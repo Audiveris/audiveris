@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,20 +21,27 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import java.awt.Color;
+import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.lag.Lag;
+import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.Book;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.StubEvent;
+import org.audiveris.omr.util.OmrExecutors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.bushe.swing.event.EventSubscriber;
+
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,12 +62,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.audiveris.omr.OMR;
-import org.audiveris.omr.lag.Lag;
-import org.audiveris.omr.log.LogUtil;
-import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.util.OmrExecutors;
-import org.bushe.swing.event.EventSubscriber;
 
 /**
  * Class <code>StubsController</code> is the UI Controller in charge of user interactions
@@ -100,9 +101,11 @@ public class StubsController
     private static final Logger logger = LoggerFactory.getLogger(StubsController.class);
 
     /** Events that can be published on sheet service. */
-    private static final Class<?>[] eventsWritten = new Class<?>[]{StubEvent.class};
+    private static final Class<?>[] eventsWritten = new Class<?>[]
+    { StubEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The concrete tabbed pane, one tab per sheet stub. */
     private final JTabbedPane stubsPane;
 
@@ -113,6 +116,7 @@ public class StubsController
     private final SelectionService stubService = new SelectionService("stubService", eventsWritten);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create the <code>StubsController</code> singleton.
      */
@@ -128,14 +132,16 @@ public class StubsController
         stubsPane.addChangeListener(this);
 
         // Listener on invalid sheets display
-        ViewParameters.getInstance()
-                .addPropertyChangeListener(ViewParameters.INVALID_SHEET_DISPLAY, this);
+        ViewParameters.getInstance().addPropertyChangeListener(
+                ViewParameters.INVALID_SHEET_DISPLAY,
+                this);
 
         // Key binding
         bindKeys();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // addAssembly //
     //-------------//
@@ -188,6 +194,30 @@ public class StubsController
         }
     }
 
+    //----------//
+    // bindKeys //
+    //----------//
+    /**
+     * Bind a few keyboard events to actions among assemblies.
+     */
+    private void bindKeys ()
+    {
+        final InputMap inputMap = stubsPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        final ActionMap actionMap = stubsPane.getActionMap();
+
+        inputMap.put(KeyStroke.getKeyStroke("PAGE_UP"), "PageUpAction");
+        actionMap.put("PageUpAction", new PageUpAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("PAGE_DOWN"), "PageDownAction");
+        actionMap.put("PageDownAction", new PageDownAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("control HOME"), "CtrlHomeAction");
+        actionMap.put("CtrlHomeAction", new CtrlHomeAction());
+
+        inputMap.put(KeyStroke.getKeyStroke("control END"), "CtrlEndAction");
+        actionMap.put("CtrlEndAction", new CtrlEndAction());
+    }
+
     //---------------//
     // callAboutStub //
     //---------------//
@@ -200,6 +230,92 @@ public class StubsController
     public void callAboutStub (SheetStub stub)
     {
         stubService.publish(new StubEvent(this, null, null, stub));
+    }
+
+    //-----------------//
+    // checkStubStatus //
+    //-----------------//
+    /**
+     * Check whether the selected sheet is visible and, if not so, launch the proper
+     * early steps on the sheet.
+     * <p>
+     * Method is called on non-EDT task.
+     *
+     * @param stub  the sheet at hand
+     * @param early if true, perform early steps on stub
+     */
+    private void checkStubStatus (final SheetStub stub,
+                                  final boolean early)
+    {
+        logger.debug("stateChanged/checkStubStatus on {}", stub);
+
+        // If stub lock is not free, then there is some processing going on on this stub.
+        // Hence, give up and let this processing go.
+        // Otherwise, launch the performing of the early steps.
+        if (stub.getLock().tryLock()) {
+            try {
+                LogUtil.start(stub);
+                logger.debug("checkStubStatus got lock on {}", stub);
+
+                if (early) {
+                    final OmrStep earlyStep = getEarlyStep();
+
+                    if (earlyStep != null) {
+                        logger.debug("EarlyStep. reachStep {} on {}", earlyStep, stub);
+                        stub.reachStep(earlyStep, false);
+                    }
+                }
+
+                final Sheet sheet;
+
+                if (!stub.hasSheet()) {
+                    // Stub just loaded from book file, load & display the related sheet
+                    logger.debug("get & display sheet for {}", stub);
+                    sheet = stub.getSheet();
+                    markTab(stub, Colors.SHEET_OK);
+                } else {
+                    logger.debug("{} already has sheet", stub);
+                    sheet = stub.getSheet();
+                }
+
+                sheet.displayMainTabs();
+            } finally {
+                logger.debug("checkStubStatus releasing lock on {}", stub);
+                stub.getLock().unlock();
+                LogUtil.stopStub();
+            }
+        } else {
+            logger.debug("{} currently busy, checkStubStatus giving up.", stub);
+        }
+    }
+
+    //----------------//
+    // defineTitleFor //
+    //----------------//
+    /**
+     * Generate proper tab title for the provided sheet.
+     *
+     * @param stub           the provided sheet stub instance
+     * @param firstDisplayed the first displayed stub
+     * @return the title to use for the related tab
+     */
+    private String defineTitleFor (SheetStub stub,
+                                   SheetStub firstDisplayed)
+    {
+        final Book book = stub.getBook();
+        final int number = stub.getNumber();
+
+        if (book.isMultiSheet()) {
+            if (stub == firstDisplayed) {
+                return book.getRadix() + "#" + number;
+            } else {
+                return "#" + number;
+            }
+        } else if (number != 1) {
+            return book.getRadix() + "#" + number;
+        } else {
+            return book.getRadix();
+        }
     }
 
     //----------------//
@@ -216,6 +332,58 @@ public class StubsController
         stubsMap.remove(stub.getAssembly().getComponent()); // Removed from stubsMap
     }
 
+    //---------//
+    // display //
+    //---------//
+    /**
+     * Display/redisplay the provided stub.
+     *
+     * @param stub  the provided stub
+     * @param early if true, perform the early steps on stub
+     */
+    public void display (final SheetStub stub,
+                         final boolean early)
+    {
+        // Since we are on Swing EDT, use asynchronous processing
+        OmrExecutors.getCachedLowExecutor().submit( () ->
+        {
+            try {
+                LogUtil.start(stub);
+
+                // Check whether we should run early steps on the sheet
+                checkStubStatus(stub, early);
+
+                SwingUtilities.invokeAndWait( () ->
+                {
+                    // Race condition: let's check we are working on the selected stub
+                    SheetStub selected = getSelectedStub();
+
+                    if (stub == selected) {
+                        // Tell the selected assembly that it now has the focus
+                        // (to display stub related boards and error pane)
+                        stub.getAssembly().assemblySelected();
+
+                        // Stub status
+                        BookActions.getInstance().updateProperties(stub.getSheet());
+
+                        // GUI: Perform sheets upgrade?
+                        final Book book = stub.getBook();
+
+                        if (!book.promptedForUpgrade() && !book.getStubsToUpgrade().isEmpty()) {
+                            promptForUpgrades(stub, book.getStubsToUpgrade());
+                        }
+                    } else {
+                        logger.debug("Too late for {}", stub);
+                    }
+                });
+
+                return null;
+            } finally {
+                LogUtil.stopStub();
+            }
+        });
+    }
+
     //--------------//
     // displayStubs //
     //--------------//
@@ -229,10 +397,11 @@ public class StubsController
     public void displayStubs (Book book,
                               Integer focus)
     {
-        displayStubs(book, focus,
-                     ViewParameters.getInstance().isInvalidSheetDisplay()
-                     ? null
-                     : SheetStub.VALIDITY_CHECK);
+        displayStubs(
+                book,
+                focus,
+                ViewParameters.getInstance().isInvalidSheetDisplay() ? null
+                        : SheetStub.VALIDITY_CHECK);
     }
 
     //--------------//
@@ -253,9 +422,8 @@ public class StubsController
         // Make sure we are on EDT
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(() -> displayStubs(book, focus, validityCheck));
-            } catch (InterruptedException |
-                     InvocationTargetException ex) {
+                SwingUtilities.invokeAndWait( () -> displayStubs(book, focus, validityCheck));
+            } catch (InterruptedException | InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
 
@@ -277,10 +445,8 @@ public class StubsController
             // Nothing displayed for this book yet, hence append all stubs at the end
             // We begin by the focus stub if any, to avoid unnecessary sheet loading
             tabPivot = stubsPane.getTabCount();
-            focusStub = ((focus != null)
-                                 && ((validityCheck == null)
-                                             || validityCheck.test(book.getStub(focus))))
-                    ? book.getStub(focus) : null;
+            focusStub = ((focus != null) && ((validityCheck == null) || validityCheck.test(
+                    book.getStub(focus)))) ? book.getStub(focus) : null;
         } else {
             focusStub = null;
             stubPivot = getStubAt(tabPivot).getNumber() - 1;
@@ -318,9 +484,9 @@ public class StubsController
         adjustStubTabs(book);
     }
 
-//--------------------------//
-// dumpCurrentSheetServices //
-//--------------------------//
+    //--------------------------//
+    // dumpCurrentSheetServices //
+    //--------------------------//
     /**
      * Debug action to dump the current status of all event services related to
      * the selected sheet if any.
@@ -390,6 +556,29 @@ public class StubsController
         return stubsPane;
     }
 
+    //----------------------------//
+    // getFirstDisplayedStubIndex //
+    //----------------------------//
+    /**
+     * Report the index of the first displayed stub (valid or not) from the given book.
+     *
+     * @param book the provided book
+     * @return the index in stubsPane of first displayed stub or -1 if none
+     */
+    private int getFirstDisplayedStubIndex (Book book)
+    {
+        for (SheetStub stub : book.getStubs()) {
+            final JComponent component = stub.getAssembly().getComponent();
+            final int tabIndex = stubsPane.indexOfComponent(component);
+
+            if (tabIndex != -1) {
+                return tabIndex;
+            }
+        }
+
+        return -1;
+    }
+
     //----------//
     // getIndex //
     //----------//
@@ -432,6 +621,44 @@ public class StubsController
         return (stubEvent != null) ? stubEvent.getData() : null;
     }
 
+    //-----------//
+    // getStubAt //
+    //-----------//
+    /**
+     * Report the stub displayed at provided index
+     *
+     * @param tabIndex the provided index (assumed to be a valid number) in stubsPane
+     * @return the corresponding stub
+     */
+    private SheetStub getStubAt (int tabIndex)
+    {
+        JComponent component = (JComponent) stubsPane.getComponentAt(tabIndex);
+
+        return stubsMap.get(component);
+    }
+
+    //----------------//
+    // insertAssembly //
+    //----------------//
+    /**
+     * Insert the assembly of provided stub at the desired index in stubsPane
+     *
+     * @param stub  the assembly to insertAssembly
+     * @param index target index in stubsPane
+     */
+    private void insertAssembly (SheetStub stub,
+                                 int index)
+    {
+        final JComponent component = stub.getAssembly().getComponent();
+        stubsMap.put(component, stub);
+        stubsPane.insertTab(
+                defineTitleFor(stub, null),
+                null,
+                component,
+                stub.getSheetInput().toString(),
+                index);
+    }
+
     //-------------//
     // isDisplayed //
     //-------------//
@@ -466,9 +693,8 @@ public class StubsController
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(() -> markTab(stub, color));
-            } catch (InterruptedException |
-                     InvocationTargetException ex) {
+                SwingUtilities.invokeAndWait( () -> markTab(stub, color));
+            } catch (InterruptedException | InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -480,6 +706,55 @@ public class StubsController
                 stubsPane.setForegroundAt(tabIndex, color);
             }
         }
+    }
+
+    //-------------------//
+    // promptForUpgrades //
+    //-------------------//
+    private void promptForUpgrades (final SheetStub stub,
+                                    final Set<SheetStub> stubsToUpgrade)
+    {
+        final Book book = stub.getBook();
+
+        // Dialog title
+        final int size = stubsToUpgrade.size();
+        final boolean plural = size > 1;
+        final String title = "Upgrade needed for " + size + " sheet" + (plural ? "s" : "") + " in "
+                + book.getRadix() + " book";
+
+        // Dialog message
+        final String question = "Should we upgrade and store the whole book in background?";
+
+        SwingUtilities.invokeLater( () ->
+        {
+            if (OMR.gui.displayConfirmation(question, title)) {
+                new SwingWorker<Void, Void>()
+                {
+                    @Override
+                    protected Void doInBackground ()
+                        throws Exception
+                    {
+                        try {
+                            LogUtil.start(book);
+
+                            book.upgradeStubs();
+                            return null;
+                        } finally {
+                            LogUtil.stopBook();
+                        }
+                    }
+
+                    @Override
+                    protected void done ()
+                    {
+                        logger.info("Upgrade completed for book " + book.getRadix());
+                        BookActions.getInstance().setBookUpgradable(false);
+                    }
+                }.execute();
+            }
+
+            book.setPromptedForUpgrade();
+        });
     }
 
     //----------------//
@@ -585,56 +860,6 @@ public class StubsController
         }
     }
 
-    //---------//
-    // display //
-    //---------//
-    /**
-     * Display/redisplay the provided stub.
-     *
-     * @param stub  the provided stub
-     * @param early if true, perform the early steps on stub
-     */
-    public void display (final SheetStub stub,
-                         final boolean early)
-    {
-        // Since we are on Swing EDT, use asynchronous processing
-        OmrExecutors.getCachedLowExecutor().submit(() -> {
-            try {
-                LogUtil.start(stub);
-
-                // Check whether we should run early steps on the sheet
-                checkStubStatus(stub, early);
-
-                SwingUtilities.invokeAndWait(() -> {
-                    // Race condition: let's check we are working on the selected stub
-                    SheetStub selected = getSelectedStub();
-
-                    if (stub == selected) {
-                        // Tell the selected assembly that it now has the focus
-                        // (to display stub related boards and error pane)
-                        stub.getAssembly().assemblySelected();
-
-                        // Stub status
-                        BookActions.getInstance().updateProperties(stub.getSheet());
-
-                        // GUI: Perform sheets upgrade?
-                        final Book book = stub.getBook();
-
-                        if (!book.promptedForUpgrade() && !book.getStubsToUpgrade().isEmpty()) {
-                            promptForUpgrades(stub, book.getStubsToUpgrade());
-                        }
-                    } else {
-                        logger.debug("Too late for {}", stub);
-                    }
-                });
-
-                return null;
-            } finally {
-                LogUtil.stopStub();
-            }
-        });
-    }
-
     //-----------------//
     // selectOtherBook //
     //-----------------//
@@ -649,9 +874,8 @@ public class StubsController
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(() -> selectOtherBook(currentBook));
-            } catch (InterruptedException |
-                     InvocationTargetException ex) {
+                SwingUtilities.invokeAndWait( () -> selectOtherBook(currentBook));
+            } catch (InterruptedException | InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -736,8 +960,7 @@ public class StubsController
      */
     public void subscribe (EventSubscriber<StubEvent> subscriber)
     {
-        stubService.subscribeStrongly(StubEvent.class,
-                                      subscriber);
+        stubService.subscribeStrongly(StubEvent.class, subscriber);
     }
 
     //----------//
@@ -759,8 +982,7 @@ public class StubsController
      */
     public void unsubscribe (EventSubscriber<StubEvent> subscriber)
     {
-        stubService.unsubscribe(StubEvent.class,
-                                subscriber);
+        stubService.unsubscribe(StubEvent.class, subscriber);
     }
 
     //----------------------//
@@ -782,224 +1004,7 @@ public class StubsController
         }
     }
 
-    //----------//
-    // bindKeys //
-    //----------//
-    /**
-     * Bind a few keyboard events to actions among assemblies.
-     */
-    private void bindKeys ()
-    {
-        final InputMap inputMap = stubsPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        final ActionMap actionMap = stubsPane.getActionMap();
-
-        inputMap.put(KeyStroke.getKeyStroke("PAGE_UP"), "PageUpAction");
-        actionMap.put("PageUpAction", new PageUpAction());
-
-        inputMap.put(KeyStroke.getKeyStroke("PAGE_DOWN"), "PageDownAction");
-        actionMap.put("PageDownAction", new PageDownAction());
-
-        inputMap.put(KeyStroke.getKeyStroke("control HOME"), "CtrlHomeAction");
-        actionMap.put("CtrlHomeAction", new CtrlHomeAction());
-
-        inputMap.put(KeyStroke.getKeyStroke("control END"), "CtrlEndAction");
-        actionMap.put("CtrlEndAction", new CtrlEndAction());
-    }
-
-    //-----------------//
-    // checkStubStatus //
-    //-----------------//
-    /**
-     * Check whether the selected sheet is visible and, if not so, launch the proper
-     * early steps on the sheet.
-     * <p>
-     * Method is called on non-EDT task.
-     *
-     * @param stub  the sheet at hand
-     * @param early if true, perform early steps on stub
-     */
-    private void checkStubStatus (final SheetStub stub,
-                                  final boolean early)
-    {
-        logger.debug("stateChanged/checkStubStatus on {}", stub);
-
-        // If stub lock is not free, then there is some processing going on on this stub.
-        // Hence, give up and let this processing go.
-        // Otherwise, launch the performing of the early steps.
-        if (stub.getLock().tryLock()) {
-            try {
-                LogUtil.start(stub);
-                logger.debug("checkStubStatus got lock on {}", stub);
-
-                if (early) {
-                    final OmrStep earlyStep = getEarlyStep();
-
-                    if (earlyStep != null) {
-                        logger.debug("EarlyStep. reachStep {} on {}", earlyStep, stub);
-                        stub.reachStep(earlyStep, false);
-                    }
-                }
-
-                final Sheet sheet;
-
-                if (!stub.hasSheet()) {
-                    // Stub just loaded from book file, load & display the related sheet
-                    logger.debug("get & display sheet for {}", stub);
-                    sheet = stub.getSheet();
-                    markTab(stub, Colors.SHEET_OK);
-                } else {
-                    logger.debug("{} already has sheet", stub);
-                    sheet = stub.getSheet();
-                }
-
-                sheet.displayMainTabs();
-            } finally {
-                logger.debug("checkStubStatus releasing lock on {}", stub);
-                stub.getLock().unlock();
-                LogUtil.stopStub();
-            }
-        } else {
-            logger.debug("{} currently busy, checkStubStatus giving up.", stub);
-        }
-    }
-
-    //-------------------//
-    // promptForUpgrades //
-    //-------------------//
-    private void promptForUpgrades (final SheetStub stub,
-                                    final Set<SheetStub> stubsToUpgrade)
-    {
-        final Book book = stub.getBook();
-
-        // Dialog title
-        final int size = stubsToUpgrade.size();
-        final boolean plural = size > 1;
-        final String title = "Upgrade needed for " + size + " sheet" + (plural ? "s" : "")
-                                     + " in " + book.getRadix() + " book";
-
-        // Dialog message
-        final String question = "Should we upgrade and store the whole book in background?";
-
-        SwingUtilities.invokeLater(() -> {
-            if (OMR.gui.displayConfirmation(question, title)) {
-                new SwingWorker<Void, Void>()
-                {
-                    @Override
-                    protected Void doInBackground ()
-                            throws Exception
-                    {
-                        try {
-                            LogUtil.start(book);
-
-                            book.upgradeStubs();
-                            return null;
-                        } finally {
-                            LogUtil.stopBook();
-                        }
-                    }
-
-                    @Override
-                    protected void done ()
-                    {
-                        logger.info("Upgrade completed for book " + book.getRadix());
-                        BookActions.getInstance().setBookUpgradable(false);
-                    }
-                }.execute();
-            }
-
-            book.setPromptedForUpgrade();
-        });
-    }
-
-    //----------------//
-    // defineTitleFor //
-    //----------------//
-    /**
-     * Generate proper tab title for the provided sheet.
-     *
-     * @param stub           the provided sheet stub instance
-     * @param firstDisplayed the first displayed stub
-     * @return the title to use for the related tab
-     */
-    private String defineTitleFor (SheetStub stub,
-                                   SheetStub firstDisplayed)
-    {
-        final Book book = stub.getBook();
-        final int number = stub.getNumber();
-
-        if (book.isMultiSheet()) {
-            if (stub == firstDisplayed) {
-                return book.getRadix() + "#" + number;
-            } else {
-                return "#" + number;
-            }
-        } else if (number != 1) {
-            return book.getRadix() + "#" + number;
-        } else {
-            return book.getRadix();
-        }
-    }
-
-    //----------------------------//
-    // getFirstDisplayedStubIndex //
-    //----------------------------//
-    /**
-     * Report the index of the first displayed stub (valid or not) from the given book.
-     *
-     * @param book the provided book
-     * @return the index in stubsPane of first displayed stub or -1 if none
-     */
-    private int getFirstDisplayedStubIndex (Book book)
-    {
-        for (SheetStub stub : book.getStubs()) {
-            final JComponent component = stub.getAssembly().getComponent();
-            final int tabIndex = stubsPane.indexOfComponent(component);
-
-            if (tabIndex != -1) {
-                return tabIndex;
-            }
-        }
-
-        return -1;
-    }
-
-    //-----------//
-    // getStubAt //
-    //-----------//
-    /**
-     * Report the stub displayed at provided index
-     *
-     * @param tabIndex the provided index (assumed to be a valid number) in stubsPane
-     * @return the corresponding stub
-     */
-    private SheetStub getStubAt (int tabIndex)
-    {
-        JComponent component = (JComponent) stubsPane.getComponentAt(tabIndex);
-
-        return stubsMap.get(component);
-    }
-
-    //----------------//
-    // insertAssembly //
-    //----------------//
-    /**
-     * Insert the assembly of provided stub at the desired index in stubsPane
-     *
-     * @param stub  the assembly to insertAssembly
-     * @param index target index in stubsPane
-     */
-    private void insertAssembly (SheetStub stub,
-                                 int index)
-    {
-        final JComponent component = stub.getAssembly().getComponent();
-        stubsMap.put(component, stub);
-        stubsPane.insertTab(
-                defineTitleFor(stub, null),
-                null,
-                component,
-                stub.getSheetInput().toString(),
-                index);
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------------//
     // getCurrentBook //
@@ -1046,22 +1051,6 @@ public class StubsController
         return constants.earlyStep.getValue();
     }
 
-    //--------------//
-    // setEarlyStep //
-    //--------------//
-    /**
-     * Set the step run by default on every new stub displayed.
-     *
-     * @param step the default target step
-     */
-    public static void setEarlyStep (OmrStep step)
-    {
-        if (step != getEarlyStep()) {
-            constants.earlyStep.setValue(step);
-            logger.info("Early step is now: {}", step);
-        }
-    }
-
     //-------------//
     // getInstance //
     //-------------//
@@ -1087,9 +1076,8 @@ public class StubsController
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(() -> invokeSelect(stub));
-            } catch (InterruptedException |
-                     InvocationTargetException ex) {
+                SwingUtilities.invokeAndWait( () -> invokeSelect(stub));
+            } catch (InterruptedException | InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -1097,7 +1085,24 @@ public class StubsController
         }
     }
 
+    //--------------//
+    // setEarlyStep //
+    //--------------//
+    /**
+     * Set the step run by default on every new stub displayed.
+     *
+     * @param step the default target step
+     */
+    public static void setEarlyStep (OmrStep step)
+    {
+        if (step != getEarlyStep()) {
+            constants.earlyStep.setValue(step);
+            logger.info("Early step is now: {}", step);
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

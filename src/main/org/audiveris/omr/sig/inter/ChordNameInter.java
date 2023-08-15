@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -25,8 +25,32 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.inter.ChordNameInter.ChordDegree.DegreeType;
-import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.*;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.AUGMENTED;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.AUGMENTED_SEVENTH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.DIMINISHED;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.DIMINISHED_SEVENTH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.DOMINANT;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.DOMINANT_11_TH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.DOMINANT_13_TH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.DOMINANT_NINTH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.HALF_DIMINISHED;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MAJOR;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MAJOR_11_TH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MAJOR_13_TH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MAJOR_MINOR;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MAJOR_NINTH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MAJOR_SEVENTH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MAJOR_SIXTH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MINOR;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MINOR_11_TH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MINOR_13_TH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MINOR_NINTH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MINOR_SEVENTH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.MINOR_SIXTH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.SUSPENDED_FOURTH;
+import static org.audiveris.omr.sig.inter.ChordNameInter.ChordKind.ChordType.SUSPENDED_SECOND;
+import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.AdditionTask;
@@ -35,14 +59,19 @@ import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.text.TextWord;
 import org.audiveris.omr.util.Jaxb;
-import static org.audiveris.omr.util.RegexUtil.*;
+import static org.audiveris.omr.util.RegexUtil.getGroup;
+import static org.audiveris.omr.util.RegexUtil.group;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -129,13 +158,14 @@ public class ChordNameInter
     private static final String STEP_CLASS = "[A-G]";
 
     /** Pattern for root value. A, A# or Ab */
-    private static final String rootPat = group(ROOT_STEP, STEP_CLASS)
-                                                  + group(ROOT_ALTER, Alter.CLASS) + "?";
+    private static final String rootPat = group(ROOT_STEP, STEP_CLASS) + group(
+            ROOT_ALTER,
+            Alter.CLASS) + "?";
 
     /** Pattern for bass value, if any. /A, /A# or /Ab */
-    private static final String bassPat = "(/" + group(BASS_STEP, STEP_CLASS)
-                                                  + group(BASS_ALTER, Alter.CLASS)
-                                                  + "?" + ")";
+    private static final String bassPat = "(/" + group(BASS_STEP, STEP_CLASS) + group(
+            BASS_ALTER,
+            Alter.CLASS) + "?" + ")";
 
     /** Pattern for major indication. M, maj or DELTA */
     private static final String majPat = group(MAJ, "(M|[Mm][Aa][Jj]|" + DELTA + ")");
@@ -154,11 +184,11 @@ public class ChordNameInter
 
     /** Pattern for any of the indication alternatives. (except sus) */
     private static final String modePat = "(" + majPat + "|" + minPat + "|" + augPat + "|" + dimPat
-                                                  + "|" + hdimPat + ")";
+            + "|" + hdimPat + ")";
 
     /** Pattern for (maj7) in min(maj7) = MAJOR_MINOR. */
     private static final String parMajPat = "(\\(" + group(PMAJ7, "(M|[Mm][Aa][Jj]|" + DELTA + ")7")
-                                                    + "\\))";
+            + "\\))";
 
     /** Pattern for any degree value. 5, 6, 7, 9, 11 or 13 */
     private static final String DEG_CLASS = "(5|6|7|9|11|13)";
@@ -190,20 +220,22 @@ public class ChordNameInter
      * Un-compiled patterns for whole chord symbol.
      * TODO: add a pattern for functions
      */
-    private static final String[] raws = new String[]{
-        rootPat + kindPat + "?" + "(" + parPat + "|" + noParPat + ")" + "?" + bassPat + "?"};
+    private static final String[] raws = new String[]
+    { rootPat + kindPat + "?" + "(" + parPat + "|" + noParPat + ")" + "?" + bassPat + "?" };
 
     /** Compiled patterns for whole chord symbol. */
     private static List<Pattern> patterns;
 
     /** Pattern for one degree. (in a sequence of degrees) */
-    private static final String degPat = group(DEG_ALTER, Alter.CLASS) + "?"
-                                                 + group(DEG_VALUE, DEG_CLASS);
+    private static final String degPat = group(DEG_ALTER, Alter.CLASS) + "?" + group(
+            DEG_VALUE,
+            DEG_CLASS);
 
     /** Compiled pattern for one degree. */
     private static final Pattern degPattern = Pattern.compile(degPat);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Chord root. */
     @XmlElement(name = "root")
     private ChordNamePitch root;
@@ -221,6 +253,74 @@ public class ChordNameInter
     private List<ChordDegree> degrees;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private ChordNameInter ()
+    {
+        this.root = null;
+        this.kind = null;
+        this.bass = null;
+        this.degrees = null;
+    }
+
+    /**
+     * Convenient constructor that creates a new ChordInfo object with no bass info.
+     *
+     * @param textWord the full underlying text
+     * @param root     root of the chord
+     * @param kind     type of the chord
+     * @param degrees  additions / subtractions / alterations if any
+     */
+    public ChordNameInter (TextWord textWord,
+                           ChordNamePitch root,
+                           ChordKind kind,
+                           ChordDegree... degrees)
+    {
+        this(textWord, root, kind, null, Arrays.asList(degrees));
+    }
+
+    /**
+     * Creates a new ChordNameInter object, with all parameters.
+     *
+     * @param textWord the full underlying text
+     * @param root     root of the chord
+     * @param kind     type of the chord
+     * @param bass     bass of the chord, or null
+     * @param degrees  additions / subtractions / alterations if any
+     */
+    public ChordNameInter (TextWord textWord,
+                           ChordNamePitch root,
+                           ChordKind kind,
+                           ChordNamePitch bass,
+                           ChordDegree... degrees)
+    {
+        this(textWord, root, kind, bass, Arrays.asList(degrees));
+    }
+
+    /**
+     * Creates a new ChordNameInter object, with all parameters.
+     *
+     * @param textWord the full underlying text
+     * @param root     root of the chord
+     * @param kind     type of the chord
+     * @param bass     bass of the chord, or null
+     * @param degrees  additions / subtractions / alterations if any
+     */
+    public ChordNameInter (TextWord textWord,
+                           ChordNamePitch root,
+                           ChordKind kind,
+                           ChordNamePitch bass,
+                           List<ChordDegree> degrees)
+    {
+        super(textWord);
+        this.root = root;
+        this.kind = kind;
+        this.bass = bass;
+        this.degrees = degrees;
+    }
+
     /**
      * Creates a new ChordNameInter object from a WordInter.
      *
@@ -228,8 +328,14 @@ public class ChordNameInter
      */
     public ChordNameInter (WordInter w)
     {
-        super(w.getGlyph(), w.getBounds(), Shape.TEXT, w.getGrade(), w.getValue(), w.getFontInfo(),
-              PointUtil.rounded(w.getLocation()));
+        super(
+                w.getGlyph(),
+                w.getBounds(),
+                Shape.TEXT,
+                w.getGrade(),
+                w.getValue(),
+                w.getFontInfo(),
+                PointUtil.rounded(w.getLocation()));
 
         setValue(w.getValue());
     }
@@ -263,82 +369,7 @@ public class ChordNameInter
         this.degrees = degrees;
     }
 
-    /**
-     * Creates a new ChordNameInter object, with all parameters.
-     *
-     * @param textWord the full underlying text
-     * @param root     root of the chord
-     * @param kind     type of the chord
-     * @param bass     bass of the chord, or null
-     * @param degrees  additions / subtractions / alterations if any
-     */
-    public ChordNameInter (TextWord textWord,
-                           ChordNamePitch root,
-                           ChordKind kind,
-                           ChordNamePitch bass,
-                           List<ChordDegree> degrees)
-    {
-        super(textWord);
-        this.root = root;
-        this.kind = kind;
-        this.bass = bass;
-        this.degrees = degrees;
-    }
-
-    /**
-     * Creates a new ChordNameInter object, with all parameters.
-     *
-     * @param textWord the full underlying text
-     * @param root     root of the chord
-     * @param kind     type of the chord
-     * @param bass     bass of the chord, or null
-     * @param degrees  additions / subtractions / alterations if any
-     */
-    public ChordNameInter (TextWord textWord,
-                           ChordNamePitch root,
-                           ChordKind kind,
-                           ChordNamePitch bass,
-                           ChordDegree... degrees)
-    {
-        this(textWord, root, kind, bass, Arrays.asList(degrees));
-    }
-
-    /**
-     * Convenient constructor that creates a new ChordInfo object with no bass info.
-     *
-     * @param textWord the full underlying text
-     * @param root     root of the chord
-     * @param kind     type of the chord
-     * @param degrees  additions / subtractions / alterations if any
-     */
-    public ChordNameInter (TextWord textWord,
-                           ChordNamePitch root,
-                           ChordKind kind,
-                           ChordDegree... degrees)
-    {
-        this(textWord, root, kind, null, Arrays.asList(degrees));
-    }
-
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private ChordNameInter ()
-    {
-        this.root = null;
-        this.kind = null;
-        this.bass = null;
-        this.degrees = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 
     /**
      * @return the bass
@@ -381,34 +412,6 @@ public class ChordNameInter
         return "CHORD_NAME: " + value;
     }
 
-    //----------//
-    // setValue //
-    //----------//
-    /**
-     * Use the new value to parse chord name information.
-     * <p>
-     * If parsing is correct, placeholders (b and #) are replaced by true alteration signs.
-     *
-     * @param value the new text value
-     */
-    @Override
-    public void setValue (String value)
-    {
-
-        final ChordStructure cs = parseChord(value);
-
-        if (cs != null) {
-            root = cs.root;
-            kind = cs.kind;
-            bass = cs.bass;
-            degrees = cs.degrees;
-            super.setValue(value.replaceAll("b", FLAT).replaceAll("#", SHARP));
-        } else {
-            logger.info("Failed parsing ChordName text: {}", value);
-            super.setValue(value);
-        }
-    }
-
     //-----------//
     // internals //
     //-----------//
@@ -438,7 +441,8 @@ public class ChordNameInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         // Standard addition task for this chord name word
         final SystemInfo system = staff.getSystem();
@@ -450,13 +454,45 @@ public class ChordNameInter
         sentence.setManual(true);
         sentence.setStaff(staff);
 
-        tasks.add(new AdditionTask(staff.getSystem().getSig(),
-                                   sentence,
-                                   getBounds(),
-                                   Arrays.asList(new Link(this, new Containment(), true))));
+        tasks.add(
+                new AdditionTask(
+                        staff.getSystem().getSig(),
+                        sentence,
+                        getBounds(),
+                        Arrays.asList(new Link(this, new Containment(), true))));
 
         return tasks;
     }
+
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Use the new value to parse chord name information.
+     * <p>
+     * If parsing is correct, placeholders (b and #) are replaced by true alteration signs.
+     *
+     * @param value the new text value
+     */
+    @Override
+    public void setValue (String value)
+    {
+
+        final ChordStructure cs = parseChord(value);
+
+        if (cs != null) {
+            root = cs.root;
+            kind = cs.kind;
+            bass = cs.bass;
+            degrees = cs.degrees;
+            super.setValue(value.replaceAll("b", FLAT).replaceAll("#", SHARP));
+        } else {
+            logger.info("Failed parsing ChordName text: {}", value);
+            super.setValue(value);
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // create //
@@ -501,6 +537,51 @@ public class ChordNameInter
         return null;
     }
 
+    //-------------//
+    // getPatterns //
+    //-------------//
+    /**
+     * Compile if needed, and provide the patterns ready to use.
+     *
+     * @return the compiled patterns
+     */
+    private static List<Pattern> getPatterns ()
+    {
+        if (patterns == null) {
+            List<Pattern> ps = new ArrayList<>();
+
+            for (String raw : raws) {
+                ps.add(Pattern.compile(raw));
+            }
+
+            patterns = ps;
+        }
+
+        return patterns;
+    }
+
+    //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Try to detect a link between this ChordNameInter and a HeadChord nearby.
+     *
+     * @param system system to be looked up
+     * @return the link found or null
+     */
+    public Link lookupLink (SystemInfo system)
+    {
+        final Point wordCenter = getCenter();
+        final MeasureStack stack = system.getStackAt(wordCenter);
+        final AbstractChordInter chordBelow = stack.getStandardChordBelow(wordCenter, getBounds());
+
+        if (chordBelow == null) {
+            return null;
+        }
+
+        return new Link(chordBelow, new ChordNameRelation(), false);
+    }
+
     //------------//
     // parseChord //
     //------------//
@@ -539,9 +620,8 @@ public class ChordNameInter
                         getGroup(matcher, BASS_STEP),
                         getGroup(matcher, BASS_ALTER));
 
-                if ((firstDeg != null)
-                            && (kind.type != SUSPENDED_FOURTH)
-                            && (kind.type != SUSPENDED_SECOND)) {
+                if ((firstDeg != null) && (kind.type != SUSPENDED_FOURTH)
+                        && (kind.type != SUSPENDED_SECOND)) {
                     // Remove first degree
                     degrees.remove(firstDeg);
                 }
@@ -569,26 +649,24 @@ public class ChordNameInter
     }
 
     //-------------//
-    // getPatterns //
+    // searchLinks //
     //-------------//
-    /**
-     * Compile if needed, and provide the patterns ready to use.
-     *
-     * @return the compiled patterns
-     */
-    private static List<Pattern> getPatterns ()
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        if (patterns == null) {
-            List<Pattern> ps = new ArrayList<>();
+        final Link link = lookupLink(system);
 
-            for (String raw : raws) {
-                ps.add(Pattern.compile(raw));
-            }
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
 
-            patterns = ps;
-        }
-
-        return patterns;
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, ChordNameRelation.class);
     }
 
     //----------//
@@ -611,6 +689,7 @@ public class ChordNameInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------//
     // Alter //
     //-------//
@@ -672,13 +751,6 @@ public class ChordNameInter
     public static class ChordDegree
     {
 
-        public static enum DegreeType
-        {
-            ADD,
-            ALTER,
-            SUBTRACT;
-        }
-
         //
         /** nth value of the degree, wrt the chord root. */
         @XmlAttribute
@@ -696,6 +768,15 @@ public class ChordNameInter
         @XmlAttribute
         public final String text;
 
+        // Needed for JAXB
+        private ChordDegree ()
+        {
+            value = 0;
+            alter = null;
+            type = null;
+            text = null;
+        }
+
         public ChordDegree (int value,
                             Integer alter,
                             DegreeType type)
@@ -712,15 +793,6 @@ public class ChordNameInter
             this.alter = alter;
             this.type = type;
             this.text = text;
-        }
-
-        // Needed for JAXB
-        private ChordDegree ()
-        {
-            value = 0;
-            alter = null;
-            type = null;
-            text = null;
         }
 
         @Override
@@ -789,6 +861,13 @@ public class ChordNameInter
 
             return degrees;
         }
+
+        public static enum DegreeType
+        {
+            ADD,
+            ALTER,
+            SUBTRACT;
+        }
     }
 
     //-----------//
@@ -796,44 +875,6 @@ public class ChordNameInter
     //-----------//
     public static class ChordKind
     {
-
-        public static enum ChordType
-        {
-            MAJOR,
-            MINOR,
-            AUGMENTED,
-            DIMINISHED,
-            DOMINANT,
-            MAJOR_SEVENTH,
-            MINOR_SEVENTH,
-            DIMINISHED_SEVENTH,
-            AUGMENTED_SEVENTH,
-            HALF_DIMINISHED,
-            MAJOR_MINOR,
-            MAJOR_SIXTH,
-            MINOR_SIXTH,
-            DOMINANT_NINTH,
-            MAJOR_NINTH,
-            MINOR_NINTH,
-            DOMINANT_11_TH,
-            MAJOR_11_TH,
-            MINOR_11_TH,
-            DOMINANT_13_TH,
-            MAJOR_13_TH,
-            MINOR_13_TH,
-            SUSPENDED_SECOND,
-            SUSPENDED_FOURTH,
-
-            //        NEAPOLITAN,
-            //        ITALIAN,
-            //        FRENCH,
-            //        GERMAN,
-            //        PEDAL,
-            //        POWER,
-            //        TRISTAN,
-            OTHER,
-            NONE;
-        }
 
         /** Precise type of kind. (subset of the 33 Music XML values) */
         @XmlAttribute
@@ -852,6 +893,15 @@ public class ChordNameInter
         /** Exact display text for the chord kind. (For example min vs m) */
         @XmlAttribute
         public final String text;
+
+        // For JAXB
+        private ChordKind ()
+        {
+            this.type = null;
+            this.parentheses = false;
+            this.symbol = false;
+            this.text = null;
+        }
 
         public ChordKind (ChordType type)
         {
@@ -880,15 +930,6 @@ public class ChordNameInter
             this.parentheses = parentheses;
             this.text = text;
             this.symbol = symbol;
-        }
-
-        // For JAXB
-        private ChordKind ()
-        {
-            this.type = null;
-            this.parentheses = false;
-            this.symbol = false;
-            this.text = null;
         }
 
         @Override
@@ -947,11 +988,9 @@ public class ChordNameInter
             }
 
             // Then check for other combinations
-            final String str = standard(matcher, MIN) + standard(matcher, MAJ)
-                                       + standard(matcher, AUG)
-                                       + standard(matcher, DIM)
-                                       + standard(matcher, HDIM)
-                                       + dominant;
+            final String str = standard(matcher, MIN) + standard(matcher, MAJ) + standard(
+                    matcher,
+                    AUG) + standard(matcher, DIM) + standard(matcher, HDIM) + dominant;
             ChordType type = typeOf(str);
 
             // Special case for Triangle sign => maj7 rather than major
@@ -960,9 +999,8 @@ public class ChordNameInter
             }
 
             // Use of symbol?
-            boolean symbol = getGroup(matcher, MAJ).equals(DELTA)
-                                     || getGroup(matcher, MIN).equals("-")
-                                     || getGroup(matcher, AUG).equals("+");
+            boolean symbol = getGroup(matcher, MAJ).equals(DELTA) || getGroup(matcher, MIN).equals(
+                    "-") || getGroup(matcher, AUG).equals("+");
 
             return (type != null) ? new ChordKind(type, kindStr, symbol, parentheses) : null;
         }
@@ -1051,6 +1089,44 @@ public class ChordNameInter
                 return null;
             }
         }
+
+        public static enum ChordType
+        {
+            MAJOR,
+            MINOR,
+            AUGMENTED,
+            DIMINISHED,
+            DOMINANT,
+            MAJOR_SEVENTH,
+            MINOR_SEVENTH,
+            DIMINISHED_SEVENTH,
+            AUGMENTED_SEVENTH,
+            HALF_DIMINISHED,
+            MAJOR_MINOR,
+            MAJOR_SIXTH,
+            MINOR_SIXTH,
+            DOMINANT_NINTH,
+            MAJOR_NINTH,
+            MINOR_NINTH,
+            DOMINANT_11_TH,
+            MAJOR_11_TH,
+            MINOR_11_TH,
+            DOMINANT_13_TH,
+            MAJOR_13_TH,
+            MINOR_13_TH,
+            SUSPENDED_SECOND,
+            SUSPENDED_FOURTH,
+
+            //        NEAPOLITAN,
+            //        ITALIAN,
+            //        FRENCH,
+            //        GERMAN,
+            //        PEDAL,
+            //        POWER,
+            //        TRISTAN,
+            OTHER,
+            NONE;
+        }
     }
 
     //----------------//
@@ -1068,11 +1144,11 @@ public class ChordNameInter
         @XmlAttribute
         public final Integer alter;
 
-        public ChordNamePitch (AbstractNoteInter.NoteStep step,
-                               Integer alter)
+        // For JAXB
+        private ChordNamePitch ()
         {
-            this.step = step;
-            this.alter = alter;
+            this.step = null;
+            this.alter = null;
         }
 
         public ChordNamePitch (AbstractNoteInter.NoteStep step)
@@ -1080,11 +1156,11 @@ public class ChordNameInter
             this(step, 0);
         }
 
-        // For JAXB
-        private ChordNamePitch ()
+        public ChordNamePitch (AbstractNoteInter.NoteStep step,
+                               Integer alter)
         {
-            this.step = null;
-            this.alter = null;
+            this.step = step;
+            this.alter = alter;
         }
 
         @Override

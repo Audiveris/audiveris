@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,6 +24,7 @@ package org.audiveris.omr.glyph.ui;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.ui.OmrGui;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -79,6 +80,7 @@ public class ShapeColorChooser
     private static JFrame frame;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The classic color chooser utility */
     private final JColorChooser colorChooser;
 
@@ -95,6 +97,7 @@ public class ShapeColorChooser
     private final ShapesPane shapes;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an instance of ShapeColorChooser (should be improved to always
      * reuse the same instance. TODO)
@@ -123,6 +126,26 @@ public class ShapeColorChooser
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------//
+    // stateChanged //
+    //--------------//
+    /**
+     * Triggered when color selection in the color chooser has changed.
+     *
+     * @param e not used
+     */
+    @Override
+    public void stateChanged (ChangeEvent e)
+    {
+        chosenColor = colorChooser.getColor();
+        ///logger.info("chosenColor: " + chosenColor);
+        ranges.colorChanged();
+        shapes.colorChanged();
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-----------//
     // showFrame //
     //-----------//
@@ -147,24 +170,8 @@ public class ShapeColorChooser
         OmrGui.getApplication().show(frame);
     }
 
-    //--------------//
-    // stateChanged //
-    //--------------//
-    /**
-     * Triggered when color selection in the color chooser has changed.
-     *
-     * @param e not used
-     */
-    @Override
-    public void stateChanged (ChangeEvent e)
-    {
-        chosenColor = colorChooser.getColor();
-        ///logger.info("chosenColor: " + chosenColor);
-        ranges.colorChanged();
-        shapes.colorChanged();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------//
     // Pane //
     //------//
@@ -251,6 +258,12 @@ public class ShapeColorChooser
             buildRangesMenu();
         }
 
+        private void buildRangesMenu ()
+        {
+            menu.removeAll();
+            ShapeSet.addAllShapeSets(menu, selectionListener);
+        }
+
         // When color chooser selection has been made
         @Override
         public void colorChanged ()
@@ -266,12 +279,6 @@ public class ShapeColorChooser
             if (current != null) {
                 banner.setForeground(current.getColor());
             }
-        }
-
-        private void buildRangesMenu ()
-        {
-            menu.removeAll();
-            ShapeSet.addAllShapeSets(menu, selectionListener);
         }
 
         private class PasteAction
@@ -380,42 +387,19 @@ public class ShapeColorChooser
             paste.setEnabled(false);
         }
 
-        // When color chooser selection has been made
-        @Override
-        public void colorChanged ()
-        {
-            updateActions();
-        }
-
-        // When a new range has been selected
-        public void setRange ()
-        {
-            buildShapesMenu();
-
-            select.setEnabled(true);
-            selectButton.setText("-- Select Shape from " + ranges.current.getName() + " --");
-
-            current = null;
-            banner.setText("");
-            cut.setEnabled(false);
-            copy.setEnabled(false);
-            paste.setEnabled(false);
-        }
-
-        @Override
-        protected void refreshBanner ()
-        {
-            if (current != null) {
-                banner.setForeground(current.getColor());
-            }
-        }
-
         private void buildShapesMenu ()
         {
             menu.removeAll();
 
             // Add all shapes within current range
-            ShapeSet.addSetShapes(ranges.current, menu, selectionListener);
+            ShapeSet.addSetShapes(MusicFamily.Bravura, ranges.current, menu, selectionListener);
+        }
+
+        // When color chooser selection has been made
+        @Override
+        public void colorChanged ()
+        {
+            updateActions();
         }
 
         private void prepareDefaultOption ()
@@ -434,6 +418,29 @@ public class ShapeColorChooser
             } else {
                 paste.setEnabled(false);
             }
+        }
+
+        @Override
+        protected void refreshBanner ()
+        {
+            if (current != null) {
+                banner.setForeground(current.getColor());
+            }
+        }
+
+        // When a new range has been selected
+        public void setRange ()
+        {
+            buildShapesMenu();
+
+            select.setEnabled(true);
+            selectButton.setText("-- Select Shape from " + ranges.current.getName() + " --");
+
+            current = null;
+            banner.setText("");
+            cut.setEnabled(false);
+            copy.setEnabled(false);
+            paste.setEnabled(false);
         }
 
         private void updateActions ()

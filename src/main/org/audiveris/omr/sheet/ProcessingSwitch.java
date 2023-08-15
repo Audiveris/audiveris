@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,6 +22,8 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.constant.Constant;
+
+import java.util.EnumSet;
 
 /**
  * Class <code>ProcessingSwitch</code> is the enumeration of all possible processing
@@ -44,32 +46,57 @@ import org.audiveris.omr.constant.Constant;
  */
 public enum ProcessingSwitch
 {
-    poorInputMode(ProcessingSwitches.constants.poorInputMode),
+    keepGrayImages(ProcessingSwitches.constants.keepGrayImages),
     indentations(ProcessingSwitches.constants.indentations),
     bothSharedHeadDots(ProcessingSwitches.constants.bothSharedHeadDots),
-    keepGrayImages(ProcessingSwitches.constants.keepGrayImages),
-    articulations(ProcessingSwitches.constants.articulations),
-    chordNames(ProcessingSwitches.constants.chordNames),
+
+    oneLineStaves(ProcessingSwitches.constants.oneLineStaves),
+    fourStringTablatures(ProcessingSwitches.constants.fourStringTablatures),
+    drumNotation(ProcessingSwitches.constants.drumNotation),
+    sixStringTablatures(ProcessingSwitches.constants.sixStringTablatures),
+
+    smallHeads(ProcessingSwitches.constants.smallHeads),
+    smallBeams(ProcessingSwitches.constants.smallBeams),
+    crossHeads(ProcessingSwitches.constants.crossHeads),
+    tremolos(ProcessingSwitches.constants.tremolos),
     fingerings(ProcessingSwitches.constants.fingerings),
     frets(ProcessingSwitches.constants.frets),
     pluckings(ProcessingSwitches.constants.pluckings),
+    partialWholeRests(ProcessingSwitches.constants.partialWholeRests),
+    multiWholeHeadChords(ProcessingSwitches.constants.multiWholeHeadChords),
+
+    chordNames(ProcessingSwitches.constants.chordNames),
     lyrics(ProcessingSwitches.constants.lyrics),
     lyricsAboveStaff(ProcessingSwitches.constants.lyricsAboveStaff),
-    smallBlackHeads(ProcessingSwitches.constants.smallBlackHeads),
-    smallVoidHeads(ProcessingSwitches.constants.smallVoidHeads),
-    smallWholeHeads(ProcessingSwitches.constants.smallWholeHeads),
-    crossHeads(ProcessingSwitches.constants.crossHeads),
+
+    articulations(ProcessingSwitches.constants.articulations),
     implicitTuplets(ProcessingSwitches.constants.implicitTuplets),
-    sixStringTablatures(ProcessingSwitches.constants.sixStringTablatures),
-    fourStringTablatures(ProcessingSwitches.constants.fourStringTablatures),
-    oneLineStaves(ProcessingSwitches.constants.oneLineStaves),
-    partialWholeRests(ProcessingSwitches.constants.partialWholeRests),
-    multiWholeHeadChords(ProcessingSwitches.constants.multiWholeHeadChords);
+
+    // Obsolete switches:
+    poorInputMode(null),
+    smallBlackHeads(null),
+    smallVoidHeads(null),
+    smallWholeHeads(null);
+
+    /**
+     * The switches currently supported.
+     */
+    public static EnumSet<ProcessingSwitch> supportedSwitches = EnumSet.range(
+            keepGrayImages,
+            implicitTuplets);
+
+    /**
+     * The switches now obsolete.
+     */
+    public static EnumSet<ProcessingSwitch> obsoleteSwitches = EnumSet.range(
+            poorInputMode,
+            smallWholeHeads);
 
     /** Underlying boolean constant. */
     private final Constant.Boolean constant;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a switch from its dedicated application constant.
      *
@@ -81,6 +108,7 @@ public enum ProcessingSwitch
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // getConstant //
     //-------------//

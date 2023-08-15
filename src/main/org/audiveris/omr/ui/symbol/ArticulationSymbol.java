@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
+
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
-import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -33,17 +34,15 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>ArticulationSymbol</code> implements an articulation symbol.
+ * Class <code>ArticulationSymbol</code> implements an articulation symbol, perhaps decorated
+ * with a note head.
  *
  * @author Hervé Bitteur
  */
 public class ArticulationSymbol
-        extends ShapeSymbol
+        extends DecorableSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    /** The head part. */
-    private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
 
     /** Ratio of head height for the decorated rectangle height. */
     private static final double yRatio = 2.5;
@@ -52,54 +51,20 @@ public class ArticulationSymbol
     private static final double dyRatio = -0.25;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create a <code>ArticulationSymbol</code> (with decoration?) standard size
-     *
-     * @param shape     the precise shape
-     * @param decorated true for a decorated image
-     * @param codes     precise code for articulation part
-     */
-    public ArticulationSymbol (Shape shape,
-                               boolean decorated,
-                               int... codes)
-    {
-        this(false, shape, decorated, codes);
-    }
 
     /**
-     * Create a <code>ArticulationSymbol</code> (with decoration?)
+     * Create a <code>ArticulationSymbol</code> standard size, with no decoration.
      *
-     * @param isIcon    true for an icon
-     * @param shape     the precise shape
-     * @param decorated true for a decorated image
-     * @param codes     precise code for articulation part
+     * @param shape  the precise shape
+     * @param family the musicFont family
      */
-    protected ArticulationSymbol (boolean isIcon,
-                                  Shape shape,
-                                  boolean decorated,
-                                  int... codes)
+    public ArticulationSymbol (Shape shape,
+                               MusicFamily family)
     {
-        super(isIcon, shape, decorated, codes);
+        super(shape, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------------//
-    // createDecoratedSymbol //
-    //-----------------------//
-    @Override
-    protected ShapeSymbol createDecoratedSymbol ()
-    {
-        return new ArticulationSymbol(isIcon, shape, true, codes);
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new ArticulationSymbol(true, shape, decorated, codes);
-    }
 
     //-----------//
     // getParams //
@@ -110,13 +75,12 @@ public class ArticulationSymbol
         MyParams p = new MyParams();
 
         // Articulation symbol layout
-        p.layout = font.layout(getString());
-
+        p.layout = font.layoutShapeByCode(shape);
         Rectangle2D rs = p.layout.getBounds(); // Symbol bounds
 
-        if (decorated) {
+        if (isDecorated) {
             // Head layout
-            p.headLayout = font.layout(head.getString());
+            p.headLayout = font.layoutShapeByCode(Shape.NOTEHEAD_BLACK); // Should be OK with inheritance
 
             // Use a rectangle 'yRatio' times as high as note head
             Rectangle2D rh = p.headLayout.getBounds(); // Head bounds
@@ -146,7 +110,7 @@ public class ArticulationSymbol
     {
         MyParams p = (MyParams) params;
 
-        if (decorated) {
+        if (isDecorated) {
             // Draw a note head (using composite) on the bottom
             Point2D loc = alignment.translatedPoint(BOTTOM_CENTER, p.rect, location);
             Composite oldComposite = g.getComposite();
@@ -166,6 +130,7 @@ public class ArticulationSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//

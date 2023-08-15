@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -41,6 +41,15 @@ public class SegmentInter
     private final SegmentInfo info;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private SegmentInter ()
+    {
+        this.info = null;
+    }
+
     /**
      * Creates a new SegmentInter object.
      *
@@ -55,23 +64,7 @@ public class SegmentInter
         this.info = info;
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private SegmentInter ()
-    {
-        this.info = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 
     //---------//
     // getInfo //
@@ -87,6 +80,7 @@ public class SegmentInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Impacts //
     //---------//
@@ -94,9 +88,11 @@ public class SegmentInter
             extends GradeImpacts
     {
 
-        private static final String[] NAMES = new String[]{"dist"};
+        private static final String[] NAMES = new String[]
+        { "dist" };
 
-        private static final double[] WEIGHTS = new double[]{1};
+        private static final double[] WEIGHTS = new double[]
+        { 1 };
 
         public Impacts (double dist)
         {

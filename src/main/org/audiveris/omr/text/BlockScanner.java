@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
-import ij.process.ByteProcessor;
-
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.util.Navigable;
 
@@ -32,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>BlockScanner</code> launches the OCR on a buffer, typically a glyph buffer,
@@ -49,16 +47,16 @@ public class BlockScanner
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Constants constants = new Constants();
-
     private static final Logger logger = LoggerFactory.getLogger(BlockScanner.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>GlyphScanner</code> object that can work on a glyph or a buffer.
      *
@@ -70,15 +68,13 @@ public class BlockScanner
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------------//
     // scanBuffer //
     //------------//
     /**
      * Launch the OCR on the provided buffer, to retrieve the TextLine instance(s) with
      * coordinates <b>relative</b> to buffer origin.
-     * <p>
-     * Tesseract OCR generally gives better results if the processed image exhibits white pixels
-     * on the image contour, so here we (transparently) add a white margin around the buffer.
      *
      * @param buffer   the ByteProcessor buffer
      * @param language the probable language spec
@@ -91,24 +87,9 @@ public class BlockScanner
     {
         return OcrUtil.scan(
                 buffer.getBufferedImage(),
-                constants.whiteMarginAdded.getValue(),
                 OCR.LayoutMode.SINGLE_BLOCK,
                 language,
-                sheet.getScale().getInterline(),
-                sheet.getId() + "-b" + id);
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer whiteMarginAdded = new Constant.Integer(
-                "pixels",
-                10,
-                "Margin of white pixels added around block image");
+                sheet,
+                sheet.getId() + "/glyph-" + id);
     }
 }

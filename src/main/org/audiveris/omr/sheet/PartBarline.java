@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -64,32 +64,8 @@ public class PartBarline
 
     private static final Logger logger = LoggerFactory.getLogger(PartBarline.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * Barline style.
-     * <p>
-     * Identical to (or subset of) MusicXML BarStyle, to avoid strict dependency on MusicXML with
-     * the addition of LIGHT_HEAVY_LIGHT to handle back-to-back configuration.
-     */
-    public static enum Style
-    {
-        REGULAR,
-        DOTTED,
-        DASHED,
-        HEAVY,
-        LIGHT_LIGHT,
-        LIGHT_HEAVY,
-        HEAVY_LIGHT,
-        HEAVY_HEAVY,
-        TICK,
-        SHORT,
-        NONE,
-
-        /** LIGHT_HEAVY_LIGHT is not part of MusicXML. */
-        LIGHT_HEAVY_LIGHT;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * List of underlying {@link OldStaffBarline} instances.
      * <p>
@@ -109,6 +85,7 @@ public class PartBarline
     private final List<StaffBarlineInter> staffBarlines = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>PartBarline</code> object.
      */
@@ -117,6 +94,7 @@ public class PartBarline
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // addStaffBarline //
     //-----------------//
@@ -228,7 +206,7 @@ public class PartBarline
         if (bar != null) {
             return bar.getRightX();
         } else {
-            throw new IllegalStateException("Part Barline with no proper StaffBarline");
+            throw new IllegalStateException("PartBarline with no proper StaffBarline in " + staff);
         }
     }
 
@@ -406,5 +384,31 @@ public class PartBarline
         }
 
         return false;
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /**
+     * Barline style.
+     * <p>
+     * Identical to (or subset of) MusicXML BarStyle, to avoid strict dependency on MusicXML with
+     * the addition of LIGHT_HEAVY_LIGHT to handle back-to-back configuration.
+     */
+    public static enum Style
+    {
+        REGULAR,
+        DOTTED,
+        DASHED,
+        HEAVY,
+        LIGHT_LIGHT,
+        LIGHT_HEAVY,
+        HEAVY_LIGHT,
+        HEAVY_HEAVY,
+        TICK,
+        SHORT,
+        NONE,
+
+        /** LIGHT_HEAVY_LIGHT is not part of MusicXML. */
+        LIGHT_HEAVY_LIGHT;
     }
 }

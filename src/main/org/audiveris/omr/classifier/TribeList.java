@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -58,6 +58,7 @@ class TribeList
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
     /** Used only to include sheet-name within the written file. */
@@ -69,6 +70,13 @@ class TribeList
     private final ArrayList<Tribe> tribes = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    // Meant for JAXB
+    private TribeList ()
+    {
+        name = null;
+    }
+
     /**
      * Creates a new <code>TribeList</code> object.
      *
@@ -83,13 +91,8 @@ class TribeList
         }
     }
 
-    // Meant for JAXB
-    private TribeList ()
-    {
-        name = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // getTribes //
     //-----------//
@@ -115,18 +118,18 @@ class TribeList
             logger.debug("Marshalling {}", this);
             Jaxb.marshal(this, tribesPath, getJaxbContext());
             logger.info("Stored {}", tribesPath);
-        } catch (IOException |
-                 JAXBException |
-                 XMLStreamException ex) {
+        } catch (IOException | JAXBException | XMLStreamException ex) {
             logger.error("Error marshalling " + this + " " + ex, ex);
         }
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------------//
     // getJaxbContext //
     //----------------//
     private static JAXBContext getJaxbContext ()
-            throws JAXBException
+        throws JAXBException
     {
         // Lazy creation
         if (jaxbContext == null) {
@@ -147,7 +150,7 @@ class TribeList
      * @throws IOException
      */
     static TribeList unmarshal (Path path)
-            throws IOException
+        throws IOException
     {
         logger.debug("TribeList unmarshalling {}", path);
 

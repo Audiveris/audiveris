@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,8 +53,9 @@ public abstract class AbstractPitchedInter
     private static final Constants constants = new Constants();
 
     /** To order from bottom to top. */
-    public static final Comparator<AbstractPitchedInter> bottomUp
-            = (AbstractPitchedInter p1, AbstractPitchedInter p2) -> {
+    public static final Comparator<AbstractPitchedInter> bottomUp = (AbstractPitchedInter p1,
+                                                                     AbstractPitchedInter p2) ->
+    {
         // Pitch comparison is usable only within the SAME staff
         if ((p1.getStaff() != null) && (p2.getStaff() == p1.getStaff())) {
             return Double.compare(p2.pitch, p1.pitch);
@@ -65,6 +66,7 @@ public abstract class AbstractPitchedInter
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * The assigned pitch coded as a double value, 1 digit maximum after the dot.
      */
@@ -73,26 +75,12 @@ public abstract class AbstractPitchedInter
     protected Double pitch;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new AbstractPitchedInter object.
-     *
-     * @param glyph   the glyph to interpret
-     * @param bounds  the precise object bounds (if different from glyph bounds)
-     * @param shape   the possible shape
-     * @param impacts assignment details
-     * @param staff   the related staff
-     * @param pitch   the pitch value WRT staff
+     * No-arg constructor meant for JAXB.
      */
-    public AbstractPitchedInter (Glyph glyph,
-                                 Rectangle bounds,
-                                 Shape shape,
-                                 GradeImpacts impacts,
-                                 Staff staff,
-                                 Double pitch)
+    protected AbstractPitchedInter ()
     {
-        super(glyph, bounds, shape, impacts);
-        this.pitch = pitch;
-        setStaff(staff);
     }
 
     /**
@@ -118,13 +106,29 @@ public abstract class AbstractPitchedInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new AbstractPitchedInter object.
+     *
+     * @param glyph   the glyph to interpret
+     * @param bounds  the precise object bounds (if different from glyph bounds)
+     * @param shape   the possible shape
+     * @param impacts assignment details
+     * @param staff   the related staff
+     * @param pitch   the pitch value WRT staff
      */
-    protected AbstractPitchedInter ()
+    public AbstractPitchedInter (Glyph glyph,
+                                 Rectangle bounds,
+                                 Shape shape,
+                                 GradeImpacts impacts,
+                                 Staff staff,
+                                 Double pitch)
     {
+        super(glyph, bounds, shape, impacts);
+        this.pitch = pitch;
+        setStaff(staff);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------------//
     // getAreaPitchOffset //
     //--------------------//
@@ -139,6 +143,88 @@ public abstract class AbstractPitchedInter
     {
         return getAreaPitchOffset(shape);
     }
+
+    //-----------------//
+    // getIntegerPitch //
+    //-----------------//
+    /**
+     * Report the rounded integer pitch value
+     *
+     * @return the pitch
+     */
+    public int getIntegerPitch ()
+    {
+        return (int) Math.rint(pitch);
+    }
+
+    //----------//
+    // getPitch //
+    //----------//
+    /**
+     * Report the precise (double) pitch value
+     *
+     * @return the pitch
+     */
+    public Double getPitch ()
+    {
+        return pitch;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + String.format(" p:%.1f", pitch);
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public void setBounds (Rectangle bounds)
+    {
+        // Bounds
+        super.setBounds(bounds);
+
+        // Pitch
+        if ((bounds == null) || (staff == null) || staff.isTablature()) {
+            setPitch(null);
+        } else {
+            setPitch(staff.pitchPositionOf(GeoUtil.center2D(bounds)) + getAreaPitchOffset());
+        }
+    }
+
+    //----------//
+    // setPitch //
+    //----------//
+    /**
+     * Set pitch value.
+     *
+     * @param pitch the pitch to set
+     */
+    public void setPitch (Double pitch)
+    {
+        this.pitch = pitch;
+    }
+
+    //----------//
+    // setStaff //
+    //----------//
+    @Override
+    public void setStaff (Staff staff)
+    {
+        super.setStaff(staff);
+
+        // Pitch?
+        if ((pitch == null) && (staff != null) && !staff.isTablature() && (bounds != null)
+                && (shape != null)) {
+            setPitch(staff.pitchPositionOf(GeoUtil.center2D(bounds)) + getAreaPitchOffset());
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------------------//
     // getAreaPitchOffset //
@@ -194,86 +280,8 @@ public abstract class AbstractPitchedInter
         }
     }
 
-    //-----------------//
-    // getIntegerPitch //
-    //-----------------//
-    /**
-     * Report the rounded integer pitch value
-     *
-     * @return the pitch
-     */
-    public int getIntegerPitch ()
-    {
-        return (int) Math.rint(pitch);
-    }
-
-    //----------//
-    // getPitch //
-    //----------//
-    /**
-     * Report the precise (double) pitch value
-     *
-     * @return the pitch
-     */
-    public Double getPitch ()
-    {
-        return pitch;
-    }
-
-    //----------//
-    // setPitch //
-    //----------//
-    /**
-     * Set pitch value.
-     *
-     * @param pitch the pitch to set
-     */
-    public void setPitch (Double pitch)
-    {
-        this.pitch = pitch;
-    }
-
-    //-----------//
-    // setBounds //
-    //-----------//
-    @Override
-    public void setBounds (Rectangle bounds)
-    {
-        // Bounds
-        super.setBounds(bounds);
-
-        // Pitch
-        if ((bounds == null) || (staff == null)) {
-            setPitch(null);
-        } else {
-            setPitch(staff.pitchPositionOf(GeoUtil.center2D(bounds)) + getAreaPitchOffset());
-        }
-    }
-
-    //----------//
-    // setStaff //
-    //----------//
-    @Override
-    public void setStaff (Staff staff)
-    {
-        super.setStaff(staff);
-
-        // Pitch?
-        if ((pitch == null) && (staff != null) && (bounds != null) && (shape != null)) {
-            setPitch(staff.pitchPositionOf(GeoUtil.center2D(bounds)) + getAreaPitchOffset());
-        }
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + String.format(" p:%.1f", pitch);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,14 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.constant;
 
-import net.jcip.annotations.ThreadSafe;
-
 import org.audiveris.omr.CLI;
 import org.audiveris.omr.Main;
 import org.audiveris.omr.WellKnowns;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import net.jcip.annotations.ThreadSafe;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -72,16 +72,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * <li><code>minResolution</code> is the Java object used in the application.
  * It is defined as a Constant.Integer, a subtype of Constant meant to host Integer values</li>
  * <li><code>"Pixels"</code> specifies the unit used. Here we are counting in pixels.</li>
- * <li><code>11</code> is the constant value. This is the value used by the application, provided it is
- * not overridden in the USER properties file or later via a dedicated GUI tool.</li>
+ * <li><code>11</code> is the constant value. This is the value used by the application, provided
+ * it is not overridden in the USER properties file or later via a dedicated GUI tool.</li>
  * <li><code>"Minimum resolution, expressed as number of pixels per interline" </code> is the
  * constant description, which will be used as a tool tip in the GUI interface in charge of editing
  * these constants.</li>
  * </ul>
  * </li>
  * <li>Then, <b>USER</b> values, contained in a property file named <em><b>"run.properties"</b></em>
- * can assign overriding values to some constants. For example, the <code>minInterline</code> constant
- * above could be altered by the following line in this user file:
+ * can assign overriding values to some constants. For example, the <code>minInterline</code>
+ * constant above could be altered by the following line in this user file:
  *
  * <pre>
  * omr.sheet.ScaleBuilder.minInterline = 12
@@ -89,7 +89,8 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * This file is modified every time the user updates the value of a constant by means of the
  * provided Constant user interface at run-time.
- * The file is not mandatory, and is located in the user application data <code>config</code> folder.
+ * The file is not mandatory, and is located in the user application data <code>config</code>
+ * folder.
  * Its values override the SOURCE corresponding constants.
  * Typically, these USER values represent some modification made by the end user at run-time and
  * thus saved from one run to the other.
@@ -136,6 +137,7 @@ public class ConstantManager
     private static final ConstantManager INSTANCE = new ConstantManager();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Map of all constants created in the application, regardless whether these
      * constants are enclosed in a ConstantSet or defined as standalone entities.
@@ -147,11 +149,13 @@ public class ConstantManager
             WellKnowns.CONFIG_FOLDER.resolve(USER_FILE_NAME));
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private ConstantManager ()
     {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // addConstant //
     //-------------//
@@ -195,19 +199,6 @@ public class ConstantManager
         return userHolder.getProperty(qName);
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton of this class.
-     *
-     * @return the only ConstantManager instance
-     */
-    public static ConstantManager getInstance ()
-    {
-        return INSTANCE;
-    }
-
     //------------------//
     // getAllProperties //
     //------------------//
@@ -222,6 +213,14 @@ public class ConstantManager
         SortedSet<String> props = new TreeSet<>(userHolder.getKeys());
 
         return props;
+    }
+
+    //----------------------//
+    // getConstantUserValue //
+    //----------------------//
+    String getConstantUserValue (String qName)
+    {
+        return userHolder.getProperty(qName);
     }
 
     //-------------------------//
@@ -270,15 +269,23 @@ public class ConstantManager
         userHolder.store();
     }
 
-    //----------------------//
-    // getConstantUserValue //
-    //----------------------//
-    String getConstantUserValue (String qName)
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton of this class.
+     *
+     * @return the only ConstantManager instance
+     */
+    public static ConstantManager getInstance ()
     {
-        return userHolder.getProperty(qName);
+        return INSTANCE;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------------//
     // AbstractHolder //
     //----------------//

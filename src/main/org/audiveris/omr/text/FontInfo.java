@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,6 +44,7 @@ public class FontInfo
     private static final char SEPARATOR = '-';
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** True if bold. */
     public final boolean isBold;
 
@@ -69,6 +70,7 @@ public class FontInfo
     public final String fontName;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new FontInfo object.
      *
@@ -120,7 +122,20 @@ public class FontInfo
                 org.fontName);
     }
 
+    /**
+     * Creates a new FontInfo object, with no attribute set, just point size and font name.
+     *
+     * @param pointsize font size in points
+     * @param fontName  font name
+     */
+    public FontInfo (int pointsize,
+                     String fontName)
+    {
+        this(false, false, false, false, false, false, pointsize, fontName);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getMnemo //
     //----------//
@@ -185,6 +200,8 @@ public class FontInfo
         return sb.toString();
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //---------------//
     // createDefault //
     //---------------//
@@ -226,6 +243,7 @@ public class FontInfo
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // JaxbAdapter //
     //-------------//
@@ -238,7 +256,7 @@ public class FontInfo
 
         @Override
         public String marshal (FontInfo info)
-                throws Exception
+            throws Exception
         {
             if (info == null) {
                 logger.warn("Null FontInfo");
@@ -251,7 +269,7 @@ public class FontInfo
 
         @Override
         public FontInfo unmarshal (String mnemo)
-                throws Exception
+            throws Exception
         {
             if (mnemo == null) {
                 logger.warn("Null mnemo");

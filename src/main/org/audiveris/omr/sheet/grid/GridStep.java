@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -54,6 +54,7 @@ public class GridStep
     private static final Logger logger = LoggerFactory.getLogger(GridStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new GridStep object.
      */
@@ -62,6 +63,7 @@ public class GridStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // displayUI //
     //-----------//
@@ -88,7 +90,7 @@ public class GridStep
     //------//
     @Override
     public void doit (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         StopWatch watch = new StopWatch("GridStep");
         watch.start("GridBuilder");
@@ -103,6 +105,7 @@ public class GridStep
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

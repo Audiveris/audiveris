@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,7 +53,14 @@ public class Run
     @XmlAttribute(name = "length")
     protected int length;
 
+    /** Meant for XML unmarshalling only. */
+    private Run ()
+    {
+        this(0, 0);
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>Run</code> instance.
      *
@@ -78,85 +85,19 @@ public class Run
         this.length = that.length;
     }
 
-    /** Meant for XML unmarshalling only. */
-    private Run ()
-    {
-        this(0, 0);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // getLength //
-    //-----------//
-    /**
-     * Report the length of the run in pixels
-     *
-     * @return this length
-     */
-    public final int getLength ()
-    {
-        return length;
-    }
 
-    /**
-     * (package private) method to set length value.
-     *
-     * @param length the length to set
-     */
-    void setLength (int length)
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
     {
-        this.length = length;
-    }
+        if (obj instanceof Run that) {
+            return (this.start == that.start) && (this.length == that.length);
+        }
 
-    //----------//
-    // getStart //
-    //----------//
-    /**
-     * Report the starting coordinate of the run (x for horizontal, y for
-     * vertical)
-     *
-     * @return the start coordinate
-     */
-    public final int getStart ()
-    {
-        return start;
-    }
-
-    /**
-     * (package private) method to set start value.
-     *
-     * @param start the start to set
-     */
-    void setStart (int start)
-    {
-        this.start = start;
-    }
-
-    //---------//
-    // getStop //
-    //---------//
-    /**
-     * Return the coordinate of the stop for a run. This is the bottom ordinate
-     * for a vertical run, or the right abscissa for a horizontal run.
-     *
-     * @return the stop coordinate
-     */
-    public final int getStop ()
-    {
-        return (start + length) - 1;
-    }
-
-    //-----------//
-    // translate //
-    //-----------//
-    /**
-     * Apply a delta-coordinate translation to this run
-     *
-     * @param dc the (coordinate) translation
-     */
-    public final void translate (int dc)
-    {
-        start += dc;
+        return false;
     }
 
     //-----------------//
@@ -176,18 +117,77 @@ public class Run
         return stopCommon - startCommon + 1;
     }
 
-    //-------------//
-    // isIdentical //
-    //-------------//
+    //-----------//
+    // getLength //
+    //-----------//
     /**
-     * Field by field comparison
+     * Report the length of the run in pixels
      *
-     * @param that the other Run to compare with
-     * @return true if identical
+     * @return this length
      */
-    public boolean isIdentical (Run that)
+    public final int getLength ()
     {
-        return (this.start == that.start) && (this.length == that.length);
+        return length;
+    }
+
+    //----------//
+    // getStart //
+    //----------//
+    /**
+     * Report the starting coordinate of the run (x for horizontal, y for
+     * vertical)
+     *
+     * @return the start coordinate
+     */
+    public final int getStart ()
+    {
+        return start;
+    }
+
+    //---------//
+    // getStop //
+    //---------//
+    /**
+     * Return the coordinate of the stop for a run. This is the bottom ordinate
+     * for a vertical run, or the right abscissa for a horizontal run.
+     *
+     * @return the stop coordinate
+     */
+    public final int getStop ()
+    {
+        return (start + length) - 1;
+    }
+
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = 41 * hash + this.start;
+        hash = 41 * hash + this.length;
+        return hash;
+    }
+
+    /**
+     * (package private) method to set length value.
+     *
+     * @param length the length to set
+     */
+    void setLength (int length)
+    {
+        this.length = length;
+    }
+
+    /**
+     * (package private) method to set start value.
+     *
+     * @param start the start to set
+     */
+    void setStart (int start)
+    {
+        this.start = start;
     }
 
     //----------//
@@ -202,5 +202,18 @@ public class Run
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Apply a delta-coordinate translation to this run
+     *
+     * @param dc the (coordinate) translation
+     */
+    public final void translate (int dc)
+    {
+        start += dc;
     }
 }

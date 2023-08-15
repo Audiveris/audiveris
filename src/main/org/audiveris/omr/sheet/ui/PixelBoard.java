@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.field.LIntegerField;
@@ -37,6 +33,10 @@ import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -61,10 +61,11 @@ public class PixelBoard
     private static final Logger logger = LoggerFactory.getLogger(PixelBoard.class);
 
     /** Events this board is interested in. */
-    private static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class,
-                                                                PixelEvent.class};
+    private static final Class<?>[] eventsRead = new Class<?>[]
+    { LocationEvent.class, PixelEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Pixel level. */
     protected final LIntegerField level = new LIntegerField(false, "Level", "Pixel level");
 
@@ -81,6 +82,7 @@ public class PixelBoard
     private final LIntegerField height = new LIntegerField("Height", "Height of rectangle");
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a PixelBoard, pre-selected by default
      *
@@ -112,33 +114,42 @@ public class PixelBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Call-back triggered when Selection has been modified.
-     *
-     * @param event the selection event
-     */
-    @Override
-    public void onEvent (UserEvent event)
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
     {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
+        FormLayout layout = Panel.makeFormLayout(2, 3);
 
-            logger.debug("PixelBoard: {}", event);
+        // Specify that columns 1, 5 & 9 as well as 3, 7 & 11 have equal widths
+        //        layout.setColumnGroups(
+        //                new int[][]{
+        //                    {1, 5, 9},
+        //                    {3, 7, 11}
+        //                });
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
 
-            if (event instanceof LocationEvent) {
-                handleLocationEvent((LocationEvent) event); // Display rectangle attributes
-            } else if (event instanceof PixelEvent) {
-                handlePixelEvent((PixelEvent) event); // Display pixel gray level
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
+        ///builder.setDefaultDialogBorder();
+        CellConstraints cst = new CellConstraints();
+
+        int r = 1; // --------------------------------
+
+        builder.add(level.getLabel(), cst.xy(1, r));
+        builder.add(level.getField(), cst.xy(3, r));
+
+        builder.add(x.getLabel(), cst.xy(5, r));
+        builder.add(x.getField(), cst.xy(7, r));
+        ///x.getField().setColumns(5);
+        builder.add(width.getLabel(), cst.xy(9, r));
+        builder.add(width.getField(), cst.xy(11, r));
+
+        r += 2; // --------------------------------
+        builder.add(y.getLabel(), cst.xy(5, r));
+        builder.add(y.getField(), cst.xy(7, r));
+
+        builder.add(height.getLabel(), cst.xy(9, r));
+        builder.add(height.getField(), cst.xy(11, r));
     }
 
     //---------------------//
@@ -185,48 +196,40 @@ public class PixelBoard
         }
     }
 
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout ()
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Call-back triggered when Selection has been modified.
+     *
+     * @param event the selection event
+     */
+    @Override
+    public void onEvent (UserEvent event)
     {
-        FormLayout layout = Panel.makeFormLayout(2, 3);
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-        // Specify that columns 1, 5 & 9 as well as 3, 7 & 11 have equal widths
-        //        layout.setColumnGroups(
-        //                new int[][]{
-        //                    {1, 5, 9},
-        //                    {3, 7, 11}
-        //                });
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
+            logger.debug("PixelBoard: {}", event);
 
-        ///builder.setDefaultDialogBorder();
-        CellConstraints cst = new CellConstraints();
-
-        int r = 1; // --------------------------------
-
-        builder.add(level.getLabel(), cst.xy(1, r));
-        builder.add(level.getField(), cst.xy(3, r));
-
-        builder.add(x.getLabel(), cst.xy(5, r));
-        builder.add(x.getField(), cst.xy(7, r));
-        ///x.getField().setColumns(5);
-        builder.add(width.getLabel(), cst.xy(9, r));
-        builder.add(width.getField(), cst.xy(11, r));
-
-        r += 2; // --------------------------------
-        builder.add(y.getLabel(), cst.xy(5, r));
-        builder.add(y.getField(), cst.xy(7, r));
-
-        builder.add(height.getLabel(), cst.xy(9, r));
-        builder.add(height.getField(), cst.xy(11, r));
+            if (event instanceof LocationEvent) {
+                handleLocationEvent((LocationEvent) event); // Display rectangle attributes
+            } else if (event instanceof PixelEvent) {
+                handlePixelEvent((PixelEvent) event); // Display pixel gray level
+            }
+        } catch (Exception ex) {
+            logger.warn(getClass().getName() + " onEvent error", ex);
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     private class ParamAction
             extends AbstractAction
     {
-
         // Method run whenever user presses Return/Enter in one of the parameter fields
         @Override
         public void actionPerformed (ActionEvent e)
@@ -237,10 +240,11 @@ public class PixelBoard
                             PixelBoard.this,
                             SelectionHint.LOCATION_INIT,
                             MouseMovement.PRESSING,
-                            new Rectangle(x.getValue(),
-                                          y.getValue(),
-                                          width.getValue(),
-                                          height.getValue())));
+                            new Rectangle(
+                                    x.getValue(),
+                                    y.getValue(),
+                                    width.getValue(),
+                                    height.getValue())));
         }
     }
 }

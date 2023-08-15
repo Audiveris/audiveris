@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -34,14 +34,17 @@ public abstract class Node
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** For comparing Node instances according to their name */
-    public static final Comparator<Node> nameComparator = (Node n1, Node n2)
-            -> n1.getName().compareTo(n2.getName());
+    public static final Comparator<Node> nameComparator = (Node n1,
+                                                           Node n2) -> n1.getName().compareTo(
+                                                                   n2.getName());
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** (Fully qualified) name of the node */
     private final String name;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a new Node.
      *
@@ -53,6 +56,7 @@ public abstract class Node
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // getName //
     //---------//

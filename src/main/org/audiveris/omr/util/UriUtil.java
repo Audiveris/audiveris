@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -41,7 +41,8 @@ public abstract class UriUtil
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //--------//
     // toFile //
     //--------//
@@ -61,28 +62,6 @@ public abstract class UriUtil
             return new File(url.toURI());
         } catch (URISyntaxException ex) {
             return new File(url.getPath());
-        }
-    }
-
-    //-------//
-    // toURI //
-    //-------//
-    /**
-     * Convenient method to avoid exception burden
-     *
-     * @param url the initial URL
-     * @return the equivalent URI
-     */
-    public static URI toURI (URL url)
-    {
-        if (url == null) {
-            return null;
-        }
-
-        try {
-            return url.toURI();
-        } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException(ex.getMessage(), ex);
         }
     }
 
@@ -120,7 +99,31 @@ public abstract class UriUtil
                 throw new IllegalArgumentException("Child is absolute: " + child);
             }
 
-            return new URI(dirName.append(child).toString());
+            final String escapedStr = dirName.append(child).toString().replace(" ", "%20");
+
+            return new URI(escapedStr);
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex.getMessage(), ex);
+        }
+    }
+
+    //-------//
+    // toURI //
+    //-------//
+    /**
+     * Convenient method to avoid exception burden
+     *
+     * @param url the initial URL
+     * @return the equivalent URI
+     */
+    public static URI toURI (URL url)
+    {
+        if (url == null) {
+            return null;
+        }
+
+        try {
+            return url.toURI();
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
         }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,6 +47,13 @@ public class OneLineStaff
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor needed for JAXB.
+     */
+    public OneLineStaff ()
+    {
+    }
+
+    /**
      * Create a <code>OneLineStaff</code> object
      *
      * @param id                the id of the staff
@@ -64,19 +71,7 @@ public class OneLineStaff
         super(id, left, right, specificInterline, lines);
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    public OneLineStaff ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public boolean isOneLineStaff ()
-    {
-        return true;
-    }
 
     //--------------//
     // getFirstLine //
@@ -104,6 +99,12 @@ public class OneLineStaff
     public LineInfo getLastLine ()
     {
         return lines.get(0).yTranslated(2 * getSpecificInterline());
+    }
+
+    @Override
+    public boolean isOneLineStaff ()
+    {
+        return true;
     }
 
     //-----------------//

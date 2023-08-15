@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,10 +50,12 @@ public class ScoreExporter
     private static final Logger logger = LoggerFactory.getLogger(ScoreExporter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related score. */
     private final Score score;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a new <code>ScoreExporter</code> object, on a related score instance.
      *
@@ -69,28 +71,31 @@ public class ScoreExporter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // export //
     //--------//
     /**
-     * Export the score to a file.
+     * Export the score to DOM node.
+     * (No longer used, it was meant for Audiveris&rarr;Zong pure java transfer)
      *
-     * @param path       the xml or mxl path to write (cannot be null)
-     * @param scoreName  simple score name, without extension
-     * @param signed     should we inject ProxyMusic signature?
-     * @param compressed true for compressed output, false for uncompressed output
+     * @param node   the DOM node to export to (cannot be null)
+     * @param signed should we inject ProxyMusic signature?
      * @throws Exception if something goes wrong
      */
-    public void export (Path path,
-                        String scoreName,
-                        boolean signed,
-                        boolean compressed)
-            throws Exception
+    public void export (Node node,
+                        boolean signed)
+        throws Exception
     {
-        try (OutputStream os = new FileOutputStream(path.toString())) {
-            export(os, signed, scoreName, compressed);
-            logger.info("Score {} exported to {}", scoreName, path);
+        if (node == null) {
+            throw new IllegalArgumentException("Trying to export a score to a null DOM Node");
         }
+
+        // Build the ScorePartwise proxy
+        ScorePartwise scorePartwise = PartwiseBuilder.build(score);
+
+        // Marshal the proxy
+        Marshalling.marshal(scorePartwise, node, signed);
     }
 
     //--------//
@@ -109,7 +114,7 @@ public class ScoreExporter
                         boolean signed,
                         String scoreName,
                         boolean compressed)
-            throws Exception
+        throws Exception
     {
         Objects.requireNonNull(os, "Trying to export a score to a null output stream");
 
@@ -140,25 +145,23 @@ public class ScoreExporter
     // export //
     //--------//
     /**
-     * Export the score to DOM node.
-     * (No longer used, it was meant for Audiveris&rarr;Zong pure java transfer)
+     * Export the score to a file.
      *
-     * @param node   the DOM node to export to (cannot be null)
-     * @param signed should we inject ProxyMusic signature?
+     * @param path       the xml or mxl path to write (cannot be null)
+     * @param scoreName  simple score name, without extension
+     * @param signed     should we inject ProxyMusic signature?
+     * @param compressed true for compressed output, false for uncompressed output
      * @throws Exception if something goes wrong
      */
-    public void export (Node node,
-                        boolean signed)
-            throws Exception
+    public void export (Path path,
+                        String scoreName,
+                        boolean signed,
+                        boolean compressed)
+        throws Exception
     {
-        if (node == null) {
-            throw new IllegalArgumentException("Trying to export a score to a null DOM Node");
+        try (OutputStream os = new FileOutputStream(path.toString())) {
+            export(os, signed, scoreName, compressed);
+            logger.info("Score {} exported to {}", scoreName, path);
         }
-
-        // Build the ScorePartwise proxy
-        ScorePartwise scorePartwise = PartwiseBuilder.build(score);
-
-        // Marshal the proxy
-        Marshalling.marshal(scorePartwise, node, signed);
     }
 }

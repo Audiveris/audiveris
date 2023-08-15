@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,6 +55,13 @@ public class RepeatDotInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor meant for JAXB.
+     */
+    private RepeatDotInter ()
+    {
+    }
+
+    /**
      * Creates a new RepeatDotInter object.
      *
      * @param glyph underlying glyph
@@ -70,21 +77,22 @@ public class RepeatDotInter
         super(glyph, null, Shape.REPEAT_DOT, grade, staff, pitch);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private RepeatDotInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
     @Override
-    public void accept (InterVisitor visitor)
+    public boolean checkAbnormal ()
     {
-        visitor.visit(this);
+        // Check pitch
+        // Check bar relation
+        // Check sibling dot relation
+        setAbnormal(
+                !checkPitch() || !sig.hasRelation(this, RepeatDotBarRelation.class) || !sig
+                        .hasRelation(this, RepeatDotPairRelation.class));
+
+        return isAbnormal();
     }
 
     //------------//
@@ -103,30 +111,6 @@ public class RepeatDotInter
 
         final double pitchDif = Math.abs(Math.abs(pitch) - 1);
         final double maxDif = RepeatDotBarRelation.getYGapMaximum(getProfile()).getValue();
-
-        return pitchDif <= (2 * maxDif);
-    }
-
-    //------------//
-    // checkPitch //
-    //------------//
-    /**
-     * Verify that the provided dot center corresponds to a valid pitch value
-     * (close to +1 or -1).
-     *
-     *
-     * @param system  containing system
-     * @param center  dot center
-     * @param profile desired profile level
-     * @return true if OK
-     */
-    public static boolean checkPitch (SystemInfo system,
-                                      Point2D center,
-                                      int profile)
-    {
-        final double pp = system.estimatedPitch(center);
-        final double pitchDif = Math.abs(Math.abs(pp) - 1);
-        final double maxDif = RepeatDotBarRelation.getYGapMaximum(profile).getValue();
 
         return pitchDif <= (2 * maxDif);
     }
@@ -153,22 +137,6 @@ public class RepeatDotInter
         dotLuBox.y -= (scale.getInterline() * dotPitch);
 
         return dotLuBox;
-    }
-
-    //---------------//
-    // checkAbnormal //
-    //---------------//
-    @Override
-    public boolean checkAbnormal ()
-    {
-        // Check pitch
-        // Check bar relation
-        // Check sibling dot relation
-        setAbnormal(!checkPitch()
-                            || !sig.hasRelation(this, RepeatDotBarRelation.class)
-                            || !sig.hasRelation(this, RepeatDotPairRelation.class));
-
-        return isAbnormal();
     }
 
     //---------------//
@@ -199,8 +167,10 @@ public class RepeatDotInter
         final Rectangle barLuBox = new Rectangle(PointUtil.rounded(dotPt));
         barLuBox.grow(maxDx, maxDy);
 
-        final List<Inter> bars = Inters
-                .intersectedInters(systemBars, GeoOrder.BY_ABSCISSA, barLuBox);
+        final List<Inter> bars = Inters.intersectedInters(
+                systemBars,
+                GeoOrder.BY_ABSCISSA,
+                barLuBox);
 
         if (bars.isEmpty()) {
             return null;
@@ -257,11 +227,10 @@ public class RepeatDotInter
                                int profile)
     {
         final Rectangle dotLuBox = getDotLuBox(system, profile);
-        final List<Inter> dots = system.getSig().inters((Inter inter)
-                -> (inter != RepeatDotInter.this)
-                           && !inter.isRemoved()
-                           && (inter.getShape() == Shape.REPEAT_DOT)
-                           && (inter.getBounds().intersects(dotLuBox)));
+        final List<Inter> dots = system.getSig().inters(
+                (Inter inter) -> (inter != RepeatDotInter.this) && !inter.isRemoved() && (inter
+                        .getShape() == Shape.REPEAT_DOT) && (inter.getBounds().intersects(
+                                dotLuBox)));
 
         if (!dots.isEmpty()) {
             return new Link(dots.get(0), new RepeatDotPairRelation(), true);
@@ -315,5 +284,34 @@ public class RepeatDotInter
                                            Collection<Link> links)
     {
         return searchObsoletelinks(links, RepeatDotBarRelation.class, RepeatDotPairRelation.class);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //------------//
+    // checkPitch //
+    //------------//
+    /**
+     * Verify that the provided dot center corresponds to a valid pitch value
+     * (close to +1 or -1).
+     *
+     * @param system  containing system
+     * @param center  dot center
+     * @param profile desired profile level
+     * @return true if OK
+     */
+    public static boolean checkPitch (SystemInfo system,
+                                      Point2D center,
+                                      int profile)
+    {
+        final Double pp = system.estimatedPitch(center);
+        if (pp == null) {
+            return false;
+        }
+
+        final double pitchDif = Math.abs(Math.abs(pp) - 1);
+        final double maxDif = RepeatDotBarRelation.getYGapMaximum(profile).getValue();
+
+        return pitchDif <= (2 * maxDif);
     }
 }

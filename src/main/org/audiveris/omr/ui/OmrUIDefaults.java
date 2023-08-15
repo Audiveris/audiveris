@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -76,18 +76,6 @@ public class OmrUIDefaults
     }
 
     /**
-     * Load UI strings from a Properties object.
-     *
-     * @param properties properties
-     */
-    public void loadFrom (Properties properties)
-    {
-        for (Map.Entry<Object, Object> e : properties.entrySet()) {
-            this.put(e.getKey(), e.getValue());
-        }
-    }
-
-    /**
      * Load UI strings from a properties file (.properties).
      *
      * @param file properties file path without locale or country information
@@ -96,8 +84,7 @@ public class OmrUIDefaults
      * @throws IOException           if the specified file could be read
      */
     public void loadFrom (File file)
-            throws FileNotFoundException,
-                   IOException
+        throws FileNotFoundException, IOException
     {
         String path = file.getPath();
         StringBuilder b = new StringBuilder(path);
@@ -123,6 +110,20 @@ public class OmrUIDefaults
         }
     }
 
+    /**
+     * Load UI strings from a Properties object.
+     *
+     * @param properties properties
+     */
+    public void loadFrom (Properties properties)
+    {
+        for (Map.Entry<Object, Object> e : properties.entrySet()) {
+            this.put(e.getKey(), e.getValue());
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------//
     // getInstance //
     //-------------//
@@ -137,6 +138,7 @@ public class OmrUIDefaults
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------------//
     // LazySingleton //
     //---------------//

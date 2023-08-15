@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -59,6 +59,7 @@ public class MemoryMeter
     private static final double MEGA = 1_024 * 1_024;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Default foreground color, when under alarm threshold */
     private Color defaultForeground;
 
@@ -84,9 +85,7 @@ public class MemoryMeter
     private int lastThreshold = 0;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // MemoryMeter //
-    //-------------//
+
     /**
      * Basic Memory Meter, with default alarm threshold and display period.
      */
@@ -103,6 +102,7 @@ public class MemoryMeter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------//
     // collectGarbage //
     //----------------//
@@ -116,41 +116,6 @@ public class MemoryMeter
         System.runFinalization();
         System.gc();
         displayMemory();
-    }
-
-    //---------------//
-    // displayMemory //
-    //---------------//
-    /**
-     * Trigger an immediate memory display
-     */
-    public void displayMemory ()
-    {
-        SwingUtilities.invokeLater(displayer);
-    }
-
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the UI component
-     *
-     * @return the concrete component
-     */
-    public JComponent getComponent ()
-    {
-        return component;
-    }
-
-    //------//
-    // stop //
-    //------//
-    /**
-     * Stop the memory monitoring
-     */
-    public void stop ()
-    {
-        monitoring = false;
     }
 
     //----------//
@@ -181,13 +146,38 @@ public class MemoryMeter
         resource.injectComponents(component);
     }
 
+    //---------------//
+    // displayMemory //
+    //---------------//
+    /**
+     * Trigger an immediate memory display
+     */
+    public void displayMemory ()
+    {
+        SwingUtilities.invokeLater(displayer);
+    }
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent ()
+    {
+        return component;
+    }
+
     //------------//
     // initialize //
     //------------//
     private void initialize ()
     {
         // Displayer
-        displayer = () -> {
+        displayer = () ->
+        {
             int total = (int) Math.rint(Memory.total() / MEGA);
             int used = (int) Math.rint(Memory.occupied() / MEGA);
             int threshold = (int) Math.rint(constants.alarmThreshold.getValue() * total);
@@ -233,7 +223,19 @@ public class MemoryMeter
         monitorThread.start();
     }
 
+    //------//
+    // stop //
+    //------//
+    /**
+     * Stop the memory monitoring
+     */
+    public void stop ()
+    {
+        monitoring = false;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,6 +45,13 @@ public class PartData
     public final int program;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    private PartData ()
+    {
+        name = null;
+        program = 0;
+    }
+
     /**
      * Creates a new <code>PartData</code> object.
      *
@@ -58,13 +65,8 @@ public class PartData
         this.program = program;
     }
 
-    private PartData ()
-    {
-        name = null;
-        program = 0;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public String toString ()
     {

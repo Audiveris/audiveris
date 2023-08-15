@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,14 +24,12 @@ package org.audiveris.omr.score;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -49,7 +47,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class <code>Page</code> represents a page in the score hierarchy, and corresponds to a
@@ -70,38 +67,17 @@ public class Page
     private static final Logger logger = LoggerFactory.getLogger(Page.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /** This is the rank of this page, counted from 1 in the containing sheet. */
     @XmlAttribute(name = "id")
     private final int id;
 
-    /** Does this page start a movement? */
-    @XmlAttribute(name = "movement-start")
-    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
-    private boolean movementStart;
-
     /** Number of measures counted in this page. */
     @XmlAttribute(name = "measure-count")
     private Integer measureCount;
-
-    /**
-     * Progression of measure id within this page.
-     * <p>
-     * This is sometimes less than the raw measure count, because of special measures
-     * (pickup, repeat, courtesy) that don't increment measure IDs.
-     */
-    @XmlAttribute(name = "delta-measure-id")
-    private Integer deltaMeasureId;
-
-    /** Last time rational value in this page. */
-    @XmlElement(name = "last-time-rational")
-    private TimeRational lastTimeRational;
-
-    /** This is the list of LogicalPart's for this page. */
-    @XmlElement(name = "logical-part")
-    private List<LogicalPart> logicalParts;
 
     /** This is the (sub)list of systems for this page, within the sheet systems. */
     @XmlElement(name = "system")
@@ -109,7 +85,10 @@ public class Page
 
     // Transient data
     //---------------
-    //
+
+    /** Soft reference to this page. */
+    private PageRef pageRef;
+
     /** Containing (physical) sheet. */
     @Navigable(false)
     private Sheet sheet;
@@ -128,6 +107,15 @@ public class Page
     private Integer durationDivisor;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private Page ()
+    {
+        id = 0;
+    }
+
     /**
      * Creates a new Page object.
      *
@@ -145,15 +133,80 @@ public class Page
         initTransients(sheet);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------------//
+    // checkPageCrossTies //
+    //--------------------//
     /**
-     * No-arg constructor needed for JAXB.
+     * Within the systems of this page, check tie status for cross-system slurs.
      */
-    private Page ()
+    public void checkPageCrossTies ()
     {
-        id = 0;
+        for (SystemInfo system : systems.subList(1, systems.size())) {
+            // Examine every part in sequence
+            for (Part part : system.getParts()) {
+                final List<SlurInter> leftExtended = part.getSlurs(SlurInter.isBeginningExtended);
+
+                for (SlurInter slur : leftExtended) {
+                    final SlurInter prevSlur = slur.getExtension(LEFT);
+
+                    if (!prevSlur.isRemoved()) {
+                        slur.checkCrossTie(prevSlur);
+                    }
+                }
+            }
+        }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //------------------------//
+    // computeDurationDivisor //
+    //------------------------//
+    /**
+     * Browse this page to determine the global page duration divisor.
+     * <p>
+     * TODO: Here we retrieve divisor for the page. We could work on each part only.
+     *
+     * @return the page duration divisor
+     */
+    private int computeDurationDivisor ()
+    {
+        try {
+            final SortedSet<Rational> durations = new TreeSet<>();
+
+            // Collect duration values for each standard chord in this page
+            for (SystemInfo system : getSystems()) {
+                for (MeasureStack stack : system.getStacks()) {
+                    for (AbstractChordInter chord : stack.getStandardChords()) {
+                        try {
+                            final Rational duration = chord.isMeasureRest() ? stack
+                                    .getExpectedDuration() : chord.getDuration();
+
+                            if (duration != null) {
+                                durations.add(duration);
+                            }
+                        } catch (Exception ex) {
+                            logger.warn(
+                                    getClass().getSimpleName() + " Error visiting " + chord,
+                                    ex);
+                        }
+                    }
+                }
+            }
+
+            // Compute greatest duration divisor for the page
+            Rational[] durationArray = durations.toArray(new Rational[durations.size()]);
+            Rational divisor = Rational.gcd(durationArray);
+            logger.debug("durations={} divisor={}", Arrays.deepToString(durationArray), divisor);
+
+            return divisor.den;
+        } catch (Exception ex) {
+            logger.warn(getClass().getSimpleName() + " Error visiting " + this, ex);
+
+            return 0;
+        }
+    }
+
     //---------------------//
     // computeMeasureCount //
     //---------------------//
@@ -220,30 +273,6 @@ public class Page
         }
     }
 
-    //--------------------//
-    // checkPageCrossTies //
-    //--------------------//
-    /**
-     * Within the systems of this page, check tie status for cross-system slurs.
-     */
-    public void checkPageCrossTies ()
-    {
-        for (SystemInfo system : systems.subList(1, systems.size())) {
-            // Examine every part in sequence
-            for (Part part : system.getParts()) {
-                final List<SlurInter> leftExtended = part.getSlurs(SlurInter.isBeginningExtended);
-
-                for (SlurInter slur : leftExtended) {
-                    final SlurInter prevSlur = slur.getExtension(LEFT);
-
-                    if (!prevSlur.isRemoved()) {
-                        slur.checkCrossTie(prevSlur);
-                    }
-                }
-            }
-        }
-    }
-
     //-------------------//
     // dumpMeasureCounts //
     //-------------------//
@@ -277,66 +306,6 @@ public class Page
         msg.append(": [").append(sb).append("]");
 
         logger.info("{}", msg.toString());
-    }
-
-    //---------------------//
-    // getLastTimeRational //
-    //---------------------//
-    /**
-     * Report the last time rational value within this page.
-     *
-     * @return the lastTimeRational
-     */
-    public TimeRational getLastTimeRational ()
-    {
-        return lastTimeRational;
-    }
-
-    //---------------------//
-    // setLastTimeRational //
-    //---------------------//
-    /**
-     * Assign the last time rational value within this page.
-     *
-     * @param lastTimeRational the last time rational value to set
-     */
-    public void setLastTimeRational (TimeRational lastTimeRational)
-    {
-        this.lastTimeRational = lastTimeRational;
-
-        SheetStub stub = sheet.getStub();
-        PageRef pageRef = stub.getPageRefs().get(id - 1);
-        pageRef.setLastTimeRational(lastTimeRational);
-    }
-
-    //-------------------//
-    // getDeltaMeasureId //
-    //-------------------//
-    /**
-     * Report the progression of measure IDs within this page.
-     *
-     * @return the deltaMeasureId
-     */
-    public Integer getDeltaMeasureId ()
-    {
-        return deltaMeasureId;
-    }
-
-    //-------------------//
-    // setDeltaMeasureId //
-    //-------------------//
-    /**
-     * Assign the progression of measure IDs within this page.
-     *
-     * @param deltaMeasureId the deltaMeasureId to set
-     */
-    public void setDeltaMeasureId (Integer deltaMeasureId)
-    {
-        this.deltaMeasureId = deltaMeasureId;
-
-        SheetStub stub = sheet.getStub();
-        PageRef pageRef = stub.getPageRefs().get(id - 1);
-        pageRef.setDeltaMeasureId(deltaMeasureId);
     }
 
     //--------------//
@@ -396,17 +365,6 @@ public class Page
         return firstSystemId;
     }
 
-    //------------------//
-    // setFirstSystemId //
-    //------------------//
-    /**
-     * @param firstSystemId the firstSystemId to set
-     */
-    public void setFirstSystemId (Integer firstSystemId)
-    {
-        this.firstSystemId = firstSystemId;
-    }
-
     //---------------------//
     // getFollowingInScore //
     //---------------------//
@@ -426,6 +384,8 @@ public class Page
     }
 
     /**
+     * Report the page id, which is the rank of this page, counted from 1 in containing sheet.
+     *
      * @return the id
      */
     public int getId ()
@@ -459,65 +419,6 @@ public class Page
     }
 
     //-----------------//
-    // setLastSystemId //
-    //-----------------//
-    /**
-     * @param lastSystemId the lastSystemId to set
-     */
-    public void setLastSystemId (Integer lastSystemId)
-    {
-        this.lastSystemId = lastSystemId;
-    }
-
-    //--------------------//
-    // getLogicalPartById //
-    //--------------------//
-    /**
-     * Report the LogicalPart that corresponds to the provided ID.
-     *
-     * @param id provided ID
-     * @return corresponding LogicalPart or null if not found
-     */
-    public LogicalPart getLogicalPartById (int id)
-    {
-        if (logicalParts != null) {
-            for (LogicalPart log : logicalParts) {
-                if (log.getId() == id) {
-                    return log;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    //-----------------//
-    // getLogicalParts //
-    //-----------------//
-    /**
-     * Report the page list of logical parts.
-     *
-     * @return partList the list of parts
-     */
-    public List<LogicalPart> getLogicalParts ()
-    {
-        return logicalParts;
-    }
-
-    //-----------------//
-    // setLogicalParts //
-    //-----------------//
-    /**
-     * Assign a part list valid for the page.
-     *
-     * @param logicalParts the list of logical parts
-     */
-    public void setLogicalParts (List<LogicalPart> logicalParts)
-    {
-        this.logicalParts = logicalParts;
-    }
-
-    //-----------------//
     // getMeasureCount //
     //-----------------//
     /**
@@ -548,6 +449,23 @@ public class Page
         return null;
     }
 
+    //--------//
+    // getRef //
+    //--------//
+    /**
+     * Report the soft reference to this page.
+     *
+     * @return the corresponding PageRef
+     */
+    public PageRef getRef ()
+    {
+        if (pageRef == null) {
+            pageRef = sheet.getStub().getPageRefs().get(id - 1);
+        }
+
+        return pageRef;
+    }
+
     //----------//
     // getScore //
     //----------//
@@ -563,19 +481,6 @@ public class Page
         }
 
         return score;
-    }
-
-    //----------//
-    // setScore //
-    //----------//
-    /**
-     * Assign the containing score.
-     *
-     * @param score the score to set
-     */
-    public void setScore (Score score)
-    {
-        this.score = score;
     }
 
     //----------//
@@ -630,23 +535,6 @@ public class Page
         return systems;
     }
 
-    //------------//
-    // setSystems //
-    //------------//
-    /**
-     * Using IDs of first and last page systems if any, register the proper (sub-)list
-     * of systems.
-     *
-     * @param sheetSystems the sheet whole list of systems
-     */
-    public void setSystems (List<SystemInfo> sheetSystems)
-    {
-        // Define proper indices
-        int first = (firstSystemId != null) ? (firstSystemId - 1) : 0;
-        int last = (lastSystemId != null) ? (lastSystemId - 1) : (sheetSystems.size() - 1);
-        systems = new ArrayList<>(sheetSystems.subList(first, last + 1));
-    }
-
     //----------------//
     // initTransients //
     //----------------//
@@ -664,22 +552,13 @@ public class Page
     // isMovementStart //
     //-----------------//
     /**
-     * @return the movementStart
+     * Report whether this page starts a movement.
+     *
+     * @return true if so
      */
     public boolean isMovementStart ()
     {
-        return movementStart;
-    }
-
-    //------------------//
-    // setMovementStart //
-    //------------------//
-    /**
-     * @param movementStart the movementStart to set
-     */
-    public void setMovementStart (boolean movementStart)
-    {
-        this.movementStart = movementStart;
+        return getRef().isMovementStart();
     }
 
     //----------------//
@@ -741,38 +620,6 @@ public class Page
         }
     }
 
-    //----------------//
-    // unremoveSystem //
-    //----------------//
-    /**
-     * Un-remove the provided system into this page.
-     *
-     * @param system the system to re-insert
-     * @see #removeSystem
-     */
-    public void unremoveSystem (SystemInfo system)
-    {
-        boolean inserted = false;
-
-        for (int i = 0; i < systems.size(); i++) {
-            SystemInfo s = systems.get(i);
-
-            if (s.getId() == system.getId()) {
-                systems.add(i, system);
-                inserted = true;
-
-                break;
-            }
-        }
-
-        if (!inserted) {
-            systems.add(system);
-        }
-
-        firstSystemId = getFirstSystem().getId();
-        lastSystemId = getLastSystem().getId();
-    }
-
     //----------------------//
     // resetDurationDivisor //
     //----------------------//
@@ -782,6 +629,84 @@ public class Page
     public void resetDurationDivisor ()
     {
         durationDivisor = null;
+    }
+
+    //-------------------//
+    // setDeltaMeasureId //
+    //-------------------//
+    /**
+     * Assign the progression of measure IDs within this page.
+     *
+     * @param deltaMeasureId the deltaMeasureId to set
+     */
+    public void setDeltaMeasureId (Integer deltaMeasureId)
+    {
+        getRef().setDeltaMeasureId(deltaMeasureId);
+    }
+
+    //------------------//
+    // setFirstSystemId //
+    //------------------//
+    /**
+     * @param firstSystemId the firstSystemId to set
+     */
+    public void setFirstSystemId (Integer firstSystemId)
+    {
+        this.firstSystemId = firstSystemId;
+    }
+
+    //-----------------//
+    // setLastSystemId //
+    //-----------------//
+    /**
+     * @param lastSystemId the lastSystemId to set
+     */
+    public void setLastSystemId (Integer lastSystemId)
+    {
+        this.lastSystemId = lastSystemId;
+    }
+
+    //---------------------//
+    // setLastTimeRational //
+    //---------------------//
+    /**
+     * Assign the last time rational value within this page.
+     *
+     * @param lastTimeRational the last time rational value to set
+     */
+    public void setLastTimeRational (TimeRational lastTimeRational)
+    {
+        getRef().setLastTimeRational(lastTimeRational);
+    }
+
+    //----------//
+    // setScore //
+    //----------//
+    /**
+     * Assign the containing score.
+     *
+     * @param score the score to set
+     */
+    public void setScore (Score score)
+    {
+        this.score = score;
+    }
+
+    //----------------//
+    // setSystemsFrom //
+    //----------------//
+    /**
+     * Using IDs of first and last page systems if any, register the proper (sub-)list
+     * of systems.
+     *
+     * @param sheetSystems the sheet whole list of systems
+     */
+    public void setSystemsFrom (List<SystemInfo> sheetSystems)
+    {
+        // Define proper indices
+        int first = (firstSystemId != null) ? (firstSystemId - 1) : 0;
+        int last = (lastSystemId != null) ? (lastSystemId - 1) : (sheetSystems.size() - 1);
+        systems = new ArrayList<>(sheetSystems.subList(first, last + 1));
     }
 
     //------------------//
@@ -820,52 +745,35 @@ public class Page
         return sb.toString();
     }
 
-    //------------------------//
-    // computeDurationDivisor //
-    //------------------------//
+    //----------------//
+    // unremoveSystem //
+    //----------------//
     /**
-     * Browse this page to determine the global page duration divisor.
-     * <p>
-     * TODO: Here we retrieve divisor for the page. We could work on each part only.
+     * Un-remove the provided system into this page.
      *
-     * @return the page duration divisor
+     * @param system the system to re-insert
+     * @see #removeSystem
      */
-    private int computeDurationDivisor ()
+    public void unremoveSystem (SystemInfo system)
     {
-        try {
-            final SortedSet<Rational> durations = new TreeSet<>();
+        boolean inserted = false;
 
-            // Collect duration values for each standard chord in this page
-            for (SystemInfo system : getSystems()) {
-                for (MeasureStack stack : system.getStacks()) {
-                    for (AbstractChordInter chord : stack.getStandardChords()) {
-                        try {
-                            final Rational duration = chord.isMeasureRest()
-                                    ? stack.getExpectedDuration()
-                                    : chord.getDuration();
+        for (int i = 0; i < systems.size(); i++) {
+            SystemInfo s = systems.get(i);
 
-                            if (duration != null) {
-                                durations.add(duration);
-                            }
-                        } catch (Exception ex) {
-                            logger.warn(
-                                    getClass().getSimpleName() + " Error visiting " + chord,
-                                    ex);
-                        }
-                    }
-                }
+            if (s.getId() == system.getId()) {
+                systems.add(i, system);
+                inserted = true;
+
+                break;
             }
-
-            // Compute greatest duration divisor for the page
-            Rational[] durationArray = durations.toArray(new Rational[durations.size()]);
-            Rational divisor = Rational.gcd(durationArray);
-            logger.debug("durations={} divisor={}", Arrays.deepToString(durationArray), divisor);
-
-            return divisor.den;
-        } catch (Exception ex) {
-            logger.warn(getClass().getSimpleName() + " Error visiting " + this, ex);
-
-            return 0;
         }
+
+        if (!inserted) {
+            systems.add(system);
+        }
+
+        firstSystemId = getFirstSystem().getId();
+        lastSystemId = getLastSystem().getId();
     }
 }

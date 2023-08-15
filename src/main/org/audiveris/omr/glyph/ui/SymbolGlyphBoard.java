@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
 
-import com.jgoodies.forms.layout.CellConstraints;
-
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
@@ -32,6 +30,8 @@ import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.layout.CellConstraints;
 
 /**
  * Class <code>SymbolGlyphBoard</code> defines an extended glyph board, with normalized
@@ -52,6 +52,7 @@ public class SymbolGlyphBoard
             .getResourceMap(SymbolGlyphBoard.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Glyph characteristics : normalized weight. */
     private final LDoubleField weight = new LDoubleField(
             false,
@@ -74,6 +75,7 @@ public class SymbolGlyphBoard
             "%.3f");
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create the symbol glyph board.
      *
@@ -94,6 +96,33 @@ public class SymbolGlyphBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define a specific layout for this Symbol GlyphBoard.
+     */
+    private void defineLayout ()
+    {
+        final CellConstraints cst = new CellConstraints();
+
+        int r = 1; // --------------------------------
+        // id + width
+
+        builder.add(width.getLabel(), cst.xy(9, r));
+        builder.add(width.getField(), cst.xy(11, r));
+
+        r += 2; // --------------------------------
+        // weight + height
+
+        builder.add(weight.getLabel(), cst.xy(5, r));
+        builder.add(weight.getField(), cst.xy(7, r));
+
+        builder.add(height.getLabel(), cst.xy(9, r));
+        builder.add(height.getField(), cst.xy(11, r));
+    }
+
     //-----------------------//
     // handleEntityListEvent //
     //-----------------------//
@@ -124,31 +153,5 @@ public class SymbolGlyphBoard
         width.setEnabled(glyph != null);
         height.setEnabled(glyph != null);
         weight.setEnabled(glyph != null);
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define a specific layout for this Symbol GlyphBoard.
-     */
-    private void defineLayout ()
-    {
-        final CellConstraints cst = new CellConstraints();
-
-        int r = 1; // --------------------------------
-        // id + width
-
-        builder.add(width.getLabel(), cst.xy(9, r));
-        builder.add(width.getField(), cst.xy(11, r));
-
-        r += 2; // --------------------------------
-        // weight + height
-
-        builder.add(weight.getLabel(), cst.xy(5, r));
-        builder.add(weight.getField(), cst.xy(7, r));
-
-        builder.add(height.getLabel(), cst.xy(9, r));
-        builder.add(height.getField(), cst.xy(11, r));
     }
 }

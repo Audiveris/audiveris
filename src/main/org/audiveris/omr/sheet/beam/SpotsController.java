@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -57,6 +57,7 @@ public class SpotsController
     private static final Logger logger = LoggerFactory.getLogger(SpotsController.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -74,6 +75,7 @@ public class SpotsController
     private SpotsView view;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SpotsController object.
      *
@@ -91,20 +93,6 @@ public class SpotsController
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // refresh //
-    //---------//
-    /**
-     * Refresh the display if any, with proper colors for sections
-     */
-    public void refresh ()
-    {
-        if (view == null) {
-            displayFrame();
-        } else {
-            view.repaint();
-        }
-    }
 
     //--------------//
     // displayFrame //
@@ -123,7 +111,23 @@ public class SpotsController
                         new SectionBoard(spotLag, true)));
     }
 
+    //---------//
+    // refresh //
+    //---------//
+    /**
+     * Refresh the display if any, with proper colors for sections
+     */
+    public void refresh ()
+    {
+        if (view == null) {
+            displayFrame();
+        } else {
+            view.repaint();
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // SpotsView //
     //-----------//
@@ -166,7 +170,7 @@ public class SpotsController
         @Override
         public void renderItems (Graphics2D g)
         {
-            // (Phase #2) Render sections (on top of rendered spots)
+            // (Phase #2) Render spots sections if any (on top of rendered spots)
             super.render(g);
 
             // (Phase #3) Render spots mean line

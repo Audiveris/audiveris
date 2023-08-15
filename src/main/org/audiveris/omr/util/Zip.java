@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -56,12 +56,14 @@ public abstract class Zip
     private static final Logger logger = LoggerFactory.getLogger(Zip.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private Zip ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //--------------------//
     // createInputStream //
     //-------------------//
@@ -201,8 +203,7 @@ public abstract class Zip
      * @throws IOException           if any IO goes wrong
      */
     public static boolean isEmpty (File file)
-            throws FileNotFoundException,
-                   IOException
+        throws FileNotFoundException, IOException
     {
         String path = file.getCanonicalPath();
         ZipFile zf = new ZipFile(path);

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,10 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.Classifier;
@@ -40,6 +36,10 @@ import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -80,7 +80,6 @@ public class Trainer
         WellKnowns.ensureLoaded();
     }
 
-    // @formatter:on
     private static final Logger logger = LoggerFactory.getLogger(Trainer.class);
 
     /** The single instance of this class. */
@@ -110,6 +109,7 @@ public class Trainer
     static final String FIELD_WIDTH = "30dlu";
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Related frame.
      * We need a frame rather than a dialog because this class can be run in standalone.
@@ -120,6 +120,7 @@ public class Trainer
     private final SelectionPanel selectionPanel;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an instance of Glyph Trainer. (there should be just one)
      */
@@ -137,38 +138,6 @@ public class Trainer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // initialize //
-    //------------//
-    @Override
-    protected void initialize (String[] args)
-    {
-        logger.debug("Trainer. 1/initialize");
-    }
-
-    //-------//
-    // ready //
-    //-------//
-    @Override
-    protected void ready ()
-    {
-        logger.debug("Trainer. 3/ready");
-
-        frame.addWindowListener(windowCloser);
-    }
-
-    //---------//
-    // startup //
-    //---------//
-    @Override
-    protected void startup ()
-    {
-        logger.debug("Trainer. 2/startup");
-
-        frame = defineLayout(getMainFrame());
-
-        show(frame); // Here we go...
-    }
 
     //--------------//
     // defineLayout //
@@ -254,6 +223,41 @@ public class Trainer
         frame.toFront();
     }
 
+    //------------//
+    // initialize //
+    //------------//
+    @Override
+    protected void initialize (String[] args)
+    {
+        logger.debug("Trainer. 1/initialize");
+    }
+
+    //-------//
+    // ready //
+    //-------//
+    @Override
+    protected void ready ()
+    {
+        logger.debug("Trainer. 3/ready");
+
+        frame.addWindowListener(windowCloser);
+    }
+
+    //---------//
+    // startup //
+    //---------//
+    @Override
+    protected void startup ()
+    {
+        logger.debug("Trainer. 2/startup");
+
+        frame = defineLayout(getMainFrame());
+
+        show(frame); // Here we go...
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------//
     // getInstance //
     //-------------//
@@ -307,25 +311,13 @@ public class Trainer
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------//
     // Task //
     //------//
     public static class Task
             extends Observable
     {
-
-        /**
-         * Enum <code>Activity</code> defines all activities in training.
-         */
-        static enum Activity
-        {
-            /** No ongoing activity */
-            INACTIVE,
-            /** Training on samples */
-            TRAINING,
-            /** Validating classifier */
-            VALIDATION;
-        }
 
         /** Managed classifier. */
         public final Classifier classifier;
@@ -363,6 +355,19 @@ public class Trainer
             this.activity = activity;
             setChanged();
             notifyObservers();
+        }
+
+        /**
+         * Enum <code>Activity</code> defines all activities in training.
+         */
+        static enum Activity
+        {
+            /** No ongoing activity */
+            INACTIVE,
+            /** Training on samples */
+            TRAINING,
+            /** Validating classifier */
+            VALIDATION;
         }
     }
 

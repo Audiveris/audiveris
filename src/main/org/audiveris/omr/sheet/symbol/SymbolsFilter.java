@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,8 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.symbol;
-
-import ij.process.ByteProcessor;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
@@ -45,6 +43,7 @@ import org.audiveris.omr.sheet.ui.ImageView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.ScrollImageView;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -55,6 +54,8 @@ import org.audiveris.omr.util.ByteUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -91,10 +92,12 @@ public class SymbolsFilter
     public static final Orientation SYMBOL_ORIENTATION = Orientation.VERTICAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SymbolsFilter object.
      *
@@ -106,48 +109,6 @@ public class SymbolsFilter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Start from the staff-free image, remove all good inters, and from the remaining
-     * pixels build the symbols glyphs put in SYMBOL group.
-     * <p>
-     * For not good inters (some "weak" inters have already survived the first REDUCTION step)
-     * we put them aside as optional glyphs that can take part of the symbols glyphs clustering and
-     * thus compete for valuable compounds.
-     *
-     * @param optionalsMap (output) all weak glyphs gathered per system
-     */
-    public void process (Map<SystemInfo, List<Glyph>> optionalsMap)
-    {
-        logger.debug("SymbolsFilter running...");
-
-        ByteProcessor rawBuf = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
-        BufferedImage img = rawBuf.getBufferedImage();
-        ByteProcessor buffer = new ByteProcessor(img);
-
-        // Prepare the ground for symbols retrieval, noting optional (weak) glyphs per system
-        Graphics2D g = img.createGraphics();
-        SymbolsCleaner eraser = new SymbolsCleaner(buffer, g, sheet);
-        eraser.eraseInters(optionalsMap);
-        buffer.threshold(127);
-
-        // Keep a copy on disk?
-        if (constants.keepSymbolsBuffer.isSet()) {
-            ImageUtil.saveOnDisk(img, sheet.getId() + ".sym");
-        }
-
-        // Display for visual check?
-        if (constants.displaySymbols.isSet() && (OMR.gui != null)) {
-            sheet.getStub().getAssembly().addViewTab(
-                    "Symbols",
-                    new ScrollImageView(sheet, new SymbolsView(img, optionalsMap)),
-                    new BoardsPane(new PixelBoard(sheet)));
-        }
-
-        buildSymbolsGlyphs(buffer);
-    }
 
     //--------------------//
     // buildSymbolsGlyphs //
@@ -200,7 +161,53 @@ public class SymbolsFilter
         }
     }
 
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Start from the staff-free image, remove all good inters, and from the remaining
+     * pixels build the symbols glyphs put in SYMBOL group.
+     * <p>
+     * For not good inters (some "weak" inters have already survived the first REDUCTION step)
+     * we put them aside as optional glyphs that can take part of the symbols glyphs clustering and
+     * thus compete for valuable compounds.
+     * <p>
+     * We also keep 1-letter words, since they might be symbols.
+     *
+     * @param optionalsMap (output) all weak glyphs gathered per system
+     */
+    public void process (Map<SystemInfo, List<Glyph>> optionalsMap)
+    {
+        logger.debug("SymbolsFilter running...");
+
+        ByteProcessor rawBuf = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
+        BufferedImage img = rawBuf.getBufferedImage();
+        ByteProcessor buffer = new ByteProcessor(img);
+
+        // Prepare the ground for symbols retrieval, noting optional (weak) glyphs per system
+        Graphics2D g = img.createGraphics();
+        SymbolsCleaner eraser = new SymbolsCleaner(buffer, g, sheet);
+        eraser.eraseInters(optionalsMap);
+        buffer.threshold(127);
+
+        // Keep a copy on disk?
+        if (constants.saveSymbolsBuffer.isSet()) {
+            ImageUtil.saveOnDisk(img, sheet.getId(), "symbols");
+        }
+
+        // Display for visual check?
+        if (constants.displaySymbols.isSet() && (OMR.gui != null)) {
+            sheet.getStub().getAssembly().addViewTab(
+                    "Symbols",
+                    new ScrollImageView(sheet, new SymbolsView(img, optionalsMap)),
+                    new BoardsPane(new PixelBoard(sheet)));
+        }
+
+        buildSymbolsGlyphs(buffer);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -212,23 +219,18 @@ public class SymbolsFilter
                 false,
                 "Should we display the symbols image?");
 
-        private final Constant.Boolean keepSymbolsBuffer = new Constant.Boolean(
+        private final Constant.Boolean saveSymbolsBuffer = new Constant.Boolean(
                 false,
-                "Should we store symbols image on disk?");
+                "Should we save symbols image on disk?");
 
         private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 0.5,
                 "Margin erased above & below staff header area");
 
-        private final Constant.Integer minWordLength = new Constant.Integer(
+        private final Constant.Integer maxSymbolLength = new Constant.Integer(
                 "letter count",
-                4,
-                "Minimum number of chars in a sentence word");
-
-        private final Constant.Integer minSentenceLength = new Constant.Integer(
-                "letter count",
-                10,
-                "Minimum number of chars in a sentence");
+                3,
+                "Maximum number of chars for a word to be checked as a symbol");
     }
 
     //----------------//
@@ -273,112 +275,6 @@ public class SymbolsFilter
             super(buffer, g, sheet);
         }
 
-        //-------------//
-        // eraseInters //
-        //-------------//
-        /**
-         * Erase from image graphics all instances of provided shapes.
-         * <p>
-         * We check text items for '3' or '6' characters, and consider these characters as
-         * potential tuplet symbols when rather close from a chord.
-         *
-         * @param weaksMap (output) populated with the erased weak glyph instances per system
-         */
-        public void eraseInters (Map<SystemInfo, List<Glyph>> weaksMap)
-        {
-            final int minWordLength = constants.minWordLength.getValue();
-            final int minSentenceLength = constants.minSentenceLength.getValue();
-
-            for (SystemInfo system : sheet.getSystems()) {
-                final SIGraph sig = system.getSig();
-
-                // Erase tablature areas
-                eraseTablatures(system, constants.staffVerticalMargin);
-
-                // Erase header area on each staff of the system
-                eraseStavesHeader(system, constants.staffVerticalMargin);
-
-                // Partition inters into strongs and weaks
-                final List<Inter> strongs = new ArrayList<>();
-                final List<Inter> weaks = new ArrayList<>();
-                systemWeaks = null;
-
-                for (Inter inter : sig.vertexSet()) {
-                    if (inter.isRemoved()) {
-                        continue;
-                    }
-
-                    // Members are handled via their ensemble
-                    if (inter.getEnsemble() != null) {
-                        continue;
-                    }
-
-                    // Special case for sentences of only very small words: they are not erased
-                    // since they might be mistaken for text-like symbols
-                    if (inter instanceof SentenceInter) {
-                        final SentenceInter sentence = (SentenceInter) inter;
-                        int maxWordLength = 0;
-                        int sentenceLength = 0;
-
-                        for (Inter iw : sentence.getMembers()) {
-                            final WordInter word = (WordInter) iw;
-                            final int wordLength = word.getValue().length();
-                            maxWordLength = Math.max(maxWordLength, wordLength);
-                            sentenceLength += wordLength;
-                        }
-
-                        if ((sentenceLength < minSentenceLength) && (maxWordLength < minWordLength)) {
-                            continue;
-                        }
-                    }
-
-                    if (canHide(inter)) {
-                        strongs.add(inter);
-                    } else {
-                        weaks.add(inter);
-                    }
-                }
-
-                // Simply erase the strongs
-                for (Inter inter : strongs) {
-                    inter.accept(this);
-                }
-
-                // Save the weaks apart and erase them
-                systemWeaks = new ArrayList<>();
-                weaksMap.put(system, systemWeaks);
-
-                for (Inter inter : weaks) {
-                    inter.accept(this);
-                }
-
-                systemWeaks = null;
-            }
-        }
-
-        //-------//
-        // visit //
-        //-------//
-        @Override
-        public void visit (HeadInter head)
-        {
-            final Template tpl = head.getTemplate();
-            final Rectangle tplBox = tpl.getBounds(head.getBounds());
-
-            // Use underlying glyph (enlarged only for strong inters)
-            final List<Point> fores = tpl.getForegroundPixels(tplBox, buffer, systemWeaks == null);
-
-            // Erase foreground pixels
-            for (final Point p : fores) {
-                g.fillRect(tplBox.x + p.x, tplBox.y + p.y, 1, 1);
-            }
-
-            // Save foreground pixels for optional (weak) glyphs
-            if (systemWeaks != null) {
-                savePixels(tplBox, fores);
-            }
-        }
-
         //---------//
         // canHide //
         //---------//
@@ -403,6 +299,83 @@ public class SymbolsFilter
             }
 
             return super.canHide(inter);
+        }
+
+        //-------------//
+        // eraseInters //
+        //-------------//
+        /**
+         * Erase from image graphics all instances of provided shapes.
+         * <p>
+         * We check text items for '3' or '6' characters, and consider these characters as
+         * potential tuplet symbols when rather close from a chord.
+         *
+         * @param weaksMap (output) populated with the erased weak glyph instances per system
+         */
+        public void eraseInters (Map<SystemInfo, List<Glyph>> weaksMap)
+        {
+            final int maxSymbolLength = constants.maxSymbolLength.getValue();
+
+            for (SystemInfo system : sheet.getSystems()) {
+                final SIGraph sig = system.getSig();
+
+                // Erase tablature areas
+                eraseTablatures(system, constants.staffVerticalMargin);
+
+                // Erase header area on each staff of the system
+                eraseStavesHeader(system, constants.staffVerticalMargin);
+
+                // Partition inters into strongs and weaks
+                final List<Inter> strongs = new ArrayList<>();
+                final List<Inter> weaks = new ArrayList<>();
+                systemWeaks = null;
+
+                for (Inter inter : sig.vertexSet()) {
+                    if (inter.isRemoved()) {
+                        continue;
+                    }
+
+                    // Check short words
+                    if (inter instanceof WordInter word) {
+                        if (word.getValue().length() <= maxSymbolLength) {
+                            continue;
+                        }
+                    }
+
+                    // Members are handled via their ensemble
+                    // Except for beams and words
+                    if ((inter.getEnsemble() != null) && !(inter instanceof AbstractBeamInter)
+                            && !(inter instanceof WordInter)) {
+                        continue;
+                    }
+
+                    // Sentences are handled via their words
+                    if (inter instanceof SentenceInter) {
+                        continue;
+                    }
+
+                    if (canHide(inter)) {
+                        strongs.add(inter);
+                    } else {
+                        weaks.add(inter);
+                    }
+                }
+
+                // Simply erase the strongs
+                for (Inter inter : strongs) {
+                    inter.accept(this);
+                }
+
+                // Save the weaks apart and erase them
+                systemWeaks = new ArrayList<>();
+                weaksMap.put(system, systemWeaks);
+
+                for (Inter inter : weaks) {
+                    inter.accept(this);
+                }
+
+                systemWeaks = null;
+            }
         }
 
         //-------------//
@@ -476,6 +449,29 @@ public class SymbolsFilter
                     GlyphGroup.SYMBOL);
 
             systemWeaks.addAll(glyphs);
+        }
+
+        //-------//
+        // visit //
+        //-------//
+        @Override
+        public void visit (HeadInter head)
+        {
+            final Template tpl = head.getTemplate();
+            final Rectangle tplBox = tpl.getBounds(head.getBounds());
+
+            // Use underlying glyph (enlarged only for strong inters)
+            final List<Point> fores = tpl.getForegroundPixels(tplBox, buffer, systemWeaks == null);
+
+            // Erase foreground pixels
+            for (final Point p : fores) {
+                g.fillRect(tplBox.x + p.x, tplBox.y + p.y, 1, 1);
+            }
+
+            // Save foreground pixels for optional (weak) glyphs
+            if (systemWeaks != null) {
+                savePixels(tplBox, fores);
+            }
         }
     }
 

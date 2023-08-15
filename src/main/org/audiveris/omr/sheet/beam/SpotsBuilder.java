@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,8 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.beam;
-
-import ij.process.ByteProcessor;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
@@ -38,8 +36,8 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
+import static org.audiveris.omr.sheet.ProcessingSwitch.smallBeams;
 import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.sheet.Scale.BeamScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -54,6 +52,8 @@ import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -80,11 +80,13 @@ public class SpotsBuilder
     public static final Orientation SPOT_ORIENTATION = Orientation.VERTICAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SpotsBuilder object.
      *
@@ -96,6 +98,7 @@ public class SpotsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // buildSheetSpots //
     //-----------------//
@@ -118,7 +121,7 @@ public class SpotsBuilder
             // Retrieve major spots
             watch.start("buildSpots");
 
-            // Select smaller between main beam thickness and second beam thickness
+            // Select smaller value between main beam thickness and second beam thickness
             final Scale scale = sheet.getScale();
             Integer beam = scale.getItemValue(Scale.Item.beam);
 
@@ -126,7 +129,10 @@ public class SpotsBuilder
                 throw new RuntimeException("No scale information on beam thickness");
             }
 
-            final Integer beam2 = scale.getItemValue(Scale.Item.smallBeam);
+            Integer beam2 = scale.getItemValue(Scale.Item.smallBeam);
+            if (beam2 == null && sheet.getStub().getProcessingSwitches().getValue(smallBeams)) {
+                beam2 = (int) Math.rint(beam * BeamsBuilder.getCueBeamRatio());
+            }
             if (beam2 != null) {
                 beam = Math.min(beam, beam2);
             }
@@ -187,9 +193,9 @@ public class SpotsBuilder
             BufferedImage img = null;
 
             // Store buffer on disk?
-            if (constants.keepBeamSpots.isSet()) {
+            if (constants.saveBeamSpots.isSet()) {
                 img = buffer.getBufferedImage();
-                ImageUtil.saveOnDisk(img, sheet.getId() + ".spots");
+                ImageUtil.saveOnDisk(img, sheet.getId(), "beam-spots");
             }
 
             // Display the gray-level view of all spots
@@ -206,9 +212,9 @@ public class SpotsBuilder
 
             // Save a specific binarized version for HEADS step
             saveHeadRuns((ByteProcessor) buffer.duplicate());
-        } else if (constants.keepCueSpots.isSet()) {
+        } else if (constants.saveCueSpots.isSet()) {
             BufferedImage img = buffer.getBufferedImage();
-            ImageUtil.saveOnDisk(img, sheet.getId() + "." + cueId + ".spots");
+            ImageUtil.saveOnDisk(img, sheet.getId(), cueId + "-spots");
         }
 
         // Binarize the spots via a global filter (no illumination problem)
@@ -252,11 +258,13 @@ public class SpotsBuilder
         final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
         final float radius = (float) (diameter - 1) / 2;
         logger.debug(
-                "Spots retrieval beam: {}, diameter: {} ...",
+                "Spots retrieval beam: {}, diameter: {}, radius: {} ...",
                 String.format("%.1f", beam),
-                String.format("%.1f", diameter));
+                String.format("%.1f", diameter),
+                String.format("%.1f", radius));
 
-        final int[] seOffset = {0, 0};
+        final int[] seOffset =
+        { 0, 0 };
         final StructureElement se = new StructureElement(0, 1, radius, seOffset);
         new MorphoProcessor(se).close(buffer);
     }
@@ -312,16 +320,24 @@ public class SpotsBuilder
         buffer.setValue(255);
 
         for (SystemInfo system : sheet.getSystems()) {
-            Staff firstStaff = system.getFirstStaff();
-            Staff lastStaff = system.getLastStaff();
-            int start = system.getBounds().x;
-            int stop = firstStaff.getHeaderStop();
-            int top = firstStaff.getFirstLine().yAt(stop) - dmzDyMargin;
-            int bot = lastStaff.getLastLine().yAt(stop) + dmzDyMargin;
+            final Staff firstStaff = system.getFirstStaff();
+            final Staff lastStaff = system.getLastStaff();
+            final int start = system.getBounds().x;
 
-            buffer.setRoi(start, top, stop - start + 1, bot - top + 1);
-            buffer.fill();
-            buffer.resetRoi();
+            for (Staff staff : system.getStaves()) {
+                // Beware of tablature staff without header
+                if (staff.getHeader() != null) {
+                    final int stop = staff.getHeaderStop();
+                    final int top = firstStaff.getFirstLine().yAt(stop) - dmzDyMargin;
+                    final int bot = lastStaff.getLastLine().yAt(stop) + dmzDyMargin;
+
+                    buffer.setRoi(start, top, stop - start + 1, bot - top + 1);
+                    buffer.fill();
+                    buffer.resetRoi();
+
+                    break;
+                }
+            }
         }
 
         buffer.setValue(0);
@@ -393,9 +409,9 @@ public class SpotsBuilder
         RunTable runs = runFactory.createTable(buffer);
 
         // For visual check
-        if (constants.keepHeadSpots.isSet()) {
+        if (constants.saveHeadSpots.isSet()) {
             BufferedImage img = runs.getBufferedImage();
-            ImageUtil.saveOnDisk(img, sheet.getId() + ".headspots");
+            ImageUtil.saveOnDisk(img, sheet.getId(), "head-spots");
         }
 
         // Save it for future HEADS step
@@ -403,6 +419,7 @@ public class SpotsBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -422,17 +439,17 @@ public class SpotsBuilder
                 false,
                 "Should we print out the stop watch?");
 
-        private final Constant.Boolean keepBeamSpots = new Constant.Boolean(
+        private final Constant.Boolean saveBeamSpots = new Constant.Boolean(
                 false,
-                "Should we store sheet beam spot images on disk?");
+                "Should we save sheet beam spot images on disk?");
 
-        private final Constant.Boolean keepHeadSpots = new Constant.Boolean(
+        private final Constant.Boolean saveHeadSpots = new Constant.Boolean(
                 false,
-                "Should we store sheet head spot images on disk?");
+                "Should we save sheet head spot images on disk?");
 
-        private final Constant.Boolean keepCueSpots = new Constant.Boolean(
+        private final Constant.Boolean saveCueSpots = new Constant.Boolean(
                 false,
-                "Should we store cue spot images on disk?");
+                "Should we save cue spot images on disk?");
 
         private final Constant.Ratio beamCircleDiameterRatio = new Constant.Ratio(
                 0.8,

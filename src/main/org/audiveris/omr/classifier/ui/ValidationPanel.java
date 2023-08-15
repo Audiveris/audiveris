@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,16 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleSource;
 import org.audiveris.omr.classifier.ui.Trainer.Task;
-import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.*;
+import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.INACTIVE;
+import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.VALIDATION;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.field.LLabel;
@@ -38,6 +35,10 @@ import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
 import java.text.DecimalFormat;
@@ -67,6 +68,7 @@ public class ValidationPanel
     private static final Logger logger = LoggerFactory.getLogger(ValidationPanel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Swing component. */
     private final Panel component;
 
@@ -135,6 +137,7 @@ public class ValidationPanel
     private final WeakNegativeAction weakNegativeAction = new WeakNegativeAction();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new ValidationPanel object.
      *
@@ -163,41 +166,6 @@ public class ValidationPanel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Give access to the encapsulated swing component.
-     *
-     * @return the user panel
-     */
-    public JComponent getComponent ()
-    {
-        return component;
-    }
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * A degenerated version, just to disable by default the
-     * verification actions whenever a new task activity is notified.
-     * These actions are then re-enabled only at the end of the validation run.
-     *
-     * @param obs    not used
-     * @param unused not used
-     */
-    @Override
-    public void update (Observable obs,
-                        Object unused)
-    {
-        weakPositiveAction.setEnabled(!weakPositives.isEmpty());
-        falsePositiveAction.setEnabled(!falsePositives.isEmpty());
-        weakNegativeAction.setEnabled(!weakNegatives.isEmpty());
-
-        Task task = (Task) obs;
-        validateAction.setEnabled(task.getActivity() == Task.Activity.INACTIVE);
-    }
 
     //--------------//
     // defineLayout //
@@ -261,6 +229,19 @@ public class ValidationPanel
         JButton weakNegativeButton = new JButton(weakNegativeAction);
         weakNegativeButton.setToolTipText("Display the impacted samples for verification");
         builder.add(weakNegativeButton, cst.xy(11, r));
+    }
+
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Give access to the encapsulated swing component.
+     *
+     * @return the user panel
+     */
+    public JComponent getComponent ()
+    {
+        return component;
     }
 
     //---------------//
@@ -364,7 +345,31 @@ public class ValidationPanel
         //        }
     }
 
+    //--------//
+    // update //
+    //--------//
+    /**
+     * A degenerated version, just to disable by default the
+     * verification actions whenever a new task activity is notified.
+     * These actions are then re-enabled only at the end of the validation run.
+     *
+     * @param obs    not used
+     * @param unused not used
+     */
+    @Override
+    public void update (Observable obs,
+                        Object unused)
+    {
+        weakPositiveAction.setEnabled(!weakPositives.isEmpty());
+        falsePositiveAction.setEnabled(!falsePositives.isEmpty());
+        weakNegativeAction.setEnabled(!weakNegatives.isEmpty());
+
+        Task task = (Task) obs;
+        validateAction.setEnabled(task.getActivity() == Task.Activity.INACTIVE);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------------------//
     // FalsePositiveAction //
     //---------------------//
@@ -400,7 +405,8 @@ public class ValidationPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            executor.execute(() -> {
+            executor.execute( () ->
+            {
                 setEnabled(false);
 
                 if (task != null) {

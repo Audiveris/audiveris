@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,6 +55,7 @@ public abstract class GradeImpacts
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Array of actual contributions. */
     protected final double[] impacts;
 
@@ -68,6 +69,7 @@ public abstract class GradeImpacts
     protected double grade = -1;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BasicImpacts object.
      *
@@ -88,6 +90,35 @@ public abstract class GradeImpacts
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------//
+    // computeGrade //
+    //--------------//
+    /**
+     * Compute resulting grade from all impacts.
+     *
+     * @return the resulting grade
+     */
+    protected double computeGrade ()
+    {
+        double global = 1d;
+        double totalWeight = 0d;
+
+        for (int i = 0; i < getImpactCount(); i++) {
+            double weight = getWeight(i);
+            double impact = getImpact(i);
+            totalWeight += weight;
+
+            if (impact == 0) {
+                global = 0;
+            } else if (weight != 0) {
+                global *= Math.pow(impact, weight);
+            }
+        }
+
+        return getIntrinsicRatio() * Math.pow(global, 1 / totalWeight);
+    }
+
     /**
      * Report a string about impacts details
      *
@@ -123,18 +154,6 @@ public abstract class GradeImpacts
     public double getImpact (int index)
     {
         return impacts[index];
-    }
-
-    /**
-     * Set impact at provided index.
-     *
-     * @param index  index in impact array
-     * @param impact value for specific impact
-     */
-    public final void setImpact (int index,
-                                 double impact)
-    {
-        impacts[index] = GradeUtil.clamp(impact);
     }
 
     /**
@@ -179,6 +198,18 @@ public abstract class GradeImpacts
         return weights[index];
     }
 
+    /**
+     * Set impact at provided index.
+     *
+     * @param index  index in impact array
+     * @param impact value for specific impact
+     */
+    public final void setImpact (int index,
+                                 double impact)
+    {
+        impacts[index] = GradeUtil.clamp(impact);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -192,39 +223,10 @@ public abstract class GradeImpacts
                 sb.append(" ");
             }
 
-            sb.append(nf1.format(getWeight(i))).append('/')
-                    .append(getName(i)).append(':')
-                    .append(nf2.format(getImpact(i)));
+            sb.append(nf1.format(getWeight(i))).append('/').append(getName(i)).append(':').append(
+                    nf2.format(getImpact(i)));
         }
 
         return sb.toString();
-    }
-
-    //--------------//
-    // computeGrade //
-    //--------------//
-    /**
-     * Compute resulting grade from all impacts.
-     *
-     * @return the resulting grade
-     */
-    protected double computeGrade ()
-    {
-        double global = 1d;
-        double totalWeight = 0d;
-
-        for (int i = 0; i < getImpactCount(); i++) {
-            double weight = getWeight(i);
-            double impact = getImpact(i);
-            totalWeight += weight;
-
-            if (impact == 0) {
-                global = 0;
-            } else if (weight != 0) {
-                global *= Math.pow(impact, weight);
-            }
-        }
-
-        return getIntrinsicRatio() * Math.pow(global, 1 / totalWeight);
     }
 }

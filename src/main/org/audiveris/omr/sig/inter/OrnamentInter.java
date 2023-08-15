@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,7 +46,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class <code>OrnamentInter</code> represents an ornament interpretation.
  * (TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED)
- * and perhaps GRACE_NOTE_SLASH, GRACE_NOTE
  *
  * @author Hervé Bitteur
  */
@@ -58,13 +57,38 @@ public class OrnamentInter
 
     private static final Logger logger = LoggerFactory.getLogger(OrnamentInter.class);
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    protected OrnamentInter ()
+    {
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new OrnamentInter object.
+     *
+     * @param glyph  underlying glyph
+     * @param bounds object bounds
+     * @param shape  TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED
+     *               (or tremolos)
+     * @param grade  evaluation value
+     */
+    public OrnamentInter (Glyph glyph,
+                          Rectangle bounds,
+                          Shape shape,
+                          Double grade)
+    {
+        super(glyph, bounds, shape, grade);
+    }
+
     /**
      * Creates a new OrnamentInter object.
      *
      * @param glyph underlying glyph
-     * @param shape precise shape (TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT,
-     *              MORDENT_INVERTED) and perhaps GRACE_NOTE_SLASH, GRACE_NOTE
+     * @param shape TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED
+     *              (or tremolos)
      * @param grade evaluation value
      */
     public OrnamentInter (Glyph glyph,
@@ -74,22 +98,7 @@ public class OrnamentInter
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private OrnamentInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 
     //---------------//
     // checkAbnormal //
@@ -133,43 +142,18 @@ public class OrnamentInter
         return null;
     }
 
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final int profile = Math.max(getProfile(), system.getProfile());
-        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
-        Collections.sort(systemHeadChords, Inters.byAbscissa);
-
-        Link link = lookupLink(systemHeadChords, profile);
-
-        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
-    }
-
-    //---------------//
-    // searchUnlinks //
-    //---------------//
-    @Override
-    public Collection<Link> searchUnlinks (SystemInfo system,
-                                           Collection<Link> links)
-    {
-        return searchObsoletelinks(links, ChordOrnamentRelation.class);
-    }
-
     //------------//
     // lookupLink //
     //------------//
     /**
      * Try to detect a link between this ornament instance and a HeadChord nearby.
      *
-     * @param systemHeadChords ordered collection of head chords in system
+     * @param systemHeadChords abscissa-ordered collection of head chords in system
      * @param profile          desired profile level
      * @return the link found or null
      */
-    private Link lookupLink (List<Inter> systemHeadChords,
-                             int profile)
+    protected Link lookupLink (List<Inter> systemHeadChords,
+                               int profile)
     {
         if (systemHeadChords.isEmpty()) {
             return null;
@@ -230,20 +214,45 @@ public class OrnamentInter
         return null;
     }
 
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        Link link = lookupLink(systemHeadChords, profile);
+
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, ChordOrnamentRelation.class);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------------------//
     // createValidAdded //
     //------------------//
     /**
      * (Try to) create and add a valid OrnamentInter.
-     * <p>
-     * TODO: this is to be refined for GRACE ornaments which are located on left side of chord.
      *
      * @param glyph            underlying glyph
      * @param shape            detected shape
      * @param grade            assigned grade
      * @param system           containing system
      * @param systemHeadChords system head chords, ordered by abscissa
-     * @return the created articulation or null
+     * @return the created ornament or null
      */
     public static OrnamentInter createValidAdded (Glyph glyph,
                                                   Shape shape,

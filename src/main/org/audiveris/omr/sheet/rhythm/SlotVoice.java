@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,23 +47,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "slot-voice")
 public class SlotVoice
 {
-    //~ Enumerations -------------------------------------------------------------------------------
-
-    //-------------//
-    // ChordStatus //
-    //-------------//
-    /**
-     * Voice status of a chord with respect to a slot.
-     */
-    public static enum ChordStatus
-    {
-        /** The chord begins at this slot (it's one of slot incoming chords). */
-        BEGIN,
-        /** The chord is still active at this slot. */
-        CONTINUE;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** This is the chord that represents this voice in this slot. */
     @XmlIDREF
     @XmlAttribute
@@ -74,6 +59,14 @@ public class SlotVoice
     public final ChordStatus status;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    // For JAXB.
+    private SlotVoice ()
+    {
+        this.chord = null;
+        this.status = null;
+    }
+
     /**
      * Create a SlotVoice object.
      *
@@ -87,14 +80,8 @@ public class SlotVoice
         this.status = status;
     }
 
-    // For JAXB.
-    private SlotVoice ()
-    {
-        this.chord = null;
-        this.status = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public String toString ()
     {
@@ -112,5 +99,21 @@ public class SlotVoice
         sb.append('}');
 
         return sb.toString();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-------------//
+    // ChordStatus //
+    //-------------//
+    /**
+     * Voice status of a chord with respect to a slot.
+     */
+    public static enum ChordStatus
+    {
+        /** The chord begins at this slot (it's one of slot incoming chords). */
+        BEGIN,
+        /** The chord is still active at this slot. */
+        CONTINUE;
     }
 }

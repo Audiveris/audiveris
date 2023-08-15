@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -30,12 +30,12 @@ import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.StubEvent;
 
-import org.bushe.swing.event.EventSubscriber;
-
 import org.jdesktop.application.AbstractBean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bushe.swing.event.EventSubscriber;
 
 /**
  * Class <code>StubDependent</code> handles the dependency on current sheet stub availability
@@ -94,6 +94,7 @@ public abstract class StubDependent
     public static final String REPETITIVE_INPUT_SELECTABLE = "repetitiveInputSelectable";
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Indicates whether the sheet binary image is available. */
     protected boolean binaryAvailable = false;
 
@@ -137,6 +138,7 @@ public abstract class StubDependent
     protected boolean repetitiveInputSelectable = false;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>StubDependent</code> object.
      */
@@ -147,6 +149,20 @@ public abstract class StubDependent
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-------------------//
+    // isBinaryAvailable //
+    //-------------------//
+    /**
+     * Getter for binaryAvailable property
+     *
+     * @return the current property value
+     */
+    public boolean isBinaryAvailable ()
+    {
+        return binaryAvailable;
+    }
+
     //------------//
     // isBookIdle //
     //------------//
@@ -160,22 +176,20 @@ public abstract class StubDependent
         return bookIdle;
     }
 
-    //-------------//
-    // setBookIdle //
-    //-------------//
-    /**
-     * Setter for bookIdle property
-     *
-     * @param bookIdle the new property value
-     */
-    public void setBookIdle (boolean bookIdle)
+    //------------//
+    // isBookIdle //
+    //------------//
+    private boolean isBookIdle (Book book)
     {
-        boolean oldValue = this.bookIdle;
-        this.bookIdle = bookIdle;
+        for (SheetStub stub : book.getValidSelectedStubs()) {
+            final OmrStep currentStep = stub.getCurrentStep();
 
-        if (bookIdle != oldValue) {
-            firePropertyChange(BOOK_IDLE, oldValue, this.bookIdle);
+            if (currentStep != null) {
+                return false;
+            }
         }
+
+        return true;
     }
 
     //--------------------------//
@@ -191,24 +205,6 @@ public abstract class StubDependent
         return bookModifiedOrUpgraded;
     }
 
-    //---------------------------//
-    // setBookModifiedOrUpgraded //
-    //---------------------------//
-    /**
-     * Setter for bookModifiedOrUpgraded property
-     *
-     * @param bookModifiedOrUpgraded the new property value
-     */
-    public void setBookModifiedOrUpgraded (boolean bookModifiedOrUpgraded)
-    {
-        boolean oldValue = this.bookModifiedOrUpgraded;
-        this.bookModifiedOrUpgraded = bookModifiedOrUpgraded;
-
-        if (bookModifiedOrUpgraded != oldValue) {
-            firePropertyChange(BOOK_MODIFIED_OR_UPGRADED, oldValue, this.bookModifiedOrUpgraded);
-        }
-    }
-
     //---------------------//
     // isBookTranscribable //
     //---------------------//
@@ -222,22 +218,19 @@ public abstract class StubDependent
         return bookTranscribable;
     }
 
-    //----------------------//
-    // setBookTranscribable //
-    //----------------------//
-    /**
-     * Setter for bookTranscribable property.
-     *
-     * @param bookTranscribable the new property value
-     */
-    public void setBookTranscribable (boolean bookTranscribable)
+    //---------------------//
+    // isBookTranscribable //
+    //---------------------//
+    private boolean isBookTranscribable (Book book)
     {
-        boolean oldValue = this.bookTranscribable;
-        this.bookTranscribable = bookTranscribable;
-
-        if (bookTranscribable != oldValue) {
-            firePropertyChange(BOOK_TRANSCRIBABLE, oldValue, this.bookTranscribable);
+        // Book is assumed idle
+        for (SheetStub stub : book.getValidSelectedStubs()) {
+            if (!stub.isDone(OmrStep.last())) {
+                return true;
+            }
         }
+
+        return book.isDirty();
     }
 
     //------------------//
@@ -253,118 +246,6 @@ public abstract class StubDependent
         return bookUpgradable;
     }
 
-    //-------------------//
-    // setBookUpgradable //
-    //-------------------//
-    /**
-     * Setter for bookUpgradable property.
-     *
-     * @param bookUpgradable the new property value
-     */
-    public void setBookUpgradable (boolean bookUpgradable)
-    {
-        boolean oldValue = this.bookUpgradable;
-        this.bookUpgradable = bookUpgradable;
-
-        if (bookUpgradable != oldValue) {
-            firePropertyChange(BOOK_UPGRADABLE, oldValue, this.bookUpgradable);
-        }
-    }
-
-    //-----------------------------//
-    // isRepetitiveInputSelectable //
-    //-----------------------------//
-    /**
-     * Getter for repetitiveInputSelectable property
-     *
-     * @return the current property value
-     */
-    public boolean isRepetitiveInputSelectable ()
-    {
-        return repetitiveInputSelectable;
-    }
-
-    //------------------------------//
-    // setRepetitiveInputSelectable //
-    //------------------------------//
-    /**
-     * Setter for repetitiveInputSelectable property
-     *
-     * @param repetitiveInputSelectable the new property value
-     */
-    public void setRepetitiveInputSelectable (boolean repetitiveInputSelectable)
-    {
-        boolean oldValue = this.repetitiveInputSelectable;
-        this.repetitiveInputSelectable = repetitiveInputSelectable;
-
-        if (repetitiveInputSelectable != oldValue) {
-            firePropertyChange(
-                    REPETITIVE_INPUT_SELECTABLE, oldValue, this.repetitiveInputSelectable);
-        }
-    }
-
-    //------------//
-    // isRedoable //
-    //------------//
-    /**
-     * Getter for redoable property
-     *
-     * @return the current property value
-     */
-    public boolean isRedoable ()
-    {
-        return redoable;
-    }
-
-    //-------------//
-    // setRedoable //
-    //-------------//
-    /**
-     * Setter for redoable property
-     *
-     * @param redoable the new property value
-     */
-    public void setRedoable (boolean redoable)
-    {
-        boolean oldValue = this.redoable;
-        this.redoable = redoable;
-
-        if (redoable != oldValue) {
-            firePropertyChange(REDOABLE, oldValue, this.redoable);
-        }
-    }
-
-    //-------------------//
-    // isBinaryAvailable //
-    //-------------------//
-    /**
-     * Getter for binaryAvailable property
-     *
-     * @return the current property value
-     */
-    public boolean isBinaryAvailable ()
-    {
-        return binaryAvailable;
-    }
-
-    //--------------------//
-    // setBinaryAvailable //
-    //--------------------//
-    /**
-     * Setter for binaryAvailable property.
-     *
-     * @param binaryAvailable the new property value
-     */
-    public void setBinaryAvailable (boolean binaryAvailable)
-    {
-        boolean oldValue = this.binaryAvailable;
-        this.binaryAvailable = binaryAvailable;
-
-        if (binaryAvailable != oldValue) {
-            firePropertyChange(BINARY_AVAILABLE, oldValue, this.binaryAvailable);
-        }
-    }
-
     //-----------------//
     // isGrayAvailable //
     //-----------------//
@@ -376,24 +257,6 @@ public abstract class StubDependent
     public boolean isGrayAvailable ()
     {
         return grayAvailable;
-    }
-
-    //------------------//
-    // setGrayAvailable //
-    //------------------//
-    /**
-     * Setter for grayAvailable property.
-     *
-     * @param grayAvailable the new property value
-     */
-    public void setGrayAvailable (boolean grayAvailable)
-    {
-        boolean oldValue = this.grayAvailable;
-        this.grayAvailable = grayAvailable;
-
-        if (grayAvailable != oldValue) {
-            firePropertyChange(GRAY_AVAILABLE, oldValue, this.grayAvailable);
-        }
     }
 
     //-----------------//
@@ -409,22 +272,30 @@ public abstract class StubDependent
         return gridAvailable;
     }
 
-    //------------------//
-    // setGridAvailable //
-    //------------------//
+    //------------//
+    // isRedoable //
+    //------------//
     /**
-     * Setter for gridAvailable property.
+     * Getter for redoable property
      *
-     * @param gridAvailable the new property value
+     * @return the current property value
      */
-    public void setGridAvailable (boolean gridAvailable)
+    public boolean isRedoable ()
     {
-        boolean oldValue = this.gridAvailable;
-        this.gridAvailable = gridAvailable;
+        return redoable;
+    }
 
-        if (gridAvailable != oldValue) {
-            firePropertyChange(GRID_AVAILABLE, oldValue, this.gridAvailable);
-        }
+    //-----------------------------//
+    // isRepetitiveInputSelectable //
+    //-----------------------------//
+    /**
+     * Getter for repetitiveInputSelectable property
+     *
+     * @return the current property value
+     */
+    public boolean isRepetitiveInputSelectable ()
+    {
+        return repetitiveInputSelectable;
     }
 
     //-----------------//
@@ -440,24 +311,6 @@ public abstract class StubDependent
         return stubAvailable;
     }
 
-    //------------------//
-    // setStubAvailable //
-    //------------------//
-    /**
-     * Setter for stubAvailable property.
-     *
-     * @param stubAvailable the new property value
-     */
-    public void setStubAvailable (boolean stubAvailable)
-    {
-        boolean oldValue = this.stubAvailable;
-        this.stubAvailable = stubAvailable;
-
-        if (stubAvailable != oldValue) {
-            firePropertyChange(STUB_AVAILABLE, oldValue, this.stubAvailable);
-        }
-    }
-
     //------------//
     // isStubIdle //
     //------------//
@@ -469,24 +322,6 @@ public abstract class StubDependent
     public boolean isStubIdle ()
     {
         return stubIdle;
-    }
-
-    //-------------//
-    // setStubIdle //
-    //-------------//
-    /**
-     * Setter for stubIdle property
-     *
-     * @param stubIdle the new property value
-     */
-    public void setStubIdle (boolean stubIdle)
-    {
-        boolean oldValue = this.stubIdle;
-        this.stubIdle = stubIdle;
-
-        if (stubIdle != oldValue) {
-            firePropertyChange(STUB_IDLE, oldValue, this.stubIdle);
-        }
     }
 
     //---------------------//
@@ -502,24 +337,6 @@ public abstract class StubDependent
         return stubTranscribable;
     }
 
-    //----------------------//
-    // setStubTranscribable //
-    //----------------------//
-    /**
-     * Setter for stubTranscribable property.
-     *
-     * @param stubTranscribable the new property value
-     */
-    public void setStubTranscribable (boolean stubTranscribable)
-    {
-        boolean oldValue = this.stubTranscribable;
-        this.stubTranscribable = stubTranscribable;
-
-        if (stubTranscribable != oldValue) {
-            firePropertyChange(STUB_TRANSCRIBABLE, oldValue, this.stubTranscribable);
-        }
-    }
-
     //-------------//
     // isStubValid //
     //-------------//
@@ -533,24 +350,6 @@ public abstract class StubDependent
         return stubValid;
     }
 
-    //--------------//
-    // setStubValid //
-    //--------------//
-    /**
-     * Setter for stubValid property.
-     *
-     * @param stubValid the new property value
-     */
-    public void setStubValid (boolean stubValid)
-    {
-        boolean oldValue = this.stubValid;
-        this.stubValid = stubValid;
-
-        if (stubValid != oldValue) {
-            firePropertyChange(STUB_VALID, oldValue, this.stubValid);
-        }
-    }
-
     //------------//
     // isUndoable //
     //------------//
@@ -562,24 +361,6 @@ public abstract class StubDependent
     public boolean isUndoable ()
     {
         return undoable;
-    }
-
-    //-------------//
-    // setUndoable //
-    //-------------//
-    /**
-     * Setter for undoable property
-     *
-     * @param undoable the new property value
-     */
-    public void setUndoable (boolean undoable)
-    {
-        boolean oldValue = this.undoable;
-        this.undoable = undoable;
-
-        if (undoable != oldValue) {
-            firePropertyChange(UNDOABLE, oldValue, this.undoable);
-        }
     }
 
     //---------//
@@ -660,35 +441,259 @@ public abstract class StubDependent
         }
     }
 
-    //------------//
-    // isBookIdle //
-    //------------//
-    private boolean isBookIdle (Book book)
+    //--------------------//
+    // setBinaryAvailable //
+    //--------------------//
+    /**
+     * Setter for binaryAvailable property.
+     *
+     * @param binaryAvailable the new property value
+     */
+    public void setBinaryAvailable (boolean binaryAvailable)
     {
-        for (SheetStub stub : book.getValidStubs()) {
-            final OmrStep currentStep = stub.getCurrentStep();
+        boolean oldValue = this.binaryAvailable;
+        this.binaryAvailable = binaryAvailable;
 
-            if (currentStep != null) {
-                return false;
-            }
+        if (binaryAvailable != oldValue) {
+            firePropertyChange(BINARY_AVAILABLE, oldValue, this.binaryAvailable);
         }
-
-        return true;
     }
 
-    //---------------------//
-    // isBookTranscribable //
-    //---------------------//
-    private boolean isBookTranscribable (Book book)
+    //-------------//
+    // setBookIdle //
+    //-------------//
+    /**
+     * Setter for bookIdle property
+     *
+     * @param bookIdle the new property value
+     */
+    public void setBookIdle (boolean bookIdle)
     {
-        // Book is assumed idle
-        for (SheetStub stub : book.getValidStubs()) {
-            if (!stub.isDone(OmrStep.last())) {
-                return true;
-            }
-        }
+        boolean oldValue = this.bookIdle;
+        this.bookIdle = bookIdle;
 
-        return book.isDirty();
+        if (bookIdle != oldValue) {
+            firePropertyChange(BOOK_IDLE, oldValue, this.bookIdle);
+        }
+    }
+
+    //---------------------------//
+    // setBookModifiedOrUpgraded //
+    //---------------------------//
+    /**
+     * Setter for bookModifiedOrUpgraded property
+     *
+     * @param bookModifiedOrUpgraded the new property value
+     */
+    public void setBookModifiedOrUpgraded (boolean bookModifiedOrUpgraded)
+    {
+        boolean oldValue = this.bookModifiedOrUpgraded;
+        this.bookModifiedOrUpgraded = bookModifiedOrUpgraded;
+
+        if (bookModifiedOrUpgraded != oldValue) {
+            firePropertyChange(BOOK_MODIFIED_OR_UPGRADED, oldValue, this.bookModifiedOrUpgraded);
+        }
+    }
+
+    //----------------------//
+    // setBookTranscribable //
+    //----------------------//
+    /**
+     * Setter for bookTranscribable property.
+     *
+     * @param bookTranscribable the new property value
+     */
+    public void setBookTranscribable (boolean bookTranscribable)
+    {
+        boolean oldValue = this.bookTranscribable;
+        this.bookTranscribable = bookTranscribable;
+
+        if (bookTranscribable != oldValue) {
+            firePropertyChange(BOOK_TRANSCRIBABLE, oldValue, this.bookTranscribable);
+        }
+    }
+
+    //-------------------//
+    // setBookUpgradable //
+    //-------------------//
+    /**
+     * Setter for bookUpgradable property.
+     *
+     * @param bookUpgradable the new property value
+     */
+    public void setBookUpgradable (boolean bookUpgradable)
+    {
+        boolean oldValue = this.bookUpgradable;
+        this.bookUpgradable = bookUpgradable;
+
+        if (bookUpgradable != oldValue) {
+            firePropertyChange(BOOK_UPGRADABLE, oldValue, this.bookUpgradable);
+        }
+    }
+
+    //------------------//
+    // setGrayAvailable //
+    //------------------//
+    /**
+     * Setter for grayAvailable property.
+     *
+     * @param grayAvailable the new property value
+     */
+    public void setGrayAvailable (boolean grayAvailable)
+    {
+        boolean oldValue = this.grayAvailable;
+        this.grayAvailable = grayAvailable;
+
+        if (grayAvailable != oldValue) {
+            firePropertyChange(GRAY_AVAILABLE, oldValue, this.grayAvailable);
+        }
+    }
+
+    //------------------//
+    // setGridAvailable //
+    //------------------//
+    /**
+     * Setter for gridAvailable property.
+     *
+     * @param gridAvailable the new property value
+     */
+    public void setGridAvailable (boolean gridAvailable)
+    {
+        boolean oldValue = this.gridAvailable;
+        this.gridAvailable = gridAvailable;
+
+        if (gridAvailable != oldValue) {
+            firePropertyChange(GRID_AVAILABLE, oldValue, this.gridAvailable);
+        }
+    }
+
+    //-------------//
+    // setRedoable //
+    //-------------//
+    /**
+     * Setter for redoable property
+     *
+     * @param redoable the new property value
+     */
+    public void setRedoable (boolean redoable)
+    {
+        boolean oldValue = this.redoable;
+        this.redoable = redoable;
+
+        if (redoable != oldValue) {
+            firePropertyChange(REDOABLE, oldValue, this.redoable);
+        }
+    }
+
+    //------------------------------//
+    // setRepetitiveInputSelectable //
+    //------------------------------//
+    /**
+     * Setter for repetitiveInputSelectable property
+     *
+     * @param repetitiveInputSelectable the new property value
+     */
+    public void setRepetitiveInputSelectable (boolean repetitiveInputSelectable)
+    {
+        boolean oldValue = this.repetitiveInputSelectable;
+        this.repetitiveInputSelectable = repetitiveInputSelectable;
+
+        if (repetitiveInputSelectable != oldValue) {
+            firePropertyChange(
+                    REPETITIVE_INPUT_SELECTABLE,
+                    oldValue,
+                    this.repetitiveInputSelectable);
+        }
+    }
+
+    //------------------//
+    // setStubAvailable //
+    //------------------//
+    /**
+     * Setter for stubAvailable property.
+     *
+     * @param stubAvailable the new property value
+     */
+    public void setStubAvailable (boolean stubAvailable)
+    {
+        boolean oldValue = this.stubAvailable;
+        this.stubAvailable = stubAvailable;
+
+        if (stubAvailable != oldValue) {
+            firePropertyChange(STUB_AVAILABLE, oldValue, this.stubAvailable);
+        }
+    }
+
+    //-------------//
+    // setStubIdle //
+    //-------------//
+    /**
+     * Setter for stubIdle property
+     *
+     * @param stubIdle the new property value
+     */
+    public void setStubIdle (boolean stubIdle)
+    {
+        boolean oldValue = this.stubIdle;
+        this.stubIdle = stubIdle;
+
+        if (stubIdle != oldValue) {
+            firePropertyChange(STUB_IDLE, oldValue, this.stubIdle);
+        }
+    }
+
+    //----------------------//
+    // setStubTranscribable //
+    //----------------------//
+    /**
+     * Setter for stubTranscribable property.
+     *
+     * @param stubTranscribable the new property value
+     */
+    public void setStubTranscribable (boolean stubTranscribable)
+    {
+        boolean oldValue = this.stubTranscribable;
+        this.stubTranscribable = stubTranscribable;
+
+        if (stubTranscribable != oldValue) {
+            firePropertyChange(STUB_TRANSCRIBABLE, oldValue, this.stubTranscribable);
+        }
+    }
+
+    //--------------//
+    // setStubValid //
+    //--------------//
+    /**
+     * Setter for stubValid property.
+     *
+     * @param stubValid the new property value
+     */
+    public void setStubValid (boolean stubValid)
+    {
+        boolean oldValue = this.stubValid;
+        this.stubValid = stubValid;
+
+        if (stubValid != oldValue) {
+            firePropertyChange(STUB_VALID, oldValue, this.stubValid);
+        }
+    }
+
+    //-------------//
+    // setUndoable //
+    //-------------//
+    /**
+     * Setter for undoable property
+     *
+     * @param undoable the new property value
+     */
+    public void setUndoable (boolean undoable)
+    {
+        boolean oldValue = this.undoable;
+        this.undoable = undoable;
+
+        if (undoable != oldValue) {
+            firePropertyChange(UNDOABLE, oldValue, this.undoable);
+        }
     }
 
     //------------------//

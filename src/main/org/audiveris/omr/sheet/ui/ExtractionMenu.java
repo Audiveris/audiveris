@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,8 +42,6 @@ import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
-import static javax.swing.Action.NAME;
-import static javax.swing.Action.SHORT_DESCRIPTION;
 import javax.swing.JMenuItem;
 
 /**
@@ -60,10 +58,12 @@ public class ExtractionMenu
     private static final Logger logger = LoggerFactory.getLogger(ExtractionMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying sheet. */
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create the extraction menu
      *
@@ -79,11 +79,12 @@ public class ExtractionMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------//
     // save //
     //------//
     private void save (BufferedImage img)
-            throws IOException
+        throws IOException
     {
         // Let the user select an output file
         final Book book = sheet.getStub().getBook();
@@ -92,7 +93,8 @@ public class ExtractionMenu
                 true,
                 OMR.gui.getFrame(),
                 new File(bookFolder.toFile(), sheet.getId() + "-ext.png"),
-                new OmrFileFilter(".png images", new String[]{".png"}));
+                new OmrFileFilter(".png images", new String[]
+                { ".png" }));
 
         if (file == null) {
             return;
@@ -109,6 +111,7 @@ public class ExtractionMenu
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------//
     // AreaAction //
     //------------//

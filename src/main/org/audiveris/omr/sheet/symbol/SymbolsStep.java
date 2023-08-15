@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -58,6 +58,7 @@ public class SymbolsStep
     private static final Logger logger = LoggerFactory.getLogger(SymbolsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SymbolsStep object.
      */
@@ -66,6 +67,7 @@ public class SymbolsStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // displayUI //
     //-----------//
@@ -88,12 +90,29 @@ public class SymbolsStep
     }
 
     //----------//
+    // doProlog //
+    //----------//
+    @Override
+    protected Context doProlog (Sheet sheet)
+        throws StepException
+    {
+        /**
+         * Prepare image without staff lines, with all good and weak inters erased and
+         * with all weak inters saved as optional symbol parts.
+         */
+        final Context context = new Context();
+        new SymbolsFilter(sheet).process(context.optionalsMap);
+
+        return context;
+    }
+
+    //----------//
     // doSystem //
     //----------//
     @Override
     public void doSystem (SystemInfo system,
                           Context context)
-            throws StepException
+        throws StepException
     {
         StopWatch watch = new StopWatch("SymbolsStep doSystem #" + system.getId());
         watch.start("factory");
@@ -117,36 +136,7 @@ public class SymbolsStep
         }
     }
 
-    //----------//
-    // doProlog //
-    //----------//
-    @Override
-    protected Context doProlog (Sheet sheet)
-            throws StepException
-    {
-        /**
-         * Prepare image without staff lines, with all good and weak inters erased and
-         * with all weak inters saved as optional symbol parts.
-         */
-        final Context context = new Context();
-        new SymbolsFilter(sheet).process(context.optionalsMap);
-
-        return context;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Context //
-    //---------//
-    /**
-     * Context for step processing.
-     */
-    protected static class Context
-    {
-
-        /** Map of optional (weak) glyphs per system. */
-        public final Map<SystemInfo, List<Glyph>> optionalsMap = new TreeMap<>();
-    }
 
     //-----------//
     // Constants //
@@ -158,5 +148,18 @@ public class SymbolsStep
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
+    }
+
+    //---------//
+    // Context //
+    //---------//
+    /**
+     * Context for step processing.
+     */
+    protected static class Context
+    {
+
+        /** Map of optional (weak) glyphs per system. */
+        public final Map<SystemInfo, List<Glyph>> optionalsMap = new TreeMap<>();
     }
 }

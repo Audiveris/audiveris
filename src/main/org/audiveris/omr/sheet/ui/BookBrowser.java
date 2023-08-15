@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -93,6 +93,7 @@ public class BookBrowser
     private static final Relevance filter = new PackageRelevance(Main.class.getPackage());
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Concrete UI component. */
     private final JPanel component;
 
@@ -109,6 +110,7 @@ public class BookBrowser
     private JFrame frame;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>BookBrowser</code> object.
      *
@@ -162,6 +164,7 @@ public class BookBrowser
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // close //
     //-------//
@@ -231,6 +234,7 @@ public class BookBrowser
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -245,64 +249,6 @@ public class BookBrowser
         private final Constant.Boolean hideOriginatingInter = new Constant.Boolean(
                 true,
                 "Should we hide the originating inter when expanding a relation?");
-    }
-
-    //-----------------//
-    // NamedCollection //
-    //-----------------//
-    private static class NamedCollection
-    {
-
-        private final String name;
-
-        private final Collection<?> collection;
-
-        NamedCollection (String name,
-                         Collection<?> collection)
-        {
-            this.name = name;
-            this.collection = collection;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return name;
-        }
-    }
-
-    //-----------//
-    // NamedData //
-    //-----------//
-    private static class NamedData
-    {
-
-        private final String name;
-
-        private final Object data;
-
-        private final Inter orgInter;
-
-        NamedData (String name,
-                   Object data,
-                   Inter orgInter)
-        {
-            this.name = name;
-            this.data = data;
-            this.orgInter = orgInter;
-        }
-
-        NamedData (String name,
-                   Object data)
-        {
-            this(name, data, null);
-        }
-
-        @Override
-        public String toString ()
-        {
-            return name + ":" + data;
-        }
     }
 
     //-------//
@@ -360,73 +306,6 @@ public class BookBrowser
                                     Object child)
         {
             return getRelevantChildren(parent, null).indexOf(child);
-        }
-
-        //---------//
-        // getRoot //
-        //---------//
-        @Override
-        public Object getRoot ()
-        {
-            return book;
-        }
-
-        //--------//
-        // isLeaf //
-        //--------//
-        @Override
-        public boolean isLeaf (Object node)
-        {
-            // Determines whether the icon shows up to the left.
-            // Return true for any node with no children
-            return getChildCount(node) == 0;
-        }
-
-        //------------//
-        // refreshAll //
-        //------------//
-        public void refreshAll ()
-        {
-            TreeModelEvent modelEvent = new TreeModelEvent(this, new Object[]{book});
-
-            for (TreeModelListener listener : listeners) {
-                listener.treeStructureChanged(modelEvent);
-            }
-        }
-
-        //-------------//
-        // refreshPath //
-        //-------------//
-        public void refreshPath (TreePath path)
-        {
-            TreeModelEvent modelEvent = new TreeModelEvent(this, path);
-
-            for (TreeModelListener listener : listeners) {
-                listener.treeStructureChanged(modelEvent);
-            }
-        }
-
-        //-------------------------//
-        // removeTreeModelListener //
-        //-------------------------//
-        @Override
-        public void removeTreeModelListener (TreeModelListener listener)
-        {
-            if (listener != null) {
-                listeners.remove(listener);
-            }
-        }
-
-        //---------------------//
-        // valueForPathChanged //
-        //---------------------//
-        @Override
-        public void valueForPathChanged (TreePath path,
-                                         Object newValue)
-        {
-            // Null. We won't be making changes in the GUI.  If we did, we would
-            // ensure the new value was really new and then fire a
-            // TreeNodesChanged event.
         }
 
         //---------------------//
@@ -575,9 +454,8 @@ public class BookBrowser
 
                         // Standard object
                         relevants.add(new NamedData(field.getName(), object));
-                    } catch (IllegalAccessException |
-                             IllegalArgumentException |
-                             SecurityException ex) {
+                    } catch (IllegalAccessException | IllegalArgumentException
+                            | SecurityException ex) {
                         logger.warn("Error in accessing field", ex);
                     }
                 }
@@ -591,6 +469,26 @@ public class BookBrowser
             }
 
             return relevants;
+        }
+
+        //---------//
+        // getRoot //
+        //---------//
+        @Override
+        public Object getRoot ()
+        {
+            return book;
+        }
+
+        //--------//
+        // isLeaf //
+        //--------//
+        @Override
+        public boolean isLeaf (Object node)
+        {
+            // Determines whether the icon shows up to the left.
+            // Return true for any node with no children
+            return getChildCount(node) == 0;
         }
 
         //------------//
@@ -608,6 +506,112 @@ public class BookBrowser
 
                 return true;
             }
+        }
+
+        //------------//
+        // refreshAll //
+        //------------//
+        public void refreshAll ()
+        {
+            TreeModelEvent modelEvent = new TreeModelEvent(this, new Object[]
+            { book });
+
+            for (TreeModelListener listener : listeners) {
+                listener.treeStructureChanged(modelEvent);
+            }
+        }
+
+        //-------------//
+        // refreshPath //
+        //-------------//
+        public void refreshPath (TreePath path)
+        {
+            TreeModelEvent modelEvent = new TreeModelEvent(this, path);
+
+            for (TreeModelListener listener : listeners) {
+                listener.treeStructureChanged(modelEvent);
+            }
+        }
+
+        //-------------------------//
+        // removeTreeModelListener //
+        //-------------------------//
+        @Override
+        public void removeTreeModelListener (TreeModelListener listener)
+        {
+            if (listener != null) {
+                listeners.remove(listener);
+            }
+        }
+
+        //---------------------//
+        // valueForPathChanged //
+        //---------------------//
+        @Override
+        public void valueForPathChanged (TreePath path,
+                                         Object newValue)
+        {
+            // Null. We won't be making changes in the GUI.  If we did, we would
+            // ensure the new value was really new and then fire a
+            // TreeNodesChanged event.
+        }
+    }
+
+    //-----------------//
+    // NamedCollection //
+    //-----------------//
+    private static class NamedCollection
+    {
+
+        private final String name;
+
+        private final Collection<?> collection;
+
+        NamedCollection (String name,
+                         Collection<?> collection)
+        {
+            this.name = name;
+            this.collection = collection;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return name;
+        }
+    }
+
+    //-----------//
+    // NamedData //
+    //-----------//
+    private static class NamedData
+    {
+
+        private final String name;
+
+        private final Object data;
+
+        private final Inter orgInter;
+
+        NamedData (String name,
+                   Object data)
+        {
+            this(name, data, null);
+        }
+
+        NamedData (String name,
+                   Object data,
+                   Inter orgInter)
+        {
+            this.name = name;
+            this.data = data;
+            this.orgInter = orgInter;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return name + ":" + data;
         }
     }
 

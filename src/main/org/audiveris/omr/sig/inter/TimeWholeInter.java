@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -26,6 +26,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
 
@@ -52,7 +53,16 @@ public class TimeWholeInter
 
     private static final Logger logger = LoggerFactory.getLogger(TimeWholeInter.class);
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private TimeWholeInter ()
+    {
+        super(null, null, 0.0);
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>TimeWholeInter</code> object.
      *
@@ -71,15 +81,8 @@ public class TimeWholeInter
         }
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private TimeWholeInter ()
-    {
-        super(null, null, 0.0);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -109,10 +112,12 @@ public class TimeWholeInter
         }
 
         // Multi symbol (num / den), such as for shape TIME_FOUR_FOUR
-        Point center = getCenter(); // Use area center
-        TimeRational nd = getTimeRational();
-        NumDenSymbol symbol = new NumDenSymbol(shape, nd.num, nd.den);
-        MusicFont musicFont = MusicFont.getBaseFont(interline);
+        final Point center = getCenter(); // Use area center
+        final TimeRational nd = getTimeRational();
+        final MusicFamily family = staff != null ? staff.getSystem().getSheet().getStub()
+                .getMusicFamily() : MusicFont.getDefaultMusicFamily();
+        MusicFont musicFont = MusicFont.getBaseFont(family, interline);
+        NumDenSymbol symbol = new NumDenSymbol(shape, family, nd.num, nd.den);
         Dimension dim = symbol.getDimension(musicFont);
 
         return new Rectangle(
@@ -133,6 +138,8 @@ public class TimeWholeInter
 
         return inter;
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // create //

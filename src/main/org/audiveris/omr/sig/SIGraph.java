@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -84,6 +84,7 @@ public class SIGraph
     private static final Logger logger = LoggerFactory.getLogger(SIGraph.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Dedicated system. */
     @Navigable(false)
     private SystemInfo system;
@@ -91,18 +92,12 @@ public class SIGraph
     /** Content for differed populating after unmarshalling. */
     private SigValue sigValue;
 
-    //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new SIGraph object at system level.
-     *
-     * @param system the containing system
+     * No-arg constructor meant for JAXB.
      */
-    public SIGraph (SystemInfo system)
+    private SIGraph ()
     {
         super(new DirectedMultigraph<>(Relation.class), true /* reuseEvents */);
-
-        Objects.requireNonNull(system, "A sig needs a non-null system");
-        this.system = system;
     }
 
     /**
@@ -116,15 +111,39 @@ public class SIGraph
         this.sigValue = sigValue;
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new SIGraph object at system level.
+     *
+     * @param system the containing system
      */
-    private SIGraph ()
+    public SIGraph (SystemInfo system)
     {
         super(new DirectedMultigraph<>(Relation.class), true /* reuseEvents */);
+
+        Objects.requireNonNull(system, "A sig needs a non-null system");
+        this.system = system;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //---------//
+    // addEdge //
+    //---------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Overridden so that we set a break-point on certain cases.
+     */
+    @Override
+    public boolean addEdge (Inter sourceVertex,
+                            Inter targetVertex,
+                            Relation rel)
+    {
+        return super.addEdge(sourceVertex, targetVertex, rel);
+    }
+
     //-----------//
     // addVertex //
     //-----------//
@@ -201,6 +220,71 @@ public class SIGraph
         inter.setContextualGrade(cg);
 
         return cg;
+    }
+
+    //------------------------//
+    // computeContextualGrade //
+    //------------------------//
+    /**
+     * Compute the contextual probability for a interpretation which is supported by
+     * a collection of relations with partners.
+     * <p>
+     * It is assumed that all these supporting relations involve the inter as either a target or a
+     * source, otherwise a runtime exception is thrown.
+     * <p>
+     * There may be mutual exclusion between some partners. In this case, we identify all partitions
+     * of compatible partners and report the best resulting contextual contribution among those
+     * partitions.
+     *
+     * @param inter    the inter whose contextual grade is to be computed
+     * @param supports all supporting relations inter is involved with, some may be in conflict
+     * @return the computed contextual grade
+     */
+    private Double computeContextualGrade (Inter inter,
+                                           Collection<? extends Support> supports)
+    {
+        /** Collection of partners. */
+        final List<Inter> partners = new ArrayList<>();
+
+        /** Map: partner -> contribution. */
+        final Map<Inter, Double> partnerContrib = new HashMap<>();
+
+        // Check inter involvement
+        for (Support support : supports) {
+            final Inter partner;
+            final double ratio;
+
+            if (inter == getEdgeTarget(support)) {
+                ratio = support.getTargetRatio();
+                partner = getEdgeSource(support);
+            } else if (inter == getEdgeSource(support)) {
+                ratio = support.getSourceRatio();
+                partner = getEdgeTarget(support);
+            } else {
+                throw new RuntimeException("No common interpretation");
+            }
+
+            if (ratio > 1) {
+                partners.add(partner);
+                partnerContrib.put(partner, partner.getGrade() * (ratio - 1));
+            }
+        }
+
+        // Check for mutual exclusion between partners
+        final List<List<Inter>> seqs = getPartitions(inter, partners);
+        double bestCg = 0;
+
+        for (List<Inter> seq : seqs) {
+            double contribution = 0;
+
+            for (Inter partner : seq) {
+                contribution += partnerContrib.get(partner);
+            }
+
+            bestCg = Math.max(bestCg, GradeUtil.contextual(inter.getGrade(), contribution));
+        }
+
+        return bestCg;
     }
 
     //-----------------//
@@ -322,6 +406,26 @@ public class SIGraph
         deleteInters(removed);
 
         return removed;
+    }
+
+    //------------//
+    // excludeSig //
+    //------------//
+    /**
+     * Exclude the provided sig from this one.
+     *
+     * @param oldSig the sig to be excluded
+     */
+    public void excludeSig (SIGraph oldSig)
+    {
+        // Inters
+        for (Inter inter : oldSig.vertexSet()) {
+            inter.setSig(oldSig);
+        }
+
+        for (Inter inter : oldSig.vertexSet()) {
+            super.removeVertex(inter); // This removes related relations
+        }
     }
 
     //------------//
@@ -709,43 +813,28 @@ public class SIGraph
         return false;
     }
 
-    //-------------------//
-    // populateAllInters //
-    //-------------------//
+    //------------//
+    // includeSig //
+    //------------//
     /**
-     * Minimal vertex addition, meant for just SIG bulk populating
+     * Include the provided sig into this one.
      *
-     * @param inters the inters to add to sig
+     * @param oldSig the sig to be included
      */
-    public final void populateAllInters (Collection<? extends Inter> inters)
+    public void includeSig (SIGraph oldSig)
     {
-        for (Inter inter : inters) {
-            super.addVertex(inter);
-        }
-    }
-
-    //--------------//
-    // getRelations //
-    //--------------//
-    /**
-     * Report the set of relations of desired class out of the provided relations
-     *
-     * @param relations the provided relation collection
-     * @param classe    the desired class of relation
-     * @return the set of filtered relations, perhaps empty but not null
-     */
-    public static Set<Relation> getRelations (Collection<? extends Relation> relations,
-                                              Class classe)
-    {
-        Set<Relation> found = new LinkedHashSet<>();
-
-        for (Relation rel : relations) {
-            if (classe.isInstance(rel)) {
-                found.add(rel);
-            }
+        // Inters
+        for (Inter inter : oldSig.vertexSet()) {
+            inter.setSig(this);
+            addVertex(inter);
         }
 
-        return found;
+        // Relations
+        for (Relation relation : oldSig.edgeSet()) {
+            Inter source = oldSig.getEdgeSource(relation);
+            Inter target = oldSig.getEdgeTarget(relation);
+            addEdge(source, target, relation);
+        }
     }
 
     //-----------------//
@@ -878,56 +967,12 @@ public class SIGraph
             if (inter1.isVip() || inter2.isVip()) {
                 logger.info("VIP support {}", sup.toLongString(this));
             }
-        } catch (IllegalAccessException |
-                 NoSuchMethodException |
-                 InstantiationException |
-                 InvocationTargetException ex) {
+        } catch (IllegalAccessException | NoSuchMethodException | InstantiationException
+                | InvocationTargetException ex) {
             logger.error("Could not instantiate {} {}", supportClass, ex.toString(), ex);
         }
 
         return sup;
-    }
-
-    //--------//
-    // inters //
-    //--------//
-    /**
-     * Lookup for interpretations of the provided collection of shapes.
-     *
-     * @param shapes the shapes to check for
-     * @return the interpretations of desired shapes, perhaps empty but not null
-     */
-    public List<Inter> inters (final Collection<Shape> shapes)
-    {
-        return inters(new ShapesPredicate(shapes));
-    }
-
-    //--------//
-    // inters //
-    //--------//
-    /**
-     * Select the inters that relate to the specified staff.
-     *
-     * @param staff the specified staff
-     * @return the list of selected inters, perhaps empty but not null
-     */
-    public List<Inter> inters (Staff staff)
-    {
-        return Inters.inters(vertexSet(), staff);
-    }
-
-    //--------//
-    // inters //
-    //--------//
-    /**
-     * Lookup for interpretations for which the provided predicate applies.
-     *
-     * @param predicate the predicate to apply, or null
-     * @return the list of compliant interpretations, perhaps empty but not null
-     */
-    public List<Inter> inters (Predicate<Inter> predicate)
-    {
-        return Inters.inters(vertexSet(), predicate);
     }
 
     //--------//
@@ -948,6 +993,48 @@ public class SIGraph
     // inters //
     //--------//
     /**
+     * Lookup for interpretations of the provided classes.
+     *
+     * @param classes array of desired classes
+     * @return the interpretations of desired classes, perhaps empty but not null
+     */
+    public List<Inter> inters (final Class[] classes)
+    {
+        return inters(new ClassesPredicate(classes));
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the provided collection of shapes.
+     *
+     * @param shapes the shapes to check for
+     * @return the interpretations of desired shapes, perhaps empty but not null
+     */
+    public List<Inter> inters (final Collection<Shape> shapes)
+    {
+        return inters(new ShapesPredicate(shapes));
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations for which the provided predicate applies.
+     *
+     * @param predicate the predicate to apply, or null
+     * @return the list of compliant interpretations, perhaps empty but not null
+     */
+    public List<Inter> inters (Predicate<Inter> predicate)
+    {
+        return Inters.inters(vertexSet(), predicate);
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
      * Lookup for interpretations of the provided shape.
      *
      * @param shape the shape to check for
@@ -962,14 +1049,14 @@ public class SIGraph
     // inters //
     //--------//
     /**
-     * Lookup for interpretations of the provided classes.
+     * Select the inters that relate to the specified staff.
      *
-     * @param classes array of desired classes
-     * @return the interpretations of desired classes, perhaps empty but not null
+     * @param staff the specified staff
+     * @return the list of selected inters, perhaps empty but not null
      */
-    public List<Inter> inters (final Class[] classes)
+    public List<Inter> inters (Staff staff)
     {
-        return inters(new ClassesPredicate(classes));
+        return Inters.inters(vertexSet(), staff);
     }
 
     //--------//
@@ -1016,48 +1103,19 @@ public class SIGraph
         return found;
     }
 
-    //------------//
-    // includeSig //
-    //------------//
-    /**
-     * Include the provided sig into this one.
-     *
-     * @param oldSig the sig to be included
-     */
-    public void includeSig (SIGraph oldSig)
+    //----------------//
+    // involvedInters //
+    //----------------//
+    private Set<Inter> involvedInters (Collection<? extends Relation> relations)
     {
-        // Inters
-        for (Inter inter : oldSig.vertexSet()) {
-            inter.setSig(this);
-            addVertex(inter);
+        Set<Inter> inters = new LinkedHashSet<>();
+
+        for (Relation rel : relations) {
+            inters.add(getEdgeSource(rel));
+            inters.add(getEdgeTarget(rel));
         }
 
-        // Relations
-        for (Relation relation : oldSig.edgeSet()) {
-            Inter source = oldSig.getEdgeSource(relation);
-            Inter target = oldSig.getEdgeTarget(relation);
-            addEdge(source, target, relation);
-        }
-    }
-
-    //------------//
-    // excludeSig //
-    //------------//
-    /**
-     * Exclude the provided sig from this one.
-     *
-     * @param oldSig the sig to be excluded
-     */
-    public void excludeSig (SIGraph oldSig)
-    {
-        // Inters
-        for (Inter inter : oldSig.vertexSet()) {
-            inter.setSig(oldSig);
-        }
-
-        for (Inter inter : oldSig.vertexSet()) {
-            super.removeVertex(inter); // This removes related relations
-        }
+        return inters;
     }
 
     //-----------//
@@ -1089,6 +1147,21 @@ public class SIGraph
         return true;
     }
 
+    //-------------------//
+    // populateAllInters //
+    //-------------------//
+    /**
+     * Minimal vertex addition, meant for just SIG bulk populating
+     *
+     * @param inters the inters to add to sig
+     */
+    public final void populateAllInters (Collection<? extends Inter> inters)
+    {
+        for (Inter inter : inters) {
+            super.addVertex(inter);
+        }
+    }
+
     //---------//
     // publish //
     //---------//
@@ -1115,6 +1188,19 @@ public class SIGraph
                          SelectionHint hint)
     {
         system.getSheet().getInterIndex().publish(inter, hint);
+    }
+
+    //------------------//
+    // reduceExclusions //
+    //------------------//
+    /**
+     * Reduce each exclusion in the SIG.
+     *
+     * @return the set of reduced inters
+     */
+    public Set<Inter> reduceExclusions ()
+    {
+        return reduceExclusions(exclusions());
     }
 
     //------------------//
@@ -1207,17 +1293,18 @@ public class SIGraph
         return removed;
     }
 
-    //------------------//
-    // reduceExclusions //
-    //------------------//
+    //-----------//
+    // relations //
+    //-----------//
     /**
-     * Reduce each exclusion in the SIG.
+     * Lookup for relations of the provided classes (or subclasses thereof).
      *
-     * @return the set of reduced inters
+     * @param classes the classes to search for
+     * @return the relations of desired classes, perhaps empty but not null
      */
-    public Set<Inter> reduceExclusions ()
+    public List<Relation> relations (final Class... classes)
     {
-        return reduceExclusions(exclusions());
+        return relations(new RelationClassPredicate(classes));
     }
 
     //-----------//
@@ -1232,20 +1319,6 @@ public class SIGraph
     public List<Relation> relations (Predicate<Relation> predicate)
     {
         return Relations.relations(edgeSet(), predicate);
-    }
-
-    //-----------//
-    // relations //
-    //-----------//
-    /**
-     * Lookup for relations of the provided classes (or subclasses thereof).
-     *
-     * @param classes the classes to search for
-     * @return the relations of desired classes, perhaps empty but not null
-     */
-    public List<Relation> relations (final Class... classes)
-    {
-        return relations(new RelationClassPredicate(classes));
     }
 
     //--------------//
@@ -1280,132 +1353,12 @@ public class SIGraph
      */
     public void sortBySource (List<Relation> rels)
     {
-        Collections.sort(rels, (Relation r1, Relation r2)
-                         -> Double.compare(getEdgeSource(r2).getBestGrade(),
-                                           getEdgeSource(r1).getBestGrade()));
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{");
-        sb.append("S#").append(system.getId());
-        sb.append(" inters:").append(vertexSet().size());
-        sb.append(" relations:").append(edgeSet().size());
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    //---------------//
-    // upgradeInters //
-    //---------------//
-    /**
-     * All just loaded inters are checked and potentially upgraded.
-     */
-    private void upgradeInters ()
-    {
-        boolean upgraded = false;
-
-        // Determine which upgrades must be applied
-        final SheetStub stub = system.getSheet().getStub();
-        final String sheetVersionValue = stub.getVersionValue();
-        final Version sheetVersion = (sheetVersionValue != null)
-                ? new Version(sheetVersionValue)
-                : stub.getBook().getVersion();
-        final List<Version> upgrades = Versions.getUpgrades(sheetVersion);
-
-        for (Inter inter : vertexSet()) {
-            upgraded |= inter.upgradeOldStuff(upgrades);
-        }
-
-        if (upgraded) {
-            system.getSheet().getStub().setUpgraded(true);
-        }
-    }
-
-    //------------------------//
-    // computeContextualGrade //
-    //------------------------//
-    /**
-     * Compute the contextual probability for a interpretation which is supported by
-     * a collection of relations with partners.
-     * <p>
-     * It is assumed that all these supporting relations involve the inter as either a target or a
-     * source, otherwise a runtime exception is thrown.
-     * <p>
-     * There may be mutual exclusion between some partners. In this case, we identify all partitions
-     * of compatible partners and report the best resulting contextual contribution among those
-     * partitions.
-     *
-     * @param inter    the inter whose contextual grade is to be computed
-     * @param supports all supporting relations inter is involved with, some may be in conflict
-     * @return the computed contextual grade
-     */
-    private Double computeContextualGrade (Inter inter,
-                                           Collection<? extends Support> supports)
-    {
-        /** Collection of partners. */
-        final List<Inter> partners = new ArrayList<>();
-
-        /** Map: partner -> contribution. */
-        final Map<Inter, Double> partnerContrib = new HashMap<>();
-
-        // Check inter involvement
-        for (Support support : supports) {
-            final Inter partner;
-            final double ratio;
-
-            if (inter == getEdgeTarget(support)) {
-                ratio = support.getTargetRatio();
-                partner = getEdgeSource(support);
-            } else if (inter == getEdgeSource(support)) {
-                ratio = support.getSourceRatio();
-                partner = getEdgeTarget(support);
-            } else {
-                throw new RuntimeException("No common interpretation");
-            }
-
-            if (ratio > 1) {
-                partners.add(partner);
-                partnerContrib.put(partner, partner.getGrade() * (ratio - 1));
-            }
-        }
-
-        // Check for mutual exclusion between partners
-        final List<List<Inter>> seqs = getPartitions(inter, partners);
-        double bestCg = 0;
-
-        for (List<Inter> seq : seqs) {
-            double contribution = 0;
-
-            for (Inter partner : seq) {
-                contribution += partnerContrib.get(partner);
-            }
-
-            bestCg = Math.max(bestCg, GradeUtil.contextual(inter.getGrade(), contribution));
-        }
-
-        return bestCg;
-    }
-
-    //----------------//
-    // involvedInters //
-    //----------------//
-    private Set<Inter> involvedInters (Collection<? extends Relation> relations)
-    {
-        Set<Inter> inters = new LinkedHashSet<>();
-
-        for (Relation rel : relations) {
-            inters.add(getEdgeSource(rel));
-            inters.add(getEdgeTarget(rel));
-        }
-
-        return inters;
+        Collections.sort(
+                rels,
+                (Relation r1,
+                 Relation r2) -> Double.compare(
+                         getEdgeSource(r2).getBestGrade(),
+                         getEdgeSource(r1).getBestGrade()));
     }
 
     //---------//
@@ -1449,7 +1402,76 @@ public class SIGraph
         return sb.toString();
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
+        sb.append("S#").append(system.getId());
+        sb.append(" inters:").append(vertexSet().size());
+        sb.append(" relations:").append(edgeSet().size());
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    //---------------//
+    // upgradeInters //
+    //---------------//
+    /**
+     * All just loaded inters are checked and potentially upgraded.
+     */
+    private void upgradeInters ()
+    {
+        boolean upgraded = false;
+
+        // Determine which upgrades must be applied
+        final SheetStub stub = system.getSheet().getStub();
+        final String sheetVersionValue = stub.getVersionValue();
+        final Version sheetVersion = (sheetVersionValue != null) ? new Version(sheetVersionValue)
+                : stub.getBook().getVersion();
+        final List<Version> upgrades = Versions.getUpgrades(sheetVersion);
+
+        for (Inter inter : vertexSet()) {
+            upgraded |= inter.upgradeOldStuff(upgrades);
+        }
+
+        if (upgraded) {
+            system.getSheet().getStub().setUpgraded(true);
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------------//
+    // getRelations //
+    //--------------//
+    /**
+     * Report the set of relations of desired class out of the provided relations
+     *
+     * @param relations the provided relation collection
+     * @param classe    the desired class of relation
+     * @return the set of filtered relations, perhaps empty but not null
+     */
+    public static Set<Relation> getRelations (Collection<? extends Relation> relations,
+                                              Class classe)
+    {
+        Set<Relation> found = new LinkedHashSet<>();
+
+        for (Relation rel : relations) {
+            if (classe.isInstance(rel)) {
+                found.add(rel);
+            }
+        }
+
+        return found;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // Sequence //
     //----------//
@@ -1549,9 +1571,8 @@ public class SIGraph
         @Override
         public boolean test (Inter inter)
         {
-            return !inter.isRemoved()
-                           && (inter.getStaff() == staff)
-                           && ((classe == null) || classe.isInstance(inter));
+            return !inter.isRemoved() && (inter.getStaff() == staff) && ((classe == null) || classe
+                    .isInstance(inter));
         }
     }
 }

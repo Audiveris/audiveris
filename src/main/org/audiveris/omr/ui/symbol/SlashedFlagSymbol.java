@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+
+import org.audiveris.omr.glyph.Shape;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
@@ -31,46 +32,28 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class <code>SlashedFlagSymbol</code> displays a SMALL_FLAG_SLASH.
+ * Class <code>SlashedFlagSymbol</code> displays a SMALL_FLAG_SLASH or SMALL_FLAG_SLASH_DOWN.
  *
  * @author Hervé Bitteur
  */
 public class SlashedFlagSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields ----------------------------------------------------------------------------
-
-    /** The small flag symbol. */
-    private final ShapeSymbol flagSymbol = Symbols.getSymbol(Shape.SMALL_FLAG);
-
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new <code>SmallFlagSymbol</code> object.
-     */
-    public SlashedFlagSymbol ()
-    {
-        this(false);
-    }
 
     /**
      * Creates a new <code>SmallFlagSymbol</code> object.
      *
-     * @param isIcon true for an icon
+     * @param shape  the precise shape (SMALL_FLAG_SLASH or SMALL_FLAG_SLASH_DOWN)
+     * @param family the MusicFont family
      */
-    protected SlashedFlagSymbol (boolean isIcon)
+    public SlashedFlagSymbol (Shape shape,
+                              MusicFamily family)
     {
-        super(isIcon, Shape.SMALL_FLAG_SLASH, false);
+        super(shape, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new SlashedFlagSymbol(true);
-    }
 
     //-----------//
     // getParams //
@@ -80,7 +63,8 @@ public class SlashedFlagSymbol
     {
         MyParams p = new MyParams();
 
-        p.layout = flagSymbol.layout(font);
+        final Shape flagShape = shape == Shape.SMALL_FLAG_SLASH ? Shape.FLAG_1 : Shape.FLAG_1_DOWN;
+        p.layout = font.layoutShapeByCode(flagShape, OmrFont.TRANSFORM_SMALL);
 
         p.rect = p.layout.getBounds();
         p.stroke = new BasicStroke(Math.max(1f, (float) p.rect.getWidth() / 10f));
@@ -101,18 +85,25 @@ public class SlashedFlagSymbol
         Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
 
+        final boolean isUp = shape == Shape.SMALL_FLAG_SLASH;
         Stroke oldStroke = g.getStroke();
         g.setStroke(p.stroke);
         g.draw(
-                new Line2D.Double(
+                isUp ? new Line2D.Double(
                         loc.getX() - (p.rect.getWidth() / 2),
                         loc.getY() + (p.rect.getHeight() / 5),
                         loc.getX() + (p.rect.getWidth() / 2),
-                        loc.getY() - (p.rect.getHeight() / 5)));
+                        loc.getY() - (p.rect.getHeight() / 5))
+                        : new Line2D.Double(
+                                loc.getX() - (p.rect.getWidth() / 2),
+                                loc.getY() - (p.rect.getHeight() / 5),
+                                loc.getX() + (p.rect.getWidth() / 2),
+                                loc.getY() + (p.rect.getHeight() / 5)));
         g.setStroke(oldStroke);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//

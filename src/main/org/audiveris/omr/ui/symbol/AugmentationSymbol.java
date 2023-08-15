@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.MIDDLE_LEFT;
+
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
-import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -38,57 +39,24 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class AugmentationSymbol
-        extends ShapeSymbol
+        extends DecorableSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    /** The head part. */
-    private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
 
     /** Offset ratio of dot center WRT decorated rectangle width. */
     private static final double dxRatio = +0.25;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create a <code>AugmentationSymbol</code> (with decoration?) standard size
-     *
-     * @param decorated true for a decorated image
-     */
-    public AugmentationSymbol (boolean decorated)
-    {
-        this(false, decorated);
-    }
 
     /**
-     * Create a <code>AugmentationSymbol</code> (with decoration?)
-     *
-     * @param isIcon    true for an icon
-     * @param decorated true for a decorated image
+     * Create a <code>AugmentationSymbol</code> (with decoration?) standard size.
      */
-    protected AugmentationSymbol (boolean isIcon,
-                                  boolean decorated)
+    public AugmentationSymbol (MusicFamily family)
     {
-        super(isIcon, Shape.AUGMENTATION_DOT, decorated, 46);
+        super(Shape.AUGMENTATION_DOT, family);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------------//
-    // createDecoratedSymbol //
-    //-----------------------//
-    @Override
-    protected ShapeSymbol createDecoratedSymbol ()
-    {
-        return new AugmentationSymbol(isIcon, true);
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new AugmentationSymbol(true, decorated);
-    }
 
     //-----------//
     // getParams //
@@ -99,11 +67,11 @@ public class AugmentationSymbol
         MyParams p = new MyParams();
 
         // Augmentation symbol layout
-        p.layout = font.layout(getString());
+        p.layout = font.layoutShapeByCode(shape);
 
-        if (decorated) {
+        if (isDecorated) {
             // Head layout
-            p.headLayout = font.layout(head.getString());
+            p.headLayout = font.layoutShapeByCode(Shape.NOTEHEAD_BLACK);
 
             // Use a rectangle twice as wide as note head
             Rectangle2D hRect = p.headLayout.getBounds();
@@ -123,15 +91,16 @@ public class AugmentationSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          BasicSymbol.Params params,
+                          Params params,
                           Point2D location,
                           Alignment alignment)
     {
-        MyParams p = (MyParams) params;
+        final MyParams p = (MyParams) params;
+        Point2D loc;
 
-        if (decorated) {
+        if (isDecorated) {
             // Draw a note head (using composite) on the left side
-            Point2D loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
+            loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
             Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
             MusicFont.paint(g, p.headLayout, loc, MIDDLE_LEFT);
@@ -139,20 +108,21 @@ public class AugmentationSymbol
 
             // Augmentation on right side
             PointUtil.add(loc, (3 * p.rect.getWidth()) / 4, 0);
-            MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         } else {
             // Augmentation alone
-            Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
-            MusicFont.paint(g, p.layout, loc, AREA_CENTER);
+            loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         }
+
+        OmrFont.paint(g, p.layout, loc, AREA_CENTER); // Draw the dot
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//
     protected static class MyParams
-            extends BasicSymbol.Params
+            extends ShapeSymbol.Params
     {
 
         // offset: if decorated, offset of symbol center vs decorated image center

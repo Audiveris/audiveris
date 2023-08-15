@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,24 +46,6 @@ public abstract class AbstractStaffVerticalInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>AbstractStaffVerticalInter</code> object, with its grade.
-     *
-     * @param glyph   the underlying glyph
-     * @param shape   the assigned shape
-     * @param impacts the assignment details
-     * @param median  the median line
-     * @param width   the line width
-     */
-    public AbstractStaffVerticalInter (Glyph glyph,
-                                       Shape shape,
-                                       GradeImpacts impacts,
-                                       Line2D median,
-                                       Double width)
-    {
-        super(glyph, shape, impacts, median, width);
-    }
-
-    /**
      * Creates a new <code>AbstractStaffVerticalInter</code> object, with detailed impacts.
      *
      * @param glyph  the underlying glyph
@@ -81,7 +63,26 @@ public abstract class AbstractStaffVerticalInter
         super(glyph, shape, grade, median, width);
     }
 
+    /**
+     * Creates a new <code>AbstractStaffVerticalInter</code> object, with its grade.
+     *
+     * @param glyph   the underlying glyph
+     * @param shape   the assigned shape
+     * @param impacts the assignment details
+     * @param median  the median line
+     * @param width   the line width
+     */
+    public AbstractStaffVerticalInter (Glyph glyph,
+                                       Shape shape,
+                                       GradeImpacts impacts,
+                                       Line2D median,
+                                       Double width)
+    {
+        super(glyph, shape, impacts, median, width);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // getEditor //
     //-----------//
@@ -105,8 +106,11 @@ public abstract class AbstractStaffVerticalInter
                 // Height is increased of halfLine on top and bottom sides
                 final Scale scale = sig.getSystem().getSheet().getScale();
                 final double halfLine = scale.getFore() / 2.0;
-                median.setLine(median.getX1() + 0.5, median.getY1() - halfLine,
-                               median.getX2() + 0.5, median.getY2() + 1 + halfLine);
+                median.setLine(
+                        median.getX1() + 0.5,
+                        median.getY1() - halfLine,
+                        median.getX2() + 0.5,
+                        median.getY2() + 1 + halfLine);
                 computeArea();
                 upgraded = true;
             }
@@ -116,6 +120,7 @@ public abstract class AbstractStaffVerticalInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Impacts //
     //---------//
@@ -126,10 +131,11 @@ public abstract class AbstractStaffVerticalInter
             extends GradeImpacts
     {
 
-        private static final String[] NAMES = new String[]{
-            "core", "gap", "start", "stop", "left", "right"};
+        private static final String[] NAMES = new String[]
+        { "core", "gap", "start", "stop", "left", "right" };
 
-        private static final double[] WEIGHTS = new double[]{1, 1, 1, 1, 0.5, 0.5};
+        private static final double[] WEIGHTS = new double[]
+        { 1, 1, 1, 1, 0.5, 0.5 };
 
         /**
          * Create an Impacts object.

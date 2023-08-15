@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,7 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.grid;
 
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
 import java.awt.geom.Point2D;
 
@@ -50,6 +51,7 @@ public class TargetLine
     private final double cos;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new TargetLine object.
      *
@@ -76,26 +78,6 @@ public class TargetLine
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // sourceOf //
-    //----------//
-    /**
-     * Report the source point that corresponds to a destination point dst
-     * above or below this line
-     *
-     * @param dst the given destination point
-     * @return the corresponding source point
-     */
-    public Point2D sourceOf (Point2D dst)
-    {
-        // Use orthogonal projection to line
-        double dist = dst.getY() - y;
-        Point2D projSrc = sourceOf(dst.getX());
-        double dx = -dist * sin;
-        double dy = dist * cos;
-
-        return new Point2D.Double(projSrc.getX() + dx, projSrc.getY() + dy);
-    }
 
     //----------//
     // sourceOf //
@@ -117,6 +99,27 @@ public class TargetLine
         double srcY = info.yAt(srcX);
 
         return new Point2D.Double(srcX, srcY);
+    }
+
+    //----------//
+    // sourceOf //
+    //----------//
+    /**
+     * Report the source point that corresponds to a destination point dst
+     * above or below this line
+     *
+     * @param dst the given destination point
+     * @return the corresponding source point
+     */
+    public Point2D sourceOf (Point2D dst)
+    {
+        // Use orthogonal projection to line
+        double dist = dst.getY() - y;
+        Point2D projSrc = sourceOf(dst.getX());
+        double dx = -dist * sin;
+        double dy = dist * cos;
+
+        return new Point2D.Double(projSrc.getX() + dx, projSrc.getY() + dy);
     }
 
     //----------//

@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Relation removal
-grand_parent: User Edition
+title: Relation Removal
+grand_parent: User Editing
 parent: UI Tools
 nav_order: 5
 ---
-## Relation removal
+## Relation Removal
 {: .no_toc }
 
 ---
@@ -25,13 +25,13 @@ In the following example, a sharp sign has been linked to the wrong note head:
 
 ![](../assets/images/wrong_relation.png)
 
-To select this relation, first select the involved sharp sign.
+To select this relation, we first select the involved sharp sign.
 This will result in the picture above.
 
-Then use a right-click to display the context popup menu, hover on `Inters...` submenu,
-then on the sharp item to see the `Relations:` list of relation(s) this Inter is involved in.
+Then we use a right-click to display the context popup menu, hover on the `Inters...` submenu,
+then on the sharp item to see the `Relations:` list of relations this Inter is involved in.
 
-By clicking on the _AlterHead_ relation, you will be prompted to confirm the removal of this
+By clicking on the _AlterHead_ relation, we will be prompted to confirm the removal of this
 relation.
 
 ![](../assets/images/select_relation_for_remove.png)
@@ -39,8 +39,8 @@ relation.
 Without this relation, the sharp sign is now no longer linked to any head,
 it thus appears in red abnormal status.
 
-Finally, the correct relation could be manually added
-(see [Add Relation](../ui_tools/add_relation.md) previous section) to result in the
+Finally, the correct relation should be manually added
+(see the [Add Relation](../ui_tools/add_relation.md) previous section) to result in the
 configuration below:
 
 ![](../assets/images/correct_relation_after_delete.png)
@@ -48,13 +48,14 @@ configuration below:
 ### Implicit relation removal
 
 In the precise case above (correcting reference of accidentals), explicit removal of the
-relation was not necessary.
+relation was not necessary, provided the correct relation is inserted manually.
+
 This is so, because an accidental can reference only one note head
-(if we except the specific case of
+(if we except the special case of a
 [note head shared by two voices](../ui_cases/shared_head.md)).
 
 So the wrong _AlterHead_ relation would be removed automatically when inserting a new one.
 
 The same applies to note heads: they can reference only one stem
-(if we except again the specific case of a single note head _shared_ between two opposite stems).
+(still excepting the special case of a single note head _shared_ between two opposite stems).
 Here again, inserting a new _HeadStem_ relation would remove the former one.

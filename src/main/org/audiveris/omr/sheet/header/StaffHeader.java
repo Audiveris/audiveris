@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -28,6 +28,7 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Rectangle;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -50,10 +51,10 @@ public class StaffHeader
     private static final Logger logger = LoggerFactory.getLogger(StaffHeader.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /**
      * Abscissa for start of staff header.
      * This is typically the point right after the right-most bar line of the starting bar group,
@@ -62,7 +63,10 @@ public class StaffHeader
     @XmlAttribute(name = "start")
     public final int start;
 
-    /** Abscissa for end of staff header. */
+    /**
+     * Abscissa for end of staff header.
+     * After clef plus key and time if any.
+     */
     @XmlAttribute(name = "stop")
     public int stop;
 
@@ -83,7 +87,7 @@ public class StaffHeader
 
     // Transient data
     //---------------
-    //
+
     /** Abscissa range for clef. */
     public Range clefRange;
 
@@ -96,7 +100,16 @@ public class StaffHeader
     /** Abscissa range for time. */
     public Range timeRange;
 
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private StaffHeader ()
+    {
+        this.start = 0;
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>StaffHeader</code> object.
      *
@@ -108,15 +121,8 @@ public class StaffHeader
         stop = start; // Initial value
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private StaffHeader ()
-    {
-        this.start = 0;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // freeze //
     //--------//
@@ -138,6 +144,29 @@ public class StaffHeader
         }
     }
 
+    //---------------//
+    // getActualStop //
+    //---------------//
+    /**
+     * Check current header CKT content to compute and report the actual ending abscissa.
+     *
+     * @return actual ending abscissa or null
+     */
+    public Integer getActualStop ()
+    {
+        final Rectangle bounds = (time != null) ? time.getBounds()
+                : (key != null) ? key.getBounds() : (clef != null) ? clef.getBounds() : null;
+
+        if (bounds != null) {
+            return bounds.x + bounds.width - 1;
+        }
+
+        return null;
+    }
+
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {
@@ -164,9 +193,9 @@ public class StaffHeader
             sb.append(" TIME(").append(timeRange).append(")");
         }
 
-        sb.append(" clef:").append((clef != null) ? clef : "null");
-        sb.append(" key:").append((key != null) ? key : "null");
-        sb.append(" time:").append((time != null) ? time : "null");
+        sb.append(" clef:").append(clef);
+        sb.append(" key:").append(key);
+        sb.append(" time:").append(time);
 
         sb.append("}");
 
@@ -174,6 +203,7 @@ public class StaffHeader
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------//
     // Range //
     //-------//
@@ -209,16 +239,6 @@ public class StaffHeader
         }
 
         /**
-         * Set range start abscissa
-         *
-         * @param start the precise abscissa of item left side
-         */
-        public void setStart (int start)
-        {
-            this.start = start;
-        }
-
-        /**
          * Report range stop abscissa
          *
          * @return the precise abscissa of item right side if known, otherwise the range stop
@@ -230,16 +250,6 @@ public class StaffHeader
             }
 
             return browseStop;
-        }
-
-        /**
-         * Set range stop abscissa
-         *
-         * @param stop the precise abscissa of item right side
-         */
-        public void setStop (int stop)
-        {
-            this.stop = stop;
         }
 
         /**
@@ -260,6 +270,26 @@ public class StaffHeader
         public boolean hasStart ()
         {
             return start != null;
+        }
+
+        /**
+         * Set range start abscissa
+         *
+         * @param start the precise abscissa of item left side
+         */
+        public void setStart (int start)
+        {
+            this.start = start;
+        }
+
+        /**
+         * Set range stop abscissa
+         *
+         * @param stop the precise abscissa of item right side
+         */
+        public void setStop (int stop)
+        {
+            this.stop = stop;
         }
 
         /**

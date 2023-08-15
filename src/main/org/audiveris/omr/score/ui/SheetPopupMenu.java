@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,6 +45,7 @@ public class SheetPopupMenu
     private static final Logger logger = LoggerFactory.getLogger(SheetPopupMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related sheet. */
     protected final Sheet sheet;
 
@@ -52,6 +53,7 @@ public class SheetPopupMenu
     protected final JPopupMenu popup = new JPopupMenu();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SheetPopupMenu</code> object.
      *
@@ -65,6 +67,7 @@ public class SheetPopupMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // addMenu //
     //---------//
@@ -104,8 +107,8 @@ public class SheetPopupMenu
     {
         // Update interested components
         for (Component component : popup.getComponents()) {
-            if (component instanceof LocationDependent) {
-                ((LocationDependent) component).updateUserLocation(rect);
+            if (component instanceof LocationDependent locationDependent) {
+                locationDependent.updateUserLocation(rect);
             }
         }
 

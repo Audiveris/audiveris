@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -62,14 +62,19 @@ public abstract class Curve
     private static final Logger logger = LoggerFactory.getLogger(Curve.class);
 
     /** Comparison by left abscissa. */
-    public static final Comparator<Curve> byLeftAbscissa = (Curve c1, Curve c2)
-            -> Integer.compare(c1.getEnd(true).x, c2.getEnd(true).x);
+    public static final Comparator<Curve> byLeftAbscissa = (c1,
+                                                            c2) -> Integer.compare(
+                                                                    c1.getEnd(true).x,
+                                                                    c2.getEnd(true).x);
 
     /** Comparison by right abscissa. */
-    public static final Comparator<Curve> byRightAbscissa = (Curve c1, Curve c2)
-            -> Integer.compare(c1.getEnd(false).x, c2.getEnd(false).x);
+    public static final Comparator<Curve> byRightAbscissa = (c1,
+                                                             c2) -> Integer.compare(
+                                                                     c1.getEnd(false).x,
+                                                                     c2.getEnd(false).x);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Unique id. (within containing sheet) */
     protected final int id;
 
@@ -92,6 +97,7 @@ public abstract class Curve
     private AttachmentHolder attachments;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Curve object.
      *
@@ -115,6 +121,7 @@ public abstract class Curve
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // addAttachment //
     //---------------//
@@ -317,19 +324,6 @@ public abstract class Curve
         return glyph;
     }
 
-    //----------//
-    // setGlyph //
-    //----------//
-    /**
-     * Assign the underlying glyph
-     *
-     * @param glyph the underlying glyph (with relevant runs only)
-     */
-    public void setGlyph (Glyph glyph)
-    {
-        this.glyph = glyph;
-    }
-
     //-------//
     // getId //
     //-------//
@@ -369,113 +363,6 @@ public abstract class Curve
     public Set<Arc> getParts ()
     {
         return parts;
-    }
-
-    //-------------------//
-    // removeAttachments //
-    //-------------------//
-    @Override
-    public int removeAttachments (String prefix)
-    {
-        if (attachments != null) {
-            return attachments.removeAttachments(prefix);
-        } else {
-            return 0;
-        }
-    }
-
-    //-------------------//
-    // renderAttachments //
-    //-------------------//
-    @Override
-    public void renderAttachments (Graphics2D g)
-    {
-        if (attachments != null) {
-            attachments.renderAttachments(g);
-        }
-    }
-
-    //---------------//
-    // retrieveGlyph //
-    //---------------//
-    /**
-     * Retrieve the underlying glyph of a curve.
-     * <p>
-     * This method works with runs rather than predefined sections.
-     * Based on each point of curve sequence of points, we find the containing vertical run, and
-     * check whether the run extrema remain close enough to curve.
-     * If not, the run is not considered as part of the curve.
-     * <p>
-     * With accepted runs, we build (sections then) the whole glyph.
-     *
-     * @param sheet          the containing sheet
-     * @param maxRunDistance maximum acceptable distance from any run extrema to curve points
-     * @return the curve glyph, or null
-     */
-    public Glyph retrieveGlyph (Sheet sheet,
-                                double maxRunDistance)
-    {
-        // Sheet global vertical run table
-        RunTable sheetTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
-
-        // Allocate a curve run table with proper dimension
-        Rectangle fatBox = getBounds();
-        fatBox.grow(0, (int) Math.ceil(maxRunDistance)); // Slight extension above & below
-
-        if (fatBox.y < 0) {
-            fatBox.height += fatBox.y;
-            fatBox.y = 0;
-        }
-
-        RunTable curveTable = new RunTable(VERTICAL, fatBox.width, fatBox.height);
-
-        // Populate the curve run table
-        for (int index = 0; index < points.size(); index++) {
-            final Point point = points.get(index); // Point of curve
-            final Run run = sheetTable.getRunAt(point.x, point.y); // Containing run
-
-            if (isCloseToCurve(point.x, run.getStart(), maxRunDistance, index)
-                        && ((run.getLength() <= 1)
-                                    || isCloseToCurve(point.x,
-                                                      run.getStop(),
-                                                      maxRunDistance,
-                                                      index))) {
-                curveTable.addRun(point.x - fatBox.x, run.getStart() - fatBox.y, run.getLength());
-            }
-        }
-
-        // Build glyph (TODO: table a bit too high, should be trimmed?)
-        if (curveTable.getSize() > 0) {
-            Glyph curveGlyph = sheet.getGlyphIndex().registerOriginal(
-                    new Glyph(fatBox.x, fatBox.y, curveTable));
-            setGlyph(curveGlyph);
-            logger.debug("{} -> {}", this, curveGlyph);
-
-            return curveGlyph;
-        } else {
-            logger.debug("{} -> no glyph", this);
-
-            return null;
-        }
-    }
-
-    //------------//
-    // setExtArea //
-    //------------//
-    /**
-     * Record extension area (to allow slur merge)
-     *
-     * @param area    the extension area on 'reverse' side
-     * @param reverse which end
-     */
-    public void setExtArea (Area area,
-                            boolean reverse)
-    {
-        if (reverse) {
-            firstExtArea = area;
-        } else {
-            lastExtArea = area;
-        }
     }
 
     //-----------//
@@ -564,6 +451,131 @@ public abstract class Curve
         }
     }
 
+    //-------------------//
+    // removeAttachments //
+    //-------------------//
+    @Override
+    public int removeAttachments (String prefix)
+    {
+        if (attachments != null) {
+            return attachments.removeAttachments(prefix);
+        } else {
+            return 0;
+        }
+    }
+
+    //-------------------//
+    // renderAttachments //
+    //-------------------//
+    @Override
+    public void renderAttachments (Graphics2D g)
+    {
+        if (attachments != null) {
+            attachments.renderAttachments(g);
+        }
+    }
+
+    //---------------//
+    // retrieveGlyph //
+    //---------------//
+    /**
+     * Retrieve the underlying glyph of a curve.
+     * <p>
+     * This method is based on runs rather than predefined sections.
+     * Based on each point of curve sequence of points, we find the containing vertical run, and
+     * check whether the run extrema remain close enough to curve.
+     * If not, the run is not considered as part of the curve.
+     * <p>
+     * With accepted runs, we build (sections then) the whole glyph.
+     *
+     * @param sheet          the containing sheet
+     * @param maxRunDistance maximum acceptable distance from any run extrema to curve points
+     * @param minRunRatio    minimum count of runs with respect to curve width
+     * @return the curve glyph, or null
+     */
+    public Glyph retrieveGlyph (Sheet sheet,
+                                double maxRunDistance,
+                                double minRunRatio)
+    {
+        // Sheet global vertical run table
+        final RunTable sheetTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+
+        // Allocate a curve run table with proper dimension
+        final Rectangle fatBox = getBounds();
+        final int curveWidth = fatBox.width;
+        fatBox.grow(0, (int) Math.ceil(maxRunDistance)); // Slight extension above & below
+
+        if (fatBox.y < 0) {
+            fatBox.height += fatBox.y;
+            fatBox.y = 0;
+        }
+
+        final RunTable curveTable = new RunTable(VERTICAL, fatBox.width, fatBox.height);
+
+        // Populate the curve run table
+        for (int index = 0; index < points.size(); index++) {
+            final Point point = points.get(index); // Point of curve
+            final Run run = sheetTable.getRunAt(point.x, point.y); // Containing run
+
+            // @formatter:off
+            if (isCloseToCurve(point.x, run.getStart(), maxRunDistance, index)
+                && ((run.getLength() <= 1) ||
+                    isCloseToCurve(point.x, run.getStop(), maxRunDistance, index))) {
+                curveTable.addRun(point.x - fatBox.x, run.getStart() - fatBox.y, run.getLength());
+            }
+            // @formatter:on
+        }
+
+        // Build glyph (TODO: table a bit too high, should be trimmed?)
+        final int minRunCount = (int) Math.rint(minRunRatio * curveWidth);
+        if (curveTable.getTotalRunCount() >= minRunCount) {
+            final Glyph curveGlyph = sheet.getGlyphIndex().registerOriginal(
+                    new Glyph(fatBox.x, fatBox.y, curveTable));
+            setGlyph(curveGlyph);
+            logger.debug("{} -> {}", this, curveGlyph);
+
+            return curveGlyph;
+        } else {
+            logger.debug("{} -> no glyph", this);
+
+            return null;
+        }
+    }
+
+    //------------//
+    // setExtArea //
+    //------------//
+    /**
+     * Record extension area (to allow slur merge)
+     *
+     * @param area    the extension area on 'reverse' side
+     * @param reverse which end
+     */
+    public void setExtArea (Area area,
+                            boolean reverse)
+    {
+        if (reverse) {
+            firstExtArea = area;
+        } else {
+            lastExtArea = area;
+        }
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    /**
+     * Assign the underlying glyph
+     *
+     * @param glyph the underlying glyph (with relevant runs only)
+     */
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-----------------------//
     // getAbscissaComparator //
     //-----------------------//
@@ -575,6 +587,7 @@ public abstract class Curve
      */
     public static Comparator<Curve> getAbscissaComparator (final boolean reverse)
     {
-        return (Curve a1, Curve a2) -> Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
+        return (Curve a1,
+                Curve a2) -> Integer.compare(a1.getEnd(reverse).x, a2.getEnd(reverse).x);
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.PageRef;
+import org.audiveris.omr.score.PartRef;
 import org.audiveris.omr.score.Score;
+import org.audiveris.omr.score.StaffConfig;
 import org.audiveris.omr.score.StaffPosition;
+import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.Voice;
@@ -38,6 +43,8 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.text.FontInfo;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
@@ -61,6 +68,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -86,18 +94,18 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * {@link LogicalPart}.
  * <p>
  * Generally, such LogicalPart corresponds to a separate (physical) Part instance in each
- * system but not always. For example, a singer part may not appear at the very beginning of a
- * score, but only after one or several systems played by the piano part.
+ * system but not always. For example, a singer part may appear only after one or several systems
+ * played by the piano part.
  * <p>
  * We assume that the configuration of staves within the physical Part instances of the same logical
- * LogicalPart do not vary (in number of staves or in relative positions of staves within the part).
- * However, the part as a whole may appear (or disappear?) from one system to the next.
+ * LogicalPart do not vary (in number of staves, in number of lines in staves or in relative
+ * positions of staves within the part).
+ * <p>
+ * The part, as a whole, may appear (or disappear) from one system to the next.
  * <p>
  * During export to MusicXML, dummy parts (and their contained dummy staves and measures) can be
  * virtually inserted <i>on-the-fly</i> into the structure of page/system/part/measure/staff
  * to ease the handling of logical parts along the pages and score.
- * <p>
- * TODO: include the image of a "merged grand staff".
  *
  * @author Hervé Bitteur
  */
@@ -109,24 +117,28 @@ public class Part
     private static final Logger logger = LoggerFactory.getLogger(Part.class);
 
     /** For comparing Part instances according to their id. */
-    public static final Comparator<Part> byId = (Part p1, Part p2)
-            -> Integer.compare(Math.abs(p1.getId()), Math.abs(p2.getId()));
+    public static final Comparator<Part> byId = (p1,
+                                                 p2) -> Integer.compare(
+                                                         Math.abs(p1.getId()),
+                                                         Math.abs(p2.getId()));
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /**
      * Id of this part, initially set as the 1-based rank within the system,
      * but later set as the ID value of its related logical part.
      * <p>
      * <b>BEWARE</b>, this ID is not to be used as an index!
+     *
+     * @see #getIndex()
      */
     @XmlAttribute(name = "id")
     private int id;
 
-    /** This is the text, if any, that faces this system part in the left margin. */
+    /** This is the text item, if any, that faces this system part in the left margin. */
     @XmlIDREF
     @XmlAttribute(name = "name")
     private SentenceInter name;
@@ -134,16 +146,21 @@ public class Part
     /**
      * This boolean indicates a <i>merged grand staff</i> part, made of 2 staves
      * not separated by a standard gutter.
+     * <p>
+     * See example:
+     * <br>
+     * <img alt="merged-grand-staff" src="doc-files/merged_grand_staff.png">
      */
     @XmlAttribute(name = "merged-grand-staff")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean merged;
 
     /** This is the vertical sequence of staves in this part. */
-    @XmlElementRefs({
-        @XmlElementRef(type = Staff.class),
-        @XmlElementRef(type = OneLineStaff.class),
-        @XmlElementRef(type = Tablature.class)})
+    @XmlElementRefs(
+    {
+            @XmlElementRef(type = Staff.class),
+            @XmlElementRef(type = OneLineStaff.class),
+            @XmlElementRef(type = Tablature.class) })
     private final List<Staff> staves = new ArrayList<>();
 
     /**
@@ -172,7 +189,7 @@ public class Part
 
     // Transient data
     //---------------
-    //
+
     /** The containing system. */
     @Navigable(false)
     private SystemInfo system;
@@ -181,6 +198,14 @@ public class Part
     private boolean dummy;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private Part ()
+    {
+    }
+
     /**
      * Creates a new instance of <code>Part</code>.
      *
@@ -191,14 +216,8 @@ public class Part
         this.system = system;
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private Part ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // addLyric //
     //----------//
@@ -222,19 +241,6 @@ public class Part
     // addmeasure //
     //------------//
     /**
-     * Append a measure.
-     *
-     * @param measure the measure to append
-     */
-    public void addMeasure (Measure measure)
-    {
-        measures.add(measure);
-    }
-
-    //------------//
-    // addmeasure //
-    //------------//
-    /**
      * Insert a measure at specified index.
      *
      * @param index   the specified index
@@ -244,6 +250,19 @@ public class Part
                             Measure measure)
     {
         measures.add(index, measure);
+    }
+
+    //------------//
+    // addmeasure //
+    //------------//
+    /**
+     * Append a measure.
+     *
+     * @param measure the measure to append
+     */
+    public void addMeasure (Measure measure)
+    {
+        measures.add(measure);
     }
 
     //---------//
@@ -388,8 +407,10 @@ public class Part
                     dummyMeasure.addInter(dummyTime);
                 }
 
-                // Create dummy measure rest (w/ no precise location)
-                dummyMeasure.addDummyMeasureRest(dummyStaff);
+                if (!measure.getStack().isMultiRest()) {
+                    // Create dummy measure rest (w/ no precise location)
+                    dummyMeasure.addDummyMeasureRest(dummyStaff);
+                }
             }
 
             isFirstMeasure = false;
@@ -398,85 +419,152 @@ public class Part
         return dummyPart;
     }
 
-    //----------------//
-    // mergeWithBelow //
-    //----------------//
+    //-------------//
+    // findRefPart //
+    //-------------//
     /**
-     * Merge this part with the part located just below in the same system.
+     * Look in following systems, then in previous systems, for a real part with the
+     * provided ID.
      * <p>
-     * This extension is performed when a missing brace is manually inserted in front of these
-     * 2 parts to merge them into a single part.
-     * <p>
-     * Not to be mistaken with the notion of "merged-grand-staff" which is a specific layout with
-     * 2 staves that physically share the common C4 step.
-     * <p>
-     * Impact on system parts, part staves, stack measures, measures extended, pointers to part
+     * Method extended to search beyond the current page.
      *
-     * @param below the part just below this one
-     * @see #splitBefore(Staff)
+     * @param id the desired part ID
+     * @return the first real part with this ID, either in following or in preceding systems.
      */
-    public void mergeWithBelow (Part below)
+    private Part findRefPart (int id)
     {
-        logger.info("Merging {} with below {}", this, below);
+        // First look in the following systems in this page and the following ones
+        final Score score = system.getPage().getScore();
+        Page currentPage = system.getPage();
+        SystemInfo otherSystem = system.getFollowingInPage();
 
-        for (int im = 0; im < measures.size(); im++) {
-            final Measure measure = measures.get(im);
-            final Measure measureBelow = below.getMeasures().get(im);
-            measureBelow.switchItemsPart(below);
-            measure.mergeWithBelow(measureBelow);
+        while (true) {
+            if (otherSystem != null) {
+                Part part = otherSystem.getPartById(id);
+
+                if ((part != null) && !part.isDummy()) {
+                    return part;
+                }
+            } else {
+                // Reached end of page
+                Page otherPage = score.getFollowingPage(currentPage);
+
+                if (otherPage != null) {
+                    currentPage = otherPage;
+                    otherSystem = otherPage.getFirstSystem();
+                    continue;
+                } else {
+                    break; // Reached end of score
+                }
+            }
+
+            otherSystem = otherSystem.getFollowingInPage();
         }
 
-        if (below.leftBarline != null) {
-            if (leftBarline == null) {
-                leftBarline = below.leftBarline;
+        // Then look in the preceding systems in this page and the preceding ones
+        currentPage = system.getPage();
+        otherSystem = system.getPrecedingInPage();
+
+        while (true) {
+            if (otherSystem != null) {
+                Part part = otherSystem.getPartById(id);
+
+                if ((part != null) && !part.isDummy()) {
+                    return part;
+                }
             } else {
-                leftBarline.mergeWithBelow(below.leftBarline);
+                // Reached start of page
+                Page otherPage = score.getPrecedingPage(currentPage);
+
+                if (otherPage != null) {
+                    currentPage = otherPage;
+                    otherSystem = otherPage.getLastSystem();
+                    continue;
+                } else {
+                    break; // Reached start of score
+                }
+            }
+
+            otherSystem = otherSystem.getPrecedingInPage();
+        }
+
+        logger.warn("{} Cannot find any real system part with id {}", this, id);
+
+        return null;
+    }
+
+    //---------------//
+    // getAreaBounds //
+    //---------------//
+    /**
+     * Report the bounds of part area.
+     *
+     * @return the part area bounds
+     */
+    public Rectangle getAreaBounds ()
+    {
+        Rectangle bounds = null;
+
+        for (Staff staff : staves) {
+            if (bounds == null) {
+                bounds = staff.getAreaBounds().getBounds();
+            } else {
+                bounds.add(staff.getAreaBounds().getBounds());
             }
         }
 
-        for (Staff staff : below.getStaves()) {
-            addStaff(staff);
-        }
-
-        system.removePart(below);
+        return bounds;
     }
 
-    //-------------//
-    // splitBefore //
-    //-------------//
+    //---------------//
+    // getCoreMargin //
+    //---------------//
     /**
-     * Split this part in two sub-parts, just before the provided staff.
+     * Report the maximum distance of key classes of Part inters, into the provided
+     * vertical direction, with respect to the staff border line.
+     * <p>
+     * Implementation notice: This method can be called at TEXTS step, when head chords are not yet
+     * available, therefore we use only proper staff heads and their related stems.
      *
-     * @param pivotStaff the first staff of second half.
-     * @see #mergeWithBelow(Part)
+     * @param side desired side
+     * @return maximum distance of inter bounds away from proper staff line
      */
-    public void splitBefore (Staff pivotStaff)
+    public int getCoreMargin (VerticalSide side)
     {
-        logger.info("Splitting {} before {}", this, pivotStaff);
+        int maxDy = 0;
 
-        final int staffIndex = staves.indexOf(pivotStaff);
-        final Part partBelow = new Part(system);
+        final LineInfo line = (side == VerticalSide.TOP) ? getFirstStaff().getFirstLine()
+                : getLastStaff().getLastLine();
+        final SIGraph sig = getSystem().getSig();
+        final Set<Inter> inters = new HashSet<>();
 
-        for (Staff staff : staves.subList(staffIndex, staves.size())) {
-            partBelow.addStaff(staff);
+        // Staff heads
+        final Staff staff = (side == VerticalSide.TOP) ? getFirstStaff() : getLastStaff();
+        List<Inter> heads = sig.inters(HeadInter.class);
+        heads = Inters.inters(heads, staff);
+        inters.addAll(heads);
+
+        // Related stems
+        for (Inter h : heads) {
+            HeadInter head = (HeadInter) h;
+
+            if (!h.isRemoved()) {
+                inters.addAll(head.getStems());
+            }
         }
 
-        staves.removeAll(partBelow.staves);
-
-        for (int im = 0; im < measures.size(); im++) {
-            final Measure measure = measures.get(im);
-            measure.splitBefore(pivotStaff, partBelow);
+        for (Inter inter : inters) {
+            if (!inter.isRemoved()) {
+                final Rectangle box = inter.getBounds();
+                final int x = inter.getCenter().x;
+                final int y = (side == VerticalSide.TOP) ? box.y : ((box.y + box.height) - 1);
+                final int yStaff = line.yAt(x);
+                final int dy = (side == VerticalSide.TOP) ? (yStaff - y) : (y - yStaff);
+                maxDy = Math.max(maxDy, dy);
+            }
         }
 
-        int myIndex = system.getParts().indexOf(this);
-        system.addPart(myIndex + 1, partBelow);
-
-        // Part numbering (to be refined)
-        int theId = id + 1;
-
-        for (Part part : system.getParts().subList(myIndex + 1, system.getParts().size())) {
-            part.setId(theId++);
-        }
+        return maxDy;
     }
 
     //-------------------//
@@ -571,7 +659,7 @@ public class Part
     }
 
     //--------------------//
-    // getPrecedingInPage //
+    // getFollowingInPage //
     //--------------------//
     /**
      * Report the corresponding part (if any) in the following system in current page.
@@ -594,31 +682,29 @@ public class Part
     //-------//
     /**
      * Report the current id of this part.
+     * <p>
+     * After parts collation, this is the related logical id.
      *
-     * @return the part id
+     * @return the part id, not to be confused with part index.
+     * @see #getIndex()
      */
     public int getId ()
     {
         return id;
     }
 
-    //-------//
-    // setId //
-    //-------//
+    //----------//
+    // getIndex //
+    //----------//
     /**
-     * Set the part id.
+     * Report the index of this part within the containing system.
      *
-     * @param id the new id value
+     * @return index within system, not to be confused with id.
+     * @see #getId()
      */
-    public void setId (int id)
+    public int getIndex ()
     {
-        if (this.id != id) {
-            this.id = id;
-
-            if (!isDummy()) {
-                getSystem().getSheet().getStub().setModified(true);
-            }
-        }
+        return system.getParts().indexOf(this);
     }
 
     //----------------//
@@ -662,19 +748,6 @@ public class Part
         return leftBarline;
     }
 
-    //--------------------//
-    // setLeftPartBarline //
-    //--------------------//
-    /**
-     * Set the PartBarline that starts the part.
-     *
-     * @param leftBarline the starting PartBarline
-     */
-    public void setLeftPartBarline (PartBarline leftBarline)
-    {
-        this.leftBarline = leftBarline;
-    }
-
     //----------------//
     // getLogicalPart //
     //----------------//
@@ -685,7 +758,15 @@ public class Part
      */
     public LogicalPart getLogicalPart ()
     {
-        return system.getPage().getLogicalPartById(id);
+        final Page page = system.getPage();
+        if (page == null)
+            return null;
+
+        final Score score = page.getScore();
+        if (score == null)
+            return null;
+
+        return score.getLogicalPartById(id);
     }
 
     //-----------//
@@ -699,81 +780,6 @@ public class Part
     public List<LyricLineInter> getLyrics ()
     {
         return (lyrics != null) ? Collections.unmodifiableList(lyrics) : Collections.emptyList();
-    }
-
-    //---------------//
-    // getCoreMargin //
-    //---------------//
-    /**
-     * Report the maximum distance of key classes of Part inters, into the provided
-     * vertical direction, with respect to the staff border line.
-     * <p>
-     * Implementation notice: This method can be called at TEXTS step, when head chords are not yet
-     * available, therefore we use only proper staff heads and their related stems.
-     *
-     * @param side desired side
-     * @return maximum distance of inter bounds away from proper staff line
-     */
-    public int getCoreMargin (VerticalSide side)
-    {
-        int maxDy = 0;
-
-        final LineInfo line = (side == VerticalSide.TOP)
-                ? getFirstStaff().getFirstLine()
-                : getLastStaff().getLastLine();
-        final SIGraph sig = getSystem().getSig();
-        final Set<Inter> inters = new HashSet<>();
-
-        // Staff heads
-        final Staff staff = (side == VerticalSide.TOP) ? getFirstStaff() : getLastStaff();
-        List<Inter> heads = sig.inters(HeadInter.class);
-        heads = Inters.inters(heads, staff);
-        inters.addAll(heads);
-
-        // Related stems
-        for (Inter h : heads) {
-            HeadInter head = (HeadInter) h;
-
-            if (!h.isRemoved()) {
-                inters.addAll(head.getStems());
-            }
-        }
-
-        for (Inter inter : inters) {
-            if (!inter.isRemoved()) {
-                final Rectangle box = inter.getBounds();
-                final int x = inter.getCenter().x;
-                final int y = (side == VerticalSide.TOP) ? box.y : ((box.y + box.height) - 1);
-                final int yStaff = line.yAt(x);
-                final int dy = (side == VerticalSide.TOP) ? (yStaff - y) : (y - yStaff);
-                maxDy = Math.max(maxDy, dy);
-            }
-        }
-
-        return maxDy;
-    }
-
-    //---------------//
-    // getAreaBounds //
-    //---------------//
-    /**
-     * Report the bounds of part area.
-     *
-     * @return the part area bounds
-     */
-    public Rectangle getAreaBounds ()
-    {
-        Rectangle bounds = null;
-
-        for (Staff staff : staves) {
-            if (bounds == null) {
-                bounds = staff.getAreaBounds().getBounds();
-            } else {
-                bounds.add(staff.getAreaBounds().getBounds());
-            }
-        }
-
-        return bounds;
     }
 
     //--------------//
@@ -809,7 +815,8 @@ public class Part
             return null;
         }
 
-        if ((point.getX() >= staff.getAbscissa(LEFT)) && (point.getX() <= staff.getAbscissa(RIGHT))) {
+        if ((point.getX() >= staff.getAbscissa(LEFT)) && (point.getX() <= staff.getAbscissa(
+                RIGHT))) {
             for (Measure measure : measures) {
                 PartBarline barline = measure.getRightPartBarline();
 
@@ -843,20 +850,26 @@ public class Part
      */
     public String getName ()
     {
-        return (name != null) ? name.getValue() : null;
+        return (name != null && !name.isRemoved()) ? name.getValue() : null;
     }
 
-    //---------//
-    // setName //
-    //---------//
+    //---------------//
+    // getNextInPage //
+    //---------------//
     /**
-     * Assign a name to this part.
+     * Report the corresponding part (if any) in the next system in current page.
      *
-     * @param name the name to set
+     * @return the corresponding part, or null
      */
-    public void setName (SentenceInter name)
+    public Part getNextInPage ()
     {
-        this.name = name;
+        SystemInfo nextSystem = getSystem().getNextInPage();
+
+        if (nextSystem == null) {
+            return null;
+        }
+
+        return nextSystem.getPartById(id);
     }
 
     //--------//
@@ -891,6 +904,32 @@ public class Part
         return prevSystem.getPartById(id);
     }
 
+    //--------//
+    // getRef //
+    //--------//
+    /**
+     * Report the corresponding PartRef in sheet stub.
+     *
+     * @return its PartRef
+     */
+    public PartRef getRef ()
+    {
+        final Page page = system.getPage();
+        final SheetStub stub = page.getSheet().getStub();
+
+        final PageRef pageRef = stub.getPageRefs().get(page.getId() - 1);
+        final List<SystemRef> systemRefs = pageRef.getSystems();
+
+        // For backward compatibility
+        if (systemRefs.isEmpty()) {
+            return null;
+        }
+
+        final SystemRef systemRef = system.getRef();
+
+        return systemRef.getParts().get(getIndex());
+    }
+
     //----------//
     // getSlurs //
     //----------//
@@ -913,6 +952,33 @@ public class Part
         }
 
         return selectedSlurs;
+    }
+
+    //-----------------//
+    // getStaffConfigs //
+    //-----------------//
+    /**
+     * Report the staves configurations.
+     *
+     * @return list of staff configuration
+     */
+    public List<StaffConfig> getStaffConfigs ()
+    {
+        final List<StaffConfig> staffConfigs = new ArrayList<>(staves.size());
+
+        for (Staff staff : staves) {
+            staffConfigs.add(staff.getStaffConfig());
+        }
+
+        return staffConfigs;
+    }
+
+    //---------------//
+    // getStaffCount //
+    //---------------//
+    public int getStaffCount ()
+    {
+        return staves.size();
     }
 
     //-------------------//
@@ -986,6 +1052,19 @@ public class Part
         return staves;
     }
 
+    //-----------//
+    // getSystem //
+    //-----------//
+    /**
+     * Report the containing system
+     *
+     * @return containing system
+     */
+    public SystemInfo getSystem ()
+    {
+        return system;
+    }
+
     //---------------//
     // getTablatures //
     //---------------//
@@ -1007,30 +1086,24 @@ public class Part
         return tablatures;
     }
 
-    //-----------//
-    // getSystem //
-    //-----------//
+    //------------//
+    // isDrumPart //
+    //------------//
     /**
-     * Report the containing system
+     * Report whether this part is a (5-line unpitched) percussion part.
      *
-     * @return containing system
+     * @return true if so, false if not (or if not certain, e.g. if no first measure clef is found)
      */
-    public SystemInfo getSystem ()
+    public boolean isDrumPart ()
     {
-        return system;
-    }
-
-    //-----------//
-    // setSystem //
-    //-----------//
-    /**
-     * Assign the containing system.
-     *
-     * @param system the containing system
-     */
-    public void setSystem (SystemInfo system)
-    {
-        this.system = system;
+        Measure firstMeasure = getFirstMeasure();
+        if (firstMeasure != null) {
+            ClefInter staffClef = firstMeasure.getFirstMeasureClef(0);
+            if (staffClef != null) {
+                return staffClef.getShape() == Shape.PERCUSSION_CLEF;
+            }
+        }
+        return false;
     }
 
     //---------//
@@ -1059,17 +1132,54 @@ public class Part
         return merged;
     }
 
-    //-----------//
-    // setMerged //
-    //-----------//
+    //----------------//
+    // mergeWithBelow //
+    //----------------//
     /**
-     * Set this part a being a "merged" part like a kind of 11-line grand staff.
+     * Merge this part with the part located just below in the same system.
+     * <p>
+     * This extension is performed when a missing brace is manually inserted in front of these
+     * 2 parts to merge them into a single part.
+     * <p>
+     * Not to be mistaken with the notion of "merged-grand-staff" which is a specific layout with
+     * 2 staves that physically share the common C4 step.
+     * <p>
+     * Impact on system parts, part staves, stack measures, measures extended, pointers to part
      *
-     * @param merged the merged value to set
+     * @param below the part just below this one
+     * @see #splitBefore(Staff)
      */
-    public void setMerged (boolean merged)
+    public void mergeWithBelow (Part below)
     {
-        this.merged = merged;
+        logger.info("Merging {} with below {}", this, below);
+
+        for (int im = 0; im < measures.size(); im++) {
+            final Measure measure = measures.get(im);
+            final Measure measureBelow = below.getMeasures().get(im);
+            measureBelow.switchItemsPart(below);
+            measure.mergeWithBelow(measureBelow);
+        }
+
+        if (below.leftBarline != null) {
+            if (leftBarline == null) {
+                leftBarline = below.leftBarline;
+            } else {
+                leftBarline.mergeWithBelow(below.leftBarline);
+            }
+        }
+
+        for (Staff staff : below.getStaves()) {
+            addStaff(staff);
+        }
+        final PartRef ref = getRef();
+        ref.computeStaffConfigs(staves);
+
+        final SystemRef systemRef = system.getRef();
+        final PartRef belowRef = below.getRef();
+        system.removePart(below);
+        systemRef.getParts().remove(belowRef);
+
+        system.getSheet().getStub().setModified(true);
     }
 
     //-----------------//
@@ -1125,6 +1235,25 @@ public class Part
     }
 
     //------------//
+    // removeName //
+    //------------//
+    /**
+     * Remove the provided PartName sentence.
+     *
+     * @param sentence the provided part name sentence
+     * @return true if actually removed
+     */
+    public boolean removeName (SentenceInter sentence)
+    {
+        if ((name != null) && (name == sentence)) {
+            setName((SentenceInter) null);
+            return true;
+        }
+
+        return false;
+    }
+
+    //------------//
     // removeSLur //
     //------------//
     /**
@@ -1159,6 +1288,186 @@ public class Part
         dummy = Boolean.TRUE;
     }
 
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Set the part id.
+     *
+     * @param id the new id value
+     */
+    public void setId (int id)
+    {
+        if (this.id != id) {
+            this.id = id;
+
+            if (!isDummy()) {
+                getSystem().getSheet().getStub().setModified(true);
+            }
+        }
+    }
+
+    //--------------------//
+    // setLeftPartBarline //
+    //--------------------//
+    /**
+     * Set the PartBarline that starts the part.
+     *
+     * @param leftBarline the starting PartBarline
+     */
+    public void setLeftPartBarline (PartBarline leftBarline)
+    {
+        this.leftBarline = leftBarline;
+    }
+
+    //----------------//
+    // setLogicalPart //
+    //----------------//
+    /**
+     * Modify the related logical part, using a specific logical id.
+     *
+     * @param logicalId   the new logical Id
+     * @param logicalPart the provided logical part (perhaps with old Id)
+     */
+    public void setLogicalPart (Integer logicalId,
+                                LogicalPart logicalPart)
+    {
+        if (logicalId != null) {
+            // Update part id
+            setId(logicalId);
+
+            // Update part name accordingly
+            final Boolean isFirst = system.isFirstInScore();
+            if (isFirst != null && isFirst) {
+                setName(logicalPart.getName());
+            } else {
+                final String abbrev = logicalPart.getAbbreviation();
+                setName(abbrev != null ? abbrev : logicalPart.getName());
+            }
+        }
+    }
+
+    //----------------//
+    // setLogicalPart //
+    //----------------//
+    /**
+     * Modify the related logical part.
+     *
+     * @param logicalPart the provided logical part
+     * @param manual      true for a manual operation
+     */
+    public void setLogicalPart (LogicalPart logicalPart,
+                                boolean manual)
+    {
+        final int logicalId = logicalPart.getId();
+        setLogicalPart(logicalId, logicalPart);
+
+        // Update partRef as well
+        final PartRef partRef = getRef();
+        if (partRef != null) {
+            partRef.setLogicalId(logicalId);
+            partRef.setManual(manual);
+        }
+    }
+
+    //-----------//
+    // setMerged //
+    //-----------//
+    /**
+     * Set this part a being a "merged" part like a kind of 11-line grand staff.
+     *
+     * @param merged the merged value to set
+     */
+    public void setMerged (boolean merged)
+    {
+        this.merged = merged;
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign a name item to this part.
+     *
+     * @param name the name item to set
+     * @see #setName(String)
+     */
+    public void setName (SentenceInter name)
+    {
+        this.name = name;
+
+        if (name != null && !name.isRemoved()) {
+            // Normalize font info for part name
+            for (Inter inter : name.getMembers()) {
+                final WordInter word = (WordInter) inter;
+                final FontInfo old = word.getFontInfo();
+                word.setFontInfo(new FontInfo(old.pointsize, old.fontName));
+            }
+
+            final FontInfo old = name.getMeanFont();
+            name.setMeanFont(new FontInfo(old.pointsize, old.fontName));
+
+        }
+
+        // Update PartRef as well
+        final PartRef partRef = getRef();
+        if (partRef != null) {
+            partRef.setName((name != null && !name.isRemoved()) ? name.getValue() : null);
+        }
+    }
+
+    //---------//
+    // setName //
+    //---------//
+    /**
+     * Assign a name value to this part.
+     * <p>
+     * This is performed by modifying current name sentence, if any, to reflect provided nameValue.
+     *
+     * @param nameValue the name value to set
+     * @see #setName(SentenceInter)
+     */
+    public void setName (String nameValue)
+    {
+        if (name != null) {
+            final List<Inter> members = name.getMembers();
+            if (members.size() == 1) {
+                final WordInter word = (WordInter) members.get(0);
+                word.setValue(nameValue);
+            } else {
+                // Try to map word for word
+                final String[] tokens = nameValue.split(" ");
+                for (int i = 0; i < members.size(); i++) {
+                    final WordInter word = (WordInter) members.get(i);
+                    if (i < tokens.length) {
+                        word.setValue(tokens[i]);
+                    }
+                }
+            }
+
+            // Update PartRef as well
+            final PartRef partRef = getRef();
+            if (partRef != null) {
+                partRef.setName(nameValue);
+            }
+
+            getSystem().getSheet().getStub().setModified(true);
+        }
+    }
+
+    //-----------//
+    // setSystem //
+    //-----------//
+    /**
+     * Assign the containing system.
+     *
+     * @param system the containing system
+     */
+    public void setSystem (SystemInfo system)
+    {
+        this.system = system;
+    }
+
     //----------------//
     // sortLyricLines //
     //----------------//
@@ -1178,8 +1487,7 @@ public class Part
 
             for (LyricLineInter line : lyrics) {
                 final Staff staff = line.getStaff();
-                final double pos = staff.pitchPositionOf(line.getCenter());
-                final boolean isAbove = pos <= 0;
+                final boolean isAbove = staff.isPointAbove(line.getCenter());
 
                 if ((staff != lastStaff) || (isAbove != lastIsAbove)) {
                     lyricNumber = 0;
@@ -1191,6 +1499,53 @@ public class Part
                 lastIsAbove = isAbove;
             }
         }
+    }
+
+    //-------------//
+    // splitBefore //
+    //-------------//
+    /**
+     * Split this part in two sub-parts, just before the provided staff.
+     *
+     * @param pivotStaff the first staff of second half.
+     * @see #mergeWithBelow(Part)
+     */
+    public void splitBefore (Staff pivotStaff)
+    {
+        logger.info("Splitting {} before {}", this, pivotStaff);
+
+        final SystemRef systemRef = system.getRef();
+        final int staffIndex = staves.indexOf(pivotStaff);
+        final Part partBelow = new Part(system);
+
+        for (Staff staff : staves.subList(staffIndex, staves.size())) {
+            partBelow.addStaff(staff);
+        }
+
+        staves.removeAll(partBelow.staves);
+
+        final PartRef ref = getRef();
+        ref.computeStaffConfigs(staves);
+
+        for (int im = 0; im < measures.size(); im++) {
+            final Measure measure = measures.get(im);
+            measure.splitBefore(pivotStaff, partBelow);
+        }
+
+        final int myIndex = getIndex();
+        system.addPart(myIndex + 1, partBelow);
+
+        final PartRef belowRef = new PartRef(systemRef, partBelow.staves);
+        systemRef.getParts().add(myIndex + 1, belowRef);
+
+        // Part numbering (to be refined)
+        int theId = id + 1;
+
+        for (Part part : system.getParts().subList(myIndex + 1, system.getParts().size())) {
+            part.setId(theId++);
+        }
+
+        system.getSheet().getStub().setModified(true);
     }
 
     //-------------//
@@ -1222,107 +1577,25 @@ public class Part
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{Part#").append(id);
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append('#').append(id).append('{');
+
+        if ((name != null) && !name.isRemoved()) {
+            sb.append("name:").append(name.getValue());
+        }
 
         if (isDummy()) {
             sb.append(" dummy");
         }
 
         sb.append(" staves[");
-
-        boolean first = true;
-
-        for (Staff staff : staves) {
-            if (!first) {
-                sb.append(",");
-            }
-
-            sb.append(staff.getId());
-
-            first = false;
-        }
-
+        sb.append(staves.stream().map(s -> "" + s.getId()).collect(Collectors.joining(",")));
         sb.append("]");
 
-        if (name != null) {
-            sb.append(" name:").append(name.getValue());
-        }
+        sb.append(" configs:[").append(StaffConfig.toCsvString(getStaffConfigs())).append(']');
 
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //-------------//
-    // findRefPart //
-    //-------------//
-    /**
-     * Look in following systems, then in previous systems, for a real part with the
-     * provided ID.
-     * <p>
-     * Method extended to search beyond the current page.
-     *
-     * @param id the desired part ID
-     * @return the first real part with this ID, either in following or in preceding systems.
-     */
-    private Part findRefPart (int id)
-    {
-        // First look in the following systems in this page and the following ones
-        final Score score = system.getPage().getScore();
-        Page currentPage = system.getPage();
-        SystemInfo otherSystem = system.getFollowingInPage();
-
-        while (true) {
-            if (otherSystem != null) {
-                Part part = otherSystem.getPartById(id);
-
-                if ((part != null) && !part.isDummy()) {
-                    return part;
-                }
-            } else {
-                // Reached end of page
-                Page otherPage = score.getFollowingPage(currentPage);
-
-                if (otherPage != null) {
-                    currentPage = otherPage;
-                    otherSystem = otherPage.getFirstSystem();
-                } else {
-                    break; // Reached end of score
-                }
-            }
-
-            otherSystem = otherSystem.getFollowingInPage();
-        }
-
-        // Then look in the preceding systems in this page and the preceding ones
-        currentPage = system.getPage();
-        otherSystem = system.getPrecedingInPage();
-
-        while (true) {
-            if (otherSystem != null) {
-                Part part = otherSystem.getPartById(id);
-
-                if ((part != null) && !part.isDummy()) {
-                    return part;
-                }
-            } else {
-                // Reached start of page
-                Page otherPage = score.getPrecedingPage(currentPage);
-
-                if (otherPage != null) {
-                    currentPage = otherPage;
-                    otherSystem = otherPage.getLastSystem();
-                } else {
-                    break; // Reached start of score
-                }
-            }
-
-            otherSystem = otherSystem.getPrecedingInPage();
-        }
-
-        logger.warn("{} Cannot find any real system part with id {}", this, id);
-
-        return null;
     }
 }

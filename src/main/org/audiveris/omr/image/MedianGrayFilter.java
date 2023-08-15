@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
 import java.util.Arrays;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>MedianGrayFilter</code> allows to run a median filter on an input image,
@@ -40,6 +40,7 @@ public class MedianGrayFilter
     private final int radius;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new MedianGrayFilter object.
      *
@@ -51,6 +52,7 @@ public class MedianGrayFilter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // filter //
     //--------//

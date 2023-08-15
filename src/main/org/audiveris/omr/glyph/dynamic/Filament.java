@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -57,10 +57,13 @@ public abstract class Filament
     /**
      * For comparing Filament instances on their top ordinate.
      */
-    public static final Comparator<Filament> topComparator = (Filament f1, Filament f2)
-            -> Integer.signum(f1.getBounds().y - f2.getBounds().y);
+    public static final Comparator<Filament> topComparator = (Filament f1,
+                                                              Filament f2) -> Integer.signum(
+                                                                      f1.getBounds().y - f2
+                                                                              .getBounds().y);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Absolute beginning point. */
     protected Point2D startPoint;
 
@@ -71,6 +74,7 @@ public abstract class Filament
     protected int interline;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>Filament</code> object.
      *
@@ -82,6 +86,7 @@ public abstract class Filament
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Force line (re)computation.
      */
@@ -108,26 +113,20 @@ public abstract class Filament
     public abstract double getPositionAt (double coord,
                                           Orientation orientation);
 
+    //---------------------//
+    // getRoughOrientation //
+    //---------------------//
     /**
-     * Report the slope with respect to desired orientation at the provided coordinate.
+     * Report a (rough) orientation of the filament (vertical or horizontal)
      *
-     * @param coord       the coordinate value (x for horizontal, y for vertical)
-     * @param orientation the reference orientation
-     * @return the slope value (WRT x-axis for horizontal, y-axis for vertical)
+     * @return rough orientation
      */
-    public abstract double getSlopeAt (double coord,
-                                       Orientation orientation);
+    protected Orientation getRoughOrientation ()
+    {
+        checkBounds();
 
-    /**
-     * Render the main guiding line of the compound, using the current foreground color.
-     *
-     * @param g          the graphic context
-     * @param showPoints true to show the defining points
-     * @param pointWidth width for any displayed defining point
-     */
-    public abstract void renderLine (Graphics2D g,
-                                     boolean showPoints,
-                                     double pointWidth);
+        return (bounds.height > bounds.width) ? Orientation.VERTICAL : Orientation.HORIZONTAL;
+    }
 
     //----------//
     // getSlope //
@@ -141,6 +140,16 @@ public abstract class Filament
     {
         return (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX() - startPoint.getX());
     }
+
+    /**
+     * Report the slope with respect to desired orientation at the provided coordinate.
+     *
+     * @param coord       the coordinate value (x for horizontal, y for vertical)
+     * @param orientation the reference orientation
+     * @return the slope value (WRT x-axis for horizontal, y-axis for vertical)
+     */
+    public abstract double getSlopeAt (double coord,
+                                       Orientation orientation);
 
     //---------------//
     // getStartPoint //
@@ -172,33 +181,6 @@ public abstract class Filament
         return stopPoint;
     }
 
-    //-----------------//
-    // setEndingPoints //
-    //-----------------//
-    /**
-     * Assign the ending points.
-     * <p>
-     * This triggers a (re)-computing of line and bounds.
-     *
-     * @param startPoint the provided starting point
-     * @param stopPoint  the providing stopping point
-     */
-    public void setEndingPoints (Point2D startPoint,
-                                 Point2D stopPoint)
-    {
-        invalidateCache();
-        this.startPoint = startPoint;
-        this.stopPoint = stopPoint;
-
-        computeLine();
-
-        // Enlarge contour box if needed
-        Rectangle box = getBounds();
-        box.add(startPoint);
-        box.add(stopPoint);
-        setBounds(box);
-    }
-
     //---------------//
     // getTrueLength //
     //---------------//
@@ -228,21 +210,6 @@ public abstract class Filament
         return (cMax - cMin + 1) - holes;
     }
 
-    //---------------------//
-    // getRoughOrientation //
-    //---------------------//
-    /**
-     * Report a (rough) orientation of the filament (vertical or horizontal)
-     *
-     * @return rough orientation
-     */
-    protected Orientation getRoughOrientation ()
-    {
-        checkBounds();
-
-        return (bounds.height > bounds.width) ? Orientation.VERTICAL : Orientation.HORIZONTAL;
-    }
-
     //-----------------//
     // invalidateCache //
     //-----------------//
@@ -255,6 +222,46 @@ public abstract class Filament
         super.invalidateCache();
         startPoint = stopPoint = null;
     }
+
+    /**
+     * Render the main guiding line of the compound, using the current foreground color.
+     *
+     * @param g          the graphic context
+     * @param showPoints true to show the defining points
+     * @param pointWidth width for any displayed defining point
+     */
+    public abstract void renderLine (Graphics2D g,
+                                     boolean showPoints,
+                                     double pointWidth);
+
+    //-----------------//
+    // setEndingPoints //
+    //-----------------//
+    /**
+     * Assign the ending points.
+     * <p>
+     * This triggers a (re)-computing of line and bounds.
+     *
+     * @param startPoint the provided starting point
+     * @param stopPoint  the providing stopping point
+     */
+    public void setEndingPoints (Point2D startPoint,
+                                 Point2D stopPoint)
+    {
+        invalidateCache();
+        this.startPoint = startPoint;
+        this.stopPoint = stopPoint;
+
+        computeLine();
+
+        // Enlarge contour box if needed
+        Rectangle box = getBounds();
+        box.add(startPoint);
+        box.add(stopPoint);
+        setBounds(box);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------------//
     // getProbeWidth //
@@ -270,6 +277,7 @@ public abstract class Filament
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

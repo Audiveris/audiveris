@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -57,10 +57,11 @@ public class InterService
     private static final Logger logger = LoggerFactory.getLogger(InterService.class);
 
     /** Events that can be published on inter service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{EntityListEvent.class,
-                                                                   IdEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]
+    { EntityListEvent.class, IdEvent.class };
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>InterService</code> object.
      *
@@ -74,6 +75,7 @@ public class InterService
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // getMostRelevant //
     //-----------------//
@@ -138,8 +140,8 @@ public class InterService
     protected void handleLocationEvent (LocationEvent locationEvent)
     {
         // Search only when in MODE_INTER or MODE_GLYPH
-        if (ViewParameters.getInstance().getSelectionMode()
-            != ViewParameters.SelectionMode.MODE_SECTION) {
+        if (ViewParameters.getInstance()
+                .getSelectionMode() != ViewParameters.SelectionMode.MODE_SECTION) {
             super.handleLocationEvent(locationEvent);
         }
     }

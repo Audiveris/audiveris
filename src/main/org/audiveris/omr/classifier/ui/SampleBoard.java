@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SheetContainer.Descriptor;
@@ -35,12 +32,16 @@ import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.selection.EntityListEvent;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.jdesktop.application.ApplicationAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Dimension;
 
@@ -65,6 +66,7 @@ public class SampleBoard
     private static final String DBL_FORMAT = "%.3f"; // Format for double output
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** User controller for samples. */
     private final SampleController controller;
 
@@ -104,6 +106,7 @@ public class SampleBoard
     private final AssignAction assignAction;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SampleBoard</code> object.
      *
@@ -137,83 +140,6 @@ public class SampleBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------------//
-    // getFormLayout //
-    //---------------//
-    @Override
-    protected FormLayout getFormLayout ()
-    {
-        return Panel.makeFormLayout(6, 3);
-    }
-
-    //-----------------------//
-    // handleEntityListEvent //
-    //-----------------------//
-    /**
-     * Interest in InterList
-     *
-     * @param sampleListEvent sample event list
-     */
-    @Override
-    protected void handleEntityListEvent (EntityListEvent<Sample> sampleListEvent)
-    {
-        super.handleEntityListEvent(sampleListEvent);
-
-        final Sample sample = sampleListEvent.getEntity();
-
-        // Shape text and icon
-        Shape shape = (sample != null) ? sample.getShape() : null;
-
-        if (shape != null) {
-            shapeField.setText(shape.toString());
-            shapeIcon.setIcon(shape.getDecoratedSymbol());
-        } else {
-            shapeField.setText("");
-            shapeIcon.setIcon(null);
-        }
-
-        // Sample characteristics
-        if (sample != null) {
-            // Interline
-            final int interline = sample.getInterline();
-            iLine.setText(Integer.toString(interline));
-
-            weight.setText(String.format(DBL_FORMAT, sample.getNormalizedWeight(interline)));
-            width.setText(String.format(DBL_FORMAT, (double) sample.getWidth() / interline));
-            height.setText(String.format(DBL_FORMAT, (double) sample.getHeight() / interline));
-
-            if (sample.getPitch() != null) {
-                pitch.setText(String.format(DBL_FORMAT, sample.getPitch()));
-            } else {
-                pitch.setText("");
-            }
-
-            Descriptor desc = repository.getDescriptor(sample);
-
-            if (desc != null) {
-                final String sh = desc.toString();
-                sheetName.setText(sh);
-                sheetName.getField().setToolTipText(desc.getAliasesString());
-                removeAction.setEnabled(!SampleRepository.isSymbols(desc.getName()));
-                assignAction.setEnabled(!SampleRepository.isSymbols(desc.getName()));
-            } else {
-                sheetName.setText("");
-                sheetName.getField().setToolTipText(null);
-                removeAction.setEnabled(false);
-                assignAction.setEnabled(false);
-            }
-        } else {
-            iLine.setText("");
-            weight.setText("");
-            width.setText("");
-            height.setText("");
-            pitch.setText("");
-            sheetName.setText("");
-            sheetName.getField().setToolTipText(null);
-            removeAction.setEnabled(false);
-            assignAction.setEnabled(false);
-        }
-    }
 
     //--------------//
     // defineLayout //
@@ -275,7 +201,86 @@ public class SampleBoard
         builder.add(pitch.getField(), cst.xy(11, r));
     }
 
+    //---------------//
+    // getFormLayout //
+    //---------------//
+    @Override
+    protected FormLayout getFormLayout ()
+    {
+        return Panel.makeFormLayout(6, 3);
+    }
+
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
+    /**
+     * Interest in InterList
+     *
+     * @param sampleListEvent sample event list
+     */
+    @Override
+    protected void handleEntityListEvent (EntityListEvent<Sample> sampleListEvent)
+    {
+        super.handleEntityListEvent(sampleListEvent);
+
+        final Sample sample = sampleListEvent.getEntity();
+
+        // Shape text and icon
+        Shape shape = (sample != null) ? sample.getShape() : null;
+
+        if (shape != null) {
+            shapeField.setText(shape.toString());
+            shapeIcon.setIcon(shape.getDecoratedSymbol(MusicFamily.Bravura));
+        } else {
+            shapeField.setText("");
+            shapeIcon.setIcon(null);
+        }
+
+        // Sample characteristics
+        if (sample != null) {
+            // Interline
+            final int interline = sample.getInterline();
+            iLine.setText(Integer.toString(interline));
+
+            weight.setText(String.format(DBL_FORMAT, sample.getNormalizedWeight(interline)));
+            width.setText(String.format(DBL_FORMAT, (double) sample.getWidth() / interline));
+            height.setText(String.format(DBL_FORMAT, (double) sample.getHeight() / interline));
+
+            if (sample.getPitch() != null) {
+                pitch.setText(String.format(DBL_FORMAT, sample.getPitch()));
+            } else {
+                pitch.setText("");
+            }
+
+            Descriptor desc = repository.getDescriptor(sample);
+
+            if (desc != null) {
+                final String sh = desc.toString();
+                sheetName.setText(sh);
+                sheetName.getField().setToolTipText(desc.getAliasesString());
+                removeAction.setEnabled(!SampleRepository.isSymbols(desc.getName()));
+                assignAction.setEnabled(!SampleRepository.isSymbols(desc.getName()));
+            } else {
+                sheetName.setText("");
+                sheetName.getField().setToolTipText(null);
+                removeAction.setEnabled(false);
+                assignAction.setEnabled(false);
+            }
+        } else {
+            iLine.setText("");
+            weight.setText("");
+            width.setText("");
+            height.setText("");
+            pitch.setText("");
+            sheetName.setText("");
+            sheetName.getField().setToolTipText(null);
+            removeAction.setEnabled(false);
+            assignAction.setEnabled(false);
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

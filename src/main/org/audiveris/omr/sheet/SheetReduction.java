@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,10 +22,11 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.sheet.rhythm.RhythmsStep;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,9 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>SheetReduction</code> works at sheet level to reduce the duplicated inters
@@ -56,10 +59,14 @@ public class SheetReduction
     private static final Logger logger = LoggerFactory.getLogger(SheetReduction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Sheet to process. */
     private final Sheet sheet;
 
+    private final Set<Inter> removedInters = new LinkedHashSet<>();
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a new <code>SheetReduction</code> object.
      *
@@ -71,24 +78,6 @@ public class SheetReduction
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Check all inter-systems gutters to resolve 'duplicated' inters.
-     */
-    public void process ()
-    {
-        final SystemManager systemMgr = sheet.getSystemManager();
-
-        for (SystemInfo systemAbove : systemMgr.getSystems()) {
-            List<SystemInfo> neighbors = systemMgr.verticalNeighbors(systemAbove, BOTTOM);
-
-            for (SystemInfo systemBelow : neighbors) {
-                checkGutter(systemAbove, systemBelow);
-            }
-        }
-    }
 
     //-------------//
     // checkGutter //
@@ -155,17 +144,19 @@ public class SheetReduction
                         final double d2 = Math.abs(staff2.distanceTo(inter2.getCenter()));
 
                         if (d1 <= d2) {
-                            logger.debug("Removing lower {}", inter2);
-                            inter2.remove();
+                            remove(inter2);
                         } else {
-                            logger.debug("Removing upper {}", inter1);
-                            inter1.remove();
+                            remove(inter1);
 
                             continue Loop1;
                         }
                     } else {
-                        logger.info("Gutter. Different glyphs {}/{} {} vs {}",
-                                    system1.getId(), system2.getId(), inter1, inter2);
+                        logger.info(
+                                "Gutter. Different glyphs {}/{} {} vs {}",
+                                system1.getId(),
+                                system2.getId(),
+                                inter1,
+                                inter2);
                     }
                 }
             }
@@ -188,10 +179,8 @@ public class SheetReduction
         List<Inter> found = new ArrayList<>();
 
         for (Inter inter : system.getSig().vertexSet()) {
-            if ((inter != null)
-                        && !inter.isRemoved()
-                        && !(inter instanceof InterEnsemble)
-                        && area.contains(inter.getCenter())) {
+            if ((inter != null) && !inter.isRemoved() && !(inter instanceof InterEnsemble) && area
+                    .contains(inter.getCenter())) {
                 found.add(inter);
             }
         }
@@ -199,5 +188,46 @@ public class SheetReduction
         Collections.sort(found, Inters.byCenterAbscissa);
 
         return found;
+    }
+
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Check all inter-systems gutters to resolve 'duplicated' inters.
+     */
+    public void process ()
+    {
+        final SystemManager systemMgr = sheet.getSystemManager();
+
+        for (SystemInfo systemAbove : systemMgr.getSystems()) {
+            List<SystemInfo> neighbors = systemMgr.verticalNeighbors(systemAbove, BOTTOM);
+
+            for (SystemInfo systemBelow : neighbors) {
+                checkGutter(systemAbove, systemBelow);
+            }
+        }
+
+        // Impact of removed inters on rhythm
+        if (!removedInters.isEmpty()) {
+            new RhythmsStep().impact(removedInters);
+        }
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    private void remove (Inter inter)
+    {
+        logger.debug("Removing {}", inter);
+        final InterEnsemble ens = inter.getEnsemble();
+
+        inter.remove();
+        removedInters.add(inter);
+
+        if (ens != null && ens.isRemoved()) {
+            logger.debug("Removing ensemble {}", inter);
+            removedInters.add(ens);
+        }
     }
 }

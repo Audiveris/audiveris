@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,6 +44,7 @@ public class StemsStep
     private static final Logger logger = LoggerFactory.getLogger(StemsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new StemsStep object.
      */
@@ -52,16 +53,6 @@ public class StemsStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // doSystem //
-    //----------//
-    @Override
-    public void doSystem (SystemInfo system,
-                          Void context)
-            throws StepException
-    {
-        new StemsRetriever(system).process();
-    }
 
     //----------//
     // doEpilog //
@@ -69,7 +60,7 @@ public class StemsStep
     @Override
     protected void doEpilog (Sheet sheet,
                              Void context)
-            throws StepException
+        throws StepException
     {
         // Further beams processing
         for (SystemInfo system : sheet.getSystems()) {
@@ -94,12 +85,23 @@ public class StemsStep
      */
     @Override
     protected Void doProlog (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         for (SystemInfo system : sheet.getSystems()) {
             BeamGroupInter.checkSystemForOldBeamGroup(system);
         }
 
         return null;
+    }
+
+    //----------//
+    // doSystem //
+    //----------//
+    @Override
+    public void doSystem (SystemInfo system,
+                          Void context)
+        throws StepException
+    {
+        new StemsRetriever(system).process();
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -38,25 +38,20 @@ public abstract class GCD
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-----//
     // gcd //
     //-----//
     /**
-     * Report the gcd of an array of int values.
+     * Report the gcd of a collection of integer values.
      *
-     * @param vals the array of int values
-     * @return the gcd over the int values
+     * @param vals the collection of values
+     * @return the gcd over the collection
      */
-    public static int gcd (int[] vals)
+    public static int gcd (Collection<Integer> vals)
     {
-        int s = 0;
-
-        for (int val : vals) {
-            s = gcd(s, val);
-        }
-
-        return s;
+        return gcd(vals.toArray(new Integer[vals.size()]));
     }
 
     //-----//
@@ -83,14 +78,20 @@ public abstract class GCD
     // gcd //
     //-----//
     /**
-     * Report the gcd of a collection of integer values.
+     * Report the gcd of an array of int values.
      *
-     * @param vals the collection of values
-     * @return the gcd over the collection
+     * @param vals the array of int values
+     * @return the gcd over the int values
      */
-    public static int gcd (Collection<Integer> vals)
+    public static int gcd (int[] vals)
     {
-        return gcd(vals.toArray(new Integer[vals.size()]));
+        int s = 0;
+
+        for (int val : vals) {
+            s = gcd(s, val);
+        }
+
+        return s;
     }
 
     //-----//
@@ -108,6 +109,26 @@ public abstract class GCD
 
         for (int val : vals) {
             s = gcd(s, val);
+        }
+
+        return s;
+    }
+
+    //-----//
+    // lcm //
+    //-----//
+    /**
+     * Report the Least Common Multiple of n values.
+     *
+     * @param vals an array of integers
+     * @return the lcm of these integers
+     */
+    public static int lcm (int... vals)
+    {
+        int s = vals[0];
+
+        for (int val : vals) {
+            s = lcm(s, val);
         }
 
         return s;
@@ -135,25 +156,5 @@ public abstract class GCD
         }
 
         return m * (n / gcd(m, n));
-    }
-
-    //-----//
-    // lcm //
-    //-----//
-    /**
-     * Report the Least Common Multiple of n values.
-     *
-     * @param vals an array of integers
-     * @return the lcm of these integers
-     */
-    public static int lcm (int... vals)
-    {
-        int s = vals[0];
-
-        for (int val : vals) {
-            s = lcm(s, val);
-        }
-
-        return s;
     }
 }

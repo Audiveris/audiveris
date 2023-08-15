@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,6 +32,9 @@ import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.FlagInter;
+import org.audiveris.omr.sig.inter.GraceChordInter;
+import org.audiveris.omr.sig.inter.GraceChordInter.HiddenHeadInter;
+import org.audiveris.omr.sig.inter.GraceChordInter.HiddenStemInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -63,17 +66,18 @@ import org.audiveris.omr.sig.ui.RelationTask;
 import org.audiveris.omr.sig.ui.RemovalTask;
 import org.audiveris.omr.sig.ui.StackTask;
 import org.audiveris.omr.sig.ui.SystemMergeTask;
-import org.audiveris.omr.sig.ui.TieTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.step.AbstractStep;
 import org.audiveris.omr.step.StepException;
+import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -94,11 +98,17 @@ public class RhythmsStep
     /** Classes that impact just a measure stack. */
     private static final Set<Class<?>> forStack;
 
+    /** (Sub)-classes that do not impact just a measure stack. */
+    private static final Set<Class<?>> whiteForStack;
+
     /** Classes that impact a whole page. */
     private static final Set<Class<?>> forPage;
 
     /** All impacting classes. */
     private static final Set<Class<?>> impactingClasses;
+
+    /** All white classes. */
+    private static final Set<Class<?>> whiteClasses;
 
     static {
         forStack = new HashSet<>();
@@ -113,7 +123,6 @@ public class RhythmsStep
         forStack.add(RestChordInter.class);
         forStack.add(RestInter.class);
         forStack.add(SmallBeamInter.class);
-        forStack.add(SmallChordInter.class);
         forStack.add(SmallFlagInter.class);
         forStack.add(StaffBarlineInter.class);
         forStack.add(StemInter.class);
@@ -130,6 +139,14 @@ public class RhythmsStep
         forStack.add(SameVoiceRelation.class);
         forStack.add(SeparateTimeRelation.class);
         forStack.add(SeparateVoiceRelation.class);
+    }
+    static {
+        whiteForStack = new HashSet<>();
+        // Inters
+        whiteForStack.add(SmallChordInter.class);
+        whiteForStack.add(GraceChordInter.class);
+        whiteForStack.add(HiddenHeadInter.class);
+        whiteForStack.add(HiddenStemInter.class);
     }
 
     static {
@@ -149,7 +166,13 @@ public class RhythmsStep
         impactingClasses.addAll(forPage);
     }
 
+    static {
+        whiteClasses = new HashSet<>();
+        whiteClasses.addAll(whiteForStack);
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>RhythmsStep</code> object.
      */
@@ -158,16 +181,53 @@ public class RhythmsStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------//
     // doit //
     //------//
     @Override
     public void doit (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         // Process each page of the sheet
         for (Page page : sheet.getPages()) {
             new PageRhythm(page).process();
+        }
+    }
+
+    //--------//
+    // impact //
+    //--------//
+    /**
+     * Reprocess rhythms for stacks impacted by the provided inters.
+     *
+     * @param inters the (removed) inters
+     */
+    public void impact (Collection<Inter> inters)
+    {
+        logger.debug("RHYTHMS impact inters: {}", Entities.ids(inters));
+
+        // First, determine what will be impacted
+        final Impact impact = new Impact();
+
+        for (Inter inter : inters) {
+            final Class classe = inter.getClass();
+            final SIGraph sig = inter.getSig();
+
+            if (isImpactedBy(classe, forStack)) {
+                // Reprocess just the stack
+                Point center = inter.getCenter();
+
+                if (center != null) {
+                    MeasureStack stack = sig.getSystem().getStackAt(center);
+                    impact.add(stack);
+                }
+            }
+        }
+
+        // Second, handle each rhythm impact
+        for (MeasureStack stack : impact.onStacks) {
+            new PageRhythm(stack.getSystem().getPage()).reprocessStack(stack);
         }
     }
 
@@ -181,21 +241,18 @@ public class RhythmsStep
         logger.debug("RHYTHMS impact {} {}", opKind, seq);
 
         final SIGraph sig = seq.getSig();
-        Page page = null;
 
         // First, determine what will be impacted
         final Impact impact = new Impact();
 
         for (UITask task : seq.getTasks()) {
-            if (task instanceof InterTask) {
-                InterTask interTask = (InterTask) task;
+            if (task instanceof InterTask interTask) {
                 Inter inter = interTask.getInter();
                 Class classe = inter.getClass();
 
                 if (isImpactedBy(classe, forPage)) {
                     // Reprocess the whole page
-                    impact.onPage = true;
-                    page = inter.getSig().getSystem().getPage();
+                    impact.add(inter.getSig().getSystem().getPage());
                 } else if (isImpactedBy(classe, forStack)) {
                     // Reprocess just the stack
                     Point center = inter.getCenter();
@@ -206,31 +263,28 @@ public class RhythmsStep
 
                         if (inter instanceof BarlineInter || inter instanceof StaffBarlineInter) {
                             if ((task instanceof RemovalTask && (opKind == OpKind.UNDO))
-                                        || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
+                                    || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
                                 // Add next stack as well
                                 impact.add(stack.getNextSibling());
                             }
                         }
                     }
                 }
-            } else if (task instanceof StackTask) {
+            } else if (task instanceof StackTask stackTask) {
                 // Reprocess the stack
-                MeasureStack stack = ((StackTask) task).getStack();
+                MeasureStack stack = stackTask.getStack();
                 Class classe = stack.getClass();
 
                 if (isImpactedBy(classe, forStack)) {
                     impact.add(stack);
                 }
-            } else if (task instanceof PageTask) {
+            } else if (task instanceof PageTask pageTask) {
                 // Reprocess the page
-                impact.onPage = true;
-                page = ((PageTask) task).getPage();
-            } else if (task instanceof SystemMergeTask) {
+                impact.add(pageTask.getPage());
+            } else if (task instanceof SystemMergeTask systemMergeTask) {
                 // Reprocess the system page
-                impact.onPage = true;
-                page = ((SystemMergeTask) task).getSystem().getPage();
-            } else if (task instanceof RelationTask) {
-                RelationTask relationTask = (RelationTask) task;
+                impact.add(systemMergeTask.getSystem().getPage());
+            } else if (task instanceof RelationTask relationTask) {
                 Relation relation = relationTask.getRelation();
                 Class classe = relation.getClass();
 
@@ -242,17 +296,13 @@ public class RhythmsStep
             }
         }
 
-        if (page == null) {
-            page = sig.getSystem().getPage();
+        // Second, handle each rhythm impact
+        for (Page page : impact.onPages) {
+            new PageRhythm(page).process();
         }
 
-        // Second, handle each rhythm impact
-        if (impact.onPage) {
-            new PageRhythm(page).process();
-        } else {
-            for (MeasureStack stack : impact.onStacks) {
-                new PageRhythm(page).reprocessStack(stack);
-            }
+        for (MeasureStack stack : impact.onStacks) {
+            new PageRhythm(stack.getSystem().getPage()).reprocessStack(stack);
         }
     }
 
@@ -262,36 +312,44 @@ public class RhythmsStep
     @Override
     public boolean isImpactedBy (Class<?> classe)
     {
+        // White list first
+        if (isImpactedBy(classe, whiteClasses))
+            return false;
+
         return isImpactedBy(classe, impactingClasses);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Impact //
     //--------//
     private static class Impact
     {
 
-        boolean onPage = false;
+        final Set<Page> onPages = new LinkedHashSet<>();
 
-        Set<MeasureStack> onStacks = new LinkedHashSet<>();
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder("RhythmsImpact{");
-            sb.append("page:").append(onPage);
-            sb.append(" stacks:").append(onStacks);
-            sb.append("}");
-
-            return sb.toString();
-        }
+        final Set<MeasureStack> onStacks = new LinkedHashSet<>();
 
         public void add (MeasureStack stack)
         {
             if (stack != null) {
                 onStacks.add(stack);
             }
+        }
+
+        public void add (Page page)
+        {
+            if (page != null) {
+                onPages.add(page);
+            }
+        }
+
+        @Override
+        public String toString ()
+        {
+            return new StringBuilder("RhythmsImpact{").append("pages:").append(onPages).append(
+                    " stacks:").append(onStacks).append("}").toString();
         }
     }
 }

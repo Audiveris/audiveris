@@ -73,9 +73,9 @@ and not persisted when running in batch.
 4.  UI: The value, if any, specified through the `Tools | Options` user interface.
 These UI values are persisted in the USER file.
 
-If ever you want to discard the modification you have made and get back to the FACTORY value of an
-option, simply uncheck the box in the `Modif` column of this option in the Options window.
+If ever we want to discard the modification we have made and get back to the FACTORY value of an
+option, we simply uncheck the box in the `Modif` column of this option in the Options window.
 
-To restore the FACTORY value for **all** options, use the `Reset` button located at the top of the
+To restore the FACTORY value for **all** options, we use the `Reset` button located at the top of the
 Options window.
-Needless to say, you will be prompted for confirmation beforehand...
+Needless to say, we will be prompted for confirmation beforehand...

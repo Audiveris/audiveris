@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,17 +24,20 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
+import static org.audiveris.omr.glyph.Shape.PERCUSSION_CLEF;
 import org.audiveris.omr.math.GeoPath;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
+import org.audiveris.omr.score.StaffConfig;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.grid.StaffFilament;
 import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.ui.ObjectEditor;
 import org.audiveris.omr.sheet.ui.StaffEditor;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.ClefInter;
@@ -49,16 +52,17 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.TOP;
+
+import org.jgrapht.Graphs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.jgrapht.Graphs;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -82,6 +86,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -104,6 +109,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * and increases in top down direction.
  * </ul>
  * Example of pitch position values and ledger index values in a 5-line staff:
+ *
  * <pre>
  *       pitch                                     ledger
  *     position:                                   index:
@@ -152,17 +158,22 @@ public class Staff
     private static final Logger logger = LoggerFactory.getLogger(Staff.class);
 
     /** To sort by staff id. */
-    public static final Comparator<Staff> byId = (Staff o1, Staff o2)
-            -> Integer.compare(o1.getId(), o2.getId());
+    public static final Comparator<Staff> byId = (Staff o1,
+                                                  Staff o2) -> Integer.compare(
+                                                          o1.getId(),
+                                                          o2.getId());
 
     /** To sort by staff abscissa. */
-    public static final Comparator<Staff> byAbscissa = (Staff o1, Staff o2)
-            -> Integer.compare(o1.left, o2.left);
+    public static final Comparator<Staff> byAbscissa = (Staff o1,
+                                                        Staff o2) -> Integer.compare(
+                                                                o1.left,
+                                                                o2.left);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /**
      * Staff id.
      * <p>
@@ -172,7 +183,7 @@ public class Staff
      */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = int.class, value = Jaxb.StringIntegerAdapter.class)
-    protected final int id;
+    protected int id;
 
     /**
      * Left extrema.
@@ -244,7 +255,7 @@ public class Staff
 
     // Transient data
     //---------------
-    //
+
     /**
      * Ledgers around the staff, organized in a map.
      * Key: Ledger index value
@@ -309,6 +320,27 @@ public class Staff
     protected final AttachmentHolder attachments = new BasicAttachmentHolder();
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    public Staff ()
+    {
+        this.id = 0;
+        this.lines = null;
+    }
+
+    /**
+     * Meant for a staff holder only.
+     *
+     * @param id the staff id to remember
+     */
+    private Staff (int id)
+    {
+        this.id = id;
+        this.lines = null;
+    }
+
     /**
      * Create info about a staff, with its contained staff lines.
      *
@@ -331,27 +363,8 @@ public class Staff
         this.lines = lines;
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    public Staff ()
-    {
-        this.id = 0;
-        this.lines = null;
-    }
-
-    /**
-     * Meant for a staff holder only.
-     *
-     * @param id the staff id to remember
-     */
-    private Staff (int id)
-    {
-        this.id = id;
-        this.lines = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // addAttachment //
     //---------------//
@@ -383,6 +396,23 @@ public class Staff
     // addLedger //
     //-----------//
     /**
+     * Add a ledger glyph to the collection, computing line index from pitch position.
+     *
+     * @param ledger the ledger glyph to add
+     */
+    public void addLedger (LedgerInter ledger)
+    {
+        Objects.requireNonNull(ledger, "Cannot add a null ledger");
+
+        Glyph glyph = ledger.getGlyph();
+        Point center = (glyph != null) ? glyph.getCentroid() : ledger.getCenter();
+        addLedger(ledger, getLedgerLineIndex(pitchPositionOf(center)));
+    }
+
+    //-----------//
+    // addLedger //
+    //-----------//
+    /**
      * Add a ledger glyph to the collection.
      *
      * @param ledger the ledger to add
@@ -402,23 +432,6 @@ public class Staff
         ledgerList.add(ledger);
     }
 
-    //-----------//
-    // addLedger //
-    //-----------//
-    /**
-     * Add a ledger glyph to the collection, computing line index from pitch position.
-     *
-     * @param ledger the ledger glyph to add
-     */
-    public void addLedger (LedgerInter ledger)
-    {
-        Objects.requireNonNull(ledger, "Cannot add a null ledger");
-
-        Glyph glyph = ledger.getGlyph();
-        Point center = (glyph != null) ? glyph.getCentroid() : ledger.getCenter();
-        addLedger(ledger, getLedgerLineIndex(pitchPositionOf(center)));
-    }
-
     //---------//
     // addNote //
     //---------//
@@ -434,6 +447,15 @@ public class Staff
         }
 
         notes.add(note);
+    }
+
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
+    {
+        ledgersValue = null;
     }
 
     //-------------//
@@ -469,6 +491,22 @@ public class Staff
         }
     }
 
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        if (!ledgerMap.isEmpty()) {
+            // Populate ledgersValue from ledgerMap
+            ledgersValue = new ArrayList<>();
+
+            for (Entry<Integer, List<LedgerInter>> entry : ledgerMap.entrySet()) {
+                ledgersValue.add(new LedgersEntry(entry.getKey(), entry.getValue()));
+            }
+        }
+    }
+
     //---------------------//
     // buildAllLedgerLines //
     //---------------------//
@@ -500,7 +538,7 @@ public class Staff
     {
         for (int i = increment;; i += increment) {
             final List<LedgerInter> ledgers = ledgerMap.get(i);
-            if (ledgers == null) {
+            if ((ledgers == null) || ledgers.isEmpty()) {
                 return;
             }
 
@@ -670,23 +708,6 @@ public class Staff
         return area;
     }
 
-    //---------//
-    // setArea //
-    //---------//
-    /**
-     * Assign staff area.
-     *
-     * @param area the underlying area
-     */
-    public void setArea (Area area)
-    {
-        this.area = area;
-
-        getArea(); // Force recomputation if area has been set to null
-
-        addAttachment("staff-area-" + id, area);
-    }
-
     //---------------//
     // getAreaBounds //
     //---------------//
@@ -718,20 +739,6 @@ public class Staff
     public List<BarlineInter> getBarlines ()
     {
         return Collections.unmodifiableList(barlines);
-    }
-
-    //-------------//
-    // setBarlines //
-    //-------------//
-    /**
-     * Assign the sequence of barlines.
-     *
-     * @param barlines the barlines to set
-     */
-    public void setBarlines (List<BarlineInter> barlines)
-    {
-        this.barlines = barlines;
-        retrieveSideBars();
     }
 
     //-------------//
@@ -808,6 +815,32 @@ public class Staff
         return xMax;
     }
 
+    //-----------//
+    // getChords //
+    //-----------//
+    /**
+     * Report the abscissa-sorted sequence of chords found in this staff.
+     *
+     * @return list of staff chords
+     */
+    public List<AbstractChordInter> getChords ()
+    {
+        final List<AbstractChordInter> staffChords = new ArrayList<>();
+
+        for (Inter inter : system.getSig().inters(AbstractChordInter.class)) {
+            final AbstractChordInter chord = (AbstractChordInter) inter;
+
+            // TODO: Should we discard SmallChordInter instances?
+            if (chord.getStaves().contains(this)) {
+                staffChords.add(chord);
+            }
+        }
+
+        Collections.sort(staffChords, Inters.byAbscissa);
+
+        return staffChords;
+    }
+
     //-------------//
     // getClefStop //
     //-------------//
@@ -816,82 +849,17 @@ public class Staff
      */
     public Integer getClefStop ()
     {
-        if ((header.clefRange != null) && header.clefRange.valid) {
-            return header.clefRange.getStop();
-        }
-
         if (header.clef != null) {
             Rectangle bounds = header.clef.getBounds();
 
             return (bounds.x + bounds.width) - 1;
         }
 
+        if ((header.clefRange != null) && header.clefRange.valid) {
+            return header.clefRange.getStop();
+        }
+
         return null;
-    }
-
-    //-------------//
-    // setClefStop //
-    //-------------//
-    /**
-     * Assign the ending abscissa of staff header clef.
-     *
-     * @param clefStop the clefStop to set
-     */
-    public void setClefStop (int clefStop)
-    {
-        header.clefRange.setStop(clefStop);
-        header.clefRange.valid = true;
-    }
-
-    //-------------------------//
-    // getConcreteLedgerNearby //
-    //-------------------------//
-    /**
-     * Report the concrete ledger (if any) near the provided point.
-     *
-     * @param point the provided point
-     * @return the closest ledger found, or null
-     */
-    public LedgerInter getConcreteLedgerNearby (Point2D point)
-    {
-        final double rawPitch = pitchPositionOf(point);
-        final int linePitch = 2 * (int) Math.rint(rawPitch / 2);
-
-        if (Math.abs(linePitch) <= lines.size()) {
-            return null; // Within staff height, hence no ledger
-        }
-
-        final int dir = Integer.signum(linePitch);
-        final int ledgerIndex = (linePitch - dir * (lines.size() - 1)) / 2;
-        final List<LedgerInter> ledgers = ledgerMap.get(ledgerIndex);
-
-        if (ledgers == null) {
-            return null; // Not close to a ledger line
-        }
-
-        final double x = point.getX();
-        final double y = point.getY();
-        final Rectangle2D searchBox = new Rectangle2D.Double(x - specificInterline,
-                                                             y - specificInterline,
-                                                             2 * specificInterline,
-                                                             2 * specificInterline);
-        LedgerInter bestLedger = null;
-        double bestDist = Double.MAX_VALUE;
-
-        // Browse the sequence of concrete ledgers
-        for (LedgerInter ledger : ledgers) {
-            if (ledger.getBounds().intersects(searchBox)) {
-                final Point2D center = ledger.getCenter();
-                final double dist = Math.abs(center.getY() - y);
-
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    bestLedger = ledger;
-                }
-            }
-        }
-
-        return bestLedger;
     }
 
     //---------------------//
@@ -965,6 +933,58 @@ public class Staff
         return clefs;
     }
 
+    //-------------------------//
+    // getConcreteLedgerNearby //
+    //-------------------------//
+    /**
+     * Report the concrete ledger (if any) near the provided point.
+     *
+     * @param point the provided point
+     * @return the closest ledger found, or null
+     */
+    public LedgerInter getConcreteLedgerNearby (Point2D point)
+    {
+        final double rawPitch = pitchPositionOf(point);
+        final int linePitch = 2 * (int) Math.rint(rawPitch / 2);
+
+        if (Math.abs(linePitch) <= lines.size()) {
+            return null; // Within staff height, hence no ledger
+        }
+
+        final int dir = Integer.signum(linePitch);
+        final int ledgerIndex = (linePitch - dir * (lines.size() - 1)) / 2;
+        final List<LedgerInter> ledgers = ledgerMap.get(ledgerIndex);
+
+        if (ledgers == null) {
+            return null; // Not close to a ledger line
+        }
+
+        final double x = point.getX();
+        final double y = point.getY();
+        final Rectangle2D searchBox = new Rectangle2D.Double(
+                x - specificInterline,
+                y - specificInterline,
+                2 * specificInterline,
+                2 * specificInterline);
+        LedgerInter bestLedger = null;
+        double bestDist = Double.MAX_VALUE;
+
+        // Browse the sequence of concrete ledgers
+        for (LedgerInter ledger : ledgers) {
+            if (ledger.getBounds().intersects(searchBox)) {
+                final Point2D center = ledger.getCenter();
+                final double dist = Math.abs(center.getY() - y);
+
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestLedger = ledger;
+                }
+            }
+        }
+
+        return bestLedger;
+    }
+
     //-----------//
     // getEditor //
     //-----------//
@@ -1031,19 +1051,6 @@ public class Staff
         return lines.get(0);
     }
 
-    //------------------//
-    // getHeadPointSize //
-    //------------------//
-    /**
-     * Report the proper point size for heads in this staff
-     *
-     * @return proper head point size
-     */
-    public int getHeadPointSize ()
-    {
-        return MusicFont.getHeadPointSize(system.getSheet().getScale(), specificInterline);
-    }
-
     //-----------//
     // getHeader //
     //-----------//
@@ -1053,19 +1060,6 @@ public class Staff
     public StaffHeader getHeader ()
     {
         return header;
-    }
-
-    //-----------//
-    // setHeader //
-    //-----------//
-    /**
-     * Assign staff header information.
-     *
-     * @param header the StaffHeader information
-     */
-    public void setHeader (StaffHeader header)
-    {
-        this.header = header;
     }
 
     //----------------//
@@ -1094,17 +1088,17 @@ public class Staff
         return header.stop;
     }
 
-    //---------------//
-    // setHeaderStop //
-    //---------------//
+    //------------------//
+    // getHeadPointSize //
+    //------------------//
     /**
-     * Refine the abscissa of StaffHeader break.
+     * Report the proper point size for heads in this staff
      *
-     * @param headerStop the refined StaffHeader end value
+     * @return proper head point size
      */
-    public void setHeaderStop (int headerStop)
+    public int getHeadPointSize ()
     {
-        header.stop = headerStop;
+        return MusicFont.getHeadPointSize(system.getSheet().getScale(), specificInterline);
     }
 
     //-----------//
@@ -1177,31 +1171,17 @@ public class Staff
      */
     public Integer getKeyStop ()
     {
-        if ((header.keyRange != null) && header.keyRange.valid) {
-            return header.keyRange.getStop();
-        }
-
         if (header.key != null) {
             Rectangle bounds = header.key.getBounds();
 
             return (bounds.x + bounds.width) - 1;
         }
 
-        return null;
-    }
+        if ((header.keyRange != null) && header.keyRange.valid) {
+            return header.keyRange.getStop();
+        }
 
-    //------------//
-    // setKeyStop //
-    //------------//
-    /**
-     * Assign the ending abscissa of staff header key.
-     *
-     * @param keyStop the keyStop to set
-     */
-    public void setKeyStop (Integer keyStop)
-    {
-        header.keyRange.setStop(keyStop);
-        header.keyRange.valid = true;
+        return null;
     }
 
     //-------------//
@@ -1429,24 +1409,11 @@ public class Staff
         return part;
     }
 
-    //---------//
-    // setPart //
-    //---------//
-    /**
-     * Assign the containing part.
-     *
-     * @param part the part to set
-     */
-    public void setPart (Part part)
-    {
-        this.part = part;
-    }
-
     //----------------//
     // getSideBarline //
     //----------------//
     /**
-     * Report the barline, if any, at the desired extremum side of this staff.
+     * Report the barline, if any, at the desired horizontal side of this staff.
      *
      * @param side desired horizontal side
      * @return the side barline or null
@@ -1474,33 +1441,33 @@ public class Staff
     // getStaffBarlines //
     //------------------//
     /**
-     * @return the barlines
+     * Report the ordered sequence of StaffBarlineInter's in this staff.
+     *
+     * @return the sequence of StaffBarlineInter's found in staff
      */
     public List<StaffBarlineInter> getStaffBarlines ()
     {
-        SIGraph sig = getSystem().getSig();
-
+        final SIGraph sig = getSystem().getSig();
         if (sig == null) {
             return Collections.emptyList();
         }
 
-        List<StaffBarlineInter> found = null;
-
-        for (Inter inter : sig.inters(StaffBarlineInter.class)) {
-            if (inter.getStaff() == this) {
-                if (found == null) {
-                    found = new ArrayList<>();
-                }
-
-                found.add((StaffBarlineInter) inter);
-            }
-        }
-
-        if (found == null) {
-            return Collections.emptyList();
-        }
+        final List<Inter> inters = sig.inters(StaffBarlineInter.class);
+        final List<StaffBarlineInter> found = inters.stream() //
+                .filter(inter -> inter.getStaff() == this) //
+                .map(inter -> (StaffBarlineInter) inter) //
+                .sorted(Inters.byCenterAbscissa) //
+                .collect(Collectors.toList());
 
         return found;
+    }
+
+    //----------------//
+    // getStaffConfig //
+    //----------------//
+    public StaffConfig getStaffConfig ()
+    {
+        return new StaffConfig(lines.size(), isSmall());
     }
 
     //-----------//
@@ -1512,19 +1479,6 @@ public class Staff
     public SystemInfo getSystem ()
     {
         return system;
-    }
-
-    //-----------//
-    // setSystem //
-    //-----------//
-    /**
-     * Assign the containing system.
-     *
-     * @param system the system to set
-     */
-    public void setSystem (SystemInfo system)
-    {
-        this.system = system;
     }
 
     //--------------//
@@ -1554,31 +1508,34 @@ public class Staff
      */
     public Integer getTimeStop ()
     {
-        if ((header.timeRange != null) && header.timeRange.valid) {
-            return header.timeRange.getStop();
-        }
-
         if (header.time != null) {
             Rectangle bounds = header.time.getBounds();
 
             return (bounds.x + bounds.width) - 1;
         }
 
+        if ((header.timeRange != null) && header.timeRange.valid) {
+            return header.timeRange.getStop();
+        }
+
         return null;
     }
 
-    //-------------//
-    // setTimeStop //
-    //-------------//
+    //--------//
+    // isDrum //
+    //--------//
     /**
-     * Assign the ending abscissa of the staff header time signature.
+     * Report whether this staff is a 5-line unpitched staff.
      *
-     * @param timeStop the timeStop to set
+     * @return true if so
      */
-    public void setTimeStop (Integer timeStop)
+    public boolean isDrum ()
     {
-        header.timeRange.setStop(timeStop);
-        header.timeRange.valid = true;
+        if (header != null && header.clef != null) {
+            return header.clef.getShape() == PERCUSSION_CLEF;
+        }
+
+        return part.isDrumPart();
     }
 
     //---------//
@@ -1605,6 +1562,34 @@ public class Staff
     public boolean isOneLineStaff ()
     {
         return false; // By default
+    }
+
+    //--------------//
+    // isPointAbove //
+    //--------------//
+    /**
+     * Report whether the provided point lies above the staff.
+     *
+     * @param pt provided point
+     * @return true if above
+     */
+    public boolean isPointAbove (Point2D pt)
+    {
+        return pt.getY() < getFirstLine().yAt(pt.getX());
+    }
+
+    //--------------//
+    // isPointBelow //
+    //--------------//
+    /**
+     * Report whether the provided point lies below the staff.
+     *
+     * @param pt provided point
+     * @return true if below
+     */
+    public boolean isPointBelow (Point2D pt)
+    {
+        return pt.getY() > getLastLine().yAt(pt.getX());
     }
 
     //---------//
@@ -1778,8 +1763,8 @@ public class Staff
     public boolean removeBarline (BarlineInter barline)
     {
         // Purge sideBars if needed
-        for (Iterator<Entry<HorizontalSide, BarlineInter>> it = sideBars.entrySet().iterator();
-                it.hasNext();) {
+        for (Iterator<Entry<HorizontalSide, BarlineInter>> it = sideBars.entrySet().iterator(); it
+                .hasNext();) {
             Entry<HorizontalSide, BarlineInter> entry = it.next();
 
             if (entry.getValue() == barline) {
@@ -1889,14 +1874,14 @@ public class Staff
             line.renderLine(g, showPoints, pointWidth);
         }
 
-//        // Draw ledger lines
-//        final Color oldColor = g.getColor();
-//        g.setColor(Color.CYAN);
-//        for (GeoPath line : ledgerLineMap.values()) {
-//            g.draw(line);
-//        }
-//        g.setColor(oldColor);
-//
+        //        // Draw ledger lines
+        //        final Color oldColor = g.getColor();
+        //        g.setColor(Color.CYAN);
+        //        for (GeoPath line : ledgerLineMap.values()) {
+        //            g.draw(line);
+        //        }
+        //        g.setColor(oldColor);
+        //
         return true;
     }
 
@@ -1924,6 +1909,31 @@ public class Staff
         return replicate;
     }
 
+    //------------------//
+    // retrieveSideBars //
+    //------------------//
+    /**
+     * Remember barlines on left and right sides, if any.
+     */
+    private void retrieveSideBars ()
+    {
+        sideBars.clear();
+
+        if (!barlines.isEmpty()) {
+            for (HorizontalSide side : HorizontalSide.values()) {
+                final int end = getAbscissa(side);
+                final BarlineInter bar = barlines.get((side == LEFT) ? 0 : (barlines.size() - 1));
+                final Rectangle barBox = bar.getBounds();
+
+                if ((barBox.x <= end) && (end <= ((barBox.x + barBox.width) - 1))) {
+                    sideBars.put(side, bar);
+                }
+            }
+        }
+
+        logger.debug("Staff#{} sideBars:{}", id, sideBars);
+    }
+
     //-------------//
     // setAbscissa //
     //-------------//
@@ -1943,6 +1953,51 @@ public class Staff
         }
     }
 
+    //---------//
+    // setArea //
+    //---------//
+    /**
+     * Assign staff area.
+     *
+     * @param area the underlying area
+     */
+    public void setArea (Area area)
+    {
+        this.area = area;
+
+        getArea(); // Force recomputation if area has been set to null
+
+        addAttachment("staff-area-" + id, area);
+    }
+
+    //-------------//
+    // setBarlines //
+    //-------------//
+    /**
+     * Assign the sequence of barlines.
+     *
+     * @param barlines the barlines to set
+     */
+    public void setBarlines (List<BarlineInter> barlines)
+    {
+        this.barlines = barlines;
+        retrieveSideBars();
+    }
+
+    //-------------//
+    // setClefStop //
+    //-------------//
+    /**
+     * Assign the ending abscissa of staff header clef.
+     *
+     * @param clefStop the clefStop to set
+     */
+    public void setClefStop (int clefStop)
+    {
+        header.clefRange.setStop(clefStop);
+        header.clefRange.valid = true;
+    }
+
     //----------//
     // setDummy //
     //----------//
@@ -1952,6 +2007,72 @@ public class Staff
     public void setDummy ()
     {
         dummy = true;
+    }
+
+    //-----------//
+    // setHeader //
+    //-----------//
+    /**
+     * Assign staff header information.
+     *
+     * @param header the StaffHeader information
+     */
+    public void setHeader (StaffHeader header)
+    {
+        this.header = header;
+    }
+
+    //---------------//
+    // setHeaderStop //
+    //---------------//
+    /**
+     * Refine the abscissa of StaffHeader break.
+     *
+     * @param headerStop the refined StaffHeader end value
+     */
+    public void setHeaderStop (int headerStop)
+    {
+        header.stop = headerStop;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Modify staff ID.
+     *
+     * @param id thee new ID
+     */
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
+    //------------//
+    // setKeyStop //
+    //------------//
+    /**
+     * Assign the ending abscissa of staff header key.
+     *
+     * @param keyStop the keyStop to set
+     */
+    public void setKeyStop (Integer keyStop)
+    {
+        header.keyRange.setStop(keyStop);
+        header.keyRange.valid = true;
+    }
+
+    //---------//
+    // setPart //
+    //---------//
+    /**
+     * Assign the containing part.
+     *
+     * @param part the part to set
+     */
+    public void setPart (Part part)
+    {
+        this.part = part;
     }
 
     //----------//
@@ -1977,6 +2098,33 @@ public class Staff
     public void setSmall ()
     {
         isSmall = true;
+    }
+
+    //-----------//
+    // setSystem //
+    //-----------//
+    /**
+     * Assign the containing system.
+     *
+     * @param system the system to set
+     */
+    public void setSystem (SystemInfo system)
+    {
+        this.system = system;
+    }
+
+    //-------------//
+    // setTimeStop //
+    //-------------//
+    /**
+     * Assign the ending abscissa of the staff header time signature.
+     *
+     * @param timeStop the timeStop to set
+     */
+    public void setTimeStop (Integer timeStop)
+    {
+        header.timeRange.setStop(timeStop);
+        header.timeRange.valid = true;
     }
 
     //---------------//
@@ -2068,55 +2216,7 @@ public class Staff
         return commonBottom > commonTop;
     }
 
-    //--------------//
-    // afterMarshal //
-    //--------------//
-    @SuppressWarnings("unused")
-    private void afterMarshal (Marshaller m)
-    {
-        ledgersValue = null;
-    }
-
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    @SuppressWarnings("unused")
-    private void beforeMarshal (Marshaller m)
-    {
-        if (!ledgerMap.isEmpty()) {
-            // Populate ledgersValue from ledgerMap
-            ledgersValue = new ArrayList<>();
-
-            for (Entry<Integer, List<LedgerInter>> entry : ledgerMap.entrySet()) {
-                ledgersValue.add(new LedgersEntry(entry.getKey(), entry.getValue()));
-            }
-        }
-    }
-
-    //------------------//
-    // retrieveSideBars //
-    //------------------//
-    /**
-     * Remember barlines on left and right sides, if any.
-     */
-    private void retrieveSideBars ()
-    {
-        sideBars.clear();
-
-        if (!barlines.isEmpty()) {
-            for (HorizontalSide side : HorizontalSide.values()) {
-                final int end = getAbscissa(side);
-                final BarlineInter bar = barlines.get((side == LEFT) ? 0 : (barlines.size() - 1));
-                final Rectangle barBox = bar.getBounds();
-
-                if ((barBox.x <= end) && (end <= ((barBox.x + barBox.width) - 1))) {
-                    sideBars.put(side, bar);
-                }
-            }
-        }
-
-        logger.debug("Staff#{} sideBars:{}", id, sideBars);
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------------------//
     // getDefiningPointSize //
@@ -2173,6 +2273,7 @@ public class Staff
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -2251,8 +2352,7 @@ public class Staff
     {
 
         /** Predefined place holders. */
-        private static ConcurrentHashMap<Integer, StaffHolder> holders
-                = new ConcurrentHashMap<>();
+        private static ConcurrentHashMap<Integer, StaffHolder> holders = new ConcurrentHashMap<>();
 
         /**
          * Create a place holder

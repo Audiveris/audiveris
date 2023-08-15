@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,14 +22,11 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
-import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.Fraction;
 import org.audiveris.omr.sheet.Sheet;
@@ -37,6 +34,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sheet.stem.BeamLinker;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamPortion;
@@ -55,12 +53,14 @@ import org.audiveris.omr.ui.symbol.BeamSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
-import org.audiveris.omr.util.Jaxb;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,14 +79,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.audiveris.omr.sheet.ui.ObjectUIModel;
 
 /**
  * Abstract class <code>AbstractBeamInter</code> is the basis for {@link BeamInter},
@@ -107,7 +101,7 @@ import org.audiveris.omr.sheet.ui.ObjectUIModel;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class AbstractBeamInter
-        extends AbstractInter
+        extends AbstractHorizontalInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -116,34 +110,50 @@ public abstract class AbstractBeamInter
     private static final Logger logger = LoggerFactory.getLogger(AbstractBeamInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
-    // Persistent data
-    //----------------
-    //
-    /**
-     * The beam average thickness, specified in pixels with 1 digit maximum after the dot.
-     */
-    @XmlAttribute
-    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
-    protected double height;
-
-    /** The beam median line, defined from left to right. */
-    @XmlElement
-    @XmlJavaTypeAdapter(Jaxb.Line2DAdapter.class)
-    protected Line2D median;
 
     // Transient data
     //---------------
-    //
+
     /** Beam-Stem linker. */
     private BeamLinker linker;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new AbstractBeamInter <b>ghost</b> object.
+     * Median and height must be assigned later
+     *
+     * @param shape BEAM or BEAM_HOOK or BEAM_SMALL
+     * @param grade the grade
+     */
+    protected AbstractBeamInter (Shape shape,
+                                 Double grade)
+    {
+        super(shape, grade);
+    }
+
     /**
      * Creates a new AbstractBeamInter object.
      * Note there is no underlying glyph, cleaning will be based on beam area.
      *
-     * @param shape   BEAM or BEAM_HOOK
+     * @param shape  BEAM or BEAM_HOOK or BEAM_SMALL or MULTIPLE_REST
+     * @param grade  evaluated grade
+     * @param median median beam line
+     * @param height beam height
+     */
+    protected AbstractBeamInter (Shape shape,
+                                 Double grade,
+                                 Line2D median,
+                                 double height)
+    {
+        super(shape, grade, median, height);
+    }
+
+    /**
+     * Creates a new AbstractBeamInter object.
+     * Note there is no underlying glyph, cleaning will be based on beam area.
+     *
+     * @param shape   BEAM or BEAM_HOOK or BEAM_SMALL
      * @param impacts the grade details
      * @param median  median beam line
      * @param height  beam height
@@ -153,29 +163,11 @@ public abstract class AbstractBeamInter
                                  Line2D median,
                                  double height)
     {
-        super(null, null, shape, impacts);
-        this.median = median;
-        this.height = height;
-
-        if (median != null) {
-            computeArea();
-        }
-    }
-
-    /**
-     * Creates a new AbstractBeamInter <b>ghost</b> object.
-     * Median and height must be assigned later
-     *
-     * @param shape BEAM or BEAM_HOOK
-     * @param grade the grade
-     */
-    protected AbstractBeamInter (Shape shape,
-                                 Double grade)
-    {
-        super(null, null, shape, grade);
+        super(shape, impacts, median, height);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -210,7 +202,10 @@ public abstract class AbstractBeamInter
         boolean left = false;
         boolean right = false;
 
-        for (Relation rel : sig.getRelations(this, BeamStemRelation.class, BeamRestRelation.class)) {
+        for (Relation rel : sig.getRelations(
+                this,
+                BeamStemRelation.class,
+                BeamRestRelation.class)) {
             final BeamPortion portion;
 
             if (rel instanceof BeamStemRelation) {
@@ -233,94 +228,73 @@ public abstract class AbstractBeamInter
         return isAbnormal();
     }
 
-    //----------//
-    // contains //
-    //----------//
+    //------------//
+    // deriveFrom //
+    //------------//
     @Override
-    public boolean contains (Point point)
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation)
     {
-        getBounds();
+        /*
+         * A beam (or a beam hook) can have its left and/or right sides snapped to existing stems,
+         * which results in beam width which can increase/decrease according to the stems nearby.
+         * <p>
+         * Short beams (like beam hooks) can have their width decrease so much, that both their
+         * left side and their right side may get snapped to the SAME stem, resulting in a width
+         * equal to zero.
+         * Such a zero-wide beam gets invisible, and if the end-user releases the mouse at this
+         * moment, a very weird beam gets created.
+         * To cope with this possibility, we have to make sure that the beam width never gets
+         * lower than a minimum.
+         */
+        final BeamSymbol beamSymbol = (BeamSymbol) symbol;
+        final Model model = beamSymbol.getModel(font, dropLocation);
+        median = new Line2D.Double(model.p1, model.p2);
+        height = model.thickness;
 
-        if ((bounds != null) && !bounds.contains(point)) {
-            return false;
+        computeArea();
+
+        if (staff != null) {
+            final List<Inter> systemStems = staff.getSystem().getSig().inters(StemInter.class);
+            Collections.sort(systemStems, Inters.byAbscissa);
+
+            // Snap sides?
+            Double left = getSnapAbscissa(LEFT, systemStems);
+            Double right = getSnapAbscissa(RIGHT, systemStems);
+
+            if (left != null && right != null) {
+                // Both sides get snapped, let's avoid beam collapse
+                final double width = right - left;
+                final int minWidth = sheet.getScale().toPixels(constants.minBeamWidth);
+
+                if (width < minWidth) {
+                    // Choose stem side
+                    if (dropLocation.x > 0.5 * (left + right)) {
+                        right = left + minWidth;
+                    } else {
+                        left = right - minWidth;
+                    }
+                }
+            }
+
+            if (left != null) {
+                model.p1.setLocation(left, model.p1.getY());
+            }
+
+            if (right != null) {
+                model.p2.setLocation(right, model.p2.getY());
+            }
+
+            if (left != null || right != null) {
+                median.setLine(model.p1, model.p2);
+                computeArea();
+                dropLocation.setLocation(PointUtil.middle(median));
+            }
         }
 
-        if ((glyph != null) && glyph.contains(point)) {
-            return true;
-        }
-
-        if (area == null) {
-            computeArea();
-        }
-
-        return area.contains(point);
-    }
-
-    //-----------//
-    // getLinker //
-    //-----------//
-    /**
-     * Report the dedicated beam-stem linker.
-     *
-     * @return the linker
-     */
-    public BeamLinker getLinker ()
-    {
-        return linker;
-    }
-
-    //-----------//
-    // setLinker //
-    //-----------//
-    /**
-     * Set the dedicated beam-stem linker.
-     *
-     * @param linker the beam-stem linker
-     */
-    public void setLinker (BeamLinker linker)
-    {
-        this.linker = linker;
-    }
-
-    //-----------//
-    // getBorder //
-    //-----------//
-    /**
-     * Report the beam border line on desired side
-     *
-     * @param side the desired side
-     * @return the beam border line on desired side
-     */
-    public Line2D getBorder (VerticalSide side)
-    {
-        final double dy = (side == TOP) ? (-height / 2) : (height / 2);
-
-        return new Line2D.Double(
-                median.getX1(),
-                median.getY1() + dy,
-                median.getX2(),
-                median.getY2() + dy);
-    }
-
-    //-----------//
-    // getBounds //
-    //-----------//
-    @Override
-    public Rectangle getBounds ()
-    {
-        if (bounds != null) {
-            return new Rectangle(bounds);
-        }
-
-        if (glyph != null) {
-            return new Rectangle(bounds = glyph.getBounds());
-        }
-
-        if (area == null) {
-            computeArea();
-        }
-
-        return new Rectangle(bounds = area.getBounds());
+        return true;
     }
 
     //-----------//
@@ -394,21 +368,6 @@ public abstract class AbstractBeamInter
     }
 
     //----------//
-    // setGroup //
-    //----------//
-    /**
-     * Assign the containing BeamGroupInter.
-     *
-     * @param group containing group
-     */
-    public void setGroup (BeamGroupInter group)
-    {
-        if (group != null) {
-            group.addMember(this);
-        }
-    }
-
-    //----------//
     // getHeads //
     //----------//
     /**
@@ -430,27 +389,88 @@ public abstract class AbstractBeamInter
     }
 
     //-----------//
-    // getHeight //
+    // getLinker //
     //-----------//
     /**
-     * @return the height
+     * Report the dedicated beam-stem linker.
+     *
+     * @return the linker
      */
-    public double getHeight ()
+    public BeamLinker getLinker ()
     {
-        return height;
+        return linker;
     }
 
-    //-----------//
-    // getMedian //
-    //-----------//
     /**
-     * Report the median line
+     * Define lookup area around the beam for potential stems
      *
-     * @return the beam median line
+     * @return the look up area
      */
-    public Line2D getMedian ()
+    private Area getLookupArea (Scale scale)
     {
-        return median;
+        final Line2D top = getBorder(TOP);
+        final Line2D bottom = getBorder(BOTTOM);
+        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(getProfile()));
+        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(getProfile()));
+
+        final Path2D lu = new Path2D.Double();
+        double xMin = top.getX1() - xOut;
+        double xMax = top.getX2() + xOut;
+        Point2D topLeft = LineUtil.intersectionAtX(top, xMin);
+        lu.moveTo(topLeft.getX(), topLeft.getY() - yGap);
+
+        Point2D topRight = LineUtil.intersectionAtX(top, xMax);
+        lu.lineTo(topRight.getX(), topRight.getY() - yGap);
+
+        Point2D bottomRight = LineUtil.intersectionAtX(bottom, xMax);
+        lu.lineTo(bottomRight.getX(), bottomRight.getY() + yGap);
+
+        Point2D bottomLeft = LineUtil.intersectionAtX(bottom, xMin);
+        lu.lineTo(bottomLeft.getX(), bottomLeft.getY() + yGap);
+        lu.closePath();
+
+        return new Area(lu);
+    }
+
+    //-----------------//
+    // getSnapAbscissa //
+    //-----------------//
+    /**
+     * Report the theoretical abscissa of the provided beam side when correctly aligned
+     * with a suitable stem.
+     * <p>
+     * Required properties: staff or sig, median, height
+     *
+     * @param side        the desired horizontal side
+     * @param systemStems all stems in containing system
+     * @return the proper abscissa if any, null otherwise
+     */
+    private Double getSnapAbscissa (HorizontalSide side,
+                                    List<Inter> systemStems)
+    {
+        final SystemInfo system;
+
+        if (sig != null) {
+            system = sig.getSystem();
+        } else if (staff != null) {
+            system = staff.getSystem();
+        } else {
+            logger.warn("No system nor staff for {}", this);
+
+            return null;
+        }
+
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final Link link = lookupSideLink(systemStems, system, side, profile);
+
+        if (link != null) {
+            final StemInter stem = (StemInter) link.partner;
+            final Point2D beamEnd = (side == LEFT) ? median.getP1() : median.getP2();
+
+            return LineUtil.xAtY(stem.getMedian(), beamEnd.getY());
+        }
+
+        return null;
     }
 
     //-----------//
@@ -519,75 +539,6 @@ public abstract class AbstractBeamInter
         return null;
     }
 
-    //------------//
-    // deriveFrom //
-    //------------//
-    @Override
-    public boolean deriveFrom (ShapeSymbol symbol,
-                               Sheet sheet,
-                               MusicFont font,
-                               Point dropLocation)
-    {
-        /*
-         * A beam (or a beam hook) can have its left and/or right sides snapped to existing stems,
-         * which results in beam width which can increase/decrease according to the stems nearby.
-         * <p>
-         * Short beams (like beam hooks) can have their width decrease so much, that both their
-         * left side and their right side may get snapped to the SAME stem, resulting in a width
-         * equal to zero.
-         * Such a zero-wide beam gets invisible, and if the end-user releases the mouse at this
-         * moment, a very weird beam gets created.
-         * To cope with this possibility, we have to make sure that the beam width never gets
-         * lower than a minimum.
-         */
-        final BeamSymbol beamSymbol = (BeamSymbol) symbol;
-        final Model model = beamSymbol.getModel(font, dropLocation);
-        median = new Line2D.Double(model.p1, model.p2);
-        height = model.thickness;
-
-        computeArea();
-
-        if (staff != null) {
-            final List<Inter> systemStems = staff.getSystem().getSig().inters(StemInter.class);
-            Collections.sort(systemStems, Inters.byAbscissa);
-
-            // Snap sides?
-            Double left = getSnapAbscissa(LEFT, systemStems);
-            Double right = getSnapAbscissa(RIGHT, systemStems);
-
-            if (left != null && right != null) {
-                // Both sides get snapped, let's avoid beam collapse
-                final double width = right - left;
-                final int minWidth = sheet.getScale().toPixels(constants.minBeamWidth);
-
-                if (width < minWidth) {
-                    // Choose stem side
-                    if (dropLocation.x > 0.5 * (left + right)) {
-                        right = left + minWidth;
-                    } else {
-                        left = right - minWidth;
-                    }
-                }
-            }
-
-            if (left != null) {
-                model.p1.setLocation(left, model.p1.getY());
-            }
-
-            if (right != null) {
-                model.p2.setLocation(right, model.p2.getY());
-            }
-
-            if (left != null || right != null) {
-                median.setLine(model.p1, model.p2);
-                computeArea();
-                dropLocation.setLocation(PointUtil.middle(median));
-            }
-        }
-
-        return true;
-    }
-
     //-------------------//
     // hasCommonStemWith //
     //-------------------//
@@ -630,272 +581,17 @@ public abstract class AbstractBeamInter
         return false;
     }
 
-    //--------//
-    // preAdd //
-    //--------//
-    @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
-    {
-        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
-
-        // Include the created beam into suitable beam group
-        BeamGroupInter group = BeamGroupInter.findBeamGroup(this, staff.getSystem(), null);
-
-        if (group != null) {
-            tasks.add(new LinkTask(staff.getSystem().getSig(), group, this, new Containment()));
-        } else {
-            group = new BeamGroupInter();
-            group.setManual(true);
-            group.setStaff(staff);
-
-            tasks.add(new AdditionTask(staff.getSystem().getSig(),
-                                       group,
-                                       getBounds(),
-                                       Arrays.asList(new Link(this, new Containment(), true))));
-        }
-
-        return tasks;
-    }
-
     //---------//
-    // preEdit //
+    // isSmall //
     //---------//
-    @Override
-    public List<? extends UITask> preEdit (InterEditor editor)
-    {
-        final List<UITask> tasks = new ArrayList<>(super.preEdit(editor));
-
-        // Keep same beam group?
-        final BeamGroupInter oldGroup = getGroup();
-        boolean oldStillOk = false;
-
-        if (oldGroup != null) {
-            // Check if this (edited) beam can still be part of the oldGroup
-            final List<Inter> members = oldGroup.getMembers();
-
-            if (members.size() == 1) {
-                oldStillOk = true;
-            } else {
-                members.remove(this);
-
-                final Scale scale = sig.getSystem().getSheet().getScale();
-
-                for (Inter member : members) {
-                    if (BeamGroupInter.canBeNeighbors(this, (AbstractBeamInter) member, scale)) {
-                        oldStillOk = true;
-                    }
-                }
-            }
-
-            if (!oldStillOk) {
-                // Unlink this beam from oldGroup
-                final Relation rel = sig.getRelation(oldGroup, this, Containment.class);
-                tasks.add(new UnlinkTask(sig, rel));
-            }
-        }
-
-        // Check for another compatible beam group
-        final BeamGroupInter otherGroup = BeamGroupInter.findBeamGroup(
-                this, sig.getSystem(), oldGroup);
-
-        if (otherGroup != null) {
-            if ((oldGroup != null) && oldStillOk) {
-                // Migrate all beams from oldGroup to otherGroup
-                for (Relation r : sig.outgoingEdgesOf(oldGroup)) {
-                    if (r instanceof Containment) {
-                        Inter b = sig.getEdgeTarget(r);
-                        tasks.add(new UnlinkTask(sig, r));
-                        tasks.add(new LinkTask(sig, otherGroup, b, new Containment()));
-                    }
-                }
-
-                // Then remove oldGroup
-                tasks.add(new RemovalTask(oldGroup));
-            } else {
-                // Link this beam to otherGroup
-                tasks.add(new LinkTask(sig, otherGroup, this, new Containment()));
-            }
-        } else {
-            // Create a brand new group with just this beam
-            final BeamGroupInter newGroup = new BeamGroupInter();
-            newGroup.setManual(true);
-            newGroup.setStaff(staff);
-            tasks.add(new AdditionTask(sig,
-                                       newGroup,
-                                       getBounds(),
-                                       Arrays.asList(new Link(this, new Containment(), true))));
-        }
-
-        return tasks;
-    }
-
-    //--------//
-    // remove //
-    //--------//
-    @Override
-    public void remove (boolean extensive)
-    {
-        if (isRemoved()) {
-            return;
-        }
-
-        for (AbstractChordInter chord : getChords()) {
-            chord.invalidateCache();
-        }
-
-        super.remove(extensive);
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final int profile = Math.max(getProfile(), system.getProfile());
-        final List<Inter> systemStems = system.getSig().inters(StemInter.class);
-        Collections.sort(systemStems, Inters.byAbscissa);
-
-        return lookupLinks(systemStems, system, profile);
-    }
-
-    //---------------//
-    // searchUnlinks //
-    //---------------//
-    @Override
-    public Collection<Link> searchUnlinks (SystemInfo system,
-                                           Collection<Link> links)
-    {
-        return searchObsoletelinks(links, BeamStemRelation.class);
-    }
-
-    //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        super.setGlyph(glyph);
-
-        if ((median == null) && (glyph != null)) {
-            // Case of manual beam: Compute height and median parameters and area
-            height = (int) Math.rint(glyph.getMeanThickness(Orientation.HORIZONTAL));
-            median = glyph.getCenterLine();
-
-            computeArea();
-        }
-    }
-
-    //---------------//
-    // switchToGroup //
-    //---------------//
     /**
-     * Move this beam to a new BeamGroupInter.
+     * Report whether this beam is a small beam.
      *
-     * @param group the (new) containing beam group
+     * @return true if so
      */
-    public void switchToGroup (BeamGroupInter group)
+    public boolean isSmall ()
     {
-        final BeamGroupInter oldGroup = getGroup();
-
-        logger.debug("Switching {} from {} to {}", this, oldGroup, group);
-
-        // Trivial noop case
-        if (oldGroup == group) {
-            return;
-        }
-
-        // Remove from current group if any
-        if (oldGroup != null) {
-            oldGroup.removeMember(this);
-        }
-
-        // Assign to new group
-        if (group != null) {
-            group.addMember(this);
-        }
-    }
-
-    //-----------------//
-    // upgradeOldStuff //
-    //-----------------//
-    @Override
-    public boolean upgradeOldStuff (List<Version> upgrades)
-    {
-        boolean upgraded = false;
-
-        if (upgrades.contains(Versions.INTER_GEOMETRY)) {
-            if (median != null) {
-                median.setLine(median.getX1(), median.getY1() + 0.5,
-                               median.getX2() + 1, median.getY2() + 0.5);
-                computeArea();
-                upgraded = true;
-            }
-        }
-
-        return upgraded;
-    }
-
-    //-------------//
-    // computeArea //
-    //-------------//
-    /**
-     * Compute the beam area.
-     */
-    protected final void computeArea ()
-    {
-        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
-
-        // Define precise bounds based on this path
-        // NOTA: these bounds may go slightly beyond the sheet image limits...
-        bounds = getArea().getBounds();
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled for this object,
-     * but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        if (median != null) {
-            computeArea();
-        }
-    }
-
-    /**
-     * Define lookup area around the beam for potential stems
-     *
-     * @return the look up area
-     */
-    private Area getLookupArea (Scale scale)
-    {
-        final Line2D top = getBorder(TOP);
-        final Line2D bottom = getBorder(BOTTOM);
-        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(getProfile()));
-        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(getProfile()));
-
-        final Path2D lu = new Path2D.Double();
-        double xMin = top.getX1() - xOut;
-        double xMax = top.getX2() + xOut;
-        Point2D topLeft = LineUtil.intersectionAtX(top, xMin);
-        lu.moveTo(topLeft.getX(), topLeft.getY() - yGap);
-
-        Point2D topRight = LineUtil.intersectionAtX(top, xMax);
-        lu.lineTo(topRight.getX(), topRight.getY() - yGap);
-
-        Point2D bottomRight = LineUtil.intersectionAtX(bottom, xMax);
-        lu.lineTo(bottomRight.getX(), bottomRight.getY() + yGap);
-
-        Point2D bottomLeft = LineUtil.intersectionAtX(bottom, xMin);
-        lu.lineTo(bottomLeft.getX(), bottomLeft.getY() + yGap);
-        lu.closePath();
-
-        return new Area(lu);
+        return false;
     }
 
     //-------------//
@@ -1019,57 +715,235 @@ public abstract class AbstractBeamInter
         return bestLink;
     }
 
-    //-------------------//
-    // getRelationCenter //
-    //-------------------//
+    //--------//
+    // preAdd //
+    //--------//
     @Override
-    public Point2D getRelationCenter ()
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
-        return PointUtil.middle(median);
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel, toPublish));
+
+        // Include the created beam into suitable beam group
+        BeamGroupInter group = BeamGroupInter.findBeamGroup(this, staff.getSystem(), null);
+
+        if (group != null) {
+            tasks.add(new LinkTask(staff.getSystem().getSig(), group, this, new Containment()));
+        } else {
+            group = new BeamGroupInter();
+            group.setManual(true);
+            group.setStaff(staff);
+
+            tasks.add(
+                    new AdditionTask(
+                            staff.getSystem().getSig(),
+                            group,
+                            getBounds(),
+                            Arrays.asList(new Link(this, new Containment(), true))));
+        }
+
+        return tasks;
+    }
+
+    //---------//
+    // preEdit //
+    //---------//
+    @Override
+    public List<? extends UITask> preEdit (InterEditor editor)
+    {
+        final List<UITask> tasks = new ArrayList<>(super.preEdit(editor));
+
+        // Keep same beam group?
+        final BeamGroupInter oldGroup = getGroup();
+        boolean oldStillOk = false;
+
+        if (oldGroup != null) {
+            // Check if this (edited) beam can still be part of the oldGroup
+            final List<Inter> members = oldGroup.getMembers();
+
+            if (members.size() == 1) {
+                oldStillOk = true;
+            } else {
+                members.remove(this);
+
+                final Scale scale = sig.getSystem().getSheet().getScale();
+
+                for (Inter member : members) {
+                    if (BeamGroupInter.canBeNeighbors(this, (AbstractBeamInter) member, scale)) {
+                        oldStillOk = true;
+                    }
+                }
+            }
+
+            if (!oldStillOk) {
+                // Unlink this beam from oldGroup
+                final Relation rel = sig.getRelation(oldGroup, this, Containment.class);
+                tasks.add(new UnlinkTask(sig, rel));
+            }
+        }
+
+        // Check for another compatible beam group
+        final BeamGroupInter otherGroup = BeamGroupInter.findBeamGroup(
+                this,
+                sig.getSystem(),
+                oldGroup);
+
+        if (otherGroup != null) {
+            if ((oldGroup != null) && oldStillOk) {
+                // Migrate all beams from oldGroup to otherGroup
+                for (Relation r : sig.outgoingEdgesOf(oldGroup)) {
+                    if (r instanceof Containment) {
+                        Inter b = sig.getEdgeTarget(r);
+                        tasks.add(new UnlinkTask(sig, r));
+                        tasks.add(new LinkTask(sig, otherGroup, b, new Containment()));
+                    }
+                }
+
+                // Then remove oldGroup
+                tasks.add(new RemovalTask(oldGroup));
+            } else {
+                // Link this beam to otherGroup
+                tasks.add(new LinkTask(sig, otherGroup, this, new Containment()));
+            }
+        } else {
+            // Create a brand new group with just this beam
+            final BeamGroupInter newGroup = new BeamGroupInter();
+            newGroup.setManual(true);
+            newGroup.setStaff(staff);
+            tasks.add(
+                    new AdditionTask(
+                            sig,
+                            newGroup,
+                            getBounds(),
+                            Arrays.asList(new Link(this, new Containment(), true))));
+        }
+
+        return tasks;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (isRemoved()) {
+            return;
+        }
+
+        for (AbstractChordInter chord : getChords()) {
+            chord.invalidateCache();
+        }
+
+        super.remove(extensive);
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final List<Inter> systemStems = system.getSig().inters(StemInter.class);
+        Collections.sort(systemStems, Inters.byAbscissa);
+
+        return lookupLinks(systemStems, system, profile);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, BeamStemRelation.class);
+    }
+
+    //----------//
+    // setGroup //
+    //----------//
+    /**
+     * Assign the containing BeamGroupInter.
+     *
+     * @param group containing group
+     */
+    public void setGroup (BeamGroupInter group)
+    {
+        if (group != null) {
+            group.addMember(this);
+        }
+    }
+
+    //-----------//
+    // setLinker //
+    //-----------//
+    /**
+     * Set the dedicated beam-stem linker.
+     *
+     * @param linker the beam-stem linker
+     */
+    public void setLinker (BeamLinker linker)
+    {
+        this.linker = linker;
+    }
+
+    //---------------//
+    // switchToGroup //
+    //---------------//
+    /**
+     * Move this beam to a new BeamGroupInter.
+     *
+     * @param group the (new) containing beam group
+     */
+    public void switchToGroup (BeamGroupInter group)
+    {
+        final BeamGroupInter oldGroup = getGroup();
+
+        logger.debug("Switching {} from {} to {}", this, oldGroup, group);
+
+        // Trivial noop case
+        if (oldGroup == group) {
+            return;
+        }
+
+        // Remove from current group if any
+        if (oldGroup != null) {
+            oldGroup.removeMember(this);
+        }
+
+        // Assign to new group
+        if (group != null) {
+            group.addMember(this);
+        }
     }
 
     //-----------------//
-    // getSnapAbscissa //
+    // upgradeOldStuff //
     //-----------------//
-    /**
-     * Report the theoretical abscissa of the provided beam side when correctly aligned
-     * with a suitable stem.
-     * <p>
-     * Required properties: staff or sig, median, height
-     *
-     * @param side        the desired horizontal side
-     * @param systemStems all stems in containing system
-     * @return the proper abscissa if any, null otherwise
-     */
-    private Double getSnapAbscissa (HorizontalSide side,
-                                    List<Inter> systemStems)
+    @Override
+    public boolean upgradeOldStuff (List<Version> upgrades)
     {
-        final SystemInfo system;
+        boolean upgraded = false;
 
-        if (sig != null) {
-            system = sig.getSystem();
-        } else if (staff != null) {
-            system = staff.getSystem();
-        } else {
-            logger.warn("No system nor staff for {}", this);
-
-            return null;
+        if (upgrades.contains(Versions.INTER_GEOMETRY)) {
+            if (median != null) {
+                median.setLine(
+                        median.getX1(),
+                        median.getY1() + 0.5,
+                        median.getX2() + 1,
+                        median.getY2() + 0.5);
+                computeArea();
+                upgraded = true;
+            }
         }
 
-        final int profile = Math.max(getProfile(), system.getProfile());
-        final Link link = lookupSideLink(systemStems, system, side, profile);
-
-        if (link != null) {
-            final StemInter stem = (StemInter) link.partner;
-            final Point2D beamEnd = (side == LEFT) ? median.getP1() : median.getP2();
-
-            return LineUtil.xAtY(stem.getMedian(), beamEnd.getY());
-        }
-
-        return null;
+        return upgraded;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -1080,70 +954,6 @@ public abstract class AbstractBeamInter
         private final Fraction minBeamWidth = new Fraction(
                 0.5,
                 "Minimum width for a beam or beam hook");
-    }
-
-    //---------//
-    // Impacts //
-    //---------//
-    /**
-     * Impacts definition for a beam.
-     */
-    public static class Impacts
-            extends GradeImpacts
-    {
-
-        private static final String[] NAMES = new String[]{
-            "wdth", "minH", "maxH", "core", "belt", "jit"};
-
-        private static final int DIST_INDEX = 5;
-
-        private static final double[] WEIGHTS = new double[]{0.5, 1, 1, 2, 2, 2};
-
-        public Impacts (double width,
-                        double minHeight,
-                        double maxHeight,
-                        double core,
-                        double belt,
-                        double dist)
-        {
-            super(NAMES, WEIGHTS);
-            setImpact(0, width);
-            setImpact(1, minHeight);
-            setImpact(2, maxHeight);
-            setImpact(3, core);
-            setImpact(4, belt);
-            setImpact(5, dist);
-        }
-
-        public double getDistImpact ()
-        {
-            return getImpact(DIST_INDEX);
-        }
-    }
-
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements ObjectUIModel
-    {
-
-        // Left point of median line
-        public Point2D p1;
-
-        // Right point of median line
-        public Point2D p2;
-
-        // Beam thickness
-        public double thickness;
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(p1, dx, dy);
-            PointUtil.add(p2, dx, dy);
-        }
     }
 
     //--------//
@@ -1195,11 +1005,12 @@ public abstract class AbstractBeamInter
             handles.add(new Handle(p1)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Handles
-                    PointUtil.add(p1, vector);
-                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
+                    PointUtil.add(p1, dx, dy);
+                    PointUtil.add(middle, dx / 2.0, dy / 2.0);
 
                     // Data
                     beam.median.setLine(p1, p2);
@@ -1228,11 +1039,12 @@ public abstract class AbstractBeamInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Handles
                     for (Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), vector);
+                        PointUtil.add(handle.getPoint(), dx, dy);
                     }
 
                     // Data
@@ -1269,11 +1081,12 @@ public abstract class AbstractBeamInter
             handles.add(new Handle(p2)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Handles
-                    PointUtil.add(middle, vector.x / 2.0, vector.y / 2.0);
-                    PointUtil.add(p2, vector);
+                    PointUtil.add(middle, dx / 2.0, dy / 2.0);
+                    PointUtil.add(p2, dx, dy);
 
                     // Data
                     beam.median.setLine(p1, p2);
@@ -1299,6 +1112,16 @@ public abstract class AbstractBeamInter
             });
         }
 
+        @Override
+        protected void doit ()
+        {
+            final AbstractBeamInter beam = (AbstractBeamInter) object;
+            beam.median.setLine(model.p1, model.p2);
+            beam.computeArea(); // Set bounds also
+
+            super.doit(); // No more glyph
+        }
+
         private List<Inter> getSystemStems ()
         {
             final AbstractBeamInter beam = (AbstractBeamInter) object;
@@ -1313,16 +1136,6 @@ public abstract class AbstractBeamInter
         }
 
         @Override
-        protected void doit ()
-        {
-            final AbstractBeamInter beam = (AbstractBeamInter) object;
-            beam.median.setLine(model.p1, model.p2);
-            beam.computeArea(); // Set bounds also
-
-            super.doit(); // No more glyph
-        }
-
-        @Override
         public void undo ()
         {
             final AbstractBeamInter beam = (AbstractBeamInter) object;
@@ -1330,6 +1143,71 @@ public abstract class AbstractBeamInter
             beam.computeArea(); // Set bounds also
 
             super.undo();
+        }
+    }
+
+    //---------//
+    // Impacts //
+    //---------//
+    /**
+     * Impacts definition for a beam.
+     */
+    public static class Impacts
+            extends GradeImpacts
+    {
+
+        private static final String[] NAMES = new String[]
+        { "wdth", "minH", "maxH", "core", "belt", "jit" };
+
+        private static final int DIST_INDEX = 5;
+
+        private static final double[] WEIGHTS = new double[]
+        { 0.5, 1, 1, 2, 2, 2 };
+
+        public Impacts (double width,
+                        double minHeight,
+                        double maxHeight,
+                        double core,
+                        double belt,
+                        double dist)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, width);
+            setImpact(1, minHeight);
+            setImpact(2, maxHeight);
+            setImpact(3, core);
+            setImpact(4, belt);
+            setImpact(5, dist);
+        }
+
+        public double getDistImpact ()
+        {
+            return getImpact(DIST_INDEX);
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
+    {
+
+        // Left point of median line
+        public Point2D p1;
+
+        // Right point of median line
+        public Point2D p2;
+
+        // Beam thickness
+        public double thickness;
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(p1, dx, dy);
+            PointUtil.add(p2, dx, dy);
         }
     }
 }

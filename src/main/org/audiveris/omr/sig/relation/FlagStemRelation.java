@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -27,7 +27,9 @@ import static org.audiveris.omr.glyph.ShapeSet.FlagsUp;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
 import org.audiveris.omr.sig.inter.Inter;
-import static org.audiveris.omr.sig.relation.StemPortion.*;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_MIDDLE;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
@@ -55,6 +57,7 @@ public class FlagStemRelation
     private static final Logger logger = LoggerFactory.getLogger(FlagStemRelation.class);
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//
@@ -63,6 +66,15 @@ public class FlagStemRelation
     {
         final AbstractFlagInter flag = (AbstractFlagInter) e.getEdgeSource();
         flag.checkAbnormal();
+    }
+
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
+    @Override
+    protected double getSourceCoeff ()
+    {
+        return constants.flagSupportCoeff.getValue();
     }
 
     //----------------//
@@ -76,50 +88,11 @@ public class FlagStemRelation
         final double margin = scale.getInterline(); // TODO: use a constant instead?
 
         if (FlagsUp.contains(source.getShape())) {
-            return (extensionPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM : STEM_MIDDLE;
-        } else {
             return (extensionPoint.getY() < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
+        } else {
+            return (extensionPoint.getY() > (stemLine.getY2() - margin)) ? STEM_BOTTOM
+                    : STEM_MIDDLE;
         }
-    }
-
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return false;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return true;
-    }
-
-    //---------//
-    // removed //
-    //---------//
-    @Override
-    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
-    {
-        final AbstractFlagInter flag = (AbstractFlagInter) e.getEdgeSource();
-
-        if (!flag.isRemoved()) {
-            flag.checkAbnormal();
-        }
-    }
-
-    //----------------//
-    // getSourceCoeff //
-    //----------------//
-    @Override
-    protected double getSourceCoeff ()
-    {
-        return constants.flagSupportCoeff.getValue();
     }
 
     //----------------//
@@ -158,6 +131,39 @@ public class FlagStemRelation
         return getYGapMaximum(profile);
     }
 
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final AbstractFlagInter flag = (AbstractFlagInter) e.getEdgeSource();
+
+        if (!flag.isRemoved()) {
+            flag.checkAbnormal();
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------------------//
     // getXInGapMaximum //
     //------------------//
@@ -183,6 +189,7 @@ public class FlagStemRelation
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

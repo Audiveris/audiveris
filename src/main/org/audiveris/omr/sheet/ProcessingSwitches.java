@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -25,6 +25,10 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.param.ConstantBasedParam;
 import org.audiveris.omr.util.param.Param;
+import static org.audiveris.omr.util.param.Param.GLOBAL_SCOPE;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -46,37 +50,44 @@ public class ProcessingSwitches
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(ProcessingSwitches.class);
+
     static final Constants constants = new Constants();
 
     /** Default switches values. */
     private static volatile ProcessingSwitches defaultSwitches;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Map of switches parameters.
      */
     protected final EnumMap<ProcessingSwitch, Param<Boolean>> map = new EnumMap<>(
             ProcessingSwitch.class);
 
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create a <code>ProcessingSwitches</code> object with its parent.
-     *
-     * @param parent parent switches
-     */
-    public ProcessingSwitches (ProcessingSwitches parent)
-    {
-        if (parent != null) {
-            setParent(parent);
-        }
-    }
-
     // Meant for JAXB
     protected ProcessingSwitches ()
     {
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Create a <code>ProcessingSwitches</code> object with its parent.
+     *
+     * @param parent parent switches
+     * @param scope  owning scope of these switches
+     */
+    public ProcessingSwitches (ProcessingSwitches parent,
+                               Object scope)
+    {
+        if (parent != null) {
+            setParent(parent, scope);
+        }
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Report the parameter for the provided key.
      *
@@ -116,24 +127,30 @@ public class ProcessingSwitches
     }
 
     /**
-     * Assign the parent of this object.
+     * Assign parent and scope for each switch.
      *
-     * @param parent the parent to assign
+     * @param parent the parent set of switches
+     * @param scope  the scope of these switches
      */
-    public final void setParent (ProcessingSwitches parent)
+    public final void setParent (ProcessingSwitches parent,
+                                 Object scope)
     {
-        // Complete the map and link each switch to parent switch
-        for (ProcessingSwitch key : ProcessingSwitch.values()) {
+        // Complete the map, link each switch to parent switch, set provided scope
+        for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
             Param<Boolean> param = getParam(key);
 
             if (param == null) {
-                param = new Param<>();
+                param = new Param<>(scope);
                 map.put(key, param);
+            } else {
+                param.setScope(scope);
             }
 
             param.setParent(parent.getParam(key));
         }
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     /**
      * Report the top level switches, which provide default values.
@@ -152,6 +169,94 @@ public class ProcessingSwitches
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    static class Constants
+            extends ConstantSet
+    {
+
+        final Constant.Boolean keepGrayImages = new Constant.Boolean(
+                false,
+                "Keep loaded gray images");
+
+        final Constant.Boolean indentations = new Constant.Boolean(
+                true,
+                "Use of system indentation");
+
+        final Constant.Boolean bothSharedHeadDots = new Constant.Boolean(
+                false,
+                "Link augmentation dot to both shared heads");
+
+        final Constant.Boolean oneLineStaves = new Constant.Boolean(
+                false,
+                "1-line percussion staves");
+
+        final Constant.Boolean fourStringTablatures = new Constant.Boolean(
+                false,
+                "4-line bass tablatures");
+
+        final Constant.Boolean drumNotation = new Constant.Boolean(
+                false,
+                "5-line unpitched percussion staves");
+
+        final Constant.Boolean sixStringTablatures = new Constant.Boolean(
+                false,
+                "6-line guitar tablatures");
+
+        final Constant.Boolean smallHeads = new Constant.Boolean(false, "Small heads");
+
+        final Constant.Boolean smallBeams = new Constant.Boolean(false, "Small beams");
+
+        final Constant.Boolean crossHeads = new Constant.Boolean(false, "Cross note heads");
+
+        final Constant.Boolean tremolos = new Constant.Boolean(false, "Tremolos");
+
+        final Constant.Boolean fingerings = new Constant.Boolean(false, "Fingering digits");
+
+        final Constant.Boolean frets = new Constant.Boolean(
+                false,
+                "Frets roman digits (I, II, IV...)");
+
+        final Constant.Boolean pluckings = new Constant.Boolean(false, "Plucking (p, i, m, a)");
+
+        final Constant.Boolean partialWholeRests = new Constant.Boolean(
+                false,
+                "Partial whole rests");
+
+        final Constant.Boolean multiWholeHeadChords = new Constant.Boolean(
+                false,
+                "Multi-whole head chords");
+
+        final Constant.Boolean chordNames = new Constant.Boolean(false, "Chord names");
+
+        final Constant.Boolean lyrics = new Constant.Boolean(true, "Lyrics");
+
+        final Constant.Boolean lyricsAboveStaff = new Constant.Boolean(
+                false,
+                "Lyrics even located above staff");
+
+        final Constant.Boolean articulations = new Constant.Boolean(true, "Articulations");
+
+        final Constant.Boolean implicitTuplets = new Constant.Boolean(false, "Implicit tuplets");
+    }
+
+    //-----------------//
+    // DefaultSwitches //
+    //-----------------//
+    private static class DefaultSwitches
+            extends ProcessingSwitches
+    {
+
+        DefaultSwitches ()
+        {
+            for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
+                map.put(key, new ConstantBasedParam<>(key.getConstant(), GLOBAL_SCOPE));
+            }
+        }
+    }
+
     //-------------//
     // JaxbAdapter //
     //-------------//
@@ -164,7 +269,7 @@ public class ProcessingSwitches
 
         @Override
         public ProcessingEntries marshal (ProcessingSwitches switches)
-                throws Exception
+            throws Exception
         {
             if (switches == null) {
                 return null;
@@ -188,24 +293,43 @@ public class ProcessingSwitches
 
         @Override
         public ProcessingSwitches unmarshal (ProcessingEntries value)
-                throws Exception
+            throws Exception
         {
+            // We need to convert obsolete switches to supported ones
             ProcessingSwitches switches = new ProcessingSwitches();
 
             // We populate entries for which we have a specific value
             for (ProcessingEntry entry : value.entries) {
-                Param<Boolean> param = new Param<>();
+                if (entry.key == null) {
+                    logger.warn("Null processing switch");
+                    continue;
+                }
 
+                ProcessingSwitch ps = entry.key;
                 if (entry.value != null) {
+                    if (ProcessingSwitch.obsoleteSwitches.contains(ps)) {
+                        // Today this means a small head flag
+                        // We consider the small black flag applies for all
+                        // and we ignore the others (void and whole)
+                        if (ps == ProcessingSwitch.smallBlackHeads) {
+                            logger.info("Processing switch '{}' converted to 'smallHeads'", ps);
+                            ps = ProcessingSwitch.smallHeads;
+                        } else {
+                            logger.info("Processing switch '{}' ignored", ps);
+                            continue;
+                        }
+                    }
+
+                    Param<Boolean> param = new Param<>(null); // NOTA: Actual scope is to be set later
                     param.setSpecific(entry.value);
-                    switches.map.put(entry.key, param);
+                    switches.map.put(ps, param);
                 }
             }
 
             // Then fill empty entries
-            for (ProcessingSwitch key : ProcessingSwitch.values()) {
+            for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
                 if (switches.map.get(key) == null) {
-                    switches.map.put(key, new Param<>());
+                    switches.map.put(key, new Param<>(null)); // IDEM
                 }
             }
 
@@ -240,117 +364,8 @@ public class ProcessingSwitches
             @Override
             public String toString ()
             {
-                return new StringBuilder("MyEntry{")
-                        .append("key:").append(key)
-                        .append(",value:").append(value)
-                        .append('}').toString();
-            }
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    static class Constants
-            extends ConstantSet
-    {
-
-        final Constant.Boolean poorInputMode = new Constant.Boolean(
-                false,
-                "Use poor input mode");
-
-        final Constant.Boolean indentations = new Constant.Boolean(
-                true,
-                "Use of system indentation");
-
-        final Constant.Boolean bothSharedHeadDots = new Constant.Boolean(
-                false,
-                "Link augmentation dot to both shared heads");
-
-        final Constant.Boolean keepGrayImages = new Constant.Boolean(
-                false,
-                "Keep loaded gray images");
-
-        final Constant.Boolean articulations = new Constant.Boolean(
-                true,
-                "Support for articulations");
-
-        final Constant.Boolean chordNames = new Constant.Boolean(
-                false,
-                "Support for chord names");
-
-        final Constant.Boolean fingerings = new Constant.Boolean(
-                false,
-                "Support for fingering digits");
-
-        final Constant.Boolean frets = new Constant.Boolean(
-                false,
-                "Support for frets roman digits (I, II, IV...)");
-
-        final Constant.Boolean pluckings = new Constant.Boolean(
-                false,
-                "Support for plucking (p, i, m, a)");
-
-        final Constant.Boolean lyrics = new Constant.Boolean(
-                true,
-                "Support for lyrics");
-
-        final Constant.Boolean lyricsAboveStaff = new Constant.Boolean(
-                false,
-                "Support for lyrics even located above staff");
-
-        final Constant.Boolean smallBlackHeads = new Constant.Boolean(
-                false,
-                "Support for small black note heads");
-
-        final Constant.Boolean smallVoidHeads = new Constant.Boolean(
-                false,
-                "Support for small void note heads");
-
-        final Constant.Boolean smallWholeHeads = new Constant.Boolean(
-                false,
-                "Support for small whole note heads");
-
-        final Constant.Boolean crossHeads = new Constant.Boolean(
-                false,
-                "Support for cross note heads");
-
-        final Constant.Boolean implicitTuplets = new Constant.Boolean(
-                false,
-                "Support for implicit tuplets");
-
-        final Constant.Boolean sixStringTablatures = new Constant.Boolean(
-                false,
-                "Support for guitar tablatures (6 lines)");
-
-        final Constant.Boolean fourStringTablatures = new Constant.Boolean(
-                false,
-                "Support for bass tablatures (4 lines)");
-
-        final Constant.Boolean oneLineStaves = new Constant.Boolean(
-                false,
-                "Support for percussion staves (1 line)");
-
-        final Constant.Boolean partialWholeRests = new Constant.Boolean(
-                false,
-                "Support for partial whole rests");
-
-        final Constant.Boolean multiWholeHeadChords = new Constant.Boolean(
-                false,
-                "Support for multi-whole head chords");
-    }
-
-    //-----------------//
-    // DefaultSwitches //
-    //-----------------//
-    private static class DefaultSwitches
-            extends ProcessingSwitches
-    {
-
-        DefaultSwitches ()
-        {
-            for (ProcessingSwitch key : ProcessingSwitch.values()) {
-                map.put(key, new ConstantBasedParam<>(key.getConstant()));
+                return new StringBuilder("MyEntry{").append("key:").append(key).append(",value:")
+                        .append(value).append('}').toString();
             }
         }
     }

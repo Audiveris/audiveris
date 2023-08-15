@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,8 +24,30 @@ package org.audiveris.omr.glyph;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import static org.audiveris.omr.glyph.Shape.*;
-import static org.audiveris.omr.glyph.ShapeSet.*;
+import static org.audiveris.omr.glyph.Shape.BRACE;
+import static org.audiveris.omr.glyph.Shape.BRACKET;
+import static org.audiveris.omr.glyph.Shape.BREATH_MARK;
+import static org.audiveris.omr.glyph.Shape.CHARACTER;
+import static org.audiveris.omr.glyph.Shape.CODA;
+import static org.audiveris.omr.glyph.Shape.DAL_SEGNO;
+import static org.audiveris.omr.glyph.Shape.DA_CAPO;
+import static org.audiveris.omr.glyph.Shape.HW_REST_set;
+import static org.audiveris.omr.glyph.Shape.LONG_REST;
+import static org.audiveris.omr.glyph.Shape.PERCUSSION_CLEF;
+import static org.audiveris.omr.glyph.Shape.SEGNO;
+import static org.audiveris.omr.glyph.Shape.TEXT;
+import static org.audiveris.omr.glyph.Shape.TIME_CUSTOM;
+import static org.audiveris.omr.glyph.ShapeSet.Articulations;
+import static org.audiveris.omr.glyph.ShapeSet.Clefs;
+import static org.audiveris.omr.glyph.ShapeSet.Dynamics;
+import static org.audiveris.omr.glyph.ShapeSet.FermataArcs;
+import static org.audiveris.omr.glyph.ShapeSet.Markers;
+import static org.audiveris.omr.glyph.ShapeSet.Pedals;
+import static org.audiveris.omr.glyph.ShapeSet.Rests;
+import static org.audiveris.omr.glyph.ShapeSet.SmallClefs;
+import static org.audiveris.omr.glyph.ShapeSet.Tuplets;
+import static org.audiveris.omr.glyph.ShapeSet.WholeTimes;
+import static org.audiveris.omr.glyph.ShapeSet.allPhysicalShapes;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
@@ -65,6 +87,7 @@ public class ShapeChecker
     private static final Logger logger = LoggerFactory.getLogger(ShapeChecker.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     //    /** Small dynamics with no 'P' or 'F' */
     //    private static final EnumSet<Shape> SmallDynamics = EnumSet.copyOf(
     //            shapesOf(DYNAMICS_CHAR_M, DYNAMICS_CHAR_R, DYNAMICS_CHAR_S, DYNAMICS_CHAR_Z));
@@ -94,6 +117,7 @@ public class ShapeChecker
     private final EnumMap<Shape, Collection<Checker>> checkerMap;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private ShapeChecker ()
     {
         checkerMap = new EnumMap<>(Shape.class);
@@ -101,6 +125,48 @@ public class ShapeChecker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------------//
+    // addChecker //
+    //------------//
+    /**
+     * Add a checker to a series of shapes.
+     *
+     * @param checker the checker to add
+     * @param shapes  the shape(s) for which the check applies
+     */
+    private void addChecker (Checker checker,
+                             Collection<Shape> shapes)
+    {
+        for (Shape shape : shapes) {
+            Collection<Checker> checks = checkerMap.get(shape);
+
+            if (checks == null) {
+                checks = new ArrayList<>();
+                checkerMap.put(shape, checks);
+            }
+
+            checks.add(checker);
+        }
+    }
+
+    //------------//
+    // addChecker //
+    //------------//
+    /**
+     * Add a checker to a series of shape ranges.
+     *
+     * @param checker     the checker to add
+     * @param shapeRanges the shape range(s) to which the check applies
+     */
+    private void addChecker (Checker checker,
+                             ShapeSet... shapeRanges)
+    {
+        for (ShapeSet range : shapeRanges) {
+            addChecker(checker, range.getShapes());
+        }
+    }
+
     //----------//
     // annotate //
     //----------//
@@ -143,47 +209,6 @@ public class ShapeChecker
 
                 return;
             }
-        }
-    }
-
-    //------------//
-    // addChecker //
-    //------------//
-    /**
-     * Add a checker to a series of shapes.
-     *
-     * @param checker the checker to add
-     * @param shapes  the shape(s) for which the check applies
-     */
-    private void addChecker (Checker checker,
-                             Collection<Shape> shapes)
-    {
-        for (Shape shape : shapes) {
-            Collection<Checker> checks = checkerMap.get(shape);
-
-            if (checks == null) {
-                checks = new ArrayList<>();
-                checkerMap.put(shape, checks);
-            }
-
-            checks.add(checker);
-        }
-    }
-
-    //------------//
-    // addChecker //
-    //------------//
-    /**
-     * Add a checker to a series of shape ranges.
-     *
-     * @param checker     the checker to add
-     * @param shapeRanges the shape range(s) to which the check applies
-     */
-    private void addChecker (Checker checker,
-                             ShapeSet... shapeRanges)
-    {
-        for (ShapeSet range : shapeRanges) {
-            addChecker(checker, range.getShapes());
         }
     }
 
@@ -254,7 +279,7 @@ public class ShapeChecker
                 Shape shape = eval.shape;
 
                 if ((shape == BRACKET) || (shape == BRACE) || (shape == TEXT)
-                            || (shape == CHARACTER)) {
+                        || (shape == CHARACTER)) {
                     return true;
                 }
 
@@ -286,7 +311,13 @@ public class ShapeChecker
                  * We also check that such measure rest candidate is not stuck to a stem,
                  * which can appear when conflicting with a beam hook.
                  */
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    eval.failure = new Evaluation.Failure("tablature");
+
+                    return false;
+                }
+
                 final int p2 = (int) Math.rint(2 * pp); // Pitch * 2
 
                 if (!checkNoStem(system, glyph)) {
@@ -353,14 +384,18 @@ public class ShapeChecker
             }
         };
 
-        new Checker("NotWithinStaffHeight", Clefs)
+        new Checker("NotWithinStaffHeight", shapesOf(Clefs, WholeTimes, Arrays.asList(TIME_CUSTOM)))
         {
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
                                   Glyph glyph)
             {
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    return false;
+                }
+
                 final double pitchAbs = Math.abs(pp);
 
                 // Very strict for percussion
@@ -381,7 +416,10 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Must be outside staff height
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    return false;
+                }
 
                 return Math.abs(pp) > 4;
             }
@@ -395,7 +433,7 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Must be on right side of system header
-                return Math.abs(glyph.getCenter2D().getX()) > system.getFirstStaff().getHeaderStop();
+                return Math.abs(glyph.getCenter2D().getX()) > system.getHeaderStop();
             }
         };
 
@@ -407,19 +445,7 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Percussion clef must be within system header
-                return Math.abs(glyph.getCenter2D().getX()) < system.getFirstStaff().getHeaderStop();
-            }
-        };
-
-        new Checker("NotWithinHeader", PERCUSSION_CLEF)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph)
-            {
-                // Percussion clef must be within system header
-                return Math.abs(glyph.getCenter().x) < system.getFirstStaff().getHeaderStop();
+                return Math.abs(glyph.getCenter2D().getX()) < system.getHeaderStop();
             }
         };
 
@@ -431,7 +457,12 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Check reasonable height (Cannot be too tall when close to staff)
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    eval.failure = new Evaluation.Failure("tablature");
+                    return false;
+                }
+
                 double maxHeight = (Math.abs(pp) >= constants.minTitlePitchPosition.getValue())
                         ? constants.maxTitleHeight.getValue()
                         : constants.maxLyricsHeight.getValue();
@@ -456,7 +487,12 @@ public class ShapeChecker
                                   Evaluation eval,
                                   Glyph glyph)
             {
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    eval.failure = new Evaluation.Failure("tablature");
+                    return false;
+                }
+
                 double absPos = Math.abs(pp);
                 double maxDy = constants.maxTimePitchPositionMargin.getValue();
 
@@ -480,29 +516,31 @@ public class ShapeChecker
                 return true;
             }
         };
-
-        new Checker("PartialTimeSig", PartialTimes)
-        {
-            @Override
-            public boolean check (SystemInfo system,
-                                  Evaluation eval,
-                                  Glyph glyph)
-            {
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
-                double absPos = Math.abs(pp);
-                double maxDy = constants.maxTimePitchPositionMargin.getValue();
-
-                // A partial time shape must be on -2 or +2 positions
-                if (Math.abs(absPos - 2) > maxDy) {
-                    eval.failure = new Evaluation.Failure("pitch");
-
-                    return false;
-                }
-
-                return true;
-            }
-        };
-
+        //
+        //        new Checker("PartialTimeSig", PartialTimes)
+        //        {
+        //            // It can be a num or den of a larger time sig
+        //            // It can also be the measure number above a multiple rest
+        //            @Override
+        //            public boolean check (SystemInfo system,
+        //                                  Evaluation eval,
+        //                                  Glyph glyph)
+        //            {
+        //                final double pp = system.estimatedPitch(glyph.getCenter2D());
+        //                double absPos = Math.abs(pp);
+        //                double maxDy = constants.maxTimePitchPositionMargin.getValue();
+        //
+        //                // A partial time shape must be on -2 or +2 positions
+        //                if (Math.abs(absPos - 2) > maxDy) {
+        //                    eval.failure = new Evaluation.Failure("pitch");
+        //
+        //                    return false;
+        //                }
+        //
+        //                return true;
+        //            }
+        //        };
+        //
         new Checker(
                 "StaffGap",
                 shapesOf(Rests.getShapes(), Dynamics.getShapes(), Articulations.getShapes()))
@@ -574,7 +612,10 @@ public class ShapeChecker
                 final Point2D glyphCenter = glyph.getCenter2D();
 
                 // Pedal marks must be below the staff
-                final double pp = system.estimatedPitch(glyphCenter);
+                final Double pp = system.estimatedPitch(glyphCenter);
+                if (pp == null) {
+                    return false;
+                }
 
                 if (pp <= 4) {
                     return false;
@@ -597,7 +638,10 @@ public class ShapeChecker
                 final Point2D glyphCenter = glyph.getCenter2D();
 
                 // Markers must be above the staff
-                final double pp = system.estimatedPitch(glyphCenter);
+                final Double pp = system.estimatedPitch(glyphCenter);
+                if (pp == null) {
+                    return false;
+                }
 
                 if (pp >= -4) {
                     return false;
@@ -618,7 +662,11 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Tuplets cannot be too far from a staff
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    eval.failure = new Evaluation.Failure("tablature");
+                    return false;
+                }
 
                 if (Math.abs(pp) > constants.maxTupletPitchPosition.getValue()) {
                     eval.failure = new Evaluation.Failure("pitch");
@@ -679,7 +727,11 @@ public class ShapeChecker
                                   Glyph glyph)
             {
                 // Must be centered on pitch position 0
-                final double pp = system.estimatedPitch(glyph.getCenter2D());
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    eval.failure = new Evaluation.Failure("tablature");
+                    return false;
+                }
 
                 if (Math.abs(pp) > 0.5) {
                     eval.failure = new Evaluation.Failure("pitch");
@@ -691,26 +743,26 @@ public class ShapeChecker
             }
         };
 
-//        new Checker("BreveRest", BREVE_REST)
-//        {
-//            @Override
-//            public boolean check (SystemInfo system,
-//                                  Evaluation eval,
-//                                  Glyph glyph)
-//            {
-//                // Must be centered on pitch position -1
-//                final double pp = system.estimatedPitch(glyph.getCenter2D());
-//
-//                if (Math.abs(pp + 1) > 0.5) {
-//                    eval.failure = new Evaluation.Failure("pitch");
-//
-//                    return false;
-//                }
-//
-//                return true;
-//            }
-//        };
-//
+        //        new Checker("BreveRest", BREVE_REST)
+        //        {
+        //            @Override
+        //            public boolean check (SystemInfo system,
+        //                                  Evaluation eval,
+        //                                  Glyph glyph)
+        //            {
+        //                // Must be centered on pitch position -1
+        //                final double pp = system.estimatedPitch(glyph.getCenter2D());
+        //
+        //                if (Math.abs(pp + 1) > 0.5) {
+        //                    eval.failure = new Evaluation.Failure("pitch");
+        //
+        //                    return false;
+        //                }
+        //
+        //                return true;
+        //            }
+        //        };
+        //
         new Checker("SystemTop", Arrays.asList(DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK))
         {
             @Override
@@ -723,7 +775,7 @@ public class ShapeChecker
                 Point bottom = new Point(bounds.x + (bounds.width / 2), bounds.y + bounds.height);
                 Staff staff = system.getClosestStaff(bottom);
 
-                if (staff != system.getFirstStaff()) {
+                if ((staff != system.getFirstStaff()) || staff.isTablature()) {
                     return false;
                 }
 
@@ -732,7 +784,33 @@ public class ShapeChecker
                 return (constants.minDirectionPitchPosition.getValue() <= pitch) && (pitch <= -5);
             }
         };
+
+        new Checker("MeasureRepeats", ShapeSet.RepeatBars)
+        {
+            @Override
+            public boolean check (SystemInfo system,
+                                  Evaluation eval,
+                                  Glyph glyph)
+            {
+                // Check these signs are located on staff mid line
+                final Double pp = system.estimatedPitch(glyph.getCenter2D());
+                if (pp == null) {
+                    eval.failure = new Evaluation.Failure("tablature");
+                    return false;
+                }
+
+                if (Math.abs(pp) > constants.maxMeasureRepeatPitchPosition.getValue()) {
+                    eval.failure = new Evaluation.Failure("pitch");
+
+                    return false;
+                }
+
+                return true;
+            }
+        };
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------//
     // getInstance //
@@ -776,6 +854,79 @@ public class ShapeChecker
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //---------//
+    // Checker //
+    //---------//
+    /**
+     * A checker runs a specific check for a given glyph with respect to a set of
+     * candidate shapes.
+     */
+    private abstract class Checker
+    {
+
+        /** Unique name for this check. */
+        public final String name;
+
+        Checker (String name,
+                 Collection<Shape> shapes)
+        {
+            this.name = name;
+            addChecker(this, shapes);
+        }
+
+        Checker (String name,
+                 Shape shape)
+        {
+            this.name = name;
+
+            List<Shape> all = new ArrayList<>();
+            all.add(shape);
+
+            addChecker(this, all);
+        }
+
+        Checker (String name,
+                 Shape shape,
+                 Collection<Shape> collection)
+        {
+            this.name = name;
+
+            List<Shape> all = new ArrayList<>();
+            all.add(shape);
+
+            all.addAll(collection);
+
+            addChecker(this, all);
+        }
+
+        Checker (String name,
+                 ShapeSet... shapeSets)
+        {
+            this.name = name;
+            addChecker(this, shapeSets);
+        }
+
+        /**
+         * Run the specific test.
+         *
+         * @param system the containing system
+         * @param eval   the partially-filled evaluation (eval.shape is an
+         *               input/output, eval.grade and eval.failure are outputs)
+         * @param glyph  the glyph at hand
+         * @return true if OK, false otherwise
+         */
+        public abstract boolean check (SystemInfo system,
+                                       Evaluation eval,
+                                       Glyph glyph);
+
+        @Override
+        public String toString ()
+        {
+            return name;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -799,6 +950,11 @@ public class ShapeChecker
                 "PitchPosition",
                 -13.0,
                 "Minimum pitch value for a  segno / coda direction");
+
+        private final Constant.Double maxMeasureRepeatPitchPosition = new Constant.Double(
+                "PitchPosition",
+                1.0,
+                "Maximum absolute pitch position for a measure repeat sign");
 
         private final Constant.Double minTitlePitchPosition = new Constant.Double(
                 "PitchPosition",
@@ -834,78 +990,6 @@ public class ShapeChecker
         private final Scale.Fraction measureRestDx = new Scale.Fraction(
                 0.2,
                 "Minimum horizontal margin around a measure-rest candidate");
-    }
-
-    //---------//
-    // Checker //
-    //---------//
-    /**
-     * A checker runs a specific check for a given glyph with respect to a set of
-     * candidate shapes.
-     */
-    private abstract class Checker
-    {
-
-        /** Unique name for this check. */
-        public final String name;
-
-        Checker (String name,
-                 Collection<Shape> shapes)
-        {
-            this.name = name;
-            addChecker(this, shapes);
-        }
-
-        Checker (String name,
-                 ShapeSet... shapeSets)
-        {
-            this.name = name;
-            addChecker(this, shapeSets);
-        }
-
-        Checker (String name,
-                 Shape shape,
-                 Collection<Shape> collection)
-        {
-            this.name = name;
-
-            List<Shape> all = new ArrayList<>();
-            all.add(shape);
-
-            all.addAll(collection);
-
-            addChecker(this, all);
-        }
-
-        Checker (String name,
-                 Shape shape)
-        {
-            this.name = name;
-
-            List<Shape> all = new ArrayList<>();
-            all.add(shape);
-
-            addChecker(this, all);
-        }
-
-        /**
-         * Run the specific test.
-         *
-         * @param system the containing system
-         * @param eval   the partially-filled evaluation (eval.shape is an
-         *               input/output, eval.grade and eval.failure are outputs)
-         * @param glyph  the glyph at hand
-         * @return true if OK, false otherwise
-         */
-        public abstract boolean check (SystemInfo system,
-                                       Evaluation eval,
-                                       Glyph glyph);
-
-        @Override
-        public String toString ()
-        {
-            return name;
-        }
     }
 
     //---------------//

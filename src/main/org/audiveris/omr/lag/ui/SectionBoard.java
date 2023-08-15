@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.lag.ui;
 
-import com.jgoodies.forms.layout.CellConstraints;
-
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.run.Orientation;
@@ -36,6 +34,8 @@ import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.layout.CellConstraints;
 
 import java.awt.Rectangle;
 
@@ -54,10 +54,10 @@ public class SectionBoard
     private static final Logger logger = LoggerFactory.getLogger(SectionBoard.class);
 
     private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(
-                    SectionBoard.class);
+            .getResourceMap(SectionBoard.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying lag */
     protected final Lag lag;
 
@@ -92,6 +92,7 @@ public class SectionBoard
             resources.getString("weight.toolTipText"));
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a Section Board
      *
@@ -104,9 +105,11 @@ public class SectionBoard
         super(
                 new Desc(
                         Board.SECTION.name + ((lag.getOrientation() == Orientation.VERTICAL)
-                        ? " Vert" : " Hori"),
+                                ? " Vert"
+                                : " Hori"),
                         Board.SECTION.position + ((lag.getOrientation() == Orientation.VERTICAL)
-                        ? 100 : 0)),
+                                ? 100
+                                : 0)),
                 lag.getEntityService(),
                 selected);
 
@@ -122,6 +125,32 @@ public class SectionBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
+    {
+        CellConstraints cst = new CellConstraints();
+
+        int r = 1; // --------------------------------
+        builder.add(x.getLabel(), cst.xy(5, r));
+        builder.add(x.getField(), cst.xy(7, r));
+
+        builder.add(width.getLabel(), cst.xy(9, r));
+        builder.add(width.getField(), cst.xy(11, r));
+
+        r += 2; // --------------------------------
+        builder.add(weight.getLabel(), cst.xy(1, r));
+        builder.add(weight.getField(), cst.xy(3, r));
+
+        builder.add(y.getLabel(), cst.xy(5, r));
+        builder.add(y.getField(), cst.xy(7, r));
+
+        builder.add(height.getLabel(), cst.xy(9, r));
+        builder.add(height.getField(), cst.xy(11, r));
+    }
+
     //-----------------------//
     // handleEntityListEvent //
     //-----------------------//
@@ -156,30 +185,5 @@ public class SectionBoard
         weight.setEnabled(section != null);
         width.setEnabled(section != null);
         height.setEnabled(section != null);
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout ()
-    {
-        CellConstraints cst = new CellConstraints();
-
-        int r = 1; // --------------------------------
-        builder.add(x.getLabel(), cst.xy(5, r));
-        builder.add(x.getField(), cst.xy(7, r));
-
-        builder.add(width.getLabel(), cst.xy(9, r));
-        builder.add(width.getField(), cst.xy(11, r));
-
-        r += 2; // --------------------------------
-        builder.add(weight.getLabel(), cst.xy(1, r));
-        builder.add(weight.getField(), cst.xy(3, r));
-
-        builder.add(y.getLabel(), cst.xy(5, r));
-        builder.add(y.getField(), cst.xy(7, r));
-
-        builder.add(height.getLabel(), cst.xy(9, r));
-        builder.add(height.getField(), cst.xy(11, r));
     }
 }

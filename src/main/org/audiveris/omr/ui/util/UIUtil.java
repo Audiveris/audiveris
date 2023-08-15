@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -99,12 +99,14 @@ public abstract class UIUtil
     };
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private UIUtil ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //--------------------//
     // adjustDefaultFonts //
     //--------------------//
@@ -114,9 +116,10 @@ public abstract class UIUtil
     public static void adjustDefaultFonts ()
     {
         // Control font
-        final Font defaultFont = new Font(constants.defaultFontName.getValue(),
-                                          Font.PLAIN,
-                                          adjustedSize(constants.defaultFontSize.getValue()));
+        final Font defaultFont = new Font(
+                constants.defaultFontName.getValue(),
+                Font.PLAIN,
+                adjustedSize(constants.defaultFontSize.getValue()));
         final Font controlFont = defaultFont;
         UIManager.put("Button.font", controlFont);
         UIManager.put("CheckBox.font", controlFont);
@@ -163,14 +166,18 @@ public abstract class UIUtil
         UIManager.put("Viewport.font", windowTitleFont);
 
         // Miscellaneous fonts
-        UIManager.put("ToolTip.font", new Font(
-                      constants.defaultFontName.getValue(),
-                      Font.ITALIC,
-                      adjustedSize(constants.defaultFontSize.getValue())));
-        UIManager.put("TitledBorder.font", new Font(
-                      constants.defaultFontName.getValue(),
-                      Font.BOLD,
-                      adjustedSize(constants.defaultFontSize.getValue())));
+        UIManager.put(
+                "ToolTip.font",
+                new Font(
+                        constants.defaultFontName.getValue(),
+                        Font.ITALIC,
+                        adjustedSize(constants.defaultFontSize.getValue())));
+        UIManager.put(
+                "TitledBorder.font",
+                new Font(
+                        constants.defaultFontName.getValue(),
+                        Font.BOLD,
+                        adjustedSize(constants.defaultFontSize.getValue())));
     }
 
     //--------------------//
@@ -181,18 +188,18 @@ public abstract class UIUtil
      */
     public static void adjustDefaultTexts ()
     {
-        final ResourceMap resources = Application.getInstance().getContext()
-                .getResourceMap(UIUtil.class);
+        final ResourceMap resources = Application.getInstance().getContext().getResourceMap(
+                UIUtil.class);
 
         // OptionPane texts
-        final String[] keys = new String[]{
-            "OptionPane.inputDialogTitle",
-            "OptionPane.messageDialogTitle",
-            "OptionPane.titleText",
-            "OptionPane.cancelButtonText",
-            "OptionPane.noButtonText",
-            "OptionPane.yesButtonText"
-        };
+        final String[] keys = new String[]
+        {
+                "OptionPane.inputDialogTitle",
+                "OptionPane.messageDialogTitle",
+                "OptionPane.titleText",
+                "OptionPane.cancelButtonText",
+                "OptionPane.noButtonText",
+                "OptionPane.yesButtonText" };
 
         for (String key : keys) {
             final String localizedString = resources.getString(key);
@@ -231,20 +238,6 @@ public abstract class UIUtil
         return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
     }
 
-    //----------------//
-    // selectionColor //
-    //----------------//
-    /**
-     * Report a selection color for the provided color.
-     *
-     * @param color provided color
-     * @return the corresponding selection color
-     */
-    public static Color selectionColor (Color color)
-    {
-        return new Color(color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
-    }
-
     //------------------//
     // directoryChooser //
     //------------------//
@@ -262,7 +255,7 @@ public abstract class UIUtil
     {
         //        String oldMacProperty = System.getProperty("apple.awt.fileDialogForDirectories", "false");
         //        System.setProperty("apple.awt.fileDialogForDirectories", "true");
-        OmrFileFilter filter = new OmrFileFilter("Directories", new String[]{})
+        OmrFileFilter filter = new OmrFileFilter("Directories", new String[] {})
         {
             @Override
             public boolean accept (File f)
@@ -533,6 +526,58 @@ public abstract class UIUtil
         return files;
     }
 
+    //--------------------//
+    // getDefaultFontSize //
+    //--------------------//
+    /**
+     * Report the font size used by default when no ratio is applied.
+     *
+     * @return the default font size in application
+     */
+    public static int getDefaultFontSize ()
+    {
+        return constants.defaultFontSize.getValue();
+    }
+
+    //--------------------//
+    // getGlobalFontRatio //
+    //--------------------//
+    /**
+     * Report the current global font ratio.
+     *
+     * @return current global font ratio
+     */
+    public static double getGlobalFontRatio ()
+    {
+        return constants.globalFontRatio.getValue();
+    }
+
+    //-----------------------//
+    // getMaxGlobalFontRatio //
+    //-----------------------//
+    /**
+     * Report the maximum allowed value for global font ratio.
+     *
+     * @return maximum allowed value
+     */
+    public static double getMaxGlobalFontRatio ()
+    {
+        return constants.maxGlobalFontRatio.getValue();
+    }
+
+    //-----------------------//
+    // getMinGlobalFontRatio //
+    //-----------------------//
+    /**
+     * Report the minimum allowed value for global font ratio.
+     *
+     * @return minimum allowed value
+     */
+    public static double getMinGlobalFontRatio ()
+    {
+        return constants.minGlobalFontRatio.getValue();
+    }
+
     //---------------//
     // getToolBorder //
     //---------------//
@@ -565,8 +610,8 @@ public abstract class UIUtil
 
         final int size = UIUtil.adjustedSize(constants.urlFontSize.getValue());
         final String name = constants.defaultFontName.getValue();
-        sb.append("<style> body ").append("{font-family: ").append(name).append(';')
-                .append(" font-size: ").append(size).append("px;").append("} </style>");
+        sb.append("<style> body ").append("{font-family: ").append(name).append(';').append(
+                " font-size: ").append(size).append("px;").append("} </style>");
 
         sb.append("<A HREF=\"").append(url).append("\">").append(url).append("</A>");
 
@@ -710,6 +755,20 @@ public abstract class UIUtil
         return paths;
     }
 
+    //----------------//
+    // selectionColor //
+    //----------------//
+    /**
+     * Report a selection color for the provided color.
+     *
+     * @param color provided color
+     * @return the corresponding selection color
+     */
+    public static Color selectionColor (Color color)
+    {
+        return new Color(color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
+    }
+
     //-------------------------//
     // setAbsoluteDashedStroke //
     //-------------------------//
@@ -733,7 +792,8 @@ public abstract class UIUtil
                 BasicStroke.CAP_SQUARE,
                 BasicStroke.JOIN_MITER,
                 10.0f,
-                new float[]{3.0f},
+                new float[]
+                { 6.0f / (float) ratio },
                 0.0f);
         g2.setStroke(stroke);
 
@@ -762,6 +822,22 @@ public abstract class UIUtil
         g2.setStroke(stroke);
 
         return oldStroke;
+    }
+
+    //--------------------//
+    // setGlobalFontRatio //
+    //--------------------//
+    /**
+     * Set value for global font ratio.
+     *
+     * @param ratio value to set
+     */
+    public static void setGlobalFontRatio (double ratio)
+    {
+        if (ratio != constants.globalFontRatio.getValue()) {
+            constants.globalFontRatio.setValue(ratio);
+            logger.info("Global font ratio: {} at next restart", ratio);
+        }
     }
 
     //-----------------//
@@ -823,75 +899,8 @@ public abstract class UIUtil
         frame.toFront();
     }
 
-    //--------------------//
-    // getDefaultFontSize //
-    //--------------------//
-    /**
-     * Report the font size used by default when no ratio is applied.
-     *
-     * @return the default font size in application
-     */
-    public static int getDefaultFontSize ()
-    {
-        return constants.defaultFontSize.getValue();
-    }
-
-    //--------------------//
-    // getGlobalFontRatio //
-    //--------------------//
-    /**
-     * Report the current global font ratio.
-     *
-     * @return current global font ratio
-     */
-    public static double getGlobalFontRatio ()
-    {
-        return constants.globalFontRatio.getValue();
-    }
-
-    //--------------------//
-    // setGlobalFontRatio //
-    //--------------------//
-    /**
-     * Set value for global font ratio.
-     *
-     * @param ratio value to set
-     */
-    public static void setGlobalFontRatio (double ratio)
-    {
-        if (ratio != constants.globalFontRatio.getValue()) {
-            constants.globalFontRatio.setValue(ratio);
-            logger.info("Global font ratio: {} at next restart", ratio);
-        }
-    }
-
-    //-----------------------//
-    // getMaxGlobalFontRatio //
-    //-----------------------//
-    /**
-     * Report the maximum allowed value for global font ratio.
-     *
-     * @return maximum allowed value
-     */
-    public static double getMaxGlobalFontRatio ()
-    {
-        return constants.maxGlobalFontRatio.getValue();
-    }
-
-    //-----------------------//
-    // getMinGlobalFontRatio //
-    //-----------------------//
-    /**
-     * Report the minimum allowed value for global font ratio.
-     *
-     * @return minimum allowed value
-     */
-    public static double getMinGlobalFontRatio ()
-    {
-        return constants.minGlobalFontRatio.getValue();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

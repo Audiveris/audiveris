@@ -1,6 +1,6 @@
 apply plugin: 'application'
 
-project.version  = '5.3-alpha'
+project.version  = '5.3.1'
 sourceCompatibility = '1.17'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
@@ -10,9 +10,9 @@ ext.programVersion  = "$project.version"
 ext.companyName     = "$programName Ltd."
 ext.companyId       = "${programName}Ltd"
 
-ext.jcppVersion     = '1.4.4'
-ext.leptVersion     = '1.77.0'
-ext.tessVersion     = '4.0.0'
+ext.jcppVersion     = '1.5.9'
+ext.leptVersion     = '1.83.0'
+ext.tessVersion     = '5.3.1'
 
 // this code is required in order to adapt values of os.name and os.arch to the
 // conventions used by Javacpp's dependencies
@@ -20,7 +20,7 @@ ext.targetOSName   = System.getProperty('os.name').toLowerCase()\
                      .startsWith('mac os x') ? 'macosx' :\
                      System.getProperty('os.name').split(' ')[0].toLowerCase()
 ext.targetOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86", "x86":"x86",
-                      "amd64":"x86_64", "x86-64":"x86_64", "x86_64":"x86_64", "arm":"armhf"]\
+                      "amd64":"x86_64", "x86-64":"x86_64", "x86_64":"x86_64", "arm":"armhf", "aarch64":"arm64"]\
                      [System.getProperty('os.arch').toLowerCase()]
 ext.targetOS       = "${project.ext.targetOSName}-${project.ext.targetOSArch}"
 println "targetOS=${project.ext.targetOS}"
@@ -41,6 +41,9 @@ allprojects {
         options.compilerArgs << "-Xlint:unchecked"
     }
 }
+
+// To circumvent limitations brought by Jigsaw
+applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED"]
 
 run {
     minHeapSize = '512m'
@@ -114,8 +117,8 @@ dependencies {
         [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
         [group: 'org.reflections', name: 'reflections', version: '0.10.2'],
         [group: 'org.bytedeco', name: 'javacpp', version: jcppVersion],
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
         [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.4.0'],
         [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'],
         [group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'],
@@ -124,8 +127,8 @@ dependencies {
     )
 
     runtimeOnly(
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
     )
 
     testImplementation(
@@ -134,11 +137,17 @@ dependencies {
     )
 }
 
+// Needed since gradle replaced "compile" by "implementation"
+// See https://stackoverflow.com/questions/47910578/not-able-to-copy-configurations-dependencies-after-upgrading-gradle-plugin-for-a
+configurations {
+    implementationConfig.extendsFrom implementation
+}
+
 // Specific configurations for specific OS dependencies
 ['windows-x86', 'windows-x86_64'].each { os ->
     configurations.create("runtime-$os")
-    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "$os"])
-    dependencies.add("runtime-$os", [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "$os"])
 }
 
 jar {
@@ -271,7 +280,7 @@ task installers {
             copy {
                 into "$buildDir/installers/$os/lib"
                 from "$buildDir/jar" // audiveris.jar
-                from configurations.compile // Compile jars
+                from configurations.implementationConfig // Compile jars
                 from configurations."runtime-$os" // OS-specific jars
             }
 
@@ -321,4 +330,17 @@ fileTree("$projectDir/private").include('*.gradle').each { file ->
 // Tell gradle to log standard output and error streams when running tests
 test {
     testLogging.showStandardStreams = true
+}
+
+// Utility task to print out head templates
+task(printTemplates, dependsOn: 'classes', type: JavaExec) {
+    description = "Print out head templates with various sizes"
+    mainClass = "org.audiveris.omr.image.TemplateFactory"
+    classpath = sourceSets.main.runtimeClasspath
+
+    if (project.hasProperty("cmdLineArgs")) {
+        if (cmdLineArgs) {
+            args(cmdLineArgs.split())
+        }
+    }
 }

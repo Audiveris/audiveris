@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,18 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.classifier.TrainingMonitor;
-import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.*;
+import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.INACTIVE;
+import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.TRAINING;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.glyph.Shape.*;
+import static org.audiveris.omr.glyph.Shape.LAST_PHYSICAL_SHAPE;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.field.LIntegerField;
 import org.audiveris.omr.ui.field.LLabel;
@@ -40,6 +37,10 @@ import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -76,6 +77,7 @@ class TrainingPanel
     private static final Logger logger = LoggerFactory.getLogger(TrainingPanel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The swing component. */
     protected final Panel component;
 
@@ -121,6 +123,7 @@ class TrainingPanel
     private boolean invoked;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new TrainingPanel object.
      *
@@ -156,77 +159,6 @@ class TrainingPanel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public void epochStarted (int epoch)
-    {
-        this.epoch = epoch;
-    }
-
-    public JComponent getComponent ()
-    {
-        return component;
-    }
-
-    @Override
-    public int getIterationPeriod ()
-    {
-        return constants.listenerPeriod.getValue();
-    }
-
-    //    @Override
-    //    public void invoke ()
-    //    {
-    //        invoked = true;
-    //    }
-    //
-    //    @Override
-    //    public boolean invoked ()
-    //    {
-    //        return invoked;
-    //    }
-    //
-    //        @Override
-    //        public void iterationDone (Model model,
-    //                                   int iteration)
-    //        {
-    //            iterCount++;
-    //
-    //            if ((iterCount % constants.listenerPeriod.getValue()) == 0) {
-    //                ///invoke();
-    //
-    //                final double score = model.score();
-    //                final int count = (int) iterCount;
-    //                logger.info(String.format("Score at iteration %d is %.5f", count, score));
-    //                display(epoch, count, score);
-    //            }
-    //        }
-    //
-    @Override
-    public void iterationPeriodDone (int iter,
-                                     double score)
-    {
-        logger.info(String.format("iteration:%4d score: %.5f", iter, score));
-        display(epoch, iter, score);
-    }
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Method triggered by new task activity : the train action is enabled only
-     * when no activity is going on.
-     *
-     * @param obs    the task object
-     * @param unused not used
-     */
-    @Override
-    public void update (Observable obs,
-                        Object unused)
-    {
-        resetAction.setEnabled(task.getActivity() == INACTIVE);
-        trainAction.setEnabled(task.getActivity() == INACTIVE);
-        stopAction.setEnabled(task.getActivity() == TRAINING);
-    }
 
     //-----------------//
     // checkPopulation //
@@ -281,6 +213,7 @@ class TrainingPanel
             if (list == null) {
                 logger.warn("Missing shape: {}", shape);
             } else if (!list.isEmpty()) {
+                logger.info(String.format("%4d %s", list.size(), shape));
                 final int size = list.size();
                 int togo = minCount - size;
                 newSamples.addAll(list);
@@ -353,7 +286,8 @@ class TrainingPanel
                           final double score)
     {
         // This part is run on swing thread
-        SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater( () ->
+        {
             // Update current values
             epochIndex.setText(Integer.toString(epoch));
             iterIndex.setText(Integer.toString(iter));
@@ -374,6 +308,23 @@ class TrainingPanel
         maxEpochs.setValue(task.classifier.getMaxEpochs());
     }
 
+    @Override
+    public void epochStarted (int epoch)
+    {
+        this.epoch = epoch;
+    }
+
+    public JComponent getComponent ()
+    {
+        return component;
+    }
+
+    @Override
+    public int getIterationPeriod ()
+    {
+        return constants.listenerPeriod.getValue();
+    }
+
     //-------------//
     // inputParams //
     //-------------//
@@ -384,7 +335,90 @@ class TrainingPanel
         progressBar.setMaximum(maxEpochs.getValue());
     }
 
+    //    @Override
+    //    public void invoke ()
+    //    {
+    //        invoked = true;
+    //    }
+    //
+    //    @Override
+    //    public boolean invoked ()
+    //    {
+    //        return invoked;
+    //    }
+    //
+    //        @Override
+    //        public void iterationDone (Model model,
+    //                                   int iteration)
+    //        {
+    //            iterCount++;
+    //
+    //            if ((iterCount % constants.listenerPeriod.getValue()) == 0) {
+    //                ///invoke();
+    //
+    //                final double score = model.score();
+    //                final int count = (int) iterCount;
+    //                logger.info(String.format("Score at iteration %d is %.5f", count, score));
+    //                display(epoch, count, score);
+    //            }
+    //        }
+    //
+    @Override
+    public void iterationPeriodDone (int iter,
+                                     double score)
+    {
+        logger.info(String.format("iteration:%4d score: %.5f", iter, score));
+        display(epoch, iter, score);
+    }
+
+    //--------//
+    // update //
+    //--------//
+    /**
+     * Method triggered by new task activity : the train action is enabled only
+     * when no activity is going on.
+     *
+     * @param obs    the task object
+     * @param unused not used
+     */
+    @Override
+    public void update (Observable obs,
+                        Object unused)
+    {
+        resetAction.setEnabled(task.getActivity() == INACTIVE);
+        trainAction.setEnabled(task.getActivity() == INACTIVE);
+        stopAction.setEnabled(task.getActivity() == TRAINING);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer listenerPeriod = new Constant.Integer(
+                "period",
+                50,
+                "Period (in iterations) between listener calls");
+    }
+
+    private class ParamAction
+            extends AbstractAction
+    {
+
+        // Purpose is just to read and remember the data from the various input fields.
+        // Triggered when user presses Enter in one of these fields.
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            inputParams();
+            displayParams();
+        }
+    }
+
     protected class ResetAction
             extends AbstractAction
     {
@@ -464,33 +498,6 @@ class TrainingPanel
             Worker worker = new Worker();
             worker.setPriority(Thread.MIN_PRIORITY);
             worker.start();
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer listenerPeriod = new Constant.Integer(
-                "period",
-                50,
-                "Period (in iterations) between listener calls");
-    }
-
-    private class ParamAction
-            extends AbstractAction
-    {
-
-        // Purpose is just to read and remember the data from the various input fields.
-        // Triggered when user presses Enter in one of these fields.
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            inputParams();
-            displayParams();
         }
     }
 }

@@ -20,7 +20,8 @@ Table of contents
 
 ### Vip
 (input/output)  
-Flag this entity as VIP, resulting in verbose processing information.
+Flag this entity as VIP, resulting in verbose processing information
+when entity is involved.
 
 ### Dump
 (input)  
@@ -43,6 +44,13 @@ Button available to manually delete this interpretation.
 (output)  
 If available, the icon related to the Inter shape.
 
+### Edit
+(input/output)
+Allows to open an editor of the entity.
+
+### To Ensemble
+Button to navigate to the ensemble if any this entity is part of.
+
 ### (shape name)
 (output)  
 Name of the shape assigned to the Inter instance.
@@ -63,6 +71,12 @@ Role of the sentence (such as Direction, PartName, Rights, Lyrics, ...).
 ![](../assets/images/role_board.png)
 
 Nota: `Lyrics` is such a specific sentence role that it cannot be changed in an existing Inter.
-Instead, a new (lyrics) inter must be created.
+Instead, a new (lyrics) inter is created automatically.
 
-![](../assets/images/lyrics_board.png)
+### (lyrics)
+![](../assets/images/lyrics_data.png)
+
+For a lyrics sentence, the inter board displays additional data:
+* Voice number,
+* Verse number,
+* Location with respect to staff.

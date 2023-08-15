@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -30,6 +30,7 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ui.GlyphsController;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.selection.SelectionService;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ApplicationAction;
@@ -62,6 +63,7 @@ public class SampleController
     private static final Logger logger = LoggerFactory.getLogger(SampleController.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final SampleRepository repository;
 
     private final ApplicationAction removeAction;
@@ -69,6 +71,7 @@ public class SampleController
     private final AssignAction assignAction;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SampleController</code> object.
      *
@@ -85,6 +88,7 @@ public class SampleController
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Assign a new shape to a sample.
      *
@@ -148,17 +152,6 @@ public class SampleController
         return removeAction;
     }
 
-    /**
-     * Remove the provided sample
-     *
-     * @param sample sample to remove
-     */
-    public void removeSample (Sample sample)
-    {
-        final SampleModel sampleModel = (SampleModel) model;
-        sampleModel.removeSample(sample);
-    }
-
     //--------------//
     // RemoveSample //
     //--------------//
@@ -175,14 +168,27 @@ public class SampleController
         SampleController.this.removeSample(sample);
     }
 
+    /**
+     * Remove the provided sample
+     *
+     * @param sample sample to remove
+     */
+    public void removeSample (Sample sample)
+    {
+        final SampleModel sampleModel = (SampleModel) model;
+        sampleModel.removeSample(sample);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------------//
     // AssignAction //
     //--------------//
     /**
      * Action to assign a new shape for a given sample.
      * <p>
-     * This action can be accessed by different ways:<ul>
+     * This action can be accessed by different ways:
+     * <ul>
      * <li>By pressing the assignButton in {@link SampleBoard},
      * <li>By selecting the assign item in the private class SamplePopup menu, triggered by a
      * right-click in {@link SampleListing}.
@@ -218,11 +224,11 @@ public class SampleController
         {
             super("Assign to");
             putValue(javax.swing.Action.SHORT_DESCRIPTION, "Assign a new shape");
-            ShapeSet.addAllShapes(popup, actionListener);
+            ShapeSet.addAllShapes(MusicFamily.Bravura, popup, actionListener);
 
             // Build menu for SamplePopup
             menu = new JMenu("Assign to");
-            ShapeSet.addAllShapes(menu, actionListener);
+            ShapeSet.addAllShapes(MusicFamily.Bravura, menu, actionListener);
             menu.setToolTipText("Assign a new shape");
         }
 

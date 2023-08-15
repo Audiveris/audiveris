@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,6 +47,26 @@ public abstract class AbstractStemConnection
     protected Point2D extensionPoint;
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-------------------//
+    // getExtensionPoint //
+    //-------------------//
+    /**
+     * Report the logical connection point, which is defined as the point with maximum
+     * extension along the logical stem.
+     * <p>
+     * This maximal definition allows to use the extension ordinate to determine the precise stem
+     * portion of the connection.
+     * <p>
+     * TODO: provide a picture for better explanation?
+     *
+     * @return the extension point
+     */
+    public Point2D getExtensionPoint ()
+    {
+        return extensionPoint;
+    }
+
     //----------------//
     // getStemPortion //
     //----------------//
@@ -62,20 +82,23 @@ public abstract class AbstractStemConnection
                                                 Line2D stemLine,
                                                 Scale scale);
 
-    //-------------------//
-    // getExtensionPoint //
-    //-------------------//
-    /**
-     * Report the logical connection point, which is defined as the point with maximum
-     * extension along the logical stem.
-     * This definition allows to use the extension ordinate to determine the precise stem portion of
-     * the connection.
-     *
-     * @return the extension point
-     */
-    public Point2D getExtensionPoint ()
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
     {
-        return extensionPoint;
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        if (extensionPoint != null) {
+            sb.append(
+                    String.format(
+                            " [x:%.0f,y:%.0f]",
+                            extensionPoint.getX(),
+                            extensionPoint.getY()));
+        }
+
+        return sb.toString();
     }
 
     //-------------------//
@@ -89,21 +112,5 @@ public abstract class AbstractStemConnection
     public void setExtensionPoint (Point2D extensionPoint)
     {
         this.extensionPoint = extensionPoint;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        if (extensionPoint != null) {
-            sb.append(
-                    String.format(" [x:%.0f,y:%.0f]", extensionPoint.getX(), extensionPoint.getY()));
-        }
-
-        return sb.toString();
     }
 }

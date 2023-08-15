@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,10 +45,13 @@ public class Evaluation
     /**
      * For comparing Evaluation instances by decreasing grade.
      */
-    public static final Comparator<Evaluation> byReverseGrade = (Evaluation e1, Evaluation e2)
-            -> Double.compare(e2.grade, e1.grade);
+    public static final Comparator<Evaluation> byReverseGrade = (Evaluation e1,
+                                                                 Evaluation e2) -> Double.compare(
+                                                                         e2.grade,
+                                                                         e1.grade);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The evaluated shape. */
     public Shape shape;
 
@@ -62,6 +65,7 @@ public class Evaluation
     public Failure failure;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an initialized evaluation instance.
      *
@@ -76,6 +80,7 @@ public class Evaluation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // toString //
     //----------//
@@ -104,6 +109,7 @@ public class Evaluation
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Failure //
     //---------//

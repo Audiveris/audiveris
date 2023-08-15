@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -84,12 +84,23 @@ public class AlterInter
     private static final Logger logger = LoggerFactory.getLogger(AlterInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Measured pitch value.
      */
     private final Double measuredPitch;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private AlterInter ()
+    {
+        super(null, null, null, (Double) null, null, null);
+        this.measuredPitch = null;
+    }
+
     /**
      * Creates a new AlterInter object.
      *
@@ -132,24 +143,7 @@ public class AlterInter
         this.measuredPitch = measuredPitch;
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private AlterInter ()
-    {
-        super(null, null, null, (Double) null, null, null);
-        this.measuredPitch = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 
     //-------//
     // added //
@@ -160,47 +154,6 @@ public class AlterInter
         super.added();
 
         setAbnormal(true); // No head linked yet
-    }
-
-    //--------------//
-    // alterationOf //
-    //--------------//
-    /**
-     * Report the pitch alteration that corresponds to the provided accidental.
-     *
-     * @param accidental the provided accidental, perhaps null
-     * @return the pitch impact
-     */
-    public static int alterationOf (AlterInter accidental)
-    {
-        if (accidental == null) {
-            return 0;
-        }
-
-        switch (accidental.getShape()) {
-        case SHARP:
-            return 1;
-
-        case DOUBLE_SHARP:
-            return 2;
-
-        case FLAT:
-            return -1;
-
-        case DOUBLE_FLAT:
-            return -2;
-
-        case NATURAL:
-            return 0;
-
-        default:
-            logger.warn(
-                    "Weird shape {} for accidental {}",
-                    accidental.getShape(),
-                    accidental.getId());
-
-            return 0; // Should not happen
-        }
     }
 
     //---------------//
@@ -226,7 +179,8 @@ public class AlterInter
     {
         switch (shape) {
         case FLAT:
-        case DOUBLE_FLAT: {
+        case DOUBLE_FLAT:
+        {
             // Alters for FLAT/DOUBLE_FLAT have a focus center different from area center
             final FlatSymbol flatSymbol = (FlatSymbol) symbol;
             final Model model = flatSymbol.getModel(font, dropLocation);
@@ -247,11 +201,14 @@ public class AlterInter
     @Override
     public String getDetails ()
     {
+        final StringBuilder sb = new StringBuilder(super.getDetails());
+
         if (measuredPitch != null) {
-            return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append(String.format("mPitch:%.1f", measuredPitch));
         }
 
-        return super.getDetails();
+        return sb.toString();
     }
 
     /**
@@ -272,11 +229,13 @@ public class AlterInter
 
         switch (shape) {
         case FLAT:
-        case DOUBLE_FLAT: {
+        case DOUBLE_FLAT:
+        {
             double il = (staff != null) ? staff.getSpecificInterline()
                     : getBounds().height / constants.flatTypicalHeight.getValue();
-            return new Point2D.Double(center.getX(),
-                                      center.getY() + (0.5 * il * getAreaPitchOffset(Shape.FLAT)));
+            return new Point2D.Double(
+                    center.getX(),
+                    center.getY() + (0.5 * il * getAreaPitchOffset(Shape.FLAT)));
         }
 
         default:
@@ -295,48 +254,6 @@ public class AlterInter
         }
 
         return null;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
-        Collections.sort(systemHeads, Inters.byAbscissa);
-
-        final int profile = Math.max(getProfile(), system.getProfile());
-
-        return lookupLinks(systemHeads, profile);
-    }
-
-    //---------------//
-    // searchUnlinks //
-    //---------------//
-    @Override
-    public Collection<Link> searchUnlinks (SystemInfo system,
-                                           Collection<Link> links)
-    {
-        return searchObsoletelinks(links, AlterHeadRelation.class);
-    }
-
-    //----------//
-    // setLinks //
-    //----------//
-    /**
-     * Try to detect relation with heads nearby (perhaps with their mirror).
-     *
-     * @param systemHeads ordered collection of heads in system
-     */
-    public void setLinks (List<Inter> systemHeads)
-    {
-        final int profile = Math.max(getProfile(), getSig().getSystem().getProfile());
-        final Collection<Link> links = lookupLinks(systemHeads, profile);
-
-        for (Link link : links) {
-            link.applyTo(this);
-        }
     }
 
     //-------------//
@@ -371,9 +288,8 @@ public class AlterInter
         Rectangle accidBox = getBounds();
         Point accidPt = new Point(
                 accidBox.x + accidBox.width,
-                ((shape != Shape.FLAT) && (shape != Shape.DOUBLE_FLAT))
-                        ? (accidBox.y + (accidBox.height / 2))
-                        : (accidBox.y + ((3 * accidBox.height) / 4)));
+                ((shape != Shape.FLAT) && (shape != Shape.DOUBLE_FLAT)) ? (accidBox.y
+                        + (accidBox.height / 2)) : (accidBox.y + ((3 * accidBox.height) / 4)));
         Rectangle luBox = new Rectangle(accidPt.x, accidPt.y - yGapMax, xGapMax, 2 * yGapMax);
         List<Inter> notes = Inters.intersectedInters(systemHeads, GeoOrder.BY_ABSCISSA, luBox);
 
@@ -420,48 +336,89 @@ public class AlterInter
         return Collections.emptySet();
     }
 
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Create an Alter inter, with a grade value, determining pitch WRT provided staff.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @param staff closest staff (questionable)
-     * @return the created instance
-     */
-    public static AlterInter create (Glyph glyph,
-                                     Shape shape,
-                                     Double grade,
-                                     Staff staff)
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
     {
-        Pitches pitches = computePitch(glyph, shape, staff);
+        final List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
+        Collections.sort(systemHeads, Inters.byAbscissa);
 
-        return new AlterInter(glyph, shape, grade, staff, pitches.pitch, pitches.measuredPitch);
+        final int profile = Math.max(getProfile(), system.getProfile());
+
+        return lookupLinks(systemHeads, profile);
     }
 
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Create an Alter inter, with impacts data, determining pitch WRT provided staff.
-     *
-     * @param glyph   underlying glyph
-     * @param shape   precise shape
-     * @param impacts assignment details
-     * @param staff   related staff
-     * @return the created instance
-     */
-    public static AlterInter create (Glyph glyph,
-                                     Shape shape,
-                                     GradeImpacts impacts,
-                                     Staff staff)
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
     {
-        Pitches pitches = computePitch(glyph, shape, staff);
+        return searchObsoletelinks(links, AlterHeadRelation.class);
+    }
 
-        return new AlterInter(glyph, shape, impacts, staff, pitches.pitch, pitches.measuredPitch);
+    //----------//
+    // setLinks //
+    //----------//
+    /**
+     * Try to detect relation with heads nearby (perhaps with their mirror).
+     *
+     * @param systemHeads ordered collection of heads in system
+     */
+    public void setLinks (List<Inter> systemHeads)
+    {
+        final int profile = Math.max(getProfile(), getSig().getSystem().getProfile());
+        final Collection<Link> links = lookupLinks(systemHeads, profile);
+
+        for (Link link : links) {
+            link.applyTo(this);
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------------//
+    // alterationOf //
+    //--------------//
+    /**
+     * Report the pitch alteration that corresponds to the provided accidental.
+     *
+     * @param accidental the provided accidental, perhaps null
+     * @return the pitch impact
+     */
+    public static int alterationOf (AlterInter accidental)
+    {
+        if (accidental == null) {
+            return 0;
+        }
+
+        switch (accidental.getShape()) {
+        case SHARP:
+            return 1;
+
+        case DOUBLE_SHARP:
+            return 2;
+
+        case FLAT:
+            return -1;
+
+        case DOUBLE_FLAT:
+            return -2;
+
+        case NATURAL:
+            return 0;
+
+        default:
+            logger.warn(
+                    "Weird shape {} for accidental {}",
+                    accidental.getShape(),
+                    accidental.getId());
+
+            return 0; // Should not happen
+        }
     }
 
     //--------------//
@@ -528,17 +485,78 @@ public class AlterInter
         double geoPitch = staff.pitchPositionOf(center);
 
         // Pitch offset for flat-based alterations
-        if ((omrShape == OmrShape.keyFlat)
-                    || (omrShape == OmrShape.accidentalFlat)
-                    || (omrShape == OmrShape.accidentalDoubleFlat)
-                    || (omrShape == OmrShape.accidentalFlatSmall)) {
+        if ((omrShape == OmrShape.keyFlat) || (omrShape == OmrShape.accidentalFlat)
+                || (omrShape == OmrShape.accidentalDoubleFlat)
+                || (omrShape == OmrShape.accidentalFlatSmall)) {
             geoPitch += getAreaPitchOffset(Shape.FLAT);
         }
 
         return new Pitches((int) Math.rint(geoPitch), geoPitch);
     }
 
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create an Alter inter, with a grade value, determining pitch WRT provided staff.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
+     * @param staff closest staff (questionable)
+     * @return the created instance
+     */
+    public static AlterInter create (Glyph glyph,
+                                     Shape shape,
+                                     Double grade,
+                                     Staff staff)
+    {
+        Pitches pitches = computePitch(glyph, shape, staff);
+
+        return new AlterInter(glyph, shape, grade, staff, pitches.pitch, pitches.measuredPitch);
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create an Alter inter, with impacts data, determining pitch WRT provided staff.
+     *
+     * @param glyph   underlying glyph
+     * @param shape   precise shape
+     * @param impacts assignment details
+     * @param staff   related staff
+     * @return the created instance
+     */
+    public static AlterInter create (Glyph glyph,
+                                     Shape shape,
+                                     GradeImpacts impacts,
+                                     Staff staff)
+    {
+        Pitches pitches = computePitch(glyph, shape, staff);
+
+        return new AlterInter(glyph, shape, impacts, staff, pitches.pitch, pitches.measuredPitch);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Scale.Fraction flatTypicalHeight = new Scale.Fraction(
+                2.7,
+                "Typical flat height");
+
+        private final Constant.Double flatMassPitchOffset = new Constant.Double(
+                "pitch",
+                0.65,
+                "Pitch offset of flat WRT mass center");
+    }
+
     //-------//
     // Model //
     //-------//
@@ -583,22 +601,5 @@ public class AlterInter
             this.pitch = pitch;
             this.measuredPitch = measuredPitch;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Scale.Fraction flatTypicalHeight = new Scale.Fraction(
-                2.7,
-                "Typical flat height");
-
-        private final Constant.Double flatMassPitchOffset = new Constant.Double(
-                "pitch",
-                0.65,
-                "Pitch offset of flat WRT mass center");
     }
 }

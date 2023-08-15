@@ -25,16 +25,24 @@ Table of contents
 ---
 
 ### 5.3
-{: .d-inline-block }
-on-going...
-{: .label .label-yellow }
 
 - User Interface
-  - Edition of staff geometry, at line and global levels
+  - Editing of staff geometry, at individual line and global staff levels
+  - User management of score logical parts, and their mapping to sheet physical parts
+  - User editing of newly supported features (multi-measure rests, octave shifts, etc)
 - Engine
-  - Better ledgers handling
-  - Support for two populations of beam height
+  - Support for drums unpitched notation
+  - Support of several musical font families for better template matching
+  - Support of several text font families
+  - Support for multi-measure rests
+  - Support for measure repeats for 1, 2 and 4 measures
+  - Support for octave shifts (single and multi-line shifts)
+  - Support for endings with no left leg, with default number generation
+  - Support for two populations of beam height and head size
+  - Support for beam thickness specification
+  - Support for fingering and plucking
 - Project
+  - Use of Tesseract 5.x in legacy mode
   - Support of MusicXML 4.0
   - Generation of Schemas documentation
 - Java
@@ -46,6 +54,7 @@ on-going...
    - Ability to move and resize symbols
    - Snapping note heads to staff line/ledgers and stems
    - Repetitive input
+   - Ability to merge/split books
    - Ability to merge/split parts via brace handling
    - Ability to merge systems
    - Ability to merge/split chords

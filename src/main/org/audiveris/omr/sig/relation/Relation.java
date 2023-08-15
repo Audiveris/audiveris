@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -64,16 +64,17 @@ public abstract class Relation
     private static final Logger logger = LoggerFactory.getLogger(Relation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** If "true", this relation was set manually. */
     @XmlAttribute(name = "manual")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean manual;
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//
@@ -98,11 +99,9 @@ public abstract class Relation
      */
     public String dumpOf (SIGraph sig)
     {
-        return new StringBuilder()
-                .append("  Source: ").append(sig.getEdgeSource(this)).append("\n")
+        return new StringBuilder().append("  Source: ").append(sig.getEdgeSource(this)).append("\n")
                 .append("Relation: ").append(this).append(" ").append(getDetails()).append("\n")
-                .append("  Target: ").append(sig.getEdgeTarget(this)).append("\n")
-                .toString();
+                .append("  Target: ").append(sig.getEdgeTarget(this)).append("\n").toString();
     }
 
     //-----------//
@@ -148,6 +147,38 @@ public abstract class Relation
         return Relations.nameOf(getClass());
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    /**
+     * Report a description string of class internals.
+     *
+     * @return description string of internals
+     */
+    protected String internals ()
+    {
+        return isManual() ? "MANUAL" : "";
+    }
+
+    //-------------//
+    // isForbidden //
+    //-------------//
+    /**
+     * Report whether this relation is <b>explicitly</b> forbidden between the provided
+     * source and target Inter instances.
+     * <p>
+     * <b>WARNING</b>: Not being explicitly forbidden does not imply being allowed.
+     *
+     * @param source source Inter instance
+     * @param target target Inter instance
+     * @return true if forbidden
+     */
+    public boolean isForbidden (Inter source,
+                                Inter target)
+    {
+        return false;
+    }
+
     //----------//
     // isManual //
     //----------//
@@ -159,19 +190,6 @@ public abstract class Relation
     public boolean isManual ()
     {
         return manual;
-    }
-
-    //-----------//
-    // setManual //
-    //-----------//
-    /**
-     * Set this relation as a manual one.
-     *
-     * @param manual new value
-     */
-    public void setManual (boolean manual)
-    {
-        this.manual = manual;
     }
 
     /**
@@ -246,6 +264,19 @@ public abstract class Relation
         return sb.toString();
     }
 
+    //-----------//
+    // setManual //
+    //-----------//
+    /**
+     * Set this relation as a manual one.
+     *
+     * @param manual new value
+     */
+    public void setManual (boolean manual)
+    {
+        this.manual = manual;
+    }
+
     //--------------//
     // toLongString //
     //--------------//
@@ -279,18 +310,5 @@ public abstract class Relation
     public String toString ()
     {
         return getName();
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    /**
-     * Report a description string of class internals.
-     *
-     * @return description string of internals
-     */
-    protected String internals ()
-    {
-        return isManual() ? "MANUAL" : "";
     }
 }

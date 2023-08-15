@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.text.WordScanner.OcrScanner;
@@ -61,6 +62,7 @@ public class TextLine
     private static final Logger logger = LoggerFactory.getLogger(TextLine.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Words that compose this line. */
     private final List<TextWord> words = new ArrayList<>();
 
@@ -74,32 +76,39 @@ public class TextLine
     private boolean processed;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new TextLine object, without its contained words which are assumed
+     * to be added later.
+     *
+     * @param sheet the related sheet
+     */
+    public TextLine (Sheet sheet)
+    {
+        super(sheet, null, null, null, null);
+    }
+
     /**
      * Creates a new TextLine object from a sequence of words.
      *
+     * @param sheet the related sheet
      * @param words the sequence of words
      */
-    public TextLine (List<TextWord> words)
+    public TextLine (Sheet sheet,
+                     List<TextWord> words)
     {
-        this();
+        this(sheet);
 
         this.words.addAll(words);
+        purgeWords();
 
         for (TextWord word : words) {
             word.setTextLine(this);
         }
     }
 
-    /**
-     * Creates a new TextLine object, without its contained words which are assumed
-     * to be added later.
-     */
-    public TextLine ()
-    {
-        super(null, null, null, null);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // addWords //
     //----------//
@@ -112,6 +121,7 @@ public class TextLine
     {
         if ((words != null) && !words.isEmpty()) {
             this.words.addAll(words);
+            purgeWords();
 
             for (TextWord word : words) {
                 word.setTextLine(this);
@@ -133,9 +143,11 @@ public class TextLine
      */
     public void appendWord (TextWord word)
     {
-        words.add(word);
-        word.setTextLine(this);
-        invalidateCache();
+        if (word.getBounds() != null) {
+            words.add(word);
+            word.setTextLine(this);
+            invalidateCache();
+        }
     }
 
     //---------------//
@@ -148,18 +160,16 @@ public class TextLine
      * Then use average of remaining words confidence value.
      * Use font size validity.
      *
-     * @param scale         scale of containing sheet
      * @param inSheetHeader true if line is located above first system
      * @return reason for invalidity if any, otherwise null
      */
-    public String checkValidity (Scale scale,
-                                 boolean inSheetHeader)
+    public String checkValidity (boolean inSheetHeader)
     {
         // Discard really invalid words
         final List<TextWord> toRemove = new ArrayList<>();
 
         for (TextWord word : getWords()) {
-            String reason = word.checkValidity(scale, inSheetHeader);
+            String reason = word.checkValidity();
 
             if (reason != null) {
                 toRemove.add(word);
@@ -179,7 +189,7 @@ public class TextLine
         }
 
         // Check font size
-        if (!isValidFontSize(scale, inSheetHeader)) {
+        if (!isValidFontSize(inSheetHeader)) {
             return "invalid-font-size";
         }
 
@@ -307,8 +317,9 @@ public class TextLine
 
         for (TextWord word : words) {
             final Rectangle box = word.bounds;
-            final Point p = new Point(box.x + box.width / 2,
-                                      (dir < 0) ? box.y : box.y + box.height - 1);
+            final Point p = new Point(
+                    box.x + box.width / 2,
+                    (dir < 0) ? box.y : box.y + box.height - 1);
             final Point2D dsk = skew.deskewed(p);
 
             if (bestDsk == null) {
@@ -400,6 +411,25 @@ public class TextLine
         }
 
         return count;
+    }
+
+    //---------------//
+    // getMaxCharGap //
+    //---------------//
+    /**
+     * Compute max abscissa gap between two chars in a word.
+     *
+     * @param word the word at hand
+     * @return max number of pixels for abscissa gap, according to the word font size
+     */
+    private int getMaxCharGap (TextWord word)
+    {
+        int pointSize = word.getFontInfo().pointsize;
+
+        // TODO: very rough value to be refined and explained!
+        int val = (int) Math.rint((constants.maxCharDx.getValue() * pointSize) / 2.0);
+
+        return val;
     }
 
     //-------------//
@@ -495,19 +525,6 @@ public class TextLine
         return role;
     }
 
-    //---------//
-    // setRole //
-    //---------//
-    /**
-     * Assign role information.
-     *
-     * @param role the role to set
-     */
-    public void setRole (TextRole role)
-    {
-        this.role = role;
-    }
-
     //----------//
     // getValue //
     //----------//
@@ -577,17 +594,32 @@ public class TextLine
         return words;
     }
 
-    //-------------//
-    // isChordName //
-    //-------------//
-    /**
-     * Report whether this line has the ChordName role
-     *
-     * @return true for chord line
-     */
-    public boolean isChordName ()
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
     {
-        return getRole() == TextRole.ChordName;
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        if (role != null) {
+            sb.append(" ").append(role);
+        }
+
+        return sb.toString();
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    public void invalidateCache ()
+    {
+        setBounds(null);
+
+        setBaseline(null);
+        setConfidence(null);
+
+        meanFont = null;
     }
 
     //-----------------//
@@ -607,6 +639,19 @@ public class TextLine
         }
 
         return true;
+    }
+
+    //-------------//
+    // isChordName //
+    //-------------//
+    /**
+     * Report whether this line has the ChordName role
+     *
+     * @return true for chord line
+     */
+    public boolean isChordName ()
+    {
+        return getRole() == TextRole.ChordName;
     }
 
     //----------//
@@ -635,17 +680,39 @@ public class TextLine
         return processed;
     }
 
-    //--------------//
-    // setProcessed //
-    //--------------//
+    //-----------------//
+    // isValidFontSize //
+    //-----------------//
     /**
-     * Set the processed flag for this line
+     * Check whether all words in the provided line have a valid font size.
+     * <p>
+     * We just check if no word has a too big font size.
      *
-     * @param processed true if processed
+     * @param inSheetHeader true if line is located above sheet first staff, to allow title font
+     * @return true if valid
      */
-    public void setProcessed (boolean processed)
+    private boolean isValidFontSize (boolean inSheetHeader)
     {
-        this.processed = processed;
+        // Heuristic: Allow large font only before sheet first staff
+        final Scale scale = sheet.getScale();
+        final int maxFontSize = inSheetHeader ? scale.toPixels(constants.maxTitleFontSize)
+                : scale.toPixels(constants.maxFontSize);
+
+        for (TextWord word : getWords()) {
+            final FontInfo fontInfo = word.getFontInfo();
+
+            if (fontInfo.pointsize > maxFontSize) {
+                logger.debug(
+                        "   too big font {} vs {} on {}",
+                        fontInfo.pointsize,
+                        maxFontSize,
+                        this);
+
+                return false;
+            }
+        }
+
+        return true;
     }
 
     //--------------------//
@@ -663,22 +730,29 @@ public class TextLine
         for (TextWord word : getWords()) {
             // Look for tiny inter-word gap
             if (prevWord != null) {
-                Rectangle prevBounds = prevWord.getBounds();
-                int prevStop = prevBounds.x + prevBounds.width;
-                int gap = word.getBounds().x - prevStop;
+                final Rectangle prevBounds = prevWord.getBounds();
 
-                if (gap < minWordDx) {
-                    toRemove.add(prevWord);
-                    toRemove.add(word);
+                if (prevBounds != null) {
+                    final int prevStop = prevBounds.x + prevBounds.width;
+                    final Rectangle wordBounds = word.getBounds();
 
-                    TextWord bigWord = TextWord.mergeOf(prevWord, word);
+                    if (wordBounds != null) {
+                        final int gap = wordBounds.x - prevStop;
 
-                    if (logger.isDebugEnabled()) {
-                        logger.info("   merged {} & {} into {}", prevWord, word, bigWord);
+                        if (gap < minWordDx) {
+                            toRemove.add(prevWord);
+                            toRemove.add(word);
+
+                            TextWord bigWord = TextWord.mergeOf(prevWord, word);
+
+                            if (logger.isDebugEnabled()) {
+                                logger.info("   merged {} & {} into {}", prevWord, word, bigWord);
+                            }
+
+                            toAdd.add(bigWord);
+                            word = bigWord;
+                        }
                     }
-
-                    toAdd.add(bigWord);
-                    word = bigWord;
                 }
             }
 
@@ -696,6 +770,17 @@ public class TextLine
             addWords(toAdd);
             removeWords(toRemove);
         }
+    }
+
+    //------------//
+    // purgeWords //
+    //------------//
+    /**
+     * Purges words collection of any word with null bounds.
+     */
+    private void purgeWords ()
+    {
+        words.removeIf( (w) -> w.getBounds() == null);
     }
 
     //--------------------//
@@ -751,6 +836,32 @@ public class TextLine
         return (int) Math.rint(constants.maxWordDxFontRatio.getValue() * pointSize);
     }
 
+    //--------------//
+    // setProcessed //
+    //--------------//
+    /**
+     * Set the processed flag for this line
+     *
+     * @param processed true if processed
+     */
+    public void setProcessed (boolean processed)
+    {
+        this.processed = processed;
+    }
+
+    //---------//
+    // setRole //
+    //---------//
+    /**
+     * Assign role information.
+     *
+     * @param role the role to set
+     */
+    public void setRole (TextRole role)
+    {
+        this.role = role;
+    }
+
     //------------//
     // splitWords //
     //------------//
@@ -777,7 +888,11 @@ public class TextLine
 
             if (!subWords.isEmpty()) {
                 toRemove.add(word);
-                toAdd.addAll(subWords);
+
+                for (TextWord subWord : subWords) {
+                    if (subWord.checkValidity() == null)
+                        toAdd.add(subWord);
+                }
             }
         }
 
@@ -811,91 +926,7 @@ public class TextLine
         }
     }
 
-    //---------------//
-    // getMaxCharGap //
-    //---------------//
-    /**
-     * Compute max abscissa gap between two chars in a word.
-     *
-     * @param word the word at hand
-     * @return max number of pixels for abscissa gap, according to the word font size
-     */
-    private int getMaxCharGap (TextWord word)
-    {
-        int pointSize = word.getFontInfo().pointsize;
-
-        // TODO: very rough value to be refined and explained!
-        int val = (int) Math.rint((constants.maxCharDx.getValue() * pointSize) / 2.0);
-
-        return val;
-    }
-
-    //-----------------//
-    // isValidFontSize //
-    //-----------------//
-    /**
-     * Check whether all words in the provided line have a valid font size.
-     * <p>
-     * We just check if no word has a too big font size.
-     *
-     * @return true if valid
-     */
-    private boolean isValidFontSize (Scale scale,
-                                     boolean inSheetHeader)
-    {
-        final int minFontSize = scale.toPixels(constants.minFontSize);
-
-        // Heuristic: Allow large font only before sheet first staff
-        final int maxFontSize = inSheetHeader ? scale.toPixels(constants.maxTitleFontSize)
-                : scale.toPixels(constants.maxFontSize);
-
-        for (TextWord word : getWords()) {
-            FontInfo fontInfo = word.getFontInfo();
-
-            if (fontInfo.pointsize > maxFontSize) {
-                logger.debug("   too big font {} vs {} on {}",
-                             fontInfo.pointsize, maxFontSize, this);
-
-                return false;
-
-                //            } else if (fontInfo.pointsize < minFontSize) {
-                //                logger.debug("   too small font {} vs {} on {}",
-                //                             fontInfo.pointsize, minFontSize, this);
-                //
-                //                return false;
-            }
-        }
-
-        return true;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        if (role != null) {
-            sb.append(" ").append(role);
-        }
-
-        return sb.toString();
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    public void invalidateCache ()
-    {
-        setBounds(null);
-
-        setBaseline(null);
-        setConfidence(null);
-
-        meanFont = null;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     /**
      * Give a Line comparator by de-skewed abscissa.
@@ -905,8 +936,10 @@ public class TextLine
      */
     public static Comparator<TextLine> byAbscissa (final Skew skew)
     {
-        return (TextLine line1, TextLine line2) -> Double.compare(line1.getDskOrigin(skew).getX(),
-                                                                  line2.getDskOrigin(skew).getX());
+        return (TextLine line1,
+                TextLine line2) -> Double.compare(
+                        line1.getDskOrigin(skew).getX(),
+                        line2.getDskOrigin(skew).getX());
     }
 
     /**
@@ -917,8 +950,10 @@ public class TextLine
      */
     public static Comparator<TextLine> byOrdinate (final Skew skew)
     {
-        return (TextLine line1, TextLine line2) -> Double.compare(line1.getDskOrigin(skew).getY(),
-                                                                  line2.getDskOrigin(skew).getY());
+        return (TextLine line1,
+                TextLine line2) -> Double.compare(
+                        line1.getDskOrigin(skew).getY(),
+                        line2.getDskOrigin(skew).getY());
     }
 
     //------//
@@ -928,7 +963,7 @@ public class TextLine
                              List<TextLine> lines,
                              boolean withWords)
     {
-        logger.info(title);
+        logger.info("{} {}", title, lines.isEmpty() ? "none" : lines.size());
 
         for (TextLine line : lines) {
             logger.info("   {}", line);
@@ -942,6 +977,7 @@ public class TextLine
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

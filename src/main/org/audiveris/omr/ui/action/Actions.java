@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -60,48 +60,21 @@ public class Actions
     /** The collection of all actions loaded so far. */
     private static final Set<ActionDescriptor> allDescriptors = new LinkedHashSet<>();
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * Predefined list of domain names.
-     * Through the action list files, the user will be able to add new domain names.
-     * This classification is mainly used to define the related pull-down menus.
-     */
-    public static enum Domain
-    {
-        /** Domain of file actions */
-        FILE,
-        /** Domain of book actions */
-        BOOK,
-        /** Domain of sheet actions */
-        SHEET,
-        /** Domain of individual steps */
-        STEP,
-        /** Domain of various view features */
-        VIEW,
-        /** Domain of utilities */
-        TOOL,
-        /** Domain of plugins */
-        PLUGIN,
-        /** Domain of help information */
-        HELP;
-
-        Domain ()
-        {
-        }
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Collection of descriptors loaded by unmarshalling one file. */
     @XmlElement(name = "action")
     private final List<ActionDescriptor> descriptors = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** No-arg constructor meant for JAXB. */
     private Actions ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------------//
     // getAllDescriptors //
     //-------------------//
@@ -179,7 +152,7 @@ public class Actions
      * @throws JAXBException if something goes wrong with XML deserialization
      */
     public static void loadActionDescriptors (InputStream in)
-            throws JAXBException
+        throws JAXBException
     {
         if (jaxbContext == null) {
             jaxbContext = JAXBContext.newInstance(Actions.class);
@@ -210,5 +183,36 @@ public class Actions
         }
 
         allDescriptors.addAll(actions.descriptors);
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /**
+     * Predefined list of domain names.
+     * Through the action list files, the user will be able to add new domain names.
+     * This classification is mainly used to define the related pull-down menus.
+     */
+    public static enum Domain
+    {
+        /** Domain of file actions */
+        FILE,
+        /** Domain of book actions */
+        BOOK,
+        /** Domain of sheet actions */
+        SHEET,
+        /** Domain of individual steps */
+        STEP,
+        /** Domain of various view features */
+        VIEW,
+        /** Domain of utilities */
+        TOOL,
+        /** Domain of plugins */
+        PLUGIN,
+        /** Domain of help information */
+        HELP;
+
+        Domain ()
+        {
+        }
     }
 }

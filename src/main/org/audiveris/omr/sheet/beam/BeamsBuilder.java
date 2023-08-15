@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -39,8 +39,8 @@ import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
+import static org.audiveris.omr.sheet.ProcessingSwitch.smallBeams;
 import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.sheet.Scale.BeamScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.stem.HeadLinker;
@@ -64,10 +64,12 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 import org.audiveris.omr.util.WrappedInteger;
 
 import org.slf4j.Logger;
@@ -109,6 +111,7 @@ public class BeamsBuilder
     private static final Logger logger = LoggerFactory.getLogger(BeamsBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -116,11 +119,11 @@ public class BeamsBuilder
     /** Scale-dependent global constants. */
     private final Parameters params;
 
-    /** Parameters to build items (cue or standard). */
-    private ItemParameters itemParams;
+    /** Parameters to build standard beam items. */
+    private ItemParameters stdParams;
 
-    /** Parameters to build second (standard) beams, if so needed. */
-    private ItemParameters secondItemParams;
+    /** Parameters to build small beam items, if so needed. */
+    private ItemParameters smallParams;
 
     /**
      * Beams (and hooks) for this system.
@@ -147,13 +150,14 @@ public class BeamsBuilder
     /** Input image. */
     private ByteProcessor pixelFilter;
 
-    /** Lag of glyph sections. */
+    /** Lag of spot glyph sections. */
     private final Lag spotLag;
 
     /** Sheet bounding box. */
     private final Rectangle sheetBox;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BeamsBuilder object.
      *
@@ -175,6 +179,48 @@ public class BeamsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-------------//
+    // browseHooks //
+    //-------------//
+    /**
+     * Look for hooks on a vertical side of a beam.
+     *
+     * @param beam the base beam
+     * @param side which vertical side to browse
+     */
+    private void browseHooks (BeamInter beam,
+                              VerticalSide side)
+    {
+        if (beam.isVip()) {
+            logger.info("VIP browseHooks on {} of {}", side, beam);
+        }
+
+        // Look for a parallel beam just above or below
+        final ItemParameters itemParams = getItemParams(beam);
+        if (itemParams.isSmall) {
+            return;
+        }
+
+        final Line2D median = beam.getMedian();
+        final double height = beam.getHeight();
+        final double dy = 1.5 * ((side == TOP) ? (-height) : height);
+
+        Area luArea = AreaUtil.horizontalParallelogram(
+                new Point2D.Double(median.getX1(), median.getY1() + dy),
+                new Point2D.Double(median.getX2(), median.getY2() + dy),
+                height);
+        Set<Glyph> glyphs = Glyphs.intersectedGlyphs(sortedBeamSpots, luArea);
+
+        for (Glyph glyph : glyphs) {
+            String failure = checkHookGlyph(beam, side, glyph, itemParams);
+
+            if ((failure != null) && glyph.isVip()) {
+                logger.info("VIP hook#{} {}", glyph.getId(), failure);
+            }
+        }
+    }
+
     //------------//
     // buildBeams //
     //------------//
@@ -186,17 +232,21 @@ public class BeamsBuilder
         final Scale scale = sheet.getScale();
 
         // Select parameters for standard items
-        itemParams = new ItemParameters(scale, scale.getBeamThickness());
+        stdParams = new ItemParameters(scale, scale.getItemValue(Scale.Item.beam), false);
 
-        final BeamScale secondBeamScale = scale.getSmallBeamScale();
-        if (secondBeamScale != null) {
-            secondItemParams = new ItemParameters(scale, secondBeamScale.getMain());
+        // Select parameters for small items?
+        Integer smallHeight = scale.getItemValue(Scale.Item.smallBeam);
+        if (smallHeight == null && sheet.getStub().getProcessingSwitches().getValue(smallBeams)) {
+            smallHeight = (int) Math.rint(scale.getBeamThickness() * getCueBeamRatio());
+        }
+        if (smallHeight != null) {
+            smallParams = new ItemParameters(scale, smallHeight, true);
         }
 
         // Cache input image
         pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
 
-        // First, retrieve beam candidates from spots
+        // First, retrieve candidates from spots
         sortedBeamSpots = system.getGroupedGlyphs(GlyphGroup.BEAM_SPOT);
         Collections.sort(sortedBeamSpots, Glyphs.byFullOrdinate);
 
@@ -221,61 +271,25 @@ public class BeamsBuilder
     /**
      * Find possible cue beams interpretations around identified cue notes and stems.
      *
-     * @param spots candidate spots for cue beams
+     * @param spots (output) candidate spots for cue beams
      */
     public void buildCueBeams (List<Glyph> spots)
     {
         final Scale scale = sheet.getScale();
 
         // Select parameters for cue items
-        itemParams = new ItemParameters(
+        stdParams = new ItemParameters(
                 scale,
-                scale.getBeamThickness() * constants.cueBeamRatio.getValue());
+                scale.getBeamThickness() * constants.cueBeamRatio.getValue(),
+                true);
 
         // Cache input image
         pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
 
-        List<CueAggregate> aggregates = getCueAggregates();
+        final List<CueAggregate> aggregates = getCueAggregates();
 
         for (CueAggregate aggregate : aggregates) {
             aggregate.process(spots);
-        }
-    }
-
-    //-------------//
-    // browseHooks //
-    //-------------//
-    /**
-     * Look for hooks on a vertical side of a beam.
-     *
-     * @param beam the base beam
-     * @param side which vertical side to browse
-     */
-    private void browseHooks (BeamInter beam,
-                              VerticalSide side)
-    {
-        if (beam.isVip()) {
-            logger.info("VIP browseHooks on {} of {}", side, beam);
-        }
-
-        // Look for a parallel beam just above or below
-        final ItemParameters itemParams = getItemParams(beam);
-        final Line2D median = beam.getMedian();
-        final double height = beam.getHeight();
-        final double dy = 1.5 * ((side == TOP) ? (-height) : height);
-
-        Area luArea = AreaUtil.horizontalParallelogram(
-                new Point2D.Double(median.getX1(), median.getY1() + dy),
-                new Point2D.Double(median.getX2(), median.getY2() + dy),
-                height);
-        Set<Glyph> glyphs = Glyphs.intersectedGlyphs(sortedBeamSpots, luArea);
-
-        for (Glyph glyph : glyphs) {
-            String failure = checkHookGlyph(beam, side, glyph, itemParams);
-
-            if ((failure != null) && glyph.isVip()) {
-                logger.info("VIP hook#{} {}", glyph.getId(), failure);
-            }
         }
     }
 
@@ -303,16 +317,16 @@ public class BeamsBuilder
     /**
      * Check the provided glyph as a beam candidate.
      *
-     * @param glyph      the glyph to check
-     * @param isCue      true for a cue beam candidate
-     * @param itemParams specific parameters for desired height
-     * @param beams      (output) to be appended by created beam inters
+     * @param glyph       the glyph to check
+     * @param isCue       true for a cue beam candidate
+     * @param itemParams  specific parameters for desired height
+     * @param createdCues (output) it non null, to be appended by created cue inters
      * @return the failure description if not successful, null otherwise
      */
     private String checkBeamGlyph (Glyph glyph,
                                    boolean isCue,
                                    ItemParameters itemParams,
-                                   List<Inter> beams)
+                                   List<Inter> createdCues)
     {
         final Rectangle box = glyph.getBounds();
         final Line2D glyphLine = glyph.getCenterLine();
@@ -358,7 +372,7 @@ public class BeamsBuilder
         final double structWidth = structure.getWidth();
 
         if (structWidth < itemParams.minBeamWidthLow) {
-            return "too narrow borders";
+            return "too narrow width";
         }
 
         // Check that all lines of the glyph are rather parallel
@@ -383,7 +397,7 @@ public class BeamsBuilder
             List<Inter> cues = createSmallBeamInters(structure, distImpact);
 
             if (!cues.isEmpty()) {
-                beams.addAll(cues);
+                createdCues.addAll(cues);
 
                 return null;
             } else {
@@ -477,8 +491,7 @@ public class BeamsBuilder
     // computeBeamImpacts //
     //--------------------//
     /**
-     * Compute the grade details for the provided BeamItem, targeting
-     * a BeamInter.
+     * Compute the grade details for the provided BeamItem, targeting a BeamInter.
      *
      * @param item       the isolated beam item
      * @param above      true to check above beam item
@@ -566,9 +579,9 @@ public class BeamsBuilder
         int width = (int) Math.rint(item.median.getX2() - item.median.getX1() + 1);
 
         if ((width < minWidthLow) || (item.height < itemParams.minHeightLow)
-                    || (item.height > itemParams.maxHeightHigh)
-                    || (coreRatio < params.minCoreBlackRatio)
-                    || (beltRatio > params.maxBeltBlackRatio)) {
+                || (item.height > itemParams.maxHeightHigh)
+                || (coreRatio < params.minCoreBlackRatio)
+                || (beltRatio > params.maxBeltBlackRatio)) {
             if (item.isVip() || logger.isDebugEnabled()) {
                 logger.info(
                         "Rejected {} width:{} height:{} %core:{} %belt:{}",
@@ -583,10 +596,10 @@ public class BeamsBuilder
         }
 
         double widthImpact = (width - minWidthLow) / (minWidthHigh - minWidthLow);
-        double minHeightImpact = (item.height - itemParams.minHeightLow)
-                                         / (itemParams.typicalHeight - itemParams.minHeightLow);
+        double minHeightImpact = (item.height - itemParams.minHeightLow) / (itemParams.typicalHeight
+                - itemParams.minHeightLow);
         double maxHeightImpact = (itemParams.maxHeightHigh - item.height)
-                                         / (itemParams.maxHeightHigh - itemParams.typicalHeight);
+                / (itemParams.maxHeightHigh - itemParams.typicalHeight);
         double coreImpact = (coreRatio - params.minCoreBlackRatio) / (1 - params.minCoreBlackRatio);
         double beltImpact = 1 - (beltRatio / params.maxBeltBlackRatio);
 
@@ -638,7 +651,7 @@ public class BeamsBuilder
                 double itemWidth = item.median.getX2() - item.median.getX1();
                 BeamHookInter hook = null;
 
-                if (itemWidth <= itemParams.maxHookWidth) {
+                if (!itemParams.isSmall && (itemWidth <= itemParams.maxHookWidth)) {
                     logger.debug("Create hook with {}", line);
 
                     Impacts impacts = computeHookImpacts(item, distImpact, itemParams);
@@ -668,7 +681,10 @@ public class BeamsBuilder
 
                     if ((impacts != null) && (impacts.getGrade() >= BeamInter.getMinGrade())) {
                         success = true;
-                        BeamInter beam = new BeamInter(impacts, item.median, item.height);
+                        final AbstractBeamInter beam = itemParams.isSmall ? new SmallBeamInter(
+                                impacts,
+                                item.median,
+                                item.height) : new BeamInter(impacts, item.median, item.height);
 
                         if (line.isVip()) {
                             beam.setVip(true);
@@ -703,11 +719,11 @@ public class BeamsBuilder
     {
         for (Glyph glyph : sortedBeamSpots) {
             // First attempt with standard height
-            String failure = checkBeamGlyph(glyph, false, itemParams, null);
+            String failure = checkBeamGlyph(glyph, false, stdParams, null);
 
             // Second attempt with second height, if any
-            if ((failure != null) && (secondItemParams != null)) {
-                failure = checkBeamGlyph(glyph, false, secondItemParams, null);
+            if ((failure != null) && (smallParams != null)) {
+                failure = checkBeamGlyph(glyph, false, smallParams, null);
             }
 
             if ((failure != null) && glyph.isVip()) {
@@ -846,7 +862,8 @@ public class BeamsBuilder
         final Line2D median = beam.getMedian();
         final double height = beam.getHeight();
         final Area luArea = AreaUtil.horizontalParallelogram(
-                median.getP1(), median.getP2(),
+                median.getP1(),
+                median.getP2(),
                 2 * sheet.getScale().toPixelsDouble(BeamGroupInter.getMaxYDistance()));
         beam.addAttachment("=", luArea);
 
@@ -881,8 +898,7 @@ public class BeamsBuilder
 
             // Check the other beam can really extend the current beam
             final Line2D otherMedian = other.getMedian();
-            final Point2D otherEndPt = (side == LEFT) ? otherMedian.getP1()
-                    : otherMedian.getP2();
+            final Point2D otherEndPt = (side == LEFT) ? otherMedian.getP1() : otherMedian.getP2();
             double extDx = (side == LEFT) ? (endPt.getX() - otherEndPt.getX())
                     : (otherEndPt.getX() - endPt.getX());
 
@@ -935,9 +951,8 @@ public class BeamsBuilder
         final Line2D beamMedian = beam.getMedian();
         final Line2D otherMedian = other.getMedian();
 
-        double gap = (beamMedian.getX1() < otherMedian.getX1())
-                ? (otherMedian.getX1() - beamMedian.getX2())
-                : (beamMedian.getX1() - otherMedian.getX2());
+        double gap = (beamMedian.getX1() < otherMedian.getX1()) ? (otherMedian.getX1() - beamMedian
+                .getX2()) : (beamMedian.getX1() - otherMedian.getX2());
 
         if (gap >= params.minBeamsGapX) {
             Area middleArea = middleArea(beam, other);
@@ -951,7 +966,7 @@ public class BeamsBuilder
             }
         }
 
-        BeamInter newBeam = mergeOf(beam, other);
+        final AbstractBeamInter newBeam = mergeOf(beam, other);
 
         if (newBeam == null) {
             return false;
@@ -964,12 +979,12 @@ public class BeamsBuilder
             newBeam.setVip(true);
         }
 
-        beam.remove();
-        other.remove();
-
         if (newBeam.isVip() || logger.isDebugEnabled()) {
             logger.info("VIP Merged {} & {} into {}", beam, other, newBeam);
         }
+
+        beam.remove();
+        other.remove();
 
         return true;
     }
@@ -1044,7 +1059,10 @@ public class BeamsBuilder
         Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact, itemParams);
 
         if ((impacts != null) && (impacts.getGrade() >= BeamInter.getMinGrade())) {
-            BeamInter newBeam = new BeamInter(impacts, newMedian, height);
+            final AbstractBeamInter newBeam = itemParams.isSmall ? new SmallBeamInter(
+                    impacts,
+                    newMedian,
+                    height) : new BeamInter(impacts, newMedian, height);
 
             if (beam.isVip()) {
                 newBeam.setVip(true);
@@ -1175,7 +1193,8 @@ public class BeamsBuilder
 
         // We look for collections of good cue black heads + stem, close enough
         // to be able to be connected by a cue beam.
-        List<Inter> smallBlacks = sig.inters((Inter inter) -> {
+        List<Inter> smallBlacks = sig.inters( (Inter inter) ->
+        {
             if (inter.isRemoved() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
                 return false;
             }
@@ -1244,18 +1263,16 @@ public class BeamsBuilder
     //---------------//
     private ItemParameters getItemParams (AbstractBeamInter beam)
     {
-        if (secondItemParams == null) {
-            return itemParams;
+        if (smallParams == null) {
+            return stdParams;
         }
 
         // We have 2 height populations
         final double height = beam.getHeight();
-        final double h = itemParams.typicalHeight;
-        final double sh = secondItemParams.typicalHeight;
+        final double h = stdParams.typicalHeight;
+        final double sh = smallParams.typicalHeight;
 
-        return (Math.abs(height - h) <= Math.abs(height - sh))
-                ? itemParams
-                : secondItemParams;
+        return (Math.abs(height - h) <= Math.abs(height - sh)) ? stdParams : smallParams;
     }
 
     //-------------//
@@ -1294,7 +1311,7 @@ public class BeamsBuilder
                 Line2D otherMedian = other.getMedian();
 
                 if ((Math.abs(LineUtil.getSlope(otherMedian) - slope) > maxSlopeDiff)
-                            || (otherMedian.ptLineDist(endPt) > params.maxBeamsGapY)) {
+                        || (otherMedian.ptLineDist(endPt) > params.maxBeamsGapY)) {
                     it.remove();
                 }
             }
@@ -1302,18 +1319,24 @@ public class BeamsBuilder
             // Keep just the closest one to current beam (abscissa-wise)
             if (others.size() > 1) {
                 final double endX = endPt.getX();
-                Collections.sort(others, (Inter o1, Inter o2) -> {
-                             AbstractBeamInter b1 = (AbstractBeamInter) o1;
-                             AbstractBeamInter b2 = (AbstractBeamInter) o2;
+                Collections.sort(
+                        others,
+                        (Inter o1,
+                         Inter o2) ->
+                        {
+                            AbstractBeamInter b1 = (AbstractBeamInter) o1;
+                            AbstractBeamInter b2 = (AbstractBeamInter) o2;
 
-                             if (side == LEFT) {
-                                 return Double.compare(endX - b1.getMedian().getX2(),
-                                                       endX - b2.getMedian().getX2());
-                             } else {
-                                 return Double.compare(b1.getMedian().getX1() - endX,
-                                                       b2.getMedian().getX1() - endX);
-                             }
-                         });
+                            if (side == LEFT) {
+                                return Double.compare(
+                                        endX - b1.getMedian().getX2(),
+                                        endX - b2.getMedian().getX2());
+                            } else {
+                                return Double.compare(
+                                        b1.getMedian().getX1() - endX,
+                                        b2.getMedian().getX1() - endX);
+                            }
+                        });
             }
 
             if (!others.isEmpty()) {
@@ -1322,6 +1345,33 @@ public class BeamsBuilder
         }
 
         return null;
+    }
+
+    //----------------//
+    // isSideInSystem //
+    //----------------//
+    /**
+     * Check whether the (beam) side designated by provided point and height values
+     * lies fully in the current system
+     *
+     * @param pt     side point on median
+     * @param height beam height
+     * @return true if side is fully within current system, false otherwise
+     */
+    boolean isSideInSystem (Point2D pt,
+                            double height)
+    {
+        Area area = system.getArea();
+
+        // Check top and bottom points of the beam side
+        for (int dir : new int[]
+        { -1, +1 }) {
+            if (!area.contains(pt.getX(), pt.getY() + (dir * (height / 2)))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     //---------//
@@ -1334,21 +1384,21 @@ public class BeamsBuilder
      * @param two another beam
      * @return the resulting beam, or null if failed
      */
-    private BeamInter mergeOf (AbstractBeamInter one,
-                               AbstractBeamInter two)
+    private AbstractBeamInter mergeOf (AbstractBeamInter one,
+                                       AbstractBeamInter two)
     {
         final Line2D oneMedian = one.getMedian();
         final Line2D twoMedian = two.getMedian();
 
         // Mean dist
-        double distImpact = (((Impacts) one.getImpacts()).getDistImpact()
-                                     + ((Impacts) two.getImpacts()).getDistImpact()) / 2;
+        double distImpact = (((Impacts) one.getImpacts()).getDistImpact() + ((Impacts) two
+                .getImpacts()).getDistImpact()) / 2;
 
         // Height
         double oneWidth = oneMedian.getX2() - oneMedian.getX1();
         double twoWidth = twoMedian.getX2() - twoMedian.getX1();
-        double height = ((one.getHeight() * oneWidth) + (two.getHeight() * twoWidth))
-                                / (oneWidth + twoWidth);
+        double height = ((one.getHeight() * oneWidth) + (two.getHeight() * twoWidth)) / (oneWidth
+                + twoWidth);
 
         // Median & height
         final Line2D median;
@@ -1369,7 +1419,8 @@ public class BeamsBuilder
         Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact, itemParams);
 
         if ((impacts != null) && (impacts.getGrade() >= BeamInter.getMinGrade())) {
-            return new BeamInter(impacts, median, height);
+            return itemParams.isSmall ? new SmallBeamInter(impacts, median, height)
+                    : new BeamInter(impacts, median, height);
         } else {
             return null;
         }
@@ -1395,8 +1446,8 @@ public class BeamsBuilder
         // Height
         double oneWidth = oneMedian.getX2() - oneMedian.getX1();
         double twoWidth = twoMedian.getX2() - twoMedian.getX1();
-        double height = ((one.getHeight() * oneWidth) + (two.getHeight() * twoWidth))
-                                / (oneWidth + twoWidth);
+        double height = ((one.getHeight() * oneWidth) + (two.getHeight() * twoWidth)) / (oneWidth
+                + twoWidth);
 
         // Median
         final Line2D median;
@@ -1567,399 +1618,22 @@ public class BeamsBuilder
         return null;
     }
 
-    //----------------//
-    // isSideInSystem //
-    //----------------//
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-----------------//
+    // getCueBeamRatio //
+    //-----------------//
     /**
-     * Check whether the (beam) side designated by provided point and height values
-     * lies fully in the current system
+     * Report the ratio of cue beam height over standard beam height.
      *
-     * @param pt     side point on median
-     * @param height beam height
-     * @return true if side is fully within current system, false otherwise
+     * @return the cue beam ratio
      */
-    boolean isSideInSystem (Point2D pt,
-                            double height)
+    public static double getCueBeamRatio ()
     {
-        Area area = system.getArea();
-
-        // Check top and bottom points of the beam side
-        for (int dir : new int[]{-1, +1}) {
-            if (!area.contains(pt.getX(), pt.getY() + (dir * (height / 2)))) {
-                return false;
-            }
-        }
-
-        return true;
+        return constants.cueBeamRatio.getValue();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //--------------//
-    // CueAggregate //
-    //--------------//
-    /**
-     * Describes an aggregate of cue notes.
-     * We assume that within a cue aggregate, the layout is rather simple:
-     * - all stems have the same direction.
-     */
-    private class CueAggregate
-    {
-
-        /** Unique Id. (in page) */
-        private String id = "";
-
-        /** Bounds of the aggregate. */
-        private Rectangle bounds;
-
-        /** Sequence of cue heads. */
-        private final List<Inter> heads = new ArrayList<>();
-
-        /** Sequence of stems. (parallel to heads list) */
-        private final List<Inter> stems = new ArrayList<>();
-
-        /** Global stem direction. (up:-1, down:+1, mixed/unknown:0) */
-        private int globalDir = 0;
-
-        public void add (Inter head,
-                         Inter stem)
-        {
-            // Head/Stem box
-            Rectangle hsBox = head.getBounds().union(stem.getBounds());
-
-            if (bounds == null) {
-                bounds = hsBox;
-            } else {
-                bounds.add(hsBox);
-            }
-
-            heads.add(head);
-            stems.add(stem);
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-            sb.append("{");
-            sb.append(id);
-
-            if (bounds != null) {
-                sb.append(" bounds:").append(bounds);
-            }
-
-            for (int i = 0; i < heads.size(); i++) {
-                sb.append(" ").append(heads.get(i)).append("+").append(stems.get(i));
-            }
-
-            sb.append("}");
-
-            return sb.toString();
-        }
-
-        /**
-         * (Try to) connect the provided stem to compatible beams.
-         *
-         * @param stem     the provided stem
-         * @param allBeams the collection of beams identified
-         */
-        private void connectStemToBeams (Inter stem,
-                                         List<Inter> allBeams,
-                                         Inter head)
-        {
-            // Which head corner?
-            if (globalDir == 0) {
-                return;
-            }
-
-            double headX = GeoUtil.center2D(head.getBounds()).getX();
-            double stemX = GeoUtil.center2D(stem.getBounds()).getX();
-
-            final HorizontalSide hSide = (headX <= stemX) ? LEFT : RIGHT;
-
-            // Limit to beams that cross stem vertical line
-            List<Inter> beams = new ArrayList<>();
-            Rectangle fatStemBox = stem.getBounds();
-            fatStemBox.grow(params.cueBoxDx, 0);
-            fatStemBox.y = bounds.y;
-            fatStemBox.height = bounds.height;
-
-            for (Inter beam : allBeams) {
-                if (fatStemBox.intersects(beam.getBounds())) {
-                    beams.add(beam);
-                }
-            }
-
-            final Point2D refPt = ((HeadInter) head).getStemReferencePoint(hSide);
-            final List<BeamGroupInter> beamGroups = HeadLinker.lookupBeamGroups(
-                    beams, refPt, globalDir, params.cueMinBeamHeadDy);
-            linkStemToCueBeams((StemInter) stem, beamGroups, refPt, globalDir);
-        }
-
-        //--------------------//
-        // linkStemToCueBeams //
-        //--------------------//
-        /**
-         * Try to build links between the stem and the provided cue beam groups.
-         *
-         * @param stem       stem candidate
-         * @param beamGroups candidate groups of cue beams
-         */
-        private void linkStemToCueBeams (StemInter stem,
-                                         List<BeamGroupInter> beamGroups,
-                                         Point2D refPt,
-                                         int yDir)
-        {
-            final VerticalSide vSide = VerticalSide.of(yDir);
-
-            for (BeamGroupInter group : beamGroups) {
-                final List<Inter> groupBeams = group.getMembers();
-
-                if (groupBeams.isEmpty()) {
-                    continue; // group is empty (and has been removed from sig)
-                }
-
-                StemsRetriever.sortBeamsFromRef(refPt, yDir, groupBeams);
-                AbstractBeamInter firstBeam = (AbstractBeamInter) groupBeams.get(0);
-
-                // Try to connect first beam & stem
-                BeamStemRelation rel = connectCueBeamStem(firstBeam, stem, vSide);
-
-                // Extend stem connection till end of current beam group, if relevant
-                if ((rel != null) && firstBeam.isGood() && (groupBeams.size() > 1)) {
-                    for (Inter next : groupBeams.subList(1, groupBeams.size())) {
-                        if (sig.getRelation(next, stem, BeamStemRelation.class) == null) {
-                            final AbstractBeamInter nextBeam = (AbstractBeamInter) next;
-                            final BeamStemRelation r = new BeamStemRelation();
-                            final Line2D extBorder = nextBeam.getBorder(vSide);
-                            final Point2D extPt = LineUtil.intersection(stem.getMedian(), extBorder);
-                            r.setExtensionPoint(extPt);
-
-                            // Portion depends on x location of stem WRT beam
-                            r.setBeamPortion(BeamStemRelation.computeBeamPortion(
-                                    nextBeam, extPt.getX(), sheet.getScale()));
-
-                            r.setGrade(rel.getGrade());
-                            sig.addEdge(next, stem, r);
-                        }
-                    }
-                }
-            }
-        }
-
-        //--------------------//
-        // connectCueBeamStem //
-        //--------------------//
-        /**
-         * (Try to) connect cue beam and stem.
-         *
-         * @param beam  the cue beam interpretation
-         * @param stem  the stem interpretation
-         * @param vSide vertical side from head to beam
-         * @return the beam stem relation if successful, null otherwise
-         */
-        private BeamStemRelation connectCueBeamStem (AbstractBeamInter beam,
-                                                     StemInter stem,
-                                                     VerticalSide vSide)
-        {
-            if (beam.isVip() && stem.isVip()) {
-                logger.info("VIP connectCueBeamStem? {} & {}", beam, stem);
-            }
-
-            // Relation beam -> stem (if not yet present)
-            BeamStemRelation bRel = (BeamStemRelation) sig.getRelation(beam, stem,
-                                                                       BeamStemRelation.class);
-
-            if (bRel == null) {
-                final int profile = Math.max(Math.max(beam.getProfile(), stem.getProfile()),
-                                             system.getProfile());
-                final Scale scale = sheet.getScale();
-                final Link link = BeamStemRelation.checkLink(beam, stem, vSide, scale, profile);
-
-                if (link != null) {
-                    link.applyTo(beam);
-                    bRel = (BeamStemRelation) link.relation;
-                }
-            }
-
-            return bRel;
-        }
-
-        /**
-         * Retrieve cue glyph instances out of an aggregate snapshot.
-         *
-         * @return the list of glyph instances found
-         */
-        private List<Glyph> getCueGlyphs ()
-        {
-            // Expand aggregate bounds using global direction
-            Rectangle box = new Rectangle(bounds);
-            box.grow(params.cueBoxDx, 0);
-
-            if (globalDir != 0) {
-                box.y += (globalDir * params.cueBoxDy);
-            } else {
-                box.grow(0, params.cueBoxDy);
-            }
-
-            // Take a small *COPY* of binary image and apply morphology
-            Picture picture = sheet.getPicture();
-            ByteProcessor whole = picture.getSource(Picture.SourceKey.BINARY);
-            ByteProcessor buf = new ByteProcessor(box.width, box.height);
-
-            for (int y = 0; y < box.height; y++) {
-                for (int x = 0; x < box.width; x++) {
-                    int val = whole.get(box.x + x, box.y + y);
-                    buf.set(x, y, val);
-                }
-            }
-
-            double beam = params.cueBeamRatio * sheet.getScale().getBeamThickness();
-
-            return new SpotsBuilder(sheet).buildSpots(buf, box.getLocation(), beam, id);
-        }
-
-        /**
-         * Retrieve the global stem direction in the aggregate.
-         *
-         * @return the global direction found, 0 otherwise
-         */
-        private int getDirection ()
-        {
-            Integer dir = null;
-
-            for (int i = 0; i < heads.size(); i++) {
-                final Inter head = heads.get(i);
-                final double headY = GeoUtil.center2D(head.getBounds()).getY();
-                final Inter stem = stems.get(i);
-                final Rectangle stemBox = stem.getBounds();
-
-                // Consider relative position is reliable only if head center
-                // is found in upper quarter or lower quarter of stem height
-                final double quarter = stemBox.height / 4.0;
-
-                if (headY >= ((stemBox.y + stemBox.height) - quarter)) {
-                    if (dir == null) {
-                        dir = -1;
-                    } else if (dir > 0) {
-                        return 0;
-                    }
-                } else if (headY <= (stemBox.y + quarter)) {
-                    if (dir == null) {
-                        dir = 1;
-                    } else if (dir < 0) {
-                        return 0;
-                    }
-                }
-            }
-
-            return (dir != null) ? dir : 0;
-        }
-
-        private void identify (int index)
-        {
-            id = "S" + system.getId() + "A" + (index + 1);
-        }
-
-        private void process (List<Glyph> spots)
-        {
-            // Determine stem direction in the aggregate
-            globalDir = getDirection();
-            if (globalDir == 0) {
-                logger.info("Mixed or unknown direction in cue area {}", this);
-
-                return;
-            }
-
-            // Retrieve candidate glyphs from spots
-            List<Glyph> glyphs = getCueGlyphs();
-
-            // Retrieve beams from candidate glyphs
-            List<Inter> beams = new ArrayList<>();
-            for (Glyph glyph : glyphs) {
-                glyph = system.registerGlyph(glyph, GlyphGroup.BEAM_SPOT);
-                spots.add(glyph);
-                List<Inter> glyphBeams = new ArrayList<>();
-                final String failure = checkBeamGlyph(glyph, true, itemParams, glyphBeams);
-                if (failure != null) {
-                    if (glyph.isVip()) {
-                        logger.info("VIP cue#{} {}", glyph.getId(), failure);
-                    }
-                } else {
-                    if (glyph.isVip()) {
-                        logger.debug("{} -> {}", glyph.idString(), glyphBeams);
-                    }
-
-                    beams.addAll(glyphBeams);
-                }
-            }
-
-            // Group beams
-            BeamGroupInter.populateCueAggregate(beams);
-
-            // Link stems & beams as possible
-            if (!beams.isEmpty()) {
-                for (int i = 0; i < heads.size(); i++) {
-                    final Inter head = heads.get(i);
-                    final Inter stem = stems.get(i);
-                    connectStemToBeams(stem, beams, head);
-                }
-            }
-        }
-    }
-
-    //----------------//
-    // ItemParameters //
-    //----------------//
-    /** Parameters that govern beam/hook items, sometimes dependent on cue/standard. */
-    public static class ItemParameters
-    {
-
-        final double minBeamWidthLow;
-
-        final double minBeamWidthHigh;
-
-        final double minHookWidthLow;
-
-        final double minHookWidthHigh;
-
-        final double maxHookWidth;
-
-        final double minHeightLow;
-
-        final double typicalHeight;
-
-        final double maxHeightHigh;
-
-        final double cornerMargin;
-
-        final double maxItemXGap;
-
-        final int coreSectionWidth;
-
-        /**
-         * Create an ItemParameters object
-         *
-         * @param scale  global sheet scale
-         * @param height expected beam height in pixels
-         */
-        public ItemParameters (Scale scale,
-                               double height)
-        {
-            minBeamWidthLow = scale.toPixelsDouble(constants.minBeamWidthLow);
-            minBeamWidthHigh = scale.toPixelsDouble(constants.minBeamWidthHigh);
-            minHookWidthLow = scale.toPixelsDouble(constants.minHookWidthLow);
-            minHookWidthHigh = scale.toPixelsDouble(constants.minHookWidthHigh);
-            maxHookWidth = scale.toPixelsDouble(constants.maxHookWidth);
-
-            typicalHeight = height;
-            minHeightLow = typicalHeight * constants.minHeightRatioLow.getValue();
-            maxHeightHigh = typicalHeight * constants.maxHeightRatioHigh.getValue();
-            cornerMargin = typicalHeight * constants.cornerMarginRatio.getValue();
-
-            maxItemXGap = scale.toPixelsDouble(constants.maxItemXGap);
-            coreSectionWidth = scale.toPixels(constants.coreSectionWidth);
-        }
-    }
 
     //-----------//
     // Constants //
@@ -1968,7 +1642,7 @@ public class BeamsBuilder
             extends ConstantSet
     {
 
-        // Item parameters
+        // Item parameters (for beam/hook)
         //----------------
         private final Scale.Fraction minBeamWidthLow = new Scale.Fraction(
                 1.0,
@@ -2041,11 +1715,11 @@ public class BeamsBuilder
                 "Maximum ordinate gap between stem and beam");
 
         private final Scale.Fraction maxExtensionToStem = new Scale.Fraction(
-                4.0,
+                1.0,
                 "Maximum beam horizontal extension to stem seed");
 
         private final Scale.Fraction maxExtensionToSpot = new Scale.Fraction(
-                2.0,
+                0.5,
                 "Maximum beam horizontal extension to spot");
 
         private final Scale.Fraction beltMarginDx = new Scale.Fraction(
@@ -2109,6 +1783,394 @@ public class BeamsBuilder
         private final Constant.Ratio cueBeamRatio = new Constant.Ratio(
                 0.6,
                 "Ratio applied for cue beams height");
+    }
+
+    //--------------//
+    // CueAggregate //
+    //--------------//
+    /**
+     * Describes an aggregate of cue notes.
+     * We assume that within a cue aggregate, the layout is rather simple:
+     * - all stems have the same direction.
+     */
+    private class CueAggregate
+    {
+
+        /** Unique Id. (in page) */
+        private String id = "";
+
+        /** Bounds of the aggregate. */
+        private Rectangle bounds;
+
+        /** Sequence of cue heads. */
+        private final List<Inter> heads = new ArrayList<>();
+
+        /** Sequence of stems. (parallel to heads list) */
+        private final List<Inter> stems = new ArrayList<>();
+
+        /** Global stem direction. (up:-1, down:+1, mixed/unknown:0) */
+        private int globalDir = 0;
+
+        public void add (Inter head,
+                         Inter stem)
+        {
+            // Head/Stem box
+            Rectangle hsBox = head.getBounds().union(stem.getBounds());
+
+            if (bounds == null) {
+                bounds = hsBox;
+            } else {
+                bounds.add(hsBox);
+            }
+
+            heads.add(head);
+            stems.add(stem);
+        }
+
+        //--------------------//
+        // connectCueBeamStem //
+        //--------------------//
+        /**
+         * (Try to) connect cue beam and stem.
+         *
+         * @param beam  the cue beam interpretation
+         * @param stem  the stem interpretation
+         * @param vSide vertical side from head to beam
+         * @return the beam stem relation if successful, null otherwise
+         */
+        private BeamStemRelation connectCueBeamStem (AbstractBeamInter beam,
+                                                     StemInter stem,
+                                                     VerticalSide vSide)
+        {
+            if (beam.isVip() && stem.isVip()) {
+                logger.info("VIP connectCueBeamStem? {} & {}", beam, stem);
+            }
+
+            // Relation beam -> stem (if not yet present)
+            BeamStemRelation bRel = (BeamStemRelation) sig.getRelation(
+                    beam,
+                    stem,
+                    BeamStemRelation.class);
+
+            if (bRel == null) {
+                final int profile = Math.max(
+                        Math.max(beam.getProfile(), stem.getProfile()),
+                        system.getProfile());
+                final Scale scale = sheet.getScale();
+                final Link link = BeamStemRelation.checkLink(beam, stem, vSide, scale, profile);
+
+                if (link != null) {
+                    link.applyTo(beam);
+                    bRel = (BeamStemRelation) link.relation;
+                }
+            }
+
+            return bRel;
+        }
+
+        /**
+         * (Try to) connect the provided stem to compatible beams.
+         *
+         * @param stem     the provided stem
+         * @param allBeams the collection of beams identified
+         */
+        private void connectStemToBeams (Inter stem,
+                                         List<Inter> allBeams,
+                                         Inter head)
+        {
+            // Which head corner?
+            if (globalDir == 0) {
+                return;
+            }
+
+            double headX = GeoUtil.center2D(head.getBounds()).getX();
+            double stemX = GeoUtil.center2D(stem.getBounds()).getX();
+
+            final HorizontalSide hSide = (headX <= stemX) ? LEFT : RIGHT;
+
+            // Limit to beams that cross stem vertical line
+            List<Inter> beams = new ArrayList<>();
+            Rectangle fatStemBox = stem.getBounds();
+            fatStemBox.grow(params.cueBoxDx, 0);
+            fatStemBox.y = bounds.y;
+            fatStemBox.height = bounds.height;
+
+            for (Inter beam : allBeams) {
+                if (fatStemBox.intersects(beam.getBounds())) {
+                    beams.add(beam);
+                }
+            }
+
+            final VerticalSide vSide = globalDir > 0 ? BOTTOM : TOP;
+            final Point2D refPt = ((HeadInter) head).getStemReferencePoint(hSide, vSide);
+            final List<BeamGroupInter> beamGroups = HeadLinker.lookupBeamGroups(
+                    beams,
+                    refPt,
+                    globalDir,
+                    params.cueMinBeamHeadDy);
+            linkStemToCueBeams((StemInter) stem, beamGroups, refPt, globalDir);
+        }
+
+        /**
+         * Retrieve cue glyph instances out of an aggregate snapshot.
+         *
+         * @return the list of glyph instances found
+         */
+        private List<Glyph> getCueGlyphs ()
+        {
+            // Expand aggregate bounds using global direction
+            final Rectangle box = new Rectangle(bounds);
+            box.grow(params.cueBoxDx, 0);
+
+            if (globalDir != 0) {
+                box.y += (globalDir * params.cueBoxDy);
+            } else {
+                box.grow(0, params.cueBoxDy);
+            }
+
+            // Take a small *COPY* of NO_STAFF image and apply morphology
+            final ByteProcessor buf = new ByteProcessor(box.width, box.height);
+
+            for (int y = 0; y < box.height; y++) {
+                for (int x = 0; x < box.width; x++) {
+                    int val = pixelFilter.get(box.x + x, box.y + y);
+                    buf.set(x, y, val);
+                }
+            }
+
+            final double beam = params.cueBeamRatio * sheet.getScale().getBeamThickness();
+
+            return new SpotsBuilder(sheet).buildSpots(buf, box.getLocation(), beam, id);
+        }
+
+        /**
+         * Retrieve the global stem direction in the aggregate.
+         *
+         * @return the global direction found, 0 otherwise
+         */
+        private int getDirection ()
+        {
+            Integer dir = null;
+
+            for (int i = 0; i < heads.size(); i++) {
+                final Inter head = heads.get(i);
+                final double headY = GeoUtil.center2D(head.getBounds()).getY();
+                final Inter stem = stems.get(i);
+                final Rectangle stemBox = stem.getBounds();
+
+                // Consider relative position is reliable only if head center
+                // is found in upper quarter or lower quarter of stem height
+                final double quarter = stemBox.height / 4.0;
+
+                if (headY >= ((stemBox.y + stemBox.height) - quarter)) {
+                    if (dir == null) {
+                        dir = -1;
+                    } else if (dir > 0) {
+                        return 0;
+                    }
+                } else if (headY <= (stemBox.y + quarter)) {
+                    if (dir == null) {
+                        dir = 1;
+                    } else if (dir < 0) {
+                        return 0;
+                    }
+                }
+            }
+
+            return (dir != null) ? dir : 0;
+        }
+
+        private void identify (int index)
+        {
+            id = "S" + system.getId() + "A" + (index + 1);
+        }
+
+        //--------------------//
+        // linkStemToCueBeams //
+        //--------------------//
+        /**
+         * Try to build links between the stem and the provided cue beam groups.
+         *
+         * @param stem       stem candidate
+         * @param beamGroups candidate groups of cue beams
+         */
+        private void linkStemToCueBeams (StemInter stem,
+                                         List<BeamGroupInter> beamGroups,
+                                         Point2D refPt,
+                                         int yDir)
+        {
+            final VerticalSide vSide = VerticalSide.of(yDir);
+
+            for (BeamGroupInter group : beamGroups) {
+                final List<Inter> groupBeams = group.getMembers();
+
+                if (groupBeams.isEmpty()) {
+                    continue; // group is empty (and has been removed from sig)
+                }
+
+                StemsRetriever.sortBeamsFromRef(refPt, yDir, groupBeams);
+                AbstractBeamInter firstBeam = (AbstractBeamInter) groupBeams.get(0);
+
+                // Try to connect first beam & stem
+                BeamStemRelation rel = connectCueBeamStem(firstBeam, stem, vSide);
+
+                // Extend stem connection till end of current beam group, if relevant
+                if ((rel != null) && firstBeam.isGood() && (groupBeams.size() > 1)) {
+                    for (Inter next : groupBeams.subList(1, groupBeams.size())) {
+                        if (sig.getRelation(next, stem, BeamStemRelation.class) == null) {
+                            final AbstractBeamInter nextBeam = (AbstractBeamInter) next;
+                            final BeamStemRelation r = new BeamStemRelation();
+                            final Line2D extBorder = nextBeam.getBorder(vSide);
+                            final Point2D extPt = LineUtil.intersection(
+                                    stem.getMedian(),
+                                    extBorder);
+                            r.setExtensionPoint(extPt);
+
+                            // Portion depends on x location of stem WRT beam
+                            r.setBeamPortion(
+                                    BeamStemRelation.computeBeamPortion(
+                                            nextBeam,
+                                            extPt.getX(),
+                                            sheet.getScale()));
+
+                            r.setGrade(rel.getGrade());
+                            sig.addEdge(next, stem, r);
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Process the small head aggregate, to retrieve candidate beam glyphs and connect them
+         * to cue stems and heads.
+         *
+         * @param spots (output) the retrieved candidate beam glyphs
+         */
+        private void process (List<Glyph> spots)
+        {
+            // Determine stem direction in the aggregate
+            globalDir = getDirection();
+            if (globalDir == 0) {
+                logger.info("Mixed or unknown direction in cue area {}", this);
+
+                return;
+            }
+
+            // Retrieve candidate glyphs from spots
+            List<Glyph> glyphs = getCueGlyphs();
+
+            // Retrieve beams from candidate glyphs
+            final List<Inter> beams = new ArrayList<>();
+            for (Glyph glyph : glyphs) {
+                glyph = system.registerGlyph(glyph, GlyphGroup.BEAM_SPOT);
+                spots.add(glyph);
+                final List<Inter> createdCues = new ArrayList<>();
+                final String failure = checkBeamGlyph(glyph, true, stdParams, createdCues);
+                if (failure != null) {
+                    if (glyph.isVip()) {
+                        logger.info("VIP cue#{} {}", glyph.getId(), failure);
+                    }
+                } else {
+                    if (glyph.isVip()) {
+                        logger.debug("{} -> {}", glyph.idString(), createdCues);
+                    }
+
+                    beams.addAll(createdCues);
+                }
+            }
+
+            // Group beams
+            BeamGroupInter.populateCueAggregate(beams);
+
+            // Link stems & beams as possible
+            if (!beams.isEmpty()) {
+                for (int i = 0; i < heads.size(); i++) {
+                    final Inter head = heads.get(i);
+                    final Inter stem = stems.get(i);
+                    connectStemToBeams(stem, beams, head);
+                }
+            }
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
+            sb.append(id);
+
+            if (bounds != null) {
+                sb.append(" bounds:").append(bounds);
+            }
+
+            for (int i = 0; i < heads.size(); i++) {
+                sb.append(" ").append(heads.get(i)).append("+").append(stems.get(i));
+            }
+
+            sb.append("}");
+
+            return sb.toString();
+        }
+    }
+
+    //----------------//
+    // ItemParameters //
+    //----------------//
+    /** Parameters that govern beam/hook items, sometimes dependent on cue/standard. */
+    public static class ItemParameters
+    {
+        final boolean isSmall;
+
+        final double minBeamWidthLow;
+
+        final double minBeamWidthHigh;
+
+        final double minHookWidthLow;
+
+        final double minHookWidthHigh;
+
+        final double maxHookWidth;
+
+        final double minHeightLow;
+
+        final double typicalHeight;
+
+        final double maxHeightHigh;
+
+        final double cornerMargin;
+
+        final double maxItemXGap;
+
+        final int coreSectionWidth;
+
+        /**
+         * Create an ItemParameters object
+         *
+         * @param scale   global sheet scale
+         * @param height  expected beam height in pixels
+         * @param isSmall true for a small beam height
+         */
+        public ItemParameters (Scale scale,
+                               double height,
+                               boolean isSmall)
+        {
+            this.isSmall = isSmall;
+
+            minBeamWidthLow = scale.toPixelsDouble(constants.minBeamWidthLow);
+            minBeamWidthHigh = scale.toPixelsDouble(constants.minBeamWidthHigh);
+            minHookWidthLow = scale.toPixelsDouble(constants.minHookWidthLow);
+            minHookWidthHigh = scale.toPixelsDouble(constants.minHookWidthHigh);
+            maxHookWidth = scale.toPixelsDouble(constants.maxHookWidth);
+
+            typicalHeight = height;
+            minHeightLow = typicalHeight * constants.minHeightRatioLow.getValue();
+            maxHeightHigh = typicalHeight * constants.maxHeightRatioHigh.getValue();
+            cornerMargin = typicalHeight * constants.cornerMarginRatio.getValue();
+
+            maxItemXGap = scale.toPixelsDouble(constants.maxItemXGap);
+            coreSectionWidth = scale.toPixels(constants.coreSectionWidth);
+        }
     }
 
     //------------//

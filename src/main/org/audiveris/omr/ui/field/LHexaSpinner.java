@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -54,6 +54,7 @@ public class LHexaSpinner
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------//
     // HexaEditor //
     //------------//
@@ -87,7 +88,7 @@ public class LHexaSpinner
 
         @Override
         public Object stringToValue (String string)
-                throws ParseException
+            throws ParseException
         {
             try {
                 JFormattedTextField ftf = getFormattedTextField();
@@ -108,7 +109,7 @@ public class LHexaSpinner
 
         @Override
         public String valueToString (Object value)
-                throws ParseException
+            throws ParseException
         {
             if (value == null) {
                 return "";

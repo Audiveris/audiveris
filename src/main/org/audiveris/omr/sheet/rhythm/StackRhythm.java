@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,10 +50,12 @@ public class StackRhythm
     private static final Logger logger = LoggerFactory.getLogger(StackRhythm.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>StackRhythm</code> object.
      *
@@ -65,56 +67,6 @@ public class StackRhythm
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Determine stack rhythm data (voices and timing).
-     *
-     * @param expectedDuration The expected duration for this stack, null if not known
-     */
-    public void process (Rational expectedDuration)
-    {
-        stack.setExpectedDuration(expectedDuration);
-
-        try {
-            if (!doProcess()) {
-                logger.info("{}{} no correct rhythm", stack.getSystem().getLogPrefix(), stack);
-            }
-        } catch (Exception ex) {
-            logger.warn("StackRhythm error processing {} {}", stack, ex.toString(), ex);
-        }
-    }
-
-    //-------------------------//
-    // readStackActualDuration //
-    //-------------------------//
-    /**
-     * Retrieve stack actual duration.
-     */
-    private void readStackActualDuration ()
-    {
-        try {
-            // Determine stack actual duration
-            final Rational actualDuration;
-
-            if (stack.getVoices().isEmpty()) {
-                actualDuration = Rational.ZERO; // No voice, hence no duration
-            } else {
-                Rational slotsDur = stack.getSlotsDuration();
-
-                if (!slotsDur.equals(Rational.ZERO)) {
-                    actualDuration = slotsDur; // Slots found, use slots-based duration
-                } else {
-                    actualDuration = stack.getExpectedDuration(); // No slot, just whole/multi rests
-                }
-            }
-
-            stack.setActualDuration(actualDuration);
-        } catch (Exception ex) {
-            logger.warn("StackRhythm. Error visiting " + stack + " " + ex, ex);
-        }
-    }
 
     //----------------------//
     // checkStavesAreFilled //
@@ -241,7 +193,9 @@ public class StackRhythm
 
                         if (time != null) {
                             Slot slot = timeToSlot.get(time);
-                            voice.putSlotInfo(slot, new SlotVoice(chord, SlotVoice.ChordStatus.BEGIN));
+                            voice.putSlotInfo(
+                                    slot,
+                                    new SlotVoice(chord, SlotVoice.ChordStatus.BEGIN));
                         } else {
                             measure.setAbnormal(true);
                         }
@@ -250,6 +204,57 @@ public class StackRhythm
                     voice.completeSlotTable();
                 }
             }
+        }
+    }
+
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Determine stack rhythm data (voices and timing).
+     *
+     * @param expectedDuration The expected duration for this stack, null if not known
+     */
+    public void process (Rational expectedDuration)
+    {
+        stack.setExpectedDuration(expectedDuration);
+
+        try {
+            if (!doProcess()) {
+                logger.info("{}{} no correct rhythm", stack.getSystem().getLogPrefix(), stack);
+            }
+        } catch (Exception ex) {
+            logger.warn("StackRhythm error processing {} {}", stack, ex.toString(), ex);
+        }
+    }
+
+    //-------------------------//
+    // readStackActualDuration //
+    //-------------------------//
+    /**
+     * Retrieve stack actual duration.
+     */
+    private void readStackActualDuration ()
+    {
+        try {
+            // Determine stack actual duration
+            final Rational actualDuration;
+
+            if (stack.getVoices().isEmpty()) {
+                actualDuration = Rational.ZERO; // No voice, hence no duration
+            } else {
+                Rational slotsDur = stack.getSlotsDuration();
+
+                if (!slotsDur.equals(Rational.ZERO)) {
+                    actualDuration = slotsDur; // Slots found, use slots-based duration
+                } else {
+                    actualDuration = stack.getExpectedDuration(); // No slot, just whole/multi rests
+                }
+            }
+
+            stack.setActualDuration(actualDuration);
+        } catch (Exception ex) {
+            logger.warn("StackRhythm. Error visiting " + stack + " " + ex, ex);
         }
     }
 }

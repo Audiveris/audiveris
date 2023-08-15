@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -59,21 +59,29 @@ public class SlurHeadRelation
     private static final Logger logger = LoggerFactory.getLogger(SlurHeadRelation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** This is the slur side (left or right) where the head is located. */
     @XmlAttribute(name = "side")
     private HorizontalSide side;
 
     // Transient data
     //---------------
-    //
+
     /** Euclidean distance from slur end to chord middle vertical. */
     private double euclidean;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB and user allocation.
+     */
+    public SlurHeadRelation ()
+    {
+    }
+
     /**
      * Creates a new <code>SlurNoteRelation</code> object.
      *
@@ -84,14 +92,8 @@ public class SlurHeadRelation
         this.side = side;
     }
 
-    /**
-     * No-arg constructor meant for JAXB and user allocation.
-     */
-    public SlurHeadRelation ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//
@@ -137,19 +139,6 @@ public class SlurHeadRelation
         return euclidean;
     }
 
-    //--------------//
-    // setEuclidean //
-    //--------------//
-    /**
-     * Set the euclidean distance between head and slur end.
-     *
-     * @param euclidean the euclidean distance to set
-     */
-    public void setEuclidean (double euclidean)
-    {
-        this.euclidean = euclidean;
-    }
-
     //---------//
     // getSide //
     //---------//
@@ -159,6 +148,15 @@ public class SlurHeadRelation
     public HorizontalSide getSide ()
     {
         return side;
+    }
+
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
+    @Override
+    protected double getSourceCoeff ()
+    {
+        return constants.slurSupportCoeff.getValue();
     }
 
     //----------------//
@@ -194,6 +192,19 @@ public class SlurHeadRelation
         }
     }
 
+    //--------------//
+    // setEuclidean //
+    //--------------//
+    /**
+     * Set the euclidean distance between head and slur end.
+     *
+     * @param euclidean the euclidean distance to set
+     */
+    public void setEuclidean (double euclidean)
+    {
+        this.euclidean = euclidean;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -203,16 +214,8 @@ public class SlurHeadRelation
         return super.toString() + "/" + side;
     }
 
-    //----------------//
-    // getSourceCoeff //
-    //----------------//
-    @Override
-    protected double getSourceCoeff ()
-    {
-        return constants.slurSupportCoeff.getValue();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

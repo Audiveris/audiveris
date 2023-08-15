@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,11 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.util.StopWatch;
 
 import java.awt.image.BufferedImage;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>AbstractGrayFilter</code> is the basis for filters operating on gray-level
@@ -36,19 +36,6 @@ import java.awt.image.BufferedImage;
 public abstract class AbstractGrayFilter
 {
     //~ Methods ------------------------------------------------------------------------------------
-
-    //--------//
-    // filter //
-    //--------//
-    /**
-     * Apply this filter on a given input image and store results in
-     * the given output image.
-     *
-     * @param input  the input image
-     * @param output the output image.
-     */
-    public abstract void filter (final ByteProcessor input,
-                                 final ByteProcessor output);
 
     //--------//
     // filter //
@@ -99,4 +86,17 @@ public abstract class AbstractGrayFilter
         ///watch.print();
         return output;
     }
+
+    //--------//
+    // filter //
+    //--------//
+    /**
+     * Apply this filter on a given input image and store results in
+     * the given output image.
+     *
+     * @param input  the input image
+     * @param output the output image.
+     */
+    public abstract void filter (final ByteProcessor input,
+                                 final ByteProcessor output);
 }

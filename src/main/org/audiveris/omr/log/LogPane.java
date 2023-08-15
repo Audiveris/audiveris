@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,15 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.log;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 
 import java.awt.Color;
 import java.awt.Insets;
@@ -59,6 +59,7 @@ public class LogPane
     private static final Logger logger = LoggerFactory.getLogger(LogPane.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The scrolling text area */
     private final JScrollPane component;
 
@@ -70,6 +71,7 @@ public class LogPane
     private final SimpleAttributeSet attributes = new SimpleAttributeSet();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create the log pane, with a standard mailbox.
      */
@@ -90,6 +92,7 @@ public class LogPane
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // clearLog //
     //----------//
@@ -116,6 +119,22 @@ public class LogPane
         return component;
     }
 
+    //---------------//
+    // getLevelColor //
+    //---------------//
+    private Color getLevelColor (Level level)
+    {
+        if (level.isGreaterOrEqual(Level.ERROR)) {
+            return Color.RED;
+        } else if (level.isGreaterOrEqual(Level.WARN)) {
+            return Color.BLUE;
+        } else if (level.isGreaterOrEqual(Level.INFO)) {
+            return Color.BLACK;
+        } else {
+            return Color.GRAY;
+        }
+    }
+
     //-----------//
     // notifyLog //
     //-----------//
@@ -124,7 +143,8 @@ public class LogPane
      */
     public void notifyLog ()
     {
-        SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater( () ->
+        {
             while (LogGuiAppender.getEventCount() > 0) {
                 ILoggingEvent event = LogGuiAppender.pollEvent();
 
@@ -168,23 +188,8 @@ public class LogPane
         });
     }
 
-    //---------------//
-    // getLevelColor //
-    //---------------//
-    private Color getLevelColor (Level level)
-    {
-        if (level.isGreaterOrEqual(Level.ERROR)) {
-            return Color.RED;
-        } else if (level.isGreaterOrEqual(Level.WARN)) {
-            return Color.BLUE;
-        } else if (level.isGreaterOrEqual(Level.INFO)) {
-            return Color.BLACK;
-        } else {
-            return Color.GRAY;
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

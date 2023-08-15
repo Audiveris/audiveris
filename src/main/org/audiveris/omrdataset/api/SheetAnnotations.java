@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -62,6 +62,7 @@ public class SheetAnnotations
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     @XmlAttribute(name = "version")
     private String version;
 
@@ -81,6 +82,7 @@ public class SheetAnnotations
     private int lastSymbolId;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SheetAnnotations</code> object.
      */
@@ -89,6 +91,7 @@ public class SheetAnnotations
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Add a symbol to the annotations
      *
@@ -157,9 +160,7 @@ public class SheetAnnotations
      * @throws XMLStreamException for XML errors
      */
     public void marshall (Path path)
-            throws IOException,
-                   JAXBException,
-                   XMLStreamException
+        throws IOException, JAXBException, XMLStreamException
     {
         if (!Files.exists(path.getParent())) {
             Files.createDirectories(path.getParent());
@@ -181,6 +182,23 @@ public class SheetAnnotations
     public void setComplete (boolean complete)
     {
         this.complete = complete ? true : null;
+    }
+
+    //--------//
+    // setIds //
+    //--------//
+    public void setIds (List<SymbolInfo> symbols)
+    {
+        for (SymbolInfo symbol : symbols) {
+            symbol.setId(nextSymbolId());
+
+            // Inner symbols?
+            List<SymbolInfo> innerSymbols = symbol.getInnerSymbols();
+
+            if (!innerSymbols.isEmpty()) {
+                setIds(innerSymbols);
+            }
+        }
     }
 
     /**
@@ -232,6 +250,22 @@ public class SheetAnnotations
         return sb.toString();
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+        throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(SheetAnnotations.class);
+        }
+
+        return jaxbContext;
+    }
+
     //-----------//
     // unmarshal //
     //-----------//
@@ -244,44 +278,13 @@ public class SheetAnnotations
      * @throws JAXBException in case of JAXB problem
      */
     public static SheetAnnotations unmarshal (Path path)
-            throws IOException,
-                   JAXBException
+        throws IOException, JAXBException
     {
         return (SheetAnnotations) Jaxb.unmarshal(path, getJaxbContext());
     }
 
-    //--------//
-    // setIds //
-    //--------//
-    public void setIds (List<SymbolInfo> symbols)
-    {
-        for (SymbolInfo symbol : symbols) {
-            symbol.setId(nextSymbolId());
-
-            // Inner symbols?
-            List<SymbolInfo> innerSymbols = symbol.getInnerSymbols();
-
-            if (!innerSymbols.isEmpty()) {
-                setIds(innerSymbols);
-            }
-        }
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(SheetAnnotations.class);
-        }
-
-        return jaxbContext;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // SheetInfo //
     //-----------//
@@ -299,18 +302,18 @@ public class SheetAnnotations
         @XmlJavaTypeAdapter(Jaxb.RectangleAdapter.class)
         public final ArrayList<Rectangle> excludedAreas = new ArrayList<>();
 
-        public SheetInfo (String imageFileName,
-                          Dimension dim)
-        {
-            this.imageFileName = imageFileName;
-            this.dim = dim;
-        }
-
         // No-arg constructor needed by JAXB
         private SheetInfo ()
         {
             this.imageFileName = null;
             this.dim = null;
+        }
+
+        public SheetInfo (String imageFileName,
+                          Dimension dim)
+        {
+            this.imageFileName = imageFileName;
+            this.dim = dim;
         }
 
         @Override

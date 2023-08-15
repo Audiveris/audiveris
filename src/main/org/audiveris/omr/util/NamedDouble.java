@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -40,7 +40,18 @@ public class NamedDouble
 
     private final String description;
 
+    /**
+     * Creates a new <code>BasicNamedDouble</code> object based on a {@link Constant.Double}.
+     *
+     * @param cst the provided Constant.DOuble instance
+     */
+    public NamedDouble (Constant.Double cst)
+    {
+        this(cst.getName(), cst.getQuantityUnit(), cst.getValue(), cst.getDescription());
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>BasicNamedDouble</code> object.
      *
@@ -60,17 +71,8 @@ public class NamedDouble
         this.description = description;
     }
 
-    /**
-     * Creates a new <code>BasicNamedDouble</code> object based on a {@link Constant.Double}.
-     *
-     * @param cst the provided Constant.DOuble instance
-     */
-    public NamedDouble (Constant.Double cst)
-    {
-        this(cst.getName(), cst.getQuantityUnit(), cst.getValue(), cst.getDescription());
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Get the description sentence recorded with the NamedDouble
      *

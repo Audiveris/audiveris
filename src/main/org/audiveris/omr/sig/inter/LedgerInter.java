@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -69,9 +69,10 @@ public class LedgerInter
     public static final double DEFAULT_THICKNESS = constants.defaultThickness.getValue();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /** Mean ledger thickness. */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
@@ -84,11 +85,12 @@ public class LedgerInter
 
     // Transient data
     //---------------
-    //
+
     /**
      * Index of virtual line relative to staff.
      * <p>
      * Above staff, if index is negative (-1, -2, etc)
+     *
      * <pre>
      * -2 --
      * -1 --
@@ -100,28 +102,19 @@ public class LedgerInter
      * +1 --
      * +2 --
      * </pre>
+     *
      * Below staff, if index is positive (+1, +2, etc)
      */
     private Integer index;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new LedgerInter object.
-     *
-     * @param glyph   the underlying glyph
-     * @param impacts the assignment details
+     * No-arg constructor meant for JAXB.
      */
-    public LedgerInter (Glyph glyph,
-                        GradeImpacts impacts)
+    private LedgerInter ()
     {
-        super(glyph, null, Shape.LEDGER, impacts);
-
-        if (glyph != null) {
-            thickness = glyph.getMeanThickness(Orientation.HORIZONTAL);
-            median = glyph.getCenterLine();
-
-            computeArea();
-        }
+        super(null, null, null, (Double) null);
     }
 
     /**
@@ -134,6 +127,25 @@ public class LedgerInter
                         Double grade)
     {
         super(glyph, null, Shape.LEDGER, grade);
+
+        if (glyph != null) {
+            thickness = glyph.getMeanThickness(Orientation.HORIZONTAL);
+            median = glyph.getCenterLine();
+
+            computeArea();
+        }
+    }
+
+    /**
+     * Creates a new LedgerInter object.
+     *
+     * @param glyph   the underlying glyph
+     * @param impacts the assignment details
+     */
+    public LedgerInter (Glyph glyph,
+                        GradeImpacts impacts)
+    {
+        super(glyph, null, Shape.LEDGER, impacts);
 
         if (glyph != null) {
             thickness = glyph.getMeanThickness(Orientation.HORIZONTAL);
@@ -163,15 +175,8 @@ public class LedgerInter
         computeArea();
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private LedgerInter ()
-    {
-        super(null, null, null, (Double) null);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -200,6 +205,36 @@ public class LedgerInter
         }
     }
 
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        if (median != null) {
+            computeArea();
+        }
+    }
+
+    //-------------//
+    // computeArea //
+    //-------------//
+    /**
+     * Compute the ledger area.
+     */
+    protected final void computeArea ()
+    {
+        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), thickness));
+
+        // Define precise bounds based on this path
+        bounds = getArea().getBounds();
+    }
+
     //----------//
     // contains //
     //----------//
@@ -224,15 +259,55 @@ public class LedgerInter
     }
 
     //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation)
+    {
+        final LedgerSymbol ledgerSymbol = (LedgerSymbol) symbol;
+        final Model model = ledgerSymbol.getModel(font, dropLocation);
+        median = new Line2D.Double(model.p1, model.p2);
+        thickness = DEFAULT_THICKNESS;
+        computeArea();
+
+        return true;
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        if (bounds != null) {
+            return new Rectangle(bounds);
+        }
+
+        if (glyph != null) {
+            return new Rectangle(bounds = glyph.getBounds());
+        }
+
+        if (area == null) {
+            computeArea();
+        }
+
+        return new Rectangle(bounds = area.getBounds());
+    }
+
+    //------------//
     // getDetails //
     //------------//
     @Override
     public String getDetails ()
     {
-        StringBuilder sb = new StringBuilder(super.getDetails());
+        final StringBuilder sb = new StringBuilder(super.getDetails());
 
         if (index != null) {
-            sb.append(" index:").append(index);
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append("index:").append(index);
         }
 
         return sb.toString();
@@ -248,23 +323,6 @@ public class LedgerInter
     }
 
     //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        super.setGlyph(glyph);
-
-        if ((median == null) && (glyph != null)) {
-            // Case of manual ledger: Compute thickness and median parameters and area
-            thickness = glyph.getMeanThickness(Orientation.HORIZONTAL);
-            median = glyph.getCenterLine();
-
-            computeArea();
-        }
-    }
-
-    //----------//
     // getIndex //
     //----------//
     /**
@@ -275,19 +333,6 @@ public class LedgerInter
     public Integer getIndex ()
     {
         return index;
-    }
-
-    //----------//
-    // setIndex //
-    //----------//
-    /**
-     * Set the ledger index, with respect to staff.
-     *
-     * @param index the index to set
-     */
-    public void setIndex (int index)
-    {
-        this.index = index;
     }
 
     //-----------//
@@ -316,24 +361,6 @@ public class LedgerInter
         return thickness;
     }
 
-    //------------//
-    // deriveFrom //
-    //------------//
-    @Override
-    public boolean deriveFrom (ShapeSymbol symbol,
-                               Sheet sheet,
-                               MusicFont font,
-                               Point dropLocation)
-    {
-        final LedgerSymbol ledgerSymbol = (LedgerSymbol) symbol;
-        final Model model = ledgerSymbol.getModel(font, dropLocation);
-        median = new Line2D.Double(model.p1, model.p2);
-        thickness = DEFAULT_THICKNESS;
-        computeArea();
-
-        return true;
-    }
-
     //--------//
     // remove //
     //--------//
@@ -358,25 +385,34 @@ public class LedgerInter
         super.remove(extensive);
     }
 
-    //-----------//
-    // setBounds //
-    //-----------//
+    //----------//
+    // setGlyph //
+    //----------//
     @Override
-    public Rectangle getBounds ()
+    public void setGlyph (Glyph glyph)
     {
-        if (bounds != null) {
-            return new Rectangle(bounds);
-        }
+        super.setGlyph(glyph);
 
-        if (glyph != null) {
-            return new Rectangle(bounds = glyph.getBounds());
-        }
+        if ((median == null) && (glyph != null)) {
+            // Case of manual ledger: Compute thickness and median parameters and area
+            thickness = glyph.getMeanThickness(Orientation.HORIZONTAL);
+            median = glyph.getCenterLine();
 
-        if (area == null) {
             computeArea();
         }
+    }
 
-        return new Rectangle(bounds = area.getBounds());
+    //----------//
+    // setIndex //
+    //----------//
+    /**
+     * Set the ledger index, with respect to staff.
+     *
+     * @param index the index to set
+     */
+    public void setIndex (int index)
+    {
+        this.index = index;
     }
 
     //-----------------//
@@ -409,8 +445,10 @@ public class LedgerInter
 
                     if (bounds != null) {
                         median = new Line2D.Double(
-                                bounds.x, bounds.y + bounds.height / 2.0,
-                                bounds.x + bounds.width, bounds.y + bounds.height / 2.0);
+                                bounds.x,
+                                bounds.y + bounds.height / 2.0,
+                                bounds.x + bounds.width,
+                                bounds.y + bounds.height / 2.0);
                         upgraded = true;
                     }
                 }
@@ -424,35 +462,7 @@ public class LedgerInter
         return upgraded;
     }
 
-    //-------------//
-    // computeArea //
-    //-------------//
-    /**
-     * Compute the ledger area.
-     */
-    protected final void computeArea ()
-    {
-        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), thickness));
-
-        // Define precise bounds based on this path
-        bounds = getArea().getBounds();
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled for this object,
-     * but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        if (median != null) {
-            computeArea();
-        }
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------//
     // getDefaultLength //
@@ -468,42 +478,6 @@ public class LedgerInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements ObjectUIModel
-    {
-
-        // Left point of median line
-        public final Point2D p1;
-
-        // Right point of median line
-        public final Point2D p2;
-
-        public Model (double x1,
-                      double y1,
-                      double x2,
-                      double y2)
-        {
-            p1 = new Point2D.Double(x1, y1);
-            p2 = new Point2D.Double(x2, y2);
-        }
-
-        public Model (Line2D line)
-        {
-            p1 = line.getP1();
-            p2 = line.getP2();
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(p1, dx, dy);
-            PointUtil.add(p2, dx, dy);
-        }
-    }
 
     //-----------//
     // Constants //
@@ -556,10 +530,9 @@ public class LedgerInter
             handles.add(new Handle(model.p1)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dx = vector.x;
-
                     if (dx == 0) {
                         return false;
                     }
@@ -575,16 +548,15 @@ public class LedgerInter
             handles.add(selectedHandle = new Handle(middle)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dy = vector.y;
-
                     if (dy == 0) {
                         return false;
                     }
 
                     for (Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), 0, dy);
+                        PointUtil.add(handle.getPoint(), 0, dy);
                     }
 
                     return true;
@@ -595,10 +567,9 @@ public class LedgerInter
             handles.add(new Handle(model.p2)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dx = vector.x;
-
                     if (dx == 0) {
                         return false;
                     }
@@ -629,6 +600,43 @@ public class LedgerInter
             ledger.computeArea(); // Set bounds also
 
             super.undo();
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
+    {
+
+        // Left point of median line
+        public final Point2D p1;
+
+        // Right point of median line
+        public final Point2D p2;
+
+        public Model (double x1,
+                      double y1,
+                      double x2,
+                      double y2)
+        {
+            p1 = new Point2D.Double(x1, y1);
+            p2 = new Point2D.Double(x2, y2);
+        }
+
+        public Model (Line2D line)
+        {
+            p1 = line.getP1();
+            p2 = line.getP2();
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(p1, dx, dy);
+            PointUtil.add(p2, dx, dy);
         }
     }
 }

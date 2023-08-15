@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -132,6 +132,17 @@ public abstract class Versions
         }
     };
 
+    /**
+     * New shape names and reordering, implying new glyph classifier file.
+     * <ul>
+     * <li>Additional shape names with no-oval head motif (diamond, triangle, circle, ...)
+     * <li>Addition of grace notes down and small flag down
+     * <li>Renaming of FLAG_x_DOWN as FLAG_x
+     * <li>Renaming of FLAG_x_UP as FLAG_x_DOWN
+     * </ul>
+     */
+    public static final UpgradeVersion DRUM_NOTATION = new UpgradeVersion("5.3-beta");
+
     //
     // NOTA: Add here below any new version for which some upgrade is necessary.
     //
@@ -140,7 +151,9 @@ public abstract class Versions
      * NOTA: This sequence must be manually updated when a new upgrade version is added above.
      */
     public static final List<UpgradeVersion> UPGRADE_VERSIONS = Arrays.asList(
-            INTER_GEOMETRY, INTERLEAVED_RESTS);
+            INTER_GEOMETRY,
+            INTERLEAVED_RESTS,
+            DRUM_NOTATION);
 
     /** Resource injection. Lazily populated on GUI. */
     private static ResourceMap resources;
@@ -151,38 +164,15 @@ public abstract class Versions
     /** How to format dates. */
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yyyy", Locale.US);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    //-------------//
-    // CheckResult //
-    //-------------//
-    public enum CheckResult
-    {
-        COMPATIBLE,
-        BOOK_TOO_OLD,
-        PROGRAM_TOO_OLD;
-    }
-
-    //-----------//
-    // Frequency //
-    //-----------//
-    /** Frequency for polling project site. */
-    private static enum Frequency
-    {
-        Always,
-        Daily,
-        Weekly,
-        Monthly,
-        Yearly,
-        Never;
-    }
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /** No instance needed for this functional class. */
     private Versions ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------//
     // check //
     //-------//
@@ -206,30 +196,19 @@ public abstract class Versions
         return CheckResult.COMPATIBLE;
     }
 
-    //-------------//
-    // getUpgrades //
-    //-------------//
+    //-----------------//
+    // considerPolling //
+    //-----------------//
     /**
-     * Report the sequence of upgrade versions to apply on the provided sheet version.
-     *
-     * @param sheetVersion current version of sheet
-     * @return sequence of upgrades to perform, perhaps empty but never null
+     * Check whether poll time has come and, if so, do poll the project site.
      */
-    public static List<Version> getUpgrades (Version sheetVersion)
+    public static void considerPolling ()
     {
-        List<Version> list = null;
-
-        for (Version v : UPGRADE_VERSIONS) {
-            if (sheetVersion.compareTo(v) < 0) {
-                if (list == null) {
-                    list = new ArrayList<>();
-                }
-
-                list.add(v);
-            }
+        if (isTimeToPoll()) {
+            poll(false /* manual */);
+        } else {
+            logger.debug("Versions. Not yet time to poll");
         }
-
-        return (list == null) ? Collections.emptyList() : list;
     }
 
     //------------------//
@@ -278,19 +257,111 @@ public abstract class Versions
         }
     }
 
+    //----------------------//
+    // getLocaleFrequencies //
+    //----------------------//
+    private static LabeledEnum<Frequency>[] getLocaleFrequencies ()
+    {
+        if (localeFrequencies == null) {
+            localeFrequencies = LabeledEnum.values(
+                    Frequency.values(),
+                    getResources(),
+                    Frequency.class);
+        }
+
+        return localeFrequencies;
+    }
+
     //-----------------//
-    // considerPolling //
+    // getNextPollDate //
     //-----------------//
     /**
-     * Check whether poll time has come and, if so, do poll the project site.
+     * Report the next date when project site is to be polled.
+     *
+     * @return next poll date
      */
-    public static void considerPolling ()
+    private static Calendar getNextPollDate ()
     {
-        if (isTimeToPoll()) {
-            poll(false /* manual */);
-        } else {
-            logger.debug("Versions. Not yet time to poll");
+        Calendar next = new GregorianCalendar();
+        next.setTime(constants.lastReleaseCheckDate.getValue());
+
+        final Frequency frequency = constants.releaseCheckFrequency.getValue();
+
+        switch (frequency) {
+        case Always ->
+                {
+                }
+        case Daily -> next.add(Calendar.DAY_OF_MONTH, 1);
+        case Weekly -> next.add(Calendar.WEEK_OF_MONTH, 1);
+        case Monthly -> next.add(Calendar.MONTH, 1);
+        case Yearly -> next.add(Calendar.YEAR, 1);
+        case Never -> next = null;
         }
+
+        logger.info(
+                "Versions. Poll frequency: {}, next poll on: {}",
+                frequency,
+                (next != null) ? DATE_FORMAT.format(next.getTime()) : null);
+
+        return next;
+    }
+
+    //--------------//
+    // getResources //
+    //--------------//
+    private static ResourceMap getResources ()
+    {
+        if (resources == null) {
+            resources = Application.getInstance().getContext().getResourceMap(Versions.class);
+        }
+
+        return resources;
+    }
+
+    //-------------//
+    // getUpgrades //
+    //-------------//
+    /**
+     * Report the sequence of upgrade versions to apply on the provided sheet version.
+     *
+     * @param sheetVersion current version of sheet
+     * @return sequence of upgrades to perform, perhaps empty but never null
+     */
+    public static List<Version> getUpgrades (Version sheetVersion)
+    {
+        List<Version> list = null;
+
+        for (Version v : UPGRADE_VERSIONS) {
+            if (sheetVersion.compareTo(v) < 0) {
+                if (list == null) {
+                    list = new ArrayList<>();
+                }
+
+                list.add(v);
+            }
+        }
+
+        return (list == null) ? Collections.emptyList() : list;
+    }
+
+    //--------------//
+    // isTimeToPoll //
+    //--------------//
+    /**
+     * Report whether the time has come to poll project site for a new release.
+     *
+     * @return true if so
+     */
+    private static boolean isTimeToPoll ()
+    {
+        Calendar now = new GregorianCalendar();
+        Calendar next = getNextPollDate();
+
+        if (next == null) {
+            return false;
+        }
+
+        return now.compareTo(next) > 0;
     }
 
     //------//
@@ -339,102 +410,8 @@ public abstract class Versions
         }
     }
 
-    //-----------------//
-    // getNextPollDate //
-    //-----------------//
-    /**
-     * Report the next date when project site is to be polled.
-     *
-     * @return next poll date
-     */
-    private static Calendar getNextPollDate ()
-    {
-        Calendar next = new GregorianCalendar();
-        next.setTime(constants.lastReleaseCheckDate.getValue());
-
-        final Frequency frequency = constants.releaseCheckFrequency.getValue();
-
-        switch (frequency) {
-        case Always:
-            break;
-
-        case Daily:
-            next.add(Calendar.DAY_OF_MONTH, 1);
-
-            break;
-
-        case Weekly:
-            next.add(Calendar.WEEK_OF_MONTH, 1);
-
-            break;
-
-        case Monthly:
-            next.add(Calendar.MONTH, 1);
-
-            break;
-
-        case Yearly:
-            next.add(Calendar.YEAR, 1);
-
-            break;
-
-        case Never:
-            next = null;
-        }
-
-        logger.info("Versions. Poll frequency: {}, next poll on: {}",
-                    frequency,
-                    (next != null) ? DATE_FORMAT.format(next.getTime()) : null);
-
-        return next;
-    }
-
-    //----------------------//
-    // getLocaleFrequencies //
-    //----------------------//
-    private static LabeledEnum<Frequency>[] getLocaleFrequencies ()
-    {
-        if (localeFrequencies == null) {
-            localeFrequencies = LabeledEnum.values(
-                    Frequency.values(), getResources(), Frequency.class);
-        }
-
-        return localeFrequencies;
-    }
-
-    //--------------//
-    // getResources //
-    //--------------//
-    private static ResourceMap getResources ()
-    {
-        if (resources == null) {
-            resources = Application.getInstance().getContext().getResourceMap(Versions.class);
-        }
-
-        return resources;
-    }
-
-    //--------------//
-    // isTimeToPoll //
-    //--------------//
-    /**
-     * Report whether the time has come to poll project site for a new release.
-     *
-     * @return true if so
-     */
-    private static boolean isTimeToPoll ()
-    {
-        Calendar now = new GregorianCalendar();
-        Calendar next = getNextPollDate();
-
-        if (next == null) {
-            return false;
-        }
-
-        return now.compareTo(next) > 0;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------------//
     // AbstractPanel //
     //---------------//
@@ -451,8 +428,8 @@ public abstract class Versions
 
         protected LLabel tag = new LLabel(JLabel.LEFT);
 
-        protected LComboBox<LabeledEnum<Frequency>> polling
-                = new LComboBox<>(getLocaleFrequencies());
+        protected LComboBox<LabeledEnum<Frequency>> polling = new LComboBox<>(
+                getLocaleFrequencies());
 
         /** The JGoodies/Form layout to be used by all subclasses. */
         protected final FormLayout layout = new FormLayout(getColumnsSpec(), getRowsSpec());
@@ -482,21 +459,6 @@ public abstract class Versions
             polling.setSelectedItem(LabeledEnum.valueOf(f, getLocaleFrequencies()));
         }
 
-        String getTitle ()
-        {
-            return title;
-        }
-
-        protected String getColumnsSpec ()
-        {
-            return "right:pref, 5dlu, pref, 5dlu";
-        }
-
-        protected String getRowsSpec ()
-        {
-            return "pref, 3dlu,pref, 3dlu,pref";
-        }
-
         private void defineLayout ()
         {
             final CellConstraints cst = new CellConstraints();
@@ -522,6 +484,21 @@ public abstract class Versions
             setBackground(Color.WHITE);
         }
 
+        protected String getColumnsSpec ()
+        {
+            return "right:pref, 5dlu, pref, 5dlu";
+        }
+
+        protected String getRowsSpec ()
+        {
+            return "pref, 3dlu,pref, 3dlu,pref";
+        }
+
+        String getTitle ()
+        {
+            return title;
+        }
+
         private class ParamAction
                 extends AbstractAction
         {
@@ -542,6 +519,18 @@ public abstract class Versions
         }
     }
 
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    //-------------//
+    // CheckResult //
+    //-------------//
+    public enum CheckResult
+    {
+        COMPATIBLE,
+        BOOK_TOO_OLD,
+        PROGRAM_TOO_OLD;
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -557,6 +546,20 @@ public abstract class Versions
         private final Constant.Date lastReleaseCheckDate = new Constant.Date(
                 "1-Jan-2000",
                 "Date when last release check was made");
+    }
+
+    //-----------//
+    // Frequency //
+    //-----------//
+    /** Frequency for polling project site. */
+    private static enum Frequency
+    {
+        Always,
+        Daily,
+        Weekly,
+        Monthly,
+        Yearly,
+        Never;
     }
 
     //---------------//
@@ -645,18 +648,6 @@ public abstract class Versions
             contentField.setText(release.getBody().trim());
         }
 
-        @Override
-        protected String getColumnsSpec ()
-        {
-            return super.getColumnsSpec() + ", 250dlu";
-        }
-
-        @Override
-        protected String getRowsSpec ()
-        {
-            return super.getRowsSpec() + ", 3dlu,pref, 3dlu,pref, 3dlu,pref, 3dlu,pref";
-        }
-
         private void defineLayout ()
         {
             final CellConstraints cst = new CellConstraints();
@@ -680,6 +671,18 @@ public abstract class Versions
             r += 2; // -----------------------------------
             builder.add(contentLabel, cst.xy(1, r));
             builder.add(contentField, cst.xyw(3, r, 3));
+        }
+
+        @Override
+        protected String getColumnsSpec ()
+        {
+            return super.getColumnsSpec() + ", 250dlu";
+        }
+
+        @Override
+        protected String getRowsSpec ()
+        {
+            return super.getRowsSpec() + ", 3dlu,pref, 3dlu,pref, 3dlu,pref, 3dlu,pref";
         }
     }
 }

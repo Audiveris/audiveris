@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Principles
-grand_parent: User Edition
+grand_parent: User Editing
 parent: UI Foundations
 nav_order: 1
 ---
@@ -30,7 +30,7 @@ as output a structured collection of music symbols.
 
 * The OMR _engine_ is one actor, which moves forward from step to step,
 creating a bunch of entities.
-* The OMR _user_ is another actor, which can interactively modify some entities,
+* The OMR _user_ is another actor, who can interactively modify some entities,
 and decide how to move the engine.
 
 The resulting objects are divided into two categories:
@@ -45,7 +45,7 @@ sheet musical content, organized in a hierarchical structure of containers:
     - *pages*, gathered in ...
     - *scores*
 
-    Starting with 5.2 release, the user can partly modify this hierarchy, by splitting and merging systems, parts and measures.
+    Since the 5.2 release, the user can partly modify this hierarchy, by splitting and merging systems, parts and measures.
 
 2.  **Inters**.
 They represent candidate interpretations, formalized by `Inter` instances, handled
@@ -54,7 +54,7 @@ Within each system SIG, it's the struggle for life, since only the strongest int
 survive in the end.   
 There is no structure within the Inter instances of a SIG, just `Relation` instances possibly set
 between a pair of Inter instances.  
-Starting with 5.2 release, all these Inter and Relation instances can be modified interactively.
+Since the 5.2 release, all these Inter and Relation instances can be modified interactively.
 
     Inter objects are everything except the static containers mentioned above:   
     - Barline, ledger, clef, key signature, time signature, chord, head, alteration,
@@ -69,7 +69,7 @@ Starting with 5.2 release, all these Inter and Relation instances can be modifie
       - A Key which contains key alter signs.
       - A TimePair which contains a numerator number and a denominator number.
       - A BeamGroup which contains several parallel beams.
-      - A StaffBarline which is a horizontal group of simple Barlines.
+      - A StaffBarline which is a horizontal sequence of simple Barlines.
 
 Measures are hybrid, since they are not Inters but depend on barlines which are Inters.
 
@@ -77,5 +77,5 @@ Beside Inter and Relation entities, glyphs, which are just sets of foreground pi
 to create new Inters.
 Hence, Glyph instances are also entities that the user can select and transcribe to Inter entities.
 
-Audiveris editor has been designed to work on the SIG data model,
+The Audiveris editor has been designed to work on the SIG data model,
 that is essentially to play directly with Inter and Relation instances.

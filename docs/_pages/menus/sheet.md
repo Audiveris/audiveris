@@ -2,7 +2,7 @@
 layout: default
 title: Sheet menu
 grand_parent: References
-parent: Pulldown menus
+parent: Pulldown Menus
 nav_order: 3
 ---
 ## Sheet menu
@@ -28,27 +28,26 @@ Undo last manual edit step, one at a time.
 
 Redo last undone manual edit step, one at a time.
 
-### Reset Sheet
+### Toggle Repetitive Input
 
-Reset the active sheet to its initial state, as if it were just loaded as a plain image
-
-### Reset Sheet to Binary
-
-Reset the active sheet to its BINARY state, that is the binarized (black and white) image.
+Switch on/off a mode where a simple click replicates the last inserted shape at the new mouse location.  
+This mode is convenient to insert a series of identical symbols, such as heads, at different locations.
 
 ### Transcribe Sheet
 
 Start the transcription of just the active sheet.
 
-### Invalidate Sheet
+### Current status
 
-Flag the selected sheet as containing no music information.
+Flag the current sheet as either valid or invalid (containing no music information, and thus be ignored during transcription of the book).
 
-The sheet will be ignored during transcription of the book.
+This validity status should not be confused with sheet selection made at book level:
+- An **invalid** sheet contains no music and thus will always be ignored even if selected at book level.
+- A sheet can be dynamically **selected** or not, according to user's desire.
 
-### Set Sheet Parameters
+### Set Scaling Data
 
-Display and potentially modify parameters of current sheet (mainly scaling data).
+Display and potentially modify scaling data of current sheet.
 
 ### Display Scale plots
 
@@ -62,7 +61,7 @@ leading to staff interline(s).
 
 ![](../assets/images/combo_plot.png)
 
-(needs PLOTS topic)
+(needs ``PLOTS`` advanced topic)
 
 ### Display Stem plot
 
@@ -70,7 +69,7 @@ Display plot of histogram of stem thickness.
 
 ![](../assets/images/stem_plot.png)
 
-(needs PLOTS topic)
+(needs ``PLOTS`` advanced topic)
 
 ### Display Staves plots
 
@@ -79,7 +78,11 @@ Display plot of histogram of stem thickness.
 Display the projection to x-axis of black pixels contained between staff first and last lines,
 leading to barlines extraction.
 
-(needs PLOTS topic)
+(needs ``PLOTS`` advanced topic)
+
+### Display Gray
+
+If still available, display the (initial) gray view tab.
 
 ### Display Binary
 
@@ -110,20 +113,18 @@ Write the transcribed sheet in PDF format, so that it can be printed or saved fo
 The name of the output file is derived from the book name, followed by "\#" and the sheet number if
 the book contains more than one sheet.
 
-The file is saved in a (newly created) book subdirectory of the basic output directory path.
-
 ### Export Sheet as
 
-Same as above except that the user can define the file name and the folder where the file is saved.
+Same as above except that we can define the file name and the folder where the file is saved.
 
 ### Sample sheet Symbols
 
 Populate the book sample repository with samples derived from relevant inters of this sheet only.
 
-(needs SAMPLES topic, see [Samples section](../advanced/samples.md))  
+(needs ``SAMPLES`` advanced topic, see [Samples section](../advanced/samples.md))  
 
 ### Annotate sheet Symbols
 
 Populate a Zip archive with images and symbol annotations derived from inters of this sheet only.
 
-(needs ANNOTATIONS topic)
+(needs ``ANNOTATIONS`` advanced topic)

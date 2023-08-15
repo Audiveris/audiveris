@@ -2,14 +2,14 @@
 layout: default
 title: Split and Merge
 grand_parent: Main Features
-parent: Book portions
+parent: Book Portions
 nav_order: 3
 ---
 
 ## Split and Merge
 {: .no_toc }
 
-This feature is meant to be Audiveris "swiss knife" to configure books, images and sheets.
+This feature is meant to be the Audiveris "Swiss Army Knife" to configure books, images and sheets.
 
 ---
 Table of contents
@@ -31,10 +31,10 @@ In terms of structure:
 
 The PlayList can be defined conveniently via the interactive "Split and Merge" dialog.   
 It can also be written from scratch via a plain text editor
-(see the paragraph about [playlist format](#playlist-format)).
+(see the paragraph about the [PlayList format](#playlist-format)).
 
-Either way, the playlist can then be used interactively or in batch to produce a compound book
-according to the playlist content.
+Either way, the PlayList can then be used interactively or in batch to produce a compound book
+according to the PlayList content.
 
 ### Use cases
 This section lists typical use cases from the end-user point of view.
@@ -67,7 +67,7 @@ The case is described in issue #129
 ([Allow to load multiple images into one book](https://github.com/Audiveris/audiveris/issues/129))
 where a paper score is scanned page after page into separate image files.
 
-1. With a playlist referencing the image files in proper order, we can build a compound **book of images**.
+1. With a PlayList referencing the image files in proper order, we can build a compound **book of images**.
 
 2. We can also start processing each input file separately and perhaps try some image improvement
 techniques.   
@@ -75,7 +75,7 @@ And when each 1-sheet book is correctly processed, we can combine all the separa
 a compound **book of books**.   
 
 3. And more generally, we can have references to book files and references to image files in the same
-playlist, resulting in a **mixed compound**.
+PlayList, resulting in a **mixed compound**.
 
 In all these cases, the engine will update the sheets where needed and process the inter-sheet
 dependencies (slurs, time-signatures, measure IDs) before building the resulting score(s).
@@ -97,7 +97,7 @@ images of better quality:
 - `Scan-6.png`: to replace sheet #6 of the book above
 - `Scan-10.png`: to replace sheet #10 of the book above
 
-Then we could use a playlist as defined below:
+Then we could use a PlayList as defined below:
 
 ![](../assets/images/split_merge_populated.png)
 
@@ -107,24 +107,24 @@ partly transcribed.
 
 ### Dialog
 
-It is accessed via `Book | Split and Merge...` menu item.
+It is accessed via the `Book | Split and Merge...` menu item.
 
-The dialog large table, meant for the underlying playlists, is initially empty.
+The dialog large table, meant for the underlying PlayLists, is initially empty.
 
-#### Populating the playlist
+#### Populating the PlayList
 
-- If we have a playlist available somewhere, we can open it via the `Open PlayList...` button
+- If we have a PlayList available somewhere, we can open it via the `Open PlayList...` button
   in the upper right corner of the dialog.   
-  This will add the content of the opened playlist to the dialog.
-- If we already have Books or Image files loaded in Audiveris main window, we can immediately
-  select and include a few of them into the playlist.   
+  This will add the content of the opened PlayList to the dialog.
+- If we already have Books or Image files loaded in the Audiveris main window, we can immediately
+  select and include a few of them into the PlayList.   
 
   ![](../assets/images/include_loaded.png)
-- Via a Drag n' Drop from a file explorer, we can drop one or several Book or Image files onto
-  the dialog, each will lead to the addition of a corresponding excerpt at a precise location
-  in the playlist.
+- Via a Drag 'n Drop from a file explorer, we can drop one or several Book or Image files onto
+  the dialog, and each will lead to the addition of a corresponding excerpt at a precise location
+  in the PlayList.
 - Similarly, via the `Load files` button, we can load one or several Book or Image files and
-  their corresponding excerpts will be appended at the bottom of the playlist.
+  their corresponding excerpts will be appended at the bottom of the PlayList.
 
 #### Legend
 - There is one row per excerpt, composed of the container name, the sheets specification string
@@ -135,31 +135,31 @@ The dialog large table, meant for the underlying playlists, is initially empty.
 - The sheets specification is an editable field.
   By default, all sheets are selected but, if the originating book already had a sheets selection
   defined, this definition would be copied over to the excerpt field.
-  -- see the previous section on [Sheets Selection](sheets_selection.md) in a book --
-- Note that the same container can appear on several rows of the playlist,
+  -- see the previous section on [Sheets Selection](sheets_selection.md) in a book.
+- Note that the same container can appear on several rows of the PlayList,
   with different sheets specifications
-  -- see the example of [Sheet replacement](#sheet-replacement) above --
+  -- see the example of [Sheet replacement](#sheet-replacement) above.
 
-#### Editing the playlist
+#### Editing the PlayList
 
 - We have seen that the sheets specification of any excerpt can be manually edited.
 - We can add/include and remove excerpts.
-- We can move a selected excerpt up and down within the playlist.
+- We can move a selected excerpt up and down within the PlayList.
 - The `Duplicate` button duplicates the selected excerpt, including its current specification.   
-  It's a convenient way to insert another excerpt of the same container in the playlist:   
+  It's a convenient way to insert another excerpt of the same container in the PlayList:
   we can simply duplicate a line, move it where desired, and modify its sheets specification.
 
-When satisfied with the playlist, we can save it for future reload or use it immediately as follows.
+When satisfied with the PlayList, we can save it for future reload or use it immediately as follows.
 
 #### Building the result
 
-The `Action!` button launches the building of the compound book according to the playlist
+The `Action!` button launches the building of the compound book according to the PlayList
 current content.
 
-The newly created Book is a full-fledge book that can be used from now on,
+The newly created Book is a full-fledged book that can be used from now on,
 just like any other book: sheet transcription, interactive validation / correction,
 export as MusicXml, etc.
-It can even be used as a source for another playlist.
+It can even be used as a source for another PlayList.
 
 It is important to realize that this compound book is a brand new **stand-alone** book,
 kept separate from its original "parts".
@@ -168,13 +168,13 @@ And similarly, any further work made on any of the original "parts" will not imp
 
 ### PlayList format
 
-A playlist can be created or saved as a plain XML file,
+A PlayList can be created or saved as a plain XML file,
 - with `<play-list>` as its root element,
 - composed of a sequence of `<excerpt>` elements, each of which containing
   - the mandatory `<path>` element to a container file
   - and a possible `sheets-selection` element.
 
-Here is the content of the `variationen.xml` example file, where the populated playlist has been
+Here is the content of the `variationen.xml` example file, where the populated PlayList has been
 saved:
 
 ```xml
@@ -206,11 +206,11 @@ saved:
 ### CLI option
 
 There is a new option available on command line interface: `-playlist <foobar.xml>` which allows
-to load an `.xml` file as a playlist, provided that file content is compliant with the PlayList
+loading an `.xml` file as a PlayList, provided that file content is compliant with the PlayList
 format described above.
 
 Then, according to the current mode (batch or interactive), the actions differ slightly:
-- In *batch* mode, the playlist is immediately used to build, next to the provided `foobar.xml`
+- In *batch* mode, the PlayList is immediately used to build, next to the provided `foobar.xml`
   file, the resulting compound book `foobar.omr` file.
-- In *interactive* mode, a `Split and Merge` dialog is populated with this playlist and displayed
+- In *interactive* mode, a `Split and Merge` dialog is populated with this PlayList and displayed
   to the user for further action, such as review / edit / build compound.

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-
 import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Application;
@@ -31,6 +28,9 @@ import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -58,6 +58,7 @@ public abstract class XactDataPane<E>
             .getResourceMap(XactDataPane.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Model parameter (cannot be null). */
     protected final Param<E> model;
 
@@ -71,6 +72,7 @@ public abstract class XactDataPane<E>
     protected final JLabel title;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>XactDataPane</code> object.
      *
@@ -98,6 +100,7 @@ public abstract class XactDataPane<E>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public void actionPerformed (ActionEvent e)
     {
@@ -136,21 +139,30 @@ public abstract class XactDataPane<E>
     /**
      * Build the related user interface
      *
-     * @param builder the shared panel builder
-     * @param cst     the cell constraints
-     * @param r       initial row value
+     * @param builder    the shared panel builder
+     * @param cst        the cell constraints
+     * @param titleWidth number of cells for title
+     * @param r          initial row value
      * @return final row value
      */
     public int defineLayout (PanelBuilder builder,
                              CellConstraints cst,
+                             int titleWidth,
                              int r)
     {
-        // Draw the specific/inherit box + separating line
+        // Draw the specific/inherit box (+ line advance?)
         builder.add(selBox, cst.xyw(1, r, 1));
-        builder.add(title, cst.xyw(3, r, 5));
+        builder.add(title, cst.xyw(3, r, titleWidth));
 
         return r + 2;
     }
+
+    /**
+     * Write the parameter into the fields content
+     *
+     * @param content the data to display
+     */
+    protected abstract void display (E content);
 
     /**
      * Report the count of needed logical rows.
@@ -163,6 +175,11 @@ public abstract class XactDataPane<E>
         return 2;
     }
 
+    public Param<E> getModel ()
+    {
+        return model;
+    }
+
     /**
      * User has selected (and enabled) this pane
      *
@@ -172,29 +189,6 @@ public abstract class XactDataPane<E>
     {
         return selBox.isSelected();
     }
-
-    /**
-     * User selects (or deselects) this pane
-     *
-     * @param bool true for selection
-     */
-    public void setSelected (boolean bool)
-    {
-        selBox.setSelected(bool);
-    }
-
-    @Override
-    public String toString ()
-    {
-        return getClass().getSimpleName() + " " + title.getText();
-    }
-
-    /**
-     * Write the parameter into the fields content
-     *
-     * @param content the data to display
-     */
-    protected abstract void display (E content);
 
     /**
      * Read the parameter as defined by the fields content.
@@ -209,4 +203,21 @@ public abstract class XactDataPane<E>
      * @param bool the flag value
      */
     protected abstract void setEnabled (boolean bool);
+
+    /**
+     * User selects (or deselects) this pane
+     *
+     * @param bool true for selection
+     */
+    public void setSelected (boolean bool)
+    {
+        selBox.setSelected(bool);
+    }
+
+    @Override
+    public String toString ()
+    {
+        return new StringBuilder(getClass().getSimpleName()).append(' ').append(title.getText())
+                .append(' ').append(model).toString();
+    }
 }

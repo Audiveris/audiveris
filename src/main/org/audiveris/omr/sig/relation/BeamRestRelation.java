@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,14 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
-import java.awt.Point;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
@@ -41,7 +33,18 @@ import org.audiveris.omr.sig.inter.RestInter;
 import static org.audiveris.omr.sig.relation.BeamPortion.CENTER;
 import static org.audiveris.omr.sig.relation.BeamPortion.LEFT;
 import static org.audiveris.omr.sig.relation.BeamPortion.RIGHT;
+
 import org.jgrapht.event.GraphEdgeChangeEvent;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class <code>BeamRestRelation</code> implements the geometric link between a beam
@@ -62,6 +65,7 @@ public class BeamRestRelation
     private static final Logger logger = LoggerFactory.getLogger(BeamRestRelation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * The dy attribute is the absolute vertical distance, in pixels, between the rest
      * center and the beam median line.
@@ -77,6 +81,7 @@ public class BeamRestRelation
     private BeamPortion beamPortion;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>BeamRestRelation</code> object.
      */
@@ -85,6 +90,7 @@ public class BeamRestRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//
@@ -134,6 +140,15 @@ public class BeamRestRelation
         return dy;
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return new StringBuilder(super.internals()).append(" dy:").append(dy).toString();
+    }
+
     //----------------//
     // isSingleSource //
     //----------------//
@@ -165,14 +180,7 @@ public class BeamRestRelation
         beam.checkAbnormal();
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return new StringBuilder(super.internals()).append(" dy:").append(dy).toString();
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------------------//
     // computeBeamPortion //
@@ -203,6 +211,7 @@ public class BeamRestRelation
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -213,19 +222,19 @@ public class BeamRestRelation
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 1.0,
                 "Maximum horizontal overlap between rest & beam");
-//
-//        @SuppressWarnings("unused")
-//        private final Scale.Fraction xInGapMax_p1 = new Scale.Fraction(
-//                1.5,
-//                "Idem for profile 1");
-//
-//        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-//                0.5,
-//                "Maximum horizontal gap between rest & beam");
-//
-//        @SuppressWarnings("unused")
-//        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
-//                0.75,
-//                "Idem for profile 1");
+        //
+        //        @SuppressWarnings("unused")
+        //        private final Scale.Fraction xInGapMax_p1 = new Scale.Fraction(
+        //                1.5,
+        //                "Idem for profile 1");
+        //
+        //        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
+        //                0.5,
+        //                "Maximum horizontal gap between rest & beam");
+        //
+        //        @SuppressWarnings("unused")
+        //        private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(
+        //                0.75,
+        //                "Idem for profile 1");
     }
 }

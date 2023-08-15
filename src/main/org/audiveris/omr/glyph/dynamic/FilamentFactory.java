@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,22 +21,26 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.dynamic;
 
-import java.awt.Point;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.lag.Section;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Line;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.run.Orientation;
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.grid.BarFilamentFactory;
 import org.audiveris.omr.sheet.grid.StaffFilament;
+import org.audiveris.omr.util.Dumping;
+import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
@@ -51,10 +55,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.audiveris.omr.math.GeoUtil;
-import static org.audiveris.omr.run.Orientation.HORIZONTAL;
-import org.audiveris.omr.util.Dumping;
-import org.audiveris.omr.util.Entities;
 
 /**
  * Class <code>FilamentFactory</code> builds filaments (long series of sections) out of a
@@ -96,6 +96,7 @@ public class FilamentFactory<F extends Filament>
     private static final Logger logger = LoggerFactory.getLogger(FilamentFactory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related scale. */
     private final Scale scale;
 
@@ -118,6 +119,7 @@ public class FilamentFactory<F extends Filament>
     private final Map<Section, Boolean> fatSections = new HashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a factory of filaments.
      *
@@ -139,8 +141,7 @@ public class FilamentFactory<F extends Filament>
 
         try {
             filamentConstructor = filamentClass.getConstructor(int.class);
-        } catch (NoSuchMethodException |
-                 SecurityException ex) {
+        } catch (NoSuchMethodException | SecurityException ex) {
             logger.error(null, ex);
         }
 
@@ -149,316 +150,6 @@ public class FilamentFactory<F extends Filament>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------//
-    // dump //
-    //------//
-    /**
-     * Dump the factory parameters.
-     *
-     * @param title optional title
-     */
-    public void dump (String title)
-    {
-        if (constants.printParameters.isSet()) {
-            params.dump(title);
-        }
-    }
-
-    //--------------//
-    // isSectionFat //
-    //--------------//
-    /**
-     * Detect if the provided section is a thick one.
-     * (as seen in the context of the factory orientation)
-     *
-     * @param section the section to check
-     * @return true if fat
-     */
-    public boolean isSectionFat (Section section)
-    {
-        final Boolean fat = fatSections.get(section);
-
-        if (fat != null) {
-            return fat;
-        }
-
-        try {
-            if (section.getMeanThickness(orientation) <= 1) {
-                return setFat(section, false);
-            }
-
-            // Check global slimness
-            if (section.getMeanAspect(orientation) < params.minSectionAspect) {
-                return setFat(section, true);
-            }
-
-            // Check thickness
-            Rectangle bounds = orientation.oriented(section.getBounds());
-            Line line = orientation.switchRef(section.getAbsoluteLine());
-
-            if (Math.abs(line.getSlope()) < (Math.PI / 4)) {
-                // Measure mean thickness on each half
-                int startCoord = bounds.x + (bounds.width / 4);
-                int startPos = line.yAtX(startCoord);
-                int stopCoord = bounds.x + ((3 * bounds.width) / 4);
-                int stopPos = line.yAtX(stopCoord);
-
-                // Start side
-                Rectangle oRoi = new Rectangle(startCoord, startPos, 0, 0);
-                final int halfWidth = Math.min(params.probeWidth / 2, bounds.width / 4);
-                oRoi.grow(halfWidth, params.maxThickness);
-
-                PointsCollector collector = new PointsCollector(orientation.absolute(oRoi));
-                section.cumulate(collector);
-
-                int startThickness = (int) Math.rint((double) collector.getSize() / oRoi.width);
-
-                // Stop side
-                oRoi.translate(stopCoord - startCoord, stopPos - startPos);
-                collector = new PointsCollector(orientation.absolute(oRoi));
-                section.cumulate(collector);
-
-                int stopThickness = (int) Math.rint((double) collector.getSize() / oRoi.width);
-
-                return setFat(section,
-                              (startThickness > params.maxThickness)
-                                      || (stopThickness > params.maxThickness));
-            } else {
-                return setFat(section, bounds.height > params.maxThickness);
-            }
-        } catch (Exception ex) {
-            logger.warn("Error in checking fatness of " + section, ex);
-
-            return setFat(section, true);
-        }
-    }
-
-    //-------------------//
-    // retrieveFilaments //
-    //-------------------//
-    /**
-     * Aggregate the long and thin sections into filaments.
-     *
-     * @param source the collection of input sections
-     * @return the collection of retrieved filaments
-     */
-    public List<F> retrieveFilaments (Collection<Section> source)
-    {
-        StopWatch watch = new StopWatch("FilamentsFactory " + orientation);
-        List<F> filaments = new ArrayList<>();
-
-        try {
-            // Create a filament for each section long & slim
-            watch.start("createInitialFilaments");
-            createInitialFilaments(filaments, source);
-            logger.debug("{} filaments created.", filaments.size());
-
-            // Merge filaments into larger ones
-            watch.start("mergeFilaments");
-            mergeFilaments(filaments);
-
-            // Expand with short sections left over
-            watch.start("expandFilaments");
-            expandFilaments(filaments, source);
-
-            // Merge filaments into larger filaments
-            watch.start("mergeFilaments #2");
-            mergeFilaments(filaments);
-
-            return filaments;
-        } catch (Exception ex) {
-            logger.warn("FilamentsFactory cannot retrieveFilaments", ex);
-
-            return null;
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
-    }
-
-    //----------------------//
-    // retrieveLineFilament //
-    //----------------------//
-    /**
-     * Aggregate sections into one filament along the provided skeleton line.
-     * <p>
-     * This method is used to retrieve the underlying glyph of a bar line peak.
-     * It allows to detect if a bar goes beyond staff height.
-     * It also allows to evaluate glyph straightness and thus discard peaks due to braces.
-     * <p>
-     * Perhaps we could also use the abscissa range of the peak rectangle?
-     *
-     * @param source the collection of candidate input sections
-     * @param line   the skeleton line
-     * @return the retrieved filament, or null
-     */
-    public Filament retrieveLineFilament (Collection<Section> source,
-                                          Line line)
-    {
-        StopWatch watch = new StopWatch("retrieveLineFilament " + orientation);
-
-        try {
-            // Aggregate long sections that intersect line core onto skeleton line
-            watch.start("populateLines");
-
-            F fil = populateLine(source, line);
-
-            if (fil == null) {
-                return null;
-            }
-
-            // Expand with short sections left over, when they touch already included ones
-            watch.start("expandFilaments");
-            expandFilaments(Arrays.asList(fil), source);
-
-            return fil;
-        } catch (Exception ex) {
-            logger.warn("FilamentsFactory cannot retrieveLineFilament", ex);
-
-            return null;
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
-    }
-
-    //----------------//
-    // setMaxCoordGap //
-    //----------------//
-    public void setMaxCoordGap (Scale.Fraction frac)
-    {
-        params.maxCoordGap = scale.toPixels(frac);
-    }
-
-    //----------------------//
-    // setMaxExpansionSpace //
-    //----------------------//
-    public void setMaxExpansionSpace (Scale.Fraction frac)
-    {
-        params.maxExpansionSpace = scale.toPixels(frac);
-    }
-
-    //----------------//
-    // setMaxGapSlope //
-    //----------------//
-    public void setMaxGapSlope (double value)
-    {
-        params.maxGapSlope = value;
-    }
-
-    //-----------------------//
-    // setMaxInvolvingLength //
-    //-----------------------//
-    public void setMaxInvolvingLength (Scale.Fraction frac)
-    {
-        params.maxInvolvingLength = scale.toPixels(frac);
-    }
-
-    //-----------------------//
-    // setMaxOverlapDeltaPos //
-    //-----------------------//
-    public void setMaxOverlapDeltaPos (Scale.Fraction frac)
-    {
-        params.maxOverlapDeltaPos = scale.toPixels(frac);
-    }
-
-    //-----------------------//
-    // setMaxOverlapDeltaPos //
-    //-----------------------//
-    public void setMaxOverlapDeltaPos (Scale.LineFraction lFrac)
-    {
-        params.maxOverlapDeltaPos = scale.toPixels(lFrac);
-    }
-
-    //--------------------//
-    // setMaxOverlapSpace //
-    //--------------------//
-    public void setMaxOverlapSpace (Scale.LineFraction lfrac)
-    {
-        params.maxOverlapSpace = scale.toPixels(lfrac);
-    }
-
-    //--------------------//
-    // setMaxOverlapSpace //
-    //--------------------//
-    public void setMaxOverlapSpace (Scale.Fraction frac)
-    {
-        params.maxOverlapSpace = scale.toPixels(frac);
-    }
-
-    //--------------//
-    // setMaxPosGap //
-    //--------------//
-    public void setMaxPosGap (Scale.LineFraction lineFrac)
-    {
-        params.maxPosGap = scale.toPixels(lineFrac);
-    }
-
-    //--------------//
-    // setMaxPosGap //
-    //--------------//
-    public void setMaxPosGap (Scale.Fraction frac)
-    {
-        params.maxPosGap = scale.toPixels(frac);
-    }
-
-    //----------------------//
-    // setMaxPosGapForSlope //
-    //----------------------//
-    public void setMaxPosGapForSlope (Scale.Fraction frac)
-    {
-        params.maxPosGapForSlope = scale.toPixels(frac);
-    }
-
-    //-----------------//
-    // setMaxThickness //
-    //-----------------//
-    public void setMaxThickness (Scale.LineFraction lineFrac)
-    {
-        params.maxThickness = scale.toPixels(lineFrac);
-    }
-
-    //-----------------//
-    // setMaxThickness //
-    //-----------------//
-    public void setMaxThickness (Scale.Fraction frac)
-    {
-        params.maxThickness = scale.toPixels(frac);
-    }
-
-    //-----------------//
-    // setMaxThickness //
-    //-----------------//
-    public void setMaxThickness (int value)
-    {
-        params.maxThickness = value;
-    }
-
-    //-------------------------//
-    // setMinCoreSectionLength //
-    //-------------------------//
-    public void setMinCoreSectionLength (Scale.Fraction frac)
-    {
-        setMinCoreSectionLength(scale.toPixels(frac));
-    }
-
-    //-------------------------//
-    // setMinCoreSectionLength //
-    //-------------------------//
-    public void setMinCoreSectionLength (int value)
-    {
-        params.minCoreSectionLength = value;
-    }
-
-    //---------------------//
-    // setMinSectionAspect //
-    //---------------------//
-    public void setMinSectionAspect (double value)
-    {
-        params.minSectionAspect = value;
-    }
 
     //----------//
     // canMerge //
@@ -556,7 +247,7 @@ public class FilamentFactory<F extends Filament>
 
                     // Check thickness consistency
                     if ((-coordGap <= params.maxInvolvingLength)
-                                && (thickness > maxConsistentThickness)) {
+                            && (thickness > maxConsistentThickness)) {
                         if (logger.isDebugEnabled() || areVips) {
                             logger.info(
                                     "{}Non consistent thickness: {} vs {} {} {}",
@@ -656,7 +347,7 @@ public class FilamentFactory<F extends Filament>
             double twoLength = twoStop.getX() - twoStart.getX() + 1;
 
             if ((oneLength >= params.minLengthForDeltaSlope)
-                        && (twoLength >= params.minLengthForDeltaSlope)) {
+                    && (twoLength >= params.minLengthForDeltaSlope)) {
                 double oneSlope = LineUtil.getSlope(oneStart, oneStop);
                 double twoSlope = LineUtil.getSlope(twoStart, twoStop);
                 double deltaSlope = Math.abs(twoSlope - oneSlope);
@@ -723,10 +414,8 @@ public class FilamentFactory<F extends Filament>
             }
 
             return fil;
-        } catch (IllegalAccessException |
-                 IllegalArgumentException |
-                 InstantiationException |
-                 InvocationTargetException ex) {
+        } catch (IllegalAccessException | IllegalArgumentException | InstantiationException
+                | InvocationTargetException ex) {
             logger.error(null, ex);
 
             return null;
@@ -744,7 +433,7 @@ public class FilamentFactory<F extends Filament>
      */
     private void createInitialFilaments (List<F> filaments,
                                          Collection<Section> inputSections)
-            throws Exception
+        throws Exception
     {
         for (Section section : inputSections) {
             // Limit to main sections
@@ -775,6 +464,21 @@ public class FilamentFactory<F extends Filament>
         }
 
         logger.debug("createFilaments: {}/{}", filaments.size(), inputSections.size());
+    }
+
+    //------//
+    // dump //
+    //------//
+    /**
+     * Dump the factory parameters.
+     *
+     * @param title optional title
+     */
+    public void dump (String title)
+    {
+        if (constants.printParameters.isSet()) {
+            params.dump(title);
+        }
     }
 
     //-----------------//
@@ -874,6 +578,76 @@ public class FilamentFactory<F extends Filament>
     private boolean isProcessed (Section section)
     {
         return processedSections.contains(section);
+    }
+
+    //--------------//
+    // isSectionFat //
+    //--------------//
+    /**
+     * Detect if the provided section is a thick one.
+     * (as seen in the context of the factory orientation)
+     *
+     * @param section the section to check
+     * @return true if fat
+     */
+    public boolean isSectionFat (Section section)
+    {
+        final Boolean fat = fatSections.get(section);
+
+        if (fat != null) {
+            return fat;
+        }
+
+        try {
+            if (section.getMeanThickness(orientation) <= 1) {
+                return setFat(section, false);
+            }
+
+            // Check global slimness
+            if (section.getMeanAspect(orientation) < params.minSectionAspect) {
+                return setFat(section, true);
+            }
+
+            // Check thickness
+            Rectangle bounds = orientation.oriented(section.getBounds());
+            Line line = orientation.switchRef(section.getAbsoluteLine());
+
+            if (Math.abs(line.getSlope()) < (Math.PI / 4)) {
+                // Measure mean thickness on each half
+                int startCoord = bounds.x + (bounds.width / 4);
+                int startPos = line.yAtX(startCoord);
+                int stopCoord = bounds.x + ((3 * bounds.width) / 4);
+                int stopPos = line.yAtX(stopCoord);
+
+                // Start side
+                Rectangle oRoi = new Rectangle(startCoord, startPos, 0, 0);
+                final int halfWidth = Math.min(params.probeWidth / 2, bounds.width / 4);
+                oRoi.grow(halfWidth, params.maxThickness);
+
+                PointsCollector collector = new PointsCollector(orientation.absolute(oRoi));
+                section.cumulate(collector);
+
+                int startThickness = (int) Math.rint((double) collector.getSize() / oRoi.width);
+
+                // Stop side
+                oRoi.translate(stopCoord - startCoord, stopPos - startPos);
+                collector = new PointsCollector(orientation.absolute(oRoi));
+                section.cumulate(collector);
+
+                int stopThickness = (int) Math.rint((double) collector.getSize() / oRoi.width);
+
+                return setFat(
+                        section,
+                        (startThickness > params.maxThickness)
+                                || (stopThickness > params.maxThickness));
+            } else {
+                return setFat(section, bounds.height > params.maxThickness);
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in checking fatness of " + section, ex);
+
+            return setFat(section, true);
+        }
     }
 
     //------------------------//
@@ -986,9 +760,8 @@ public class FilamentFactory<F extends Filament>
                     }
                 } else {
                     Point centroid = section.getCentroid();
-                    double gap = (orientation == HORIZONTAL)
-                            ? (line.yAtXExt(centroid.x) - centroid.y)
-                            : (line.xAtYExt(centroid.y) - centroid.x);
+                    double gap = (orientation == HORIZONTAL) ? (line.yAtXExt(centroid.x)
+                            - centroid.y) : (line.xAtYExt(centroid.y) - centroid.x);
 
                     if (Math.abs(gap) <= params.maxPosGap) {
                         fil.addSection(section);
@@ -1019,6 +792,97 @@ public class FilamentFactory<F extends Filament>
         }
     }
 
+    //-------------------//
+    // retrieveFilaments //
+    //-------------------//
+    /**
+     * Aggregate the long and thin sections into filaments.
+     *
+     * @param source the collection of input sections
+     * @return the collection of retrieved filaments
+     */
+    public List<F> retrieveFilaments (Collection<Section> source)
+    {
+        StopWatch watch = new StopWatch("FilamentsFactory " + orientation);
+        List<F> filaments = new ArrayList<>();
+
+        try {
+            // Create a filament for each section long & slim
+            watch.start("createInitialFilaments");
+            createInitialFilaments(filaments, source);
+            logger.debug("{} filaments created.", filaments.size());
+
+            // Merge filaments into larger ones
+            watch.start("mergeFilaments");
+            mergeFilaments(filaments);
+
+            // Expand with short sections left over
+            watch.start("expandFilaments");
+            expandFilaments(filaments, source);
+
+            // Merge filaments into larger filaments
+            watch.start("mergeFilaments #2");
+            mergeFilaments(filaments);
+
+            return filaments;
+        } catch (Exception ex) {
+            logger.warn("FilamentsFactory cannot retrieveFilaments", ex);
+
+            return null;
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+    }
+
+    //----------------------//
+    // retrieveLineFilament //
+    //----------------------//
+    /**
+     * Aggregate sections into one filament along the provided skeleton line.
+     * <p>
+     * This method is used to retrieve the underlying glyph of a bar line peak.
+     * It allows to detect if a bar goes beyond staff height.
+     * It also allows to evaluate glyph straightness and thus discard peaks due to braces.
+     * <p>
+     * Perhaps we could also use the abscissa range of the peak rectangle?
+     *
+     * @param source the collection of candidate input sections
+     * @param line   the skeleton line
+     * @return the retrieved filament, or null
+     */
+    public Filament retrieveLineFilament (Collection<Section> source,
+                                          Line line)
+    {
+        StopWatch watch = new StopWatch("retrieveLineFilament " + orientation);
+
+        try {
+            // Aggregate long sections that intersect line core onto skeleton line
+            watch.start("populateLines");
+
+            F fil = populateLine(source, line);
+
+            if (fil == null) {
+                return null;
+            }
+
+            // Expand with short sections left over, when they touch already included ones
+            watch.start("expandFilaments");
+            expandFilaments(Arrays.asList(fil), source);
+
+            return fil;
+        } catch (Exception ex) {
+            logger.warn("FilamentsFactory cannot retrieveLineFilament", ex);
+
+            return null;
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+    }
+
     //--------//
     // setFat //
     //--------//
@@ -1030,6 +894,142 @@ public class FilamentFactory<F extends Filament>
         return bool;
     }
 
+    //----------------//
+    // setMaxCoordGap //
+    //----------------//
+    public void setMaxCoordGap (Scale.Fraction frac)
+    {
+        params.maxCoordGap = scale.toPixels(frac);
+    }
+
+    //----------------------//
+    // setMaxExpansionSpace //
+    //----------------------//
+    public void setMaxExpansionSpace (Scale.Fraction frac)
+    {
+        params.maxExpansionSpace = scale.toPixels(frac);
+    }
+
+    //----------------//
+    // setMaxGapSlope //
+    //----------------//
+    public void setMaxGapSlope (double value)
+    {
+        params.maxGapSlope = value;
+    }
+
+    //-----------------------//
+    // setMaxInvolvingLength //
+    //-----------------------//
+    public void setMaxInvolvingLength (Scale.Fraction frac)
+    {
+        params.maxInvolvingLength = scale.toPixels(frac);
+    }
+
+    //-----------------------//
+    // setMaxOverlapDeltaPos //
+    //-----------------------//
+    public void setMaxOverlapDeltaPos (Scale.Fraction frac)
+    {
+        params.maxOverlapDeltaPos = scale.toPixels(frac);
+    }
+
+    //-----------------------//
+    // setMaxOverlapDeltaPos //
+    //-----------------------//
+    public void setMaxOverlapDeltaPos (Scale.LineFraction lFrac)
+    {
+        params.maxOverlapDeltaPos = scale.toPixels(lFrac);
+    }
+
+    //--------------------//
+    // setMaxOverlapSpace //
+    //--------------------//
+    public void setMaxOverlapSpace (Scale.Fraction frac)
+    {
+        params.maxOverlapSpace = scale.toPixels(frac);
+    }
+
+    //--------------------//
+    // setMaxOverlapSpace //
+    //--------------------//
+    public void setMaxOverlapSpace (Scale.LineFraction lfrac)
+    {
+        params.maxOverlapSpace = scale.toPixels(lfrac);
+    }
+
+    //--------------//
+    // setMaxPosGap //
+    //--------------//
+    public void setMaxPosGap (Scale.Fraction frac)
+    {
+        params.maxPosGap = scale.toPixels(frac);
+    }
+
+    //--------------//
+    // setMaxPosGap //
+    //--------------//
+    public void setMaxPosGap (Scale.LineFraction lineFrac)
+    {
+        params.maxPosGap = scale.toPixels(lineFrac);
+    }
+
+    //----------------------//
+    // setMaxPosGapForSlope //
+    //----------------------//
+    public void setMaxPosGapForSlope (Scale.Fraction frac)
+    {
+        params.maxPosGapForSlope = scale.toPixels(frac);
+    }
+
+    //-----------------//
+    // setMaxThickness //
+    //-----------------//
+    public void setMaxThickness (int value)
+    {
+        params.maxThickness = value;
+    }
+
+    //-----------------//
+    // setMaxThickness //
+    //-----------------//
+    public void setMaxThickness (Scale.Fraction frac)
+    {
+        params.maxThickness = scale.toPixels(frac);
+    }
+
+    //-----------------//
+    // setMaxThickness //
+    //-----------------//
+    public void setMaxThickness (Scale.LineFraction lineFrac)
+    {
+        params.maxThickness = scale.toPixels(lineFrac);
+    }
+
+    //-------------------------//
+    // setMinCoreSectionLength //
+    //-------------------------//
+    public void setMinCoreSectionLength (int value)
+    {
+        params.minCoreSectionLength = value;
+    }
+
+    //-------------------------//
+    // setMinCoreSectionLength //
+    //-------------------------//
+    public void setMinCoreSectionLength (Scale.Fraction frac)
+    {
+        setMinCoreSectionLength(scale.toPixels(frac));
+    }
+
+    //---------------------//
+    // setMinSectionAspect //
+    //---------------------//
+    public void setMinSectionAspect (double value)
+    {
+        params.minSectionAspect = value;
+    }
+
     //--------------//
     // setProcessed //
     //--------------//
@@ -1039,6 +1039,7 @@ public class FilamentFactory<F extends Filament>
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -1073,7 +1074,7 @@ public class FilamentFactory<F extends Filament>
 
         // Constants specified WRT mean line thickness
         // -------------------------------------------
-        //
+
         private final Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
                 1.5,
                 "Maximum filament thickness WRT mean line height");
@@ -1084,9 +1085,9 @@ public class FilamentFactory<F extends Filament>
 
         // Constants specified WRT mean interline
         // --------------------------------------
-        //
+
         private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
-                1,
+                0.9, // Was 1.0, but shorter length is needed for staves w/ no starting barline
                 "Minimum length for a section to be considered as core");
 
         private final Scale.Fraction maxOverlapDeltaPos = new Scale.Fraction(

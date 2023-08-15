@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -38,44 +38,12 @@ public class LDoubleField
     public static final String DEFAULT_FORMAT = "%.5f";
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Specific display format, if any */
     private final String format;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create an (initially) editable double labeled field with proper
-     * characteristics
-     *
-     * @param label  string for the label text
-     * @param tip    related tool tip text
-     * @param format specific display format
-     */
-    public LDoubleField (String label,
-                         String tip,
-                         String format)
-    {
-        this(true, label, tip, format);
-    }
 
-    //--------------//
-    // LDoubleField //
-    //--------------//
-    /**
-     * Create an (initially) editable double labeled field with proper
-     * characteristics
-     *
-     * @param label string for the label text
-     * @param tip   related tool tip text
-     */
-    public LDoubleField (String label,
-                         String tip)
-    {
-        this(label, tip, null);
-    }
-
-    //--------------//
-    // LDoubleField //
-    //--------------//
     /**
      * Create a double labeled field with proper characteristics
      *
@@ -90,9 +58,6 @@ public class LDoubleField
         this(editable, label, tip, null);
     }
 
-    //--------------//
-    // LDoubleField //
-    //--------------//
     /**
      * Create a double labeled field with proper characteristics
      *
@@ -110,7 +75,36 @@ public class LDoubleField
         this.format = format;
     }
 
+    /**
+     * Create an (initially) editable double labeled field with proper
+     * characteristics
+     *
+     * @param label string for the label text
+     * @param tip   related tool tip text
+     */
+    public LDoubleField (String label,
+                         String tip)
+    {
+        this(label, tip, null);
+    }
+
+    /**
+     * Create an (initially) editable double labeled field with proper
+     * characteristics
+     *
+     * @param label  string for the label text
+     * @param tip    related tool tip text
+     * @param format specific display format
+     */
+    public LDoubleField (String label,
+                         String tip,
+                         String format)
+    {
+        this(true, label, tip, format);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getValue //
     //----------//

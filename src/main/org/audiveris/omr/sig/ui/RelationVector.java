@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -23,8 +23,8 @@ package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -57,6 +57,7 @@ public class RelationVector
     private static final Logger logger = LoggerFactory.getLogger(RelationVector.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underling sheet. */
     private final Sheet sheet;
 
@@ -67,6 +68,7 @@ public class RelationVector
     private final List<Inter> starts;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a useful vector.
      *
@@ -83,77 +85,6 @@ public class RelationVector
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // extendTo //
-    //----------//
-    /**
-     * Modify vector stopping point.
-     *
-     * @param pt new stopping point
-     */
-    public void extendTo (Point pt)
-    {
-        line.setLine(line.getP1(), pt);
-    }
-
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Process the vector into a relation.
-     */
-    public void process ()
-    {
-        final Point p2 = PointUtil.rounded(line.getP2());
-        final List<Inter> stops = sheet.getInterIndex().getContainingEntities(p2);
-
-        if (!stops.isEmpty()) {
-            stops.removeAll(starts); // No looping vector!
-        }
-
-        if (stops.isEmpty()) {
-            return;
-        }
-
-        Collections.sort(stops, Inters.membersFirst);
-        logger.debug("process starts:{} stops{}", starts, stops);
-
-        for (Inter start : starts) {
-            for (Inter stop : stops) {
-                if (checkCrossSystemConnection(start, stop)) {
-                    return;
-                }
-
-                for (boolean reverse : new boolean[]{false, true}) {
-                    final Inter source = reverse ? stop : start;
-                    final Inter target = reverse ? start : stop;
-                    final Set<Class<? extends Relation>> suggestions;
-                    suggestions = Relations.suggestedRelationsBetween(source, target);
-
-                    if (suggestions.isEmpty()) {
-                        continue;
-                    }
-
-                    logger.debug("src:{} tgt:{} suggestions:{}", source, target, suggestions);
-
-                    try {
-                        SIGraph sig = source.getSig();
-                        Class<? extends Relation> relClass = suggestions.iterator().next();
-
-                        // Allocate relation to be added
-                        Relation relation = relClass.getDeclaredConstructor().newInstance();
-                        relation.setManual(true);
-
-                        sheet.getInterController().link(sig, source, target, relation);
-
-                        return;
-                    } catch (Exception ex) {
-                        logger.warn("Error linking {}", ex.toString(), ex);
-                    }
-                }
-            }
-        }
-    }
 
     //----------------------------//
     // checkCrossSystemConnection //
@@ -202,11 +133,88 @@ public class RelationVector
             return false;
         }
 
-        sheet.getInterController().connect(startSlur,
-                                           stopSlur,
-                                           ConnectionTask.Kind.SLUR_CONNECTION);
+        sheet.getInterController().connect(
+                startSlur,
+                stopSlur,
+                ConnectionTask.Kind.SLUR_CONNECTION);
 
         return true;
+    }
+
+    //----------//
+    // extendTo //
+    //----------//
+    /**
+     * Modify vector stopping point.
+     *
+     * @param pt new stopping point
+     */
+    public void extendTo (Point pt)
+    {
+        line.setLine(line.getP1(), pt);
+    }
+
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Process the vector into a relation.
+     */
+    public void process ()
+    {
+        final Point p2 = PointUtil.rounded(line.getP2());
+        final List<Inter> stops = sheet.getInterIndex().getContainingEntities(p2);
+
+        if (!stops.isEmpty()) {
+            stops.removeAll(starts); // No looping vector!
+        }
+
+        if (stops.isEmpty()) {
+            return;
+        }
+
+        Collections.sort(stops, Inters.membersFirst);
+        logger.debug("process starts:{} stops{}", starts, stops);
+
+        for (Inter start : starts) {
+            for (Inter stop : stops) {
+                if (checkCrossSystemConnection(start, stop)) {
+                    return;
+                }
+
+                for (boolean reverse : new boolean[]
+                { false, true }) {
+                    final Inter source = reverse ? stop : start;
+                    final Inter target = reverse ? start : stop;
+                    final Set<Class<? extends Relation>> suggestions;
+                    suggestions = Relations.suggestedRelationsBetween(source, target);
+
+                    if (suggestions.isEmpty()) {
+                        continue;
+                    }
+
+                    logger.debug("src:{} tgt:{} suggestions:{}", source, target, suggestions);
+
+                    try {
+                        final SIGraph sig = source.getSig();
+                        final Class<? extends Relation> relClass = suggestions.iterator().next();
+
+                        // Allocate relation to be added
+                        final Relation relation = relClass.getDeclaredConstructor().newInstance();
+
+                        if (relation.isForbidden(source, target)) {
+                            logger.debug("Not allowed {} src:{} tgt:{}", relClass, source, target);
+                        } else {
+                            relation.setManual(true);
+                            sheet.getInterController().link(sig, source, target, relation);
+                            return;
+                        }
+                    } catch (Exception ex) {
+                        logger.warn("Error linking {}", ex.toString(), ex);
+                    }
+                }
+            }
+        }
     }
 
     //--------//

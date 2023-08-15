@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,21 +24,18 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
-import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.ui.InterEditor;
-import org.audiveris.omr.ui.symbol.BracketSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.font.TextLayout;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
@@ -62,31 +59,34 @@ public class BracketInter
 
     private static final Logger logger = LoggerFactory.getLogger(BracketInter.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    //-------------//
-    // BracketKind //
-    //-------------//
-    /**
-     * Kind of bracket.
-     */
-    public static enum BracketKind
-    {
-        /** With upper serif. */
-        TOP,
-        /** With upper and lower serifs. */
-        BOTH,
-        /** With lower serif. */
-        BOTTOM,
-        /** With no serif. */
-        NONE;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Bracket kind. */
     @XmlAttribute(name = "kind")
     private final BracketKind kind;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private BracketInter ()
+    {
+        super(null, null, (Double) null, null, null);
+        this.kind = null;
+    }
+
+    /**
+     * Creates a new <code>BracketInter</code> object, meant for manual use.
+     *
+     * @param grade inter quality
+     */
+    public BracketInter (Double grade)
+    {
+        super(null, Shape.BRACKET, grade, null, null);
+        this.kind = BracketKind.BOTH;
+    }
+
     /**
      * Creates a new <code>BracketInter</code> object.
      *
@@ -106,27 +106,8 @@ public class BracketInter
         this.kind = kind;
     }
 
-    /**
-     * Creates a new <code>BracketInter</code> object, meant for manual use.
-     *
-     * @param grade inter quality
-     */
-    public BracketInter (Double grade)
-    {
-        super(null, Shape.BRACKET, grade, null, null);
-        this.kind = BracketKind.BOTH;
-    }
-
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private BracketInter ()
-    {
-        super(null, null, (Double) null, null, null);
-        this.kind = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -134,6 +115,77 @@ public class BracketInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-------------//
+    // computeArea //
+    //-------------//
+    @Override
+    protected void computeArea ()
+    {
+        if (sig != null) {
+            final Sheet sheet = sig.getSystem().getSheet();
+            final MusicFamily family = sheet.getStub().getMusicFamily();
+            final MusicFont font = MusicFont.getBaseFont(family, sheet.getScale().getInterline());
+            computeArea(font);
+        }
+    }
+
+    //-------------//
+    // computeArea //
+    //-------------//
+    protected void computeArea (MusicFont font)
+    {
+        final Rectangle2D upperRect = font.layoutShapeByCode(Shape.BRACKET_UPPER_SERIF).getBounds();
+        final Rectangle2D lowerRect = font.layoutShapeByCode(Shape.BRACKET_LOWER_SERIF).getBounds();
+
+        area = AreaUtil.verticalParallelogram(median.getP1(), median.getP2(), getWidth());
+
+        // Top serif?
+        if (kind == BracketKind.TOP || kind == BracketKind.BOTH) {
+            Rectangle2D tr = new Rectangle2D.Double(
+                    median.getX1() - width / 2,
+                    median.getY1() - upperRect.getHeight(),
+                    upperRect.getWidth(),
+                    upperRect.getHeight());
+            area.add(new Area(tr));
+        }
+
+        // Bottom serif?
+        if (kind == BracketKind.BOTTOM || kind == BracketKind.BOTH) {
+            Rectangle2D br = new Rectangle2D.Double(
+                    median.getX1() - width / 2,
+                    median.getY2(),
+                    lowerRect.getWidth(),
+                    lowerRect.getHeight());
+            area.add(new Area(br));
+        }
+
+        bounds = area.getBounds();
+    }
+
+    //------------//
+    // deriveFrom //
+    //------------//
+    @Override
+    public boolean deriveFrom (ShapeSymbol symbol,
+                               Sheet sheet,
+                               MusicFont font,
+                               Point dropLocation)
+    {
+        final Rectangle2D wholeRect = font.layoutShapeByCode(symbol.getShape()).getBounds();
+        final Rectangle2D upperRect = font.layoutShapeByCode(Shape.BRACKET_UPPER_SERIF).getBounds();
+        final double wholeWidth = wholeRect.getWidth();
+        final double trunkHeight = wholeRect.getHeight() - 2 * upperRect.getHeight();
+        width = font.layoutShapeByCode(Shape.THICK_BARLINE).getBounds().getWidth();
+        median = new Line2D.Double(
+                dropLocation.x - wholeWidth / 2 + width / 2,
+                dropLocation.y - trunkHeight / 2,
+                dropLocation.x - wholeWidth / 2 + width / 2,
+                dropLocation.y + trunkHeight / 2);
+        computeArea(font);
+
+        return true;
     }
 
     //---------//
@@ -157,8 +209,9 @@ public class BracketInter
     @Override
     public String getDetails ()
     {
-        StringBuilder sb = new StringBuilder(super.getDetails());
-        sb.append(" ").append(kind);
+        final StringBuilder sb = new StringBuilder(super.getDetails());
+        sb.append((sb.length() != 0) ? " " : "");
+        sb.append(kind);
 
         return sb.toString();
     }
@@ -185,24 +238,6 @@ public class BracketInter
         return kind;
     }
 
-    //------------//
-    // deriveFrom //
-    //------------//
-    @Override
-    public boolean deriveFrom (ShapeSymbol symbol,
-                               Sheet sheet,
-                               MusicFont font,
-                               Point dropLocation)
-    {
-        BracketSymbol bracketSymbol = (BracketSymbol) symbol;
-        Model model = bracketSymbol.getModel(font, dropLocation);
-        median = new Line2D.Double(model.p1, model.p2);
-        width = model.width;
-        computeArea(font);
-
-        return true;
-    }
-
     //-----------//
     // setBounds //
     //-----------//
@@ -215,50 +250,23 @@ public class BracketInter
         this.bounds = (bounds != null) ? new Rectangle(bounds) : null;
     }
 
+    //~ Enumerations -------------------------------------------------------------------------------
+
     //-------------//
-    // computeArea //
+    // BracketKind //
     //-------------//
-    @Override
-    protected void computeArea ()
+    /**
+     * Kind of bracket.
+     */
+    public static enum BracketKind
     {
-        if (sig != null) {
-            Scale scale = sig.getSystem().getSheet().getScale();
-            MusicFont font = MusicFont.getBaseFont(scale.getInterline());
-            computeArea(font);
-        }
-    }
-
-    //-------------//
-    // computeArea //
-    //-------------//
-    protected void computeArea (MusicFont font)
-    {
-        TextLayout upperLayout = font.layout(Symbols.SYMBOL_BRACKET_UPPER_SERIF.getString());
-        Rectangle2D upperRect = upperLayout.getBounds();
-
-        TextLayout lowerLayout = font.layout(Symbols.SYMBOL_BRACKET_LOWER_SERIF.getString());
-        Rectangle2D lowerRect = lowerLayout.getBounds();
-
-        area = AreaUtil.verticalParallelogram(median.getP1(), median.getP2(), getWidth());
-
-        // Top serif?
-        if (kind == BracketKind.TOP || kind == BracketKind.BOTH) {
-            Rectangle2D tr = new Rectangle2D.Double(median.getX1() - width / 2,
-                                                    median.getY1() + upperRect.getY(),
-                                                    upperRect.getWidth(),
-                                                    -upperRect.getY());
-            area.add(new Area(tr));
-        }
-
-        // Bottom serif?
-        if (kind == BracketKind.BOTTOM || kind == BracketKind.BOTH) {
-            Rectangle2D br = new Rectangle2D.Double(median.getX1() - width / 2,
-                                                    median.getY2(),
-                                                    lowerRect.getWidth(),
-                                                    lowerRect.getHeight() + lowerRect.getY());
-            area.add(new Area(br));
-        }
-
-        bounds = area.getBounds();
+        /** With upper serif. */
+        TOP,
+        /** With upper and lower serifs. */
+        BOTH,
+        /** With lower serif. */
+        BOTTOM,
+        /** With no serif. */
+        NONE;
     }
 }

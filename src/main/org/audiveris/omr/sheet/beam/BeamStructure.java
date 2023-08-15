@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -36,7 +36,8 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.sheet.beam.BeamsBuilder.ItemParameters;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 import org.audiveris.omr.util.Vip;
 
 import org.slf4j.Logger;
@@ -46,7 +47,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -59,6 +61,7 @@ import java.util.TreeMap;
 /**
  * Class <code>BeamStructure</code> handles one or several {@link BeamLine} instances,
  * all retrieved from a single glyph.
+ * <p>
  * This is a private working companion of {@link BeamsBuilder}.
  *
  * @author Hervé Bitteur
@@ -73,10 +76,14 @@ public class BeamStructure
     private static final Logger logger = LoggerFactory.getLogger(BeamStructure.class);
 
     /** Comparator on abscissae. */
-    public static final Comparator<BeamStructure> byAbscissa = (BeamStructure b1, BeamStructure b2)
-            -> Integer.compare(b1.getGlyph().getBounds().x, b2.getGlyph().getBounds().x);
+    public static final Comparator<BeamStructure> byAbscissa = (b1,
+                                                                b2) -> Integer.compare(
+                                                                        b1.getGlyph().getBounds().x,
+                                                                        b2.getGlyph()
+                                                                                .getBounds().x);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying glyph. */
     private final Glyph glyph;
 
@@ -99,6 +106,7 @@ public class BeamStructure
     private boolean vip;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>BeamStructure</code> object.
      *
@@ -117,14 +125,18 @@ public class BeamStructure
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // adjustSides //
     //-------------//
     /**
      * Adjust abscissa of horizontal sides.
-     * Do this only for limits touching left or right side of the glyph.
-     * In practice, if a limit is close to glyph side, it's a full beam, we extend it to glyph side.
-     * Otherwise, it's not a full beam so we leave this side as it is.
+     * <p>
+     * Do this only for limits touching left or right side of the glyph, because in practice:
+     * <ul>
+     * <li>If a limit is close to glyph side, it's a full beam, we extend it to glyph side.
+     * <li>Otherwise, it's not a full beam so we leave this side as it is.
+     * </ul>
      */
     public void adjustSides ()
     {
@@ -182,6 +194,125 @@ public class BeamStructure
         }
 
         return maxItemGap;
+    }
+
+    //---------------------//
+    // completeBorderLines //
+    //---------------------//
+    /**
+     * Add or extend observed border lines.
+     * Beam items may be merged due to stuck pixels, resulting in missing (portions of) borders.
+     * In theory, we should have pairs of top & bottom borders with identical length, each pair
+     * corresponding to a beam item.
+     *
+     * @param yDir        -1 for going upward, +1 downward
+     * @param globalSlope global structure slope
+     * @param baseMap     (input/output) configuration of base lines
+     * @param otherMap    (input/output) configuration of other lines
+     */
+    private void completeBorderLines (double yDir,
+                                      double globalSlope,
+                                      SortedMap<Double, Line2D> baseMap,
+                                      SortedMap<Double, Line2D> otherMap)
+    {
+        double dy = yDir * params.typicalHeight;
+
+        // For each base border line, look for corresponding other border line
+        for (Entry<Double, Line2D> baseEntry : baseMap.entrySet()) {
+            Line2D base = baseEntry.getValue();
+            double targetY = baseEntry.getKey() + dy;
+            Entry<Double, Line2D> otherEntry = lookupLine(targetY, otherMap);
+
+            if (otherEntry == null) {
+                // Create a brand new map entry
+                otherMap.put(
+                        targetY,
+                        new Line2D.Double(
+                                base.getX1(),
+                                base.getY1() + dy,
+                                base.getX2(),
+                                base.getY2() + dy));
+            } else {
+                // Extend the map entry if needed
+                Line2D other = otherEntry.getValue();
+                double xMid = (other.getX1() + other.getX2()) / 2;
+                double yMid = (other.getY1() + other.getY2()) / 2;
+                double height = yMid - LineUtil.yAtX(base, xMid);
+                Point2D p1 = (base.getX1() < other.getX1()) ? new Point2D.Double(
+                        base.getX1(),
+                        base.getY1() + height) : other.getP1();
+                Point2D p2 = (base.getX2() > other.getX2()) ? new Point2D.Double(
+                        base.getX2(),
+                        base.getY2() + height) : other.getP2();
+                double x = (p1.getX() + p2.getX()) / 2;
+                double y = LineUtil.yAtX(p1, p2, x);
+                double offset = y - LineUtil.yAtX(center, globalSlope, x);
+
+                otherMap.remove(otherEntry.getKey());
+                otherMap.put(offset, new Line2D.Double(p1, p2));
+            }
+        }
+    }
+
+    //-----------------------//
+    // computeGlobalDistance //
+    //-----------------------//
+    /**
+     * Compute the observed average distance to border line
+     *
+     * @param lines all border lines (top & bottom)
+     * @return the average distance to straight line
+     */
+    private double computeGlobalDistance (List<BasicLine> lines)
+    {
+        int sumPoints = 0; // Number of points measured
+        double sumDist = 0; // Cumulated distance
+
+        for (BasicLine line : lines) {
+            sumPoints += line.getNumberOfPoints();
+            sumDist += (line.getMeanDistance() * line.getNumberOfPoints());
+        }
+
+        return sumDist / sumPoints;
+    }
+
+    //--------------------//
+    // computeGlobalSlope //
+    //--------------------//
+    /**
+     * Compute the leading slope among all borders found.
+     * We consider the section by decreasing width, and compute the mean slope on first sections.
+     * We stop as soon as a section border diverges strongly from the mean slope.
+     *
+     * @param sectionBorders the various sections borders (on one side)
+     * @return the most probable global slope
+     */
+    private double computeGlobalSlope (List<SectionBorder> sectionBorders)
+    {
+        // Use mean slope of longest sections
+        Collections.sort(sectionBorders, SectionBorder.byReverseLength);
+
+        double sumSlope = 0;
+        int sumPoints = 0;
+
+        for (SectionBorder border : sectionBorders) {
+            BasicLine line = border.line;
+            double lineSlope = line.getSlope();
+
+            if (sumPoints > 0) {
+                // Check if this line diverges from current mean slope value
+                double meanSlope = sumSlope / sumPoints;
+
+                if (Math.abs(lineSlope - meanSlope) > constants.maxSectionSlopeGap.getValue()) {
+                    break;
+                }
+            }
+
+            sumPoints += line.getNumberOfPoints();
+            sumSlope += (line.getNumberOfPoints() * line.getSlope());
+        }
+
+        return sumSlope / sumPoints;
     }
 
     //---------------//
@@ -349,275 +480,6 @@ public class BeamStructure
         }
     }
 
-    //----------//
-    // getGlyph //
-    //----------//
-    /**
-     * @return the glyph
-     */
-    public Glyph getGlyph ()
-    {
-        return glyph;
-    }
-
-    //----------//
-    // getLines //
-    //----------//
-    /**
-     * @return the lines
-     */
-    public List<BeamLine> getLines ()
-    {
-        return lines;
-    }
-
-    //-----------//
-    // getParams //
-    //-----------//
-    /**
-     * Report the ItemParameters used.
-     *
-     * @return the item params
-     */
-    public ItemParameters getParams ()
-    {
-        return params;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Compute the structure width, based on borders points only.
-     *
-     * @return a better width
-     */
-    public double getWidth ()
-    {
-        double xLeft = Double.MAX_VALUE;
-        double xRight = Double.MIN_VALUE;
-
-        for (BeamLine line : lines) {
-            xLeft = Math.min(xLeft, line.median.getX1());
-            xRight = Math.max(xRight, line.median.getX2());
-        }
-
-        return xRight - xLeft + 1;
-    }
-
-    //-------//
-    // isVip //
-    //-------//
-    @Override
-    public boolean isVip ()
-    {
-        return vip;
-    }
-
-    //--------//
-    // setVip //
-    //--------//
-    @Override
-    public void setVip (boolean vip)
-    {
-        this.vip = vip;
-    }
-
-    //------------//
-    // splitLines //
-    //------------//
-    /**
-     * Look for several beams stuck in a single line and split them if necessary.
-     */
-    public void splitLines ()
-    {
-        final double meanHeight = glyph.getMeanThickness(Orientation.HORIZONTAL);
-        final double ratio = meanHeight / params.typicalHeight;
-        final int targetCount = (int) Math.rint(ratio);
-
-        // Typical case: 2 beams are stuck (beamCount = 1, targetCount = 2)
-        // TODO: what if beamCount = 1 and targetCount = 3 or more?
-        // TODO: what if beamCount = 2 and targetCount = 3 or more?
-        if ((lines.size() > 1) || (targetCount <= lines.size())) {
-            return;
-        }
-
-        // Create the middle lines with proper vertical gap
-        BeamLine line = lines.get(0);
-        double gutter = line.height - (2 * params.typicalHeight);
-
-        if (gutter < 0) {
-            if (glyph.isVip()) {
-                logger.info("VIP glyph#{} not enough room for 2 beams", glyph.getId());
-            }
-
-            return;
-        }
-
-        double newHeight = (line.height - gutter) / 2;
-        final Line2D median = line.median;
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(
-                    String.format(
-                            "Stuck beams #%d %d vs %.2f, gutter:%.1f",
-                            glyph.getId(),
-                            lines.size(),
-                            ratio,
-                            gutter));
-        }
-
-        // Insert new lines
-        double dy = (newHeight + gutter) / 2;
-        Line2D topMedian = new Line2D.Double(
-                median.getX1(),
-                median.getY1() - dy,
-                median.getX2(),
-                median.getY2() - dy);
-        Line2D botMedian = new Line2D.Double(
-                median.getX1(),
-                median.getY1() + dy,
-                median.getX2(),
-                median.getY2() + dy);
-        lines.clear();
-        lines.add(new BeamLine(topMedian, newHeight));
-        lines.add(new BeamLine(botMedian, newHeight));
-        logger.debug("Adjusted {}", this);
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("beamGlyph#").append(glyph.getId());
-
-        for (BeamLine line : lines) {
-            sb.append(" [").append(line).append("]");
-        }
-
-        return sb.toString();
-    }
-
-    //---------------------//
-    // completeBorderLines //
-    //---------------------//
-    /**
-     * Add or extend observed border lines.
-     * Beam items may be merged due to stuck pixels, resulting in missing (portions of) borders.
-     * In theory, we should have pairs of top & bottom borders with identical length, each pair
-     * corresponding to a beam item.
-     *
-     * @param yDir        -1 for going upward, +1 downward
-     * @param globalSlope global structure slope
-     * @param baseMap     (input/output) configuration of base lines
-     * @param otherMap    (input/output) configuration of other lines
-     */
-    private void completeBorderLines (double yDir,
-                                      double globalSlope,
-                                      SortedMap<Double, Line2D> baseMap,
-                                      SortedMap<Double, Line2D> otherMap)
-    {
-        double dy = yDir * params.typicalHeight;
-
-        // For each base border line, look for corresponding other border line
-        for (Entry<Double, Line2D> baseEntry : baseMap.entrySet()) {
-            Line2D base = baseEntry.getValue();
-            double targetY = baseEntry.getKey() + dy;
-            Entry<Double, Line2D> otherEntry = lookupLine(targetY, otherMap);
-
-            if (otherEntry == null) {
-                // Create a brand new map entry
-                otherMap.put(
-                        targetY,
-                        new Line2D.Double(
-                                base.getX1(),
-                                base.getY1() + dy,
-                                base.getX2(),
-                                base.getY2() + dy));
-            } else {
-                // Extend the map entry if needed
-                Line2D other = otherEntry.getValue();
-                double xMid = (other.getX1() + other.getX2()) / 2;
-                double yMid = (other.getY1() + other.getY2()) / 2;
-                double height = yMid - LineUtil.yAtX(base, xMid);
-                Point2D p1 = (base.getX1() < other.getX1())
-                        ? new Point2D.Double(base.getX1(), base.getY1() + height) : other.getP1();
-                Point2D p2 = (base.getX2() > other.getX2())
-                        ? new Point2D.Double(base.getX2(), base.getY2() + height) : other.getP2();
-                double x = (p1.getX() + p2.getX()) / 2;
-                double y = LineUtil.yAtX(p1, p2, x);
-                double offset = y - LineUtil.yAtX(center, globalSlope, x);
-
-                otherMap.remove(otherEntry.getKey());
-                otherMap.put(offset, new Line2D.Double(p1, p2));
-            }
-        }
-    }
-
-    //-----------------------//
-    // computeGlobalDistance //
-    //-----------------------//
-    /**
-     * Compute the observed average distance to border line
-     *
-     * @param lines all border lines (top & bottom)
-     * @return the average distance to straight line
-     */
-    private double computeGlobalDistance (List<BasicLine> lines)
-    {
-        int sumPoints = 0; // Number of points measured
-        double sumDist = 0; // Cumulated distance
-
-        for (BasicLine line : lines) {
-            sumPoints += line.getNumberOfPoints();
-            sumDist += (line.getMeanDistance() * line.getNumberOfPoints());
-        }
-
-        return sumDist / sumPoints;
-    }
-
-    //--------------------//
-    // computeGlobalSlope //
-    //--------------------//
-    /**
-     * Compute the leading slope among all borders found.
-     * We consider the section by decreasing width, and compute the mean slope on first sections.
-     * We stop as soon as a section border diverges strongly from the mean slope.
-     *
-     * @param sectionBorders the various sections borders (on one side)
-     * @return the most probable global slope
-     */
-    private double computeGlobalSlope (List<SectionBorder> sectionBorders)
-    {
-        // Use mean slope of longest sections
-        Collections.sort(sectionBorders, SectionBorder.byReverseLength);
-
-        double sumSlope = 0;
-        int sumPoints = 0;
-
-        for (SectionBorder border : sectionBorders) {
-            BasicLine line = border.line;
-            double lineSlope = line.getSlope();
-
-            if (sumPoints > 0) {
-                // Check if this line diverges from current mean slope value
-                double meanSlope = sumSlope / sumPoints;
-
-                if (Math.abs(lineSlope - meanSlope) > constants.maxSectionSlopeGap.getValue()) {
-                    break;
-                }
-            }
-
-            sumPoints += line.getNumberOfPoints();
-            sumSlope += (line.getNumberOfPoints() * line.getSlope());
-        }
-
-        return sumSlope / sumPoints;
-    }
-
     //----------------//
     // getBorderLines //
     //----------------//
@@ -705,6 +567,17 @@ public class BeamStructure
         return borderLines;
     }
 
+    //----------//
+    // getGlyph //
+    //----------//
+    /**
+     * @return the glyph
+     */
+    public Glyph getGlyph ()
+    {
+        return glyph;
+    }
+
     //------------------//
     // getGlyphSections //
     //------------------//
@@ -718,6 +591,17 @@ public class BeamStructure
         }
 
         return glyphSections;
+    }
+
+    //----------//
+    // getLines //
+    //----------//
+    /**
+     * @return the lines
+     */
+    public List<BeamLine> getLines ()
+    {
+        return lines;
     }
 
     //-------------//
@@ -738,6 +622,49 @@ public class BeamStructure
         }
 
         return map;
+    }
+
+    //-----------//
+    // getParams //
+    //-----------//
+    /**
+     * Report the ItemParameters used.
+     *
+     * @return the item params
+     */
+    public ItemParameters getParams ()
+    {
+        return params;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Compute the structure width, based on borders points only.
+     *
+     * @return a better width
+     */
+    public double getWidth ()
+    {
+        double xLeft = Double.MAX_VALUE;
+        double xRight = Double.MIN_VALUE;
+
+        for (BeamLine line : lines) {
+            xLeft = Math.min(xLeft, line.median.getX1());
+            xRight = Math.max(xRight, line.median.getX2());
+        }
+
+        return xRight - xLeft + 1;
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    @Override
+    public boolean isVip ()
+    {
+        return vip;
     }
 
     //------------//
@@ -842,6 +769,15 @@ public class BeamStructure
         }
     }
 
+    //--------//
+    // setVip //
+    //--------//
+    @Override
+    public void setVip (boolean vip)
+    {
+        this.vip = vip;
+    }
+
     //----------------//
     // slopeOfLongest //
     //----------------//
@@ -862,7 +798,86 @@ public class BeamStructure
         return bestLine.getSlope();
     }
 
+    //------------//
+    // splitLines //
+    //------------//
+    /**
+     * Look for several beams stuck in a single line and split them if necessary.
+     */
+    public void splitLines ()
+    {
+        final double meanHeight = glyph.getMeanThickness(Orientation.HORIZONTAL);
+        final double ratio = meanHeight / params.typicalHeight;
+        final int targetCount = (int) Math.rint(ratio);
+
+        // Typical case: 2 beams are stuck (beamCount = 1, targetCount = 2)
+        // TODO: what if beamCount = 1 and targetCount = 3 or more?
+        // TODO: what if beamCount = 2 and targetCount = 3 or more?
+        if ((lines.size() > 1) || (targetCount <= lines.size())) {
+            return;
+        }
+
+        // Create the middle lines with proper vertical gap
+        BeamLine line = lines.get(0);
+        double gutter = line.height - (2 * params.typicalHeight);
+
+        if (gutter < 0) {
+            if (glyph.isVip()) {
+                logger.info("VIP glyph#{} not enough room for 2 beams", glyph.getId());
+            }
+
+            return;
+        }
+
+        double newHeight = (line.height - gutter) / 2;
+        final Line2D median = line.median;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(
+                    String.format(
+                            "Stuck beams #%d %d vs %.2f, gutter:%.1f",
+                            glyph.getId(),
+                            lines.size(),
+                            ratio,
+                            gutter));
+        }
+
+        // Insert new lines
+        double dy = (newHeight + gutter) / 2;
+        Line2D topMedian = new Line2D.Double(
+                median.getX1(),
+                median.getY1() - dy,
+                median.getX2(),
+                median.getY2() - dy);
+        Line2D botMedian = new Line2D.Double(
+                median.getX1(),
+                median.getY1() + dy,
+                median.getX2(),
+                median.getY2() + dy);
+        lines.clear();
+        lines.add(new BeamLine(topMedian, newHeight));
+        lines.add(new BeamLine(botMedian, newHeight));
+        logger.debug("Adjusted {}", this);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("beamGlyph#").append(glyph.getId());
+
+        for (BeamLine line : lines) {
+            sb.append(" [").append(line).append("]");
+        }
+
+        return sb.toString();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -890,11 +905,15 @@ public class BeamStructure
     {
 
         // Sort by increasing ordinate offset WRT glyph reference line
-        static Comparator<SectionBorder> byOrdinateOffset = (SectionBorder o1, SectionBorder o2)
-                -> Double.compare(o1.dy, o2.dy);
+        static Comparator<SectionBorder> byOrdinateOffset = (SectionBorder o1,
+                                                             SectionBorder o2) -> Double.compare(
+                                                                     o1.dy,
+                                                                     o2.dy);
 
-        static Comparator<SectionBorder> byReverseLength = (SectionBorder o1, SectionBorder o2)
-                -> Integer.compare(o2.section.getRunCount(), o1.section.getRunCount());
+        static Comparator<SectionBorder> byReverseLength = (SectionBorder o1,
+                                                            SectionBorder o2) -> Integer.compare(
+                                                                    o2.section.getRunCount(),
+                                                                    o1.section.getRunCount());
 
         final Section section; // Underlying section
 

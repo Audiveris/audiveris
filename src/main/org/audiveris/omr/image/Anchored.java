@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
+import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.*;
+
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
@@ -31,59 +36,8 @@ import java.awt.geom.Rectangle2D;
  */
 public interface Anchored
 {
-    //~ Enumerations -------------------------------------------------------------------------------
-
-    /** Specifies a reference relative location. */
-    public enum Anchor
-    {
-        /**
-         * Area Center.
-         */
-        CENTER("C"),
-        /**
-         * X at symbol left abscissa, Y at middle.
-         */
-        MIDDLE_LEFT("ML"),
-        /**
-         * X at symbol right abscissa, Y at middle.
-         */
-        MIDDLE_RIGHT("MR"),
-        /**
-         * X at symbol left stem, Y at middle.
-         */
-        LEFT_STEM("LS"),
-        /**
-         * X at symbol left stem, Y at low stem ordinate.
-         */
-        BOTTOM_LEFT_STEM("BLS"),
-        /**
-         * X at symbol right stem, Y at middle.
-         */
-        RIGHT_STEM("RS"),
-        /**
-         * X at symbol right stem, Y at high stem ordinate.
-         */
-        TOP_RIGHT_STEM("TRS");
-
-        final String abbreviation;
-
-        Anchor (String a)
-        {
-            abbreviation = a;
-        }
-
-        /**
-         * Report the abbreviation based on anchor
-         *
-         * @return anchor abbreviation
-         */
-        public String abbreviation ()
-        {
-            return abbreviation;
-        }
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Report the rectangular bounds when positioning anchor at location (x,y).
      *
@@ -128,4 +82,92 @@ public interface Anchored
     void putOffset (Anchor anchor,
                     double dx,
                     double dy);
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    /** Specifies a reference relative location. */
+    public enum Anchor
+    {
+        /**
+         * Area Center.
+         */
+        CENTER("C"),
+        /**
+         * X at symbol left abscissa, Y at middle.
+         */
+        MIDDLE_LEFT("ML"),
+        /**
+         * X at symbol right abscissa, Y at middle.
+         */
+        MIDDLE_RIGHT("MR"),
+        /**
+         * X at symbol left stem, Y at middle.
+         */
+        LEFT_STEM("LS"),
+        /**
+         * X at symbol left stem, Y at high stem ordinate.
+         */
+        TOP_LEFT_STEM("TLS"),
+        /**
+         * X at symbol left stem, Y at low stem ordinate.
+         */
+        BOTTOM_LEFT_STEM("BLS"),
+        /**
+         * X at symbol right stem, Y at middle.
+         */
+        RIGHT_STEM("RS"),
+        /**
+         * X at symbol right stem, Y at high stem ordinate.
+         */
+        TOP_RIGHT_STEM("TRS"),
+        /**
+         * X at symbol right stem, Y at low stem ordinate.
+         */
+        BOTTOM_RIGHT_STEM("BRS");
+
+        final String abbreviation;
+
+        Anchor (String a)
+        {
+            abbreviation = a;
+        }
+
+        /**
+         * Report the abbreviation based on anchor
+         *
+         * @return anchor abbreviation
+         */
+        public String abbreviation ()
+        {
+            return abbreviation;
+        }
+
+        /**
+         * Report the horizontal side of this anchor
+         *
+         * @return anchor horizontal side, null for center abscissa
+         */
+        public HorizontalSide hSide ()
+        {
+            return switch (this) {
+            case MIDDLE_LEFT, LEFT_STEM, TOP_LEFT_STEM, BOTTOM_LEFT_STEM -> LEFT;
+            case CENTER -> null;
+            case TOP_RIGHT_STEM, MIDDLE_RIGHT, RIGHT_STEM, BOTTOM_RIGHT_STEM -> RIGHT;
+            };
+        }
+
+        /**
+         * Report the vertical side of this anchor
+         *
+         * @return anchor vertical side, null for anchors on center ordinate
+         */
+        public VerticalSide vSide ()
+        {
+            return switch (this) {
+            case TOP_LEFT_STEM, TOP_RIGHT_STEM -> TOP;
+            case MIDDLE_LEFT, LEFT_STEM, CENTER, RIGHT_STEM, MIDDLE_RIGHT -> null;
+            case BOTTOM_LEFT_STEM, BOTTOM_RIGHT_STEM -> BOTTOM;
+            };
+        }
+    }
 }

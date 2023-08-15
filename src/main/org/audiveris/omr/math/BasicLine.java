@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,13 +21,17 @@
 // </editor-fold>
 package org.audiveris.omr.math;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.hypot;
+import static java.lang.Math.rint;
+import static java.lang.Math.sqrt;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import static java.lang.Math.*;
 import java.util.Collection;
 
 /**
@@ -44,6 +48,7 @@ public final class BasicLine
     private static final Logger logger = LoggerFactory.getLogger(BasicLine.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Flag to indicate that data needs to be recomputed. */
     private boolean dirty;
 
@@ -90,6 +95,7 @@ public final class BasicLine
     private double yMax = Double.MIN_VALUE;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a line, with no data.
      * The line is no yet usable, except for including further defining points.
@@ -97,6 +103,29 @@ public final class BasicLine
     public BasicLine ()
     {
         reset();
+    }
+
+    /**
+     * Create a line (and immediately compute its coefficients), as the least square
+     * fitted line on the provided points.
+     *
+     * @param points collection of points
+     */
+    public BasicLine (Collection<? extends Point2D> points)
+    {
+        this();
+
+        // Checks for parameter validity
+        if ((points == null) || (points.size() < 2)) {
+            throw new IllegalArgumentException("Points collection is null or too small");
+        }
+
+        // Include all defining points
+        for (Point2D point : points) {
+            includePoint(point.getX(), point.getY());
+        }
+
+        checkLineParameters();
     }
 
     /**
@@ -134,30 +163,8 @@ public final class BasicLine
         checkLineParameters();
     }
 
-    /**
-     * Create a line (and immediately compute its coefficients), as the least square
-     * fitted line on the provided points.
-     *
-     * @param points collection of points
-     */
-    public BasicLine (Collection<? extends Point2D> points)
-    {
-        this();
-
-        // Checks for parameter validity
-        if ((points == null) || (points.size() < 2)) {
-            throw new IllegalArgumentException("Points collection is null or too small");
-        }
-
-        // Include all defining points
-        for (Point2D point : points) {
-            includePoint(point.getX(), point.getY());
-        }
-
-        checkLineParameters();
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------------//
     // checkLineParameters //
     //---------------------//
@@ -175,6 +182,42 @@ public final class BasicLine
         if (Double.isNaN(a) || Double.isNaN(b) || Double.isNaN(c)) {
             throw new UndefinedLineException("Line parameters not properly set");
         }
+    }
+
+    //---------//
+    // compute //
+    //---------//
+    /**
+     * Compute the line equation, based on the cumulated number of points
+     */
+    private void compute ()
+    {
+        dirty = false;
+
+        if (n < 2) {
+            throw new UndefinedLineException("Not enough defining points : " + n);
+        }
+
+        // Make a choice between horizontal vs vertical
+        double hDen = (n * sx2) - (sx * sx);
+        double vDen = (n * sy2) - (sy * sy);
+        logger.trace("hDen={} vDen={}", hDen, vDen);
+
+        if (abs(hDen) >= abs(vDen)) {
+            // Use a rather horizontal orientation, y = mx +p
+            isRatherVertical = false;
+            a = ((n * sxy) - (sx * sy)) / hDen;
+            b = -1d;
+            c = ((sy * sx2) - (sx * sxy)) / hDen;
+        } else {
+            // Use a rather vertical orientation, x = my +p
+            isRatherVertical = true;
+            a = -1d;
+            b = ((n * sxy) - (sx * sy)) / vDen;
+            c = ((sx * sy2) - (sy * sxy)) / vDen;
+        }
+
+        normalize();
     }
 
     //------------//
@@ -203,6 +246,26 @@ public final class BasicLine
         return distanceOf(point.getX(), point.getY());
     }
 
+    //------//
+    // getA // Meant for test
+    //------//
+    double getA ()
+    {
+        checkLineParameters();
+
+        return a;
+    }
+
+    //------//
+    // getB // Meant for test
+    //------//
+    double getB ()
+    {
+        checkLineParameters();
+
+        return b;
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -210,6 +273,16 @@ public final class BasicLine
     public Rectangle getBounds ()
     {
         return toDouble().getBounds();
+    }
+
+    //------//
+    // getC // Meant for test
+    //------//
+    double getC ()
+    {
+        checkLineParameters();
+
+        return c;
     }
 
     //------------------//
@@ -258,8 +331,8 @@ public final class BasicLine
 
         checkLineParameters();
 
-        double distSq = ((a * a * sx2) + (b * b * sy2) + (c * c * n)
-                                 + (2 * a * b * sxy) + (2 * a * c * sx) + (2 * b * c * sy)) / n;
+        double distSq = ((a * a * sx2) + (b * b * sy2) + (c * c * n) + (2 * a * b * sxy) + (2 * a
+                * c * sx) + (2 * b * c * sy)) / n;
 
         if (distSq < 0) {
             distSq = 0;
@@ -342,19 +415,6 @@ public final class BasicLine
     //--------------//
     // includePoint //
     //--------------//
-    /**
-     * Add a defining point to the line.
-     *
-     * @param point the point to include
-     */
-    public void includePoint (Point2D point)
-    {
-        includePoint(point.getX(), point.getY());
-    }
-
-    //--------------//
-    // includePoint //
-    //--------------//
     @Override
     public void includePoint (double x,
                               double y)
@@ -374,6 +434,33 @@ public final class BasicLine
         yMax = Math.max(yMax, y);
 
         dirty = true;
+    }
+
+    //--------------//
+    // includePoint //
+    //--------------//
+    /**
+     * Add a defining point to the line.
+     *
+     * @param point the point to include
+     */
+    public void includePoint (Point2D point)
+    {
+        includePoint(point.getX(), point.getY());
+    }
+
+    //-----------//
+    // normalize //
+    //-----------//
+    /**
+     * Compute the distance normalizing factor
+     */
+    private void normalize ()
+    {
+        double norm = hypot(a, b);
+        a /= norm;
+        b /= norm;
+        c /= norm;
     }
 
     //-------//
@@ -421,6 +508,30 @@ public final class BasicLine
         return that;
     }
 
+    //--------------//
+    // toCenterLine //
+    //--------------//
+    /**
+     * Generate a Line2D.Double instance that matches line precise end points,
+     * translated to points centers and extended to pixel limits.
+     *
+     * @return a Line2D.Double instance
+     */
+    public Line2D.Double toCenterLine ()
+    {
+        try {
+            checkLineParameters();
+
+            if (isRatherVertical) {
+                return new Line2D.Double(xAtY(yMin) + 0.5, yMin, xAtY(yMax) + 0.5, yMax + 1);
+            } else {
+                return new Line2D.Double(xMin, yAtX(xMin) + 0.5, xMax + 1, yAtX(xMax) + 0.5);
+            }
+        } catch (UndefinedLineException ulex) {
+            return null; // Not enough points
+        }
+    }
+
     //----------//
     // toDouble //
     //----------//
@@ -452,30 +563,6 @@ public final class BasicLine
     public GeoPath toPath ()
     {
         return new GeoPath(toDouble());
-    }
-
-    //--------------//
-    // toCenterLine //
-    //--------------//
-    /**
-     * Generate a Line2D.Double instance that matches line precise end points,
-     * translated to points centers and extended to pixel limits.
-     *
-     * @return a Line2D.Double instance
-     */
-    public Line2D.Double toCenterLine ()
-    {
-        try {
-            checkLineParameters();
-
-            if (isRatherVertical) {
-                return new Line2D.Double(xAtY(yMin) + 0.5, yMin, xAtY(yMax) + 0.5, yMax + 1);
-            } else {
-                return new Line2D.Double(xMin, yAtX(xMin) + 0.5, xMax + 1, yAtX(xMax) + 0.5);
-            }
-        } catch (UndefinedLineException ulex) {
-            return null; // Not enough points
-        }
     }
 
     //----------//
@@ -593,85 +680,5 @@ public final class BasicLine
     public double yAtXExt (double x)
     {
         return yAtX(x);
-    }
-
-    //---------//
-    // compute //
-    //---------//
-    /**
-     * Compute the line equation, based on the cumulated number of points
-     */
-    private void compute ()
-    {
-        dirty = false;
-
-        if (n < 2) {
-            throw new UndefinedLineException("Not enough defining points : " + n);
-        }
-
-        // Make a choice between horizontal vs vertical
-        double hDen = (n * sx2) - (sx * sx);
-        double vDen = (n * sy2) - (sy * sy);
-        logger.trace("hDen={} vDen={}", hDen, vDen);
-
-        if (abs(hDen) >= abs(vDen)) {
-            // Use a rather horizontal orientation, y = mx +p
-            isRatherVertical = false;
-            a = ((n * sxy) - (sx * sy)) / hDen;
-            b = -1d;
-            c = ((sy * sx2) - (sx * sxy)) / hDen;
-        } else {
-            // Use a rather vertical orientation, x = my +p
-            isRatherVertical = true;
-            a = -1d;
-            b = ((n * sxy) - (sx * sy)) / vDen;
-            c = ((sx * sy2) - (sy * sxy)) / vDen;
-        }
-
-        normalize();
-    }
-
-    //-----------//
-    // normalize //
-    //-----------//
-    /**
-     * Compute the distance normalizing factor
-     */
-    private void normalize ()
-    {
-        double norm = hypot(a, b);
-        a /= norm;
-        b /= norm;
-        c /= norm;
-    }
-
-    //------//
-    // getA // Meant for test
-    //------//
-    double getA ()
-    {
-        checkLineParameters();
-
-        return a;
-    }
-
-    //------//
-    // getB // Meant for test
-    //------//
-    double getB ()
-    {
-        checkLineParameters();
-
-        return b;
-    }
-
-    //------//
-    // getC // Meant for test
-    //------//
-    double getC ()
-    {
-        checkLineParameters();
-
-        return c;
     }
 }

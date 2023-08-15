@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,11 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.FormSpecs;
 
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
@@ -43,6 +38,8 @@ import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.UserEvent;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.FixedWidthIcon;
 import org.audiveris.omr.ui.util.Panel;
@@ -50,6 +47,11 @@ import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.FormSpecs;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -82,7 +84,8 @@ public class EvaluationBoard
     private static final Logger logger = LoggerFactory.getLogger(EvaluationBoard.class);
 
     /** Events this board is interested in */
-    private static final Class<?>[] eventsRead = new Class<?>[]{EntityListEvent.class};
+    private static final Class<?>[] eventsRead = new Class<?>[]
+    { EntityListEvent.class };
 
     /** Color for well recognized glyphs */
     private static final Color EVAL_GOOD_COLOR = new Color(100, 200, 100);
@@ -91,6 +94,7 @@ public class EvaluationBoard
     private static final Color EVAL_SOSO_COLOR = new Color(150, 150, 150);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying glyph classifier. */
     protected final Classifier classifier;
 
@@ -111,6 +115,7 @@ public class EvaluationBoard
     protected final boolean isActive;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     //-----------------//
     // EvaluationBoard //
     //-----------------//
@@ -152,39 +157,33 @@ public class EvaluationBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Call-back triggered when Glyph Selection has been modified.
-     *
-     * @param event the (Glyph) Selection
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public void onEvent (UserEvent event)
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
     {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
+        String colSpec = Panel.makeColumns(3);
+        FormLayout layout = new FormLayout(colSpec, "");
+
+        int visibleButtons = Math.min(constants.visibleButtons.getValue(), selector.buttons.size());
+
+        for (int i = 0; i < visibleButtons; i++) {
+            if (i != 0) {
+                layout.appendRow(FormSpecs.LINE_GAP_ROWSPEC);
             }
 
-            // Don't evaluate Added glyph, since this would hide Compound evaluation
-            if (event.hint == SelectionHint.LOCATION_ADD) {
-                return;
-            }
+            layout.appendRow(FormSpecs.PREF_ROWSPEC);
+        }
 
-            if (event instanceof EntityListEvent) {
-                EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
-                Glyph glyph = listEvent.getEntity();
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
+        CellConstraints cst = new CellConstraints();
 
-                if (glyph != null) {
-                    evaluate(glyph);
-                }
-            }
-        } catch (Exception ex) {
-            logger.warn("EvaluationBoard error", ex);
+        for (int i = 0; i < visibleButtons; i++) {
+            int r = (2 * i) + 1; // --------------------------------
+            EvalButton evb = selector.buttons.get(i);
+            builder.add(evb.grade, cst.xy(5, r));
+            builder.add(isActive ? evb.button : evb.field, cst.xyw(7, r, 5));
         }
     }
 
@@ -234,32 +233,39 @@ public class EvaluationBoard
         }
     }
 
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout ()
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Call-back triggered when Glyph Selection has been modified.
+     *
+     * @param event the (Glyph) Selection
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public void onEvent (UserEvent event)
     {
-        String colSpec = Panel.makeColumns(3);
-        FormLayout layout = new FormLayout(colSpec, "");
-
-        int visibleButtons = Math.min(constants.visibleButtons.getValue(), selector.buttons.size());
-
-        for (int i = 0; i < visibleButtons; i++) {
-            if (i != 0) {
-                layout.appendRow(FormSpecs.LINE_GAP_ROWSPEC);
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
             }
 
-            layout.appendRow(FormSpecs.PREF_ROWSPEC);
-        }
+            // Don't evaluate Added glyph, since this would hide Compound evaluation
+            if (event.hint == SelectionHint.LOCATION_ADD) {
+                return;
+            }
 
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
-        CellConstraints cst = new CellConstraints();
+            if (event instanceof EntityListEvent) {
+                EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
+                Glyph glyph = listEvent.getEntity();
 
-        for (int i = 0; i < visibleButtons; i++) {
-            int r = (2 * i) + 1; // --------------------------------
-            EvalButton evb = selector.buttons.get(i);
-            builder.add(evb.grade, cst.xy(5, r));
-            builder.add(isActive ? evb.button : evb.field, cst.xyw(7, r, 5));
+                if (glyph != null) {
+                    evaluate(glyph);
+                }
+            }
+        } catch (Exception ex) {
+            logger.warn("EvaluationBoard error", ex);
         }
     }
 
@@ -280,18 +286,7 @@ public class EvaluationBoard
         }
     }
 
-    //-------------------//
-    // getVisibleButtons //
-    //-------------------//
-    /**
-     * Report the number of buttons in evaluation board.
-     *
-     * @return count of visible buttons
-     */
-    public static int getVisibleButtons ()
-    {
-        return constants.visibleButtons.getValue();
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-----------//
     // evalCount //
@@ -306,87 +301,20 @@ public class EvaluationBoard
         return constants.visibleButtons.getValue();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //----------//
-    // Selector //
-    //----------//
-    protected class Selector
+    //-------------------//
+    // getVisibleButtons //
+    //-------------------//
+    /**
+     * Report the number of buttons in evaluation board.
+     *
+     * @return count of visible buttons
+     */
+    public static int getVisibleButtons ()
     {
-
-        // A collection of EvalButton's
-        final List<EvalButton> buttons = new ArrayList<>();
-
-        public Selector ()
-        {
-            for (int i = 0; i < evalCount(); i++) {
-                buttons.add(new EvalButton());
-            }
-
-            setEvals(null, null);
-        }
-
-        //----------//
-        // setEvals //
-        //----------//
-        /**
-         * Display the evaluations.
-         * Only first evalCount evaluations are displayed.
-         *
-         * @param evals top evaluations sorted from best to worst
-         * @param glyph evaluated glyph, to check forbidden shapes if any
-         */
-        public final void setEvals (Evaluation[] evals,
-                                    Glyph glyph)
-        {
-            // Special case to empty the selector
-            if (evals == null) {
-                for (EvalButton evalButton : buttons) {
-                    evalButton.setEval(null, false);
-                }
-
-                return;
-            }
-
-            boolean enabled = true;
-            double minGrade = constants.minGrade.getValue();
-            int iBound = Math.min(evalCount(), positiveEvals(evals));
-            int i;
-
-            for (i = 0; i < iBound; i++) {
-                Evaluation eval = evals[i];
-
-                // Limitation on shape relevance
-                if (eval.grade < minGrade) {
-                    break;
-                }
-
-                // Active buttons
-                buttons.get(i).setEval(eval, enabled);
-            }
-
-            // Zero the remaining buttons
-            for (; i < evalCount(); i++) {
-                buttons.get(i).setEval(null, false);
-            }
-        }
-
-        /**
-         * Return the number of evaluations with grade strictly positive
-         *
-         * @param evals the evaluations sorted from best to worst
-         * @return the number of evaluations with grade > 0
-         */
-        private int positiveEvals (Evaluation[] evals)
-        {
-            for (int i = 0; i < evals.length; i++) {
-                if (evals[i].grade <= 0) {
-                    return i;
-                }
-            }
-
-            return evals.length;
-        }
+        return constants.visibleButtons.getValue();
     }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------//
     // Constants //
@@ -466,22 +394,24 @@ public class EvaluationBoard
             final JComponent comp = isActive ? button : field;
 
             if (eval != null) {
-                Evaluation.Failure failure = eval.failure;
-                String text = eval.shape.toString();
-                String tip = (failure != null) ? failure.toString() : null;
+                final Evaluation.Failure failure = eval.failure;
+                final String text = eval.shape.toString();
+                final String tip = (failure != null) ? failure.toString() : null;
+                final MusicFamily family = sheet != null ? sheet.getStub().getMusicFamily()
+                        : MusicFont.getDefaultMusicFamily();
 
                 if (isActive) {
                     button.setEnabled(enabled);
                     button.setText(text);
                     button.setToolTipText(tip);
 
-                    ShapeSymbol symbol = eval.shape.getDecoratedSymbol();
+                    ShapeSymbol symbol = eval.shape.getDecoratedSymbol(family);
                     button.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
                 } else {
                     field.setText(text);
                     field.setToolTipText(tip);
 
-                    ShapeSymbol symbol = eval.shape.getDecoratedSymbol();
+                    final ShapeSymbol symbol = eval.shape.getDecoratedSymbol(family);
                     field.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
                 }
 
@@ -498,6 +428,87 @@ public class EvaluationBoard
             } else {
                 grade.setVisible(false);
                 comp.setVisible(false);
+            }
+        }
+    }
+
+    //----------//
+    // Selector //
+    //----------//
+    protected class Selector
+    {
+
+        // A collection of EvalButton's
+        final List<EvalButton> buttons = new ArrayList<>();
+
+        public Selector ()
+        {
+            for (int i = 0; i < evalCount(); i++) {
+                buttons.add(new EvalButton());
+            }
+
+            setEvals(null, null);
+        }
+
+        /**
+         * Return the number of evaluations with grade strictly positive
+         *
+         * @param evals the evaluations sorted from best to worst
+         * @return the number of evaluations with grade > 0
+         */
+        private int positiveEvals (Evaluation[] evals)
+        {
+            for (int i = 0; i < evals.length; i++) {
+                if (evals[i].grade <= 0) {
+                    return i;
+                }
+            }
+
+            return evals.length;
+        }
+
+        //----------//
+        // setEvals //
+        //----------//
+        /**
+         * Display the evaluations.
+         * Only first evalCount evaluations are displayed.
+         *
+         * @param evals top evaluations sorted from best to worst
+         * @param glyph evaluated glyph, to check forbidden shapes if any
+         */
+        public final void setEvals (Evaluation[] evals,
+                                    Glyph glyph)
+        {
+            // Special case to empty the selector
+            if (evals == null) {
+                for (EvalButton evalButton : buttons) {
+                    evalButton.setEval(null, false);
+                }
+
+                return;
+            }
+
+            boolean enabled = true;
+            double minGrade = constants.minGrade.getValue();
+            int iBound = Math.min(evalCount(), positiveEvals(evals));
+            int i;
+
+            for (i = 0; i < iBound; i++) {
+                Evaluation eval = evals[i];
+
+                // Limitation on shape relevance
+                if (eval.grade < minGrade) {
+                    break;
+                }
+
+                // Active buttons
+                buttons.get(i).setEval(eval, enabled);
+            }
+
+            // Zero the remaining buttons
+            for (; i < evalCount(); i++) {
+                buttons.get(i).setEval(null, false);
             }
         }
     }

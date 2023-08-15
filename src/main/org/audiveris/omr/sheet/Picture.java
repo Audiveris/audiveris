@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,9 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet;
-
-import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -44,10 +41,13 @@ import org.audiveris.omr.ui.selection.PixelEvent;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 
-import org.bushe.swing.event.EventSubscriber;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bushe.swing.event.EventSubscriber;
+
+import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -65,7 +65,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import javax.media.jai.JAI;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -107,65 +106,11 @@ public class Picture
 
     private static final Logger logger = LoggerFactory.getLogger(Picture.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * The set of handled images ({@link BufferedImage} instances).
-     */
-    public static enum ImageKey
-    {
-        /** The initial gray-level source. */
-        GRAY,
-        /** The binarized (black and white) source. */
-        BINARY,
-        /** Temporary image of head spots. */
-        HEAD_SPOTS;
-
-        public TableKey toTableKey ()
-        {
-            if (this == GRAY) {
-                return null;
-            }
-
-            return TableKey.valueOf(name());
-        }
-    }
-
-    /**
-     * The set of handled sources ({@link ByteProcessor} instances).
-     */
-    public static enum SourceKey
-    {
-        /** The initial gray-level source. */
-        GRAY,
-        /** The binarized (black and white) source. */
-        BINARY,
-        /** The Gaussian-filtered source. */
-        GAUSSIAN,
-        /** The Median-filtered source. */
-        MEDIAN,
-        /** The source with staff lines removed. */
-        NO_STAFF;
-    }
-
-    /**
-     * The set of handled tables ({@link RunTable} instances).
-     */
-    public static enum TableKey
-    {
-        BINARY,
-        HEAD_SPOTS;
-
-        public ImageKey toImageKey ()
-        {
-            return ImageKey.valueOf(name());
-        }
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** Image width. */
     @XmlAttribute(name = "width")
     private final int width;
@@ -189,37 +134,30 @@ public class Picture
 
     // Transient data
     //---------------
-    //
+
     /** Map of all handled run tables. */
-    private final ConcurrentSkipListMap<TableKey, WeakReference<RunTable>> tables
-            = new ConcurrentSkipListMap<>();
+    private final ConcurrentSkipListMap<TableKey, WeakReference<RunTable>> tables =
+            new ConcurrentSkipListMap<>();
 
     /** Map of all handled sources. */
-    private final ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>> sources
-            = new ConcurrentSkipListMap<>();
+    private final ConcurrentSkipListMap<SourceKey, WeakReference<ByteProcessor>> sources =
+            new ConcurrentSkipListMap<>();
 
     /** Related sheet. */
     @Navigable(false)
     private Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Build a picture instance from a binary table.
-     *
-     * @param sheet       the related sheet
-     * @param binaryTable the provided binary table
+     * No-arg constructor needed for JAXB.
      */
-    public Picture (Sheet sheet,
-                    RunTable binaryTable)
+    private Picture ()
     {
-        initTransients(sheet);
-
-        width = binaryTable.getWidth();
-        height = binaryTable.getHeight();
-
-        setTable(TableKey.BINARY, binaryTable, true); // This sets also binary image
-
-        logger.debug("Picture with BinaryTable {}", binaryTable);
+        this.sheet = null;
+        this.width = 0;
+        this.height = 0;
+        logger.debug("Picture unmarshalled by JAXB");
     }
 
     /**
@@ -252,17 +190,114 @@ public class Picture
     }
 
     /**
-     * No-arg constructor needed for JAXB.
+     * Build a picture instance from a binary table.
+     *
+     * @param sheet       the related sheet
+     * @param binaryTable the provided binary table
      */
-    private Picture ()
+    public Picture (Sheet sheet,
+                    RunTable binaryTable)
     {
-        this.sheet = null;
-        this.width = 0;
-        this.height = 0;
-        logger.debug("Picture unmarshalled by JAXB");
+        initTransients(sheet);
+
+        width = binaryTable.getWidth();
+        height = binaryTable.getHeight();
+
+        setTable(TableKey.BINARY, binaryTable, true); // This sets also binary image
+
+        logger.debug("Picture with BinaryTable {}", binaryTable);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------//
+    // binarized //
+    //-----------//
+    private ByteProcessor binarized (ByteProcessor src)
+    {
+        FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
+        logger.info("{} {}", "Binarization", desc);
+
+        PixelFilter filter = desc.getFilter(src);
+
+        return filter.filteredImage();
+    }
+
+    //-----------------//
+    // buildGraySource //
+    //-----------------//
+    /**
+     * Build the initial gray source from gray image.
+     *
+     * @param img the initial gray image
+     * @return the initial gray source
+     */
+    private ByteProcessor buildGraySource (BufferedImage img)
+    {
+        if (img != null) {
+            if (img.getType() != BufferedImage.TYPE_BYTE_GRAY) {
+                StopWatch watch = new StopWatch("ToGray");
+                watch.start("convertToByteProcessor");
+
+                ColorProcessor cp = new ColorProcessor(img);
+                ByteProcessor bp = cp.convertToByteProcessor();
+
+                if (constants.printWatch.isSet()) {
+                    watch.print();
+                }
+
+                return bp;
+            } else {
+                return new ByteProcessor(img);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    //--------------------//
+    // buildNoStaffBuffer //
+    //--------------------//
+    private ByteProcessor buildNoStaffBuffer ()
+    {
+        boolean linesErased = false;
+        ByteProcessor src = getSource(SourceKey.BINARY);
+        ByteProcessor buf = (ByteProcessor) src.duplicate();
+        BufferedImage img = buf.getBufferedImage();
+        Graphics2D g = img.createGraphics();
+        g.setColor(Color.WHITE);
+
+        for (SystemInfo system : sheet.getSystems()) {
+            for (Staff staff : system.getStaves()) {
+                for (LineInfo li : staff.getLines()) {
+                    StaffLine line = (StaffLine) li;
+                    Glyph glyph = line.getGlyph();
+
+                    if (glyph == null) {
+                        logger.warn("glyph is null for line " + line + " staff:" + staff);
+                    } else {
+                        if (glyph.getRunTable() == null) {
+                            logger.warn("glyph runtable is null");
+                        } else {
+                            glyph.getRunTable().render(g, glyph.getTopLeft());
+                            linesErased = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        g.dispose();
+
+        if (!linesErased) {
+            logger.warn("No system lines to build NO_STAFF buffer"); // Should not happen!
+
+            return null;
+        }
+
+        return new ByteProcessor(img);
+    }
+
     //-------------------//
     // buildNoStaffTable //
     //-------------------//
@@ -322,6 +357,26 @@ public class Picture
     {
         for (SourceKey key : SourceKey.values()) {
             logger.info(String.format("%15s ref:%s", key, getStrongRef(key)));
+        }
+    }
+
+    //------------------//
+    // convertOldTables //
+    //------------------//
+    /**
+     * Migrate from tables as .xml files to images as .png files.
+     */
+    private void convertOldTables ()
+    {
+        if (oldTables != null) {
+            for (Entry<TableKey, RunTableHolder> entry : oldTables.entrySet()) {
+                final RunTableHolder holder = entry.getValue();
+                final RunTable table = holder.getData(sheet.getStub());
+                setTable(entry.getKey(), table, true); // Sets related image as well
+                sheet.getStub().setUpgraded(true);
+            }
+
+            oldTables = null;
         }
     }
 
@@ -452,6 +507,35 @@ public class Picture
         }
     }
 
+    //--------------//
+    // getGrayImage //
+    //--------------//
+    /**
+     * Report the initial gray image.
+     *
+     * @return the gray image, perhaps null
+     */
+    public BufferedImage getGrayImage ()
+    {
+        BufferedImage gray = getImage(ImageKey.GRAY);
+
+        if (gray == null) {
+            try {
+                // Try to reload image from book input path
+                SheetStub stub = sheet.getStub();
+                gray = stub.getBook().loadSheetImage(stub.getNumber());
+                gray = adjustImageFormat(gray);
+                setImage(ImageKey.GRAY, gray, false);
+            } catch (ImageFormatException ex) {
+                logger.warn("ImageFormatException thrown in getGrayImage", ex);
+
+                return null;
+            }
+        }
+
+        return gray;
+    }
+
     //-----------//
     // getHeight //
     //-----------//
@@ -463,6 +547,26 @@ public class Picture
     public int getHeight ()
     {
         return height;
+    }
+
+    //----------//
+    // getImage //
+    //----------//
+    /**
+     * Report the desired image.
+     *
+     * @param key key of desired image
+     * @return the image found, if any, null otherwise
+     */
+    public BufferedImage getImage (ImageKey key)
+    {
+        ImageHolder holder = images.get(key);
+
+        if (holder == null) {
+            return null;
+        }
+
+        return holder.getData(sheet.getStub());
     }
 
     //-------------------//
@@ -498,102 +602,6 @@ public class Picture
         }
     }
 
-    //----------//
-    // getImage //
-    //----------//
-    /**
-     * Report the desired image.
-     *
-     * @param key key of desired image
-     * @return the image found, if any, null otherwise
-     */
-    public BufferedImage getImage (ImageKey key)
-    {
-        ImageHolder holder = images.get(key);
-
-        if (holder == null) {
-            return null;
-        }
-
-        return holder.getData(sheet.getStub());
-    }
-
-    //--------------//
-    // getGrayImage //
-    //--------------//
-    /**
-     * Report the initial gray image.
-     *
-     * @return the gray image, perhaps null
-     */
-    public BufferedImage getGrayImage ()
-    {
-        BufferedImage gray = getImage(ImageKey.GRAY);
-
-        if (gray == null) {
-            try {
-                // Try to reload image from book input path
-                SheetStub stub = sheet.getStub();
-                gray = stub.getBook().loadSheetImage(stub.getNumber());
-                gray = adjustImageFormat(gray);
-                setImage(ImageKey.GRAY, gray, false);
-            } catch (ImageFormatException ex) {
-                logger.warn("ImageFormatException thrown in getGrayImage", ex);
-
-                return null;
-            }
-        }
-
-        return gray;
-    }
-
-    //----------------//
-    // hasNoGrayImage //
-    //----------------//
-    /**
-     * Tell whether no initial gray image still exists, even on disk.
-     *
-     * @return true if no initial image still exists
-     */
-    public boolean hasNoGrayImage ()
-    {
-        final ImageHolder holder = images.get(ImageKey.GRAY);
-
-        return ((holder == null) || holder.hasNoData);
-    }
-
-    //-----------------//
-    // buildGraySource //
-    //-----------------//
-    /**
-     * Build the initial gray source from gray image.
-     *
-     * @param img the initial gray image
-     * @return the initial gray source
-     */
-    private ByteProcessor buildGraySource (BufferedImage img)
-    {
-        if (img != null) {
-            if (img.getType() != BufferedImage.TYPE_BYTE_GRAY) {
-                StopWatch watch = new StopWatch("ToGray");
-                watch.start("convertToByteProcessor");
-
-                ColorProcessor cp = new ColorProcessor(img);
-                ByteProcessor bp = cp.convertToByteProcessor();
-
-                if (constants.printWatch.isSet()) {
-                    watch.print();
-                }
-
-                return bp;
-            } else {
-                return new ByteProcessor(img);
-            }
-        } else {
-            return null;
-        }
-    }
-
     //---------//
     // getName //
     //---------//
@@ -623,13 +631,10 @@ public class Picture
 
         if (src == null) {
             switch (key) {
-            case GRAY:
-                src = buildGraySource(getGrayImage());
+            case GRAY -> src = buildGraySource(getGrayImage());
 
-                break;
-
-            case BINARY:
-
+            case BINARY ->
+            {
                 // Built from binary image, if available
                 BufferedImage image = getImage(ImageKey.BINARY);
 
@@ -652,29 +657,18 @@ public class Picture
                         return null;
                     }
                 }
+            }
 
-                break;
+            case GAUSSIAN -> // Built from median
+                    src = gaussianFiltered(getSource(SourceKey.MEDIAN));
 
-            case GAUSSIAN:
-                // Built from median
-                src = gaussianFiltered(getSource(SourceKey.MEDIAN));
+            case MEDIAN -> // Built from no_staff
+                    src = medianFiltered(getSource(SourceKey.NO_STAFF));
 
-                break;
+            case NO_STAFF -> // Built by erasing StaffLines glyphs from binary source
+                    src = buildNoStaffBuffer();
 
-            case MEDIAN:
-                // Built from no_staff
-                src = medianFiltered(getSource(SourceKey.NO_STAFF));
-
-                break;
-
-            case NO_STAFF:
-                // Built by erasing StaffLines glyphs from binary source
-                src = buildNoStaffBuffer();
-
-                break;
-
-            default:
-                logger.error("Source " + key + " is not yet supported");
+            default -> logger.error("Source " + key + " is not yet supported");
             }
 
             if (src != null) {
@@ -685,6 +679,50 @@ public class Picture
         }
 
         return src;
+    }
+
+    //--------------//
+    // getStrongRef //
+    //--------------//
+    /**
+     * Report the actual (strong) reference, if any, of a weak source reference.
+     *
+     * @param key the source key
+     * @return the strong reference, if any
+     */
+    private ByteProcessor getStrongRef (SourceKey key)
+    {
+        // Check if key is referenced
+        WeakReference<ByteProcessor> ref = sources.get(key);
+
+        if (ref != null) {
+            // Actual reference may be null or not (depending on garbage collection)
+            return ref.get();
+        }
+
+        return null;
+    }
+
+    //--------------//
+    // getStrongRef //
+    //--------------//
+    /**
+     * Report the actual (strong) reference, if any, of a weak table reference.
+     *
+     * @param key the table key
+     * @return the strong reference, if any
+     */
+    private RunTable getStrongRef (TableKey key)
+    {
+        // Check if key is referenced
+        WeakReference<RunTable> ref = tables.get(key);
+
+        if (ref != null) {
+            // Actual reference may be null or not (depending on garbage collection)
+            return ref.get();
+        }
+
+        return null;
     }
 
     //----------//
@@ -771,6 +809,38 @@ public class Picture
     }
 
     //----------------//
+    // hasNoGrayImage //
+    //----------------//
+    /**
+     * Tell whether no initial gray image still exists, even on disk.
+     *
+     * @return true if no initial image still exists
+     */
+    public boolean hasNoGrayImage ()
+    {
+        final ImageHolder holder = images.get(ImageKey.GRAY);
+
+        return ((holder == null) || holder.hasNoData);
+    }
+
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * (package private) method to initialize needed transient members.
+     * (which by definition have not been set by the unmarshalling).
+     *
+     * @param sheet the containing sheet
+     */
+    final void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
+
+        // Convert oldTables to images
+        convertOldTables();
+    }
+
+    //----------------//
     // medianFiltered //
     //----------------//
     /**
@@ -843,8 +913,8 @@ public class Picture
                 }
             }
 
-            sheet.getLocationService()
-                    .publish(new PixelEvent(this, event.hint, event.movement, level));
+            sheet.getLocationService().publish(
+                    new PixelEvent(this, event.hint, event.movement, level));
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
@@ -932,8 +1002,8 @@ public class Picture
                        Path oldSheetFolder)
     {
         // Each handled image
-        for (Iterator<Entry<ImageKey, ImageHolder>> it = images.entrySet().iterator();
-                it.hasNext();) {
+        for (Iterator<Entry<ImageKey, ImageHolder>> it = images.entrySet().iterator(); it
+                .hasNext();) {
             final Entry<ImageKey, ImageHolder> entry = it.next();
             final ImageKey iKey = entry.getKey();
             final ImageHolder holder = entry.getValue();
@@ -967,208 +1037,6 @@ public class Picture
     // tableOf //
     //---------//
     /**
-     * Report the (vertical) RunTable built from the provided binary image.
-     *
-     * @param binaryImg provided binary image
-     * @return the binary RunTable
-     */
-    public static RunTable tableOf (BufferedImage binaryImg)
-    {
-        return new RunTableFactory(VERTICAL).createTable(new ByteProcessor(binaryImg));
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return getName();
-    }
-
-    //-------------------//
-    // adjustImageFormat //
-    //-------------------//
-    /**
-     * Check if the image format (and especially its color model) is
-     * properly handled by Audiveris and adjust if needed.
-     *
-     * @param img image to be checked
-     * @return valid image
-     * @throws ImageFormatException is the format is not supported
-     */
-    public static BufferedImage adjustImageFormat (BufferedImage img)
-            throws ImageFormatException
-    {
-        ColorModel colorModel = img.getColorModel();
-        boolean hasAlpha = colorModel.hasAlpha();
-        logger.debug("{}", colorModel);
-
-        // Check nb of bands
-        SampleModel sampleModel = img.getSampleModel();
-        int numBands = sampleModel.getNumBands();
-        logger.debug("numBands={}", numBands);
-
-        if (numBands == 1) {
-            // Pixel gray value. Nothing to do
-            return img;
-        } else if ((numBands == 2) && hasAlpha) {
-            // Pixel + alpha
-            // Discard alpha
-            return JAI.create("bandselect", img, new int[]{0}).getAsBufferedImage();
-        } else if ((numBands == 3) && !hasAlpha) {
-            // RGB
-            return ImageUtil.maxRgbToGray(img);
-        } else if ((numBands == 4) && hasAlpha) {
-            // RGB + alpha
-            return ImageUtil.maxRgbaToGray(img);
-        } else {
-            throw new ImageFormatException(
-                    "Unsupported sample model numBands=" + numBands + " hasAlpha=" + hasAlpha);
-        }
-    }
-
-    //-----------//
-    // binarized //
-    //-----------//
-    private ByteProcessor binarized (ByteProcessor src)
-    {
-        FilterDescriptor desc = sheet.getStub().getBinarizationFilter().getValue();
-        logger.info("{} {}", "Binarization", desc);
-
-        PixelFilter filter = desc.getFilter(src);
-
-        return filter.filteredImage();
-    }
-
-    //--------------------//
-    // buildNoStaffBuffer //
-    //--------------------//
-    private ByteProcessor buildNoStaffBuffer ()
-    {
-        boolean linesErased = false;
-        ByteProcessor src = getSource(SourceKey.BINARY);
-        ByteProcessor buf = (ByteProcessor) src.duplicate();
-        BufferedImage img = buf.getBufferedImage();
-        Graphics2D g = img.createGraphics();
-        g.setColor(Color.WHITE);
-
-        for (SystemInfo system : sheet.getSystems()) {
-            for (Staff staff : system.getStaves()) {
-                for (LineInfo li : staff.getLines()) {
-                    StaffLine line = (StaffLine) li;
-                    Glyph glyph = line.getGlyph();
-
-                    if (glyph == null) {
-                        logger.warn("glyph is null for line " + line + " staff:" + staff);
-                    } else {
-                        if (glyph.getRunTable() == null) {
-                            logger.warn("glyph runtable is null");
-                        } else {
-                            glyph.getRunTable().render(g, glyph.getTopLeft());
-                            linesErased = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        g.dispose();
-
-        if (!linesErased) {
-            logger.warn("No system lines to build NO_STAFF buffer"); // Should not happen!
-
-            return null;
-        }
-
-        return new ByteProcessor(img);
-    }
-
-    //--------------//
-    // getStrongRef //
-    //--------------//
-    /**
-     * Report the actual (strong) reference, if any, of a weak source reference.
-     *
-     * @param key the source key
-     * @return the strong reference, if any
-     */
-    private ByteProcessor getStrongRef (SourceKey key)
-    {
-        // Check if key is referenced
-        WeakReference<ByteProcessor> ref = sources.get(key);
-
-        if (ref != null) {
-            // Actual reference may be null or not (depending on garbage collection)
-            return ref.get();
-        }
-
-        return null;
-    }
-
-    //--------------//
-    // getStrongRef //
-    //--------------//
-    /**
-     * Report the actual (strong) reference, if any, of a weak table reference.
-     *
-     * @param key the table key
-     * @return the strong reference, if any
-     */
-    private RunTable getStrongRef (TableKey key)
-    {
-        // Check if key is referenced
-        WeakReference<RunTable> ref = tables.get(key);
-
-        if (ref != null) {
-            // Actual reference may be null or not (depending on garbage collection)
-            return ref.get();
-        }
-
-        return null;
-    }
-
-    //------------------//
-    // convertOldTables //
-    //------------------//
-    /**
-     * Migrate from tables as .xml files to images as .png files.
-     */
-    private void convertOldTables ()
-    {
-        if (oldTables != null) {
-            for (Entry<TableKey, RunTableHolder> entry : oldTables.entrySet()) {
-                final RunTableHolder holder = entry.getValue();
-                final RunTable table = holder.getData(sheet.getStub());
-                setTable(entry.getKey(), table, true); // Sets related image as well
-                sheet.getStub().setUpgraded(true);
-            }
-
-            oldTables = null;
-        }
-    }
-
-    //----------------//
-    // initTransients //
-    //----------------//
-    /**
-     * (package private) method to initialize needed transient members.
-     * (which by definition have not been set by the unmarshalling).
-     *
-     * @param sheet the containing sheet
-     */
-    final void initTransients (Sheet sheet)
-    {
-        this.sheet = sheet;
-
-        // Convert oldTables to images
-        convertOldTables();
-    }
-
-    //---------//
-    // tableOf //
-    //---------//
-    /**
      * Build table from provided image.
      *
      * @param key key to image
@@ -1189,7 +1057,75 @@ public class Picture
         return null;
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return getName();
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------------//
+    // adjustImageFormat //
+    //-------------------//
+    /**
+     * Check if the image format (and especially its color model) is
+     * properly handled by Audiveris and adjust if needed.
+     *
+     * @param img image to be checked
+     * @return valid image
+     * @throws ImageFormatException is the format is not supported
+     */
+    public static BufferedImage adjustImageFormat (BufferedImage img)
+        throws ImageFormatException
+    {
+        ColorModel colorModel = img.getColorModel();
+        boolean hasAlpha = colorModel.hasAlpha();
+        logger.debug("{}", colorModel);
+
+        // Check nb of bands
+        SampleModel sampleModel = img.getSampleModel();
+        int numBands = sampleModel.getNumBands();
+        logger.debug("numBands={}", numBands);
+
+        if (numBands == 1) {
+            // Pixel gray value. Nothing to do
+            return img;
+        } else if ((numBands == 2) && hasAlpha) {
+            // Pixel + alpha
+            // Discard alpha
+            return ImageUtil.grayAlphaToGray(img);
+        } else if ((numBands == 3) && !hasAlpha) {
+            // RGB
+            return ImageUtil.maxRgbToGray(img);
+        } else if ((numBands == 4) && hasAlpha) {
+            // RGB + alpha
+            return ImageUtil.maxRgbaToGray(img);
+        } else {
+            throw new ImageFormatException(
+                    "Unsupported sample model numBands=" + numBands + " hasAlpha=" + hasAlpha);
+        }
+    }
+
+    //---------//
+    // tableOf //
+    //---------//
+    /**
+     * Report the (vertical) RunTable built from the provided binary image.
+     *
+     * @param binaryImg provided binary image
+     * @return the binary RunTable
+     */
+    public static RunTable tableOf (BufferedImage binaryImg)
+    {
+        return new RunTableFactory(VERTICAL).createTable(new ByteProcessor(binaryImg));
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -1210,5 +1146,60 @@ public class Picture
                 "pixels",
                 1,
                 "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /**
+     * The set of handled images ({@link BufferedImage} instances).
+     */
+    public static enum ImageKey
+    {
+        /** The initial gray-level source. */
+        GRAY,
+        /** The binarized (black and white) source. */
+        BINARY,
+        /** Temporary image of head spots. */
+        HEAD_SPOTS;
+
+        public TableKey toTableKey ()
+        {
+            if (this == GRAY) {
+                return null;
+            }
+
+            return TableKey.valueOf(name());
+        }
+    }
+
+    /**
+     * The set of handled sources ({@link ByteProcessor} instances).
+     */
+    public static enum SourceKey
+    {
+        /** The initial gray-level source. */
+        GRAY,
+        /** The binarized (black and white) source. */
+        BINARY,
+        /** The Gaussian-filtered source. */
+        GAUSSIAN,
+        /** The Median-filtered source. */
+        MEDIAN,
+        /** The source with staff lines removed. */
+        NO_STAFF;
+    }
+
+    /**
+     * The set of handled tables ({@link RunTable} instances).
+     */
+    public static enum TableKey
+    {
+        BINARY,
+        HEAD_SPOTS;
+
+        public ImageKey toImageKey ()
+        {
+            return ImageKey.valueOf(name());
+        }
     }
 }

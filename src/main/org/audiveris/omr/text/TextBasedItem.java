@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,6 +22,7 @@
 package org.audiveris.omr.text;
 
 import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.util.Vip;
 
@@ -44,6 +45,9 @@ public abstract class TextBasedItem
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
+    /** Related sheet. */
+    protected Sheet sheet;
+
     /** Baseline. */
     private Line2D baseline;
 
@@ -57,26 +61,31 @@ public abstract class TextBasedItem
     private Staff staff;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new TextBasedItem object.
      *
+     * @param sheet      the related sheet
      * @param bounds     Bounding box
      * @param value      UTF-8 content for this item
      * @param baseline   item baseline
      * @param confidence OCR confidence in this item content
      */
-    public TextBasedItem (Rectangle bounds,
+    public TextBasedItem (Sheet sheet,
+                          Rectangle bounds,
                           String value,
                           Line2D baseline,
                           Double confidence)
     {
         super(bounds, value);
 
+        this.sheet = sheet;
         this.baseline = baseline;
         this.confidence = confidence;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // getBaseline //
     //-------------//
@@ -90,19 +99,6 @@ public abstract class TextBasedItem
         return baseline;
     }
 
-    //-------------//
-    // setBaseline //
-    //-------------//
-    /**
-     * Assign the word baseline
-     *
-     * @param baseline the new item baseline
-     */
-    public void setBaseline (Line2D baseline)
-    {
-        this.baseline = baseline;
-    }
-
     //---------------//
     // getConfidence //
     //---------------//
@@ -114,19 +110,6 @@ public abstract class TextBasedItem
     public Double getConfidence ()
     {
         return confidence;
-    }
-
-    //---------------//
-    // setConfidence //
-    //---------------//
-    /**
-     * Assign the item confidence level
-     *
-     * @param confidence the confidence or null
-     */
-    public void setConfidence (Double confidence)
-    {
-        this.confidence = confidence;
     }
 
     //-------------//
@@ -149,6 +132,19 @@ public abstract class TextBasedItem
     }
 
     //----------//
+    // getSheet //
+    //----------//
+    /**
+     * Report the related sheet.
+     *
+     * @return the related sheet
+     */
+    public Sheet getSheet ()
+    {
+        return sheet;
+    }
+
+    //----------//
     // getStaff //
     //----------//
     /**
@@ -157,6 +153,66 @@ public abstract class TextBasedItem
     public Staff getStaff ()
     {
         return staff;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        if (getConfidence() != null) {
+            sb.append(" conf:").append(String.format("%.2f", getConfidence()));
+        }
+
+        if (getBaseline() != null) {
+            sb.append(
+                    String.format(
+                            " base[%.0f,%.0f]-[%.0f,%.0f]",
+                            baseline.getX1(),
+                            baseline.getY1(),
+                            baseline.getX2(),
+                            baseline.getY2()));
+        }
+
+        return sb.toString();
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    @Override
+    public boolean isVip ()
+    {
+        return vip;
+    }
+
+    //-------------//
+    // setBaseline //
+    //-------------//
+    /**
+     * Assign the word baseline
+     *
+     * @param baseline the new item baseline
+     */
+    public void setBaseline (Line2D baseline)
+    {
+        this.baseline = baseline;
+    }
+
+    //---------------//
+    // setConfidence //
+    //---------------//
+    /**
+     * Assign the item confidence level
+     *
+     * @param confidence the confidence or null
+     */
+    public void setConfidence (Double confidence)
+    {
+        this.confidence = confidence;
     }
 
     //----------//
@@ -168,15 +224,6 @@ public abstract class TextBasedItem
     public void setStaff (Staff staff)
     {
         this.staff = staff;
-    }
-
-    //-------//
-    // isVip //
-    //-------//
-    @Override
-    public boolean isVip ()
-    {
-        return vip;
     }
 
     //--------//
@@ -214,30 +261,7 @@ public abstract class TextBasedItem
         }
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        if (getConfidence() != null) {
-            sb.append(" conf:").append(String.format("%.2f", getConfidence()));
-        }
-
-        if (getBaseline() != null) {
-            sb.append(
-                    String.format(
-                            " base[%.0f,%.0f]-[%.0f,%.0f]",
-                            baseline.getX1(),
-                            baseline.getY1(),
-                            baseline.getX2(),
-                            baseline.getY2()));
-        }
-
-        return sb.toString();
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------//
     // baselineOf //

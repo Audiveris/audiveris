@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.Inter;
@@ -36,8 +34,9 @@ import org.audiveris.omr.step.StepException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -71,6 +70,7 @@ public class TextsStep
     }
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a TextsStep instance.
      */
@@ -79,43 +79,38 @@ public class TextsStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // doSystem //
-    //----------//
-    @Override
-    public void doSystem (SystemInfo system,
-                          Context context)
-            throws StepException
-    {
-        // Process texts at system level
-        new TextBuilder(system).processSystem(context.buffer, context.textLines);
-    }
 
     //----------//
     // doProlog //
     //----------//
     @Override
     protected Context doProlog (Sheet sheet)
-            throws StepException
+        throws StepException
     {
-        List<TextLine> lines = new ArrayList<>();
-
         // Launch OCR on the whole sheet
-        SheetScanner scanner = new SheetScanner(sheet);
+        final List<TextLine> lines = new ArrayList<>();
+        final SheetScanner scanner = new SheetScanner(sheet);
 
         if (OcrUtil.getOcr().isAvailable()) {
             lines.addAll(scanner.scanSheet());
-            Collections.sort(lines, TextLine.byOrdinate(sheet.getSkew()));
-
-            if (logger.isDebugEnabled()) {
-                TextLine.dump("Sheet raw OCRed lines:", lines, false);
-            }
         } else {
             logger.warn("TEXTS step: {}", OCR.NO_OCR);
         }
 
         // Make all this available for system-level processing
         return new Context(scanner.getBuffer(), lines);
+    }
+
+    //----------//
+    // doSystem //
+    //----------//
+    @Override
+    public void doSystem (SystemInfo system,
+                          Context context)
+        throws StepException
+    {
+        // Process texts at system level
+        new TextBuilder(system).processSystem(context.buffer, context.textLines);
     }
 
     //--------//
@@ -128,11 +123,10 @@ public class TextsStep
         logger.debug("TEXTS impact {} {}", opKind, seq);
 
         for (UITask task : seq.getTasks()) {
-            if (task instanceof InterTask) {
-                InterTask interTask = (InterTask) task;
-                Inter inter = interTask.getInter();
-                SystemInfo system = inter.getSig().getSystem();
-                Class interClass = inter.getClass();
+            if (task instanceof InterTask interTask) {
+                final Inter inter = interTask.getInter();
+                final SystemInfo system = inter.getSig().getSystem();
+                final Class interClass = inter.getClass();
 
                 if (isImpactedBy(interClass, forLyrics)) {
                     if (inter instanceof LyricLineInter) {
@@ -154,6 +148,7 @@ public class TextsStep
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Context //
     //---------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,6 +46,7 @@ public class Dumping
     protected final Relevance relevance;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Dumping service.
      *
@@ -67,6 +68,7 @@ public class Dumping
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------//
     // dump //
     //------//
@@ -127,7 +129,7 @@ public class Dumping
                       String title,
                       int level)
     {
-        new Column(relevance, obj, title, level).print();
+        System.out.println(new Column(relevance, obj, title, level).toString());
     }
 
     //--------//
@@ -159,34 +161,8 @@ public class Dumping
         return new Html(relevance, obj).toString();
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
-    //-----------//
-    // Relevance //
-    //-----------//
-    /**
-     * Handles if a field or class is relevant for dumping.
-     */
-    public static interface Relevance
-    {
-
-        /**
-         * Predicate to determine if a given class is worth being printed.
-         *
-         * @param classe the class at stake
-         * @return true if found relevant
-         */
-        boolean isClassRelevant (Class<?> classe);
-
-        /**
-         * Predicate to determine if a given field is worth being printed.
-         *
-         * @param field the field at stake
-         * @return true if found relevant
-         */
-        boolean isFieldRelevant (Field field);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------------//
     // PackageRelevance //
     //------------------//
@@ -253,5 +229,33 @@ public class Dumping
             // We don't print non-user visible entities
             return field.getName().indexOf('$') == -1;
         }
+    }
+
+    //~ Inner Interfaces ---------------------------------------------------------------------------
+
+    //-----------//
+    // Relevance //
+    //-----------//
+    /**
+     * Handles if a field or class is relevant for dumping.
+     */
+    public static interface Relevance
+    {
+
+        /**
+         * Predicate to determine if a given class is worth being printed.
+         *
+         * @param classe the class at stake
+         * @return true if found relevant
+         */
+        boolean isClassRelevant (Class<?> classe);
+
+        /**
+         * Predicate to determine if a given field is worth being printed.
+         *
+         * @param field the field at stake
+         * @return true if found relevant
+         */
+        boolean isFieldRelevant (Field field);
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,6 +22,7 @@
 package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sig.inter.SlurInter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,11 +34,12 @@ import org.slf4j.LoggerFactory;
 public class TieTask
         extends InterTask
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(TieTask.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>TieTask</code> object.
      *
@@ -49,6 +51,7 @@ public class TieTask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public SlurInter getInter ()
     {

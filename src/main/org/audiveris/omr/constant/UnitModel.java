@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -54,82 +54,8 @@ public class UnitModel
 
     private static final Logger logger = LoggerFactory.getLogger(UnitModel.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * Enumeration type to describe each column of the JTreeTable
-     */
-    public static enum Column
-    {
-        /**
-         * The left column, assigned to tree structure, allows expansion
-         * and collapsing of sub-tree portions.
-         */
-        TREE("Unit", true, 280, TreeTableModel.class),
-        /**
-         * Editable column with modification flag if node is a constant.
-         * Empty if node is a package.
-         */
-        MODIF("Modif", true, 50, String.class),
-        /**
-         * Column that recalls the constant type, and thus the possible
-         * range of values.
-         */
-        TYPE("Type", false, 70, String.class),
-        /**
-         * Column for the units, if any, used for the value.
-         */
-        UNIT("Unit", false, 70, String.class),
-        /**
-         * Column relevant only for constants which are fractions of interline, as
-         * defined by {@link org.audiveris.omr.sheet.Scale.Fraction}.
-         * The equivalent number of pixels is displayed, according to the scale of the currently
-         * selected Sheet.
-         * If there is no current Sheet, then just a question mark (?) is shown
-         */
-        PIXEL("Pixels", false, 30, String.class),
-        /**
-         * Editable column for constant current value, with related tool
-         * tip retrieved from the constant declaration.
-         */
-        VALUE("Value", true, 100, String.class),
-        /**
-         * Column dedicated to constant description.
-         */
-        DESC("Description", false, 350, String.class);
-
-        /** Java class to handle column content. */
-        private final Class<?> type;
-
-        /** Is this column user editable?. */
-        private final boolean editable;
-
-        /** Header for the column. */
-        private final String header;
-
-        /** Width for column display. */
-        private final int width;
-
-        Column (String header,
-                boolean editable,
-                int width,
-                Class<?> type)
-        {
-            this.header = header;
-            this.editable = editable;
-            this.width = width;
-            this.type = type;
-        }
-
-        //----------//
-        // getWidth //
-        //----------//
-        public int getWidth ()
-        {
-            return width;
-        }
-    }
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Builds the model.
      */
@@ -139,6 +65,7 @@ public class UnitModel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getChild //
     //----------//
@@ -170,7 +97,8 @@ public class UnitModel
         }
 
         System.err.println(
-                "*** getChild. Unexpected node " + parent + ", type=" + parent.getClass().getName());
+                "*** getChild. Unexpected node " + parent + ", type=" + parent.getClass()
+                        .getName());
 
         return null;
     }
@@ -202,8 +130,9 @@ public class UnitModel
             return 0;
         }
 
-        System.err.println("*** getChildCount. Unexpected node " + parent
-                                   + ", type=" + parent.getClass().getName());
+        System.err.println(
+                "*** getChildCount. Unexpected node " + parent + ", type=" + parent.getClass()
+                        .getName());
 
         return 0;
     }
@@ -323,7 +252,7 @@ public class UnitModel
                 Constant constant = (Constant) node;
 
                 if (constant instanceof Scale.Fraction || constant instanceof Scale.LineFraction
-                            || constant instanceof Scale.AreaFraction) {
+                        || constant instanceof Scale.AreaFraction) {
                     // Compute the equivalent in pixels of this interline-based
                     // fraction, line or area fraction, provided that we have a
                     // current sheet and its scale is available.
@@ -445,28 +374,106 @@ public class UnitModel
             case VALUE:
 
                 try {
-                constant.setStringValue(value.toString());
+                    constant.setStringValue(value.toString());
 
-                // Forward modif to the modif status column and to the pixel
-                // column (brute force!)
-                fireTreeNodesChanged(this, new Object[]{getRoot()}, null, null);
-            } catch (NumberFormatException ex) {
-                OMR.gui.displayError("Illegal number format");
-            }
+                    // Forward modif to the modif status column and to the pixel
+                    // column (brute force!)
+                    fireTreeNodesChanged(this, new Object[]
+                    { getRoot() }, null, null);
+                } catch (NumberFormatException ex) {
+                    OMR.gui.displayError("Illegal number format");
+                }
 
-            break;
+                break;
 
             case MODIF:
 
                 if (!((Boolean) value)) {
                     constant.resetToSource();
-                    fireTreeNodesChanged(this, new Object[]{getRoot()}, null, null);
+                    fireTreeNodesChanged(this, new Object[]
+                    { getRoot() }, null, null);
                 }
 
                 break;
 
             default:
             }
+        }
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /**
+     * Enumeration type to describe each column of the JTreeTable
+     */
+    public static enum Column
+    {
+        /**
+         * The left column, assigned to tree structure, allows expansion
+         * and collapsing of sub-tree portions.
+         */
+        TREE("Unit", true, 280, TreeTableModel.class),
+        /**
+         * Editable column with modification flag if node is a constant.
+         * Empty if node is a package.
+         */
+        MODIF("Modif", true, 50, String.class),
+        /**
+         * Column that recalls the constant type, and thus the possible
+         * range of values.
+         */
+        TYPE("Type", false, 70, String.class),
+        /**
+         * Column for the units, if any, used for the value.
+         */
+        UNIT("Unit", false, 70, String.class),
+        /**
+         * Column relevant only for constants which are fractions of interline, as
+         * defined by {@link org.audiveris.omr.sheet.Scale.Fraction}.
+         * The equivalent number of pixels is displayed, according to the scale of the currently
+         * selected Sheet.
+         * If there is no current Sheet, then just a question mark (?) is shown
+         */
+        PIXEL("Pixels", false, 30, String.class),
+        /**
+         * Editable column for constant current value, with related tool
+         * tip retrieved from the constant declaration.
+         */
+        VALUE("Value", true, 100, String.class),
+        /**
+         * Column dedicated to constant description.
+         */
+        DESC("Description", false, 350, String.class);
+
+        /** Java class to handle column content. */
+        private final Class<?> type;
+
+        /** Is this column user editable?. */
+        private final boolean editable;
+
+        /** Header for the column. */
+        private final String header;
+
+        /** Width for column display. */
+        private final int width;
+
+        Column (String header,
+                boolean editable,
+                int width,
+                Class<?> type)
+        {
+            this.header = header;
+            this.editable = editable;
+            this.width = width;
+            this.type = type;
+        }
+
+        //----------//
+        // getWidth //
+        //----------//
+        public int getWidth ()
+        {
+            return width;
         }
     }
 }

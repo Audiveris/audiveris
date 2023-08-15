@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -58,19 +58,24 @@ public abstract class Glyphs
      * To compare glyphs according to their id.
      * This comparator, which requires that all handled glyphs have an ID, can be used for a set.
      */
-    public static final Comparator<Glyph> byId = (g1, g2)
-            -> Integer.compare(g1.getId(), g2.getId());
+    public static final Comparator<Glyph> byId = (g1,
+                                                  g2) -> Integer.compare(g1.getId(), g2.getId());
 
     /** To compare glyphs according to their left abscissa. */
-    public static final Comparator<Glyph> byAbscissa = (g1, g2)
-            -> (g1 == g2) ? 0 : Integer.compare(g1.getLeft(), g2.getLeft());
+    public static final Comparator<Glyph> byAbscissa = (g1,
+                                                        g2) -> (g1 == g2) ? 0
+                                                                : Integer.compare(
+                                                                        g1.getLeft(),
+                                                                        g2.getLeft());
 
     /**
      * To compare glyphs according to their left abscissa (then top ordinate, then id).
      * This comparator, which requires that all handled glyphs have an ID, can be used for a
      * set.
      */
-    public static final Comparator<Glyph> byFullAbscissa = (g1, g2) -> {
+    public static final Comparator<Glyph> byFullAbscissa = (g1,
+                                                            g2) ->
+    {
         if (g1 == g2) {
             return 0;
         }
@@ -94,14 +99,19 @@ public abstract class Glyphs
     };
 
     /** To compare glyphs according to their top ordinate. */
-    public static final Comparator<Glyph> byOrdinate = (g1, g2)
-            -> (g1 == g2) ? 0 : Integer.compare(g1.getTop(), g2.getTop());
+    public static final Comparator<Glyph> byOrdinate = (g1,
+                                                        g2) -> (g1 == g2) ? 0
+                                                                : Integer.compare(
+                                                                        g1.getTop(),
+                                                                        g2.getTop());
 
     /**
      * To compare glyphs according to their top ordinate (then left abscissa, then id).
      * This comparator, which requires that all handled glyphs have an ID, can be used for a set.
      */
-    public static final Comparator<Glyph> byFullOrdinate = (g1, g2) -> {
+    public static final Comparator<Glyph> byFullOrdinate = (g1,
+                                                            g2) ->
+    {
         if (g1 == g2) {
             return 0;
         }
@@ -125,29 +135,44 @@ public abstract class Glyphs
     };
 
     /** To compare glyphs according to their decreasing bottom ordinate. */
-    public static final Comparator<Glyph> byReverseBottom = (g1, g2)
-            -> (g1 == g2) ? 0 : Integer.compare(g2.getTop() + g2.getHeight(),
-                                                g1.getTop() + g1.getHeight());
+    public static final Comparator<Glyph> byReverseBottom = (g1,
+                                                             g2) -> (g1 == g2) ? 0
+                                                                     : Integer.compare(
+                                                                             g2.getTop() + g2
+                                                                                     .getHeight(),
+                                                                             g1.getTop() + g1
+                                                                                     .getHeight());
 
     /** To compare glyphs according to their (increasing) weight. */
-    public static final Comparator<Glyph> byWeight = (g1, g2)
-            -> (g1 == g2) ? 0 : Integer.compare(g1.getWeight(), g2.getWeight());
+    public static final Comparator<Glyph> byWeight = (g1,
+                                                      g2) -> (g1 == g2) ? 0
+                                                              : Integer.compare(
+                                                                      g1.getWeight(),
+                                                                      g2.getWeight());
 
     /** To compare glyphs according to their (increasing) width. */
-    public static final Comparator<Glyph> byWidth = (g1, g2)
-            -> (g1 == g2) ? 0 : Integer.compare(g1.getWidth(), g2.getWidth());
+    public static final Comparator<Glyph> byWidth = (g1,
+                                                     g2) -> (g1 == g2) ? 0
+                                                             : Integer.compare(
+                                                                     g1.getWidth(),
+                                                                     g2.getWidth());
 
     /** To compare glyphs according to their decreasing weight. */
-    public static final Comparator<Glyph> byReverseWeight = (g1, g2)
-            -> (g1 == g2) ? 0 : Integer.compare(g2.getWeight(), g1.getWeight());
+    public static final Comparator<Glyph> byReverseWeight = (g1,
+                                                             g2) -> (g1 == g2) ? 0
+                                                                     : Integer.compare(
+                                                                             g2.getWeight(),
+                                                                             g1.getWeight());
 
     //~ Constructors -------------------------------------------------------------------------------
+
     // Class is not meant to be instantiated.
     private Glyphs ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------------//
     // buildLinks //
     //------------//
@@ -241,31 +266,6 @@ public abstract class Glyphs
     //-----------------//
     /**
      * Look up in a collection of glyph instances for <b>all</b> glyph
-     * instances contained in a provided rectangle.
-     *
-     * @param collection the collection of glyph instances to be browsed
-     * @param rect       the coordinates rectangle
-     * @return the glyph instances found, which may be an empty list
-     */
-    public static Set<Glyph> containedGlyphs (Collection<? extends Glyph> collection,
-                                              Rectangle rect)
-    {
-        Set<Glyph> set = new LinkedHashSet<>();
-
-        for (Glyph glyph : collection) {
-            if (rect.contains(glyph.getBounds())) {
-                set.add(glyph);
-            }
-        }
-
-        return set;
-    }
-
-    //-----------------//
-    // containedGlyphs //
-    //-----------------//
-    /**
-     * Look up in a collection of glyph instances for <b>all</b> glyph
      * instances contained in a provided polygon.
      *
      * @param collection the collection of glyph instances to be browsed
@@ -279,6 +279,31 @@ public abstract class Glyphs
 
         for (Glyph glyph : collection) {
             if (polygon.contains(glyph.getBounds())) {
+                set.add(glyph);
+            }
+        }
+
+        return set;
+    }
+
+    //-----------------//
+    // containedGlyphs //
+    //-----------------//
+    /**
+     * Look up in a collection of glyph instances for <b>all</b> glyph
+     * instances contained in a provided rectangle.
+     *
+     * @param collection the collection of glyph instances to be browsed
+     * @param rect       the coordinates rectangle
+     * @return the glyph instances found, which may be an empty list
+     */
+    public static Set<Glyph> containedGlyphs (Collection<? extends Glyph> collection,
+                                              Rectangle rect)
+    {
+        Set<Glyph> set = new LinkedHashSet<>();
+
+        for (Glyph glyph : collection) {
+            if (rect.contains(glyph.getBounds())) {
                 set.add(glyph);
             }
         }
@@ -423,6 +448,21 @@ public abstract class Glyphs
     // ids //
     //-----//
     /**
+     * Build a string with just the IDs of the glyph collection,
+     * introduced by the label "glyphs".
+     *
+     * @param glyphs the collection of glyph instances
+     * @return the string built
+     */
+    public static String ids (Collection<? extends Glyph> glyphs)
+    {
+        return Entities.ids("glyphs", glyphs);
+    }
+
+    //-----//
+    // ids //
+    //-----//
+    /**
      * Report a string of glyph IDs.
      *
      * @param label  a string to introduce the list of IDs
@@ -433,21 +473,6 @@ public abstract class Glyphs
                               Collection<? extends Glyph> glyphs)
     {
         return Entities.ids(label, glyphs);
-    }
-
-    //-----//
-    // ids //
-    //-----//
-    /**
-     * Build a string with just the IDs of the glyph collection,
-     * introduced by the label "glyphs".
-     *
-     * @param glyphs the collection of glyph instances
-     * @return the string built
-     */
-    public static String ids (Collection<? extends Glyph> glyphs)
-    {
-        return Entities.ids("glyphs", glyphs);
     }
 
     //-----------//
@@ -519,31 +544,6 @@ public abstract class Glyphs
     //-------------------//
     /**
      * Look up in a collection of glyph instances for <b>all</b> glyph
-     * instances intersected by a provided rectangle.
-     *
-     * @param collection the collection of glyph instances to be browsed
-     * @param rect       the coordinates rectangle
-     * @return the glyph instances found, which may be an empty list
-     */
-    public static Set<Glyph> intersectedGlyphs (Collection<? extends Glyph> collection,
-                                                Rectangle rect)
-    {
-        Set<Glyph> set = new LinkedHashSet<>();
-
-        for (Glyph glyph : collection) {
-            if (rect.intersects(glyph.getBounds())) {
-                set.add(glyph);
-            }
-        }
-
-        return set;
-    }
-
-    //-------------------//
-    // intersectedGlyphs //
-    //-------------------//
-    /**
-     * Look up in a collection of glyph instances for <b>all</b> glyph
      * instances intersected by a provided area.
      *
      * @param collection the collection of glyph instances to be browsed
@@ -560,6 +560,31 @@ public abstract class Glyphs
                 if (area.intersects(glyph.getBounds())) {
                     set.add(glyph);
                 }
+            }
+        }
+
+        return set;
+    }
+
+    //-------------------//
+    // intersectedGlyphs //
+    //-------------------//
+    /**
+     * Look up in a collection of glyph instances for <b>all</b> glyph
+     * instances intersected by a provided rectangle.
+     *
+     * @param collection the collection of glyph instances to be browsed
+     * @param rect       the coordinates rectangle
+     * @return the glyph instances found, which may be an empty list
+     */
+    public static Set<Glyph> intersectedGlyphs (Collection<? extends Glyph> collection,
+                                                Rectangle rect)
+    {
+        Set<Glyph> set = new LinkedHashSet<>();
+
+        for (Glyph glyph : collection) {
+            if (rect.intersects(glyph.getBounds())) {
+                set.add(glyph);
             }
         }
 

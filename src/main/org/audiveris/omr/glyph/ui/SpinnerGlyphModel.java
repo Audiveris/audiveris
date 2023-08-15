@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,6 +50,7 @@ public class SpinnerGlyphModel
     private static final Logger logger = LoggerFactory.getLogger(SpinnerGlyphModel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying glyph nest */
     private final GlyphIndex nest;
 
@@ -60,6 +61,7 @@ public class SpinnerGlyphModel
     private int currentId;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SpinnerGlyphModel object, on all nest glyph instances.
      *
@@ -88,6 +90,7 @@ public class SpinnerGlyphModel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------//
     // getNextValue //
     //--------------//

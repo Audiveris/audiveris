@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -54,7 +54,8 @@ public abstract class ZipFileSystem
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //--------//
     // create //
     //--------//
@@ -69,7 +70,7 @@ public abstract class ZipFileSystem
      * @throws IOException if anything goes wrong
      */
     public static Path create (Path path)
-            throws IOException
+        throws IOException
     {
         Objects.requireNonNull(path, "ZipFileSystem.create: path is null");
 
@@ -101,7 +102,7 @@ public abstract class ZipFileSystem
      * @throws IOException if anything goes wrong
      */
     public static Path open (Path path)
-            throws IOException
+        throws IOException
     {
         Objects.requireNonNull(path, "ZipFileSystem.open: path is null");
 

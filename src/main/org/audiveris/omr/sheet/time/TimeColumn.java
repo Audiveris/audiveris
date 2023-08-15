@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -68,6 +68,7 @@ public abstract class TimeColumn
     private static final Logger logger = LoggerFactory.getLogger(TimeColumn.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Containing system. */
     protected final SystemInfo system;
 
@@ -78,6 +79,7 @@ public abstract class TimeColumn
     protected final Map<Staff, TimeBuilder> builders = new TreeMap<>(Staff.byId);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>Column</code> object.
      *
@@ -89,116 +91,6 @@ public abstract class TimeColumn
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // getMaxDxOffset //
-    //----------------//
-    /**
-     * Report the maximum abscissa shift between de-skewed time items in column.
-     *
-     * @param sheet containing sheet
-     * @return maximum abscissa shift
-     */
-    public static int getMaxDxOffset (Sheet sheet)
-    {
-        return sheet.getScale().toPixels(constants.maxDxOffset);
-    }
-
-    //---------------//
-    // getTimeInters //
-    //---------------//
-    /**
-     * Report the time inter instance for each staff in the column.
-     *
-     * @return the map: staff &rarr; time inter
-     */
-    public Map<Staff, AbstractTimeInter> getTimeInters ()
-    {
-        Map<Staff, AbstractTimeInter> times = new TreeMap<>(Staff.byId);
-
-        for (Map.Entry<Staff, TimeBuilder> entry : builders.entrySet()) {
-            times.put(entry.getKey(), entry.getValue().getTimeInter());
-        }
-
-        return times;
-    }
-
-    //--------------//
-    // retrieveTime //
-    //--------------//
-    /**
-     * This is the main entry point for time signature, it retrieves the column of
-     * staves candidates time signatures, and selects the best one at system level.
-     *
-     * @return 0 if valid, or -1 if invalid
-     */
-    public int retrieveTime ()
-    {
-        // Allocate one time-sig builder for each staff within system
-        for (Staff staff : system.getStaves()) {
-            if (!staff.isTablature()) {
-                builders.put(staff, allocateBuilder(staff));
-            }
-        }
-
-        // Process each staff on turn, to find candidates
-        for (TimeBuilder builder : builders.values()) {
-            // Retrieve candidates for time items
-            builder.findCandidates();
-
-            // This fails if no candidate at all is kept in staff after filtering
-            if (!builder.filterCandidates()) {
-                cleanup(); // Clean up what has been constructed
-
-                return -1; // We failed to find a time sig in stack
-            }
-        }
-
-        // Check vertical alignment
-        purgeUnaligned();
-
-        // Check time sig consistency at system level
-        if (checkConsistency()) {
-            discardNeighbors();
-
-            return 0;
-        }
-
-        return -1; // Failed
-    }
-
-    //------------------//
-    // discardNeighbors //
-    //------------------//
-    protected void discardNeighbors ()
-    {
-        final SIGraph sig = system.getSig();
-        final Collection<AbstractTimeInter> times = getTimeInters().values();
-        final Rectangle columnBox = Inters.getBounds(times);
-        final List<Inter> neighbors = sig.inters((Inter inter) -> inter.getBounds().intersects(
-                columnBox) && !(inter instanceof InterEnsemble));
-
-        // Let's not consider our own time items as overlapping neighbors
-        for (AbstractTimeInter time : times) {
-            if (time instanceof TimePairInter) {
-                TimePairInter pair = (TimePairInter) time;
-                neighbors.removeAll(pair.getMembers());
-            }
-
-            neighbors.remove(time);
-        }
-
-        for (AbstractTimeInter time : times) {
-            for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
-                Inter neighbor = it.next();
-
-                if (neighbor.overlaps(time)) {
-                    logger.debug("Deleting time overlapping {}", neighbor);
-                    neighbor.remove();
-                    it.remove();
-                }
-            }
-        }
-    }
 
     /**
      * Allocate instance of proper subclass of TimeBuilder
@@ -241,23 +133,31 @@ public abstract class TimeColumn
             final TimeValue time = entry.getKey();
             final AbstractTimeInter[] vector = entry.getValue();
 
-            // Check that this time is present in all staves and compute the time mean grade
+            // Check that this time is present in all standard staves
+            // and compute the time mean grade
             double mean = 0;
+            int count = 0;
 
-            for (Inter inter : vector) {
-                if (inter == null) {
-                    logger.debug(
-                            "System#{} TimeValue {} not found in all staves",
-                            system.getId(),
-                            time);
+            final List<Staff> staves = system.getStaves();
+            for (int idx = 0; idx < staves.size(); idx++) {
+                final Staff staff = staves.get(idx);
+                if (!staff.isTablature()) {
+                    final Inter inter = vector[idx];
+                    if (inter == null) {
+                        logger.debug(
+                                "System#{} TimeValue {} not found in all standard staves",
+                                system.getId(),
+                                time);
 
-                    continue TimeLoop;
+                        continue TimeLoop;
+                    }
+
+                    mean += inter.getGrade(); // TODO: use contextual?????
+                    count++;
                 }
-
-                mean += inter.getGrade(); // TODO: use contextual?????
             }
 
-            mean /= vector.length;
+            mean /= count;
             grades.put(time, mean);
         }
 
@@ -303,6 +203,63 @@ public abstract class TimeColumn
      * so that all related data inserted in sig is removed.
      */
     protected abstract void cleanup ();
+
+    //------------------//
+    // discardNeighbors //
+    //------------------//
+    protected void discardNeighbors ()
+    {
+        final SIGraph sig = system.getSig();
+        final Collection<AbstractTimeInter> times = getTimeInters().values();
+        final Rectangle columnBox = Inters.getBounds(times);
+        final List<Inter> neighbors = sig.inters(
+                (Inter inter) -> inter.getBounds().intersects(columnBox)
+                        && !(inter instanceof InterEnsemble));
+
+        // Let's not consider our own time items as overlapping neighbors
+        for (AbstractTimeInter time : times) {
+            if (time instanceof TimePairInter pair) {
+                neighbors.removeAll(pair.getMembers());
+            }
+
+            neighbors.remove(time);
+        }
+
+        for (AbstractTimeInter time : times) {
+            final double timeGrade = time.getGrade();
+
+            for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
+                Inter neighbor = it.next();
+
+                if (neighbor.overlaps(time) && (neighbor.getGrade() < timeGrade)) {
+                    if (neighbor.isVip()) {
+                        logger.info("VIP Deleting time overlapping {}", neighbor);
+                    }
+                    neighbor.remove();
+                    it.remove();
+                }
+            }
+        }
+    }
+
+    //---------------//
+    // getTimeInters //
+    //---------------//
+    /**
+     * Report the time inter instance for each staff in the column.
+     *
+     * @return the map: staff &rarr; time inter
+     */
+    public Map<Staff, AbstractTimeInter> getTimeInters ()
+    {
+        Map<Staff, AbstractTimeInter> times = new TreeMap<>(Staff.byId);
+
+        for (Map.Entry<Staff, TimeBuilder> entry : builders.entrySet()) {
+            times.put(entry.getKey(), entry.getValue().getTimeInter());
+        }
+
+        return times;
+    }
 
     /**
      * Report the system vector of values for each time value found.
@@ -380,7 +337,66 @@ public abstract class TimeColumn
         // Void by default
     }
 
+    //--------------//
+    // retrieveTime //
+    //--------------//
+    /**
+     * This is the main entry point for time signature, it retrieves the column of
+     * staves candidates time signatures, and selects the best one at system level.
+     *
+     * @return 0 if valid, or -1 if invalid
+     */
+    public int retrieveTime ()
+    {
+        // Allocate one time-sig builder for each staff within system
+        for (Staff staff : system.getStaves()) {
+            if (!staff.isTablature()) {
+                builders.put(staff, allocateBuilder(staff));
+            }
+        }
+
+        // Process each staff on turn, to find candidates
+        for (TimeBuilder builder : builders.values()) {
+            // Retrieve candidates for time items
+            builder.findCandidates();
+
+            // This fails if no candidate at all is kept in staff after filtering
+            if (!builder.filterCandidates()) {
+                cleanup(); // Clean up what has been constructed
+
+                return -1; // We failed to find a time sig in stack
+            }
+        }
+
+        // Check vertical alignment
+        purgeUnaligned();
+
+        // Check time sig consistency at system level
+        if (checkConsistency()) {
+            discardNeighbors();
+
+            return 0;
+        }
+
+        return -1; // Failed
+    }
+
+    //----------------//
+    // getMaxDxOffset //
+    //----------------//
+    /**
+     * Report the maximum abscissa shift between de-skewed time items in column.
+     *
+     * @param sheet containing sheet
+     * @return maximum abscissa shift
+     */
+    public static int getMaxDxOffset (Sheet sheet)
+    {
+        return sheet.getScale().toPixels(constants.maxDxOffset);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

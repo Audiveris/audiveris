@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,10 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.field.IntegerListSpinner;
@@ -41,6 +37,10 @@ import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -72,7 +72,7 @@ import javax.swing.event.ChangeListener;
  * Class <code>SymbolRipper</code> is a stand-alone utility to generate the
  * textual description of a symbol.
  * <p>
- * Symbol appearance is "ripped" from a musical font.
+ * Symbol appearance is "ripped" from a music font.
  *
  * @author Hervé Bitteur
  */
@@ -87,6 +87,7 @@ public class SymbolRipper
     private static boolean standAlone = false;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Related frame.
      * We need a frame rather than a dialog because this class can be run in standalone.
@@ -182,84 +183,40 @@ public class SymbolRipper
     private final LDoubleField hSym = new LDoubleField(false, "hSym", "h symbol", f);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SymbolRipper object.
      */
     public SymbolRipper ()
     {
         // Actors
-        drawing = new Drawing();
+        drawing=new Drawing();
 
-        fontBase.setModel(new SpinnerListModel(new Integer[]{0, 0xf000, 0x1_d100}));
-        SpinnerUtil.setRightAlignment(fontBase);
-        SpinnerUtil.fixIntegerList(fontBase);
+        fontBase.setModel(new SpinnerListModel(new Integer[]{0,0xf000,0x1_d100}));SpinnerUtil.setRightAlignment(fontBase);SpinnerUtil.fixIntegerList(fontBase);
 
-        fontName.setModel(
-                new SpinnerListModel(
-                        GraphicsEnvironment.getLocalGraphicsEnvironment()
-                                .getAvailableFontFamilyNames()));
+        fontName.setModel(new SpinnerListModel(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
 
-        pointCode.setModel(new SpinnerNumberModel(0x1_d100, 0, 0x1_d1ff, 1));
+        pointCode.setModel(new SpinnerNumberModel(0x1_d100,0,0x1_d1ff,1));
 
         // Initial values
-        fontName.getSpinner().setValue("MusicalSymbols");
-        ///fontName.getSpinner().setValue("Symbola");
-        fontBase.setValue(fontBase.getModel().getNextValue()); // (for MusicalSymbols)
+        if(true){fontName.getSpinner().setValue("Bravura");fontBase.setValue(0); // (for Bravura)
+        pointCode.setValue(0xE0A4); // Quarter note (in Bravura)
+        }else{fontName.getSpinner().setValue("MusicalSymbols");fontBase.setValue(fontBase.getModel().getNextValue()); // (for MusicalSymbols)
         pointCode.setValue(113); // Quarter note (in MusicalSymbols)
+        }
 
-        fontSize.setValue(200);
-        width.setValue(400);
-        height.setValue(500);
-        xOffset.setValue(200);
-        yOffset.setValue(300);
+        fontSize.setValue(200);width.setValue(400);height.setValue(500);xOffset.setValue(200);yOffset.setValue(300);
 
-        changeCode();
-        defineFont();
+        changeCode();defineFont();
 
         // Listeners
-        fontName.addChangeListener(paramListener);
-        fontBase.addChangeListener(paramListener);
-        fontSize.addChangeListener(paramListener);
-        pointCode.addChangeListener(paramListener);
-        hexaCode.addChangeListener(paramListener);
-        xOffset.addChangeListener(paramListener);
-        yOffset.addChangeListener(paramListener);
-        width.addChangeListener(paramListener);
-        height.addChangeListener(paramListener);
+        fontName.addChangeListener(paramListener);fontBase.addChangeListener(paramListener);fontSize.addChangeListener(paramListener);pointCode.addChangeListener(paramListener);hexaCode.addChangeListener(paramListener);xOffset.addChangeListener(paramListener);yOffset.addChangeListener(paramListener);width.addChangeListener(paramListener);height.addChangeListener(paramListener);
 
         // Global layout
-        if (!standAlone) {
-            frame = defineLayout(new JFrame("Symbol Ripper"));
-            OmrGui.getApplication().show(frame);
-        }
+        if(!standAlone){frame=defineLayout(new JFrame("Symbol Ripper"));OmrGui.getApplication().show(frame);}
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getFrame //
-    //----------//
-    /**
-     * Report the related User Interface frame of this entity
-     *
-     * @return the window frame
-     */
-    public JFrame getFrame ()
-    {
-        return frame;
-    }
-
-    //---------//
-    // startup //
-    //---------//
-    @Override
-    protected void startup ()
-    {
-        logger.debug("SymbolRipper. 2/startup");
-
-        frame = defineLayout(getMainFrame());
-
-        show(frame); // Here we go...
-    }
 
     //------------//
     // buildImage //
@@ -347,6 +304,19 @@ public class SymbolRipper
         return frame;
     }
 
+    //----------//
+    // getFrame //
+    //----------//
+    /**
+     * Report the related User Interface frame of this entity
+     *
+     * @return the window frame
+     */
+    public JFrame getFrame ()
+    {
+        return frame;
+    }
+
     //---------------//
     // getParamPanel //
     //---------------//
@@ -426,6 +396,21 @@ public class SymbolRipper
         drawing.revalidate();
     }
 
+    //---------//
+    // startup //
+    //---------//
+    @Override
+    protected void startup ()
+    {
+        logger.debug("SymbolRipper. 2/startup");
+
+        frame = defineLayout(getMainFrame());
+
+        show(frame); // Here we go...
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------//
     // main //
     //------//
@@ -447,6 +432,7 @@ public class SymbolRipper
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Drawing //
     //---------//

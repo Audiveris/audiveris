@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,19 +21,22 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.glyph.ShapeSet;
+import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
 import org.audiveris.omr.math.TableUtil;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.util.ByteUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -53,10 +56,13 @@ import java.util.Map.Entry;
  * There are several topics to consider in a template specification:
  * <dl>
  * <dt><b>Base shape</b></dt>
- * <dd>Supported shapes are NOTEHEAD_BLACK, NOTEHEAD_VOID and WHOLE_NOTE and possibly their small
- * (cue) counterparts</dd>
+ * <dd>As of this writing, there are 24 head shapes, as defined by {@link ShapeSet#Heads}
+ * collection, organized by {@link HeadMotif} values.
+ * Depending upon the various active {@link ProcessingSwitch} values for the sheet at hand,
+ * some shapes can be discarded.
+ * </dd>
  * <dt><b>Size</b></dt>
- * <dd>Either standard size or small size (for cues and grace notes).</dd>
+ * <dd>Standard size vs small size (for cues and grace notes).</dd>
  * <dt><b>Lines and Stems</b></dt>
  * <dd>These regions will be neutralized in the distance table, hence the templates don't have to
  * cope with them.</dd>
@@ -75,18 +81,16 @@ public class Template
 
     private static final Logger logger = LoggerFactory.getLogger(Template.class);
 
-    /** Ratio applied to small symbols (cue / grace). */
-    public static final double smallRatio = constants.smallRatio.getValue();
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Template shape. */
     private final Shape shape;
 
+    /** Font family. */
+    private final MusicFamily family;
+
     /** Scaling factor. */
     private final int pointSize;
-
-    /** Collection of key points defined for this template. */
-    private final List<PixelDistance> keyPoints;
 
     /** Template width. (perhaps larger than symbol width) */
     private final int width;
@@ -104,11 +108,16 @@ public class Template
      */
     private final Map<Anchor, Point2D> offsets = new EnumMap<>(Anchor.class);
 
+    /** Collection of key points lazily computed for this template. */
+    private List<PixelDistance> keyPoints;
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Template object with a provided set of points.
      *
      * @param shape      the template specified shape
+     * @param family     the music font family
      * @param pointSize  scaling factor
      * @param width      template width
      * @param height     template height
@@ -116,6 +125,7 @@ public class Template
      * @param slimBounds symbol slim bounds WRT template bounds
      */
     public Template (Shape shape,
+                     MusicFamily family,
                      int pointSize,
                      int width,
                      int height,
@@ -123,14 +133,16 @@ public class Template
                      Rectangle slimBounds)
     {
         this.shape = shape;
+        this.family = family;
         this.pointSize = pointSize;
-        this.keyPoints = new ArrayList<>(keyPoints);
+        this.keyPoints = keyPoints != null ? new ArrayList<>(keyPoints) : null;
         this.width = width;
         this.height = height;
         this.slimBounds = slimBounds;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------//
     // dump //
     //------//
@@ -147,7 +159,7 @@ public class Template
             }
         }
 
-        for (PixelDistance pix : keyPoints) {
+        for (PixelDistance pix : getKeyPoints()) {
             vals[pix.x][pix.y] = (int) Math.round(pix.d);
         }
 
@@ -203,7 +215,7 @@ public class Template
         double weights = 0; // Sum of weights
         double total = 0; // Sum of weighted distances
 
-        for (PixelDistance pix : keyPoints) {
+        for (PixelDistance pix : getKeyPoints()) {
             int nx = ul.x + pix.x;
             int ny = ul.y + pix.y;
 
@@ -216,8 +228,8 @@ public class Template
                     // pix.d < 0 for expected hole, expected negative distance to nearest foreground
                     // pix.d == 0 for expected foreground, 0 distance
                     // pix.d > 0 for expected background, expected distance to nearest foreground
-                    double weight = (pix.d == 0) ? foreWeight : ((pix.d > 0) ? backWeight
-                            : holeWeight);
+                    double weight = (pix.d == 0) ? foreWeight
+                            : ((pix.d > 0) ? backWeight : holeWeight);
                     double expected = (pix.d == 0) ? 0 : 1;
                     double actual = (actualDist == 0) ? 0 : 1;
                     double dist = Math.abs(actual - expected);
@@ -262,7 +274,7 @@ public class Template
         int expectedHoles = 0; // Expected number of white pixels in hole
         int actualHoles = 0; // Actual number of white pixels in hole
 
-        for (PixelDistance pix : keyPoints) {
+        for (PixelDistance pix : getKeyPoints()) {
             int nx = ul.x + pix.x;
             int ny = ul.y + pix.y;
 
@@ -308,6 +320,19 @@ public class Template
     //-------------//
     // getBoundsAt //
     //-------------//
+    @Override
+    public Rectangle2D getBoundsAt (double x,
+                                    double y,
+                                    Anchor anchor)
+    {
+        final Point2D offset = getOffset(anchor);
+
+        return new Rectangle2D.Double(x - offset.getX(), y - offset.getY(), width, height);
+    }
+
+    //-------------//
+    // getBoundsAt //
+    //-------------//
     public Rectangle getBoundsAt (int x,
                                   int y,
                                   Anchor anchor)
@@ -317,17 +342,12 @@ public class Template
         return new Rectangle(x - offset.x, y - offset.y, width, height);
     }
 
-    //-------------//
-    // getBoundsAt //
-    //-------------//
-    @Override
-    public Rectangle2D getBoundsAt (double x,
-                                    double y,
-                                    Anchor anchor)
+    //-----------//
+    // getFamily //
+    //-----------//
+    public MusicFamily getFamily ()
     {
-        final Point2D offset = getOffset(anchor);
-
-        return new Rectangle2D.Double(x - offset.getX(), y - offset.getY(), width, height);
+        return family;
     }
 
     //---------------------//
@@ -347,7 +367,7 @@ public class Template
         final int imgHeight = image.getHeight();
         final List<Point> fores = new ArrayList<>();
 
-        for (PixelDistance pix : keyPoints) {
+        for (PixelDistance pix : getKeyPoints()) {
             if (pix.d != 0) {
                 continue;
             }
@@ -441,7 +461,12 @@ public class Template
      */
     public List<PixelDistance> getKeyPoints ()
     {
-        return Collections.unmodifiableList(keyPoints);
+
+        if (keyPoints == null) {
+            keyPoints = TemplateFactory.retrieveKeyPoints(shape, family, pointSize);
+        }
+
+        return keyPoints;
     }
 
     //-----------//
@@ -453,27 +478,17 @@ public class Template
         final Point2D offset = offsets.get(anchor);
 
         // We have to round abscissa in symmetrical manner around slim rectangle
-        switch (anchor) {
-        case MIDDLE_LEFT:
-        case LEFT_STEM:
-        case BOTTOM_LEFT_STEM:
-            return new Point(
-                    (int) Math.round(offset.getX() - 0.5 - 0.001),
-                    (int) Math.round(offset.getY() - 0.5));
-
-        case MIDDLE_RIGHT:
-        case RIGHT_STEM:
-        case TOP_RIGHT_STEM:
-            return new Point(
-                    (int) Math.round(offset.getX() - 0.5 + 0.001),
-                    (int) Math.round(offset.getY() - 0.5));
-
-        default:
-        case CENTER:
-            return new Point(
-                    (int) Math.round(offset.getX() - 0.5),
-                    (int) Math.round(offset.getY() - 0.5));
-        }
+        return switch (anchor.hSide()) {
+        case LEFT -> new Point(
+                (int) Math.round(offset.getX() - 0.5 - 0.001),
+                (int) Math.round(offset.getY() - 0.5));
+        default -> new Point(
+                (int) Math.round(offset.getX() - 0.5),
+                (int) Math.round(offset.getY() - 0.5));
+        case RIGHT -> new Point(
+                (int) Math.round(offset.getX() - 0.5 + 0.001),
+                (int) Math.round(offset.getY() - 0.5));
+        };
     }
 
     //-------------//
@@ -585,17 +600,17 @@ public class Template
         sb.append(shape);
 
         sb.append(" w:").append(width).append(",h:").append(height);
-        sb.append(" keyPoints:").append(keyPoints.size());
+        sb.append(" keyPoints:").append(keyPoints != null ? keyPoints.size() : null);
 
         if ((slimBounds.width != width) || (slimBounds.height != height)) {
             sb.append("\n slim:").append(slimBounds);
         }
-
-        for (Entry<Anchor, Point2D> entry : offsets.entrySet()) {
-            final Point2D offset = entry.getValue();
-            sb.append("\n ").append(entry.getKey()).append(PointUtil.toString(offset));
-        }
-
+        //
+        //        for (Entry<Anchor, Point2D> entry : offsets.entrySet()) {
+        //            final Point2D offset = entry.getValue();
+        //            sb.append("\n ").append(entry.getKey()).append(PointUtil.toString(offset));
+        //        }
+        //
         return sb.append("}").toString();
     }
 
@@ -623,6 +638,8 @@ public class Template
 
         return new Point(x, y);
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------//
     // impactOf //
@@ -677,7 +694,16 @@ public class Template
         return constants.reallyBadDistance.getValue();
     }
 
+    //-------------------//
+    // retrieveKeyPoints //
+    //-------------------//
+    private static void retrieveKeyPoints ()
+    {
+        // TO BE IMPLEMENTED...
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -685,20 +711,16 @@ public class Template
             extends ConstantSet
     {
 
-        private final Constant.Ratio smallRatio = new Constant.Ratio(
-                0.67,
-                "Global ratio applied to small (cue/grace) templates");
-
-        private final Constant.Ratio foreWeight = new Constant.Ratio(
-                5.0, // Was 1.0, now modified for cross heads
-                "Weight assigned to template foreground pixels");
-
         private final Constant.Ratio backWeight = new Constant.Ratio(
                 1.0,
                 "Weight assigned to template exterior background pixels");
 
+        private final Constant.Ratio foreWeight = new Constant.Ratio(
+                6.0,
+                "Weight assigned to template foreground pixels");
+
         private final Constant.Ratio holeWeight = new Constant.Ratio(
-                4.0, // Was 1.0, now modified for cross heads
+                4.0,
                 "Weight assigned to template interior background pixels");
 
         private final Scale.Fraction dilation = new Scale.Fraction(

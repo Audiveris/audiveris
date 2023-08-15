@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,54 +22,110 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.FontInfo;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+import static org.audiveris.omr.ui.symbol.OmrFont.RATIO_TINY;
+import static org.audiveris.omr.ui.symbol.OmrFont.defaultImageColor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 
 /**
- * Class <code>TextSymbol</code> implements a decorated text symbol
+ * Class <code>TextSymbol</code> implements a decorated text symbol.
  *
  * @author Hervé Bitteur
  */
 public class TextSymbol
         extends ShapeSymbol
 {
+    private static final Logger logger = LoggerFactory.getLogger(TextSymbol.class);
+
     //~ Instance fields ----------------------------------------------------------------------------
 
+    /** The text font family to use. */
+    protected TextFamily textFamily;
+
     /** The text string to use. */
-    private final String str;
+    protected final String str;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Create an TextSymbol
+     * Create a <code>TextSymbol</code>.
      *
-     * @param shape the precise shape
-     * @param str   the text to draw
+     * @param shape       the precise shape
+     * @param musicFamily the MusicFont family (irrelevant in fact, but cannot be null...)
+     * @param str         the text to draw
      */
     public TextSymbol (Shape shape,
+                       MusicFamily musicFamily,
                        String str)
     {
-        this(false, shape, str);
+        super(shape, musicFamily);
+        this.str = str;
     }
 
     /**
-     * Create an TextSymbol
+     * Create a <code>TextSymbol</code>.
      *
-     * @param isIcon true for an icon
-     * @param shape  the precise shape
-     * @param str    the text to draw
+     * @param shape      the precise shape
+     * @param textFamily the TextFont family
+     * @param str        the text to draw
      */
-    protected TextSymbol (boolean isIcon,
-                          Shape shape,
-                          String str)
+    public TextSymbol (Shape shape,
+                       TextFamily textFamily,
+                       String str)
     {
-        super(isIcon, shape, true); // Decorated
+        super(shape, null);
+        this.textFamily = textFamily;
         this.str = str;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------------//
+    // buildImage //
+    //------------//
+    /**
+     * Build an image that represents the related shape, using the provided specific text font.
+     *
+     * @param textFont properly-scaled font (for interline and zoom)
+     * @return the image built, or null if failed
+     */
+    public SymbolImage buildImage (TextFont textFont)
+    {
+        // Params
+        Params p = getParams(textFont);
+
+        // Allocate image of proper size
+        Rectangle intRect = p.rect.getBounds();
+        SymbolImage img = new SymbolImage(
+                intRect.width,
+                intRect.height,
+                PointUtil.rounded(p.offset));
+
+        // Paint the image
+        Graphics2D g = (Graphics2D) img.getGraphics();
+
+        g.setColor(defaultImageColor);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+
+        paint(g, p, new Point(0, 0), TOP_LEFT);
+
+        return img;
+    }
+
     //----------//
     // getModel //
     //----------//
@@ -83,51 +139,76 @@ public class TextSymbol
         return p.model;
     }
 
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new TextSymbol(true, shape, str);
-    }
-
     //-----------//
     // getParams //
     //-----------//
     @Override
     protected MyParams getParams (MusicFont font)
     {
-        MyParams p = new MyParams();
+        TextFamily theTextFamily = textFamily;
 
-        int fontSize = (int) Math.rint(font.getSize2D() * 0.5); // 0.5 for icon size
-        TextFont textFont = new TextFont(fontSize);
+        if (theTextFamily == null) {
+            // Workaround to retrieve sheet text family
+            final StubsController controller = StubsController.getInstance();
+            final SheetStub stub = controller.getSelectedStub();
+            theTextFamily = (stub != null) ? stub.getTextFamily() : TextFamily.SansSerif;
+        }
+
+        final int fontSize = (int) Math.rint(font.getSize2D() * RATIO_TINY);
+        final TextFont textFont = new TextFont(
+                theTextFamily.getFontName(),
+                null,
+                Font.PLAIN,
+                fontSize);
+
+        final MyParams p = new MyParams();
         p.layout = textFont.layout(str);
         p.rect = p.layout.getBounds();
 
-        Point2D baseLoc = new Point2D.Double(0, 0);
-        FontInfo fontInfo = FontInfo.createDefault(fontSize);
-
+        final Point2D baseLoc = new Point2D.Double(0, 0);
+        final FontInfo fontInfo = FontInfo.createDefault(fontSize);
         p.model = new WordInter.Model(str, baseLoc, fontInfo);
 
         return p;
     }
 
+    //-----------//
+    // getParams //
+    //-----------//
+    protected MyParams getParams (TextFont textFont)
+    {
+        final MyParams p = new MyParams();
+
+        p.layout = textFont.layout(str);
+        p.rect = p.layout.getBounds();
+
+        final Point2D baseLoc = new Point2D.Double(0, 0);
+        final FontInfo fontInfo = new FontInfo(textFont.getSize(), textFont.getFontName());
+        p.model = new WordInter.Model(str, baseLoc, fontInfo);
+
+        return p;
+    }
+
+    //---------------//
+    // getTextFamily //
+    //---------------//
+    public TextFamily getTextFamily ()
+    {
+        return textFamily;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//
     protected static class MyParams
-            extends BasicSymbol.Params
+            extends ShapeSymbol.Params
     {
 
         // offset: not used
-        // layout: head decoration
+        // layout: text layout
         // rect:   global image
-        //
-        // ledger thickness
-        int thickness;
-
         // model
         WordInter.Model model;
     }

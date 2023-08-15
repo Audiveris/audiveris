@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,6 +20,9 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
+
+import static java.awt.RenderingHints.KEY_ANTIALIASING;
+import static java.awt.RenderingHints.VALUE_ANTIALIAS_OFF;
 
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
@@ -43,8 +46,6 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import static java.awt.RenderingHints.KEY_ANTIALIASING;
-import static java.awt.RenderingHints.VALUE_ANTIALIAS_OFF;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -67,6 +68,7 @@ public class PictureView
     private static final Logger logger = LoggerFactory.getLogger(PictureView.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Link with sheet. */
     private final Sheet sheet;
 
@@ -77,6 +79,7 @@ public class PictureView
     private final SheetTab sheetTab;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a new <code>PictureView</code> instance, dedicated to a sheet.
      *
@@ -109,6 +112,7 @@ public class PictureView
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------//
     // propertyChange //
     //----------------//
@@ -119,6 +123,7 @@ public class PictureView
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------------//
     // RunTableView //
     //--------------//
@@ -141,62 +146,6 @@ public class PictureView
                     JPopupMenu popup = pageMenu.getPopup();
                     popup.show(this, getZoom().scaled(pt.x), getZoom().scaled(pt.y));
                 }
-            }
-        }
-
-        //--------//
-        // render //
-        //--------//
-        @Override
-        public void render (final Graphics2D g)
-        {
-            // Check we have all needed data
-            // If not, use SwingWorker to spawn a task to retrieve the data and then do the painting
-            final ViewParameters viewParams = ViewParameters.getInstance();
-            final boolean input = viewParams.isInputPainting();
-            final boolean output = viewParams.isOutputPainting();
-            final boolean voice = viewParams.isVoicePainting();
-
-            boolean ok = true;
-
-            if (input) {
-                final Picture picture = sheet.getPicture();
-
-                if (sheetTab == SheetTab.GRAY_TAB) {
-                    BufferedImage gray = picture.getGrayImage();
-                    ok = gray != null;
-                } else {
-                    BufferedImage binary = picture.getImage(Picture.ImageKey.BINARY);
-                    ok = binary != null;
-                }
-            }
-
-            if (ok) {
-                RunTable table = sheet.getPicture().getTable(Picture.TableKey.BINARY);
-                doRender(g, input, output, voice, table);
-            } else {
-                // Spawn
-                new SwingWorker<RunTable, Void>()
-                {
-                    @Override
-                    protected RunTable doInBackground ()
-                            throws Exception
-                    {
-                        try {
-                            LogUtil.start(sheet.getStub());
-
-                            return sheet.getPicture().getTable(Picture.TableKey.BINARY);
-                        } finally {
-                            LogUtil.stopStub();
-                        }
-                    }
-
-                    @Override
-                    protected void done ()
-                    {
-                        repaint();
-                    }
-                }.execute();
             }
         }
 
@@ -228,6 +177,68 @@ public class PictureView
             }
 
             g.setColor(oldColor);
+        }
+
+        //--------//
+        // render //
+        //--------//
+        @Override
+        public void render (final Graphics2D g)
+        {
+            //            // Check we have all needed data
+            //            // If not, use SwingWorker to spawn a task to retrieve the data and then do the painting
+            //            final ViewParameters viewParams = ViewParameters.getInstance();
+            //            final boolean input = viewParams.isInputPainting();
+            //            final boolean output = viewParams.isOutputPainting();
+            //            final boolean voice = viewParams.isVoicePainting();
+
+            // For GRAY and BINARY views, there is no point to draw output
+            // Therefore, we just draw the input
+            final boolean input = true;
+            final boolean output = false;
+            final boolean voice = false;
+
+            boolean ok = true;
+
+            if (input) {
+                final Picture picture = sheet.getPicture();
+
+                if (sheetTab == SheetTab.GRAY_TAB) {
+                    BufferedImage gray = picture.getGrayImage();
+                    ok = gray != null;
+                } else {
+                    BufferedImage binary = picture.getImage(Picture.ImageKey.BINARY);
+                    ok = binary != null;
+                }
+            }
+
+            if (ok) {
+                RunTable table = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+                doRender(g, input, output, voice, table);
+            } else {
+                // Spawn
+                new SwingWorker<RunTable, Void>()
+                {
+                    @Override
+                    protected RunTable doInBackground ()
+                        throws Exception
+                    {
+                        try {
+                            LogUtil.start(sheet.getStub());
+
+                            return sheet.getPicture().getTable(Picture.TableKey.BINARY);
+                        } finally {
+                            LogUtil.stopStub();
+                        }
+                    }
+
+                    @Override
+                    protected void done ()
+                    {
+                        repaint();
+                    }
+                }.execute();
+            }
         }
     }
 }

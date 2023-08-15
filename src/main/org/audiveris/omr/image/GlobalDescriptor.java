@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+
+import ij.process.ByteProcessor;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -47,13 +47,21 @@ public class GlobalDescriptor
     private static final Constants constants = new Constants();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * The <b>same</b> threshold value to apply on <b>all</b> pixels of the source.
      */
     @XmlAttribute(name = "threshold")
     public final int threshold;
 
+    /** No-arg constructor meant for JAXB. */
+    private GlobalDescriptor ()
+    {
+        threshold = 0;
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new GlobalDescriptor object.
      *
@@ -64,13 +72,8 @@ public class GlobalDescriptor
         this.threshold = threshold;
     }
 
-    /** No-arg constructor meant for JAXB. */
-    private GlobalDescriptor ()
-    {
-        threshold = 0;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // equals //
     //--------//
@@ -128,6 +131,8 @@ public class GlobalDescriptor
         return sb.toString();
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------------//
     // defaultIsSpecific //
     //-------------------//
@@ -152,14 +157,6 @@ public class GlobalDescriptor
         return constants.defaultThreshold.getValue();
     }
 
-    //---------------------//
-    // setDefaultThreshold //
-    //---------------------//
-    public static void setDefaultThreshold (int threshold)
-    {
-        constants.defaultThreshold.setValue(threshold);
-    }
-
     //----------------//
     // getSourceValue //
     //----------------//
@@ -176,7 +173,16 @@ public class GlobalDescriptor
         constants.defaultThreshold.resetToSource();
     }
 
+    //---------------------//
+    // setDefaultThreshold //
+    //---------------------//
+    public static void setDefaultThreshold (int threshold)
+    {
+        constants.defaultThreshold.setValue(threshold);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -39,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -57,6 +56,7 @@ public class TribeMenu
     private static final Logger logger = LoggerFactory.getLogger(SampleMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Selected glyph. */
     private final Glyph glyph;
 
@@ -67,6 +67,7 @@ public class TribeMenu
     private SampleSheet sampleSheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>TribeMenu</code> object.
      *
@@ -86,6 +87,7 @@ public class TribeMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // addGood //
     //---------//
@@ -190,6 +192,7 @@ public class TribeMenu
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------//
     // SelectMenu //
     //------------//
@@ -206,7 +209,8 @@ public class TribeMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(this, (ActionEvent e) -> {
+            ShapeSet.addAllShapes(sheet.getStub().getMusicFamily(), this, (ActionEvent e) ->
+            {
                 JMenuItem source = (JMenuItem) e.getSource();
                 Shape shape = Shape.valueOf(source.getText());
                 selectBest(shape);

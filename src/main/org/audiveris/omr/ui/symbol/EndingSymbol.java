@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.EndingInter;
-import static org.audiveris.omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -32,7 +33,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class <code>EndingSymbol</code> implements an ending symbol
+ * Class <code>EndingSymbol</code> implements an ending symbol.
  *
  * @author Hervé Bitteur
  */
@@ -44,30 +45,22 @@ public class EndingSymbol
     final boolean withRightLeg;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create an EndingSymbol.
-     *
-     * @param withRightLeg true to provide the optional right leg
-     */
-    public EndingSymbol (boolean withRightLeg)
-    {
-        this(withRightLeg, false);
-    }
 
     /**
      * Create an EndingSymbol.
      *
      * @param withRightLeg true to provide the optional right leg
-     * @param isIcon       true for an icon
+     * @param family       the musicFont family
      */
-    protected EndingSymbol (boolean withRightLeg,
-                            boolean isIcon)
+    public EndingSymbol (boolean withRightLeg,
+                         MusicFamily family)
     {
-        super(isIcon, withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, false);
+        super(withRightLeg ? Shape.ENDING_WRL : Shape.ENDING, family);
         this.withRightLeg = withRightLeg;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getModel //
     //----------//
@@ -79,24 +72,6 @@ public class EndingSymbol
         p.model.translate(p.vectorTo(location));
 
         return p.model;
-    }
-
-    //--------//
-    // getTip //
-    //--------//
-    @Override
-    public String getTip ()
-    {
-        return shape + (withRightLeg ? " (w/ right leg)" : "");
-    }
-
-    //------------//
-    // createIcon //
-    //------------//
-    @Override
-    protected ShapeSymbol createIcon ()
-    {
-        return new EndingSymbol(withRightLeg, true);
     }
 
     //-----------//
@@ -124,6 +99,15 @@ public class EndingSymbol
         return p;
     }
 
+    //--------//
+    // getTip //
+    //--------//
+    @Override
+    public String getTip ()
+    {
+        return shape + (withRightLeg ? " (w/ right leg)" : "");
+    }
+
     //-------//
     // paint //
     //-------//
@@ -147,11 +131,12 @@ public class EndingSymbol
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Params //
     //--------//
     protected static class MyParams
-            extends BasicSymbol.Params
+            extends ShapeSymbol.Params
     {
 
         // offset: used

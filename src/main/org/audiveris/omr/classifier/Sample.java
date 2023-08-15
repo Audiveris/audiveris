@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -51,28 +51,37 @@ public class Sample
     private static final Logger logger = LoggerFactory.getLogger(Sample.class);
 
     /** For comparing Sample instances by shape. */
-    public static final Comparator<Sample> byShape = (Sample s1, Sample s2) -> Integer.compare(s1
-            .getShape().ordinal(), s2.getShape().ordinal());
+    public static final Comparator<Sample> byShape = (Sample s1,
+                                                      Sample s2) -> Integer.compare(
+                                                              s1.getShape().ordinal(),
+                                                              s2.getShape().ordinal());
 
     /** For comparing Sample instances by normalized width. */
-    public static final Comparator<Sample> byNormalizedWidth = (Sample s1, Sample s2) -> Double
-            .compare(s1.getNormalizedWidth(), s2.getNormalizedWidth());
+    public static final Comparator<Sample> byNormalizedWidth = (Sample s1,
+                                                                Sample s2) -> Double.compare(
+                                                                        s1.getNormalizedWidth(),
+                                                                        s2.getNormalizedWidth());
 
     /** For comparing Sample instances by normalized height. */
-    public static final Comparator<Sample> byNormalizedHeight = (Sample s1, Sample s2) -> Double
-            .compare(s1.getNormalizedHeight(), s2.getNormalizedHeight());
+    public static final Comparator<Sample> byNormalizedHeight = (Sample s1,
+                                                                 Sample s2) -> Double.compare(
+                                                                         s1.getNormalizedHeight(),
+                                                                         s2.getNormalizedHeight());
 
     /** For comparing Sample instances by normalized weight. */
-    public static final Comparator<Sample> byNormalizedWeight = (Sample s1, Sample s2) -> Double
-            .compare(s1.getNormalizedWeight(), s2.getNormalizedWeight());
+    public static final Comparator<Sample> byNormalizedWeight = (Sample s1,
+                                                                 Sample s2) -> Double.compare(
+                                                                         s1.getNormalizedWeight(),
+                                                                         s2.getNormalizedWeight());
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /** Assigned shape. */
     @XmlAttribute(name = "shape")
-    protected final Shape shape;
+    protected Shape shape;
 
     /** Scaling information. */
     @XmlAttribute(name = "interline")
@@ -85,11 +94,46 @@ public class Sample
 
     // Transient data
     //---------------
-    //
+
     /** True for artificial (font-based) sample. */
-    private boolean symbol;
+    private boolean isSymbol;
+
+    /** True for a redundant artificial smaple. */
+    private boolean isIgnored;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB unmarshalling.
+     */
+    private Sample ()
+    {
+        this(0, 0, null, 0, 0, null, null);
+    }
+
+    /**
+     * Creates a new <code>Sample</code> object from a glyph.
+     *
+     * @param glyph     the originating glyph
+     * @param interline sheet interline
+     * @param shape     assigned shape
+     * @param pitch     pitch WRT related staff
+     */
+    public Sample (Glyph glyph,
+                   int interline,
+                   Shape shape,
+                   Double pitch)
+    {
+        this(
+                glyph.getLeft(),
+                glyph.getTop(),
+                glyph.getRunTable(),
+                interline,
+                glyph.getId(),
+                shape,
+                pitch);
+    }
+
     /**
      * Creates a new <code>ShapeSample</code> object.
      *
@@ -116,37 +160,14 @@ public class Sample
         this.pitch = pitch;
     }
 
-    /**
-     * Creates a new <code>Sample</code> object from a glyph.
-     *
-     * @param glyph     the originating glyph
-     * @param interline sheet interline
-     * @param shape     assigned shape
-     * @param pitch     pitch WRT related staff
-     */
-    public Sample (Glyph glyph,
-                   int interline,
-                   Shape shape,
-                   Double pitch)
-    {
-        this(glyph.getLeft(), glyph.getTop(), glyph.getRunTable(), interline, glyph.getId(), shape,
-             pitch);
-    }
-
-    /**
-     * No-arg constructor needed for JAXB unmarshalling.
-     */
-    private Sample ()
-    {
-        this(0, 0, null, 0, 0, null, null);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * We need equality strictly based on reference.
      *
      * @param obj the reference object with which to compare.
-     * @return <code>true</code> if this object is the same as the obj argument; <code>false</code> otherwise.
+     * @return <code>true</code> if this object is the same as the obj argument; <code>false</code>
+     *         otherwise.
      */
     @Override
     public boolean equals (Object obj)
@@ -234,22 +255,6 @@ public class Sample
         return hash;
     }
 
-    /**
-     * @return the symbol
-     */
-    public boolean isSymbol ()
-    {
-        return symbol;
-    }
-
-    /**
-     * @param symbol the symbol to set
-     */
-    public void setSymbol (boolean symbol)
-    {
-        this.symbol = symbol;
-    }
-
     //-----------//
     // internals //
     //-----------//
@@ -272,6 +277,50 @@ public class Sample
 
         return sb.toString();
     }
+
+    public boolean isIgnored ()
+    {
+        return isIgnored;
+    }
+
+    /**
+     * @return the isSymbol
+     */
+    public boolean isSymbol ()
+    {
+        return isSymbol;
+    }
+
+    /**
+     * WARNING: This method is reserved for administrative purpose only.
+     *
+     * @param shape new shape for the sample
+     * @return true if shape was actually renamed
+     */
+    public boolean renameShapeAs (Shape shape)
+    {
+        if (this.shape != shape) {
+            this.shape = shape;
+            return true;
+        }
+
+        return false;
+    }
+
+    public void setIgnored (boolean bool)
+    {
+        isIgnored = bool;
+    }
+
+    /**
+     * @param bool true for a font symbol, false otherwise
+     */
+    public void setSymbol (boolean bool)
+    {
+        isSymbol = bool;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------------------//
     // getRecordableShape //

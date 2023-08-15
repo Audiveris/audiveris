@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
- * Class <code>EditionTask</code> modifies the location and/or geometry of an inter
+ * Class <code>EditionTask</code> modifies the location and/or geometry of an inter.
  *
  * @author Hervé Bitteur
  */
@@ -45,6 +45,7 @@ public class EditionTask
     private final Collection<Link> unlinks;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>EditionTask</code> object.
      *
@@ -67,10 +68,11 @@ public class EditionTask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public void performDo ()
     {
-        editor.doit();
+        editor.finalDoit();
 
         for (Iterator<Link> it = links.iterator(); it.hasNext();) {
             Link link = it.next();
@@ -106,7 +108,7 @@ public class EditionTask
     @Override
     public String toString ()
     {
-        return new StringBuilder(getClass().getSimpleName())
-                .append('{').append(editor).append('}').toString();
+        return new StringBuilder(getClass().getSimpleName()).append('{').append(editor).append('}')
+                .toString();
     }
 }

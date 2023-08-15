@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import java.awt.Color;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
@@ -37,9 +36,9 @@ import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
-import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
@@ -55,6 +54,7 @@ import org.audiveris.omr.util.Entities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -93,11 +93,13 @@ public class ChordListMenu
     private static final String NO_VOICE_ID = "None";
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final Sheet sheet;
 
     private final ChordListener chordListener = new ChordListener();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>ChordListMenu</code> object.
      *
@@ -110,15 +112,21 @@ public class ChordListMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------------//
-    // updateUserLocation //
-    //--------------------//
-    @Override
-    public void updateUserLocation (Rectangle rect)
-    {
-        updateMenu(sheet.getInterIndex().getEntityService().getSelectedEntityList());
 
-        super.updateUserLocation(rect);
+    //---------//
+    // addItem //
+    //---------//
+    /**
+     * Connect the selection listener to the menu item and add it to the top menu.
+     *
+     * @param item     the menu item
+     * @param listener the listener to connect
+     */
+    private void addItem (JMenuItem item,
+                          SelectionListener listener)
+    {
+        item.addMouseListener(listener);
+        add(item);
     }
 
     //----------------//
@@ -171,21 +179,6 @@ public class ChordListMenu
         }
 
         addItem(new JMenuItem(new MergeAction(headChords, withStem)), listener);
-    }
-
-    //----------------//
-    // buildVoiceMenu //
-    //----------------//
-    /**
-     * Build an assign voice action item.
-     *
-     * @param chord    the provided head chord
-     * @param listener the selection listener to use
-     */
-    private void buildVoiceMenu (final AbstractChordInter chord,
-                                 final SelectionListener listener)
-    {
-        addItem(new VoiceMenu(chord), listener);
     }
 
     //----------------//
@@ -491,6 +484,21 @@ public class ChordListMenu
         }
     }
 
+    //----------------//
+    // buildVoiceMenu //
+    //----------------//
+    /**
+     * Build an assign voice action item.
+     *
+     * @param chord    the provided head chord
+     * @param listener the selection listener to use
+     */
+    private void buildVoiceMenu (final AbstractChordInter chord,
+                                 final SelectionListener listener)
+    {
+        addItem(new VoiceMenu(chord), listener);
+    }
+
     //----------------------//
     // checkAlignedForMerge //
     //----------------------//
@@ -540,6 +548,29 @@ public class ChordListMenu
 
                 prevCenter = center;
             }
+        }
+
+        return true;
+    }
+
+    //-----------------//
+    // checkHeadChords //
+    //-----------------//
+    /**
+     * Check if the provided chords are all head chords.
+     *
+     * @param chords     (input) provided list of chords (heads and rests)
+     * @param headChords (output) the list of head chords
+     */
+    private boolean checkHeadChords (List<AbstractChordInter> chords,
+                                     List<HeadChordInter> headChords)
+    {
+        for (AbstractChordInter ch : chords) {
+            if (!(ch instanceof HeadChordInter)) {
+                return false;
+            }
+
+            headChords.add((HeadChordInter) ch);
         }
 
         return true;
@@ -670,8 +701,7 @@ public class ChordListMenu
             return (AbstractChordInter) inter;
         }
 
-        if (inter instanceof AbstractNoteInter) {
-            AbstractNoteInter note = (AbstractNoteInter) inter;
+        if (inter instanceof AbstractNoteInter note) {
             AbstractChordInter chord = note.getChord();
 
             if ((chord != null) && !(chord instanceof SmallChordInter)) {
@@ -762,46 +792,19 @@ public class ChordListMenu
         }
     }
 
-    //---------//
-    // addItem //
-    //---------//
-    /**
-     * Connect the selection listener to the menu item and add it to the top menu.
-     *
-     * @param item     the menu item
-     * @param listener the listener to connect
-     */
-    private void addItem (JMenuItem item,
-                          SelectionListener listener)
+    //--------------------//
+    // updateUserLocation //
+    //--------------------//
+    @Override
+    public void updateUserLocation (Rectangle rect)
     {
-        item.addMouseListener(listener);
-        add(item);
-    }
+        updateMenu(sheet.getInterIndex().getEntityService().getSelectedEntityList());
 
-    //-----------------//
-    // checkHeadChords //
-    //-----------------//
-    /**
-     * Check if the provided chords are all head chords.
-     *
-     * @param chords     (input) provided list of chords (heads and rests)
-     * @param headChords (output) the list of head chords
-     */
-    private boolean checkHeadChords (List<AbstractChordInter> chords,
-                                     List<HeadChordInter> headChords)
-    {
-        for (AbstractChordInter ch : chords) {
-            if (!(ch instanceof HeadChordInter)) {
-                return false;
-            }
-
-            headChords.add((HeadChordInter) ch);
-        }
-
-        return true;
+        super.updateUserLocation(rect);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------------//
     // ChordListener //
     //---------------//
@@ -902,17 +905,14 @@ public class ChordListMenu
                         for (int i = 0; i < (chords.size() - 1); i++) {
                             final AbstractChordInter src = chords.get(i);
 
-                            for (AbstractChordInter tgt : chords.subList(
-                                    i + 1,
-                                    chords.size())) {
+                            for (AbstractChordInter tgt : chords.subList(i + 1, chords.size())) {
                                 Relation rel = relationClass.newInstance();
                                 strs.add(new SourceTargetRelation(src, tgt, rel));
                             }
                         }
 
                         sheet.getInterController().linkMultiple(sig, strs);
-                    } catch (InstantiationException |
-                             IllegalAccessException ex) {
+                    } catch (InstantiationException | IllegalAccessException ex) {
                         logger.error("Could not instantiate class {}", relationClass, ex);
                     }
                 }
@@ -1025,6 +1025,31 @@ public class ChordListMenu
         }
     }
 
+    //-------------//
+    // SplitAction //
+    //-------------//
+    private class SplitAction
+            extends AbstractAction
+    {
+
+        private final HeadChordInter chord;
+
+        SplitAction (HeadChordInter chord)
+        {
+            super("Split");
+            putValue(Action.SHORT_DESCRIPTION, "Split the provided chord into two chords");
+
+            this.chord = chord;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            logger.debug("Splitting {}", chord);
+            sheet.getInterController().splitChord(chord);
+        }
+    }
+
     //-----------//
     // VoiceMenu //
     //-----------//
@@ -1046,7 +1071,7 @@ public class ChordListMenu
             chordPrefId = chord.getPreferredVoiceId();
 
             final int prefId = (chordPrefId != null) ? chordPrefId : 0;
-            setText("Preferred voice [Experimental]");
+            setText("Preferred voice");
             setToolTipText("Assign specific voice ID to first chord in system voice");
 
             // None item
@@ -1056,7 +1081,7 @@ public class ChordListMenu
             add(noneItem);
 
             // ID items
-            for (int id : chord.getMeasure().inferVoiceFamily(chord).ids()) {
+            for (int id : chord.getMeasure().inferVoiceKind(chord).ids()) {
                 final JMenuItem item = new JRadioButtonMenuItem("" + id);
                 item.setOpaque(true);
                 item.setBackground(new Color(Voices.colorOf(id).getRGB()));
@@ -1084,31 +1109,6 @@ public class ChordListMenu
                     sheet.getInterController().changeVoiceId(chord, prefId);
                 }
             }
-        }
-    }
-
-    //-------------//
-    // SplitAction //
-    //-------------//
-    private class SplitAction
-            extends AbstractAction
-    {
-
-        private final HeadChordInter chord;
-
-        SplitAction (HeadChordInter chord)
-        {
-            super("Split");
-            putValue(Action.SHORT_DESCRIPTION, "Split the provided chord into two chords");
-
-            this.chord = chord;
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            logger.debug("Splitting {}", chord);
-            sheet.getInterController().splitChord(chord);
         }
     }
 }

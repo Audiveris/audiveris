@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -33,6 +33,7 @@ import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.OmrGlassPane;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -59,7 +60,6 @@ import java.util.List;
  * It cannot shift view limits.
  *
  * @see InterEditor
- *
  * @author Hervé Bitteur
  */
 public class InterDnd
@@ -69,6 +69,7 @@ public class InterDnd
     private static final Logger logger = LoggerFactory.getLogger(InterDnd.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -100,12 +101,13 @@ public class InterDnd
     private Point staffReference;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>InterDnd</code> object.
      *
      * @param ghost  the inter being dragged
      * @param sheet  the containing sheet
-     * @param symbol the originating symbol
+     * @param symbol the originating symbol, standard size, perhaps decorated
      */
     public InterDnd (Inter ghost,
                      Sheet sheet,
@@ -124,6 +126,25 @@ public class InterDnd
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------------------//
+    // buildCurveStroke //
+    //------------------//
+    /**
+     * Build stroke for curves, based on sheet scale and view zoom.
+     *
+     * @return curve stroke
+     */
+    private Stroke buildCurveStroke ()
+    {
+        final Scale scale = sheet.getScale();
+        final Integer fore = (scale != null) ? scale.getFore() : null;
+        final double thickness = (fore != null) ? fore : Curves.DEFAULT_THICKNESS;
+        final float curveThickness = (float) (zoomRatio * thickness);
+
+        return new BasicStroke(curveThickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+    }
+
     //------//
     // drop //
     //------//
@@ -153,8 +174,7 @@ public class InterDnd
                 return;
             }
 
-            if ((staves.size() == 1)
-                        || (ghost instanceof BraceInter)) {
+            if ((staves.size() == 1) || (ghost instanceof BraceInter)) {
                 staff = staves.get(0);
             } else {
                 // Prompt user...
@@ -203,6 +223,27 @@ public class InterDnd
     public Inter getGhost ()
     {
         return ghost;
+    }
+
+    //----------------//
+    // getSceneBounds //
+    //----------------//
+    /**
+     * The scene is composed of inter image plus its decorations if any
+     * (staff reference, support links, ledgers).
+     *
+     * @return bounding box of inter + decorations if any + reference point
+     */
+    public Rectangle getSceneBounds ()
+    {
+        if (staffReference == null) {
+            return null;
+        }
+
+        final Rectangle box = tracker.getSceneBounds();
+        box.add(staffReference);
+
+        return box;
     }
 
     //------------//
@@ -289,6 +330,22 @@ public class InterDnd
         }
     }
 
+    //--------//
+    // render //
+    //--------//
+    public void render (Graphics2D g)
+    {
+        if (staffReference != null) {
+            // Draw line to staff reference if any
+            g.setColor(Color.RED);
+
+            final Point center = PointUtil.rounded(ghost.getRelationCenter());
+            g.drawLine(center.x, center.y, staffReference.x, staffReference.y);
+        }
+
+        tracker.render(g);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -308,61 +365,6 @@ public class InterDnd
         return sb.append('}').toString();
     }
 
-    //----------------//
-    // getSceneBounds //
-    //----------------//
-    /**
-     * The scene is composed of inter image plus its decorations if any
-     * (staff reference, support links, ledgers).
-     *
-     * @return bounding box of inter + decorations if any + reference point
-     */
-    public Rectangle getSceneBounds ()
-    {
-        if (staffReference == null) {
-            return null;
-        }
-
-        final Rectangle box = tracker.getSceneBounds();
-        box.add(staffReference);
-
-        return box;
-    }
-
-    //--------//
-    // render //
-    //--------//
-    public void render (Graphics2D g)
-    {
-        if (staffReference != null) {
-            // Draw line to staff reference if any
-            g.setColor(Color.RED);
-
-            final Point center = PointUtil.rounded(ghost.getRelationCenter());
-            g.drawLine(center.x, center.y, staffReference.x, staffReference.y);
-        }
-
-        tracker.render(g);
-    }
-
-    //------------------//
-    // buildCurveStroke //
-    //------------------//
-    /**
-     * Build stroke for curves, based on sheet scale and view zoom.
-     *
-     * @return curve stroke
-     */
-    private Stroke buildCurveStroke ()
-    {
-        final Scale scale = sheet.getScale();
-        final Integer fore = (scale != null) ? scale.getFore() : null;
-        final double thickness = (fore != null) ? fore : Curves.DEFAULT_THICKNESS;
-        final float curveThickness = (float) (zoomRatio * thickness);
-
-        return new BasicStroke(curveThickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-    }
-
     //-------------//
     // updateGhost //
     //-------------//
@@ -374,11 +376,12 @@ public class InterDnd
      */
     private boolean updateGhost (Point location)
     {
-        // We use the non-decorated symbol
         final int staffInterline = staff.getSpecificInterline();
-        final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape()))
-                ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
-                : MusicFont.getBaseFont(staffInterline);
+        final MusicFamily family = sheet.getStub().getMusicFamily();
+        final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape())) ? MusicFont.getHeadFont(
+                family,
+                sheet.getScale(),
+                staffInterline) : MusicFont.getBaseFont(family, staffInterline);
 
         return ghost.deriveFrom(symbol, sheet, font, location);
     }
@@ -400,7 +403,7 @@ public class InterDnd
     {
         // Adapt image to current interline
         final int zoomedInterline = (int) Math.rint(zoomRatio * interline);
-        final MusicFont font = MusicFont.getBaseFont(zoomedInterline);
-        glass.setImage(symbol.getDecoratedSymbol().buildImage(font, curveStroke));
+        final MusicFont font = MusicFont.getBaseFont(symbol.getMusicFamily(), zoomedInterline);
+        glass.setImage(symbol.getDecoratedVersion().buildImage(font, curveStroke));
     }
 }

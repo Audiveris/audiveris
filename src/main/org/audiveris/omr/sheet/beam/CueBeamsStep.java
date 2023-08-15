@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -28,17 +28,27 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.lag.BasicLag;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Lags;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Class <code>CueBeamsStep</code> implements <b>CUE_BEAMS</b> step, which attempts to
- * retrieve beams for cue notes.
+ * retrieve small beams for cue notes.
+ * <p>
+ * This step is effective only if both following conditions are met:
+ * <ol>
+ * <li>The switch {@link ProcessingSwitch#smallHeads} is set.
+ * <li>No small beam height has been set (either detected by SCALE step or manually set by end-user)
+ * </ol>
  *
  * @author Hervé Bitteur
  */
@@ -48,6 +58,8 @@ public class CueBeamsStep
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(CueBeamsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -59,6 +71,35 @@ public class CueBeamsStep
 
     //~ Methods ------------------------------------------------------------------------------------
     //----------//
+    // doProlog //
+    //----------//
+    @Override
+    protected Context doProlog (Sheet sheet)
+    {
+        // Check whether we have to effectively run this step
+        if (!sheet.getStub().getProcessingSwitches().getValue(ProcessingSwitch.smallHeads)) {
+            logger.info("Step CUE_BEAMS is skipped because small heads switch is off");
+            return null;
+        }
+
+        if (sheet.getScale().getSmallBeamScale() != null) {
+            logger.info("Step CUE_BEAMS is skipped because small beams have been processed");
+            return null;
+        }
+
+        final List<Glyph> spots = new ArrayList<>();
+        final Lag spotLag = new BasicLag(Lags.SPOT_LAG, SpotsBuilder.SPOT_ORIENTATION);
+
+        if ((OMR.gui != null) && constants.displayCueBeamSpots.isSet()) {
+            // Display on cue spot glyphs
+            final SpotsController spotController = new SpotsController(sheet, spots, spotLag);
+            spotController.refresh();
+        }
+
+        return new Context(spots, spotLag);
+    }
+
+    //----------//
     // doSystem //
     //----------//
     @Override
@@ -66,28 +107,24 @@ public class CueBeamsStep
                           Context context)
             throws StepException
     {
-        new BeamsBuilder(system, context.spotLag).buildCueBeams(context.spots); // -> Cue beams
-    }
-
-    //----------//
-    // doProlog //
-    //----------//
-    @Override
-    protected Context doProlog (Sheet sheet)
-    {
-        List<Glyph> spots = new ArrayList<>();
-        Lag spotLag = new BasicLag(Lags.SPOT_LAG, SpotsBuilder.SPOT_ORIENTATION);
-
-        // Display on cue spot glyphs?
-        if ((OMR.gui != null) && constants.displayCueBeamSpots.isSet()) {
-            SpotsController spotController = new SpotsController(sheet, spots, spotLag);
-            spotController.refresh();
+        if (context != null) {
+            new BeamsBuilder(system, context.spotLag).buildCueBeams(context.spots); // -> Cue beams
         }
-
-        return new Context(spots, spotLag);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean displayCueBeamSpots = new Constant.Boolean(
+                false,
+                "Should we display the cue beam Spots view?");
+    }
+
     //---------//
     // Context //
     //---------//
@@ -101,31 +138,13 @@ public class CueBeamsStep
         public final Lag spotLag;
 
         /** Spot glyphs. */
-        private final List<Glyph> spots;
+        public final List<Glyph> spots;
 
-        /**
-         * Create Context.
-         *
-         * @param spots
-         * @param spotLag
-         */
         Context (List<Glyph> spots,
                  Lag spotLag)
         {
             this.spots = spots;
             this.spotLag = spotLag;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean displayCueBeamSpots = new Constant.Boolean(
-                false,
-                "Should we display the cue beam Spots view?");
     }
 }

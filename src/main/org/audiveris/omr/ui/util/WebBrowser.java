@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,18 +52,20 @@ public class WebBrowser
     private static final Logger logger = LoggerFactory.getLogger(WebBrowser.class);
 
     /** Major browsers. */
-    private static final String[] browsers
-            = {"firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape"};
+    private static final String[] browsers =
+    { "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
 
     /** Singleton instance, initially null. */
     private static WebBrowser instance;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private WebBrowser ()
     {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // isSupported //
     //-------------//
@@ -114,6 +116,8 @@ public class WebBrowser
         return "WebBrowser(unimplemented fallback)";
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------------//
     // getBrowser //
     //------------//
@@ -145,17 +149,20 @@ public class WebBrowser
         try {
             if (WellKnowns.MAC_OS_X) {
                 Class fileMgr = Class.forName("com.apple.eio.FileManager");
-                Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[]{String.class});
-                openURL.invoke(null, new Object[]{url});
+                Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[]
+                { String.class });
+                openURL.invoke(null, new Object[]
+                { url });
             } else if (WellKnowns.WINDOWS) {
-                Runtime.getRuntime().exec(new String[]{"rundll32",
-                                                       "url.dll,FileProtocolHandler",
-                                                       url});
+                Runtime.getRuntime().exec(new String[]
+                { "rundll32", "url.dll,FileProtocolHandler", url });
             } else { //assume Unix or Linux
 
                 for (String browser : browsers) {
-                    if (Runtime.getRuntime().exec(new String[]{"which", browser}).waitFor() == 0) {
-                        Runtime.getRuntime().exec(new String[]{browser, url});
+                    if (Runtime.getRuntime().exec(new String[]
+                    { "which", browser }).waitFor() == 0) {
+                        Runtime.getRuntime().exec(new String[]
+                        { browser, url });
 
                         return;
                     }
@@ -163,14 +170,9 @@ public class WebBrowser
 
                 logger.warn("Could not find any suitable web browser");
             }
-        } catch (IOException |
-                 ClassNotFoundException |
-                 IllegalAccessException |
-                 IllegalArgumentException |
-                 InterruptedException |
-                 NoSuchMethodException |
-                 SecurityException |
-                 InvocationTargetException ex) {
+        } catch (IOException | ClassNotFoundException | IllegalAccessException
+                | IllegalArgumentException | InterruptedException | NoSuchMethodException
+                | SecurityException | InvocationTargetException ex) {
             logger.warn("Could not launch browser", ex);
         }
     }
@@ -194,11 +196,9 @@ public class WebBrowser
                         Method supported = desktopClass.getMethod("isDesktopSupported");
 
                         return (Boolean) supported.invoke(null);
-                    } catch (IllegalAccessException |
-                             IllegalArgumentException |
-                             NoSuchMethodException |
-                             SecurityException |
-                             InvocationTargetException e) {
+                    } catch (IllegalAccessException | IllegalArgumentException
+                            | NoSuchMethodException | SecurityException
+                            | InvocationTargetException e) {
                         return false;
                     }
                 }

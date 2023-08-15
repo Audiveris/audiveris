@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,11 +32,15 @@ public enum FilterKind
     GLOBAL("Basic filter using a global threshold", GlobalFilter.class),
     ADAPTIVE("Adaptive filter using a local threshold", AdaptiveFilter.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+
     /** Description. */
     public final String description;
 
     /** Implementing class. */
     public final Class<?> classe;
+
+    //~ Constructors -------------------------------------------------------------------------------
 
     FilterKind (String description,
                 Class<?> classe)

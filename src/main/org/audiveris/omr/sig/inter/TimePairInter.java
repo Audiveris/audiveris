@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -25,9 +25,13 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.NumDenSymbol;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.VerticalSide;
-import static org.audiveris.omr.util.VerticalSide.*;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +47,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class <code>TimePairInter</code> is a time signature composed of two halves
  * (num and den).
  * <p>
- * It is an Inter ensemble composed of 2 TimeNumberInter instances, one for top, one for bottom.
+ * It is an Inter ensemble composed of 2 {@link TimeNumberInter} instances, one for the top,
+ * and one for the bottom.
  *
  * @author Hervé Bitteur
  */
@@ -58,17 +63,6 @@ public class TimePairInter
     private static final Logger logger = LoggerFactory.getLogger(TimePairInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * (Private) constructor.
-     *
-     * @param timeRational
-     * @param grade
-     */
-    private TimePairInter (TimeRational timeRational,
-                           Double grade)
-    {
-        super(null, null, timeRational, grade);
-    }
 
     /**
      * No-arg constructor meant for JAXB.
@@ -78,7 +72,20 @@ public class TimePairInter
         super((Glyph) null, null, 0.0);
     }
 
+    /**
+     * Creates a new <code>TimePairInter</code> object.
+     *
+     * @param timeRational num/den literal value
+     * @param grade        quality grade
+     */
+    public TimePairInter (TimeRational timeRational,
+                          Double grade)
+    {
+        super(null, null, timeRational, grade);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -103,6 +110,17 @@ public class TimePairInter
         }
 
         EnsembleHelper.addMember(this, member);
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        setAbnormal(getMembers().size() != 2);
+
+        return isAbnormal();
     }
 
     //-----------//
@@ -149,8 +167,7 @@ public class TimePairInter
             return (TimeNumberInter) members.get((side == TOP) ? 0 : 1);
 
         case 1:
-
-            if (staff != null) {
+            if ((staff != null) && !staff.isTablature()) {
                 final TimeNumberInter tni = (TimeNumberInter) members.get(0);
                 final double pp = staff.pitchPositionOf(tni.getCenter());
 
@@ -199,6 +216,22 @@ public class TimePairInter
     public String getShapeString ()
     {
         return "TIME_SIG:" + getTimeRational();
+    }
+
+    //----------------//
+    // getShapeSymbol //
+    //----------------//
+    @Override
+    public ShapeSymbol getShapeSymbol (MusicFamily family)
+    {
+        final TimeNumberInter num = getNum();
+        final TimeNumberInter den = getDen();
+
+        if (num == null || den == null) {
+            return null;
+        }
+
+        return new NumDenSymbol(null, family, num.getValue(), den.getValue());
     }
 
     //-----------------//
@@ -254,7 +287,8 @@ public class TimePairInter
         bounds = null;
         timeRational = null;
 
-        setGrade(EnsembleHelper.computeMeanContextualGrade(this));
+        checkAbnormal();
+        setGrade(isAbnormal() ? 0 : EnsembleHelper.computeMeanContextualGrade(this));
     }
 
     //--------------//
@@ -282,6 +316,8 @@ public class TimePairInter
         return inter;
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------//
     // createAdded //
     //-------------//
@@ -295,8 +331,8 @@ public class TimePairInter
     public static TimePairInter createAdded (TimeNumberInter num,
                                              TimeNumberInter den)
     {
-        TimePairInter pair = new TimePairInter(null, null);
-        SIGraph sig = num.getSig();
+        final TimePairInter pair = new TimePairInter(null, null);
+        final SIGraph sig = num.getSig();
         sig.addVertex(pair);
         pair.addMember(num);
         pair.addMember(den);

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -48,6 +48,7 @@ public class KeySlice
     private static final Logger logger = LoggerFactory.getLogger(KeySlice.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Containing Roi. */
     private final KeyRoi roi;
 
@@ -67,6 +68,7 @@ public class KeySlice
     private boolean stuffed;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>KeySlice</code> object.
      *
@@ -81,6 +83,7 @@ public class KeySlice
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Remove the alter in this slice.
      */
@@ -103,17 +106,6 @@ public class KeySlice
     }
 
     /**
-     * Set slice alter
-     *
-     * @param alter the alter to set
-     */
-    public void setAlter (KeyAlterInter alter)
-    {
-        deleteAlter();
-        this.alter = alter;
-    }
-
-    /**
      * Report slice evaluation
      *
      * @return the eval
@@ -124,16 +116,6 @@ public class KeySlice
     }
 
     /**
-     * Set slice evaluation
-     *
-     * @param eval the eval to set
-     */
-    public void setEval (Evaluation eval)
-    {
-        this.eval = eval;
-    }
-
-    /**
      * Report slice glyph
      *
      * @return the glyph
@@ -141,16 +123,6 @@ public class KeySlice
     public Glyph getGlyph ()
     {
         return glyph;
-    }
-
-    /**
-     * Set slice glyph
-     *
-     * @param glyph the glyph to set
-     */
-    public void setGlyph (Glyph glyph)
-    {
-        this.glyph = glyph;
     }
 
     /**
@@ -171,10 +143,11 @@ public class KeySlice
     public String getLabel ()
     {
         if (alter != null) {
-            return String.format("%s%+1d %-5d",
-                                 (alter.getShape() == Shape.FLAT) ? "b" : "#",
-                                 alter.getIntegerPitch(),
-                                 alter.getId());
+            return String.format(
+                    "%s%+1d %-5d",
+                    (alter.getShape() == Shape.FLAT) ? "b" : "#",
+                    alter.getIntegerPitch(),
+                    alter.getId());
         } else if (stuffed) {
             return "STUFFED  ";
         } else {
@@ -190,16 +163,6 @@ public class KeySlice
     public final Rectangle getRect ()
     {
         return new Rectangle(rect);
-    }
-
-    /**
-     * Define a new rectangle for this slice.
-     *
-     * @param rect the slice new rectangle
-     */
-    public void setRect (Rectangle rect)
-    {
-        this.rect = new Rectangle(rect);
     }
 
     /**
@@ -242,6 +205,37 @@ public class KeySlice
         return stuffed;
     }
 
+    /**
+     * Set slice alter
+     *
+     * @param alter the alter to set
+     */
+    public void setAlter (KeyAlterInter alter)
+    {
+        deleteAlter();
+        this.alter = alter;
+    }
+
+    /**
+     * Set slice evaluation
+     *
+     * @param eval the eval to set
+     */
+    public void setEval (Evaluation eval)
+    {
+        this.eval = eval;
+    }
+
+    /**
+     * Set slice glyph
+     *
+     * @param glyph the glyph to set
+     */
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
+    }
+
     //--------------//
     // setPitchRect //
     //--------------//
@@ -265,6 +259,16 @@ public class KeySlice
         final int y = (int) Math.rint(yp - (typicalHeight / 2));
         setRect(new Rectangle(getStart(), y, getWidth(), typicalHeight));
         staff.addAttachment(roi.attachmentKey(getId()), rect);
+    }
+
+    /**
+     * Define a new rectangle for this slice.
+     *
+     * @param rect the slice new rectangle
+     */
+    public void setRect (Rectangle rect)
+    {
+        this.rect = new Rectangle(rect);
     }
 
     /**

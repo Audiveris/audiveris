@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Class <code>1</code> is a GradeImpacts implementation based on an underlying
+ * Class <code>SuiteImpacts</code> is a GradeImpacts implementation based on an underlying
  * CheckSuite.
  *
  * @author Hervé Bitteur
@@ -42,9 +42,11 @@ public class SuiteImpacts
     private static final Logger logger = LoggerFactory.getLogger(SuiteImpacts.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final String suiteName;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SuiteImpacts object.
      *
@@ -61,6 +63,7 @@ public class SuiteImpacts
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // getDump //
     //---------//
@@ -100,6 +103,8 @@ public class SuiteImpacts
     {
         this.grade = grade;
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------//
     // newInstance //

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,6 +50,7 @@ public abstract class StemItem
     private static final double EPS = 0.01;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Start and stop points, oriented top down. */
     final Line2D line;
 
@@ -60,6 +61,7 @@ public abstract class StemItem
     final int contrib;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>StemItem</code> object.
      *
@@ -77,6 +79,7 @@ public abstract class StemItem
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public String toString ()
     {
@@ -86,15 +89,18 @@ public abstract class StemItem
 
         if (glyph != null) {
             sb.append(' ').append(glyph);
-            sb.append(String.format(" %.1f-%.1f",
-                                    glyph.getStartPoint(Orientation.VERTICAL).getY(),
-                                    glyph.getStopPoint(Orientation.VERTICAL).getY()));
+            sb.append(
+                    String.format(
+                            " %.1f-%.1f",
+                            glyph.getStartPoint(Orientation.VERTICAL).getY(),
+                            glyph.getStopPoint(Orientation.VERTICAL).getY()));
         }
 
         return sb.append('}').toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // GapItem //
     //---------//
@@ -122,8 +128,8 @@ public abstract class StemItem
                 final GapItem gap = (GapItem) obj;
 
                 // We care about y values only
-                return (Math.abs(gap.line.getY1() - this.line.getY1()) < EPS)
-                               && (Math.abs(gap.line.getY2() - this.line.getY2()) < EPS);
+                return (Math.abs(gap.line.getY1() - this.line.getY1()) < EPS) && (Math.abs(
+                        gap.line.getY2() - this.line.getY2()) < EPS);
             }
 
             return super.equals(obj);

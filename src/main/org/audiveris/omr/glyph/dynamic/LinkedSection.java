@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,10 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.glyph.dynamic;
-
-import ij.process.ByteProcessor;
-
-import net.jcip.annotations.NotThreadSafe;
 
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Section;
@@ -44,6 +40,9 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import ij.process.ByteProcessor;
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Class <code>LinkedSection</code> is a working wrapper around a section considered as
@@ -78,6 +77,7 @@ public class LinkedSection
     private SectionCompound compound;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>LinkedSection</code> object.
      *
@@ -89,6 +89,7 @@ public class LinkedSection
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // addSource //
     //-----------//
@@ -224,19 +225,6 @@ public class LinkedSection
         return compound;
     }
 
-    //-------------//
-    // setCompound //
-    //-------------//
-    /**
-     * Set the underlying compound section
-     *
-     * @param compound underlying section
-     */
-    public void setCompound (SectionCompound compound)
-    {
-        this.compound = compound;
-    }
-
     @Override
     public int getFirstPos ()
     {
@@ -262,21 +250,9 @@ public class LinkedSection
     }
 
     @Override
-    public void setId (int id)
-    {
-        section.setId(id);
-    }
-
-    @Override
     public Lag getLag ()
     {
         return section.getLag();
-    }
-
-    @Override
-    public void setLag (Lag lag)
-    {
-        section.setLag(lag);
     }
 
     @Override
@@ -434,15 +410,15 @@ public class LinkedSection
     }
 
     @Override
-    public boolean intersects (Shape shape)
-    {
-        return section.intersects(shape);
-    }
-
-    @Override
     public boolean intersects (Section that)
     {
         return section.intersects(that);
+    }
+
+    @Override
+    public boolean intersects (Shape shape)
+    {
+        return section.intersects(shape);
     }
 
     //-------------//
@@ -471,12 +447,6 @@ public class LinkedSection
     }
 
     @Override
-    public void setVip (boolean vip)
-    {
-        section.setVip(vip);
-    }
-
-    @Override
     public boolean render (Graphics g,
                            boolean drawBorders,
                            Color specificColor)
@@ -490,6 +460,31 @@ public class LinkedSection
         return section.renderSelected(g);
     }
 
+    //-------------//
+    // setCompound //
+    //-------------//
+    /**
+     * Set the underlying compound section
+     *
+     * @param compound underlying section
+     */
+    public void setCompound (SectionCompound compound)
+    {
+        this.compound = compound;
+    }
+
+    @Override
+    public void setId (int id)
+    {
+        section.setId(id);
+    }
+
+    @Override
+    public void setLag (Lag lag)
+    {
+        section.setLag(lag);
+    }
+
     //--------------//
     // setProcessed //
     //--------------//
@@ -499,6 +494,12 @@ public class LinkedSection
     public void setProcessed ()
     {
         processed = true;
+    }
+
+    @Override
+    public void setVip (boolean vip)
+    {
+        section.setVip(vip);
     }
 
     //----------//

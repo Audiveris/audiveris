@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -60,10 +60,10 @@ public class OldBeamGroup
     private static final Logger logger = LoggerFactory.getLogger(OldBeamGroup.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** Id for debug mainly, unique within measure stack. */
     @XmlAttribute
     private final int id;
@@ -80,6 +80,7 @@ public class OldBeamGroup
     private final LinkedHashSet<AbstractBeamInter> beams = new LinkedHashSet<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * No-arg constructor meant for JAXB.
      */
@@ -89,6 +90,7 @@ public class OldBeamGroup
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // afterReload //
     //-------------//

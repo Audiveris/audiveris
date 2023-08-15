@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -26,15 +26,17 @@ import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import static org.audiveris.omr.ui.selection.SelectionHint.*;
+import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_INIT;
+import static org.audiveris.omr.ui.selection.SelectionHint.LOCATION_ADD;
+import static org.audiveris.omr.ui.selection.SelectionHint.LOCATION_INIT;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.util.ClassUtil;
 
-import org.bushe.swing.event.EventSubscriber;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -87,6 +89,7 @@ public class RubberPanel
     private static final Logger logger = LoggerFactory.getLogger(RubberPanel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Current display zoom, if any. */
     protected Zoom zoom;
 
@@ -100,6 +103,7 @@ public class RubberPanel
     protected SelectionService locationService;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a bare RubberPanel, assuming zoom and rubber will be assigned later.
      */
@@ -128,6 +132,48 @@ public class RubberPanel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------//
+    // bindKeys //
+    //----------//
+    /**
+     * Bind keys to shift rubber location and modify zoom ratio.
+     */
+    protected void bindKeys ()
+    {
+        final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        final ActionMap actionMap = getActionMap();
+
+        // Slight translation
+        inputMap.put(KeyStroke.getKeyStroke("alt UP"), "UpTranslateAction");
+        actionMap.put("UpTranslateAction", getTranslateAction(0, -1));
+
+        inputMap.put(KeyStroke.getKeyStroke("alt DOWN"), "DownTranslateAction");
+        actionMap.put("DownTranslateAction", getTranslateAction(0, 1));
+
+        inputMap.put(KeyStroke.getKeyStroke("alt LEFT"), "LeftTranslateAction");
+        actionMap.put("LeftTranslateAction", getTranslateAction(-1, 0));
+
+        inputMap.put(KeyStroke.getKeyStroke("alt RIGHT"), "RightTranslateAction");
+        actionMap.put("RightTranslateAction", getTranslateAction(1, 0));
+
+        // Zoom modifications
+        inputMap.put(KeyStroke.getKeyStroke("ctrl ADD"), "ZoomInAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl EQUALS"), "ZoomInAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl shift EQUALS"), "ZoomInAction");
+        actionMap.put("ZoomInAction", new ZoomAction(1));
+
+        inputMap.put(KeyStroke.getKeyStroke("ctrl SUBTRACT"), "ZoomOutAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl MINUS"), "ZoomOutAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl shift MINUS"), "ZoomOutAction");
+        actionMap.put("ZoomOutAction", new ZoomAction(-1));
+
+        inputMap.put(KeyStroke.getKeyStroke("ctrl NUMPAD0"), "ZoomResetAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl 0"), "ZoomResetAction");
+        inputMap.put(KeyStroke.getKeyStroke("ctrl shift 0"), "ZoomResetAction");
+        actionMap.put("ZoomResetAction", new ZoomAction(0));
+    }
+
     //--------------//
     // contextAdded //
     //--------------//
@@ -163,19 +209,6 @@ public class RubberPanel
         } else {
             return null;
         }
-    }
-
-    //--------------//
-    // setModelSize //
-    //--------------//
-    /**
-     * Assign the size of the model object, that is the un-scaled size.
-     *
-     * @param modelSize the model size to use
-     */
-    public void setModelSize (Dimension modelSize)
-    {
-        this.modelSize = new Dimension(modelSize);
     }
 
     //----------------//
@@ -280,6 +313,15 @@ public class RubberPanel
         return new AffineTransform(z, 0, 0, z, gOffset.x, gOffset.y);
     }
 
+    //--------------------//
+    // getTranslateAction //
+    //--------------------//
+    protected TranslateAction getTranslateAction (int dx,
+                                                  int dy)
+    {
+        return new TranslateAction(dx, dy);
+    }
+
     //---------//
     // getZoom //
     //---------//
@@ -293,25 +335,28 @@ public class RubberPanel
         return zoom;
     }
 
-    //---------//
-    // setZoom //
-    //---------//
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
     /**
-     * Assign a zoom to this panel
+     * Handle the provided location event
      *
-     * @param zoom the zoom assigned
+     * @param locationEvent the location event to process
      */
-    public final void setZoom (final Zoom zoom)
+    protected void handleLocationEvent (LocationEvent locationEvent)
     {
-        // Clean up if needed
-        unsetZoom(this.zoom);
+        // Location => move view focus on this location w/ markers
+        showFocusLocation(locationEvent.getData(), false); // Centered: false
+    }
 
-        this.zoom = zoom;
-
-        if (zoom != null) {
-            // Add a listener on this zoom
-            zoom.addChangeListener(this);
-        }
+    //----------------//
+    // objectSelected //
+    //----------------//
+    @Override
+    public void objectSelected (Point pt,
+                                MouseMovement movement)
+    {
+        setFocusLocation(new Rectangle(pt), movement, ENTITY_INIT);
     }
 
     //---------//
@@ -338,6 +383,50 @@ public class RubberPanel
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
+    //----------------//
+    // paintComponent //
+    //----------------//
+    /**
+     * Final method, called by Swing.
+     * If something has to be changed in the rendering of the model, override the {@link #render}
+     * and/or the {@link #renderItems} methods instead.
+     *
+     * @param initialGraphics the graphic context
+     */
+    @Override
+    protected final void paintComponent (Graphics initialGraphics)
+    {
+        // First, paint view background
+        super.paintComponent(initialGraphics);
+
+        // Adjust graphics context to desired zoom ratio
+        if (zoom != null) {
+            Graphics2D g = (Graphics2D) initialGraphics.create();
+            g.scale(zoom.getRatio(), zoom.getRatio());
+
+            try {
+                // Second, drawing specific to the view (to be provided in subclass)
+                render(g);
+
+                // Third, draw selected items (to be provided in subclass)
+                renderItems(g);
+            } catch (ConcurrentModificationException ex) {
+                // It's hard to avoid all concurrent modifs since the GUI may need to
+                // repaint a view, while some processing is taking place ...
+                repaint(); // Simply trigger another painting later ...
+            } catch (Throwable ex) {
+                logger.warn("RubberPanel paintComponent " + ex, ex);
+            } finally {
+                // Finally, draw the location rubber, now that everything else has been drawn
+                if (rubber != null) {
+                    rubber.render(initialGraphics);
+                }
+
+                g.dispose();
+            }
         }
     }
 
@@ -399,13 +488,62 @@ public class RubberPanel
             showFocusLocation(rect, true);
 
             // Then, adjust zoom ratio to fit the rectangle size
-            SwingUtilities.invokeLater(() -> {
+            SwingUtilities.invokeLater( () ->
+            {
                 Rectangle vr = getVisibleRect();
                 double zoomX = vr.width / (double) rect.width;
                 double zoomY = vr.height / (double) rect.height;
                 zoom.setRatio(Math.min(zoomX, zoomY));
             });
         }
+    }
+
+    //--------//
+    // render //
+    //--------//
+    /**
+     * Render the global data in the provided Graphics context, perhaps already scaled.
+     * This is just a place holder, the real global rendering must be provided by a subclass.
+     *
+     * @param g the graphic context
+     */
+    protected void render (Graphics2D g)
+    {
+        // Void by default
+    }
+
+    //---------------//
+    // renderBoxArea //
+    //---------------//
+    /**
+     * Render the provided box area, using inverted color.
+     *
+     * @param box the rectangle whose area is to be rendered
+     * @param g   the graphic context
+     */
+    protected void renderBoxArea (Rectangle box,
+                                  Graphics2D g)
+    {
+        // Check the clipping
+        Rectangle clip = g.getClipBounds();
+
+        if ((box != null) && ((clip == null) || clip.intersects(box))) {
+            g.drawRect(box.x, box.y, box.width, box.height);
+        }
+    }
+
+    //-------------//
+    // renderItems //
+    //-------------//
+    /**
+     * Room for rendering additional items, typically some user-selected items if any,
+     * on top of the global ones already rendered by the {@link #render} method.
+     *
+     * @param g the graphic context
+     */
+    protected void renderItems (Graphics2D g)
+    {
+        // Void by default
     }
 
     //-------------//
@@ -421,6 +559,30 @@ public class RubberPanel
         pointSelected(point, MouseMovement.PRESSING);
 
         ///showFocusLocation(new Rectangle(point), true);
+    }
+
+    //------------------//
+    // setFocusLocation //
+    //------------------//
+    /**
+     * Modifies the location information.
+     * This method simply posts the location information on the proper Service object, provided that
+     * such object has been previously injected (by means of the method {@link #setLocationService}.
+     *
+     * @param rect     the location information
+     * @param movement the button movement
+     * @param hint     the related selection hint
+     */
+    protected void setFocusLocation (Rectangle rect,
+                                     MouseMovement movement,
+                                     SelectionHint hint)
+    {
+        logger.debug("setFocusLocation rect={} hint={}", rect, hint);
+
+        // Publish the new user-selected location
+        if (locationService != null) {
+            locationService.publish(new LocationEvent(this, hint, movement, new Rectangle(rect)));
+        }
     }
 
     //--------------------//
@@ -452,6 +614,19 @@ public class RubberPanel
         this.locationService = locationService;
     }
 
+    //--------------//
+    // setModelSize //
+    //--------------//
+    /**
+     * Assign the size of the model object, that is the un-scaled size.
+     *
+     * @param modelSize the model size to use
+     */
+    public void setModelSize (Dimension modelSize)
+    {
+        this.modelSize = new Dimension(modelSize);
+    }
+
     //-----------//
     // setRubber //
     //-----------//
@@ -468,6 +643,27 @@ public class RubberPanel
         rubber.setZoom(zoom);
         rubber.connectComponent(this);
         rubber.setMouseMonitor(this);
+    }
+
+    //---------//
+    // setZoom //
+    //---------//
+    /**
+     * Assign a zoom to this panel
+     *
+     * @param zoom the zoom assigned
+     */
+    public final void setZoom (final Zoom zoom)
+    {
+        // Clean up if needed
+        unsetZoom(this.zoom);
+
+        this.zoom = zoom;
+
+        if (zoom != null) {
+            // Add a listener on this zoom
+            zoom.addChangeListener(this);
+        }
     }
 
     //-------------------//
@@ -618,194 +814,18 @@ public class RubberPanel
         }
     }
 
-    //----------------//
-    // objectSelected //
-    //----------------//
-    @Override
-    public void objectSelected (Point pt,
-                                MouseMovement movement)
-    {
-        setFocusLocation(new Rectangle(pt), movement, ENTITY_INIT);
-    }
-
-    //----------//
-    // bindKeys //
-    //----------//
-    /**
-     * Bind keys to shift rubber location and modify zoom ratio.
-     */
-    protected void bindKeys ()
-    {
-        final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        final ActionMap actionMap = getActionMap();
-
-        // Slight translation
-        inputMap.put(KeyStroke.getKeyStroke("alt UP"), "UpTranslateAction");
-        actionMap.put("UpTranslateAction", getTranslateAction(0, -1));
-
-        inputMap.put(KeyStroke.getKeyStroke("alt DOWN"), "DownTranslateAction");
-        actionMap.put("DownTranslateAction", getTranslateAction(0, 1));
-
-        inputMap.put(KeyStroke.getKeyStroke("alt LEFT"), "LeftTranslateAction");
-        actionMap.put("LeftTranslateAction", getTranslateAction(-1, 0));
-
-        inputMap.put(KeyStroke.getKeyStroke("alt RIGHT"), "RightTranslateAction");
-        actionMap.put("RightTranslateAction", getTranslateAction(1, 0));
-
-        // Zoom modifications
-        inputMap.put(KeyStroke.getKeyStroke("ctrl ADD"), "ZoomInAction");
-        inputMap.put(KeyStroke.getKeyStroke("ctrl PLUS"), "ZoomInAction");
-        actionMap.put("ZoomInAction", new ZoomAction(1));
-
-        inputMap.put(KeyStroke.getKeyStroke("ctrl SUBTRACT"), "ZoomOutAction");
-        inputMap.put(KeyStroke.getKeyStroke("ctrl MINUS"), "ZoomOutAction");
-        actionMap.put("ZoomOutAction", new ZoomAction(-1));
-
-        inputMap.put(KeyStroke.getKeyStroke("ctrl NUMPAD0"), "ZoomResetAction");
-        inputMap.put(KeyStroke.getKeyStroke("ctrl 0"), "ZoomResetAction");
-        actionMap.put("ZoomResetAction", new ZoomAction(0));
-    }
-
-    //--------------------//
-    // getTranslateAction //
-    //--------------------//
-    protected TranslateAction getTranslateAction (int dx,
-                                                  int dy)
-    {
-        return new TranslateAction(dx, dy);
-    }
-
-    //----------------//
-    // paintComponent //
-    //----------------//
-    /**
-     * Final method, called by Swing.
-     * If something has to be changed in the rendering of the model, override the {@link #render}
-     * and/or the {@link #renderItems} methods instead.
-     *
-     * @param initialGraphics the graphic context
-     */
-    @Override
-    protected final void paintComponent (Graphics initialGraphics)
-    {
-        // First, paint view background
-        super.paintComponent(initialGraphics);
-
-        // Adjust graphics context to desired zoom ratio
-        if (zoom != null) {
-            Graphics2D g = (Graphics2D) initialGraphics.create();
-            g.scale(zoom.getRatio(), zoom.getRatio());
-
-            try {
-                // Second, drawing specific to the view (to be provided in subclass)
-                render(g);
-
-                // Third, draw selected items (to be provided in subclass)
-                renderItems(g);
-            } catch (ConcurrentModificationException ex) {
-                // It's hard to avoid all concurrent modifs since the GUI may need to
-                // repaint a view, while some processing is taking place ...
-                repaint(); // Simply trigger another painting later ...
-            } catch (Throwable ex) {
-                logger.warn("RubberPanel paintComponent " + ex, ex);
-            } finally {
-                // Finally, draw the location rubber, now that everything else has been drawn
-                if (rubber != null) {
-                    rubber.render(initialGraphics);
-                }
-
-                g.dispose();
-            }
-        }
-    }
-
-    //---------------------//
-    // handleLocationEvent //
-    //---------------------//
-    /**
-     * Handle the provided location event
-     *
-     * @param locationEvent the location event to process
-     */
-    protected void handleLocationEvent (LocationEvent locationEvent)
-    {
-        // Location => move view focus on this location w/ markers
-        showFocusLocation(locationEvent.getData(), false); // Centered: false
-    }
-
-    //--------//
-    // render //
-    //--------//
-    /**
-     * Render the global data in the provided Graphics context, perhaps already scaled.
-     * This is just a place holder, the real global rendering must be provided by a subclass.
-     *
-     * @param g the graphic context
-     */
-    protected void render (Graphics2D g)
-    {
-        // Void by default
-    }
-
-    //---------------//
-    // renderBoxArea //
-    //---------------//
-    /**
-     * Render the provided box area, using inverted color.
-     *
-     * @param box the rectangle whose area is to be rendered
-     * @param g   the graphic context
-     */
-    protected void renderBoxArea (Rectangle box,
-                                  Graphics2D g)
-    {
-        // Check the clipping
-        Rectangle clip = g.getClipBounds();
-
-        if ((box != null) && ((clip == null) || clip.intersects(box))) {
-            g.drawRect(box.x, box.y, box.width, box.height);
-        }
-    }
-
-    //-------------//
-    // renderItems //
-    //-------------//
-    /**
-     * Room for rendering additional items, typically some user-selected items if any,
-     * on top of the global ones already rendered by the {@link #render} method.
-     *
-     * @param g the graphic context
-     */
-    protected void renderItems (Graphics2D g)
-    {
-        // Void by default
-    }
-
-    //------------------//
-    // setFocusLocation //
-    //------------------//
-    /**
-     * Modifies the location information.
-     * This method simply posts the location information on the proper Service object, provided that
-     * such object has been previously injected (by means of the method {@link #setLocationService}.
-     *
-     * @param rect     the location information
-     * @param movement the button movement
-     * @param hint     the related selection hint
-     */
-    protected void setFocusLocation (Rectangle rect,
-                                     MouseMovement movement,
-                                     SelectionHint hint)
-    {
-        logger.debug("setFocusLocation rect={} hint={}", rect, hint);
-
-        // Publish the new user-selected location
-        if (locationService != null) {
-            locationService.publish(new LocationEvent(this, hint, movement, new Rectangle(rect)));
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final PixelCount focusMargin = new PixelCount(20, "Margin visible around a focus");
+    }
+
     //-----------------//
     // TranslateAction //
     //-----------------//
@@ -860,15 +880,5 @@ public class RubberPanel
         {
             rubber.modifyZoomRatio(val);
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final PixelCount focusMargin = new PixelCount(20, "Margin visible around a focus");
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -48,12 +48,14 @@ public abstract class EnsembleHelper
     private static final Logger logger = LoggerFactory.getLogger(EnsembleHelper.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private EnsembleHelper ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-----------//
     // addMember //
     //-----------//
@@ -78,6 +80,26 @@ public abstract class EnsembleHelper
         if (sig.getRelation(ensemble, member, Containment.class) == null) {
             sig.addEdge(ensemble, member, new Containment());
         }
+    }
+
+    //----------------------------//
+    // computeMeanContextualGrade //
+    //----------------------------//
+    /**
+     * Compute contextual grade of each ensemble member, then report the mean value.
+     *
+     * @param ensemble the containing inter
+     * @return mean contextual grade, or null if no value could be computed
+     */
+    public static Double computeMeanContextualGrade (InterEnsemble ensemble)
+    {
+        final SIGraph sig = ensemble.getSig();
+
+        if ((sig != null) && sig.containsVertex(ensemble)) {
+            return Inters.computeMeanContextualGrade(ensemble.getMembers());
+        }
+
+        return null;
     }
 
     //------------//
@@ -158,25 +180,5 @@ public abstract class EnsembleHelper
     {
         final SIGraph sig = ensemble.getSig();
         sig.removeEdge(ensemble, member);
-    }
-
-    //----------------------------//
-    // computeMeanContextualGrade //
-    //----------------------------//
-    /**
-     * Compute contextual grade of each ensemble member, then report the mean value.
-     *
-     * @param ensemble the containing inter
-     * @return mean contextual grade, or null if no value could be computed
-     */
-    public static Double computeMeanContextualGrade (InterEnsemble ensemble)
-    {
-        final SIGraph sig = ensemble.getSig();
-
-        if ((sig != null) && sig.containsVertex(ensemble)) {
-            return Inters.computeMeanContextualGrade(ensemble.getMembers());
-        }
-
-        return null;
     }
 }

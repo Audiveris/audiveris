@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -38,18 +38,6 @@ public class ScreenPoint
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new ScreenPoint object, from provided coordinates.
-     *
-     * @param x abscissa
-     * @param y ordinate
-     */
-    public ScreenPoint (int x,
-                        int y)
-    {
-        super(x, y);
-    }
-
-    /**
      * Creates a new ScreenPoint object, using a local component-based point.
      *
      * @param component  the component to use as the base
@@ -63,6 +51,19 @@ public class ScreenPoint
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    /**
+     * Creates a new ScreenPoint object, from provided coordinates.
+     *
+     * @param x abscissa
+     * @param y ordinate
+     */
+    public ScreenPoint (int x,
+                        int y)
+    {
+        super(x, y);
+    }
+
     //---------------//
     // getLocalPoint //
     //---------------//

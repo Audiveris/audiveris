@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -41,6 +41,7 @@ public abstract class TextItem
     private static final char[] VOWELS = "aeiouy".toCharArray();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Item bounds. */
     protected Rectangle bounds;
 
@@ -48,9 +49,7 @@ public abstract class TextItem
     protected String value;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //----------//
-    // TextItem //
-    //----------//
+
     /**
      * Creates a new TextItem object.
      *
@@ -68,26 +67,6 @@ public abstract class TextItem
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // hasVowell //
-    //-----------//
-    /**
-     * Report whether the item value contains at least one vowel.
-     *
-     * @return true if so
-     */
-    public boolean hasVowell ()
-    {
-        String lowerCaseValue = getValue().toLowerCase();
-
-        for (char v : VOWELS) {
-            if (lowerCaseValue.indexOf(v) != -1) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     //-----------//
     // getBounds //
@@ -104,19 +83,6 @@ public abstract class TextItem
         } else {
             return null;
         }
-    }
-
-    //-----------//
-    // setBounds //
-    //-----------//
-    /**
-     * Set a new bounding box of the item.
-     *
-     * @param bounds the new bounding box
-     */
-    public void setBounds (Rectangle bounds)
-    {
-        this.bounds = bounds;
     }
 
     //-----------//
@@ -147,6 +113,67 @@ public abstract class TextItem
     public String getValue ()
     {
         return value;
+    }
+
+    //-----------//
+    // hasVowell //
+    //-----------//
+    /**
+     * Report whether the item value contains at least one vowel.
+     *
+     * @return true if so
+     */
+    public boolean hasVowell ()
+    {
+        String lowerCaseValue = getValue().toLowerCase();
+
+        for (char v : VOWELS) {
+            if (lowerCaseValue.indexOf(v) != -1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    /**
+     * Report a textual description of object internals.
+     *
+     * @return string of internals
+     */
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(" \"").append(getValue()).append("\"");
+
+        if (getBounds() != null) {
+            sb.append(
+                    String.format(
+                            " bounds[%d,%d,%d,%d]",
+                            bounds.x,
+                            bounds.y,
+                            bounds.width,
+                            bounds.height));
+        }
+
+        return sb.toString();
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    /**
+     * Set a new bounding box of the item.
+     *
+     * @param bounds the new bounding box
+     */
+    public void setBounds (Rectangle bounds)
+    {
+        this.bounds = bounds;
     }
 
     //----------//
@@ -195,32 +222,7 @@ public abstract class TextItem
         }
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    /**
-     * Report a textual description of object internals
-     *
-     * @return string of internals
-     */
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(" \"").append(getValue()).append("\"");
-
-        if (getBounds() != null) {
-            sb.append(
-                    String.format(
-                            " bounds[%d,%d,%d,%d]",
-                            bounds.x,
-                            bounds.y,
-                            bounds.width,
-                            bounds.height));
-        }
-
-        return sb.toString();
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------//
     // boundsOf //

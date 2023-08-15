@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,7 +42,7 @@ import javax.swing.SwingWorker;
  * Delayed busy cursor.
  *
  * @author from Simon White
- * see http://www.catalysoft.com/articles/busycursor.html
+ *         see http://www.catalysoft.com/articles/busycursor.html
  */
 public class CursorController
 {
@@ -62,11 +62,13 @@ public class CursorController
     public static final long DELAY = constants.delay.getValue(); // in milliseconds
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private CursorController ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //----------------//
     // createListener //
     //----------------//
@@ -80,7 +82,8 @@ public class CursorController
     public static ActionListener createListener (final Component component,
                                                  final ActionListener mainActionListener)
     {
-        ActionListener actionListener = (final ActionEvent ae) -> {
+        ActionListener actionListener = (final ActionEvent ae) ->
+        {
             TimerTask timerTask = new TimerTask()
             {
                 @Override
@@ -89,9 +92,9 @@ public class CursorController
                     component.setCursor(busyCursor);
                 }
             };
-            
+
             Timer timer = new Timer();
-            
+
             try {
                 timer.schedule(timerTask, DELAY);
                 mainActionListener.actionPerformed(ae);
@@ -179,6 +182,7 @@ public class CursorController
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

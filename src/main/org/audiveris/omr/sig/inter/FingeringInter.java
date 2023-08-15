@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -23,8 +23,23 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sig.relation.HeadFingeringRelation;
+import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omrdataset.api.OmrShape;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -37,12 +52,26 @@ public class FingeringInter
         extends AbstractInter
         implements StringSymbolInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(FingeringInter.class);
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Integer value for the number. (0, 1, 2, 3, 4) */
+    @XmlAttribute
     private final int value;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private FingeringInter ()
+    {
+        this.value = 0;
+    }
+
     /**
      * Creates a new FingeringInter object.
      *
@@ -58,22 +87,46 @@ public class FingeringInter
         this.value = (shape != null) ? valueOf(shape) : (-1);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private FingeringInter ()
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
     {
-        this.value = 0;
+        super.added();
+
+        setAbnormal(true); // No head linked yet
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
+    //---------------//
+    // checkAbnormal //
+    //---------------//
     @Override
-    public void accept (InterVisitor visitor)
+    public boolean checkAbnormal ()
     {
-        visitor.visit(this);
+        // Check if a note head is connected
+        setAbnormal(!sig.hasRelation(this, HeadFingeringRelation.class));
+
+        return isAbnormal();
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
+    {
+        if (staff == null) {
+            for (Relation rel : sig.getRelations(this, HeadFingeringRelation.class)) {
+                final HeadInter head = (HeadInter) sig.getOppositeInter(this, rel);
+
+                return staff = head.getStaff();
+            }
+        }
+
+        return staff;
     }
 
     //-----------------//
@@ -85,6 +138,9 @@ public class FingeringInter
         return String.valueOf(value);
     }
 
+    //----------//
+    // getValue //
+    //----------//
     /**
      * @return the value
      */
@@ -93,72 +149,145 @@ public class FingeringInter
         return value;
     }
 
-    //---------//
-    // valueOf //
-    //---------//
-    private static int valueOf (Shape shape)
+    //----------//
+    // getVoice //
+    //----------//
+    @Override
+    public Voice getVoice ()
     {
-        switch (shape) {
-        case DIGIT_0:
-            return 0;
-
-        case DIGIT_1:
-            return 1;
-
-        case DIGIT_2:
-            return 2;
-
-        case DIGIT_3:
-            return 3;
-
-        case DIGIT_4:
-            return 4;
-
-        case DIGIT_5:
-            return 5;
-
-        //        // Following shapes may be useless
-        //        case DIGIT_6:
-        //            return 6;
-        //
-        //        case DIGIT_7:
-        //            return 7;
-        //
-        //        case DIGIT_8:
-        //            return 8;
-        //
-        //        case DIGIT_9:
-        //            return 9;
+        for (Relation rel : sig.getRelations(this, HeadFingeringRelation.class)) {
+            return sig.getOppositeInter(this, rel).getVoice();
         }
 
-        throw new IllegalArgumentException("No fingering value for " + shape);
+        return null;
+    }
+
+    //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Try to detect a link between this fingering instance and a head in a HeadChord nearby.
+     *
+     * @param systemHeadChords abscissa-ordered collection of head chords in system
+     * @param profile          desired profile level
+     * @return the link found or null
+     */
+    protected Link lookupLink (List<Inter> systemHeadChords,
+                               int profile)
+    {
+        if (systemHeadChords.isEmpty()) {
+            return null;
+        }
+
+        final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
+        final Scale scale = system.getSheet().getScale();
+        final HeadInter head = TechnicalHelper.lookupHead(
+                this,
+                systemHeadChords,
+                scale.toPixels(HeadFingeringRelation.getXOutGapMaximum(profile)),
+                scale.toPixels(HeadFingeringRelation.getYGapMaximum(profile)));
+
+        if (head == null) {
+            return null;
+        }
+
+        return new Link(head, new HeadFingeringRelation(), false);
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final int profile = Math.max(getProfile(), system.getProfile());
+        final List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        Link link = lookupLink(systemHeadChords, profile);
+
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, HeadFingeringRelation.class);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add a valid FingeringInter.
+     *
+     * @param glyph            underlying glyph
+     * @param shape            detected shape
+     * @param grade            assigned grade
+     * @param system           containing system
+     * @param systemHeadChords system head chords, ordered by abscissa
+     * @return the created fingering or null
+     */
+    public static FingeringInter createValidAdded (Glyph glyph,
+                                                   Shape shape,
+                                                   double grade,
+                                                   SystemInfo system,
+                                                   List<Inter> systemHeadChords)
+    {
+        if (glyph.isVip()) {
+            logger.info("VIP FingeringInter create {} as {}", glyph, shape);
+        }
+
+        FingeringInter fingering = new FingeringInter(glyph, shape, grade);
+        Link link = fingering.lookupLink(systemHeadChords, system.getProfile());
+
+        if (link != null) {
+            system.getSig().addVertex(fingering);
+            link.applyTo(fingering);
+
+            return fingering;
+        }
+
+        return null;
     }
 
     //---------//
     // valueOf //
     //---------//
-    private static int valueOf (OmrShape omrShape)
+    public static int valueOf (OmrShape omrShape)
     {
-        switch (omrShape) {
-        case fingering0:
-            return 0;
+        return switch (omrShape) {
+        case fingering0 -> 0;
+        case fingering1 -> 1;
+        case fingering2 -> 2;
+        case fingering3 -> 3;
+        case fingering4 -> 4;
+        case fingering5 -> 5;
 
-        case fingering1:
-            return 1;
+        default -> throw new IllegalArgumentException("No fingering value for " + omrShape);
+        };
+    }
 
-        case fingering2:
-            return 2;
+    //---------//
+    // valueOf //
+    //---------//
+    public static int valueOf (Shape shape)
+    {
+        return switch (shape) {
+        case DIGIT_0 -> 0;
+        case DIGIT_1 -> 1;
+        case DIGIT_2 -> 2;
+        case DIGIT_3 -> 3;
+        case DIGIT_4 -> 4;
+        case DIGIT_5 -> 5;
 
-        case fingering3:
-            return 3;
-
-        case fingering4:
-            return 4;
-
-        case fingering5:
-            return 5;
-        }
-
-        throw new IllegalArgumentException("No fingering value for " + omrShape);
+        default -> throw new IllegalArgumentException("No fingering value for " + shape);
+        };
     }
 }

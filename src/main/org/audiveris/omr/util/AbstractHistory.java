@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -38,7 +38,6 @@ import javax.swing.SwingUtilities;
  * Class <code>AbstractHistory</code> handles a limited history of entities.
  *
  * @param <E> entity type
- *
  * @author Hervé Bitteur
  */
 public abstract class AbstractHistory<E>
@@ -48,6 +47,7 @@ public abstract class AbstractHistory<E>
     private static final Logger logger = LoggerFactory.getLogger(AbstractHistory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying list of names. */
     protected final NameSet nameSet;
 
@@ -58,6 +58,7 @@ public abstract class AbstractHistory<E>
     protected HistoryMenu menu;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>AbstractHistory</code> object.
      *
@@ -78,6 +79,7 @@ public abstract class AbstractHistory<E>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----//
     // add //
     //-----//
@@ -98,9 +100,25 @@ public abstract class AbstractHistory<E>
 
         if (OMR.gui != null) {
             // Enable input history menu
-            SwingUtilities.invokeLater(() -> menu.setEnabled(true));
+            SwingUtilities.invokeLater( () -> menu.setEnabled(true));
         }
     }
+
+    /**
+     * Decode the provided string representation as an entity.
+     *
+     * @param str provided representation
+     * @return the related entity
+     */
+    protected abstract E decode (String str);
+
+    /**
+     * Report the storing string representation of the provided entity.
+     *
+     * @param entity provided entity
+     * @return string representation
+     */
+    protected abstract String encode (E entity);
 
     //----------//
     // feedMenu //
@@ -132,6 +150,14 @@ public abstract class AbstractHistory<E>
 
         return (first != null) ? decode(first) : null;
     }
+
+    /**
+     * Report the parent folder for this entity.
+     *
+     * @param entity provided entity
+     * @return parent folder or null
+     */
+    protected abstract Path getParent (E entity);
 
     //---------//
     // isEmpty //
@@ -172,28 +198,4 @@ public abstract class AbstractHistory<E>
     {
         this.menu = menu;
     }
-
-    /**
-     * Report the parent folder for this entity.
-     *
-     * @param entity provided entity
-     * @return parent folder or null
-     */
-    protected abstract Path getParent (E entity);
-
-    /**
-     * Report the storing string representation of the provided entity.
-     *
-     * @param entity provided entity
-     * @return string representation
-     */
-    protected abstract String encode (E entity);
-
-    /**
-     * Decode the provided string representation as an entity.
-     *
-     * @param str provided representation
-     * @return the related entity
-     */
-    protected abstract E decode (String str);
 }

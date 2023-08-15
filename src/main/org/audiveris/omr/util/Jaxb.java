@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -79,43 +79,14 @@ public abstract class Jaxb
     private static final Logger logger = LoggerFactory.getLogger(Jaxb.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     @SuppressWarnings("unused")
     private Jaxb ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // marshal //
-    //---------//
-    /**
-     * Marshal an object to a file, using provided JAXB context.
-     *
-     * @param object      instance to marshal
-     * @param path        target file
-     * @param jaxbContext proper context
-     * @throws IOException        on IO error
-     * @throws JAXBException      on JAXB error
-     * @throws XMLStreamException on XML error
-     */
-    public static void marshal (Object object,
-                                Path path,
-                                JAXBContext jaxbContext)
-            throws IOException,
-                   JAXBException,
-                   XMLStreamException
-    {
-
-        try (OutputStream os = Files.newOutputStream(path, CREATE);) {
-            Marshaller m = jaxbContext.createMarshaller();
-            XMLStreamWriter writer = new CustomXMLStreamWriter(
-                    XMLOutputFactory.newInstance().createXMLStreamWriter(os, "UTF-8"));
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            m.marshal(object, writer);
-            os.flush();
-        }
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------//
     // marshal //
@@ -132,8 +103,7 @@ public abstract class Jaxb
     public static void marshal (Object object,
                                 OutputStream os,
                                 JAXBContext jaxbContext)
-            throws JAXBException,
-                   XMLStreamException
+        throws JAXBException, XMLStreamException
     {
         Marshaller m = jaxbContext.createMarshaller();
         XMLStreamWriter writer = new CustomXMLStreamWriter(
@@ -142,25 +112,32 @@ public abstract class Jaxb
         m.marshal(object, writer);
     }
 
-    //-----------//
-    // unmarshal //
-    //-----------//
+    //---------//
+    // marshal //
+    //---------//
     /**
-     * Unmarshal an object from a file, using provided JAXB context.
+     * Marshal an object to a file, using provided JAXB context.
      *
-     * @param path        input file
+     * @param object      instance to marshal
+     * @param path        target file
      * @param jaxbContext proper context
-     * @return the unmarshalled object
-     * @throws IOException   on IO error
-     * @throws JAXBException on JAXB error
+     * @throws IOException        on IO error
+     * @throws JAXBException      on JAXB error
+     * @throws XMLStreamException on XML error
      */
-    public static Object unmarshal (Path path,
-                                    JAXBContext jaxbContext)
-            throws IOException,
-                   JAXBException
+    public static void marshal (Object object,
+                                Path path,
+                                JAXBContext jaxbContext)
+        throws IOException, JAXBException, XMLStreamException
     {
-        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
-            return unmarshal(is, jaxbContext);
+
+        try (OutputStream os = Files.newOutputStream(path, CREATE);) {
+            Marshaller m = jaxbContext.createMarshaller();
+            XMLStreamWriter writer = new CustomXMLStreamWriter(
+                    XMLOutputFactory.newInstance().createXMLStreamWriter(os, "UTF-8"));
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            m.marshal(object, writer);
+            os.flush();
         }
     }
 
@@ -178,90 +155,33 @@ public abstract class Jaxb
      */
     public static Object unmarshal (InputStream is,
                                     JAXBContext jaxbContext)
-            throws IOException,
-                   JAXBException
+        throws IOException, JAXBException
     {
         return jaxbContext.createUnmarshaller().unmarshal(is);
     }
 
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal an object from a file, using provided JAXB context.
+     *
+     * @param path        input file
+     * @param jaxbContext proper context
+     * @return the unmarshalled object
+     * @throws IOException   on IO error
+     * @throws JAXBException on JAXB error
+     */
+    public static Object unmarshal (Path path,
+                                    JAXBContext jaxbContext)
+        throws IOException, JAXBException
+    {
+        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
+            return unmarshal(is, jaxbContext);
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------------//
-    // MarshalLogger //
-    //---------------//
-    /**
-     * A logger specific for marshalling.
-     */
-    public static class MarshalLogger
-            extends Marshaller.Listener
-    {
-
-        @Override
-        public void afterMarshal (Object source)
-        {
-            logger.info("GL afterMarshal  {}", source);
-        }
-
-        @Override
-        public void beforeMarshal (Object source)
-        {
-            logger.info("GL beforeMarshal {}", source);
-        }
-    }
-
-    //-----------------//
-    // UnmarshalLogger //
-    //-----------------//
-    /**
-     * Specific logger for unmarshalling.
-     */
-    public static class UnmarshalLogger
-            extends Unmarshaller.Listener
-    {
-
-        @Override
-        public void afterUnmarshal (Object target,
-                                    Object parent)
-        {
-            logger.info("GL afterUnmarshal parent:{} of {}", parent, target);
-        }
-
-        @Override
-        public void beforeUnmarshal (Object target,
-                                     Object parent)
-        {
-            logger.info("GL beforeUnmarshal parent:{} for target {}", parent, target.getClass());
-        }
-    }
-
-    //-------------------------//
-    // OmrSchemaOutputResolver //
-    //-------------------------//
-    /**
-     * A SchemaOutputResolver meant for this OMR application.
-     */
-    public static class OmrSchemaOutputResolver
-            extends SchemaOutputResolver
-    {
-
-        /** Output file name. */
-        private final String outputFileName;
-
-        public OmrSchemaOutputResolver (String outputFileName)
-        {
-            this.outputFileName = outputFileName;
-        }
-
-        @Override
-        public Result createOutput (String namespaceURI,
-                                    String suggestedFileName)
-        {
-            File file = new File(outputFileName);
-            StreamResult result = new StreamResult(file);
-            result.setSystemId(file.getAbsolutePath());
-
-            return result;
-        }
-    }
 
     //----------------------//
     // AtomicIntegerAdapter //
@@ -275,14 +195,14 @@ public abstract class Jaxb
 
         @Override
         public Integer marshal (AtomicInteger atomic)
-                throws Exception
+            throws Exception
         {
             return atomic.get();
         }
 
         @Override
         public AtomicInteger unmarshal (Integer i)
-                throws Exception
+            throws Exception
         {
             return new AtomicInteger(i);
         }
@@ -301,7 +221,7 @@ public abstract class Jaxb
 
         @Override
         public Boolean marshal (Boolean b)
-                throws Exception
+            throws Exception
         {
             if (b == null) {
                 return null;
@@ -312,7 +232,7 @@ public abstract class Jaxb
 
         @Override
         public Boolean unmarshal (Boolean s)
-                throws Exception
+            throws Exception
         {
             if (s == null) {
                 return false;
@@ -334,7 +254,7 @@ public abstract class Jaxb
 
         @Override
         public CubicFacade marshal (CubicCurve2D curve)
-                throws Exception
+            throws Exception
         {
             if (curve == null) {
                 return null;
@@ -345,7 +265,7 @@ public abstract class Jaxb
 
         @Override
         public CubicCurve2D unmarshal (CubicFacade facade)
-                throws Exception
+            throws Exception
         {
             if (facade == null) {
                 return null;
@@ -465,7 +385,7 @@ public abstract class Jaxb
 
         @Override
         public DimensionFacade marshal (Dimension dim)
-                throws Exception
+            throws Exception
         {
             if (dim == null) {
                 return null;
@@ -476,7 +396,7 @@ public abstract class Jaxb
 
         @Override
         public Dimension unmarshal (DimensionFacade facade)
-                throws Exception
+            throws Exception
         {
             if (facade == null) {
                 return null;
@@ -546,7 +466,7 @@ public abstract class Jaxb
 
         @Override
         public String marshal (Double d)
-                throws Exception
+            throws Exception
         {
             if (d == null) {
                 return null;
@@ -557,7 +477,7 @@ public abstract class Jaxb
 
         @Override
         public Double unmarshal (String s)
-                throws Exception
+            throws Exception
         {
             if (s == null) {
                 return null;
@@ -586,7 +506,7 @@ public abstract class Jaxb
 
         @Override
         public String marshal (Double d)
-                throws Exception
+            throws Exception
         {
             if (d == null) {
                 return null;
@@ -597,7 +517,7 @@ public abstract class Jaxb
 
         @Override
         public Double unmarshal (String s)
-                throws Exception
+            throws Exception
         {
             if (s == null) {
                 return null;
@@ -626,7 +546,7 @@ public abstract class Jaxb
 
         @Override
         public String marshal (Double d)
-                throws Exception
+            throws Exception
         {
             if (d == null) {
                 return null;
@@ -637,7 +557,7 @@ public abstract class Jaxb
 
         @Override
         public Double unmarshal (String s)
-                throws Exception
+            throws Exception
         {
             if (s == null) {
                 return null;
@@ -660,7 +580,7 @@ public abstract class Jaxb
 
         @Override
         public String marshal (Integer i)
-                throws Exception
+            throws Exception
         {
             if (i == null) {
                 return null;
@@ -671,7 +591,7 @@ public abstract class Jaxb
 
         @Override
         public Integer unmarshal (String s)
-                throws Exception
+            throws Exception
         {
             if (s == null) {
                 return 0;
@@ -693,7 +613,7 @@ public abstract class Jaxb
 
         @Override
         public Line2DFacade marshal (Line2D line)
-                throws Exception
+            throws Exception
         {
             if (line == null) {
                 return null;
@@ -704,7 +624,7 @@ public abstract class Jaxb
 
         @Override
         public Line2D unmarshal (Line2DFacade facade)
-                throws Exception
+            throws Exception
         {
             if (facade == null) {
                 return null;
@@ -764,11 +684,62 @@ public abstract class Jaxb
             @Override
             public String toString ()
             {
-                return new StringBuilder("Line2DF{")
-                        .append("p1:").append(p1)
-                        .append(",p2:").append(p2)
-                        .append('}').toString();
+                return new StringBuilder("Line2DF{").append("p1:").append(p1).append(",p2:").append(
+                        p2).append('}').toString();
             }
+        }
+    }
+
+    //---------------//
+    // MarshalLogger //
+    //---------------//
+    /**
+     * A logger specific for marshalling.
+     */
+    public static class MarshalLogger
+            extends Marshaller.Listener
+    {
+
+        @Override
+        public void afterMarshal (Object source)
+        {
+            logger.info("GL afterMarshal  {}", source);
+        }
+
+        @Override
+        public void beforeMarshal (Object source)
+        {
+            logger.info("GL beforeMarshal {}", source);
+        }
+    }
+
+    //-------------------------//
+    // OmrSchemaOutputResolver //
+    //-------------------------//
+    /**
+     * A SchemaOutputResolver meant for this OMR application.
+     */
+    public static class OmrSchemaOutputResolver
+            extends SchemaOutputResolver
+    {
+
+        /** Output file name. */
+        private final String outputFileName;
+
+        public OmrSchemaOutputResolver (String outputFileName)
+        {
+            this.outputFileName = outputFileName;
+        }
+
+        @Override
+        public Result createOutput (String namespaceURI,
+                                    String suggestedFileName)
+        {
+            File file = new File(outputFileName);
+            StreamResult result = new StreamResult(file);
+            result.setSystemId(file.getAbsolutePath());
+
+            return result;
         }
     }
 
@@ -784,7 +755,7 @@ public abstract class Jaxb
 
         @Override
         public String marshal (Path path)
-                throws Exception
+            throws Exception
         {
             if (path == null) {
                 return null;
@@ -816,7 +787,7 @@ public abstract class Jaxb
 
         @Override
         public Point2DFacade marshal (Point2D point)
-                throws Exception
+            throws Exception
         {
             if (point == null) {
                 return null;
@@ -827,13 +798,70 @@ public abstract class Jaxb
 
         @Override
         public Point2D unmarshal (Point2DFacade facade)
-                throws Exception
+            throws Exception
         {
             if (facade == null) {
                 return null;
             }
 
             return facade.getPoint();
+        }
+    }
+
+    //---------------//
+    // Point2DFacade //
+    //---------------//
+    /**
+     * Class <code>Point2DFacade</code> is a JAXB-compatible facade for predefined
+     * {@link java.awt.geom.Point2D.Double} class.
+     * <p>
+     * All coordinates are coded with a maximum of 1 digit after the dot.
+     */
+    @XmlRootElement(name = "point2d")
+    private static class Point2DFacade
+    {
+
+        /**
+         * Abscissa value.
+         */
+        @XmlAttribute
+        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
+        public double x;
+
+        /**
+         * Ordinate value.
+         */
+        @XmlAttribute
+        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
+        public double y;
+
+        /** No-arg constructor needed for JAXB. */
+        @SuppressWarnings("unused")
+        private Point2DFacade ()
+        {
+        }
+
+        /**
+         * Creates a new <code>Point2DFacade</code> object from a Point2D parameter.
+         *
+         * @param point the Point2D object to interface
+         */
+        public Point2DFacade (Point2D point)
+        {
+            this.x = point.getX();
+            this.y = point.getY();
+        }
+
+        public Point2D getPoint ()
+        {
+            return new Point2D.Double(x, y);
+        }
+
+        @Override
+        public String toString ()
+        {
+            return new StringBuilder("Point2DF{").append("x:").append(x).append(",y:").append(y)
+                    .append('}').toString();
         }
     }
 
@@ -849,7 +877,7 @@ public abstract class Jaxb
 
         @Override
         public PointFacade marshal (Point point)
-                throws Exception
+            throws Exception
         {
             if (point == null) {
                 return null;
@@ -860,7 +888,7 @@ public abstract class Jaxb
 
         @Override
         public Point unmarshal (PointFacade facade)
-                throws Exception
+            throws Exception
         {
             if (facade == null) {
                 return null;
@@ -919,9 +947,7 @@ public abstract class Jaxb
             @Override
             public String toString ()
             {
-                return new StringBuilder("PointF{")
-                        .append("x:").append(x)
-                        .append(",y:").append(y)
+                return new StringBuilder("PointF{").append("x:").append(x).append(",y:").append(y)
                         .append('}').toString();
             }
         }
@@ -939,7 +965,7 @@ public abstract class Jaxb
 
         @Override
         public Rectangle2DFacade marshal (Rectangle2D rect)
-                throws Exception
+            throws Exception
         {
             if (rect == null) {
                 return null;
@@ -950,7 +976,7 @@ public abstract class Jaxb
 
         @Override
         public Rectangle2D unmarshal (Rectangle2DFacade facade)
-                throws Exception
+            throws Exception
         {
             if (facade == null) {
                 return null;
@@ -998,6 +1024,14 @@ public abstract class Jaxb
             public double height;
 
             /**
+             * No-arg constructor needed for JAXB.
+             */
+            @SuppressWarnings("unused")
+            private Rectangle2DFacade ()
+            {
+            }
+
+            /**
              * Creates a <code>Rectangle2DFacade</code> object from a Rectangle2D parameter.
              *
              * @param rect the provided Rectangle2D
@@ -1008,14 +1042,6 @@ public abstract class Jaxb
                 y = rect.getY();
                 width = rect.getWidth();
                 height = rect.getHeight();
-            }
-
-            /**
-             * No-arg constructor needed for JAXB.
-             */
-            @SuppressWarnings("unused")
-            private Rectangle2DFacade ()
-            {
             }
 
             public Rectangle2D getRectangle2D ()
@@ -1037,7 +1063,7 @@ public abstract class Jaxb
 
         @Override
         public RectangleFacade marshal (Rectangle rect)
-                throws Exception
+            throws Exception
         {
             if (rect == null) {
                 return null;
@@ -1048,7 +1074,7 @@ public abstract class Jaxb
 
         @Override
         public Rectangle unmarshal (RectangleFacade facade)
-                throws Exception
+            throws Exception
         {
             if (facade == null) {
                 return null;
@@ -1090,6 +1116,14 @@ public abstract class Jaxb
             public int height;
 
             /**
+             * No-arg constructor needed for JAXB.
+             */
+            @SuppressWarnings("unused")
+            private RectangleFacade ()
+            {
+            }
+
+            /**
              * Creates a <code>RectangleFacade</code> object from a Rectangle parameter.
              *
              * @param rect the provided Rectangle
@@ -1102,14 +1136,6 @@ public abstract class Jaxb
                 height = rect.height;
             }
 
-            /**
-             * No-arg constructor needed for JAXB.
-             */
-            @SuppressWarnings("unused")
-            private RectangleFacade ()
-            {
-            }
-
             public Rectangle getRectangle ()
             {
                 return new Rectangle(x, y, width, height);
@@ -1118,12 +1144,9 @@ public abstract class Jaxb
             @Override
             public String toString ()
             {
-                return new StringBuilder("RectangleF{")
-                        .append("x:").append(x)
-                        .append(",y:").append(y)
-                        .append(",w:").append(width)
-                        .append(",h:").append(height)
-                        .append('}').toString();
+                return new StringBuilder("RectangleF{").append("x:").append(x).append(",y:").append(
+                        y).append(",w:").append(width).append(",h:").append(height).append('}')
+                        .toString();
             }
         }
     }
@@ -1140,7 +1163,7 @@ public abstract class Jaxb
 
         @Override
         public String marshal (Integer i)
-                throws Exception
+            throws Exception
         {
             if (i == null) {
                 return null;
@@ -1151,7 +1174,7 @@ public abstract class Jaxb
 
         @Override
         public Integer unmarshal (String s)
-                throws Exception
+            throws Exception
         {
             if (s == null) {
                 return null;
@@ -1161,62 +1184,28 @@ public abstract class Jaxb
         }
     }
 
-    //---------------//
-    // Point2DFacade //
-    //---------------//
+    //-----------------//
+    // UnmarshalLogger //
+    //-----------------//
     /**
-     * Class <code>Point2DFacade</code> is a JAXB-compatible facade for predefined
-     * {@link java.awt.geom.Point2D.Double} class.
-     * <p>
-     * All coordinates are coded with a maximum of 1 digit after the dot.
+     * Specific logger for unmarshalling.
      */
-    @XmlRootElement(name = "point2d")
-    private static class Point2DFacade
+    public static class UnmarshalLogger
+            extends Unmarshaller.Listener
     {
 
-        /**
-         * Abscissa value.
-         */
-        @XmlAttribute
-        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
-        public double x;
-
-        /**
-         * Ordinate value.
-         */
-        @XmlAttribute
-        @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
-        public double y;
-
-        /** No-arg constructor needed for JAXB. */
-        @SuppressWarnings("unused")
-        private Point2DFacade ()
+        @Override
+        public void afterUnmarshal (Object target,
+                                    Object parent)
         {
-        }
-
-        /**
-         * Creates a new <code>Point2DFacade</code> object from a Point2D parameter.
-         *
-         * @param point the Point2D object to interface
-         */
-        public Point2DFacade (Point2D point)
-        {
-            this.x = point.getX();
-            this.y = point.getY();
-        }
-
-        public Point2D getPoint ()
-        {
-            return new Point2D.Double(x, y);
+            logger.info("GL afterUnmarshal parent:{} of {}", parent, target);
         }
 
         @Override
-        public String toString ()
+        public void beforeUnmarshal (Object target,
+                                     Object parent)
         {
-            return new StringBuilder("Point2DF{")
-                    .append("x:").append(x)
-                    .append(",y:").append(y)
-                    .append('}').toString();
+            logger.info("GL beforeUnmarshal parent:{} for target {}", parent, target.getClass());
         }
     }
 }

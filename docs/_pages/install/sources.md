@@ -1,11 +1,18 @@
 ---
 layout: default
 title: Building from sources
-nav_order: 2
+nav_order: 4
 parent: Installation
 ---
-## Building from sources (Windows, Linux, MacOS)
+## Building from sources (Windows, MacOS, Linux, ArchLinux)
 {: .no_toc }
+
+{: .note }
+For GitHub users:
+- Audiveris "*master*" branch is updated only when a new release is published.
+- Instead, Audiveris development happens continuously in "*development*" branch, so checkout and pull
+this *development* branch to get and build the latest version.
+- See workflow details in this dedicated [Wiki article][workflow].
 
 Table of contents
 {: .no_toc .text-delta }
@@ -15,45 +22,24 @@ Table of contents
 
 ### Dependencies
 
-* [Java Development Kit (JDK)][1]: version 11 (higher numbers may work, to be confirmed).
-  Audiveris 5.2 runs only on 64-bit architectures.
+* [Git][git]: version control system.
 
-* [Git](https://git-scm.com): version control system.
+* [Gradle][gradle]: build tool.
 
-* [Tesseract OCR][2]: Audiveris engine delegates to Tesseract *libraries* the recognition of any
-text item (lyrics, title, directions, part names, etc...).
-These libraries are automatically pulled as Gradle dependencies, but you will need Tesseract
-*language files* for this OCR to work properly.  
-Pick up at least the english (`eng`) language data.
-Other languages can be installed too, like `deu`, `ita`, `fra`, etc.
-Please check the [Tesseract guide][3] for further details and make sure to grab language data
-for Tesseract **3.04** rather than 4.0.  
-Note that you can still run Audiveris without any Tesseract language file, you will simply get a
-warning at launch time, and of course any text recognition will not be effective.  
-Language installation depends on your OS. Here are examples to add Russian language (`rus`):
-  - Linux-Ubuntu: `sudo apt-get install tesseract-ocr-rus`
-  - MacOS: `sudo port install tesseract-rus`
-  - Windows:
-    1. Download russian language data from
-    [https://github.com/tesseract-ocr/langdata/tree/master/rus](https://github.com/tesseract-ocr/langdata/tree/master/rus)
-    into `c:\Program Files (x86)\tesseract-ocr\tessdata`
-    2. Make sure the environment variable `TESSDATA_PREFIX` contains the full path to the parent of
-    `tessdata` folder, that is `c:\Program Files (x86)\tesseract-ocr\`.  
+* [Java Development Kit (JDK)][jdk]: version {{ site.java_version }}
+ (higher numbers may work, to be confirmed).
+  Audiveris {{ site.audiveris_version }} runs only on 64-bit architectures.
 
-  At runtime, you can specify which languages should be tried by the OCR software.
-  By default, these are `deu`, `eng`, `ita`, `fra` as specified by the application constant
-  `org.audiveris.omr.text.Language.defaultSpecification`.  
-  You can modify this default by changing the constant value either interactively
-  (using the menu `Tools|Options`) or in batch
-  (using `-option org.audiveris.omr.text.Language.defaultSpecification=ita+fra+eng+deu+rus)`.  
-  You can also, using the `Book | Set Book Parameters` menu, change the language(s) default or
-  override it at book and even sheet levels.
-* [FreeType library][4]: Unix-like platforms (including MacOS) need FreeType in your $PATH to handle
-those specific PDFs that contain vector graphics.
+* Tesseract OCR: The Tesseract *libraries* are automatically pulled as Gradle dependencies,
+but you will need the Tesseract *language files* for this OCR to work properly.  
+Please check [OCR languages](./languages.md) section.
+
+* [FreeType library][freetype]: Unix-like platforms (including MacOS) need FreeType in your $PATH
+to handle those specific PDFs that contain vector graphics.  
 Fortunately, every known Unix-like OS distribution already contains a package for FreeType.
 
 ### Download, build and run
-To download Audiveris project, use the following command in a directory of your choice:
+To download the Audiveris project, use the following command in a directory of your choice:
 
 ```sh
 git clone https://github.com/Audiveris/audiveris.git
@@ -70,7 +56,7 @@ cd audiveris
 
 Once in this `audiveris` project directory, you can select the branch you want.   
 By default, you are on `master`branch.  
-To use for example the `development`branch with its latest features, use:
+To use the `development`branch with its latest features, use:
 ```sh
 git checkout development
 
@@ -98,7 +84,7 @@ You can run the software, as GUI tool, via the command:
 gradlew.bat run
 ```
 
-Please note that all these commands use **gradle wrapper** (`gradlew`) which, behind the scene,
+Please note that all these commands use **gradle wrapper** (`gradlew`) which, behind the scenes,
 takes care of getting and launching the proper gradle version.
 
 ### Alternative run
@@ -132,7 +118,8 @@ Then, you can repeatedly run audiveris from those files:
 java -cp "Audiveris/lib/*" Audiveris
 ```
 
-[1]: http://www.oracle.com/technetwork/java/javase/downloads/index.html
-[2]: https://github.com/tesseract-ocr/tesseract
-[3]: https://github.com/tesseract-ocr/tesseract/wiki
-[4]: https://www.freetype.org
+[freetype]: https://www.freetype.org
+[git]:      https://git-scm.com
+[gradle]:   https://gradle.org
+[jdk]:      http://www.oracle.com/technetwork/java/javase/downloads/index.html
+[workflow]: https://github.com/Audiveris/audiveris/wiki/Git-Workflow

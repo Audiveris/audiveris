@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.math.BasicLine;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointsCollector;
@@ -37,6 +35,8 @@ import org.audiveris.omr.util.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -86,9 +86,10 @@ public class Glyph
     private static final Logger logger = LoggerFactory.getLogger(Glyph.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /** Absolute abscissa of the glyph top left corner. */
     @XmlAttribute(name = "left")
     protected final int left;
@@ -105,7 +106,7 @@ public class Glyph
 
     // Transient data
     //---------------
-    //
+
     /** The containing glyph index, if any. */
     @Navigable(false)
     protected GlyphIndex index;
@@ -132,6 +133,17 @@ public class Glyph
     protected Double slope;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private Glyph ()
+    {
+        this.left = 0;
+        this.top = 0;
+        this.runTable = null;
+    }
+
     /**
      * Creates a new <code>BasicGlyph</code> object.
      *
@@ -151,17 +163,64 @@ public class Glyph
         this.runTable = runTable;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------//
+    // checkLine //
+    //-----------//
     /**
-     * No-arg constructor meant for JAXB.
+     * Make sure the approximating line is available
      */
-    private Glyph ()
+    private void checkLine ()
     {
-        this.left = 0;
-        this.top = 0;
-        this.runTable = null;
+        if (line == null) {
+            computeLine();
+        }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // computeLine //
+    //-------------//
+    private void computeLine ()
+    {
+        basicLine = new BasicLine();
+
+        final boolean isHori = runTable.getOrientation() == HORIZONTAL;
+
+        for (int iSeq = 0, iBreak = runTable.getSize(); iSeq < iBreak; iSeq++) {
+            for (Iterator<Run> it = runTable.iterator(iSeq); it.hasNext();) {
+                Run run = it.next();
+                int start = run.getStart();
+
+                for (int ic = run.getLength() - 1; ic >= 0; ic--) {
+                    if (isHori) {
+                        basicLine.includePoint(left + start + ic, top + iSeq);
+                    } else {
+                        basicLine.includePoint(left + iSeq, top + start + ic);
+                    }
+                }
+            }
+        }
+
+        // We have a problem if glyph is just 0 or 1 pixel: no computable slope!
+        switch (basicLine.getNumberOfPoints()) {
+        case 0:
+            throw new IllegalStateException("Glyph has no pixel, cannot compute line.");
+
+        case 1:
+            slope = 0d; // we just need a value.
+
+            break;
+
+        default:
+            slope = basicLine.getSlope();
+
+            break;
+        }
+
+        line = basicLine.toDouble();
+    }
+
     //----------//
     // contains //
     //----------//
@@ -177,6 +236,9 @@ public class Glyph
         return false;
     }
 
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
     public String dumpOf ()
     {
@@ -206,6 +268,9 @@ public class Glyph
         return sb.toString();
     }
 
+    //--------//
+    // equals //
+    //--------//
     @Override
     public boolean equals (Object obj)
     {
@@ -234,6 +299,9 @@ public class Glyph
         return Objects.equals(this.runTable, other.runTable);
     }
 
+    //-----------//
+    // fillTable //
+    //-----------//
     /**
      * Fill the provided table with glyph foreground pixels.
      *
@@ -248,6 +316,9 @@ public class Glyph
         runTable.fillTable(table, tableOrigin, getTopLeft(), fat);
     }
 
+    //---------------//
+    // getARTMoments //
+    //---------------//
     /**
      * Report the glyph ART moments.
      *
@@ -262,12 +333,18 @@ public class Glyph
         return artMoments;
     }
 
+    //-----------//
+    // getBounds //
+    //-----------//
     @Override
     public Rectangle getBounds ()
     {
         return new Rectangle(left, top, runTable.getWidth(), runTable.getHeight());
     }
 
+    //-----------//
+    // getBuffer //
+    //-----------//
     /**
      * Report a buffer of the glyph (which can be handed to the OCR)
      *
@@ -278,6 +355,9 @@ public class Glyph
         return runTable.getBuffer();
     }
 
+    //-----------//
+    // getCenter //
+    //-----------//
     @Override
     public Point getCenter ()
     {
@@ -288,11 +368,23 @@ public class Glyph
         return center;
     }
 
+    //-------------//
+    // getCenter2D //
+    //-------------//
     @Override
     public Point2D getCenter2D ()
     {
-        return new Point2D.Double(left + (runTable.getWidth() / 2.0),
-                                  top + (runTable.getHeight() / 2.0));
+        return new Point2D.Double(
+                left + (runTable.getWidth() / 2.0),
+                top + (runTable.getHeight() / 2.0));
+    }
+
+    @Override
+    public Line2D getCenterLine ()
+    {
+        checkLine();
+
+        return basicLine.toCenterLine();
     }
 
     @Override
@@ -341,16 +433,6 @@ public class Glyph
         return index;
     }
 
-    /**
-     * The setter for glyph index.
-     *
-     * @param index the containing glyph index
-     */
-    public void setIndex (GlyphIndex index)
-    {
-        this.index = index;
-    }
-
     @Override
     public double getInvertedSlope ()
     {
@@ -384,19 +466,27 @@ public class Glyph
     }
 
     @Override
-    public Line2D getCenterLine ()
-    {
-        checkLine();
-
-        return basicLine.toCenterLine();
-    }
-
-    @Override
     public double getMeanDistance ()
     {
         checkLine();
 
         return basicLine.getMeanDistance();
+    }
+
+    //--------------------//
+    // getPointsCollector //
+    //--------------------//
+    /**
+     * Cumulate <b>absolute</b> points from all runs.
+     *
+     * @return a populated point collector
+     */
+    public PointsCollector getPointsCollector ()
+    {
+        final PointsCollector collector = new PointsCollector(null, getWeight());
+        runTable.cumulate(collector, new Point(left, top));
+
+        return collector;
     }
 
     /**
@@ -504,17 +594,24 @@ public class Glyph
         return "glyph#" + id;
     }
 
+    //-----------//
+    // internals //
+    //-----------//
     /**
-     * Report whether the glyph has a pixel in common with the provided table.
+     * Return the internals of this class, typically for inclusion in a toString.
      *
-     * @param table       the table of pixels
-     * @param tableOrigin top-left corner of table
-     * @return true if connection found
+     * @return the string of internals
      */
-    public boolean intersects (Table.UnsignedByte table,
-                               Point tableOrigin)
+    @Override
+    protected String internals ()
     {
-        return runTable.intersects(table, tableOrigin, getTopLeft());
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        if ((groups != null) && !groups.isEmpty()) {
+            sb.append(' ').append(groups);
+        }
+
+        return sb.toString();
     }
 
     /**
@@ -539,7 +636,11 @@ public class Glyph
                     for (Iterator<Run> it = runTable.iterator(iSeq); it.hasNext();) {
                         final Run run = it.next();
 
-                        if (shape.intersects(left + run.getStart(), top + iSeq, run.getLength(), 1)) {
+                        if (shape.intersects(
+                                left + run.getStart(),
+                                top + iSeq,
+                                run.getLength(),
+                                1)) {
                             return true;
                         }
                     }
@@ -552,7 +653,11 @@ public class Glyph
                     for (Iterator<Run> it = runTable.iterator(iSeq); it.hasNext();) {
                         Run run = it.next();
 
-                        if (shape.intersects(left + iSeq, top + run.getStart(), 1, run.getLength())) {
+                        if (shape.intersects(
+                                left + iSeq,
+                                top + run.getStart(),
+                                1,
+                                run.getLength())) {
                             return true;
                         }
                     }
@@ -561,6 +666,19 @@ public class Glyph
         }
 
         return false;
+    }
+
+    /**
+     * Report whether the glyph has a pixel in common with the provided table.
+     *
+     * @param table       the table of pixels
+     * @param tableOrigin top-left corner of table
+     * @return true if connection found
+     */
+    public boolean intersects (Table.UnsignedByte table,
+                               Point tableOrigin)
+    {
+        return runTable.intersects(table, tableOrigin, getTopLeft());
     }
 
     /**
@@ -611,6 +729,16 @@ public class Glyph
         }
     }
 
+    /**
+     * The setter for glyph index.
+     *
+     * @param index the containing glyph index
+     */
+    public void setIndex (GlyphIndex index)
+    {
+        this.index = index;
+    }
+
     @Override
     public String toString ()
     {
@@ -623,97 +751,5 @@ public class Glyph
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    /**
-     * Return the internals of this class, typically for inclusion in a toString.
-     *
-     * @return the string of internals
-     */
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        if ((groups != null) && !groups.isEmpty()) {
-            sb.append(' ').append(groups);
-        }
-
-        return sb.toString();
-    }
-
-    //-----------//
-    // checkLine //
-    //-----------//
-    /**
-     * Make sure the approximating line is available
-     */
-    private void checkLine ()
-    {
-        if (line == null) {
-            computeLine();
-        }
-    }
-
-    //-------------//
-    // computeLine //
-    //-------------//
-    private void computeLine ()
-    {
-        basicLine = new BasicLine();
-
-        final boolean isHori = runTable.getOrientation() == HORIZONTAL;
-
-        for (int iSeq = 0, iBreak = runTable.getSize(); iSeq < iBreak; iSeq++) {
-            for (Iterator<Run> it = runTable.iterator(iSeq); it.hasNext();) {
-                Run run = it.next();
-                int start = run.getStart();
-
-                for (int ic = run.getLength() - 1; ic >= 0; ic--) {
-                    if (isHori) {
-                        basicLine.includePoint(left + start + ic, top + iSeq);
-                    } else {
-                        basicLine.includePoint(left + iSeq, top + start + ic);
-                    }
-                }
-            }
-        }
-
-        // We have a problem if glyph is just 0 or 1 pixel: no computable slope!
-        switch (basicLine.getNumberOfPoints()) {
-        case 0:
-            throw new IllegalStateException("Glyph has no pixel, cannot compute line.");
-
-        case 1:
-            slope = 0d; // we just need a value.
-
-            break;
-
-        default:
-            slope = basicLine.getSlope();
-
-            break;
-        }
-
-        line = basicLine.toDouble();
-    }
-
-    //--------------------//
-    // getPointsCollector //
-    //--------------------//
-    /**
-     * Cumulate <b>absolute</b> points from all runs.
-     *
-     * @return a populated point collector
-     */
-    private PointsCollector getPointsCollector ()
-    {
-        final PointsCollector collector = new PointsCollector(null, getWeight());
-        runTable.cumulate(collector, new Point(left, top));
-
-        return collector;
     }
 }

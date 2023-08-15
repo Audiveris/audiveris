@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,8 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet;
-
-import ij.process.ByteProcessor;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
@@ -54,6 +52,8 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import ij.process.ByteProcessor;
+
 /**
  * Class <code>SheetDiff</code> measures the difference between input data
  * (the input sheet picture) and output data (the recognized entities).
@@ -68,30 +68,8 @@ public class SheetDiff
 
     private static final Logger logger = LoggerFactory.getLogger(SheetDiff.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * DiffKind.
-     */
-    public static enum DiffKind
-    {
-        /**
-         * Non recognized entities.
-         * Input data not found in output.
-         */
-        NEGATIVES,
-        /**
-         * Recognized entities.
-         * Intersection of input and output.
-         */
-        POSITIVES,
-        /**
-         * False recognized entities.
-         * Output data not found in input.
-         */
-        FALSE_POSITIVES;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -103,6 +81,7 @@ public class SheetDiff
     private Integer inputCount;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>SheetDiff</code> object.
      *
@@ -114,6 +93,7 @@ public class SheetDiff
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // computeDiff //
     //-------------//
@@ -261,6 +241,32 @@ public class SheetDiff
         return count;
     }
 
+    //--------------//
+    // getForeCount //
+    //--------------//
+    /**
+     * Count the number of foreground pixels in the provided image.
+     *
+     * @param filter the binary image
+     * @return the number of foreground pixels
+     */
+    private int getForeCount (ByteProcessor filter)
+    {
+        final int width = filter.getWidth();
+        final int height = filter.getHeight();
+        int count = 0;
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (filter.get(x, y) == 0) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
     //----------//
     // getImage //
     //----------//
@@ -328,32 +334,6 @@ public class SheetDiff
         return img;
     }
 
-    //--------------//
-    // getForeCount //
-    //--------------//
-    /**
-     * Count the number of foreground pixels in the provided image.
-     *
-     * @param filter the binary image
-     * @return the number of foreground pixels
-     */
-    private int getForeCount (ByteProcessor filter)
-    {
-        final int width = filter.getWidth();
-        final int height = filter.getHeight();
-        int count = 0;
-
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                if (filter.get(x, y) == 0) {
-                    count++;
-                }
-            }
-        }
-
-        return count;
-    }
-
     //---------------//
     // getInputCount //
     //---------------//
@@ -410,6 +390,7 @@ public class SheetDiff
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -425,6 +406,30 @@ public class SheetDiff
                 "gray level",
                 127,
                 "Global threshold to binarize delta results");
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /**
+     * DiffKind.
+     */
+    public static enum DiffKind
+    {
+        /**
+         * Non recognized entities.
+         * Input data not found in output.
+         */
+        NEGATIVES,
+        /**
+         * Recognized entities.
+         * Intersection of input and output.
+         */
+        POSITIVES,
+        /**
+         * False recognized entities.
+         * Output data not found in input.
+         */
+        FALSE_POSITIVES;
     }
 
     //----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,10 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import org.audiveris.omr.classifier.GlyphDescriptor;
 import org.audiveris.omr.classifier.ImgGlyphDescriptor;
@@ -40,6 +36,10 @@ import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -74,6 +74,7 @@ class SelectionPanel
     private static final Logger logger = LoggerFactory.getLogger(SelectionPanel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Swing component. */
     private final Panel component;
 
@@ -108,6 +109,7 @@ class SelectionPanel
     private List<Sample> tests;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SelectionPanel object.
      */
@@ -133,6 +135,55 @@ class SelectionPanel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
+    {
+        progressBar.setForeground(Colors.PROGRESS_BAR);
+
+        FormLayout layout = Panel.makeFormLayout(
+                3,
+                3,
+                "",
+                Trainer.LABEL_WIDTH,
+                Trainer.FIELD_WIDTH);
+        PanelBuilder builder = new PanelBuilder(layout, component);
+        CellConstraints cst = new CellConstraints();
+
+        int r = 1; // ----------------------------
+
+        builder.addSeparator("Selection", cst.xyw(1, r, 3));
+
+        builder.add(progressBar, cst.xyw(5, r, 7));
+
+        r += 2; // ----------------------------
+
+        builder.add(nbRepoSamples.getLabel(), cst.xy(5, r));
+        builder.add(nbRepoSamples.getField(), cst.xy(7, r));
+
+        builder.add(nbTrainSamples.getLabel(), cst.xy(9, r));
+        builder.add(nbTrainSamples.getField(), cst.xy(11, r));
+
+        r += 2; // ----------------------------
+
+        builder.add(new JButton(selectAction), cst.xy(3, r));
+
+        builder.add(new JButton(storeAction), cst.xy(5, r));
+
+        builder.add(nbTestSamples.getLabel(), cst.xy(9, r));
+        builder.add(nbTestSamples.getField(), cst.xy(11, r));
+    }
+
+    //---------------//
+    // displayParams //
+    //---------------//
+    private void displayParams ()
+    {
+        ///similar.setValue(constants.maxSimilar.getValue());
+    }
+
     //--------------//
     // getComponent //
     //--------------//
@@ -198,12 +249,33 @@ class SelectionPanel
     }
 
     //-------------//
+    // inputParams //
+    //-------------//
+    private void inputParams ()
+    {
+        ///constants.maxSimilar.setStringValue(similar.getValue());
+    }
+
+    //-------------//
     // loadedSheet //
     //-------------//
     @Override
     public void loadedSheet (SampleSheet sampleSheet)
     {
         progressBar.setValue(progressBar.getValue() + 1);
+    }
+
+    //-----------------//
+    // setTotalSamples //
+    //-----------------//
+    /**
+     * Notify the total number of samples in the base
+     *
+     * @param total the total number of samples available
+     */
+    private void setTotalSamples (int total)
+    {
+        nbRepoSamples.setText(Integer.toString(total));
     }
 
     //--------------//
@@ -225,74 +297,7 @@ class SelectionPanel
         progressBar.setMaximum(total);
     }
 
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout ()
-    {
-        progressBar.setForeground(Colors.PROGRESS_BAR);
-
-        FormLayout layout = Panel.makeFormLayout(
-                3,
-                3,
-                "",
-                Trainer.LABEL_WIDTH,
-                Trainer.FIELD_WIDTH);
-        PanelBuilder builder = new PanelBuilder(layout, component);
-        CellConstraints cst = new CellConstraints();
-
-        int r = 1; // ----------------------------
-
-        builder.addSeparator("Selection", cst.xyw(1, r, 3));
-
-        builder.add(progressBar, cst.xyw(5, r, 7));
-
-        r += 2; // ----------------------------
-
-        builder.add(nbRepoSamples.getLabel(), cst.xy(5, r));
-        builder.add(nbRepoSamples.getField(), cst.xy(7, r));
-
-        builder.add(nbTrainSamples.getLabel(), cst.xy(9, r));
-        builder.add(nbTrainSamples.getField(), cst.xy(11, r));
-
-        r += 2; // ----------------------------
-
-        builder.add(new JButton(selectAction), cst.xy(3, r));
-
-        builder.add(new JButton(storeAction), cst.xy(5, r));
-
-        builder.add(nbTestSamples.getLabel(), cst.xy(9, r));
-        builder.add(nbTestSamples.getField(), cst.xy(11, r));
-    }
-
-    //---------------//
-    // displayParams //
-    //---------------//
-    private void displayParams ()
-    {
-        ///similar.setValue(constants.maxSimilar.getValue());
-    }
-
-    //-------------//
-    // inputParams //
-    //-------------//
-    private void inputParams ()
-    {
-        ///constants.maxSimilar.setStringValue(similar.getValue());
-    }
-
-    //-----------------//
-    // setTotalSamples //
-    //-----------------//
-    /**
-     * Notify the total number of samples in the base
-     *
-     * @param total the total number of samples available
-     */
-    private void setTotalSamples (int total)
-    {
-        nbRepoSamples.setText(Integer.toString(total));
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------------//
     // getMinShapeSampleCount //
@@ -303,6 +308,7 @@ class SelectionPanel
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -312,7 +318,7 @@ class SelectionPanel
 
         private final Constant.Integer maxShapeSampleCount = new Constant.Integer(
                 "samples",
-                100,
+                150,
                 "Maximum sample count per shape for training");
 
         private final Constant.Integer minShapeSampleCount = new Constant.Integer(
@@ -348,7 +354,8 @@ class SelectionPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            executor.execute(() -> {
+            executor.execute( () ->
+            {
                 trains = null;
                 tests = null;
 

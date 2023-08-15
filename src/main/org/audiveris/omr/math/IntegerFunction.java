@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -48,6 +48,7 @@ public class IntegerFunction
     private static final Logger logger = LoggerFactory.getLogger(IntegerFunction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Minimum x value. */
     protected final int xMin;
 
@@ -58,6 +59,7 @@ public class IntegerFunction
     private final int[] values;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates an instance of <code>IntegerFunction</code>.
      *
@@ -73,6 +75,7 @@ public class IntegerFunction
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // addValue //
     //----------//
@@ -171,24 +174,13 @@ public class IntegerFunction
     // getDerivativeSeries //
     //---------------------//
     /**
-     * Report the XY series for function derivatives between x1 and x2.
+     * Report the XY series for function derivatives on whole x domain.
      *
-     * @param x1 lower value for x (x1 must be &gt; xMin)
-     * @param x2 upper value for x
      * @return the XY derivatives ready to plot
      */
-    public XYSeries getDerivativeSeries (int x1,
-                                         int x2)
+    public XYSeries getDerivativeSeries ()
     {
-        XYSeries derivativeSeries = new XYSeries("Derivative", false); // No autosort
-
-        for (int i = x1; i <= x2; i++) {
-            if ((i >= xMin) && (i <= xMax)) {
-                derivativeSeries.add(i, getDerivative(i));
-            }
-        }
-
-        return derivativeSeries;
+        return getDerivativeSeries(xMin + 1, xMax);
     }
 
     //---------------------//
@@ -209,13 +201,24 @@ public class IntegerFunction
     // getDerivativeSeries //
     //---------------------//
     /**
-     * Report the XY series for function derivatives on whole x domain.
+     * Report the XY series for function derivatives between x1 and x2.
      *
+     * @param x1 lower value for x (x1 must be &gt; xMin)
+     * @param x2 upper value for x
      * @return the XY derivatives ready to plot
      */
-    public XYSeries getDerivativeSeries ()
+    public XYSeries getDerivativeSeries (int x1,
+                                         int x2)
     {
-        return getDerivativeSeries(xMin + 1, xMax);
+        XYSeries derivativeSeries = new XYSeries("Derivative", false); // No autosort
+
+        for (int i = x1; i <= x2; i++) {
+            if ((i >= xMin) && (i <= xMax)) {
+                derivativeSeries.add(i, getDerivative(i));
+            }
+        }
+
+        return derivativeSeries;
     }
 
     //----------------//
@@ -260,7 +263,10 @@ public class IntegerFunction
         }
 
         // Sort by decreasing y values
-        Collections.sort(maxima, (x3, x4) -> Integer.compare(getValue(x4), getValue(x3)));
+        Collections.sort(
+                maxima,
+                (x3,
+                 x4) -> Integer.compare(getValue(x4), getValue(x3)));
 
         return maxima;
     }
@@ -277,6 +283,33 @@ public class IntegerFunction
     public int getValue (int x)
     {
         return values[x - xMin];
+    }
+
+    //----------------//
+    // getValueSeries //
+    //----------------//
+    /**
+     * Report the XY series for function values on whole x domain.
+     *
+     * @return the XY values ready to plot
+     */
+    public XYSeries getValueSeries ()
+    {
+        return getValueSeries(xMin, xMax);
+    }
+
+    //----------------//
+    // getValueSeries //
+    //----------------//
+    /**
+     * Report the XY series for function values up to provided xMax.
+     *
+     * @param x2 upper value for x
+     * @return the XY values ready to plot
+     */
+    public XYSeries getValueSeries (int x2)
+    {
+        return getValueSeries(xMin, x2);
     }
 
     //----------------//
@@ -301,33 +334,6 @@ public class IntegerFunction
         }
 
         return valueSeries;
-    }
-
-    //----------------//
-    // getValueSeries //
-    //----------------//
-    /**
-     * Report the XY series for function values up to provided xMax.
-     *
-     * @param x2 upper value for x
-     * @return the XY values ready to plot
-     */
-    public XYSeries getValueSeries (int x2)
-    {
-        return getValueSeries(xMin, x2);
-    }
-
-    //----------------//
-    // getValueSeries //
-    //----------------//
-    /**
-     * Report the XY series for function values on whole x domain.
-     *
-     * @return the XY values ready to plot
-     */
-    public XYSeries getValueSeries ()
-    {
-        return getValueSeries(xMin, xMax);
     }
 
     //---------//

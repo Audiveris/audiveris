@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,8 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
-
-import net.jcip.annotations.NotThreadSafe;
 
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Grades;
@@ -40,11 +38,14 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import net.jcip.annotations.NotThreadSafe;
 
 import java.awt.Point;
 import java.awt.geom.Line2D;
@@ -73,14 +74,19 @@ public class MeasuresBuilder
     private static final Logger logger = LoggerFactory.getLogger(MeasuresBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
 
     /** Sequence of groups of barlines per staff. */
-    private final Map<Staff, List<Group>> staffMap = new TreeMap<>(Staff.byId);
+    private final Map<Staff, List<Group>> staffGroupsMap = new TreeMap<>(Staff.byId);
+
+    /** Sequence of StaffBarline's per staff. */
+    private final Map<Staff, List<StaffBarlineInter>> staffBarsMap = new TreeMap<>(Staff.byId);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>MeasuresBuilder</code> object.
      *
@@ -92,53 +98,6 @@ public class MeasuresBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------------//
-    // buildMeasures //
-    //---------------//
-    /**
-     * Based on barlines found, allocate all measures in the system.
-     * <p>
-     * Parts and physical BarlineInter's have been identified within the system.
-     * Each staff has its BarlineInter's attached.
-     * <p>
-     * To build the logical StaffBarlineInter's, PartBarline's and Measures, the strategy is:
-     * <ol>
-     * <li>Staff by staff, gather barlines into groups of closely located barlines
-     * (StaffBarlineInter's).</li>
-     * <li>Check and adjust consistency across all staves within the system</li>
-     * <li>In each part, browsing the sequence of groups in first staff which is now the reference,
-     * allocate the corresponding PartBarline's and measures.</li>
-     * </ol>
-     * <p>
-     * Strategy for assigning barlines to measures:
-     * <ul>
-     * <li>A group of 2 physical barlines, whatever their thickness, gives a single logical
-     * barline.</li>
-     * <li>A group of 3 or 4 physical barlines (thin | thick | thin) or (thin | thick | thick |
-     * thin) gives two logical barlines (thin | thick) and (thick | thin).</li>
-     * <li>In the case of 3 verticals, the middle one is "shared" between the two logicals.</li>
-     * <li>In the case of 4 verticals, no line is shared between the two logicals.</li>
-     * </ul>
-     * TODO: should we handle the degraded case of staff with no barline at all?
-     */
-    public void buildMeasures ()
-    {
-        // Determine groups of BarlineInter's for each staff within system
-        for (Staff staff : system.getStaves()) {
-            staffMap.put(staff, buildGroups(staff.getBarlines()));
-        }
-
-        // Enforce consistency within system
-        enforceSystemConsistency();
-
-        // Allocate measures in each part
-        for (Part part : system.getParts()) {
-            buildPartMeasures(part);
-        }
-
-        // Empty courtesy measure if any
-        emptyCourtesyMeasure();
-    }
 
     //-------------//
     // buildGroups //
@@ -175,35 +134,80 @@ public class MeasuresBuilder
         return groups;
     }
 
+    //---------------//
+    // buildMeasures //
+    //---------------//
+    /**
+     * Based on barlines found, allocate all measures in the system.
+     * <p>
+     * Parts and physical BarlineInter's have been identified within the system.
+     * Each staff has its BarlineInter's attached.
+     * <p>
+     * To build the logical StaffBarlineInter's, PartBarline's and Measures, the strategy is:
+     * <ol>
+     * <li>Staff by staff, gather barlines into groups of closely located barlines
+     * (StaffBarlineInter's).</li>
+     * <li>Check and adjust consistency across all staves within the system</li>
+     * <li>In each part, browsing the sequence of groups in first staff which is now the reference,
+     * allocate the corresponding PartBarline's and measures.</li>
+     * </ol>
+     * <p>
+     * Strategy for assigning barlines to measures:
+     * <ul>
+     * <li>A group of 2 physical barlines, whatever their thickness, gives a single logical
+     * barline.</li>
+     * <li>A group of 3 or 4 physical barlines (thin | thick | thin) or (thin | thick | thick |
+     * thin) gives two logical barlines (thin | thick) and (thick | thin).</li>
+     * <li>In the case of 3 verticals, the middle one is "shared" between the two logicals.</li>
+     * <li>In the case of 4 verticals, no line is shared between the two logicals.</li>
+     * </ul>
+     * TODO: should we handle the degraded case of staff with no barline at all?
+     */
+    public void buildMeasures ()
+    {
+        // Determine groups of BarlineInter's for each staff within system
+        for (Staff staff : system.getStaves()) {
+            staffGroupsMap.put(staff, buildGroups(staff.getBarlines()));
+        }
+
+        // Enforce consistency within system
+        enforceSystemConsistency();
+
+        // Create StaffBarlineInter's out of barline groups
+        buildStaffBarlines();
+
+        // Allocate measures in each part
+        for (Part part : system.getParts()) {
+            buildPartMeasures(part);
+        }
+
+        // Empty courtesy measure if any
+        emptyCourtesyMeasure();
+    }
+
     //-------------------//
     // buildPartMeasures //
     //-------------------//
     /**
-     * Here, we build the sequence of PartBarlines in parallel with the StaffBarlineInter
-     * sequence of each staff within part.
+     * Here, we build the sequence of PartBarlines and measures, based on StaffBarlineInter's.
      *
      * @param part the containing part
      */
     private void buildPartMeasures (Part part)
     {
         final Staff topStaff = part.getFirstStaff();
-        final List<Group> topGroups = staffMap.get(topStaff);
-        final boolean noRightBar = topStaff.getSideBarline(HorizontalSide.RIGHT) == null;
-        final int igMax = noRightBar ? topGroups.size() : (topGroups.size() - 1);
+        final List<StaffBarlineInter> topBars = staffBarsMap.get(topStaff);
         PartBarline leftBarPending = null;
 
-        for (int ig = 0; ig <= igMax; ig++) {
-            Group topGroup = (ig < topGroups.size()) ? topGroups.get(ig) : null;
-            Measure measure = ((topGroup != null)
-                                       && topGroup.get(0).isStaffEnd(HorizontalSide.LEFT))
-                    ? null
+        for (int i = 0; i < topBars.size(); i++) {
+            final StaffBarlineInter topSb = topBars.get(i);
+            final Measure measure = topSb.isStaffEnd(HorizontalSide.LEFT) ? null
                     : new Measure(part);
 
             if (measure != null) {
                 part.addMeasure(measure);
 
                 final int im = part.getMeasures().size() - 1;
-
                 while (system.getStacks().size() <= im) {
                     system.addStack(new MeasureStack(system));
                 }
@@ -214,25 +218,22 @@ public class MeasuresBuilder
                 leftBarPending = null;
             }
 
-            if (topGroup != null) {
-                // Logical barline
-                PartBarline partBar = new PartBarline();
+            // PartBarline
+            final PartBarline partBar = new PartBarline();
 
-                for (Staff s : part.getStaves()) {
-                    Group group = staffMap.get(s).get(ig);
-                    partBar.addStaffBarline(new StaffBarlineInter(group));
-                }
+            for (Staff s : part.getStaves()) {
+                partBar.addStaffBarline(staffBarsMap.get(s).get(i));
+            }
 
-                if (measure == null) {
-                    part.setLeftPartBarline(partBar);
-                } else {
-                    measure.setRightPartBarline(partBar);
-                }
+            if (measure == null) {
+                part.setLeftPartBarline(partBar);
+            } else {
+                measure.setRightPartBarline(partBar);
+            }
 
-                if (topGroup.size() > 2) {
-                    // We have a back to back group, and it starts a new measure
-                    leftBarPending = partBar;
-                }
+            if (topSb.isBackToBack()) {
+                // We have a back-to-back configuration, and it starts a new measure
+                leftBarPending = partBar;
             }
 
             if (measure != null) {
@@ -241,6 +242,53 @@ public class MeasuresBuilder
                 measure.setStack(stack);
                 stack.addMeasure(measure);
             }
+        }
+
+        // Ending measure with no barline on right?
+        final StaffBarlineInter lastSb = topBars.get(topBars.size() - 1);
+        if (!lastSb.isStaffEnd(RIGHT)) {
+            final Measure measure = new Measure(part);
+            part.addMeasure(measure);
+            measure.setLeftPartBarline(leftBarPending); // Perhaps null
+
+            final int im = part.getMeasures().size() - 1;
+            while (system.getStacks().size() <= im) {
+                system.addStack(new MeasureStack(system));
+            }
+
+            final MeasureStack stack = system.getStacks().get(im);
+            measure.setStack(stack);
+            stack.addMeasure(measure);
+        }
+    }
+
+    //--------------------//
+    // buildStaffBarlines //
+    //--------------------//
+    /**
+     * From groups of barlines, build StaffBarlineInter's.
+     * <p>
+     * NOTA: Many StaffBarlines will be built from (physical) Barlines.
+     * But some may have already been created manually by the end-user, without any physical Barline
+     */
+    private void buildStaffBarlines ()
+    {
+        final SIGraph sig = system.getSig();
+        final Staff topStaff = system.getFirstStaff();
+        final List<Group> topGroups = staffGroupsMap.get(topStaff);
+
+        for (int ig = 0; ig < topGroups.size(); ig++) {
+            for (Staff staff : system.getStaves()) {
+                final Group group = staffGroupsMap.get(staff).get(ig);
+                final StaffBarlineInter sb = new StaffBarlineInter(group);
+                sb.setStaff(staff);
+                sig.addVertex(sb);
+            }
+        }
+
+        // Populate staffBarsMap from ALL StaffBarlineInter's in sig
+        for (Staff staff : system.getStaves()) {
+            staffBarsMap.put(staff, staff.getStaffBarlines());
         }
     }
 
@@ -320,7 +368,7 @@ public class MeasuresBuilder
         final List<Column> columns = new ArrayList<>();
 
         for (Staff staff : system.getStaves()) {
-            List<Group> groups = staffMap.get(staff);
+            List<Group> groups = staffGroupsMap.get(staff);
 
             GroupLoop:
             for (Group group : groups) {
@@ -381,83 +429,6 @@ public class MeasuresBuilder
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Scale.Fraction minStandardWidth = new Scale.Fraction(
-                4.0,
-                "Minimum measure width for not being a courtesy measure");
-    }
-
-    //-------//
-    // Group //
-    //-------//
-    /**
-     * A group of barlines in a staff.
-     */
-    private static class Group
-            extends ArrayList<BarlineInter>
-            implements Comparable<Group>
-    {
-
-        /** (Skewed) group center. */
-        final Point2D center;
-
-        /** De-skewed group center. */
-        final Point2D dsk;
-
-        Group (List<BarlineInter> barlines,
-               SystemInfo system)
-        {
-            addAll(barlines);
-
-            center = computeCenter();
-            dsk = system.getSkew().deskewed(center);
-        }
-
-        @Override
-        public int compareTo (Group that)
-        {
-            return Double.compare(this.center.getX(), that.center.getX());
-        }
-
-        public double getDeskewedAbscissa ()
-        {
-            return dsk.getX();
-        }
-
-        public String midString ()
-        {
-            return String.format("G(x:%.0f,y:%.0f)", center.getX(), center.getY());
-        }
-
-        @Override
-        public String toString ()
-        {
-            return midString() + Inters.ids(this);
-        }
-
-        private Point2D computeCenter ()
-        {
-            final int n = size();
-            double xx = 0;
-            double yy = 0;
-
-            for (BarlineInter bar : this) {
-                Point barCenter = bar.getCenter();
-                xx += barCenter.x;
-                yy += barCenter.y;
-            }
-
-            return new Point2D.Double(xx / n, yy / n);
-        }
-    }
-
     //--------//
     // Column //
     //--------//
@@ -513,44 +484,6 @@ public class MeasuresBuilder
             return Double.compare(this.getDeskewedAbscissa(), that.getDeskewedAbscissa());
         }
 
-        @Override
-        public boolean equals (Object obj)
-        {
-            if (this == obj) {
-                return true;
-            }
-
-            if (obj instanceof Column) {
-                return compareTo((Column) obj) == 0;
-            }
-
-            return false;
-        }
-
-        @Override
-        public int hashCode ()
-        {
-            int hash = 7;
-            hash = (23 * hash) + Objects.hashCode(this.getDeskewedAbscissa());
-
-            return hash;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            for (Entry<Staff, Group> entry : groups.entrySet()) {
-                sb.append(" s");
-                sb.append(entry.getKey().getId());
-                sb.append(":");
-                sb.append(entry.getValue());
-            }
-
-            return sb.toString();
-        }
-
         /**
          * Remove this column.
          */
@@ -559,12 +492,26 @@ public class MeasuresBuilder
             for (Entry<Staff, Group> entry : groups.entrySet()) {
                 Staff staff = entry.getKey();
                 Group group = entry.getValue();
-                staffMap.get(staff).remove(group);
+                staffGroupsMap.get(staff).remove(group);
 
                 for (BarlineInter barline : group) {
                     barline.remove();
                 }
             }
+        }
+
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj instanceof Column column) {
+                return compareTo(column) == 0;
+            }
+
+            return false;
         }
 
         /**
@@ -609,19 +556,24 @@ public class MeasuresBuilder
                 Group group = groups.get(staff);
 
                 if (group == null) {
-                    double xStaffMiddle = (staff.getAbscissa(LEFT) + staff.getAbscissa(RIGHT)) / 2.0;
+                    double xStaffMiddle = (staff.getAbscissa(LEFT) + staff.getAbscissa(RIGHT))
+                            / 2.0;
                     double yStaffMiddle = staff.getFirstLine().yAt(xStaffMiddle);
                     double x = line.xAtY(yStaffMiddle); // Roughly
                     double y1 = staff.getFirstLine().yAt(x);
                     double y2 = staff.getLastLine().yAt(x);
                     Line2D median = new Line2D.Double(x, y1, x, y2);
                     BarlineInter barline = new BarlineInter(
-                            null, shape, (Double) null, median, width);
+                            null,
+                            shape,
+                            (Double) null,
+                            median,
+                            width);
                     system.getSig().addVertex(barline);
                     barline.setGrade(Grades.intrinsicRatio);
                     barline.freeze();
 
-                    List<Group> staffGroups = staffMap.get(staff);
+                    List<Group> staffGroups = staffGroupsMap.get(staff);
                     staffGroups.add(new Group(Collections.singletonList(barline), system));
                     Collections.sort(staffGroups);
                     staff.addBarline(barline);
@@ -642,6 +594,108 @@ public class MeasuresBuilder
             }
 
             return xDsk;
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 7;
+            hash = (23 * hash) + Objects.hashCode(this.getDeskewedAbscissa());
+
+            return hash;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (Entry<Staff, Group> entry : groups.entrySet()) {
+                sb.append(" s");
+                sb.append(entry.getKey().getId());
+                sb.append(":");
+                sb.append(entry.getValue());
+            }
+
+            return sb.toString();
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Scale.Fraction minStandardWidth = new Scale.Fraction(
+                4.0,
+                "Minimum measure width for not being a courtesy measure");
+    }
+
+    //-------//
+    // Group //
+    //-------//
+    /**
+     * A group of barlines in a staff.
+     */
+    private static class Group
+            extends ArrayList<BarlineInter>
+            implements Comparable<Group>
+    {
+
+        /** (Skewed) group center. */
+        final Point2D center;
+
+        /** De-skewed group center. */
+        final Point2D dsk;
+
+        Group (List<BarlineInter> barlines,
+               SystemInfo system)
+        {
+            addAll(barlines);
+
+            center = computeCenter();
+            dsk = system.getSkew().deskewed(center);
+        }
+
+        @Override
+        public int compareTo (Group that)
+        {
+            return Double.compare(this.center.getX(), that.center.getX());
+        }
+
+        private Point2D computeCenter ()
+        {
+            final int n = size();
+            double xx = 0;
+            double yy = 0;
+
+            for (BarlineInter bar : this) {
+                Point barCenter = bar.getCenter();
+                xx += barCenter.x;
+                yy += barCenter.y;
+            }
+
+            return new Point2D.Double(xx / n, yy / n);
+        }
+
+        public double getDeskewedAbscissa ()
+        {
+            return dsk.getX();
+        }
+
+        public String midString ()
+        {
+            return String.format("G(x:%.0f,y:%.0f)", center.getX(), center.getY());
+        }
+
+        @Override
+        public String toString ()
+        {
+            return midString() + Inters.ids(this);
         }
     }
 }

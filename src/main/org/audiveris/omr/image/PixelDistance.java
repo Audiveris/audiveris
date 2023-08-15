@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -33,10 +33,13 @@ public class PixelDistance
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To sort by increasing value, regardless of (x,y). */
-    public static final Comparator<PixelDistance> byValue = (PixelDistance o1, PixelDistance o2)
-            -> Double.compare(o1.d, o2.d);
+    public static final Comparator<PixelDistance> byValue = (PixelDistance o1,
+                                                             PixelDistance o2) -> Double.compare(
+                                                                     o1.d,
+                                                                     o2.d);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Location abscissa. */
     public final int x;
 
@@ -47,6 +50,7 @@ public class PixelDistance
     public final double d;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new PixelDistance object.
      *
@@ -64,6 +68,7 @@ public class PixelDistance
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // toString //
     //----------//

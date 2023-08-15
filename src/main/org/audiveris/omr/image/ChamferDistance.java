@@ -12,7 +12,7 @@ import ij.process.ByteProcessor;
  * chamfer masks.
  *
  * @author Code by Xavier Philippeau <br>
- * Kernels by Verwer, Borgefors and Thiel
+ *         Kernels by Verwer, Borgefors and Thiel
  * @author Hervé Bitteur for interface and type-specific implementations
  */
 public interface ChamferDistance
@@ -26,41 +26,53 @@ public interface ChamferDistance
     public static final int VALUE_UNKNOWN = -1;
 
     /** Chessboard mask. */
-    public static final int[][] chessboard = new int[][]{
-        new int[]{1, 0, 1},
-        new int[]{1, 1, 1}};
+    public static final int[][] chessboard = new int[][]
+    { new int[]
+            { 1, 0, 1 }, new int[]
+            { 1, 1, 1 } };
 
     /** 3x3 mask. */
-    public static final int[][] chamfer3 = new int[][]{
-        new int[]{1, 0, 3},
-        new int[]{1, 1, 4}};
+    public static final int[][] chamfer3 = new int[][]
+    { new int[]
+            { 1, 0, 3 }, new int[]
+            { 1, 1, 4 } };
 
     /** 5x5 mask. */
-    public static final int[][] chamfer5 = new int[][]{
-        new int[]{1, 0, 5},
-        new int[]{1, 1, 7},
-        new int[]{2, 1, 11}};
+    public static final int[][] chamfer5 = new int[][]
+    { new int[]
+            { 1, 0, 5 }, new int[]
+            { 1, 1, 7 }, new int[]
+            { 2, 1, 11 } };
 
     /** 7x7 mask. */
-    public static final int[][] chamfer7 = new int[][]{
-        new int[]{1, 0, 14},
-        new int[]{1, 1, 20},
-        new int[]{2, 1, 31},
-        new int[]{3, 1, 44}};
+    public static final int[][] chamfer7 = new int[][]
+    { new int[]
+            { 1, 0, 14 }, new int[]
+            { 1, 1, 20 }, new int[]
+            { 2, 1, 31 }, new int[]
+            { 3, 1, 44 } };
 
     /** 13x13 mask. */
-    public static final int[][] chamfer13 = new int[][]{
-        new int[]{1, 0, 68},
-        new int[]{1, 1, 96},
-        new int[]{2, 1, 152},
-        new int[]{3, 1, 215},
-        new int[]{3, 2, 245},
-        new int[]{4, 1, 280},
-        new int[]{4, 3, 340},
-        new int[]{5, 1, 346},
-        new int[]{6, 1, 413}};
+    public static final int[][] chamfer13 = new int[][]
+    { new int[]
+            { 1, 0, 68 }, new int[]
+            { 1, 1, 96 }, new int[]
+            { 2, 1, 152 }, new int[]
+            { 3, 1, 215 }, new int[]
+            { 3, 2, 245 }, new int[]
+            { 4, 1, 280 }, new int[]
+            { 4, 3, 340 }, new int[]
+            { 5, 1, 346 }, new int[]
+            { 6, 1, 413 } };
+
+    /** Default chamfer mask. */
+    public static final int[][] DEFAULT_MASK = chamfer3;
+
+    /** Normalizer of default mask. */
+    public static final int DEFAULT_NORMALIZER = DEFAULT_MASK[0][2];
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // compute //
     //---------//
@@ -101,6 +113,7 @@ public interface ChamferDistance
     DistanceTable computeToFore (ByteProcessor input);
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     /**
      * Abstract implementation.
      */
@@ -115,11 +128,11 @@ public interface ChamferDistance
         private final int normalizer;
 
         /**
-         * Creates a new Abstract object, with chamfer3 as default mask.
+         * Creates a new Abstract object, with default mask.
          */
         public Abstract ()
         {
-            this(chamfer3);
+            this(DEFAULT_MASK);
         }
 
         /**
@@ -132,6 +145,18 @@ public interface ChamferDistance
             this.chamfer = chamfer;
             normalizer = chamfer[0][2];
         }
+
+        /**
+         * Get Table instance of the proper type and size.
+         *
+         * @param width      desired width
+         * @param height     desired height
+         * @param normalizer the normalizing value
+         * @return the table of proper type and dimension
+         */
+        protected abstract DistanceTable allocateOutput (int width,
+                                                         int height,
+                                                         int normalizer);
 
         //---------//
         // compute //
@@ -183,6 +208,38 @@ public interface ChamferDistance
             process(output);
 
             return output;
+        }
+
+        //------------------//
+        // initializeToBack //
+        //------------------//
+        private void initializeToBack (ByteProcessor input,
+                                       DistanceTable output)
+        {
+            for (int y = 0, h = input.getHeight(); y < h; y++) {
+                for (int x = 0, w = input.getWidth(); x < w; x++) {
+                    if (input.get(x, y) == 0) {
+                        output.setValue(x, y, VALUE_UNKNOWN); // non-reference pixel -> to be computed
+                    } else {
+                        output.setValue(x, y, VALUE_TARGET); // reference pixel -> distance=0
+                    }
+                }
+            }
+        }
+
+        //------------------//
+        // initializeToFore //
+        //------------------//
+        private void initializeToFore (ByteProcessor input,
+                                       DistanceTable output)
+        {
+            for (int i = (input.getWidth() * input.getHeight()) - 1; i >= 0; i--) {
+                if (input.get(i) == 0) {
+                    output.setValue(i, VALUE_TARGET); // reference pixel -> distance=0
+                } else {
+                    output.setValue(i, VALUE_UNKNOWN); // non-reference pixel -> to be computed
+                }
+            }
         }
 
         //---------//
@@ -255,50 +312,6 @@ public interface ChamferDistance
                             }
                         }
                     }
-                }
-            }
-        }
-
-        /**
-         * Get Table instance of the proper type and size.
-         *
-         * @param width      desired width
-         * @param height     desired height
-         * @param normalizer the normalizing value
-         * @return the table of proper type and dimension
-         */
-        protected abstract DistanceTable allocateOutput (int width,
-                                                         int height,
-                                                         int normalizer);
-
-        //------------------//
-        // initializeToBack //
-        //------------------//
-        private void initializeToBack (ByteProcessor input,
-                                       DistanceTable output)
-        {
-            for (int y = 0, h = input.getHeight(); y < h; y++) {
-                for (int x = 0, w = input.getWidth(); x < w; x++) {
-                    if (input.get(x, y) == 0) {
-                        output.setValue(x, y, VALUE_UNKNOWN); // non-reference pixel -> to be computed
-                    } else {
-                        output.setValue(x, y, VALUE_TARGET); // reference pixel -> distance=0
-                    }
-                }
-            }
-        }
-
-        //------------------//
-        // initializeToFore //
-        //------------------//
-        private void initializeToFore (ByteProcessor input,
-                                       DistanceTable output)
-        {
-            for (int i = (input.getWidth() * input.getHeight()) - 1; i >= 0; i--) {
-                if (input.get(i) == 0) {
-                    output.setValue(i, VALUE_TARGET); // reference pixel -> distance=0
-                } else {
-                    output.setValue(i, VALUE_UNKNOWN); // non-reference pixel -> to be computed
                 }
             }
         }

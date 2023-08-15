@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,8 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet;
-
-import ij.process.ByteProcessor;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -51,15 +49,18 @@ import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
 import java.awt.BasicStroke;
-import static java.awt.BasicStroke.*;
+import static java.awt.BasicStroke.CAP_SQUARE;
+import static java.awt.BasicStroke.JOIN_MITER;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -94,6 +95,7 @@ public abstract class PageCleaner
     private static final Logger logger = LoggerFactory.getLogger(PageCleaner.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Sheet buffer. */
     protected final ByteProcessor buffer;
 
@@ -103,22 +105,29 @@ public abstract class PageCleaner
     /** Related sheet. */
     protected final Sheet sheet;
 
-    /** Slightly thicker fonts for music symbols. */
-    protected final MusicFont musicFont;
-
-    protected final MusicFont headMusicFont;
-
-    protected final MusicFont smallMusicFont;
-
-    protected final MusicFont smallHeadMusicFont;
-
     /** Stroke for margin around areas. */
     private final Stroke marginStroke;
 
     /** Slightly thicker stroke for lines. (endings, wedges, slurs) */
     private final Stroke lineStroke;
 
+    /** Preferred font family for sheet at hand. */
+    private final MusicFamily family;
+
+    /** Slightly dilated font point size. */
+    private final int dilatedSize;
+
+    /** Slightly dilated font point size for heads. */
+    private final int dilatedHeadSize;
+
+    /** Font point size on small staves, if any. */
+    private final int smallPointSize;
+
+    /** Font point size for heads on small staves, if any. */
+    private final int smallHeadSize;
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>PageCleaner</code> object.
      *
@@ -134,23 +143,21 @@ public abstract class PageCleaner
         this.g = g;
         this.sheet = sheet;
 
-        Scale scale = sheet.getScale();
+        final Scale scale = sheet.getScale();
+        family = sheet.getStub().getMusicFamily();
 
-        // Use music fonts slightly larger (TODO: perhaps only for heads?)
+        // NOTA: To clean items from buffer, we use slightly dilated music fonts
         final int interline = scale.getInterline();
-        int pointSize = MusicFont.getPointSize(interline);
-        musicFont = MusicFont.getPointFont(dilated(pointSize), interline);
+        dilatedSize = dilated(MusicFont.getPointSize(interline));
+        dilatedHeadSize = dilated(MusicFont.getHeadPointSize(scale, interline));
 
-        int headPointSize = MusicFont.getHeadPointSize(scale, interline);
-        headMusicFont = MusicFont.getPointFont(dilated(headPointSize), interline);
-
+        // TODO: Should we use a similar dilation for small items?
         final Integer smallInterline = scale.getSmallInterline();
-
         if (smallInterline != null) {
-            smallMusicFont = MusicFont.getBaseFont(smallInterline);
-            smallHeadMusicFont = MusicFont.getHeadFont(scale, smallInterline);
+            smallPointSize = MusicFont.getPointSize(smallInterline);
+            smallHeadSize = MusicFont.getHeadPointSize(scale, smallInterline);
         } else {
-            smallMusicFont = smallHeadMusicFont = null;
+            smallPointSize = smallHeadSize = 0; // To keep compiler happy
         }
 
         // Thickness of margins applied (around areas & lines)
@@ -168,6 +175,169 @@ public abstract class PageCleaner
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //---------//
+    // canHide //
+    //---------//
+    /**
+     * Check if we can safely hide the inter.
+     * TODO: Quick hack, to be better implemented.
+     *
+     * @param inter the inter to check
+     * @return true if we can safely hide the inter
+     */
+    protected boolean canHide (Inter inter)
+    {
+        return inter.isFrozen() || inter.isContextuallyGood();
+    }
+
+    //---------//
+    // dilated //
+    //---------//
+    /**
+     * Report a slightly dilated value of provided point size
+     *
+     * @param pointSize the provided point size
+     * @return slightly increased point size value
+     */
+    private int dilated (int pointSize)
+    {
+        return (int) Math.rint(pointSize * constants.dilationRatio.getValue());
+    }
+
+    //-------------------//
+    // eraseStavesHeader //
+    //-------------------//
+    /**
+     * Erase from image the staff header part for each staff of a system.
+     * There is one erased area per staff with an abscissa range from staff left abscissa to header
+     * end.
+     *
+     * @param system  the system to process
+     * @param yMargin the vertical margin erased above and below each staff
+     */
+    protected void eraseStavesHeader (SystemInfo system,
+                                      Scale.Fraction yMargin)
+    {
+        for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
+
+            int dy = InterlineScale.toPixels(staff.getSpecificInterline(), yMargin);
+            int left = staff.getHeaderStart();
+            int right = staff.getHeaderStop();
+            int top = staff.getFirstLine().yAt(right) - dy;
+            int bot = staff.getLastLine().yAt(right) + dy;
+            g.fillRect(left, top, right - left + 1, bot - top + 1);
+        }
+    }
+
+    //-------------------//
+    // eraseSystemHeader //
+    //-------------------//
+    /**
+     * Erase from image the header part of a system.
+     * The erased area is a single rectangle for the whole system, with an abscissa range from
+     * system left bound to header end.
+     *
+     * @param system  the system to process
+     * @param yMargin the vertical margin erased above first staff and below last staff
+     */
+    protected void eraseSystemHeader (SystemInfo system,
+                                      Scale.Fraction yMargin)
+    {
+        final int dy = sheet.getScale().toPixels(yMargin);
+        final Staff firstStaff = system.getFirstStaff();
+        final Staff lastStaff = system.getLastStaff();
+
+        // Determine abscissa at end of header(s)
+        // Mind the fact that we may encounter a tablature, thus without header
+        for (Staff staff : system.getStaves()) {
+            if (staff.getHeader() != null) {
+                final int dmzEnd = staff.getHeaderStop();
+                final int top = firstStaff.getFirstLine().yAt(dmzEnd) - dy;
+                final int bot = lastStaff.getLastLine().yAt(dmzEnd) + dy;
+                g.fillRect(system.getBounds().x, top, dmzEnd, bot - top + 1);
+
+                return;
+            }
+        }
+    }
+
+    //-----------------//
+    // eraseTablatures //
+    //-----------------//
+    /**
+     * Erase tablatures areas in sheet.
+     *
+     * @param yMargin the vertical margin erased above and below each tablature
+     */
+    public void eraseTablatures (Scale.Fraction yMargin)
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            eraseTablatures(system, yMargin);
+        }
+    }
+
+    //-----------------//
+    // eraseTablatures //
+    //-----------------//
+    /**
+     * Erase tablatures areas.
+     *
+     * @param system  the system to process
+     * @param yMargin the vertical margin erased above and below each tablature
+     */
+    protected void eraseTablatures (SystemInfo system,
+                                    Scale.Fraction yMargin)
+    {
+        for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                int dy = InterlineScale.toPixels(staff.getSpecificInterline(), yMargin);
+                Area core = StaffManager.getCoreArea(staff, 0, dy);
+                g.fill(core);
+            }
+        }
+    }
+
+    //-------------//
+    // processArea //
+    //-------------//
+    /**
+     * Process area-based inter.
+     * Strategy is to fill the area with white and also draw its contour in white with a specific
+     * stroke.
+     *
+     * @param area the inter underlying area
+     */
+    protected void processArea (Area area)
+    {
+        // Erase area
+        g.fill(area);
+
+        // Erase contour of area
+        g.setStroke(marginStroke);
+        g.draw(area);
+    }
+
+    //--------------//
+    // processGlyph //
+    //--------------//
+    /**
+     * Process glyph-based inter.
+     * Strategy is to paint the glyph (its runTable actually) in white.
+     *
+     * @param glyph the inter underlying glyph
+     */
+    protected void processGlyph (Glyph glyph)
+    {
+        if (glyph != null) {
+            // Use pixels of underlying glyph
+            glyph.getRunTable().render(g, glyph.getTopLeft());
+        }
+    }
+
     @Override
     public void visit (AbstractBeamInter inter)
     {
@@ -236,11 +406,18 @@ public abstract class PageCleaner
     @Override
     public void visit (HeadInter head)
     {
-        ShapeSymbol symbol = Symbols.getSymbol(head.getShape());
-        Glyph glyph = head.getGlyph();
-        Point2D center = (glyph != null) ? glyph.getCenter2D() : head.getCenter2D();
-        MusicFont font = head.getStaff().isSmall() ? smallHeadMusicFont : headMusicFont;
-        symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+
+        final int size = head.getStaff().isSmall() ? smallHeadSize : dilatedHeadSize;
+        final FontSymbol fs = head.getShape().getFontSymbolBySize(family, size);
+
+        if (fs.symbol == null) {
+            logger.warn("No symbol for head {}", head);
+            return;
+        }
+
+        final Glyph glyph = head.getGlyph();
+        final Point2D center = (glyph != null) ? glyph.getCenter2D() : head.getCenter2D();
+        fs.symbol.paintSymbol(g, fs.font, center, Alignment.AREA_CENTER);
     }
 
     /**
@@ -255,12 +432,18 @@ public abstract class PageCleaner
             return;
         }
 
-        ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
-        Glyph glyph = inter.getGlyph();
-        Point2D center = (glyph != null) ? glyph.getCenter2D() : inter.getCenter2D();
-        boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
-        MusicFont font = isSmall ? smallMusicFont : musicFont;
-        symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+        final boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
+        final int size = isSmall ? smallPointSize : dilatedSize;
+        final FontSymbol fs = inter.getShape().getFontSymbolBySize(family, size);
+
+        if (fs.symbol == null) {
+            logger.warn("No symbol for inter {}", inter);
+            return;
+        }
+
+        final Glyph glyph = inter.getGlyph();
+        final Point2D center = (glyph != null) ? glyph.getCenter2D() : inter.getCenter2D();
+        fs.symbol.paintSymbol(g, fs.font, center, Alignment.AREA_CENTER);
     }
 
     @Override
@@ -302,16 +485,6 @@ public abstract class PageCleaner
     }
 
     @Override
-    public void visit (StemInter inter)
-    {
-        if (inter.getGlyph() != null) {
-            processGlyph(inter.getGlyph());
-        } else {
-            processArea(new Area(inter.getBounds()));
-        }
-    }
-
-    @Override
     public void visit (StaffBarlineInter inter)
     {
         List<Inter> members = inter.getMembers();
@@ -322,6 +495,16 @@ public abstract class PageCleaner
             }
         } else if (inter.getShape() != null) {
             visit((Inter) inter);
+        }
+    }
+
+    @Override
+    public void visit (StemInter inter)
+    {
+        if (inter.getGlyph() != null) {
+            processGlyph(inter.getGlyph());
+        } else {
+            processArea(new Area(inter.getBounds()));
         }
     }
 
@@ -353,139 +536,8 @@ public abstract class PageCleaner
         processGlyph(word.getGlyph());
     }
 
-    //---------//
-    // canHide //
-    //---------//
-    /**
-     * Check if we can safely hide the inter.
-     * TODO: Quick hack, to be better implemented.
-     *
-     * @param inter the inter to check
-     * @return true if we can safely hide the inter
-     */
-    protected boolean canHide (Inter inter)
-    {
-        return inter.isFrozen() || inter.isContextuallyGood();
-    }
-
-    //-------------------//
-    // eraseStavesHeader //
-    //-------------------//
-    /**
-     * Erase from image the staff header part for each staff of a system.
-     * There is one erased area per staff with an abscissa range from staff left abscissa to header
-     * end.
-     *
-     * @param system  the system to process
-     * @param yMargin the vertical margin erased above and below each staff
-     */
-    protected void eraseStavesHeader (SystemInfo system,
-                                      Scale.Fraction yMargin)
-    {
-        for (Staff staff : system.getStaves()) {
-            if (staff.isTablature()) {
-                continue;
-            }
-
-            int dy = InterlineScale.toPixels(staff.getSpecificInterline(), yMargin);
-            int left = staff.getHeaderStart();
-            int right = staff.getHeaderStop();
-            int top = staff.getFirstLine().yAt(right) - dy;
-            int bot = staff.getLastLine().yAt(right) + dy;
-            g.fillRect(left, top, right - left + 1, bot - top + 1);
-        }
-    }
-
-    //-------------------//
-    // eraseSystemHeader //
-    //-------------------//
-    /**
-     * Erase from image the header part of a system.
-     * The erased area is a single rectangle for the whole system, with an abscissa range from
-     * system left bound to header end.
-     *
-     * @param system  the system to process
-     * @param yMargin the vertical margin erased above first staff and below last staff
-     */
-    protected void eraseSystemHeader (SystemInfo system,
-                                      Scale.Fraction yMargin)
-    {
-        int dy = sheet.getScale().toPixels(yMargin);
-        Staff firstStaff = system.getFirstStaff();
-        Staff lastStaff = system.getLastStaff();
-        int dmzEnd = firstStaff.getHeaderStop();
-        int top = firstStaff.getFirstLine().yAt(dmzEnd) - dy;
-        int bot = lastStaff.getLastLine().yAt(dmzEnd) + dy;
-        g.fillRect(system.getBounds().x, top, dmzEnd, bot - top + 1);
-    }
-
-    //-----------------//
-    // eraseTablatures //
-    //-----------------//
-    /**
-     * Erase tablatures areas.
-     *
-     * @param system  the system to process
-     * @param yMargin the vertical margin erased above and below each tablature
-     */
-    protected void eraseTablatures (SystemInfo system,
-                                    Scale.Fraction yMargin)
-    {
-        for (Staff staff : system.getStaves()) {
-            if (staff.isTablature()) {
-                int dy = InterlineScale.toPixels(staff.getSpecificInterline(), yMargin);
-                Area core = StaffManager.getCoreArea(staff, 0, dy);
-                g.fill(core);
-            }
-        }
-    }
-
-    //-------------//
-    // processArea //
-    //-------------//
-    /**
-     * Process area-based inter.
-     * Strategy is to fill the area with white and also draw its contour in white with a specific
-     * stroke.
-     *
-     * @param area the inter underlying area
-     */
-    protected void processArea (Area area)
-    {
-        // Erase area
-        g.fill(area);
-
-        // Erase contour of area
-        g.setStroke(marginStroke);
-        g.draw(area);
-    }
-
-    //--------------//
-    // processGlyph //
-    //--------------//
-    /**
-     * Process glyph-based inter.
-     * Strategy is to paint the glyph (its runTable actually) in white.
-     *
-     * @param glyph the inter underlying glyph
-     */
-    protected void processGlyph (Glyph glyph)
-    {
-        if (glyph != null) {
-            // Use pixels of underlying glyph
-            Color oldColor = g.getColor();
-            g.setColor(Color.WHITE);
-            glyph.getRunTable().render(g, glyph.getTopLeft());
-            g.setColor(oldColor);
-        }
-    }
-
-    private int dilated (int pointSize)
-    {
-        return (int) Math.rint(pointSize * constants.dilationRatio.getValue());
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

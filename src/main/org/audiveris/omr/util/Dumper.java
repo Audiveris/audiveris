@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,11 +45,10 @@ import java.util.Map;
  * A (super)class is considered "relevant" if the static method <code>isClassRelevant(class)</code>
  * returns true. This method can be overridden in a subclass of Dumper to adapt to local needs.
  * <p>
- * A field is considered "relevant" if the following condition if the method
- * <code>isFieldRelevant(field)</code> returns true. Similarly, the behavior of this predicate can be
- * customized by subclassing the Dumper class.
+ * A field is considered "relevant" if the method <code>isFieldRelevant(field)</code> returns true.
+ * Similarly, the behavior of this predicate can be customized by sub-classing the Dumper class.
  * <p>
- * There are several kinds of print outs available through subclassing. Each of them export two
+ * There are several kinds of print outs available through sub-classing. Each of them export two
  * public methods: <code>dump()</code> which prints the result on default output stream, and
  * <code>dumpOf()</code> which simply returns the generated dump string.
  * <ul>
@@ -86,6 +85,7 @@ public class Dumper
     private static final int MAX_COLLECTION_INDEX = 9;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** To filter classes and fields */
     protected final Relevance relevance;
 
@@ -110,6 +110,7 @@ public class Dumper
     protected Class<?> classe;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Dumper.
      *
@@ -133,6 +134,7 @@ public class Dumper
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // print //
     //-------//
@@ -143,22 +145,28 @@ public class Dumper
     {
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Return the string buffer content
-     *
-     * @return the dump of the object as a string
-     */
-    @Override
-    public String toString ()
+    private void printArrayValue (Object[] value)
     {
-        // Do the processing
-        processObject();
+        sb.append("[");
 
-        // Return the final content of string buffer
-        return sb.toString();
+        int i = 0;
+
+        for (Object obj : value) {
+            if (i++ > 0) {
+                sb.append(useHtml ? ",<br/>" : ",");
+            }
+
+            // Safeguard action when the object is a big collection
+            if (i > MAX_COLLECTION_INDEX) {
+                sb.append(" ... ").append(value.length).append(" items");
+
+                break;
+            } else {
+                sb.append(obj);
+            }
+        }
+
+        sb.append("]");
     }
 
     //------------------//
@@ -228,57 +236,33 @@ public class Dumper
     {
         if (value == null) {
             sb.append("null");
-        } else if (value instanceof Collection) {
-            printCollectionValue((Collection) value);
-        } else if (value instanceof Map) {
-            printCollectionValue(((Map) value).entrySet());
-        } else if (value instanceof boolean[]) {
-            sb.append(Arrays.toString((boolean[]) value));
-        } else if (value instanceof byte[]) {
-            sb.append(Arrays.toString((byte[]) value));
-        } else if (value instanceof short[]) {
-            sb.append(Arrays.toString((short[]) value));
-        } else if (value instanceof char[]) {
-            sb.append(Arrays.toString((char[]) value));
-        } else if (value instanceof int[]) {
-            sb.append(Arrays.toString((int[]) value));
-        } else if (value instanceof long[]) {
-            sb.append(Arrays.toString((long[]) value));
-        } else if (value instanceof float[]) {
-            sb.append(Arrays.toString((float[]) value));
-        } else if (value instanceof double[]) {
-            sb.append(Arrays.toString((double[]) value));
-        } else if (value instanceof Line2D) {
-            sb.append(LineUtil.toString((Line2D) value));
+        } else if (value instanceof Collection collection) {
+            printCollectionValue(collection);
+        } else if (value instanceof Map map) {
+            printCollectionValue(map.entrySet());
+        } else if (value instanceof boolean[] bs) {
+            sb.append(Arrays.toString(bs));
+        } else if (value instanceof byte[] bs) {
+            sb.append(Arrays.toString(bs));
+        } else if (value instanceof short[] ses) {
+            sb.append(Arrays.toString(ses));
+        } else if (value instanceof char[] cs) {
+            sb.append(Arrays.toString(cs));
+        } else if (value instanceof int[] is) {
+            sb.append(Arrays.toString(is));
+        } else if (value instanceof long[] ls) {
+            sb.append(Arrays.toString(ls));
+        } else if (value instanceof float[] fs) {
+            sb.append(Arrays.toString(fs));
+        } else if (value instanceof double[] ds) {
+            sb.append(Arrays.toString(ds));
+        } else if (value instanceof Line2D line2D) {
+            sb.append(LineUtil.toString(line2D));
         } else if (value.getClass().isArray()) {
             printArrayValue((Object[]) value);
         } else {
             sb.append(value.toString());
         }
-    }
-
-    private void printArrayValue (Object[] value)
-    {
-        sb.append("[");
-
-        int i = 0;
-
-        for (Object obj : value) {
-            if (i++ > 0) {
-                sb.append(useHtml ? ",<br/>" : ",");
-            }
-
-            // Safeguard action when the object is a big collection
-            if (i > MAX_COLLECTION_INDEX) {
-                sb.append(" ... ").append(value.length).append(" items");
-
-                break;
-            } else {
-                sb.append(obj);
-            }
-        }
-
-        sb.append("]");
     }
 
     //--------------//
@@ -334,7 +318,26 @@ public class Dumper
         } while (relevance.isClassRelevant(classe));
     }
 
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Return the string buffer content
+     *
+     * @return the dump of the object as a string
+     */
+    @Override
+    public String toString ()
+    {
+        // Do the processing
+        processObject();
+
+        // Return the final content of string buffer
+        return sb.toString();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Column //
     //--------//
@@ -408,6 +411,23 @@ public class Dumper
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer fontSize = new Constant.Integer(
+                "Points",
+                9,
+                "Font size for HTML dump");
+
+        private final Constant.String fontName = new Constant.String(
+                "Lucida Console",
+                "Font name for HTML dump");
+    }
+
     //------//
     // Html //
     //------//
@@ -429,30 +449,6 @@ public class Dumper
                      Object object)
         {
             super(relevance, object, true);
-        }
-
-        @Override
-        public String toString ()
-        {
-            // Style
-            final String name = constants.fontName.getValue();
-            final int size = UIUtil.adjustedSize(constants.fontSize.getValue());
-            sb.append("<style> td {").append(" font-family: ").append(name).append(
-                    ", Verdana, sans-serif;").append(" font-size: ").append(size).append("px;")
-                    .append(
-                            " font-style: normal;").append("} </style>");
-
-            // Table begin
-            sb.append("<table border=0 cellpadding=3>");
-
-            // The object
-            super.processObject();
-
-            // Table end
-            sb.append("</table>");
-
-            // Return the final content of string buffer
-            return sb.toString();
         }
 
         @Override
@@ -478,6 +474,29 @@ public class Dumper
             super.printField(name, value);
 
             sb.append("</td>").append("</tr>");
+        }
+
+        @Override
+        public String toString ()
+        {
+            // Style
+            final String name = constants.fontName.getValue();
+            final int size = UIUtil.adjustedSize(constants.fontSize.getValue());
+            sb.append("<style> td {").append(" font-family: ").append(name).append(
+                    ", Verdana, sans-serif;").append(" font-size: ").append(size).append("px;")
+                    .append(" font-style: normal;").append("} </style>");
+
+            // Table begin
+            sb.append("<table border=0 cellpadding=3>");
+
+            // The object
+            super.processObject();
+
+            // Table end
+            sb.append("</table>");
+
+            // Return the final content of string buffer
+            return sb.toString();
         }
     }
 
@@ -532,22 +551,5 @@ public class Dumper
             sb.append(name).append("=");
             super.printField(name, value);
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer fontSize = new Constant.Integer(
-                "Points",
-                9,
-                "Font size for HTML dump");
-
-        private final Constant.String fontName = new Constant.String(
-                "Lucida Console",
-                "Font name for HTML dump");
     }
 }

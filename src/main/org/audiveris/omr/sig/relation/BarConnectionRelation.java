@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,6 +42,14 @@ public class BarConnectionRelation
     private static final Constants constants = new Constants();
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new <code>BarConnectionRelation</code> object.
+     */
+    public BarConnectionRelation ()
+    {
+    }
+
     /**
      * Creates a new BarConnectionRelation object.
      *
@@ -53,31 +61,7 @@ public class BarConnectionRelation
         setImpacts(impacts);
     }
 
-    /**
-     * Creates a new <code>BarConnectionRelation</code> object.
-     */
-    public BarConnectionRelation ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return true;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return true;
-    }
 
     //----------------//
     // getSourceCoeff //
@@ -97,7 +81,26 @@ public class BarConnectionRelation
         return constants.barSupportCoeff.getValue();
     }
 
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

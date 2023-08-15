@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -58,22 +58,18 @@ public class BeamHeadRelation
     private static final Logger logger = LoggerFactory.getLogger(BeamHeadRelation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Is head connected on beam side?. */
     @XmlAttribute(name = "on-beam-side")
     private boolean onBeamSide;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new <code>BeamHeadRelation</code> object.
-     *
-     * @param grade      quality of relation
-     * @param onBeamSide true for head on beam side
+     * No-arg constructor meant for JAXB.
      */
-    public BeamHeadRelation (double grade,
-                             boolean onBeamSide)
+    private BeamHeadRelation ()
     {
-        super(grade);
-        this.onBeamSide = onBeamSide;
     }
 
     /**
@@ -87,29 +83,16 @@ public class BeamHeadRelation
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new <code>BeamHeadRelation</code> object.
+     *
+     * @param grade      quality of relation
+     * @param onBeamSide true for head on beam side
      */
-    private BeamHeadRelation ()
+    public BeamHeadRelation (double grade,
+                             boolean onBeamSide)
     {
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return false;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return false;
+        super(grade);
+        this.onBeamSide = onBeamSide;
     }
 
     //----------------//
@@ -135,6 +118,26 @@ public class BeamHeadRelation
         return onBeamSide;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return false;
+    }
+
     //---------------//
     // setOnBeamSide //
     //---------------//
@@ -149,6 +152,7 @@ public class BeamHeadRelation
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -161,7 +165,7 @@ public class BeamHeadRelation
                 "Supporting coeff for (target) head");
 
         private final Constant.Ratio headSideSupportCoeff = new Constant.Ratio(
-                5.0,
+                1.0,
                 "Supporting coeff for side (target) head");
     }
 }

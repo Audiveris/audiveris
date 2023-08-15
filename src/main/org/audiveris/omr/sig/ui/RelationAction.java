@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -28,7 +28,6 @@ import org.audiveris.omr.sig.relation.Relation;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**
  * Class <code>RelationAction</code> displays a relation and selects the other interpretation
@@ -51,6 +50,7 @@ public class RelationAction
     private final Inter other;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new RelationAction object.
      *
@@ -85,6 +85,7 @@ public class RelationAction
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // actionPerformed //
     //-----------------//

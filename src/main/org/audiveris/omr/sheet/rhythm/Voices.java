@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,18 +21,22 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
-import java.awt.Color;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.PageNumber;
 import org.audiveris.omr.score.PageRef;
+import org.audiveris.omr.score.PartRef;
 import org.audiveris.omr.score.Score;
+import org.audiveris.omr.score.ScoreReduction;
+import org.audiveris.omr.score.SystemRef;
 import org.audiveris.omr.sheet.Book;
-import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.rhythm.Voice.Family;
+import org.audiveris.omr.sheet.rhythm.Voice.VoiceKind;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -41,15 +45,16 @@ import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import org.audiveris.omr.sig.inter.BeamGroupInter;
 
 /**
  * Class <code>Voices</code> connects voices and harmonizes their IDs (and thus colors)
@@ -64,11 +69,15 @@ public abstract class Voices
     private static final Logger logger = LoggerFactory.getLogger(Voices.class);
 
     /** To sort voices by their ID. */
-    public static final Comparator<Voice> byId = (Voice v1, Voice v2)
-            -> Integer.compare(v1.getId(), v2.getId());
+    public static final Comparator<Voice> byId = (Voice v1,
+                                                  Voice v2) -> Integer.compare(
+                                                          v1.getId(),
+                                                          v2.getId());
 
     /** To sort voices by vertical position within their containing measure or stack. */
-    public static final Comparator<Voice> byOrdinate = (Voice v1, Voice v2) -> {
+    public static final Comparator<Voice> byOrdinate = (Voice v1,
+                                                        Voice v2) ->
+    {
         if (v1.getMeasure().getStack() != v2.getMeasure().getStack()) {
             throw new IllegalArgumentException("Comparing voices in different stacks");
         }
@@ -81,16 +90,17 @@ public abstract class Voices
             return Part.byId.compare(p1, p2);
         }
 
-        // Check voice family
-        Family f1 = v1.getFamily();
-        Family f2 = v2.getFamily();
+        // Check voice kind
+        VoiceKind k1 = v1.getKind();
+        VoiceKind k2 = v2.getKind();
 
-        if (f1 != f2) {
-            return f1.compareTo(f2);
+        if (k1 != k2) {
+            return k1.compareTo(k2);
         }
 
         AbstractChordInter c1 = v1.getFirstChord();
         AbstractChordInter c2 = v2.getFirstChord();
+
         Slot firstSlot1 = c1.getSlot();
         Slot firstSlot2 = c2.getSlot();
 
@@ -123,44 +133,33 @@ public abstract class Voices
     /** Sequence of colors for voices. */
     private static final int alpha = 200;
 
-    private static final Color[] voiceColors = new Color[]{
-        /** 1 Purple */
-        new Color(128, 64, 255, alpha),
-        /** 2 Green */
-        new Color(0, 255, 0, alpha),
-        /** 3 Brown */
-        new Color(165, 42, 42, alpha),
-        /** 4 Magenta */
-        new Color(255, 0, 255, alpha),
-        /** 5 Cyan */
-        new Color(0, 255, 255, alpha),
-        /** 6 Orange */
-        new Color(255, 200, 0, alpha),
-        /** 7 Pink */
-        new Color(255, 150, 150, alpha),
-        /** 8 BlueGreen */
-        new Color(0, 128, 128, alpha)};
+    private static final Color[] voiceColors = new Color[]
+    {
+            /** 1 Purple */
+            new Color(128, 64, 255, alpha),
+            /** 2 Green */
+            new Color(0, 255, 0, alpha),
+            /** 3 Brown */
+            new Color(165, 42, 42, alpha),
+            /** 4 Magenta */
+            new Color(255, 0, 255, alpha),
+            /** 5 Cyan */
+            new Color(0, 255, 255, alpha),
+            /** 6 Orange */
+            new Color(255, 200, 0, alpha),
+            /** 7 Pink */
+            new Color(255, 150, 150, alpha),
+            /** 8 BlueGreen */
+            new Color(0, 128, 128, alpha) };
 
     //~ Constructors -------------------------------------------------------------------------------
+
     // Not meant to be instantiated.
     private Voices ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // colorOf //
-    //---------//
-    /**
-     * Report the color to use when painting elements related to the provided voice.
-     *
-     * @param voice the provided voice
-     * @return the color to use
-     */
-    public static Color colorOf (Voice voice)
-    {
-        return colorOf(voice.getId());
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------//
     // colorOf //
@@ -179,6 +178,20 @@ public abstract class Voices
         return voiceColors[index];
     }
 
+    //---------//
+    // colorOf //
+    //---------//
+    /**
+     * Report the color to use when painting elements related to the provided voice.
+     *
+     * @param voice the provided voice
+     * @return the color to use
+     */
+    public static Color colorOf (Voice voice)
+    {
+        return colorOf(voice.getId());
+    }
+
     //---------------//
     // getColorCount //
     //---------------//
@@ -190,256 +203,6 @@ public abstract class Voices
     public static int getColorCount ()
     {
         return voiceColors.length;
-    }
-
-    //------------//
-    // refinePage //
-    //------------//
-    /**
-     * Connect voices within the same logical part across all systems of a page.
-     *
-     * @param page the page to process
-     */
-    public static void refinePage (Page page)
-    {
-        logger.debug("PageStep.refinePage");
-
-        final SystemInfo firstSystem = page.getFirstSystem();
-
-        // Across systems within a single page, the partnering slur is the left extension
-        final SlurAdapter systemSlurAdapter = (SlurInter slur) -> slur.getExtension(LEFT);
-
-        for (LogicalPart logicalPart : page.getLogicalParts()) {
-            for (SystemInfo system : page.getSystems()) {
-                Part part = system.getPartById(logicalPart.getId());
-
-                if (part != null) {
-                    if (system != firstSystem) {
-                        // Check tied voices from previous system
-                        final Measure firstMeasure = part.getFirstMeasure();
-
-                        // A part may have no measure (case of tablature, which are ignored today)
-                        if (firstMeasure != null) {
-                            for (Voice voice : firstMeasure.getVoices()) {
-                                Integer tiedId = getTiedId(voice, systemSlurAdapter);
-
-                                if ((tiedId != null) && (voice.getId() != tiedId)) {
-                                    part.swapVoiceId(voice.getId(), tiedId);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    //-------------//
-    // refineScore //
-    //-------------//
-    /**
-     * Connect voices within the same logical part across all pages of a score.
-     * <p>
-     * Ties across sheets cannot easily be persisted, so we detect and use them on the fly.
-     *
-     * @param score the score to process
-     * @param stubs the valid selected stubs
-     * @return the count of modifications made
-     */
-    public static int refineScore (Score score,
-                                   List<SheetStub> stubs)
-    {
-        final Book book = score.getBook();
-        int modifs = 0;
-        SystemInfo prevSystem = null; // Last system of preceding page, if any
-
-        for (int pageNumber = 1; pageNumber <= score.getPageCount(); pageNumber++) {
-            // Within valid selected stubs?
-            final PageRef ref = score.getPageRefs().get(pageNumber - 1);
-            final SheetStub stub = book.getStub(ref.getSheetNumber());
-
-            if (!stubs.contains(stub)) {
-                prevSystem = null;
-                continue;
-            }
-
-            final Page page = score.getPage(pageNumber);
-
-            if (prevSystem != null) {
-                for (LogicalPart scorePart : score.getLogicalParts()) {
-                    // Check tied voices from same logicalPart in previous page
-                    final LogicalPart logicalPart = page.getLogicalPartById(scorePart.getId());
-
-                    if (logicalPart == null) {
-                        continue; // logical part not found in this page
-                    }
-
-                    final Part part = page.getFirstSystem().getPartById(logicalPart.getId());
-
-                    if (part == null) {
-                        continue; // logical part not found in the first system of this page
-                    }
-
-                    final List<SlurInter> orphans = part.getSlurs(SlurInter.isBeginningOrphan);
-
-                    final Part precedingPart = prevSystem.getPartById(logicalPart.getId());
-
-                    if (precedingPart != null) {
-                        final List<SlurInter> precOrphans = precedingPart.getSlurs(
-                                SlurInter.isEndingOrphan);
-
-                        final Map<SlurInter, SlurInter> links = part.getCrossSlurLinks(
-                                precedingPart); // Links: Slur -> prevSlur
-
-                        // Apply the links possibilities
-                        for (Map.Entry<SlurInter, SlurInter> entry : links.entrySet()) {
-                            final SlurInter slur = entry.getKey();
-                            final SlurInter prevSlur = entry.getValue();
-
-                            slur.checkCrossTie(prevSlur);
-                        }
-
-                        // Purge orphans across pages
-                        orphans.removeAll(links.keySet());
-                        precOrphans.removeAll(links.values());
-                        SlurInter.discardOrphans(precOrphans, RIGHT);
-
-                        // Across pages within a score, use the links map
-                        final SlurAdapter pageSlurAdapter = (SlurInter slur) -> links.get(slur);
-
-                        for (Voice voice : part.getFirstMeasure().getVoices()) {
-                            Integer tiedId = getTiedId(voice, pageSlurAdapter);
-
-                            if ((tiedId != null) && (voice.getId() != tiedId)) {
-                                logicalPart.swapVoiceId(page, voice.getId(), tiedId);
-                                modifs++;
-                            }
-                        }
-                    }
-
-                    SlurInter.discardOrphans(orphans, LEFT);
-                }
-            }
-
-            prevSystem = page.getLastSystem();
-        }
-
-        return modifs;
-    }
-
-    //-------------//
-    // refineStack //
-    //-------------//
-    /**
-     * Refine voice IDs within a stack. (METHOD NOT USED)
-     * <p>
-     * When this method is called, initial IDs have been assigned according to voice creation
-     * (measure-long voices first, then slot voices, with each voice remaining in its part).
-     * <p>
-     * Here we simply rename the IDs from top to bottom (roughly), within each staff.
-     * <p>
-     * We then extend each chord voice to its preceding cue chords.
-     *
-     * @param stack the stack to process
-     */
-    public static void refineStack (MeasureStack stack)
-    {
-        // Within each measure, sort voices vertically and rename them accordingly per staff.
-        for (Measure measure : stack.getMeasures()) {
-            measure.sortVoices();
-            measure.renameVoices();
-            measure.setCueVoices();
-        }
-    }
-
-    //--------------//
-    // refineSystem //
-    //--------------//
-    /**
-     * Connect voices within the same part across all measures of a system.
-     * <p>
-     * When this method is called, each stack has a sequence of voices, the goal is now to
-     * connect them from one stack to the other.
-     *
-     * @param system the system to process
-     */
-    public static void refineSystem (SystemInfo system)
-    {
-        final SIGraph sig = system.getSig();
-
-        // Across measures within a single system, the partnering slur is the slur itself
-        final SlurAdapter measureSlurAdapter = (SlurInter slur) -> slur;
-
-        for (Part part : system.getParts()) {
-            Measure prevMeasure = null;
-
-            for (MeasureStack stack : system.getStacks()) {
-                final Measure measure = stack.getMeasureAt(part);
-                final List<Voice> measureVoices = measure.getVoices(); // Sorted vertically (?)
-
-                for (Voice voice : measureVoices) {
-                    // Check voices from same part in previous measure
-                    if (prevMeasure != null) {
-                        // Tie-based voice link
-                        final Integer tiedId = getTiedId(voice, measureSlurAdapter);
-
-                        if ((tiedId != null) && (voice.getId() != tiedId)) {
-                            measure.swapVoiceId(voice, tiedId);
-                        }
-
-                        final AbstractChordInter ch2 = voice.getFirstChord();
-
-                        if (ch2 != null) {
-                            // BeamGroup-based voice link
-                            final BeamGroupInter beamGroup = ch2.getBeamGroup();
-                            if ((beamGroup != null) && beamGroup.getMeasures().contains(prevMeasure)) {
-                                AbstractChordInter prevCh = null;
-                                for (AbstractChordInter ch : beamGroup.getAllChords()) {
-                                    if (prevCh != null && ch == ch2) {
-                                        if (voice.getId() != prevCh.getVoice().getId()) {
-                                            measure.swapVoiceId(voice, prevCh.getVoice().getId());
-                                        }
-
-                                        break;
-                                    }
-
-                                    prevCh = ch;
-                                }
-                            }
-
-                            // SameVoiceRelation-based or NextInVoiceRelation-based voice links
-                            for (Relation rel : sig.getRelations(ch2,
-                                                                 SameVoiceRelation.class,
-                                                                 NextInVoiceRelation.class)) {
-                                final Inter inter = sig.getOppositeInter(ch2, rel);
-                                final AbstractChordInter ch1 = (AbstractChordInter) inter;
-
-                                if (ch1.getMeasure() == prevMeasure) {
-                                    if (voice.getId() != ch1.getVoice().getId()) {
-                                        measure.swapVoiceId(voice, ch1.getVoice().getId());
-                                    }
-
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    // Preferred voice IDs?
-                    final AbstractChordInter ch1 = voice.getFirstChord();
-
-                    if (ch1 != null) {
-                        final Integer preferredVoiceId = ch1.getPreferredVoiceId();
-
-                        if ((preferredVoiceId != null) && (preferredVoiceId != voice.getId())) {
-                            measure.swapVoiceId(voice, preferredVoiceId);
-                        }
-                    }
-                }
-
-                prevMeasure = measure;
-            }
-        }
     }
 
     //-----------//
@@ -498,7 +261,246 @@ public abstract class Voices
         return null;
     }
 
+    //------------//
+    // refinePage //
+    //------------//
+    /**
+     * Connect voices within the same logical part across all systems of a page/score?.
+     *
+     * @param page the page to process
+     */
+    public static void refinePage (Page page)
+    {
+        logger.debug("PageStep.refinePage");
+
+        // Across systems within a single page, the partnering slur is the left extension
+        final SlurAdapter systemSlurAdapter = (SlurInter slur) -> slur.getExtension(LEFT);
+
+        final Score score = page.getScore();
+        final PageNumber pageNumber = score.getPageNumber(page);
+        final PageRef pageRef = pageNumber.getPageRef(score.getBook());
+        final SystemRef firstSystemRef = pageRef.getSystems().get(0);
+
+        for (LogicalPart logicalPart : page.getScore().getLogicalParts()) {
+            final int logicalId = logicalPart.getId();
+
+            for (SystemRef systemRef : pageRef.getSystems()) {
+                for (PartRef partRef : systemRef.getParts()) {
+                    final Integer partRefLogicalId = partRef.getLogicalId();
+
+                    if ((partRefLogicalId != null) && (partRefLogicalId == logicalId)) {
+                        final Part part = partRef.getRealPart();
+
+                        if (systemRef != firstSystemRef) {
+                            // Check tied voices from previous system
+                            final Measure firstMeasure = part.getFirstMeasure();
+
+                            // A part may have no measure (case of tablature, ignored today)
+                            if (firstMeasure != null) {
+                                for (Voice voice : firstMeasure.getVoices()) {
+                                    Integer tiedId = getTiedId(voice, systemSlurAdapter);
+
+                                    if ((tiedId != null) && (voice.getId() != tiedId)) {
+                                        part.swapVoiceId(voice.getId(), tiedId);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //-------------//
+    // refineScore //
+    //-------------//
+    /**
+     * Connect voices within the same logical part across all pages of a score.
+     * <p>
+     * Ties across sheets cannot easily be persisted, so we detect and use them on the fly.
+     *
+     * @param score the score to process
+     * @param stubs the valid selected stubs
+     * @return the count of modifications made
+     */
+    public static int refineScore (Score score,
+                                   List<SheetStub> stubs)
+    {
+        // Make sure logical parts are available
+        if (score.getLogicalParts() == null) {
+            logger.info("Retrieving logical parts");
+            final Book theBook = score.getBook();
+            final List<SheetStub> theStubs = theBook.getValidSelectedStubs();
+            new ScoreReduction(score).reduce(theStubs);
+            theBook.setModified(true);
+        }
+
+        int modifs = 0;
+        SystemInfo prevSystem = null; // Last system of preceding page, if any
+
+        for (Page page : score.getPages()) {
+            final SheetStub stub = page.getSheet().getStub();
+            if (!stubs.contains(stub)) {
+                prevSystem = null;
+                continue;
+            }
+
+            if (prevSystem != null) {
+                for (LogicalPart logicalPart : score.getLogicalParts()) {
+                    // Check tied voices from same logicalPart in previous page
+                    final Part part = page.getFirstSystem().getPartById(logicalPart.getId());
+
+                    if (part == null) {
+                        continue; // logical part not found in the first system of this page
+                    }
+
+                    final List<SlurInter> orphans = part.getSlurs(SlurInter.isBeginningOrphan);
+
+                    final Part precedingPart = prevSystem.getPartById(logicalPart.getId());
+
+                    if (precedingPart != null) {
+                        final List<SlurInter> precOrphans = precedingPart.getSlurs(
+                                SlurInter.isEndingOrphan);
+
+                        final Map<SlurInter, SlurInter> links = part.getCrossSlurLinks(
+                                precedingPart); // Links: Slur -> prevSlur
+
+                        // Apply the links possibilities
+                        for (Map.Entry<SlurInter, SlurInter> entry : links.entrySet()) {
+                            final SlurInter slur = entry.getKey();
+                            final SlurInter prevSlur = entry.getValue();
+
+                            slur.checkCrossTie(prevSlur);
+                        }
+
+                        // Purge orphans across pages
+                        orphans.removeAll(links.keySet());
+                        precOrphans.removeAll(links.values());
+                        SlurInter.discardOrphans(precOrphans, RIGHT);
+
+                        // Across pages within a score, use the links map
+                        final SlurAdapter pageSlurAdapter = (SlurInter slur) -> links.get(slur);
+
+                        for (Voice voice : part.getFirstMeasure().getVoices()) {
+                            Integer tiedId = getTiedId(voice, pageSlurAdapter);
+
+                            if ((tiedId != null) && (voice.getId() != tiedId)) {
+                                logicalPart.swapVoiceId(page, voice.getId(), tiedId);
+                                modifs++;
+                            }
+                        }
+                    }
+
+                    SlurInter.discardOrphans(orphans, LEFT);
+                }
+            }
+
+            prevSystem = page.getLastSystem();
+        }
+
+        return modifs;
+    }
+
+    //--------------//
+    // refineSystem //
+    //--------------//
+    /**
+     * Connect voices within the same part across all measures of a system.
+     * <p>
+     * When this method is called, each stack has a sequence of voices, the goal is now to
+     * connect them from one stack to the other.
+     *
+     * @param system the system to process
+     */
+    public static void refineSystem (SystemInfo system)
+    {
+        final SIGraph sig = system.getSig();
+
+        // Across measures within a single system, the partnering slur is the slur itself
+        final SlurAdapter measureSlurAdapter = (SlurInter slur) -> slur;
+
+        for (Part part : system.getParts()) {
+            Measure prevMeasure = null;
+
+            for (MeasureStack stack : system.getStacks()) {
+                final Measure measure = stack.getMeasureAt(part);
+
+                measure.purgeVoices();
+                measure.sortVoices();
+                measure.renameVoices();
+
+                final List<Voice> measureVoices = measure.getVoices(); // Sorted vertically (?)
+
+                for (Voice voice : measureVoices) {
+                    // Check voices from same part in previous measure
+                    if (prevMeasure != null) {
+                        // Tie-based voice link
+                        final Integer tiedId = getTiedId(voice, measureSlurAdapter);
+
+                        if ((tiedId != null) && (voice.getId() != tiedId)) {
+                            measure.swapVoiceId(voice, tiedId);
+                        }
+
+                        final AbstractChordInter ch2 = voice.getFirstChord();
+
+                        if (ch2 != null) {
+                            // BeamGroup-based voice link
+                            final BeamGroupInter beamGroup = ch2.getBeamGroup();
+                            if ((beamGroup != null) && beamGroup.getMeasures().contains(
+                                    prevMeasure)) {
+                                AbstractChordInter prevCh = null;
+                                for (AbstractChordInter ch : beamGroup.getAllChords()) {
+                                    if (prevCh != null && ch == ch2) {
+                                        if (voice.getId() != prevCh.getVoice().getId()) {
+                                            measure.swapVoiceId(voice, prevCh.getVoice().getId());
+                                        }
+
+                                        break;
+                                    }
+
+                                    prevCh = ch;
+                                }
+                            }
+
+                            // SameVoiceRelation-based or NextInVoiceRelation-based voice links
+                            for (Relation rel : sig.getRelations(
+                                    ch2,
+                                    SameVoiceRelation.class,
+                                    NextInVoiceRelation.class)) {
+                                final Inter inter = sig.getOppositeInter(ch2, rel);
+                                final AbstractChordInter ch1 = (AbstractChordInter) inter;
+
+                                if (ch1.getMeasure() == prevMeasure) {
+                                    if (voice.getId() != ch1.getVoice().getId()) {
+                                        measure.swapVoiceId(voice, ch1.getVoice().getId());
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Preferred voice IDs?
+                    final AbstractChordInter ch1 = voice.getFirstChord();
+
+                    if (ch1 != null) {
+                        final Integer preferredVoiceId = ch1.getPreferredVoiceId();
+
+                        if ((preferredVoiceId != null) && (preferredVoiceId != voice.getId())) {
+                            measure.swapVoiceId(voice, preferredVoiceId);
+                        }
+                    }
+                }
+
+                prevMeasure = measure;
+            }
+        }
+    }
+
     //~ Inner Interfaces ---------------------------------------------------------------------------
+
     //-------------//
     // SlurAdapter //
     //-------------//

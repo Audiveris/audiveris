@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,25 +22,18 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.lag.Lag;
-import org.audiveris.omr.lag.Lags;
-import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.grid.LineInfo;
-import org.audiveris.omr.sheet.ui.ObjectEditor;
-import org.audiveris.omr.sheet.ui.ObjectEditor.Handle;
-import org.audiveris.omr.sheet.ui.ObjectUIModel;
-import org.audiveris.omr.util.BasicIndex;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -71,10 +64,10 @@ public class StaffLine
     private static final Logger logger = LoggerFactory.getLogger(StaffLine.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** Absolute defining points (including start and stop points). */
     @XmlElement(name = "point")
     @XmlJavaTypeAdapter(Jaxb.Point2DAdapter.class)
@@ -92,14 +85,24 @@ public class StaffLine
 
     // Transient data
     //---------------
-    //
+
     /** Curved line across all defining points. */
     protected NaturalSpline spline;
 
     /** Bounding box. */
     protected Rectangle bounds;
 
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    @SuppressWarnings("unused")
+    private StaffLine ()
+    {
+        this.thickness = 0;
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>StaffLine</code> object.
      *
@@ -117,30 +120,7 @@ public class StaffLine
         }
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    @SuppressWarnings("unused")
-    private StaffLine ()
-    {
-        this.thickness = 0;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // yTranslated //
-    //-------------//
-    @Override
-    public StaffLine yTranslated (double dy)
-    {
-        final StaffLine virtual = new StaffLine(Collections.emptyList(), thickness);
-
-        for (Point2D p : points) {
-            virtual.points.add(new Point2D.Double(p.getX(), p.getY() + dy));
-        }
-
-        return virtual;
-    }
 
     //-----------//
     // getBounds //
@@ -170,25 +150,6 @@ public class StaffLine
         return new Rectangle(bounds);
     }
 
-    //-----------//
-    // getPoints //
-    //-----------//
-    public List<Point2D> getPoints ()
-    {
-        return points;
-    }
-
-    //-------------------//
-    // getPointsDeepCopy //
-    //-------------------//
-    public List<Point2D> getPointsDeepCopy ()
-    {
-        final List<Point2D> copy = new ArrayList<>(points.size());
-        points.forEach(p -> copy.add(new Point2D.Double(p.getX(), p.getY())));
-
-        return copy;
-    }
-
     //-------------//
     // getEndPoint //
     //-------------//
@@ -209,36 +170,23 @@ public class StaffLine
         return glyph;
     }
 
-    //----------//
-    // setGlyph //
-    //----------//
-    /**
-     * Assign the underlying glyph for the whole staff line
-     *
-     * @param glyph the staff line glyph
-     */
-    public void setGlyph (Glyph glyph)
+    //-----------//
+    // getPoints //
+    //-----------//
+    public List<Point2D> getPoints ()
     {
-        this.glyph = glyph;
+        return points;
     }
 
-    //-----------//
-    // setPoints //
-    //-----------//
-    /**
-     * Replace the whole list of points by a new one.
-     *
-     * @param points the new list of points
-     */
-    public void setPoints (List<Point2D> points)
+    //-------------------//
+    // getPointsDeepCopy //
+    //-------------------//
+    public List<Point2D> getPointsDeepCopy ()
     {
-        if (this.points != points) {
-            this.points.clear();
-            this.points.addAll(points);
-        }
+        final List<Point2D> copy = new ArrayList<>(points.size());
+        points.forEach(p -> copy.add(new Point2D.Double(p.getX(), p.getY())));
 
-        spline = null;
-        bounds = null;
+        return copy;
     }
 
     //-----------//
@@ -275,42 +223,35 @@ public class StaffLine
     }
 
     //----------//
-    // toString //
+    // setGlyph //
     //----------//
-    @Override
-    public String toString ()
+    /**
+     * Assign the underlying glyph for the whole staff line
+     *
+     * @param glyph the staff line glyph
+     */
+    public void setGlyph (Glyph glyph)
     {
-        return new StringBuilder("StaffLine{")
-                .append("points:").append(points.size())
-                .append('}').toString();
+        this.glyph = glyph;
     }
 
-    //-----//
-    // yAt //
-    //-----//
-    @Override
-    public int yAt (int x)
+    //-----------//
+    // setPoints //
+    //-----------//
+    /**
+     * Replace the whole list of points by a new one.
+     *
+     * @param points the new list of points
+     */
+    public void setPoints (List<Point2D> points)
     {
-        return (int) Math.rint(yAt((double) x));
-    }
-
-    //-----//
-    // yAt //
-    //-----//
-    @Override
-    public double yAt (double x)
-    {
-        Point2D start = getEndPoint(LEFT);
-        Point2D stop = getEndPoint(RIGHT);
-
-        if ((x < start.getX()) || (x > stop.getX())) {
-            // Extrapolate beyond spline abscissa range, using spline global slope
-            double slope = (stop.getY() - start.getY()) / (stop.getX() - start.getX());
-
-            return start.getY() + (slope * (x - start.getX()));
-        } else {
-            return getSpline().yAtX(x);
+        if (this.points != points) {
+            this.points.clear();
+            this.points.addAll(points);
         }
+
+        spline = null;
+        bounds = null;
     }
 
     /**
@@ -380,7 +321,61 @@ public class StaffLine
         }
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return new StringBuilder("StaffLine{").append("points:").append(points.size()).append('}')
+                .toString();
+    }
+
+    //-----//
+    // yAt //
+    //-----//
+    @Override
+    public double yAt (double x)
+    {
+        Point2D start = getEndPoint(LEFT);
+        Point2D stop = getEndPoint(RIGHT);
+
+        if ((x < start.getX()) || (x > stop.getX())) {
+            // Extrapolate beyond spline abscissa range, using spline global slope
+            double slope = (stop.getY() - start.getY()) / (stop.getX() - start.getX());
+
+            return start.getY() + (slope * (x - start.getX()));
+        } else {
+            return getSpline().yAtX(x);
+        }
+    }
+
+    //-----//
+    // yAt //
+    //-----//
+    @Override
+    public int yAt (int x)
+    {
+        return (int) Math.rint(yAt((double) x));
+    }
+
+    //-------------//
+    // yTranslated //
+    //-------------//
+    @Override
+    public StaffLine yTranslated (double dy)
+    {
+        final StaffLine virtual = new StaffLine(Collections.emptyList(), thickness);
+
+        for (Point2D p : points) {
+            virtual.points.add(new Point2D.Double(p.getX(), p.getY() + dy));
+        }
+
+        return virtual;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // JaxbAdapter //
     //-------------//
@@ -393,14 +388,14 @@ public class StaffLine
 
         @Override
         public StaffLine marshal (LineInfo lineInfo)
-                throws Exception
+            throws Exception
         {
             return (StaffLine) lineInfo;
         }
 
         @Override
         public LineInfo unmarshal (StaffLine staffLine)
-                throws Exception
+            throws Exception
         {
             return staffLine;
         }

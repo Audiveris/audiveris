@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,14 +21,16 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.math.LineUtil;
+import org.audiveris.omr.sig.relation.BeamRestRelation;
+import org.audiveris.omr.sig.relation.Relation;
+
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.math.LineUtil;
-import org.audiveris.omr.sig.relation.BeamRestRelation;
-import org.audiveris.omr.sig.relation.Relation;
 
 /**
  * Class <code>RestChordInter</code> is a AbstractChordInter composed of (one) rest.
@@ -42,6 +44,13 @@ public class RestChordInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * No-arg constructor meant for JAXB (and for FakeChord subclass).
+     */
+    protected RestChordInter ()
+    {
+    }
+
+    /**
      * Creates a new <code>RestChordInter</code> object.
      *
      * @param grade the intrinsic grade
@@ -51,31 +60,7 @@ public class RestChordInter
         super(grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB (and for FakeChord subclass).
-     */
-    protected RestChordInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
-    {
-        return "RestChord";
-    }
 
     //----------//
     // getBeams //
@@ -114,12 +99,23 @@ public class RestChordInter
             final int yRest = restLoc.y;
 
             // Keep the sequence ordered by distance from chord tail
-            Collections.sort(beams,
-                             (AbstractBeamInter b1, AbstractBeamInter b2) -> Double.compare(
-                                     Math.abs(yRest - LineUtil.yAtX(b2.getMedian(), x)),
-                                     Math.abs(yRest - LineUtil.yAtX(b1.getMedian(), x))));
+            Collections.sort(
+                    beams,
+                    (AbstractBeamInter b1,
+                     AbstractBeamInter b2) -> Double.compare(
+                             Math.abs(yRest - LineUtil.yAtX(b2.getMedian(), x)),
+                             Math.abs(yRest - LineUtil.yAtX(b1.getMedian(), x))));
         }
 
         return beams;
+    }
+
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return "RestChord";
     }
 }

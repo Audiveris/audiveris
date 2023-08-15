@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -51,6 +51,7 @@ public class TimeSignatureFixer
     private static final Logger logger = LoggerFactory.getLogger(TimeSignatureFixer.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new TimeSignatureFixer object.
      */
@@ -59,61 +60,6 @@ public class TimeSignatureFixer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Page hierarchy entry point
-     *
-     * @param page the page to process
-     */
-    public void process (Page page)
-    {
-        try {
-            SystemInfo firstSystem = page.getFirstSystem();
-            MeasureStack stack = firstSystem.getFirstStack();
-
-            // MeasureStack that starts a range of measures with an explicit time sig
-            MeasureStack startStack = null;
-
-            // Is this starting time sig a manual one?
-            boolean startManual = false;
-
-            // End of range (right before another time sig, or last measure of the page)
-            MeasureStack stopStack = null;
-
-            // Remember if current signature is manual, and thus should not be updated
-            WrappedBoolean isManual = new WrappedBoolean(false);
-
-            while (stack != null) {
-                if (hasTimeSig(stack, isManual)) {
-                    if ((startStack != null) && !startManual) {
-                        // Complete the ongoing time sig analysis
-                        checkTimeSigs(startStack, stopStack);
-                    }
-
-                    // Start a new analysis
-                    startStack = stack;
-                    startManual = isManual.isSet();
-                }
-
-                stopStack = stack;
-                stack = stack.getFollowingInPage();
-            }
-
-            if (startStack != null) {
-                if (!startManual) {
-                    // Complete the ongoing time sig analysis
-                    checkTimeSigs(startStack, stopStack);
-                }
-            } else {
-                // Whole page without explicit time signature
-                checkTimeSigs(firstSystem.getFirstStack(), page.getLastSystem().getLastStack());
-            }
-        } catch (Exception ex) {
-            logger.warn("TimeSignatureFixer. Error processing " + page, ex);
-        }
-    }
 
     //---------------//
     // checkTimeSigs //
@@ -139,7 +85,10 @@ public class TimeSignatureFixer
 
         // Sort them by decreasing occurrences
         List<TimeRational> sigs = new ArrayList<>(sigMap.keySet());
-        Collections.sort(sigs, (t1, t2) -> Integer.compare(sigMap.get(t2), sigMap.get(t1)));
+        Collections.sort(
+                sigs,
+                (t1,
+                 t2) -> Integer.compare(sigMap.get(t2), sigMap.get(t1)));
         logger.debug(
                 "Best inferred time sigs in [M#{},M#{}]: {}",
                 startStack.getIdValue(),
@@ -220,6 +169,62 @@ public class TimeSignatureFixer
         }
 
         return found;
+    }
+
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Page hierarchy entry point
+     *
+     * @param page the page to process
+     */
+    public void process (Page page)
+    {
+        try {
+            SystemInfo firstSystem = page.getFirstSystem();
+            MeasureStack stack = firstSystem.getFirstStack();
+
+            // MeasureStack that starts a range of measures with an explicit time sig
+            MeasureStack startStack = null;
+
+            // Is this starting time sig a manual one?
+            boolean startManual = false;
+
+            // End of range (right before another time sig, or last measure of the page)
+            MeasureStack stopStack = null;
+
+            // Remember if current signature is manual, and thus should not be updated
+            WrappedBoolean isManual = new WrappedBoolean(false);
+
+            while (stack != null) {
+                if (hasTimeSig(stack, isManual)) {
+                    if ((startStack != null) && !startManual) {
+                        // Complete the ongoing time sig analysis
+                        checkTimeSigs(startStack, stopStack);
+                    }
+
+                    // Start a new analysis
+                    startStack = stack;
+                    startManual = isManual.isSet();
+                }
+
+                stopStack = stack;
+                stack = stack.getFollowingInPage();
+            }
+
+            if (startStack != null) {
+                if (!startManual) {
+                    // Complete the ongoing time sig analysis
+                    checkTimeSigs(startStack, stopStack);
+                }
+            } else {
+                // Whole page without explicit time signature
+                checkTimeSigs(firstSystem.getFirstStack(), page.getLastSystem().getLastStack());
+            }
+        } catch (Exception ex) {
+            logger.warn("TimeSignatureFixer. Error processing " + page, ex);
+        }
     }
 
     //------------------//

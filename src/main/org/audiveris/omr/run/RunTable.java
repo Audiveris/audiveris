@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.run;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.image.PixelSource;
-import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.moments.ARTMoments;
@@ -38,6 +35,8 @@ import org.audiveris.omr.util.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -86,15 +85,14 @@ import javax.xml.stream.XMLStreamException;
  * </ul>
  * We can have these various kinds of sequence, where 'F' stands for the length of a foreground run
  * and 'B' for the length of a background run:
- *
- * <pre>
- * null    (for an empty sequence)
- * []      (for an empty sequence as well)
- * [F]     (&gt;0)
- * [FBF]   (perhaps 0BF)
- * [FBFBF] (perhaps 0BFBF)
- * etc...
- * </pre>
+ * <ul>
+ * <li>null (for an empty sequence)
+ * <li>[] (for an empty sequence as well)
+ * <li>[F] (&gt;0)
+ * <li>[FBF] (perhaps 0BF)
+ * <li>[FBFBF] (perhaps 0BFBF)
+ * <li>etc...
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -111,8 +109,10 @@ public class RunTable
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
+
     /**
      * This is the orientation (horizontal or vertical) chosen for all runs in the table.
      */
@@ -145,6 +145,7 @@ public class RunTable
 
     // Transient data
     //---------------
+
     /** Hosted event service for UI events related to this table (Runs), if any. */
     private RunService runService;
 
@@ -152,6 +153,18 @@ public class RunTable
     private Integer weight;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor, needed for JAXB.
+     */
+    private RunTable ()
+    {
+        this.orientation = null;
+        this.width = 0;
+        this.height = 0;
+        this.sequences = null;
+    }
+
     /**
      * Creates a new RunTable object.
      *
@@ -172,33 +185,7 @@ public class RunTable
         sequences = new RunSequence[seqNb];
     }
 
-    /**
-     * No-arg constructor, needed for JAXB.
-     */
-    private RunTable ()
-    {
-        this.orientation = null;
-        this.width = 0;
-        this.height = 0;
-        this.sequences = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // addRun //
-    //--------//
-    /**
-     * Insert a run in the sequence found at provided index.
-     *
-     * @param index index of the sequence in table
-     * @param run   the run to insert (at its provided location)
-     * @return true if addition was performed, false otherwise
-     */
-    public boolean addRun (int index,
-                           Run run)
-    {
-        return addRun(index, run.getStart(), run.getLength());
-    }
 
     //--------//
     // addRun //
@@ -321,6 +308,74 @@ public class RunTable
         }
 
         return true;
+    }
+
+    //--------//
+    // addRun //
+    //--------//
+    /**
+     * Insert a run in the sequence found at provided index.
+     *
+     * @param index index of the sequence in table
+     * @param run   the run to insert (at its provided location)
+     * @return true if addition was performed, false otherwise
+     */
+    public boolean addRun (int index,
+                           Run run)
+    {
+        return addRun(index, run.getStart(), run.getLength());
+    }
+
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    /**
+     * Called immediately after marshalling of this object.
+     * We reset any empty RunSequence to null.
+     */
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
+    {
+        for (int i = 0, iBreak = sequences.length; i < iBreak; i++) {
+            RunSequence seq = sequences[i];
+
+            if ((seq != null) && ((seq.rle == null) || (seq.rle.length == 0))) {
+                sequences[i] = null;
+            }
+        }
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called immediately after unmarshalling of this object.
+     * We reset any empty RunSequence to null.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller m,
+                                 Object parent)
+    {
+        afterMarshal(null);
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    /**
+     * Called immediately before the marshalling of this object begins.
+     * We replace any null RunSequence by an empty RunSequence (to be properly marshalled).
+     */
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        for (int i = 0, iBreak = sequences.length; i < iBreak; i++) {
+            RunSequence seq = sequences[i];
+
+            if (seq == null) {
+                sequences[i] = new RunSequence(new int[0]);
+            }
+        }
     }
 
     //-------------------//
@@ -937,6 +992,20 @@ public class RunTable
         return runService;
     }
 
+    //-------------//
+    // getSequence //
+    //-------------//
+    /**
+     * (package private) Report the sequence of runs at a given index
+     *
+     * @param index the desired index
+     * @return the MODIFIABLE sequence of runs
+     */
+    final RunSequence getSequence (int index)
+    {
+        return sequences[index];
+    }
+
     //---------//
     // getSize //
     //---------//
@@ -993,52 +1062,6 @@ public class RunTable
         }
 
         return weight;
-    }
-
-    //---------//
-    // marshal //
-    //---------//
-    /**
-     * Marshal this RunTable to the provided path.
-     *
-     * @param path target path
-     * @throws IOException        on IO error
-     * @throws JAXBException      on JAXB error
-     * @throws XMLStreamException on XML error
-     */
-    public void marshal (Path path)
-            throws IOException,
-                   JAXBException,
-                   XMLStreamException
-    {
-        Jaxb.marshal(this, path, getJaxbContext());
-    }
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal a RunTable from a file.
-     *
-     * @param path path to file
-     * @return unmarshalled run table
-     */
-    public static RunTable unmarshal (Path path)
-    {
-        logger.debug("RunTable unmarshalling {}", path);
-
-        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
-            Unmarshaller um = getJaxbContext().createUnmarshaller();
-            RunTable runTable = (RunTable) um.unmarshal(is);
-            logger.debug("Unmarshalled {}", runTable);
-
-            return runTable;
-        } catch (IOException |
-                 JAXBException ex) {
-            logger.warn("RunTable. Error unmarshalling " + path + " " + ex, ex);
-
-            return null;
-        }
     }
 
     //----------//
@@ -1213,6 +1236,23 @@ public class RunTable
         return new Itr(index);
     }
 
+    //---------//
+    // marshal //
+    //---------//
+    /**
+     * Marshal this RunTable to the provided path.
+     *
+     * @param path target path
+     * @throws IOException        on IO error
+     * @throws JAXBException      on JAXB error
+     * @throws XMLStreamException on XML error
+     */
+    public void marshal (Path path)
+        throws IOException, JAXBException, XMLStreamException
+    {
+        Jaxb.marshal(this, path, getJaxbContext());
+    }
+
     //--------------------//
     // persistentHashCode //
     //--------------------//
@@ -1310,7 +1350,7 @@ public class RunTable
         while (iter.hasNext()) {
             Run r = iter.next();
 
-            if (r.isIdentical(run)) {
+            if (r.equals(run)) {
                 // We are located on the right run
                 iter.remove();
                 weight = null;
@@ -1346,9 +1386,9 @@ public class RunTable
 
         if (orientation == HORIZONTAL) {
             final int minSeq = (clip != null) ? Math.max(clip.y - offset.y, 0) : 0;
-            final int maxSeq = (clip != null)
-                    ? (Math.min(((clip.y + clip.height) - offset.y), height) - 1)
-                    : (height - 1);
+            final int maxSeq = (clip != null) ? (Math.min(
+                    ((clip.y + clip.height) - offset.y),
+                    height) - 1) : (height - 1);
 
             for (int iSeq = minSeq; iSeq <= maxSeq; iSeq++) {
                 for (Itr it = new Itr(iSeq); it.hasNext();) {
@@ -1358,8 +1398,8 @@ public class RunTable
             }
         } else {
             final int minSeq = (clip != null) ? Math.max(clip.x - offset.x, 0) : 0;
-            final int maxSeq = (clip != null)
-                    ? (Math.min((clip.x + clip.width) - offset.x, width) - 1) : (width - 1);
+            final int maxSeq = (clip != null) ? (Math.min((clip.x + clip.width) - offset.x, width)
+                    - 1) : (width - 1);
 
             for (int iSeq = minSeq; iSeq <= maxSeq; iSeq++) {
                 for (Itr it = new Itr(iSeq); it.hasNext();) {
@@ -1442,6 +1482,21 @@ public class RunTable
                              List<? extends Run> list)
     {
         sequences[index] = encode(list);
+    }
+
+    //-------------//
+    // setSequence //
+    //-------------//
+    /**
+     * (package private) method meant to optimize the filling of a whole run sequence.
+     *
+     * @param index position in sequences list
+     * @param seq   the run sequence already populated
+     */
+    final void setSequence (int index,
+                            RunSequence seq)
+    {
+        sequences[index] = seq;
     }
 
     //----------//
@@ -1589,19 +1644,7 @@ public class RunTable
         }
     }
 
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(RunTable.class);
-        }
-
-        return jaxbContext;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // encode //
@@ -1653,167 +1696,43 @@ public class RunTable
         return new RunSequence(rle);
     }
 
-    //-------------//
-    // getSequence //
-    //-------------//
-    /**
-     * (package private) Report the sequence of runs at a given index
-     *
-     * @param index the desired index
-     * @return the MODIFIABLE sequence of runs
-     */
-    final RunSequence getSequence (int index)
-    {
-        return sequences[index];
-    }
-
-    //-------------//
-    // setSequence //
-    //-------------//
-    /**
-     * (package private) method meant to optimize the filling of a whole run sequence.
-     *
-     * @param index position in sequences list
-     * @param seq   the run sequence already populated
-     */
-    final void setSequence (int index,
-                            RunSequence seq)
-    {
-        sequences[index] = seq;
-    }
-
-    //--------------//
-    // afterMarshal //
-    //--------------//
-    /**
-     * Called immediately after marshalling of this object.
-     * We reset any empty RunSequence to null.
-     */
-    @SuppressWarnings("unused")
-    private void afterMarshal (Marshaller m)
-    {
-        for (int i = 0, iBreak = sequences.length; i < iBreak; i++) {
-            RunSequence seq = sequences[i];
-
-            if ((seq != null) && ((seq.rle == null) || (seq.rle.length == 0))) {
-                sequences[i] = null;
-            }
-        }
-    }
-
     //----------------//
-    // afterUnmarshal //
+    // getJaxbContext //
     //----------------//
-    /**
-     * Called immediately after unmarshalling of this object.
-     * We reset any empty RunSequence to null.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller m,
-                                 Object parent)
+    private static JAXBContext getJaxbContext ()
+        throws JAXBException
     {
-        afterMarshal(null);
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(RunTable.class);
+        }
+
+        return jaxbContext;
     }
 
-    //---------------//
-    // beforeMarshal //
-    //---------------//
+    //-----------//
+    // unmarshal //
+    //-----------//
     /**
-     * Called immediately before the marshalling of this object begins.
-     * We replace any null RunSequence by an empty RunSequence (to be properly marshalled).
+     * Unmarshal a RunTable from a file.
+     *
+     * @param path path to file
+     * @return unmarshalled run table
      */
-    @SuppressWarnings("unused")
-    private void beforeMarshal (Marshaller m)
+    public static RunTable unmarshal (Path path)
     {
-        for (int i = 0, iBreak = sequences.length; i < iBreak; i++) {
-            RunSequence seq = sequences[i];
+        logger.debug("RunTable unmarshalling {}", path);
 
-            if (seq == null) {
-                sequences[i] = new RunSequence(new int[0]);
-            }
-        }
-    }
+        try (InputStream is = Files.newInputStream(path, StandardOpenOption.READ)) {
+            Unmarshaller um = getJaxbContext().createUnmarshaller();
+            RunTable runTable = (RunTable) um.unmarshal(is);
+            logger.debug("Unmarshalled {}", runTable);
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-------------//
-    // RunSequence //
-    //-------------//
-    /**
-     * Class <code>RunSequence</code> is a sequence of run lengths within a
-     * <code>RunTable</code>, using run-length encoding.
-     * <p>
-     * Here is a marshalled example of one RunSequence:
-     * <p>
-     * <code>&lt;runs&gt;0 41 25 80 2 1 2 80 25&lt;/runs&gt;</code>
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlRootElement(name = "runs")
-    static class RunSequence
-    {
+            return runTable;
+        } catch (IOException | JAXBException ex) {
+            logger.warn("RunTable. Error unmarshalling " + path + " " + ex, ex);
 
-        /**
-         * This array of integers represents the lengths of aligned runs,
-         * one after the other, alternating foreground and background colors.
-         */
-        @XmlValue
-        private int[] rle;
-
-        RunSequence (int[] rle)
-        {
-            this.rle = rle;
-        }
-
-        RunSequence ()
-        {
-        }
-
-        @Override
-        public boolean equals (Object obj)
-        {
-            if (this == obj) {
-                return true;
-            }
-
-            if (!(obj instanceof RunSequence)) {
-                return false;
-            }
-
-            final RunSequence that = (RunSequence) obj;
-
-            return Arrays.equals(rle, that.rle);
-        }
-
-        @Override
-        public int hashCode ()
-        {
-            int hash = 5;
-            hash = (67 * hash) + Arrays.hashCode(this.rle);
-
-            return hash;
-        }
-
-        /**
-         * Report the number of foreground runs in this sequence
-         *
-         * @return count of (foreground) runs
-         */
-        public int size ()
-        {
-            if ((rle == null) || (rle.length == 0)) {
-                return 0;
-            }
-
-            if (rle[0] == 0) {
-                return (rle.length - 1) / 2; // Case of an initial background run
-            } else {
-                return (rle.length + 1) / 2; // Standard case of an initial foreground run
-            }
-        }
-
-        @Override
-        public String toString ()
-        {
-            return Arrays.toString(rle);
+            return null;
         }
     }
 
@@ -1966,6 +1885,90 @@ public class RunTable
 
                 cursor = c;
             }
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-------------//
+    // RunSequence //
+    //-------------//
+    /**
+     * Class <code>RunSequence</code> is a sequence of run lengths within a
+     * <code>RunTable</code>, using run-length encoding.
+     * <p>
+     * Here is a marshalled example of one RunSequence:
+     * <p>
+     * <code>&lt;runs&gt;0 41 25 80 2 1 2 80 25&lt;/runs&gt;</code>
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlRootElement(name = "runs")
+    static class RunSequence
+    {
+
+        /**
+         * This array of integers represents the lengths of aligned runs,
+         * one after the other, alternating foreground and background colors.
+         */
+        @XmlValue
+        private int[] rle;
+
+        RunSequence ()
+        {
+        }
+
+        RunSequence (int[] rle)
+        {
+            this.rle = rle;
+        }
+
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+
+            if (!(obj instanceof RunSequence)) {
+                return false;
+            }
+
+            final RunSequence that = (RunSequence) obj;
+
+            return Arrays.equals(rle, that.rle);
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 5;
+            hash = (67 * hash) + Arrays.hashCode(this.rle);
+
+            return hash;
+        }
+
+        /**
+         * Report the number of foreground runs in this sequence
+         *
+         * @return count of (foreground) runs
+         */
+        public int size ()
+        {
+            if ((rle == null) || (rle.length == 0)) {
+                return 0;
+            }
+
+            if (rle[0] == 0) {
+                return (rle.length - 1) / 2; // Case of an initial background run
+            } else {
+                return (rle.length + 1) / 2; // Standard case of an initial foreground run
+            }
+        }
+
+        @Override
+        public String toString ()
+        {
+            return Arrays.toString(rle);
         }
     }
 }

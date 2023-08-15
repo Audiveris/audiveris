@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,6 +22,8 @@
 package org.audiveris.omr.image;
 
 import static org.junit.Assert.fail;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.awt.image.BufferedImage;
@@ -118,7 +120,8 @@ public class MedianGrayFilterTest
         }
     }
 
-    //    @Test
+    @Ignore
+    @Test
     public void testProcess_white_1 ()
     {
         System.out.println("\nprocess_white_1");
@@ -127,11 +130,10 @@ public class MedianGrayFilterTest
         dump(image, "initial white:");
 
         MedianGrayFilter instance = new MedianGrayFilter(1);
-        BufferedImage expResult = image;
         BufferedImage result = instance.filter(image);
         dump(result, "result:");
 
-        if (!areEqual(expResult, result)) {
+        if (!areEqual(image, result)) {
             fail("Images are not equal");
         }
     }

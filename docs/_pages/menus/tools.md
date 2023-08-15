@@ -2,7 +2,7 @@
 layout: default
 title: Tools menu
 grand_parent: References
-parent: Pulldown menus
+parent: Pulldown Menus
 nav_order: 6
 ---
 ## Tools menu

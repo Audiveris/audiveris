@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -25,7 +25,9 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.AdditionTask;
@@ -41,6 +43,7 @@ import org.audiveris.omr.ui.symbol.TextSymbol;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.StringUtil;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,8 +62,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import org.audiveris.omr.sheet.ui.ObjectUIModel;
-
 /**
  * Class <code>WordInter</code> represents a text word.
  * <p>
@@ -77,10 +78,10 @@ public class WordInter
     private static final Logger logger = LoggerFactory.getLogger(WordInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** Word text content. */
     @XmlAttribute
     protected String value;
@@ -96,51 +97,15 @@ public class WordInter
     protected Point2D location;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new <code>WordInter</code> object, with TEXT shape.
-     *
-     * @param textWord the OCR'ed text word
-     */
-    public WordInter (TextWord textWord)
-    {
-        this(textWord, Shape.TEXT);
-    }
 
     /**
-     * Creates a new <code>WordInter</code> object, with provided shape.
-     *
-     * @param textWord the OCR'ed text word
-     * @param shape    specific shape (TEXT or LYRICS)
+     * No-arg constructor meant for JAXB.
      */
-    public WordInter (TextWord textWord,
-                      Shape shape)
+    protected WordInter ()
     {
-        this(textWord.getGlyph(),
-             textWord.getBounds(),
-             shape,
-             textWord.getConfidence() * Grades.intrinsicRatio,
-             textWord.getValue(),
-             textWord.getFontInfo(),
-             textWord.getLocation());
-    }
+        super(null, null, null, (Double) null);
 
-    /**
-     * Creates a new <code>WordInter</code> object from an original WordInter,
-     * with provided shape.
-     *
-     * @param word  the original word inter
-     * @param shape specific shape (TEXT or LYRICS)
-     */
-    public WordInter (WordInter word,
-                      Shape shape)
-    {
-        this(word.getGlyph(),
-             word.getBounds(),
-             shape,
-             1.0,
-             word.getValue(),
-             word.getFontInfo(),
-             PointUtil.rounded(word.getLocation()));
+        this.fontInfo = null;
     }
 
     /**
@@ -184,16 +149,56 @@ public class WordInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Creates a new <code>WordInter</code> object, with TEXT shape.
+     *
+     * @param textWord the OCR'ed text word
      */
-    protected WordInter ()
+    public WordInter (TextWord textWord)
     {
-        super(null, null, null, (Double) null);
+        this(textWord, Shape.TEXT);
+    }
 
-        this.fontInfo = null;
+    /**
+     * Creates a new <code>WordInter</code> object, with provided shape.
+     *
+     * @param textWord the OCR'ed text word
+     * @param shape    specific shape (TEXT or LYRICS)
+     */
+    public WordInter (TextWord textWord,
+                      Shape shape)
+    {
+        this(
+                textWord.getGlyph(),
+                textWord.getBounds(),
+                shape,
+                textWord.getConfidence() * Grades.intrinsicRatio,
+                textWord.getValue(),
+                textWord.getFontInfo(),
+                textWord.getLocation());
+    }
+
+    /**
+     * Creates a new <code>WordInter</code> object from an original WordInter,
+     * with provided shape.
+     *
+     * @param word  the original word inter
+     * @param shape specific shape (TEXT or LYRICS)
+     */
+    public WordInter (WordInter word,
+                      Shape shape)
+    {
+        this(
+                word.getGlyph(),
+                word.getBounds(),
+                shape,
+                1.0,
+                word.getValue(),
+                word.getFontInfo(),
+                PointUtil.rounded(word.getLocation()));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -247,10 +252,12 @@ public class WordInter
         TextLayout layout = textFont.layout(value);
         Rectangle2D rect = layout.getBounds();
 
-        return new Rectangle(bounds = new Rectangle((int) Math.rint(location.getX()),
-                                                    (int) Math.rint(location.getY() + rect.getY()),
-                                                    (int) Math.rint(rect.getWidth()),
-                                                    (int) Math.rint(rect.getHeight())));
+        return new Rectangle(
+                bounds = new Rectangle(
+                        (int) Math.rint(location.getX()),
+                        (int) Math.rint(location.getY() + rect.getY()),
+                        (int) Math.rint(rect.getWidth()),
+                        (int) Math.rint(rect.getHeight())));
     }
 
     //------------//
@@ -259,14 +266,16 @@ public class WordInter
     @Override
     public String getDetails ()
     {
-        StringBuilder sb = new StringBuilder(super.getDetails());
+        final StringBuilder sb = new StringBuilder(super.getDetails());
 
         if (value != null) {
-            sb.append(" codes[").append(StringUtil.codesOf(value, false)).append(']');
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append("codes[").append(StringUtil.codesOf(value, false)).append(']');
         }
 
         if (fontInfo != null) {
-            sb.append(' ').append(fontInfo.getMnemo());
+            sb.append((sb.length() != 0) ? " " : "");
+            sb.append(fontInfo.getMnemo());
         }
 
         return sb.toString();
@@ -305,6 +314,15 @@ public class WordInter
         return location;
     }
 
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return "WORD";
+    }
+
     //----------//
     // getValue //
     //----------//
@@ -314,6 +332,64 @@ public class WordInter
     public String getValue ()
     {
         return value;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        sb.append(" \"").append(value).append("\"");
+
+        return sb.toString();
+    }
+
+    //--------//
+    // preAdd //
+    //--------//
+    @Override
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
+    {
+        // Standard addition task for this word
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel, toPublish));
+
+        // Wrap this word into a new sentence
+        SentenceInter sentence = new SentenceInter(TextRole.Direction, 1.0);
+        sentence.setManual(true);
+        sentence.setStaff(staff);
+
+        tasks.add(
+                new AdditionTask(
+                        staff.getSystem().getSig(),
+                        sentence,
+                        getBounds(),
+                        Arrays.asList(new Link(this, new Containment(), true))));
+
+        return tasks;
+    }
+
+    //-------------//
+    // setFontInfo //
+    //-------------//
+    public void setFontInfo (FontInfo fontInfo)
+    {
+        this.fontInfo = fontInfo;
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        // Location?
+        // FontInfo?
     }
 
     //----------//
@@ -332,100 +408,21 @@ public class WordInter
 
         if (sig != null) {
             // Update containing sentence
-            Inter sentence = getEnsemble();
+            final SentenceInter sentence = (SentenceInter) getEnsemble();
 
             if (sentence != null) {
                 sentence.invalidateCache();
+
+                if (sentence.getRole() == TextRole.PartName) {
+                    // Update partRef name as well
+                    final Part part = sentence.getStaff().getPart();
+                    part.setName(sentence);
+                }
             }
         }
     }
 
-    //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
-    {
-        super.setGlyph(glyph);
-
-        // Location?
-        // FontInfo?
-    }
-
-    //--------//
-    // preAdd //
-    //--------//
-    @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
-    {
-        // Standard addition task for this word
-        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
-
-        // Wrap this word into a new sentence
-        SentenceInter sentence = new SentenceInter(TextRole.Direction, 1.0);
-        sentence.setManual(true);
-        sentence.setStaff(staff);
-
-        tasks.add(new AdditionTask(staff.getSystem().getSig(),
-                                   sentence,
-                                   getBounds(),
-                                   Arrays.asList(new Link(this, new Containment(), true))));
-
-        return tasks;
-    }
-
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
-    {
-        return "WORD";
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        sb.append(" \"").append(value).append("\"");
-
-        return sb.toString();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-------//
-    // Model //
-    //-------//
-    public static class Model
-            implements ObjectUIModel
-    {
-
-        public final String value;
-
-        public final Point2D baseLoc;
-
-        public FontInfo fontInfo;
-
-        public Model (String value,
-                      Point2D baseLoc,
-                      FontInfo fontInfo)
-        {
-            this.value = value;
-            this.baseLoc = new Point2D.Double(baseLoc.getX(), baseLoc.getY());
-            this.fontInfo = fontInfo;
-        }
-
-        @Override
-        public void translate (double dx,
-                               double dy)
-        {
-            PointUtil.add(baseLoc, dx, dy);
-        }
-    }
 
     //--------//
     // Editor //
@@ -466,14 +463,15 @@ public class WordInter
             handles.add(selectedHandle = new InterEditor.Handle(middle)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
                     // Data
-                    PointUtil.add(model.baseLoc, vector);
+                    PointUtil.add(model.baseLoc, dx, dy);
 
                     // Handles
                     for (InterEditor.Handle handle : handles) {
-                        PointUtil.add(handle.getHandleCenter(), vector);
+                        PointUtil.add(handle.getPoint(), dx, dy);
                     }
 
                     return true;
@@ -484,10 +482,9 @@ public class WordInter
             handles.add(new Handle(right)
             {
                 @Override
-                public boolean move (Point vector)
+                public boolean move (int dx,
+                                     int dy)
                 {
-                    final int dx = vector.x;
-
                     if (dx == 0) {
                         return false;
                     }
@@ -538,6 +535,36 @@ public class WordInter
 
             inter.setBounds(null);
             super.undo();
+        }
+    }
+
+    //-------//
+    // Model //
+    //-------//
+    public static class Model
+            implements ObjectUIModel
+    {
+
+        public final String value;
+
+        public final Point2D baseLoc;
+
+        public FontInfo fontInfo;
+
+        public Model (String value,
+                      Point2D baseLoc,
+                      FontInfo fontInfo)
+        {
+            this.value = value;
+            this.baseLoc = new Point2D.Double(baseLoc.getX(), baseLoc.getY());
+            this.fontInfo = fontInfo;
+        }
+
+        @Override
+        public void translate (double dx,
+                               double dy)
+        {
+            PointUtil.add(baseLoc, dx, dy);
         }
     }
 }

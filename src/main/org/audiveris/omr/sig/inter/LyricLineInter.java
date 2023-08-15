@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,11 +52,30 @@ public class LyricLineInter
     private static final Logger logger = LoggerFactory.getLogger(LyricLineInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The verse number (within part). */
     @XmlAttribute
     private int number;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private LyricLineInter ()
+    {
+    }
+
+    /**
+     * Creates a new <code>LyricLineInter</code> object, meant for manual use.
+     *
+     * @param grade the interpretation quality
+     */
+    public LyricLineInter (Double grade)
+    {
+        this(null, grade, null);
+    }
+
     /**
      * Creates a new <code>LyricLineInter</code> object.
      *
@@ -71,32 +90,7 @@ public class LyricLineInter
         super(bounds, grade, meanFont, TextRole.Lyrics);
     }
 
-    /**
-     * Creates a new <code>LyricLineInter</code> object, meant for manual use.
-     *
-     * @param grade the interpretation quality
-     */
-    public LyricLineInter (Double grade)
-    {
-        this(null, grade, null);
-    }
-
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private LyricLineInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 
     //-------//
     // added //
@@ -170,19 +164,6 @@ public class LyricLineInter
         return number;
     }
 
-    //-----------//
-    // setNumber //
-    //-----------//
-    /**
-     * Set the verse number of this item within the containing lyrics line.
-     *
-     * @param number 1-based number
-     */
-    public void setNumber (int number)
-    {
-        this.number = number;
-    }
-
     //------------------//
     // getPrecedingLine //
     //------------------//
@@ -201,6 +182,15 @@ public class LyricLineInter
         }
 
         return null;
+    }
+
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return "LYRICS";
     }
 
     //-----------//
@@ -295,14 +285,20 @@ public class LyricLineInter
         super.remove(extensive);
     }
 
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
+    //-----------//
+    // setNumber //
+    //-----------//
+    /**
+     * Set the verse number of this item within the containing lyrics line.
+     *
+     * @param number 1-based number
+     */
+    public void setNumber (int number)
     {
-        return "LYRICS";
+        this.number = number;
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // create //

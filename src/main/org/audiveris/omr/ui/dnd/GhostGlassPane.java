@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -59,6 +59,7 @@ public class GhostGlassPane
             0.25f);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The image to be dragged. */
     protected BufferedImage draggedImage = null;
 
@@ -72,6 +73,7 @@ public class GhostGlassPane
     protected boolean overTarget = false;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a new GhostGlassPane object.
      */
@@ -82,67 +84,6 @@ public class GhostGlassPane
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // paintComponent //
-    //----------------//
-    @Override
-    public void paintComponent (Graphics g)
-    {
-        if ((draggedImage == null) || (localPoint == null)) {
-            return;
-        }
-
-        Graphics2D g2 = (Graphics2D) g;
-
-        // Use composition with display underneath
-        if (overTarget) {
-            g2.setComposite(targetComposite);
-        } else {
-            g2.setComposite(nonTargetComposite);
-        }
-
-        Rectangle rect = getImageBounds(localPoint);
-        g2.drawImage(draggedImage, null, rect.x, rect.y);
-    }
-
-    //----------//
-    // setImage //
-    //----------//
-    /**
-     * Assign the image to be dragged
-     *
-     * @param draggedImage the image to drag
-     */
-    public void setImage (BufferedImage draggedImage)
-    {
-        this.draggedImage = draggedImage;
-    }
-
-    //---------------//
-    // setOverTarget //
-    //---------------//
-    /**
-     * Tell the glass pane whether we are currently over a droppable target
-     *
-     * @param overTarget true if over a target
-     */
-    public void setOverTarget (boolean overTarget)
-    {
-        this.overTarget = overTarget;
-    }
-
-    //----------------//
-    // setScreenPoint //
-    //----------------//
-    /**
-     * Assign the current screen point, where the dragged image is to be displayed
-     *
-     * @param screenPoint the current location (screen-based)
-     */
-    public void setScreenPoint (ScreenPoint screenPoint)
-    {
-        setLocalPoint(screenPoint.getLocalPoint(this));
-    }
 
     //----------------//
     // getImageBounds //
@@ -185,6 +126,42 @@ public class GhostGlassPane
         return getImageBounds(center); // By default, just the image
     }
 
+    //----------------//
+    // paintComponent //
+    //----------------//
+    @Override
+    public void paintComponent (Graphics g)
+    {
+        if ((draggedImage == null) || (localPoint == null)) {
+            return;
+        }
+
+        Graphics2D g2 = (Graphics2D) g;
+
+        // Use composition with display underneath
+        if (overTarget) {
+            g2.setComposite(targetComposite);
+        } else {
+            g2.setComposite(nonTargetComposite);
+        }
+
+        Rectangle rect = getImageBounds(localPoint);
+        g2.drawImage(draggedImage, null, rect.x, rect.y);
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    /**
+     * Assign the image to be dragged
+     *
+     * @param draggedImage the image to drag
+     */
+    public void setImage (BufferedImage draggedImage)
+    {
+        this.draggedImage = draggedImage;
+    }
+
     //---------------//
     // setLocalPoint //
     //---------------//
@@ -219,5 +196,31 @@ public class GhostGlassPane
             this.localPoint = localPoint;
             prevSceneBounds = null;
         }
+    }
+
+    //---------------//
+    // setOverTarget //
+    //---------------//
+    /**
+     * Tell the glass pane whether we are currently over a droppable target
+     *
+     * @param overTarget true if over a target
+     */
+    public void setOverTarget (boolean overTarget)
+    {
+        this.overTarget = overTarget;
+    }
+
+    //----------------//
+    // setScreenPoint //
+    //----------------//
+    /**
+     * Assign the current screen point, where the dragged image is to be displayed
+     *
+     * @param screenPoint the current location (screen-based)
+     */
+    public void setScreenPoint (ScreenPoint screenPoint)
+    {
+        setLocalPoint(screenPoint.getLocalPoint(this));
     }
 }

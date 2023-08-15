@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -30,7 +30,6 @@ import java.nio.file.Path;
  *            <code>doInBackground</code> and <code>get</code> methods
  * @param <V> the type used for carrying out intermediate results by this
  *            <code>SwingWorker's</code> <code>publish</code> and <code>process</code> methods
- *
  * @author Hervé Bitteur
  */
 public abstract class PathTask<T, V>
@@ -42,6 +41,7 @@ public abstract class PathTask<T, V>
     protected Path path;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>PathTask</code> object.
      */
@@ -60,6 +60,7 @@ public abstract class PathTask<T, V>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Set the path value.
      *

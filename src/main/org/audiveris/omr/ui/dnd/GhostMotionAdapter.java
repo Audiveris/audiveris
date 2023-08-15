@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -41,10 +41,12 @@ public class GhostMotionAdapter
     private static final Logger logger = LoggerFactory.getLogger(GhostMotionAdapter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related glass pane. */
     protected GhostGlassPane glassPane;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a new GhostMotionAdapter object
      *
@@ -56,6 +58,7 @@ public class GhostMotionAdapter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------//
     // mouseDragged //
     //--------------//

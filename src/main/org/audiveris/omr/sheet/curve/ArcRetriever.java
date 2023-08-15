@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -31,7 +31,18 @@ import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
-import static org.audiveris.omr.sheet.curve.Skeleton.*;
+import static org.audiveris.omr.sheet.curve.Skeleton.ARC;
+import static org.audiveris.omr.sheet.curve.Skeleton.HIDDEN;
+import static org.audiveris.omr.sheet.curve.Skeleton.JUNCTION;
+import static org.audiveris.omr.sheet.curve.Skeleton.JUNCTION_PROCESSED;
+import static org.audiveris.omr.sheet.curve.Skeleton.PROCESSED;
+import static org.audiveris.omr.sheet.curve.Skeleton.allDirs;
+import static org.audiveris.omr.sheet.curve.Skeleton.dxs;
+import static org.audiveris.omr.sheet.curve.Skeleton.dys;
+import static org.audiveris.omr.sheet.curve.Skeleton.getDir;
+import static org.audiveris.omr.sheet.curve.Skeleton.isJunction;
+import static org.audiveris.omr.sheet.curve.Skeleton.isJunctionProcessed;
+import static org.audiveris.omr.sheet.curve.Skeleton.scans;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Navigable;
@@ -63,6 +74,7 @@ import java.util.List;
  * to vertical does not always result in a junction point being detected).
  * If a skeleton sequence of points share the same (long) vertical run, only two junction points are
  * set, one at the beginning and one at the end.
+ *
  * <pre>
  * -scanImage() // Scan the whole image for arc starts
  *         + scanJunction() // Scan all arcs leaving a junction point
@@ -83,23 +95,8 @@ public class ArcRetriever
 
     private static final Logger logger = LoggerFactory.getLogger(ArcRetriever.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * MoveStatus for current move along arc.
-     */
-    private static enum MoveStatus
-    {
-        /** One more point on arc. */
-        CONTINUE,
-
-        /** Arrived at a new junction point. */
-        SWITCH,
-
-        /** No more move possible. */
-        END;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -130,6 +127,7 @@ public class ArcRetriever
     boolean longRunPart;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates an ArcRetriever object
      *
@@ -146,41 +144,6 @@ public class ArcRetriever
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // scanImage //
-    //-----------//
-    /**
-     * Scan the whole image.
-     * Note the skeleton image has background pixels on the image border, hence there is no
-     * foreground point to look for there.
-     */
-    public void scanImage ()
-    {
-        for (int x = 1, w = sheet.getWidth() - 1; x < w; x++) {
-            for (int y = 1, h = sheet.getHeight() - 1; y < h; y++) {
-                int pix = skeleton.getPixel(x, y);
-
-                if (pix == ARC) {
-                    // Basic arc pixel, not yet processed, so scan full arc
-                    scanArc(x, y, null, 0);
-
-                    // Re-read pixel value, since an artificial junction may have been set
-                    // (when the starting point is located on a long vertical run)
-                    pix = skeleton.getPixel(x, y);
-                }
-
-                if (isJunction(pix)) {
-                    // Junction pixel, so scan all arcs linked to this junction point
-                    if (!isJunctionProcessed(pix)) {
-                        scanJunction(x, y);
-                    }
-                }
-            }
-        }
-
-        // Sort arcsEnds by abscissa
-        Collections.sort(skeleton.arcsEnds, PointUtil.byAbscissa);
-    }
 
     //----------//
     // addPoint //
@@ -319,12 +282,19 @@ public class ArcRetriever
 
         Point p0 = points.get(0);
         Staff staff = sheet.getStaffManager().getClosestStaff(p0);
+
+        if (staff.isTablature()) {
+            // No slur within a tablature area
+            return true;
+        }
+
         LineInfo line = staff.getClosestStaffLine(p0);
         double maxDist = 0;
         double maxDy = Double.MIN_VALUE;
         double minDy = Double.MAX_VALUE;
 
-        for (int i : new int[]{0, points.size() / 2, points.size() - 1}) {
+        for (int i : new int[]
+        { 0, points.size() / 2, points.size() - 1 }) {
             Point p = points.get(i);
             double dist = p.y - line.yAt(p.x);
             maxDist = max(maxDist, abs(dist));
@@ -332,8 +302,8 @@ public class ArcRetriever
             minDy = min(minDy, dist);
         }
 
-        return (maxDist < params.minStaffLineDistance)
-                       && ((maxDy - minDy) < params.minStaffLineDistance);
+        return (maxDist < params.minStaffLineDistance) && ((maxDy
+                - minDy) < params.minStaffLineDistance);
     }
 
     //------//
@@ -348,9 +318,9 @@ public class ArcRetriever
      * @return code describing the move performed if any. The new position is stored in (cx, cy).
      */
     private MoveStatus move (Arc arc,
-                         int x,
-                         int y,
-                         boolean reverse)
+                             int x,
+                             int y,
+                             boolean reverse)
     {
         // First, check for junctions within reach to stop
         for (int dir : scans[lastDir]) {
@@ -468,6 +438,42 @@ public class ArcRetriever
                 hide(arc);
             }
         }
+    }
+
+    //-----------//
+    // scanImage //
+    //-----------//
+    /**
+     * Scan the whole image.
+     * Note the skeleton image has background pixels on the image border, hence there is no
+     * foreground point to look for there.
+     */
+    public void scanImage ()
+    {
+        for (int x = 1, w = sheet.getWidth() - 1; x < w; x++) {
+            for (int y = 1, h = sheet.getHeight() - 1; y < h; y++) {
+                int pix = skeleton.getPixel(x, y);
+
+                if (pix == ARC) {
+                    // Basic arc pixel, not yet processed, so scan full arc
+                    scanArc(x, y, null, 0);
+
+                    // Re-read pixel value, since an artificial junction may have been set
+                    // (when the starting point is located on a long vertical run)
+                    pix = skeleton.getPixel(x, y);
+                }
+
+                if (isJunction(pix)) {
+                    // Junction pixel, so scan all arcs linked to this junction point
+                    if (!isJunctionProcessed(pix)) {
+                        scanJunction(x, y);
+                    }
+                }
+            }
+        }
+
+        // Sort arcsEnds by abscissa
+        Collections.sort(skeleton.arcsEnds, PointUtil.byAbscissa);
     }
 
     //--------------//
@@ -589,6 +595,8 @@ public class ArcRetriever
         }
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------//
     // sinSq //
     //-------//
@@ -613,6 +621,7 @@ public class ArcRetriever
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -655,6 +664,23 @@ public class ArcRetriever
                 "Maximum length for a vertical run");
     }
 
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /**
+     * MoveStatus for current move along arc.
+     */
+    private static enum MoveStatus
+    {
+        /** One more point on arc. */
+        CONTINUE,
+
+        /** Arrived at a new junction point. */
+        SWITCH,
+
+        /** No more move possible. */
+        END;
+    }
+
     //------------//
     // Parameters //
     //------------//
@@ -663,7 +689,6 @@ public class ArcRetriever
      */
     private static class Parameters
     {
-
         final int arcMinQuorum;
 
         final int minStaffArcLength;

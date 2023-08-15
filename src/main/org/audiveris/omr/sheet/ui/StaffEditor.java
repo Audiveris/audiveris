@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,7 +42,6 @@ import static org.audiveris.omr.util.VerticalSide.TOP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -94,6 +93,7 @@ public abstract class StaffEditor
     protected static final double minWidthHeightRatio = constants.minWidthHeightRatio.getValue();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     protected StaffModel originalModel;
 
     protected StaffModel model;
@@ -113,6 +113,7 @@ public abstract class StaffEditor
     protected final SortedSet<Section> staffSections;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>StaffEditor</code> instance.
      *
@@ -129,6 +130,7 @@ public abstract class StaffEditor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------------//
     // applyModel //
     //------------//
@@ -139,17 +141,35 @@ public abstract class StaffEditor
      */
     protected abstract void applyModel (StaffModel model);
 
-    //------------//
-    // endProcess //
-    //------------//
-    @Override
-    public void endProcess ()
+    //-------------------------//
+    // collectRelevantSections //
+    //-------------------------//
+    /**
+     * Collect just the horizontal sections that may be impacted by staff edition.
+     *
+     * @return the set of relevant sections, ordered by starting ordinate
+     */
+    private SortedSet<Section> collectRelevantSections ()
     {
-        if (hasMoved) {
-            system.getSheet().getInterController().editObject(this);
-        }
+        final Staff staff = getStaff();
+        final Rectangle staffBox = staff.getAreaBounds().getBounds();
 
-        system.getSheet().getSheetEditor().closeEditMode();
+        // Side abscissae may not be the ultimate ones, so let's widen staffBox until sheet limits
+        final Sheet sheet = staff.getSystem().getSheet();
+        staffBox.setBounds(0, staffBox.y, sheet.getWidth(), staffBox.height);
+
+        final List<Section> sections = new ArrayList<>();
+        hLag.getEntities().forEach(section ->
+        {
+            if (section.getBounds().intersects(staffBox)) {
+                sections.add(section);
+            }
+        });
+
+        final SortedSet<Section> set = new TreeSet<>(Section.byFullPosition);
+        set.addAll(sections);
+
+        return set;
     }
 
     //------//
@@ -165,7 +185,8 @@ public abstract class StaffEditor
         applyModel(model); // Change lines geometry
 
         // Detect and remove sections on staff lines
-        lines.forEach(line -> {
+        lines.forEach(line ->
+        {
             final StaffLine staffLine = (StaffLine) line;
             final List<Section> lineRemovedSections = getRemovals(staffLine);
             model.removedSections.setEntities(lineRemovedSections);
@@ -173,24 +194,17 @@ public abstract class StaffEditor
         });
     }
 
-    //------//
-    // undo //
-    //------//
+    //------------//
+    // endProcess //
+    //------------//
     @Override
-    public void undo ()
+    public void endProcess ()
     {
-        applyModel(originalModel); // Reset lines geometry
+        if (hasMoved) {
+            system.getSheet().getInterController().editObject(this);
+        }
 
-        // Cancel the sections removal
-        hLag.insertSections(model.removedSections.getEntities());
-    }
-
-    //----------//
-    // getStaff //
-    //----------//
-    protected Staff getStaff ()
-    {
-        return (Staff) object;
+        system.getSheet().getSheetEditor().closeEditMode();
     }
 
     /**
@@ -212,13 +226,13 @@ public abstract class StaffEditor
                 // Refine intersection check
                 final double yLeft = staffLine.yAt((double) box.x);
                 final double yRight = staffLine.yAt((double) (box.x + box.width));
-                if (yLeft >= box.y && yLeft <= box.y + box.height
-                            || (yRight >= box.y && yRight <= box.y + box.height)) {
+                if (yLeft >= box.y && yLeft <= box.y + box.height || (yRight >= box.y
+                        && yRight <= box.y + box.height)) {
 
                     // Check minimum ratio width / height
                     final double wh = box.width / (double) box.height;
-//                logger.info(" {} w:{} h:{} w/h: {}",
-//                            section, box.width, box.height, String.format("%.1f", wh));
+                    //                logger.info(" {} w:{} h:{} w/h: {}",
+                    //                            section, box.width, box.height, String.format("%.1f", wh));
                     if (wh >= minWidthHeightRatio) {
                         toRemove.add(section);
                     }
@@ -230,6 +244,14 @@ public abstract class StaffEditor
         toRemove.addAll(getStickers(toRemove));
 
         return toRemove;
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    protected Staff getStaff ()
+    {
+        return (Staff) object;
     }
 
     /**
@@ -279,37 +301,20 @@ public abstract class StaffEditor
         return stickers;
     }
 
-    //-------------------------//
-    // collectRelevantSections //
-    //-------------------------//
-    /**
-     * Collect just the horizontal sections that may be impacted by staff edition.
-     *
-     * @return the set of relevant sections, ordered by starting ordinate
-     */
-    private SortedSet<Section> collectRelevantSections ()
+    //------//
+    // undo //
+    //------//
+    @Override
+    public void undo ()
     {
-        final Staff staff = getStaff();
-        final Rectangle staffBox = staff.getAreaBounds().getBounds();
+        applyModel(originalModel); // Reset lines geometry
 
-        // Side abscissae may not be the ultimate ones, so let's widen staffBox until sheet limits
-        final Sheet sheet = staff.getSystem().getSheet();
-        staffBox.setBounds(0, staffBox.y, sheet.getWidth(), staffBox.height);
-
-        final List<Section> sections = new ArrayList<>();
-        hLag.getEntities().forEach(section -> {
-            if (section.getBounds().intersects(staffBox)) {
-                sections.add(section);
-            }
-        });
-
-        final SortedSet<Section> set = new TreeSet<>(Section.byFullPosition);
-        set.addAll(sections);
-
-        return set;
+        // Cancel the sections removal
+        hLag.insertSections(model.removedSections.getEntities());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -364,38 +369,36 @@ public abstract class StaffEditor
             final int nb = points.size();
 
             // Side handles
-            Arrays.asList(points.get(0), points.get(nb - 1)).forEach(
-                    p -> handles.add(new Handle(p)
-                    {
-                        @Override
-                        public boolean move (Point vector)
-                        {
-                            // Move in any direction
-                            PointUtil.add(p, vector);
+            Arrays.asList(points.get(0), points.get(nb - 1)).forEach(p -> handles.add(new Handle(p)
+            {
+                @Override
+                public boolean move (int dx,
+                                     int dy)
+                {
+                    // Move in any direction
+                    PointUtil.add(p, dx, dy);
 
-                            return true;
-                        }
-                    }));
+                    return true;
+                }
+            }));
 
             // Inside handles
-            points.subList(1, nb - 1).forEach(
-                    p -> handles.add(new Handle(p)
-                    {
-                        @Override
-                        public boolean move (Point vector)
-                        {
-                            // Move only vertically
-                            final int dy = vector.y;
+            points.subList(1, nb - 1).forEach(p -> handles.add(new Handle(p)
+            {
+                @Override
+                public boolean move (int dx,
+                                     int dy)
+                {
+                    // Move only vertically
+                    if (dy == 0) {
+                        return false;
+                    }
 
-                            if (dy == 0) {
-                                return false;
-                            }
+                    PointUtil.add(p, 0, dy);
 
-                            PointUtil.add(p, 0, dy);
-
-                            return true;
-                        }
-                    }));
+                    return true;
+                }
+            }));
         }
 
         @Override
@@ -473,6 +476,21 @@ public abstract class StaffEditor
         }
     }
 
+    //-----------//
+    // LineModel //
+    //-----------//
+    protected static class LineModel
+    {
+
+        public final List<Point2D> points = new ArrayList<>();
+
+        public LineModel (StaffLine staffLine)
+        {
+            // Make a deep copy of provided points, to avoid live sharing of points
+            points.addAll(staffLine.getPointsDeepCopy());
+        }
+    }
+
     //-------//
     // Lines //
     //-------//
@@ -495,24 +513,22 @@ public abstract class StaffEditor
 
             // Handles
             ((LineArrayModel) model).lineModels.forEach(
-                    lineModel -> lineModel.points.forEach(
-                            p -> handles.add(new Handle(p)
-                            {
-                                @Override
-                                public boolean move (Point vector)
-                                {
-                                    // Move only vertically
-                                    final int dy = vector.y;
+                    lineModel -> lineModel.points.forEach(p -> handles.add(new Handle(p)
+                    {
+                        @Override
+                        public boolean move (int dx,
+                                             int dy)
+                        {
+                            // Move only vertically
+                            if (dy == 0) {
+                                return false;
+                            }
 
-                                    if (dy == 0) {
-                                        return false;
-                                    }
+                            PointUtil.add(p, 0, dy);
 
-                                    PointUtil.add(p, 0, dy);
-
-                                    return true;
-                                }
-                            })));
+                            return true;
+                        }
+                    })));
         }
 
         @Override
@@ -548,20 +564,5 @@ public abstract class StaffEditor
     {
 
         public final BasicIndex<Section> removedSections = new BasicIndex<>(new AtomicInteger(0));
-    }
-
-    //-----------//
-    // LineModel //
-    //-----------//
-    protected static class LineModel
-    {
-
-        public final List<Point2D> points = new ArrayList<>();
-
-        public LineModel (StaffLine staffLine)
-        {
-            // Make a deep copy of provided points, to avoid live sharing of points
-            points.addAll(staffLine.getPointsDeepCopy());
-        }
     }
 }

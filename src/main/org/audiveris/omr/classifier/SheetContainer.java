@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
-import org.audiveris.omr.classifier.SheetContainer.HashMapAdapter;
 import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
@@ -77,8 +76,10 @@ public class SheetContainer
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
+
     /** Map (RunTable Hash code => list of sheet descriptors). */
     @XmlElement(name = "sheets")
     @XmlJavaTypeAdapter(HashMapAdapter.class)
@@ -86,6 +87,7 @@ public class SheetContainer
 
     // Transient data
     //---------------
+
     /** True if container has been modified. */
     private boolean modified;
 
@@ -93,6 +95,7 @@ public class SheetContainer
     private Set<Descriptor> defunctDescriptors = new LinkedHashSet<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SheetContainer</code> object. Needed for JAXB.
      */
@@ -101,6 +104,7 @@ public class SheetContainer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // addDescriptor //
     //---------------//
@@ -279,19 +283,6 @@ public class SheetContainer
         return modified;
     }
 
-    //-------------//
-    // setModified //
-    //-------------//
-    /**
-     * Set the modified status of this container.
-     *
-     * @param modified the modified to set
-     */
-    public void setModified (boolean modified)
-    {
-        this.modified = modified;
-    }
-
     //---------//
     // marshal //
     //---------//
@@ -324,25 +315,9 @@ public class SheetContainer
             defunctDescriptors.clear();
 
             setModified(false);
-        } catch (IOException |
-                 JAXBException |
-                 XMLStreamException ex) {
+        } catch (IOException | JAXBException | XMLStreamException ex) {
             logger.error("Error marshalling " + this + " " + ex, ex);
         }
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(SheetContainer.class);
-        }
-
-        return jaxbContext;
     }
 
     //------------------//
@@ -368,6 +343,19 @@ public class SheetContainer
         setModified(true);
     }
 
+    //-------------//
+    // setModified //
+    //-------------//
+    /**
+     * Set the modified status of this container.
+     *
+     * @param modified the modified to set
+     */
+    public void setModified (boolean modified)
+    {
+        this.modified = modified;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -380,6 +368,22 @@ public class SheetContainer
         sb.append('}');
 
         return sb.toString();
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+        throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(SheetContainer.class);
+        }
+
+        return jaxbContext;
     }
 
     //-----------//
@@ -401,51 +405,10 @@ public class SheetContainer
             logger.info("Unmarshalled {}", sheetContainer);
 
             return sheetContainer;
-        } catch (IOException |
-                 JAXBException ex) {
+        } catch (IOException | JAXBException ex) {
             logger.warn("Error unmarshalling SheetContainer " + ex, ex);
 
             return null;
-        }
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //----------------//
-    // HashMapAdapter //
-    //----------------//
-    /**
-     * JAXB adapter to support a HashMap.
-     */
-    public static class HashMapAdapter
-            extends XmlAdapter<ContainerValue, HashMap<Integer, List<Descriptor>>>
-    {
-
-        @Override
-        public ContainerValue marshal (HashMap<Integer, List<Descriptor>> map)
-                throws Exception
-        {
-            return new ContainerValue(map);
-        }
-
-        @Override
-        public HashMap<Integer, List<Descriptor>> unmarshal (ContainerValue value)
-                throws Exception
-        {
-            HashMap<Integer, List<Descriptor>> map = new HashMap<>();
-
-            for (Descriptor desc : value.descriptors) {
-                List<Descriptor> descriptors = map.get(desc.hash);
-
-                if (descriptors == null) {
-                    map.put(desc.hash, descriptors = new ArrayList<>());
-                }
-
-                if (!descriptors.contains(desc)) {
-                    descriptors.add(desc);
-                }
-            }
-
-            return map;
         }
     }
 
@@ -463,6 +426,10 @@ public class SheetContainer
         @XmlElement(name = "sheet")
         private final List<Descriptor> descriptors = new ArrayList<>();
 
+        private ContainerValue ()
+        {
+        }
+
         /**
          * Populate the flat list.
          *
@@ -475,10 +442,6 @@ public class SheetContainer
             }
 
             Collections.sort(descriptors);
-        }
-
-        private ContainerValue ()
-        {
         }
     }
 
@@ -504,6 +467,11 @@ public class SheetContainer
         /** Collection of all name aliases, perhaps empty. */
         @XmlElement(name = "alias")
         private final ArrayList<String> aliases = new ArrayList<>();
+
+        // For JAXB
+        private Descriptor ()
+        {
+        }
 
         /**
          * Create descriptor for a sample sheet.
@@ -531,11 +499,6 @@ public class SheetContainer
             this.hash = hash;
             this.name = name;
             this.aliases.addAll(aliases);
-        }
-
-        // For JAXB
-        private Descriptor ()
-        {
         }
 
         /**
@@ -615,16 +578,6 @@ public class SheetContainer
             return name;
         }
 
-        /**
-         * Set sheet name.
-         *
-         * @param name name for sheet
-         */
-        public void setName (String name)
-        {
-            this.name = name;
-        }
-
         @Override
         public int hashCode ()
         {
@@ -655,10 +608,61 @@ public class SheetContainer
             return false;
         }
 
+        /**
+         * Set sheet name.
+         *
+         * @param name name for sheet
+         */
+        public void setName (String name)
+        {
+            this.name = name;
+        }
+
         @Override
         public String toString ()
         {
             return name;
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //----------------//
+    // HashMapAdapter //
+    //----------------//
+    /**
+     * JAXB adapter to support a HashMap.
+     */
+    public static class HashMapAdapter
+            extends XmlAdapter<ContainerValue, HashMap<Integer, List<Descriptor>>>
+    {
+
+        @Override
+        public ContainerValue marshal (HashMap<Integer, List<Descriptor>> map)
+            throws Exception
+        {
+            return new ContainerValue(map);
+        }
+
+        @Override
+        public HashMap<Integer, List<Descriptor>> unmarshal (ContainerValue value)
+            throws Exception
+        {
+            HashMap<Integer, List<Descriptor>> map = new HashMap<>();
+
+            for (Descriptor desc : value.descriptors) {
+                List<Descriptor> descriptors = map.get(desc.hash);
+
+                if (descriptors == null) {
+                    map.put(desc.hash, descriptors = new ArrayList<>());
+                }
+
+                if (!descriptors.contains(desc)) {
+                    descriptors.add(desc);
+                }
+            }
+
+            return map;
         }
     }
 }

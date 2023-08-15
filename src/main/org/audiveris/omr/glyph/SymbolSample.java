@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,17 +21,19 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.TextFont;
+import org.audiveris.omr.ui.symbol.TextSymbol;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -51,6 +53,7 @@ public class SymbolSample
     private static final Logger logger = LoggerFactory.getLogger(SymbolSample.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Build an (artificial) sample out of a symbol icon.
      * This is meant to populate and train on shapes for which we have no real sample yet.
@@ -66,7 +69,8 @@ public class SymbolSample
         super(0, 0, runTable, interline, 0, shape, null);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //--------//
     // create //
     //--------//
@@ -75,16 +79,46 @@ public class SymbolSample
      *
      * @param shape     assigned shape
      * @param symbol    the font-based symbol
+     * @param musicFont the proper family font
      * @param interline the related interline value
      * @return the created SymbolSample
      */
     public static SymbolSample create (Shape shape,
                                        ShapeSymbol symbol,
+                                       MusicFont musicFont,
                                        int interline)
     {
         // Build the corresponding runTable
-        MusicFont musicFont = MusicFont.getBaseFont(interline);
         BufferedImage image = symbol.buildImage(musicFont);
+        ByteProcessor buffer = createBuffer(image);
+        RunTableFactory factory = new RunTableFactory(Orientation.VERTICAL);
+        RunTable runTable = factory.createTable(buffer);
+
+        // Allocate the sample
+        SymbolSample sample = new SymbolSample(symbol.getShape(), interline, runTable);
+
+        return sample;
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a <code>SymbolSample</code>.
+     *
+     * @param shape     assigned shape
+     * @param symbol    the font-based symbol
+     * @param textFont  the proper family font
+     * @param interline the related interline value
+     * @return the created SymbolSample
+     */
+    public static SymbolSample create (Shape shape,
+                                       TextSymbol symbol,
+                                       TextFont textFont,
+                                       int interline)
+    {
+        // Build the corresponding runTable
+        BufferedImage image = symbol.buildImage(textFont);
         ByteProcessor buffer = createBuffer(image);
         RunTableFactory factory = new RunTableFactory(Orientation.VERTICAL);
         RunTable runTable = factory.createTable(buffer);

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,8 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.text;
-
-import ij.process.ByteProcessor;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
@@ -49,7 +47,6 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.util.StopWatch;
-import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +60,8 @@ import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>SheetScanner</code> runs OCR on the whole sheet, where good inters and
@@ -84,6 +83,7 @@ public class SheetScanner
     private static final Logger logger = LoggerFactory.getLogger(SheetScanner.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -91,6 +91,7 @@ public class SheetScanner
     private ByteProcessor buffer;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>TextPageScanner</code> object.
      *
@@ -102,6 +103,7 @@ public class SheetScanner
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // getBuffer //
     //-----------//
@@ -111,45 +113,6 @@ public class SheetScanner
     public ByteProcessor getBuffer ()
     {
         return buffer;
-    }
-
-    //-----------//
-    // scanSheet //
-    //-----------//
-    /**
-     * Get a clean image of whole sheet and run OCR on it.
-     *
-     * @return the list of OCR'ed lines found
-     */
-    public List<TextLine> scanSheet ()
-    {
-        StopWatch watch = new StopWatch("scanSheet");
-
-        try {
-            // Get clean page image
-            watch.start("getCleanImage");
-
-            final BufferedImage image = getCleanImage(); // This also sets buffer member
-
-            // Perform OCR on whole image
-            watch.start("OCR recognize");
-
-            final Param<String> textParam = sheet.getStub().getOcrLanguages();
-            final String language = textParam.getValue();
-            logger.debug("scanSheet lan:{} on {}", language, sheet);
-
-            return OcrUtil.scan(
-                    image,
-                    constants.whiteMarginAdded.getValue(),
-                    OCR.LayoutMode.MULTI_BLOCK,
-                    language,
-                    sheet.getScale().getInterline(),
-                    sheet.getId());
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
     }
 
     //---------------//
@@ -171,25 +134,56 @@ public class SheetScanner
             sheet.getStub().getAssembly().addViewTab(
                     "Texts",
                     new ScrollImageView(sheet, new ImageView(img)
-                                {
-                                    @Override
-                                    protected void renderItems (Graphics2D g)
-                                    {
-                                        sheet.renderItems(g); // Apply registered sheet renderers
-                                    }
-                                }),
+                    {
+                        @Override
+                        protected void renderItems (Graphics2D g)
+                        {
+                            sheet.renderItems(g); // Apply registered sheet renderers
+                        }
+                    }),
                     new BoardsPane(new PixelBoard(sheet)));
         }
 
-        // Keep a copy on disk?
-        if (constants.keepTextsBuffer.isSet()) {
-            ImageUtil.saveOnDisk(img, sheet.getId() + ".text");
+        // Save a copy on disk?
+        if (constants.saveTextsBuffer.isSet()) {
+            ImageUtil.saveOnDisk(img, sheet.getId(), "text");
         }
 
         return img;
     }
 
+    //-----------//
+    // scanSheet //
+    //-----------//
+    /**
+     * Get a clean image of whole sheet and run OCR on it.
+     *
+     * @return the list of OCR'ed lines found and filtered
+     */
+    public List<TextLine> scanSheet ()
+    {
+        StopWatch watch = new StopWatch("scanSheet");
+
+        try {
+            // Get clean sheet image
+            watch.start("getCleanImage");
+            final BufferedImage image = getCleanImage(); // This also sets buffer member
+
+            // Perform OCR on whole image
+            final String languages = sheet.getStub().getOcrLanguages();
+            logger.debug("scanSheet lan:{} on {}", languages, sheet);
+            watch.start("OCR recognize");
+
+            return OcrUtil.scan(image, OCR.LayoutMode.MULTI_BLOCK, languages, sheet, sheet.getId());
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -205,9 +199,9 @@ public class SheetScanner
                 false,
                 "Should we display the texts image?");
 
-        private final Constant.Boolean keepTextsBuffer = new Constant.Boolean(
+        private final Constant.Boolean saveTextsBuffer = new Constant.Boolean(
                 false,
-                "Should we store texts buffer on disk?");
+                "Should we save texts buffer on disk?");
 
         private final Scale.Fraction staffHorizontalMargin = new Scale.Fraction(
                 0.25,
@@ -216,11 +210,6 @@ public class SheetScanner
         private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 0.25,
                 "Vertical margin around staff core area");
-
-        private final Constant.Integer whiteMarginAdded = new Constant.Integer(
-                "pixels",
-                10,
-                "Margin of white pixels added around sheet image");
     }
 
     //--------------//
@@ -249,6 +238,35 @@ public class SheetScanner
         {
             super(buffer, g, sheet);
             params = new Parameters(sheet.getScale());
+        }
+
+        //-------------------//
+        // eraseBorderGlyphs //
+        //-------------------//
+        /**
+         * Erase from text image the glyphs that intersect or touch a staff core area.
+         * <p>
+         * (We also tried to remove too small glyphs, but this led to poor recognition by OCR)
+         *
+         * @param glyphs all the glyph instances in image
+         * @param cores  all staves cores
+         */
+        private void eraseBorderGlyphs (List<Glyph> glyphs,
+                                        List<Area> cores)
+        {
+            for (Glyph glyph : glyphs) {
+                // Check position WRT staves cores
+                Rectangle glyphBox = glyph.getBounds();
+                glyphBox.grow(1, 1); // To catch touching glyphs (on top of intersecting ones)
+
+                for (Area core : cores) {
+                    if (core.intersects(glyphBox)) {
+                        glyph.getRunTable().render(g, glyph.getTopLeft());
+
+                        break;
+                    }
+                }
+            }
         }
 
         //-------------//
@@ -327,35 +345,6 @@ public class SheetScanner
             g.setStroke(new BasicStroke(thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
             g.draw(ledger.getMedian());
             g.setStroke(oldStroke);
-        }
-
-        //-------------------//
-        // eraseBorderGlyphs //
-        //-------------------//
-        /**
-         * Erase from text image the glyphs that intersect or touch a staff core area.
-         * <p>
-         * (We also tried to remove too small glyphs, but this led to poor recognition by OCR)
-         *
-         * @param glyphs all the glyph instances in image
-         * @param cores  all staves cores
-         */
-        private void eraseBorderGlyphs (List<Glyph> glyphs,
-                                        List<Area> cores)
-        {
-            for (Glyph glyph : glyphs) {
-                // Check position WRT staves cores
-                Rectangle glyphBox = glyph.getBounds();
-                glyphBox.grow(1, 1); // To catch touching glyphs (on top of intersecting ones)
-
-                for (Area core : cores) {
-                    if (core.intersects(glyphBox)) {
-                        glyph.getRunTable().render(g, glyph.getTopLeft());
-
-                        break;
-                    }
-                }
-            }
         }
 
         //------------//

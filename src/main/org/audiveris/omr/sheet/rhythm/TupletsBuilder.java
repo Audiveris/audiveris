@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -63,10 +63,12 @@ public class TupletsBuilder
     private static final Logger logger = LoggerFactory.getLogger(TupletsBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>TupletsBuilder</code> object.
      *
@@ -78,6 +80,47 @@ public class TupletsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------------//
+    // getChordsAround //
+    //-----------------//
+    /**
+     * Report the list of AbstractChordInter instances (rests & heads) in the
+     * neighborhood of the specified Inter.
+     * <p>
+     * Neighborhood is limited horizontally by the measure sides and vertically by the staves above
+     * and below.
+     *
+     * @param tuplet the inter of interest
+     * @return the list of neighbors, sorted by euclidean distance to tuplet sign
+     */
+    private List<AbstractChordInter> getChordsAround (TupletInter tuplet)
+    {
+        final List<AbstractChordInter> chords = new ArrayList<>();
+        final Point tupletCenter = tuplet.getCenter();
+
+        if (stack == null) {
+            return chords;
+        }
+
+        final List<Staff> stavesAround = stack.getSystem().getStavesAround(tupletCenter);
+        logger.trace("{} around:{}", tuplet, stavesAround);
+
+        for (AbstractChordInter chord : stack.getStandardChords()) {
+            final List<Staff> chordStaves = new ArrayList<>(chord.getStaves());
+            chordStaves.retainAll(stavesAround);
+
+            if (!chordStaves.isEmpty()) {
+                chords.add(chord);
+            }
+        }
+
+        Collections.sort(chords, new ByEuclidean(tupletCenter));
+        logger.trace("Chords: {}", Inters.ids(chords));
+
+        return chords;
+    }
+
     //------------------//
     // linkStackTuplets //
     //------------------//
@@ -153,100 +196,7 @@ public class TupletsBuilder
         return links;
     }
 
-    //-----------------//
-    // getChordsAround //
-    //-----------------//
-    /**
-     * Report the list of AbstractChordInter instances (rests & heads) in the
-     * neighborhood of the specified Inter.
-     * <p>
-     * Neighborhood is limited horizontally by the measure sides and vertically by the staves above
-     * and below.
-     *
-     * @param tuplet the inter of interest
-     * @return the list of neighbors, sorted by euclidean distance to tuplet sign
-     */
-    private List<AbstractChordInter> getChordsAround (TupletInter tuplet)
-    {
-        final List<AbstractChordInter> chords = new ArrayList<>();
-        final Point tupletCenter = tuplet.getCenter();
-
-        if (stack == null) {
-            return chords;
-        }
-
-        final List<Staff> stavesAround = stack.getSystem().getStavesAround(tupletCenter);
-        logger.trace("{} around:{}", tuplet, stavesAround);
-
-        for (AbstractChordInter chord : stack.getStandardChords()) {
-            final List<Staff> chordStaves = new ArrayList<>(chord.getStaves());
-            chordStaves.retainAll(stavesAround);
-
-            if (!chordStaves.isEmpty()) {
-                chords.add(chord);
-            }
-        }
-
-        Collections.sort(chords, new ByEuclidean(tupletCenter));
-        logger.trace("Chords: {}", Inters.ids(chords));
-
-        return chords;
-    }
-
-    //-------------------//
-    // getEmbracedChords //
-    //-------------------//
-    /**
-     * Report the proper collection of chords that are embraced by the tuplet.
-     *
-     * @param tuplet     underlying tuplet sign
-     * @param candidates the chords candidates, ordered by euclidean distance to sign
-     * @return the set of embraced chords, ordered from left to right, or null if retrieval failed
-     */
-    public static SortedSet<AbstractChordInter> getEmbracedChords (TupletInter tuplet,
-                                                                   List<AbstractChordInter> candidates)
-    {
-        logger.trace("{} getEmbracedChords", tuplet);
-
-        filterChordsOnAbscissa(tuplet, candidates);
-
-        // We consider each candidate in turn, with its duration
-        // in order to determine the duration base of the tuplet
-        final TupletCollector collector = new TupletCollector(tuplet,
-                                                              new TreeSet<>(Inters.byFullAbscissa));
-        final Staff targetStaff = getTargetStaff(candidates);
-
-        for (AbstractChordInter chord : candidates) {
-            // We assume that chords with 2 staves have their tuplet sign above...
-            Staff staff = chord.getTopStaff();
-
-            // Check that all chords are on the same staff
-            if (staff != targetStaff) {
-                continue;
-            }
-
-            collector.include(chord);
-
-            // Check we have collected the exact amount of time
-            // TODO: Test is questionable for non-reliable candidates
-            if (collector.isNotOk()) {
-                logger.debug("{} {}", tuplet, collector.getStatusMessage());
-
-                return null;
-            } else if (collector.isOk()) {
-                if (logger.isDebugEnabled()) {
-                    collector.dump();
-                }
-
-                return collector.getChords(); // Normal exit
-            }
-        }
-
-        // Candidates are exhausted, we lack chords
-        logger.debug("{} {}", tuplet, collector.getStatusMessage());
-
-        return null;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------------//
     // expectedCount //
@@ -317,6 +267,62 @@ public class TupletsBuilder
         }
     }
 
+    //-------------------//
+    // getEmbracedChords //
+    //-------------------//
+    /**
+     * Report the proper collection of chords that are embraced by the tuplet.
+     *
+     * @param tuplet     underlying tuplet sign
+     * @param candidates the chords candidates, ordered by euclidean distance to sign
+     * @return the set of embraced chords, ordered from left to right, or null if retrieval failed
+     */
+    public static SortedSet<AbstractChordInter> getEmbracedChords (TupletInter tuplet,
+                                                                   List<AbstractChordInter> candidates)
+    {
+        logger.trace("{} getEmbracedChords", tuplet);
+
+        filterChordsOnAbscissa(tuplet, candidates);
+
+        // We consider each candidate in turn, with its duration
+        // in order to determine the duration base of the tuplet
+        final TupletCollector collector = new TupletCollector(
+                tuplet,
+                new TreeSet<>(Inters.byFullAbscissa));
+        final Staff targetStaff = getTargetStaff(candidates);
+
+        for (AbstractChordInter chord : candidates) {
+            // We assume that chords with 2 staves have their tuplet sign above...
+            Staff staff = chord.getTopStaff();
+
+            // Check that all chords are on the same staff
+            if (staff != targetStaff) {
+                continue;
+            }
+
+            collector.include(chord);
+
+            // Check we have collected the exact amount of time
+            // TODO: Test is questionable for non-reliable candidates
+            if (collector.isNotOk()) {
+                logger.debug("{} {}", tuplet, collector.getStatusMessage());
+
+                return null;
+            } else if (collector.isOk()) {
+                if (logger.isDebugEnabled()) {
+                    collector.dump();
+                }
+
+                return collector.getChords(); // Normal exit
+            }
+        }
+
+        // Candidates are exhausted, we lack chords
+        logger.debug("{} {}", tuplet, collector.getStatusMessage());
+
+        return null;
+    }
+
     //----------------//
     // getTargetStaff //
     //----------------//
@@ -338,6 +344,7 @@ public class TupletsBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // ByEuclidean //
     //-------------//
@@ -371,16 +378,6 @@ public class TupletsBuilder
     private static class TupletCollector
     {
 
-        /** Describe the current status of the tuplet collector */
-        public enum Status
-        {
-            TOO_SHORT,
-            OK,
-            TOO_LONG,
-            TOO_MANY,
-            OUTSIDE;
-        }
-
         /** Underlying sign. */
         private final TupletInter tuplet;
 
@@ -410,6 +407,22 @@ public class TupletsBuilder
             this.chords = chords;
         }
 
+        /** Include a chord into the collection */
+        private void doInclude (AbstractChordInter chord)
+        {
+            if (chords.add(chord)) {
+                Rational sansTuplet = chord.getDurationSansTuplet();
+                total = total.plus(sansTuplet);
+
+                // If this is a shorter chord, let's update the base
+                // TODO: this is not always true.
+                if (sansTuplet.compareTo(base) < 0) {
+                    base = sansTuplet;
+                    expectedTotal = base.times(expectedCount);
+                }
+            }
+        }
+
         public void dump ()
         {
             StringBuilder sb = new StringBuilder();
@@ -431,6 +444,53 @@ public class TupletsBuilder
             logger.info(sb.toString());
         }
 
+        /**
+         * Retrieve all chords linked via the smallest beam to the provided chord.
+         * <p>
+         * We have to check position of tuplet with respect to chord
+         * If tuplet is closer to chord tail side (thus beam) we use siblings
+         * Otherwise, tuplet is closer to head and we don't propagate to beam siblings
+         *
+         * @param chord the provided chord
+         * @return all sibling chords, including the chord provided
+         */
+        protected Set<AbstractChordInter> getBeamSiblings (AbstractChordInter chord)
+        {
+            final Set<AbstractChordInter> set = new LinkedHashSet<>();
+            set.add(chord);
+
+            final StemInter stem = chord.getStem();
+
+            if (stem != null) {
+                final Point center = tuplet.getCenter();
+                final Point tail = chord.getTailLocation();
+                final Point head = chord.getHeadLocation();
+
+                if (center.distanceSq(tail) < center.distanceSq(head)) {
+                    // Pick up the smallest beam, if any, connected to this stem
+                    int smallestWidth = Integer.MAX_VALUE;
+                    AbstractBeamInter smallestBeam = null;
+
+                    for (AbstractBeamInter beam : stem.getBeams()) {
+                        int width = beam.getBounds().width;
+
+                        if (width < smallestWidth) {
+                            smallestWidth = width;
+                            smallestBeam = beam;
+                        }
+                    }
+
+                    if (smallestBeam != null) {
+                        for (StemInter s : smallestBeam.getStems()) {
+                            set.addAll(s.getChords());
+                        }
+                    }
+                }
+            }
+
+            return set;
+        }
+
         public SortedSet<AbstractChordInter> getChords ()
         {
             return chords;
@@ -439,8 +499,8 @@ public class TupletsBuilder
         public String getStatusMessage ()
         {
             StringBuilder sb = new StringBuilder();
-            sb.append(status).append(" sequence in ").append(tuplet.getShape())
-                    .append(": ").append(total);
+            sb.append(status).append(" sequence in ").append(tuplet.getShape()).append(": ").append(
+                    total);
 
             if (expectedTotal != Rational.MAX_VALUE) {
                 sb.append(" vs ").append(expectedTotal);
@@ -493,69 +553,6 @@ public class TupletsBuilder
             return status == Status.OK;
         }
 
-        /**
-         * Retrieve all chords linked via the smallest beam to the provided chord.
-         * <p>
-         * We have to check position of tuplet with respect to chord
-         * If tuplet is closer to chord tail side (thus beam) we use siblings
-         * Otherwise, tuplet is closer to head and we don't propagate to beam siblings
-         *
-         * @param chord the provided chord
-         * @return all sibling chords, including the chord provided
-         */
-        protected Set<AbstractChordInter> getBeamSiblings (AbstractChordInter chord)
-        {
-            final Set<AbstractChordInter> set = new LinkedHashSet<>();
-            set.add(chord);
-
-            final StemInter stem = chord.getStem();
-
-            if (stem != null) {
-                final Point center = tuplet.getCenter();
-                final Point tail = chord.getTailLocation();
-                final Point head = chord.getHeadLocation();
-
-                if (center.distanceSq(tail) < center.distanceSq(head)) {
-                    // Pick up the smallest beam, if any, connected to this stem
-                    int smallestWidth = Integer.MAX_VALUE;
-                    AbstractBeamInter smallestBeam = null;
-
-                    for (AbstractBeamInter beam : stem.getBeams()) {
-                        int width = beam.getBounds().width;
-
-                        if (width < smallestWidth) {
-                            smallestWidth = width;
-                            smallestBeam = beam;
-                        }
-                    }
-
-                    if (smallestBeam != null) {
-                        for (StemInter s : smallestBeam.getStems()) {
-                            set.addAll(s.getChords());
-                        }
-                    }
-                }
-            }
-
-            return set;
-        }
-
-        /** Include a chord into the collection */
-        private void doInclude (AbstractChordInter chord)
-        {
-            if (chords.add(chord)) {
-                Rational sansTuplet = chord.getDurationSansTuplet();
-                total = total.plus(sansTuplet);
-
-                // If this is a shorter chord, let's update the base
-                // TODO: this is not always true.
-                if (sansTuplet.compareTo(base) < 0) {
-                    base = sansTuplet;
-                    expectedTotal = base.times(expectedCount);
-                }
-            }
-        }
-
         /** Check whether the tuplet sign lies between the chords abscissae. */
         private boolean isWithinChordsAbscissaRange ()
         {
@@ -563,6 +560,16 @@ public class TupletsBuilder
 
             return (signX >= chords.first().getTailLocation().x) && (signX <= chords.last()
                     .getTailLocation().x);
+        }
+
+        /** Describe the current status of the tuplet collector */
+        public enum Status
+        {
+            TOO_SHORT,
+            OK,
+            TOO_LONG,
+            TOO_MANY,
+            OUTSIDE;
         }
     }
 }

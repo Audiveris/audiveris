@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.Population;
@@ -31,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>AdaptiveFilter</code> is an abstract implementation of
@@ -90,6 +90,7 @@ public abstract class AdaptiveFilter
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveFilter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Default value for (half of) window size. */
     protected final int HALF_WINDOW_SIZE = constants.halfWindowSize.getValue();
 
@@ -106,6 +107,7 @@ public abstract class AdaptiveFilter
     protected Tile sqrTile;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an adaptive wrapper on a pixel source.
      *
@@ -124,6 +126,7 @@ public abstract class AdaptiveFilter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // filteredImage //
     //---------------//
@@ -181,6 +184,16 @@ public abstract class AdaptiveFilter
         }
     }
 
+    //--------------//
+    // getThreshold //
+    //--------------//
+    private double getThreshold (double mean,
+                                 double stdDev)
+    {
+        // This is the key formula
+        return (MEAN_COEFF * mean) + (STD_DEV_COEFF * stdDev);
+    }
+
     // -------//
     // isFore //
     // -------//
@@ -201,17 +214,8 @@ public abstract class AdaptiveFilter
         return isFore;
     }
 
-    //--------------//
-    // getThreshold //
-    //--------------//
-    private double getThreshold (double mean,
-                                 double stdDev)
-    {
-        // This is the key formula
-        return (MEAN_COEFF * mean) + (STD_DEV_COEFF * stdDev);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------------//
     // AdaptiveContext //
     //-----------------//
@@ -243,6 +247,19 @@ public abstract class AdaptiveFilter
             this.mean = mean;
             this.standardDeviation = standardDeviation;
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer halfWindowSize = new Constant.Integer(
+                "Pixels",
+                18,
+                "Half size of window around a given pixel");
     }
 
     //------//
@@ -382,18 +399,5 @@ public abstract class AdaptiveFilter
         {
             // Void by default
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Integer halfWindowSize = new Constant.Integer(
-                "Pixels",
-                18,
-                "Half size of window around a given pixel");
     }
 }

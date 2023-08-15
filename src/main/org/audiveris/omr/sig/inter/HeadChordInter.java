@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
+import org.audiveris.omr.sig.relation.ChordGraceRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
@@ -70,7 +72,9 @@ public class HeadChordInter
      * distance from chord head ordinate.
      * It implements total ordering.
      */
-    public static final Comparator<HeadInter> headComparator = (HeadInter n1, HeadInter n2) -> {
+    public static final Comparator<HeadInter> headComparator = (HeadInter n1,
+                                                                HeadInter n2) ->
+    {
         if (n1 == n2) {
             return 0;
         }
@@ -90,6 +94,14 @@ public class HeadChordInter
     };
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    protected HeadChordInter ()
+    {
+    }
+
     /**
      * Creates a new <code>HeadChordInter</code> object.
      *
@@ -101,20 +113,55 @@ public class HeadChordInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * Protected constructor meant for SmallChordInter based on grace note.
+     *
+     * @param glyph
+     * @param shape
+     * @param grade
      */
-    protected HeadChordInter ()
+    protected HeadChordInter (Glyph glyph,
+                              Shape shape,
+                              Double grade)
     {
+        super(glyph, shape, grade);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
+
+    //------------------//
+    // computeLocations //
+    //------------------//
+    /**
+     * Compute the head and tail locations for this chord.
+     */
     @Override
-    public void accept (InterVisitor visitor)
+    protected void computeLocations ()
     {
-        visitor.visit(this);
+        AbstractNoteInter leading = getLeadingNote();
+
+        if (leading == null) {
+            return;
+        }
+
+        final StemInter stem = getStem();
+
+        if (stem == null) {
+            tailLocation = headLocation = leading.getCenter();
+        } else {
+            Rectangle stemBox = stem.getBounds();
+
+            if (stem.getCenter().y < leading.getCenter().y) {
+                // Stem is up
+                tailLocation = new Point(stemBox.x + (stemBox.width / 2), stemBox.y);
+            } else {
+                // Stem is down
+                tailLocation = new Point(
+                        stemBox.x + (stemBox.width / 2),
+                        ((stemBox.y + stemBox.height) - 1));
+            }
+
+            headLocation = new Point(tailLocation.x, leading.getCenter().y);
+        }
     }
 
     //----------//
@@ -286,17 +333,29 @@ public class HeadChordInter
     //---------------//
     /**
      * Report the grace chord, if any, which is linked on left side of this chord.
+     * <p>
+     * This method assumes there is either:
+     * <ul>
+     * <li>a direct chord-grace relation between the two chords, or
+     * <li>a slur between one chord head and the grace head.
+     * </ul>
      *
      * @return the linked grace chord if any
      */
     public SmallChordInter getGraceChord ()
     {
+        // Direct
+        for (Relation rel : sig.getRelations(this, ChordGraceRelation.class)) {
+            return (SmallChordInter) sig.getOppositeInter(this, rel);
+        }
+
+        // Slur
         for (Inter interNote : getNotes()) {
             for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
                 SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
                 HeadInter head = slur.getHead(HorizontalSide.LEFT);
 
-                if ((head != null) && head.getShape().isSmall()) {
+                if ((head != null) && head.getShape().isSmallHead()) {
                     return (SmallChordInter) head.getChord();
                 }
             }
@@ -424,6 +483,15 @@ public class HeadChordInter
         return null;
     }
 
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return "HeadChord";
+    }
+
     //---------//
     // getStem //
     //---------//
@@ -436,7 +504,7 @@ public class HeadChordInter
     public StemInter getStem ()
     {
         if (isRemoved()) {
-            logger.debug("HeadChord#{} not in sig", id);
+            logger.debug("HeadChord#{} removed", id);
 
             return null;
         }
@@ -446,25 +514,6 @@ public class HeadChordInter
         }
 
         return null;
-    }
-
-    //---------//
-    // setStem //
-    //---------//
-    /**
-     * Set the stem of this head chord.
-     *
-     * @param stem the stem to set
-     */
-    public final void setStem (StemInter stem)
-    {
-        Objects.requireNonNull(sig, "Chord not in SIG.");
-
-        Relation rel = sig.getRelation(this, stem, ChordStemRelation.class);
-
-        if (rel == null) {
-            sig.addEdge(this, stem, new ChordStemRelation());
-        }
     }
 
     //------------//
@@ -483,6 +532,29 @@ public class HeadChordInter
         } else {
             return Integer.signum(getTailLocation().y - getHeadLocation().y);
         }
+    }
+
+    //----------//
+    // hasSlash //
+    //----------//
+    /**
+     * Report whether this chord has a slashed stem.
+     *
+     * @return true if so.
+     */
+    public boolean hasSlash ()
+    {
+        final StemInter stem = getStem();
+
+        if (stem != null) {
+            for (Relation rel : sig.getRelations(stem, FlagStemRelation.class)) {
+                if (Shape.SMALL_FLAG_SLASH == sig.getOppositeInter(stem, rel).getShape()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     //-----------//
@@ -505,48 +577,22 @@ public class HeadChordInter
         return inters;
     }
 
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
-    {
-        return "HeadChord";
-    }
-
-    //------------------//
-    // computeLocations //
-    //------------------//
+    //---------//
+    // setStem //
+    //---------//
     /**
-     * Compute the head and tail locations for this chord.
+     * Set the stem of this head chord.
+     *
+     * @param stem the stem to set
      */
-    @Override
-    protected void computeLocations ()
+    public final void setStem (StemInter stem)
     {
-        AbstractNoteInter leading = getLeadingNote();
+        Objects.requireNonNull(sig, "Chord not in SIG.");
 
-        if (leading == null) {
-            return;
-        }
+        Relation rel = sig.getRelation(this, stem, ChordStemRelation.class);
 
-        final StemInter stem = getStem();
-
-        if (stem == null) {
-            tailLocation = headLocation = leading.getCenter();
-        } else {
-            Rectangle stemBox = stem.getBounds();
-
-            if (stem.getCenter().y < leading.getCenter().y) {
-                // Stem is up
-                tailLocation = new Point(stemBox.x + (stemBox.width / 2), stemBox.y);
-            } else {
-                // Stem is down
-                tailLocation = new Point(
-                        stemBox.x + (stemBox.width / 2),
-                        ((stemBox.y + stemBox.height) - 1));
-            }
-
-            headLocation = new Point(tailLocation.x, leading.getCenter().y);
+        if (rel == null) {
+            sig.addEdge(this, stem, new ChordStemRelation());
         }
     }
 }

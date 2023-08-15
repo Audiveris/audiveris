@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**
  * Class <code>PluginAction</code> implements the concrete user action related to a
@@ -46,10 +45,12 @@ class PluginAction
     private static final Logger logger = LoggerFactory.getLogger(PluginAction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related plugin. */
     private final Plugin plugin;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new PluginAction object.
      *
@@ -63,6 +64,7 @@ class PluginAction
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // actionPerformed //
     //-----------------//

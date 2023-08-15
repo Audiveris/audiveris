@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -120,6 +120,7 @@ public class BookManager
     private static final Logger logger = LoggerFactory.getLogger(BookManager.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Map of all book instances.
      * Keyed by file path (book path or input path).
@@ -142,6 +143,7 @@ public class BookManager
     private SheetPathHistory bookHistory;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Private constructor for a singleton.
      */
@@ -150,6 +152,7 @@ public class BookManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // addBook //
     //---------//
@@ -160,95 +163,10 @@ public class BookManager
 
         synchronized (books) {
             // Choose suitable path
-            final Path path = (book.getBookPath() != null)
-                    ? book.getBookPath()
+            final Path path = (book.getBookPath() != null) ? book.getBookPath()
                     : book.getInputPath();
 
             books.put(path.toAbsolutePath(), book);
-        }
-    }
-
-    //-------------//
-    // deletePaths //
-    //-------------//
-    /**
-     * Delete the provided files and dirs.
-     * If interactive mode, prompt user for confirmation beforehand.
-     *
-     * @param title scope indication for deletion
-     * @param paths the paths to delete
-     */
-    public static void deletePaths (String title,
-                                    List<Path> paths)
-    {
-        if (!paths.isEmpty()) {
-            if (OMR.gui != null) {
-                StringBuilder sb = new StringBuilder();
-
-                for (Path p : paths) {
-                    if (Files.isDirectory(p)) {
-                        sb.append("\ndir  ");
-                    } else {
-                        sb.append("\nfile ");
-                    }
-
-                    sb.append(p);
-                }
-
-                if (!OMR.gui.displayConfirmation("Confirm " + title + "?\n" + sb)) {
-                    return;
-                }
-            }
-
-            // Do delete
-            int count = 0;
-
-            for (Path path : paths) {
-                try {
-                    Files.delete(path);
-                    count++;
-                } catch (IOException ex) {
-                    logger.warn("Error deleting " + path + " " + ex, ex);
-                }
-            }
-
-            logger.info("{} path(s) deleted.", count);
-        }
-    }
-
-    //---------------//
-    // getActualPath //
-    //---------------//
-    /**
-     * Report the actual path to be used as target (the provided target path if any,
-     * otherwise the provided default), making sure the path parent folder really exists.
-     *
-     * @param targetPath  the provided target path, if any
-     * @param defaultPath the default target path
-     * @return the path to use
-     */
-    public static Path getActualPath (Path targetPath,
-                                      Path defaultPath)
-    {
-        try {
-            if (targetPath == null) {
-                targetPath = defaultPath;
-            }
-
-            // Make sure the target folder exists
-            Path folder = targetPath.getParent();
-
-            if (!Files.exists(folder)) {
-                Files.createDirectories(folder);
-
-                logger.info("Creating folder {}", folder);
-            }
-
-            return targetPath;
-        } catch (IOException ex) {
-            logger.warn("Cannot get directory for " + targetPath, ex);
-
-            return null;
         }
     }
 
@@ -275,38 +193,13 @@ public class BookManager
         return Collections.unmodifiableCollection(books.values());
     }
 
-    //---------------//
-    // getBaseFolder //
-    //---------------//
-    /**
-     * Report the base for output folders.
-     *
-     * @return the output base folder
-     */
-    public static Path getBaseFolder ()
+    //---------//
+    // getBook //
+    //---------//
+    @Override
+    public Book getBook (Path bookPath)
     {
-        final Path cliOutput = Main.getCli().getOutputFolder();
-
-        if (cliOutput != null) {
-            return cliOutput;
-        } else {
-            return Paths.get(getBaseFolderString());
-        }
-    }
-
-    //---------------------//
-    // getBaseFolderString //
-    //---------------------//
-    /**
-     * Report the (trimmed) base string for output folders.
-     * <p>
-     * We make sure there is no heading or trailing space in the user-provided folder name.
-     *
-     * @return the output base folder string
-     */
-    public static String getBaseFolderString ()
-    {
-        return constants.baseFolder.getValue().trim();
+        return books.get(bookPath.toAbsolutePath());
     }
 
     //----------------//
@@ -330,148 +223,6 @@ public class BookManager
         return bookHistory;
     }
 
-    //---------//
-    // getBook //
-    //---------//
-    @Override
-    public Book getBook (Path bookPath)
-    {
-        return books.get(bookPath.toAbsolutePath());
-    }
-
-    //----------------------//
-    // getDefaultBookFolder //
-    //----------------------//
-    /**
-     * Report the folder where the book should be saved.
-     *
-     * @param book the book to store
-     * @return the default book folder
-     */
-    public static Path getDefaultBookFolder (Book book)
-    {
-        // If book already has a target, use it
-        if (book.getBookPath() != null) {
-            return book.getBookPath().getParent();
-        }
-
-        // Use same folder as input
-        // Or define folder based on global base folder + book radix
-        // Or use global base folder directly
-        final Path bookFolder = constants.useInputBookFolder.isSet()
-                ? book.getInputPath().getParent()
-                : (useSeparateBookFolders()
-                        ? getBaseFolder().resolve(book.getRadix())
-                        : getBaseFolder());
-
-        try {
-            if (!Files.exists(bookFolder)) {
-                Files.createDirectories(bookFolder);
-            }
-
-            return bookFolder;
-        } catch (IOException ex) {
-            logger.warn("Cannot create folder {}", bookFolder, ex);
-
-            return null;
-        }
-    }
-
-    //-----------------------------//
-    // getDefaultExportPathSansExt //
-    //-----------------------------//
-    /**
-     * Report the file path (without extension) to which the book should be written.
-     *
-     * @param book the book to export
-     * @return the default book path (without extension) for export
-     */
-    public static Path getDefaultExportPathSansExt (Book book)
-    {
-        if (book.getExportPathSansExt() != null) {
-            return book.getExportPathSansExt();
-        }
-
-        return getDefaultBookFolder(book).resolve(book.getRadix());
-    }
-
-    //----------------------//
-    // getDefaultBookFolder //
-    //----------------------//
-    /**
-     * Report the folder where books should be found.
-     *
-     * @return the latest book folder
-     */
-    public static String getDefaultBookFolder ()
-    {
-        return constants.defaultBookFolder.getValue();
-    }
-
-    //-----------------------//
-    // getDefaultImageFolder //
-    //-----------------------//
-    /**
-     * Report the folder where images should be found.
-     *
-     * @return the latest image folder
-     */
-    public static String getDefaultImageFolder ()
-    {
-        return constants.defaultImageFolder.getValue();
-    }
-
-    //---------------------//
-    // getDefaultPrintPath //
-    //---------------------//
-    /**
-     * Report the file path to which the book should be printed.
-     *
-     * @param book the book to export
-     * @return the default book path for print
-     */
-    public static Path getDefaultPrintPath (Book book)
-    {
-        if (book.getPrintPath() != null) {
-            return book.getPrintPath();
-        }
-
-        return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.PRINT_EXTENSION);
-    }
-
-    //--------------------//
-    // getDefaultSavePath //
-    //--------------------//
-    /**
-     * Report the file path to which the book should be saved.
-     *
-     * @param book the book to store
-     * @return the default book path for save
-     */
-    public static Path getDefaultSavePath (Book book)
-    {
-        if (book.getBookPath() != null) {
-            return book.getBookPath();
-        }
-
-        return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.BOOK_EXTENSION);
-    }
-
-    //--------------------//
-    // getExportExtension //
-    //--------------------//
-    /**
-     * Report the extension to use for book export, depending on the use (or not)
-     * of opus and of compression.
-     *
-     * @return the file extension to use.
-     */
-    public static String getExportExtension ()
-    {
-        return useOpus() ? OMR.OPUS_EXTENSION
-                : (useCompression() ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION);
-    }
-
     //-----------------//
     // getImageHistory //
     //-----------------//
@@ -491,32 +242,6 @@ public class BookManager
         }
 
         return imageHistory;
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of BookManager in the application.
-     *
-     * @return the instance
-     */
-    public static BookManager getInstance ()
-    {
-        return LazySingleton.INSTANCE;
-    }
-
-    //-------------//
-    // isMultiBook //
-    //-------------//
-    /**
-     * Report whether we are currently handling more than one book.
-     *
-     * @return true if more than one book
-     */
-    public static boolean isMultiBook ()
-    {
-        return getInstance().books.size() > 1;
     }
 
     //----------//
@@ -605,8 +330,7 @@ public class BookManager
     public synchronized void renameBook (Book book,
                                          Path oldBookPath)
     {
-        final Path oldPath = (oldBookPath != null)
-                ? oldBookPath.toAbsolutePath()
+        final Path oldPath = (oldBookPath != null) ? oldBookPath.toAbsolutePath()
                 : book.getInputPath().toAbsolutePath();
         final Path newPath = book.getBookPath().toAbsolutePath();
 
@@ -614,6 +338,284 @@ public class BookManager
             books.put(newPath, book);
             books.remove(oldPath, book);
         }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------//
+    // deletePaths //
+    //-------------//
+    /**
+     * Delete the provided files and dirs.
+     * If interactive mode, prompt user for confirmation beforehand.
+     *
+     * @param title scope indication for deletion
+     * @param paths the paths to delete
+     */
+    public static void deletePaths (String title,
+                                    List<Path> paths)
+    {
+        if (!paths.isEmpty()) {
+            if (OMR.gui != null) {
+                StringBuilder sb = new StringBuilder();
+
+                for (Path p : paths) {
+                    if (Files.isDirectory(p)) {
+                        sb.append("\ndir  ");
+                    } else {
+                        sb.append("\nfile ");
+                    }
+
+                    sb.append(p);
+                }
+
+                if (!OMR.gui.displayConfirmation("Confirm " + title + "?\n" + sb)) {
+                    return;
+                }
+            }
+
+            // Do delete
+            int count = 0;
+
+            for (Path path : paths) {
+                try {
+                    Files.delete(path);
+                    count++;
+                } catch (IOException ex) {
+                    logger.warn("Error deleting " + path + " " + ex, ex);
+                }
+            }
+
+            logger.info("{} path(s) deleted.", count);
+        }
+    }
+
+    //---------------//
+    // getActualPath //
+    //---------------//
+    /**
+     * Report the actual path to be used as target (the provided target path if any,
+     * otherwise the provided default), making sure the path parent folder really exists.
+     *
+     * @param targetPath  the provided target path, if any
+     * @param defaultPath the default target path
+     * @return the path to use
+     */
+    public static Path getActualPath (Path targetPath,
+                                      Path defaultPath)
+    {
+        try {
+            if (targetPath == null) {
+                targetPath = defaultPath;
+            }
+
+            // Make sure the target folder exists
+            Path folder = targetPath.getParent();
+
+            if (!Files.exists(folder)) {
+                Files.createDirectories(folder);
+
+                logger.info("Creating folder {}", folder);
+            }
+
+            return targetPath;
+        } catch (IOException ex) {
+            logger.warn("Cannot get directory for " + targetPath, ex);
+
+            return null;
+        }
+    }
+
+    //---------------//
+    // getBaseFolder //
+    //---------------//
+    /**
+     * Report the base for output folders.
+     *
+     * @return the output base folder
+     */
+    public static Path getBaseFolder ()
+    {
+        final Path cliOutput = Main.getCli().getOutputFolder();
+
+        if (cliOutput != null) {
+            return cliOutput;
+        } else {
+            return Paths.get(getBaseFolderString());
+        }
+    }
+
+    //---------------------//
+    // getBaseFolderString //
+    //---------------------//
+    /**
+     * Report the (trimmed) base string for output folders.
+     * <p>
+     * We make sure there is no heading or trailing space in the user-provided folder name.
+     *
+     * @return the output base folder string
+     */
+    public static String getBaseFolderString ()
+    {
+        return constants.baseFolder.getValue().trim();
+    }
+
+    //----------------------//
+    // getDefaultBookFolder //
+    //----------------------//
+    /**
+     * Report the folder where books should be found.
+     *
+     * @return the latest book folder
+     */
+    public static String getDefaultBookFolder ()
+    {
+        return constants.defaultBookFolder.getValue();
+    }
+
+    //----------------------//
+    // getDefaultBookFolder //
+    //----------------------//
+    /**
+     * Report the folder where the book should be saved.
+     *
+     * @param book the book to store
+     * @return the default book folder
+     */
+    public static Path getDefaultBookFolder (Book book)
+    {
+        // If book already has a target, use it
+        if (book.getBookPath() != null) {
+            return book.getBookPath().getParent();
+        }
+
+        final Path bookFolder = Main.getCli().getOutputFolder() != null //
+                ? Main.getCli().getOutputFolder() //
+                : constants.useInputBookFolder.isSet() //
+                        ? book.getInputPath().getParent() //
+                        : (useSeparateBookFolders().isSet() //
+                                ? getBaseFolder().resolve(book.getRadix()) //
+                                : getBaseFolder());
+
+        try {
+            if (!Files.exists(bookFolder)) {
+                Files.createDirectories(bookFolder);
+            }
+
+            return bookFolder;
+        } catch (IOException ex) {
+            logger.warn("Cannot create folder {}", bookFolder, ex);
+
+            return null;
+        }
+    }
+
+    //-----------------------------//
+    // getDefaultExportPathSansExt //
+    //-----------------------------//
+    /**
+     * Report the file path (without extension) to which the book should be written.
+     *
+     * @param book the book to export
+     * @return the default book path (without extension) for export
+     */
+    public static Path getDefaultExportPathSansExt (Book book)
+    {
+        if (book.getExportPathSansExt() != null) {
+            return book.getExportPathSansExt();
+        }
+
+        return getDefaultBookFolder(book).resolve(book.getRadix());
+    }
+
+    //-----------------------//
+    // getDefaultImageFolder //
+    //-----------------------//
+    /**
+     * Report the folder where images should be found.
+     *
+     * @return the latest image folder
+     */
+    public static String getDefaultImageFolder ()
+    {
+        return constants.defaultImageFolder.getValue();
+    }
+
+    //---------------------//
+    // getDefaultPrintPath //
+    //---------------------//
+    /**
+     * Report the file path to which the book should be printed.
+     *
+     * @param book the book to export
+     * @return the default book path for print
+     */
+    public static Path getDefaultPrintPath (Book book)
+    {
+        if (book.getPrintPath() != null) {
+            return book.getPrintPath();
+        }
+
+        return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.PRINT_EXTENSION);
+    }
+
+    //--------------------//
+    // getDefaultSavePath //
+    //--------------------//
+    /**
+     * Report the file path to which the book should be saved.
+     *
+     * @param book the book to store
+     * @return the default book path for save
+     */
+    public static Path getDefaultSavePath (Book book)
+    {
+        if (book.getBookPath() != null) {
+            return book.getBookPath();
+        }
+
+        return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.BOOK_EXTENSION);
+    }
+
+    //--------------------//
+    // getExportExtension //
+    //--------------------//
+    /**
+     * Report the extension to use for book export, depending on the use (or not)
+     * of opus and of compression.
+     *
+     * @return the file extension to use.
+     */
+    public static String getExportExtension ()
+    {
+        return useOpus() ? OMR.OPUS_EXTENSION
+                : (useCompression() ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION);
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of BookManager in the application.
+     *
+     * @return the instance
+     */
+    public static BookManager getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
+    //-------------//
+    // isMultiBook //
+    //-------------//
+    /**
+     * Report whether we are currently handling more than one book.
+     *
+     * @return true if more than one book
+     */
+    public static boolean isMultiBook ()
+    {
+        return getInstance().books.size() > 1;
     }
 
     //----------------//
@@ -627,6 +629,14 @@ public class BookManager
     public static boolean useCompression ()
     {
         return constants.useCompression.getValue();
+    }
+
+    //--------------------//
+    // useInputBookFolder //
+    //--------------------//
+    public static Constant.Boolean useInputBookFolder ()
+    {
+        return constants.useInputBookFolder;
     }
 
     //---------//
@@ -651,9 +661,9 @@ public class BookManager
      *
      * @return true for separate folders
      */
-    public static boolean useSeparateBookFolders ()
+    public static Constant.Boolean useSeparateBookFolders ()
     {
-        return constants.useSeparateBookFolders.isSet();
+        return constants.useSeparateBookFolders;
     }
 
     //--------------//
@@ -670,6 +680,7 @@ public class BookManager
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -40,12 +40,15 @@ public class Entities
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare Entity instances according to their id. */
-    public static final Comparator<Entity> byId = (e1, e2) -> e1.getId() - e2.getId();
+    public static final Comparator<Entity> byId = (e1,
+                                                   e2) -> e1.getId() - e2.getId();
 
     /**
      * For comparing entities by center abscissa.
      */
-    public static final Comparator<Entity> byCenterAbscissa = (e1, e2) -> {
+    public static final Comparator<Entity> byCenterAbscissa = (e1,
+                                                               e2) ->
+    {
         final Rectangle b1 = e1.getBounds();
         final Rectangle b2 = e2.getBounds();
 
@@ -53,11 +56,13 @@ public class Entities
     };
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private Entities ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------------//
     // containedEntities //
     //-------------------//
@@ -131,6 +136,30 @@ public class Entities
         }
     }
 
+    //-------------//
+    // containsVip //
+    //-------------//
+    /**
+     * Report whether the provided collection of entities contains at least one VIP.
+     *
+     * @param entities the collection to check
+     * @return true if at least one VIP is included
+     */
+    public static boolean containsVip (Collection<? extends Entity> entities)
+    {
+        if (entities == null) {
+            return false;
+        }
+
+        for (Entity entity : entities) {
+            if ((entity != null) && entity.isVip()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -167,6 +196,20 @@ public class Entities
     // ids //
     //-----//
     /**
+     * Build a string with just the IDs of the entity collection.
+     *
+     * @param entities the collection of Entity instances
+     * @return the string built
+     */
+    public static String ids (Collection<? extends Entity> entities)
+    {
+        return ids("", entities);
+    }
+
+    //-----//
+    // ids //
+    //-----//
+    /**
      * Build a string with just the IDs of the entity collection, introduced by a label.
      *
      * @param label    a string to introduce the list of IDs
@@ -190,44 +233,6 @@ public class Entities
         sb.append("]");
 
         return sb.toString();
-    }
-
-    //-----//
-    // ids //
-    //-----//
-    /**
-     * Build a string with just the IDs of the entity collection.
-     *
-     * @param entities the collection of Entity instances
-     * @return the string built
-     */
-    public static String ids (Collection<? extends Entity> entities)
-    {
-        return ids("", entities);
-    }
-
-    //-------------//
-    // containsVip //
-    //-------------//
-    /**
-     * Report whether the provided collection of entities contains at least one VIP.
-     *
-     * @param entities the collection to check
-     * @return true if at least one VIP is included
-     */
-    public static boolean containsVip (Collection<? extends Entity> entities)
-    {
-        if (entities == null) {
-            return false;
-        }
-
-        for (Entity entity : entities) {
-            if ((entity != null) && entity.isVip()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     //---------------------//

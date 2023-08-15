@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -36,9 +36,16 @@ import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sig.inter.FingeringInter;
+import org.audiveris.omr.sig.inter.FretInter;
+import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.ui.OmrGui;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
+import org.audiveris.omr.ui.symbol.TextFamily;
+import org.audiveris.omr.ui.symbol.TextFont;
+import org.audiveris.omr.ui.symbol.TextSymbol;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.ZipFileSystem;
@@ -59,11 +66,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
@@ -81,13 +90,14 @@ import javax.swing.event.ChangeListener;
  * The repository is implemented as a collection of {@link SampleSheet} instances, to ease the
  * addition or removal of sheet samples as a whole.
  * <p>
- * A special kind of samples is provided by the use of a musical font with proper scaling. These
- * font-based samples, though being artificial, are considered as part of the training material.
- * There is exactly one font-base sample for every trainable shape, and this sample is always
- * shown in first position among all samples of the same shape.
- * All these font-based samples are gathered in the virtual {@link #SYMBOLS} container.
- * <br>
- * TODO: Provide support for symbols based on additional music fonts, such as Bravura.
+ * A special kind of samples is provided by the use of a music font or text font with proper
+ * scaling.
+ * These font-based samples, though being artificial, are considered as part of the training
+ * material.
+ * There is at most one font-base sample in each font family for every trainable shape,
+ * and these sample are always shown in first position among all samples of the same shape.
+ * All these font-based samples are gathered in virtual containers, whose names start with
+ * {@link #SYMBOLS_PREFIX}.
  * <p>
  * <img alt="Sample management" src="doc-files/Samples.png">
  *
@@ -116,8 +126,8 @@ public class SampleRepository
     /** File name for images material: {@value}. */
     private static final String IMAGES_FILE_NAME = "images.zip";
 
-    /** Special name to refer to font-based samples: {@value}. */
-    private static final String SYMBOLS = "ALL_FONT_BASED_SYMBOLS";
+    /** Special prefix to refer to font-based samples, according to font family. */
+    private static final String SYMBOLS_PREFIX = "# SYMBOLS FROM FONT # ";
 
     /**
      * Regex pattern for samples archive file name.
@@ -129,6 +139,7 @@ public class SampleRepository
     private static final Pattern SAMPLES_PATTERN = Pattern.compile("(.*-)?(samples\\.zip)");
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Sheets, mapped by their unique name. */
     private final Map<String, SampleSheet> nameMap = new TreeMap<>();
 
@@ -163,6 +174,7 @@ public class SampleRepository
     private Application.ExitListener exitListener;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * (Private) constructor.
      * <p>
@@ -197,6 +209,7 @@ public class SampleRepository
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // addListener //
     //-------------//
@@ -209,6 +222,55 @@ public class SampleRepository
     {
         Objects.requireNonNull(listener, "Cannot add a null listener");
         listeners.add(listener);
+    }
+
+    //-----------//
+    // addSample //
+    //-----------//
+    /**
+     * Add a new sample to the provided SampleSheet.
+     *
+     * @param sample      the sample to add, non-null
+     * @param sampleSheet the containing sample sheet
+     * @see #removeSample(Sample)
+     */
+    public void addSample (Sample sample,
+                           SampleSheet sampleSheet)
+    {
+        Objects.requireNonNull(sampleSheet, "Cannot add a sample to a null sample sheet");
+
+        sampleSheet.privateAddSample(sample);
+        sampleMap.put(sample, sampleSheet);
+
+        logger.info("{} added {} to {}", this, sample, sampleSheet);
+
+        fireStateChanged(new AdditionEvent(sample, this));
+    }
+
+    //-----------//
+    // addSample //
+    //-----------//
+    /**
+     * Build and add a sample from the provided glyph into the provided sample sheet.
+     *
+     * @param shape       assigned shape
+     * @param glyph       underlying glyph
+     * @param interline   scaling factor
+     * @param sampleSheet target sample sheet
+     * @param pitch       staff-related pitch, if any
+     */
+    public void addSample (Shape shape,
+                           Glyph glyph,
+                           int interline,
+                           SampleSheet sampleSheet,
+                           Double pitch)
+    {
+        shape = Sample.getRecordableShape(shape);
+
+        if (shape != null) {
+            final Sample sample = new Sample(glyph, interline, shape, pitch);
+            addSample(sample, sampleSheet);
+        }
     }
 
     //-----------//
@@ -254,53 +316,142 @@ public class SampleRepository
         addSample(shape, glyph, staff.getSpecificInterline(), sampleSheet, pitch);
     }
 
-    //-----------//
-    // addSample //
-    //-----------//
+    //--------------//
+    // buildSymbols //
+    //--------------//
     /**
-     * Build and add a sample from the provided glyph into the provided sample sheet.
-     *
-     * @param shape       assigned shape
-     * @param glyph       underlying glyph
-     * @param interline   scaling factor
-     * @param sampleSheet target sample sheet
-     * @param pitch       staff-related pitch, if any
+     * Build all the artificial symbols for all supported fonts.
      */
-    public void addSample (Shape shape,
-                           Glyph glyph,
-                           int interline,
-                           SampleSheet sampleSheet,
-                           Double pitch)
+    private void buildSymbols ()
     {
-        shape = Sample.getRecordableShape(shape);
 
-        if (shape != null) {
-            final Sample sample = new Sample(glyph, interline, shape, pitch);
-            addSample(sample, sampleSheet);
+        // Music symbols
+        final EnumSet<Shape> textShapes = EnumSet.noneOf(Shape.class);
+        textShapes.addAll(ShapeSet.Digits.getShapes());
+        textShapes.addAll(ShapeSet.Pluckings.getShapes());
+        textShapes.addAll(ShapeSet.Romans.getShapes());
+        textShapes.add(Shape.CLUTTER);
+
+        for (TextFamily textFamily : TextFamily.values()) {
+            final String sheetName = SYMBOLS_PREFIX + textFamily;
+            Descriptor desc = sheetContainer.getDescriptor(sheetName);
+
+            if (desc == null) {
+                desc = new Descriptor(sheetName, null);
+                sheetContainer.addDescriptor(desc);
+            }
+
+            final SampleSheet symbolSheet = new SampleSheet(desc);
+
+            for (Shape shape : textShapes) {
+                final Sample sample = buildSymbolSample(textFamily, shape);
+
+                if (sample != null) {
+                    symbolSheet.privateAddSample(sample);
+                    sampleMap.put(sample, symbolSheet);
+                }
+            }
+
+            nameMap.put(sheetName, symbolSheet);
+        }
+
+        final EnumSet<Shape> musicShapes = EnumSet.copyOf(ShapeSet.allPhysicalShapes);
+        musicShapes.removeAll(textShapes);
+
+        for (MusicFamily musicFamily : MusicFamily.values()) {
+            final String sheetName = SYMBOLS_PREFIX + musicFamily;
+            Descriptor desc = sheetContainer.getDescriptor(sheetName);
+
+            if (desc == null) {
+                desc = new Descriptor(sheetName, null);
+                sheetContainer.addDescriptor(desc);
+            }
+
+            final SampleSheet symbolSheet = new SampleSheet(desc);
+
+            for (Shape shape : musicShapes) {
+                final Sample sample = buildSymbolSample(musicFamily, shape);
+
+                if (sample != null) {
+                    symbolSheet.privateAddSample(sample);
+                    sampleMap.put(sample, symbolSheet);
+                }
+            }
+
+            nameMap.put(sheetName, symbolSheet);
         }
     }
 
-    //-----------//
-    // addSample //
-    //-----------//
+    //-------------------//
+    // buildSymbolSample //
+    //-------------------//
     /**
-     * Add a new sample to the provided SampleSheet.
+     * Build an artificial sample from a symbol descriptor, in order to
+     * train a classifier even when we have no concrete sample.
      *
-     * @param sample      the sample to add, non-null
-     * @param sampleSheet the containing sample sheet
-     * @see #removeSample(Sample)
+     * @param family chosen music font family
+     * @param shape  the symbol shape
+     * @return the sample built, or null if failed
      */
-    public void addSample (Sample sample,
-                           SampleSheet sampleSheet)
+    private Sample buildSymbolSample (MusicFamily family,
+                                      Shape shape)
     {
-        Objects.requireNonNull(sampleSheet, "Cannot add a sample to a null sample sheet");
+        Sample sample = null;
 
-        sampleSheet.privateAddSample(sample);
-        sampleMap.put(sample, sampleSheet);
+        // Make sure we have the drawing available for this shape
+        ShapeSymbol symbol = family.getSymbols().getSymbol(shape);
 
-        logger.info("{} added {} to {}", this, sample, sampleSheet);
+        if (symbol != null) {
+            final MusicFont font = MusicFont.getBaseFont(family, STANDARD_INTERLINE);
+            sample = SymbolSample.create(shape, symbol, font, STANDARD_INTERLINE);
+            sample.setSymbol(true);
+        } else {
+            logger.info("{} family, no artificial sample for {}", family, shape);
+        }
 
-        fireStateChanged(new AdditionEvent(sample, this));
+        return sample;
+    }
+
+    //-------------------//
+    // buildSymbolSample //
+    //-------------------//
+    /**
+     * Build an artificial sample from a symbol descriptor, in order to
+     * train a classifier even when we have no concrete sample.
+     *
+     * @param family chosen music font family
+     * @param shape  the symbol shape
+     * @return the sample built, or null if failed
+     */
+    private Sample buildSymbolSample (TextFamily family,
+                                      Shape shape)
+    {
+        Sample sample = null;
+
+        // Make sure we have the drawing available for this shape
+        final String str;
+        if (ShapeSet.Digits.contains(shape))
+            str = "" + FingeringInter.valueOf(shape);
+        else if (ShapeSet.Pluckings.contains(shape))
+            str = String.valueOf(PluckingInter.valueOf(shape));
+        else if (ShapeSet.Romans.contains(shape))
+            str = FretInter.symbolStringOf(FretInter.valueOf(shape));
+        else
+            str = null;
+
+        TextSymbol textSymbol = str != null ? new TextSymbol(shape, family, str) : null;
+
+        if (textSymbol != null) {
+            final TextFont font = TextFont.getBaseFontBySize(
+                    family,
+                    MusicFont.getPointSize(STANDARD_INTERLINE));
+            sample = SymbolSample.create(shape, textSymbol, font, STANDARD_INTERLINE);
+            sample.setSymbol(true);
+        } else {
+            logger.info("{} family, no artificial sample for {}", family, shape);
+        }
+
+        return sample;
     }
 
     //-----------------//
@@ -326,15 +477,19 @@ public class SampleRepository
         List<Sample> allSamples = getAllSamples();
 
         // Sort by weight, then by sheet ID
-        Collections.sort(allSamples, (Sample s1, Sample s2) -> {
-                     int comp = Integer.compare(s1.getWeight(), s2.getWeight());
+        Collections.sort(
+                allSamples,
+                (Sample s1,
+                 Sample s2) ->
+                {
+                    int comp = Integer.compare(s1.getWeight(), s2.getWeight());
 
-                     if (comp != 0) {
-                         return comp;
-                     }
+                    if (comp != 0) {
+                        return comp;
+                    }
 
-                     return getSheetName(s1).compareTo(getSheetName(s2));
-                 });
+                    return getSheetName(s1).compareTo(getSheetName(s2));
+                });
 
         int n = allSamples.size();
         logger.debug("Checking {} samples...", n);
@@ -379,7 +534,9 @@ public class SampleRepository
                                 sample,
                                 getSheetName(s),
                                 s);
-                        redundants.add(s);
+                        if (!s.isSymbol()) {
+                            redundants.add(s);
+                        }
                         deleted[j] = true;
                     }
                 }
@@ -392,6 +549,81 @@ public class SampleRepository
 
         if (!redundants.isEmpty()) {
             logger.info("Redundant samples: {} / {}", redundants.size(), allSamples.size());
+        }
+    }
+
+    //------------------//
+    // checkFontSamples //
+    //------------------//
+    /**
+     * Make sure that all redundant font-based samples are flagged as "ignored".
+     */
+    public void checkFontSamples ()
+    {
+        List<Sample> fontSamples = getFontSamples();
+
+        // Sort by weight, then by sheet ID
+        Collections.sort(
+                fontSamples,
+                (Sample s1,
+                 Sample s2) ->
+                {
+                    int comp = Integer.compare(s1.getWeight(), s2.getWeight());
+
+                    if (comp != 0) {
+                        return comp;
+                    }
+
+                    return getSheetName(s1).compareTo(getSheetName(s2));
+                });
+
+        int n = fontSamples.size();
+        logger.debug("Checking {} font samples...", n);
+
+        boolean[] deleted = new boolean[n];
+        int ignoredCount = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (deleted[i]) {
+                continue;
+            }
+
+            final Sample sample = fontSamples.get(i);
+            final int weight = sample.getWeight();
+            final RunTable runTable = sample.getRunTable();
+            final int interline = sample.getInterline();
+
+            for (int j = i + 1; j < n; j++) {
+                if (deleted[j]) {
+                    continue;
+                }
+
+                Sample s = fontSamples.get(j);
+
+                if (s.getWeight() != weight) {
+                    break;
+                }
+
+                if ((s.getInterline() == interline) && s.getRunTable().equals(runTable)) {
+                    if (s.getShape() != sample.getShape()) {
+                        logger.warn(
+                                "Conflicting shapes between {}/{} and {}/{}",
+                                getSheetName(sample),
+                                sample,
+                                getSheetName(s),
+                                s);
+                    } else {
+                        logger.debug("Ignoring redundant {}/{}", getSheetName(s), s);
+                        s.setIgnored(true);
+                        deleted[j] = true;
+                        ignoredCount++;
+                    }
+                }
+            }
+        }
+
+        if (ignoredCount > 0) {
+            logger.info("Ignored redundant font-based samples: {}", ignoredCount);
         }
     }
 
@@ -598,6 +830,16 @@ public class SampleRepository
         return sampleSheet;
     }
 
+    //------------------//
+    // fireStateChanged //
+    //------------------//
+    private void fireStateChanged (ChangeEvent event)
+    {
+        for (ChangeListener listener : listeners) {
+            listener.stateChanged(event);
+        }
+    }
+
     //-------------------//
     // getAllDescriptors //
     //-------------------//
@@ -669,32 +911,42 @@ public class SampleRepository
         return null;
     }
 
-    //----------------//
-    // getSampleSheet //
-    //----------------//
+    //-----------------//
+    // getExitListener //
+    //-----------------//
     /**
-     * Report the SampleSheet related to the provided descriptor.
+     * Report the ExitListener called at closing time.
      *
-     * @param descriptor the provided descriptor
-     * @return the related sample sheet
+     * @return specific exit listener that check if repository has unsaved modifications
      */
-    public SampleSheet getSampleSheet (Descriptor descriptor)
+    public final synchronized Application.ExitListener getExitListener ()
     {
-        return nameMap.get(descriptor.getName());
+        if (exitListener == null) {
+            exitListener = new RepositoryExitListener();
+        }
+
+        return exitListener;
     }
 
     //----------------//
-    // getSampleSheet //
+    // getFontSamples //
     //----------------//
     /**
-     * Report the SampleSheet that contains the provided sample.
+     * Report the font-based samples in the repository.
      *
-     * @param sample the provided sample
-     * @return the containing sample sheet
+     * @return the repository font-based samples
      */
-    public SampleSheet getSampleSheet (Sample sample)
+    public List<Sample> getFontSamples ()
     {
-        return sampleMap.get(sample);
+        final List<Sample> fontSamples = new ArrayList<>();
+
+        for (Entry<String, SampleSheet> entry : nameMap.entrySet()) {
+            if (isSymbols(entry.getKey())) {
+                fontSamples.addAll(entry.getValue().getAllSamples());
+            }
+        }
+
+        return fontSamples;
     }
 
     //------------//
@@ -749,6 +1001,34 @@ public class SampleRepository
         return Collections.emptyList();
     }
 
+    //----------------//
+    // getSampleSheet //
+    //----------------//
+    /**
+     * Report the SampleSheet related to the provided descriptor.
+     *
+     * @param descriptor the provided descriptor
+     * @return the related sample sheet
+     */
+    public SampleSheet getSampleSheet (Descriptor descriptor)
+    {
+        return nameMap.get(descriptor.getName());
+    }
+
+    //----------------//
+    // getSampleSheet //
+    //----------------//
+    /**
+     * Report the SampleSheet that contains the provided sample.
+     *
+     * @param sample the provided sample
+     * @return the containing sample sheet
+     */
+    public SampleSheet getSampleSheet (Sample sample)
+    {
+        return sampleMap.get(sample);
+    }
+
     //-----------//
     // getShapes //
     //-----------//
@@ -795,23 +1075,6 @@ public class SampleRepository
         return null;
     }
 
-    //-----------------//
-    // getExitListener //
-    //-----------------//
-    /**
-     * Report the ExitListener called at closing time.
-     *
-     * @return specific exit listener that check if repository has unsaved modifications
-     */
-    public final synchronized Application.ExitListener getExitListener ()
-    {
-        if (exitListener == null) {
-            exitListener = new RepositoryExitListener();
-        }
-
-        return exitListener;
-    }
-
     //----------------//
     // hasSheetImages //
     //----------------//
@@ -842,6 +1105,23 @@ public class SampleRepository
             if (!isSymbols(sampleSheet.getDescriptor().getName())) {
                 includeSampleSheet(sampleSheet);
             }
+        }
+    }
+
+    //--------------------//
+    // includeSamplesFile //
+    //--------------------//
+    /**
+     * Include the content of a samples file.
+     *
+     * @param samplesFile provided samples file
+     */
+    public synchronized void includeSamplesFile (Path samplesFile)
+    {
+        SampleRepository repo = getInstance(samplesFile, true);
+
+        if (repo != null) {
+            includeRepository(repo);
         }
     }
 
@@ -893,23 +1173,6 @@ public class SampleRepository
         return localSheet;
     }
 
-    //--------------------//
-    // includeSamplesFile //
-    //--------------------//
-    /**
-     * Include the content of a samples file.
-     *
-     * @param samplesFile provided samples file
-     */
-    public synchronized void includeSamplesFile (Path samplesFile)
-    {
-        SampleRepository repo = getInstance(samplesFile, true);
-
-        if (repo != null) {
-            includeRepository(repo);
-        }
-    }
-
     //----------//
     // isGlobal //
     //----------//
@@ -957,18 +1220,6 @@ public class SampleRepository
         return false;
     }
 
-    //-------------//
-    // setModified //
-    //-------------//
-    private void setModified (boolean bool)
-    {
-        sheetContainer.setModified(bool);
-
-        for (SampleSheet sampleSheet : nameMap.values()) {
-            sampleSheet.setModified(bool);
-        }
-    }
-
     //---------------//
     // loadAllImages //
     //---------------//
@@ -991,6 +1242,73 @@ public class SampleRepository
             } catch (IOException ex) {
                 logger.warn("Error loading sheet images " + ex, ex);
             }
+        }
+    }
+
+    //---------------//
+    // loadAllImages //
+    //---------------//
+    /**
+     * Unmarshal all the sheet images available in training material and not yet loaded.
+     */
+    private void loadAllImages (final Path root)
+    {
+        try {
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult preVisitDirectory (Path dir,
+                                                          BasicFileAttributes attrs)
+                    throws IOException
+                {
+                    // Check whether we already have an image for this folder
+                    final Path dirFile = dir.getFileName();
+
+                    if (dirFile != null) {
+                        String dirName = dirFile.toString();
+
+                        if (dirName.endsWith("/")) {
+                            dirName = dirName.substring(0, dirName.length() - 1);
+                        }
+
+                        final SampleSheet sampleSheet = nameMap.get(dirName);
+
+                        if ((sampleSheet != null) && (sampleSheet.getImage() != null)) {
+                            return FileVisitResult.SKIP_SUBTREE;
+                        }
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
+                    throws IOException
+                {
+                    final String fileName = file.getFileName().toString();
+
+                    if (fileName.equals(SampleSheet.IMAGE_FILE_NAME)) {
+                        RunTable runTable = RunTable.unmarshal(file);
+
+                        if (runTable != null) {
+                            Path folder = file.getParent().getFileName();
+                            SampleSheet sampleSheet = nameMap.get(folder.toString());
+
+                            if (sampleSheet != null) {
+                                sampleSheet.setImage(runTable, true);
+                                logger.debug("Loaded {}", file);
+                            } else {
+                                logger.warn("No SampleSheet found for image {}", file);
+                            }
+                        }
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException ex) {
+            logger.warn("Error loading binaries from " + imagesFile + " " + ex, ex);
         }
     }
 
@@ -1107,6 +1425,105 @@ public class SampleRepository
         }
     }
 
+    //-------------//
+    // loadSamples //
+    //-------------//
+    /**
+     * Unmarshal the repository concrete samples.
+     */
+    private void loadSamples (final Path root,
+                              final LoadListener loadListener)
+    {
+        try {
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
+                    throws IOException
+                {
+                    final String fileName = file.getFileName().toString();
+
+                    if (fileName.equals(SampleSheet.SAMPLES_FILE_NAME)) {
+                        Path folder = file.getParent().getFileName();
+                        Descriptor desc = sheetContainer.getDescriptor(folder.toString());
+                        SampleSheet sampleSheet = null;
+
+                        if (desc == null) {
+                            logger.warn(
+                                    "Samples entry {} not declared in {} is ignored.",
+                                    folder,
+                                    SheetContainer.CONTAINER_ENTRY_NAME);
+                        } else {
+                            boolean isSymbol = isSymbols(desc.getName());
+
+                            if (isSymbol) {
+                                logger.info("Skipping symbols entry");
+
+                                return FileVisitResult.CONTINUE;
+                            }
+
+                            sampleSheet = SampleSheet.unmarshal(file, desc);
+                            nameMap.put(desc.getName(), sampleSheet);
+
+                            for (Sample sample : sampleSheet.getAllSamples()) {
+                                sample.setSymbol(false);
+                                sampleMap.put(sample, sampleSheet);
+                            }
+                        }
+
+                        if (loadListener != null) {
+                            loadListener.loadedSheet(sampleSheet);
+                        }
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException ex) {
+            logger.warn("Error loading " + samplesFile + " " + ex, ex);
+        }
+    }
+
+    //------------//
+    // loadTribes //
+    //------------//
+    /**
+     * Unmarshal all the sheet tribes available in training material.
+     */
+    private void loadTribes (final Path root)
+    {
+        try {
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
+                    throws IOException
+                {
+                    final String fileName = file.getFileName().toString();
+
+                    if (fileName.equals(SampleSheet.TRIBES_FILE_NAME)) {
+                        Path folder = file.getParent().getFileName();
+                        SampleSheet sampleSheet = nameMap.get(folder.toString());
+
+                        if (sampleSheet != null) {
+                            TribeList tribeList = TribeList.unmarshal(file);
+                            sampleSheet.setTribes(tribeList.getTribes());
+                            logger.debug("Loaded {}", file);
+                        } else {
+                            logger.warn("No SampleSheet found for tribes {}", file);
+                        }
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException ex) {
+            logger.warn("Error loading tribes " + ex, ex);
+        }
+    }
+
     //-----------------//
     // pokeSampleSheet //
     //-----------------//
@@ -1121,6 +1538,42 @@ public class SampleRepository
         RunTable image = sheet.getPicture().getTable(Picture.TableKey.BINARY);
 
         return imageMap.get(image);
+    }
+
+    //-------------------//
+    // printSampleCounts //
+    //-------------------//
+    /**
+     * Print out the list of shapes and related samples count.
+     */
+    private void printSampleCounts ()
+    {
+        final int[] counts = new int[Shape.values().length];
+
+        for (Sample sample : getAllSamples()) {
+            final Shape shape = sample.getShape();
+            final int ordinal = shape.ordinal();
+            counts[ordinal]++;
+        }
+
+        final List<Shape> NNShapes = new ArrayList<>(EnumSet.range(Shape.DOT_set, Shape.CLUTTER));
+        Collections.sort(
+                NNShapes,
+                (Shape o1,
+                 Shape o2) -> o1.name().compareTo(o2.name()));
+
+        System.out.println("");
+        System.out.println("Sample counts:");
+        System.out.println("-------------");
+        System.out.println("");
+        System.out.println("| Shape | Count |");
+        System.out.println("| :---  |  ---: |");
+
+        for (Shape shape : NNShapes) {
+            final int ordinal = shape.ordinal();
+            //System.out.println(String.format("   %3d: %5d %s", ordinal, counts[ordinal], shape));
+            System.out.println(String.format("| %s | %d |", shape, counts[ordinal]));
+        }
     }
 
     //------------------------//
@@ -1160,6 +1613,10 @@ public class SampleRepository
         }
 
         logger.info("{} empty sheets purged: {}", this, count);
+
+        if (constants.printSampleCounts.isSet()) {
+            printSampleCounts();
+        }
     }
 
     //----------------//
@@ -1228,6 +1685,18 @@ public class SampleRepository
         fireStateChanged(new SheetRemovalEvent(descriptor, this));
     }
 
+    //-------------//
+    // setModified //
+    //-------------//
+    private void setModified (boolean bool)
+    {
+        sheetContainer.setModified(bool);
+
+        for (SampleSheet sampleSheet : nameMap.values()) {
+            sampleSheet.setModified(bool);
+        }
+    }
+
     //--------//
     // shrink //
     //--------//
@@ -1281,10 +1750,18 @@ public class SampleRepository
                                    int minCount,
                                    int maxCount)
     {
+        // Flag redundant font-based samples as such
+        checkFontSamples();
+
         // Gather samples by shape
         EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<>(Shape.class);
 
         for (Sample sample : getAllSamples()) {
+            // Exclude redundant font-based samples
+            if (sample.isIgnored()) {
+                continue;
+            }
+
             Shape shape = sample.getShape();
             List<Sample> list = shapeSamples.get(shape);
 
@@ -1355,247 +1832,7 @@ public class SampleRepository
         return name + " repository";
     }
 
-    //-------------------//
-    // buildSymbolSample //
-    //-------------------//
-    /**
-     * Build an artificial sample from a symbol descriptor, in order to
-     * train a classifier even when we have no concrete sample.
-     *
-     * @param shape the symbol shape
-     * @return the sample built, or null if failed
-     */
-    private Sample buildSymbolSample (Shape shape)
-    {
-        Sample sample = null;
-
-        // Make sure we have the drawing available for this shape
-        ShapeSymbol symbol = Symbols.getSymbol(shape);
-
-        // If no plain symbol, use the decorated symbol as plan B
-        if (symbol == null) {
-            symbol = Symbols.getSymbol(shape, true);
-        }
-
-        if (symbol != null) {
-            sample = SymbolSample.create(shape, symbol, STANDARD_INTERLINE);
-            sample.setSymbol(true);
-        } else {
-            logger.warn("No symbol for {}", shape);
-        }
-
-        return sample;
-    }
-
-    //--------------//
-    // buildSymbols //
-    //--------------//
-    /**
-     * Build all the artificial symbols for a given font.
-     * <p>
-     * TODO: support additional fonts.
-     */
-    private void buildSymbols ()
-    {
-        Descriptor desc = sheetContainer.getDescriptor(SYMBOLS);
-
-        if (desc == null) {
-            desc = new Descriptor(SYMBOLS, null);
-            sheetContainer.addDescriptor(desc);
-        }
-
-        SampleSheet symbolSheet = new SampleSheet(desc);
-
-        for (Shape shape : ShapeSet.allPhysicalShapes) {
-            Sample sample = buildSymbolSample(shape);
-            symbolSheet.privateAddSample(sample);
-            sampleMap.put(sample, symbolSheet);
-        }
-
-        nameMap.put(SYMBOLS, symbolSheet);
-    }
-
-    //------------------//
-    // fireStateChanged //
-    //------------------//
-    private void fireStateChanged (ChangeEvent event)
-    {
-        for (ChangeListener listener : listeners) {
-            listener.stateChanged(event);
-        }
-    }
-
-    //---------------//
-    // loadAllImages //
-    //---------------//
-    /**
-     * Unmarshal all the sheet images available in training material and not yet loaded.
-     */
-    private void loadAllImages (final Path root)
-    {
-        try {
-            Files.walkFileTree(
-                    root,
-                    new SimpleFileVisitor<Path>()
-            {
-                @Override
-                public FileVisitResult preVisitDirectory (Path dir,
-                                                          BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    // Check whether we already have an image for this folder
-                    final Path dirFile = dir.getFileName();
-
-                    if (dirFile != null) {
-                        String dirName = dirFile.toString();
-
-                        if (dirName.endsWith("/")) {
-                            dirName = dirName.substring(0, dirName.length() - 1);
-                        }
-
-                        final SampleSheet sampleSheet = nameMap.get(dirName);
-
-                        if ((sampleSheet != null) && (sampleSheet.getImage() != null)) {
-                            return FileVisitResult.SKIP_SUBTREE;
-                        }
-                    }
-
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFile (Path file,
-                                                  BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    final String fileName = file.getFileName().toString();
-
-                    if (fileName.equals(SampleSheet.IMAGE_FILE_NAME)) {
-                        RunTable runTable = RunTable.unmarshal(file);
-
-                        if (runTable != null) {
-                            Path folder = file.getParent().getFileName();
-                            SampleSheet sampleSheet = nameMap.get(folder.toString());
-
-                            if (sampleSheet != null) {
-                                sampleSheet.setImage(runTable, true);
-                                logger.debug("Loaded {}", file);
-                            } else {
-                                logger.warn("No SampleSheet found for image {}", file);
-                            }
-                        }
-                    }
-
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException ex) {
-            logger.warn("Error loading binaries from " + imagesFile + " " + ex, ex);
-        }
-    }
-
-    //-------------//
-    // loadSamples //
-    //-------------//
-    /**
-     * Unmarshal the repository concrete samples.
-     */
-    private void loadSamples (final Path root,
-                              final LoadListener loadListener)
-    {
-        try {
-            Files.walkFileTree(
-                    root,
-                    new SimpleFileVisitor<Path>()
-            {
-                @Override
-                public FileVisitResult visitFile (Path file,
-                                                  BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    final String fileName = file.getFileName().toString();
-
-                    if (fileName.equals(SampleSheet.SAMPLES_FILE_NAME)) {
-                        Path folder = file.getParent().getFileName();
-                        Descriptor desc = sheetContainer.getDescriptor(folder.toString());
-                        SampleSheet sampleSheet = null;
-
-                        if (desc == null) {
-                            logger.warn(
-                                    "Samples entry {} not declared in {} is ignored.",
-                                    folder,
-                                    SheetContainer.CONTAINER_ENTRY_NAME);
-                        } else {
-                            boolean isSymbol = isSymbols(desc.getName());
-
-                            if (isSymbol) {
-                                logger.info("Skipping symbols entry");
-
-                                return FileVisitResult.CONTINUE;
-                            }
-
-                            sampleSheet = SampleSheet.unmarshal(file, desc);
-                            nameMap.put(desc.getName(), sampleSheet);
-
-                            for (Sample sample : sampleSheet.getAllSamples()) {
-                                sample.setSymbol(isSymbol);
-                                sampleMap.put(sample, sampleSheet);
-                            }
-                        }
-
-                        if (loadListener != null) {
-                            loadListener.loadedSheet(sampleSheet);
-                        }
-                    }
-
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException ex) {
-            logger.warn("Error loading " + samplesFile + " " + ex, ex);
-        }
-    }
-
-    //------------//
-    // loadTribes //
-    //------------//
-    /**
-     * Unmarshal all the sheet tribes available in training material.
-     */
-    private void loadTribes (final Path root)
-    {
-        try {
-            Files.walkFileTree(
-                    root,
-                    new SimpleFileVisitor<Path>()
-            {
-                @Override
-                public FileVisitResult visitFile (Path file,
-                                                  BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    final String fileName = file.getFileName().toString();
-
-                    if (fileName.equals(SampleSheet.TRIBES_FILE_NAME)) {
-                        Path folder = file.getParent().getFileName();
-                        SampleSheet sampleSheet = nameMap.get(folder.toString());
-
-                        if (sampleSheet != null) {
-                            TribeList tribeList = TribeList.unmarshal(file);
-                            sampleSheet.setTribes(tribeList.getTribes());
-                            logger.debug("Loaded {}", file);
-                        } else {
-                            logger.warn("No SampleSheet found for tribes {}", file);
-                        }
-                    }
-
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException ex) {
-            logger.warn("Error loading tribes " + ex, ex);
-        }
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------------//
     // getGlobalInstance //
@@ -1678,6 +1915,22 @@ public class SampleRepository
         }
     }
 
+    //----------------//
+    // getSamplesFile //
+    //----------------//
+    /**
+     * Report the path to the (theoretical) samples file for the provided book.
+     *
+     * @param book the provided book
+     * @return the theoretical path to samples file
+     */
+    private static Path getSamplesFile (Book book)
+    {
+        final Path bookFolder = BookManager.getDefaultBookFolder(book);
+
+        return bookFolder.resolve(book.getRadix() + "-" + SAMPLES_FILE_NAME);
+    }
+
     //-------------//
     // hasInstance //
     //-------------//
@@ -1702,7 +1955,7 @@ public class SampleRepository
      */
     public static boolean isSymbols (String name)
     {
-        return SYMBOLS.equals(name);
+        return name.startsWith(SYMBOLS_PREFIX);
     }
 
     //------------------//
@@ -1719,49 +1972,8 @@ public class SampleRepository
         return Files.exists(getSamplesFile(book));
     }
 
-    //----------------//
-    // getSamplesFile //
-    //----------------//
-    /**
-     * Report the path to the (theoretical) samples file for the provided book.
-     *
-     * @param book the provided book
-     * @return the theoretical path to samples file
-     */
-    private static Path getSamplesFile (Book book)
-    {
-        final Path bookFolder = BookManager.getDefaultBookFolder(book);
-
-        return bookFolder.resolve(book.getRadix() + "-" + SAMPLES_FILE_NAME);
-    }
-
-    //~ Inner Interfaces ---------------------------------------------------------------------------
-    //--------------//
-    // LoadListener //
-    //-------------//
-    /**
-     * Interface <code>LoadListener</code> defines the entries to a UI entity
-     * which monitors the loading of samples by the sample repository.
-     */
-    public static interface LoadListener
-    {
-
-        /**
-         * Called whenever a new sample sheet has been loaded.
-         *
-         * @param sampleSheet the sample sheet loaded
-         */
-        void loadedSheet (SampleSheet sampleSheet);
-
-        /**
-         * Called to pass the total number of sample sheets in repository
-         *
-         * @param total total number of sample sheets
-         */
-        void totalSheets (int total);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------------//
     // AdditionEvent //
     //---------------//
@@ -1789,6 +2001,53 @@ public class SampleRepository
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Constant.Boolean useTribes = new Constant.Boolean(
+                false,
+                "Should we support tribes?");
+
+        private final Constant.Boolean printSampleCounts = new Constant.Boolean(
+                false,
+                "Should we print out the count of samples per shape?");
+    }
+
+    //~ Inner Interfaces ---------------------------------------------------------------------------
+
+    //--------------//
+    // LoadListener //
+    //-------------//
+    /**
+     * Interface <code>LoadListener</code> defines the entries to a UI entity
+     * which monitors the loading of samples by the sample repository.
+     */
+    public static interface LoadListener
+    {
+
+        /**
+         * Called whenever a new sample sheet has been loaded.
+         *
+         * @param sampleSheet the sample sheet loaded
+         */
+        void loadedSheet (SampleSheet sampleSheet);
+
+        /**
+         * Called to pass the total number of sample sheets in repository
+         *
+         * @param total total number of sample sheets
+         */
+        void totalSheets (int total);
+    }
+
     //--------------//
     // RemovalEvent //
     //--------------//
@@ -1814,49 +2073,6 @@ public class SampleRepository
             super(repo);
             this.sample = sample;
         }
-    }
-
-    //-------------------//
-    // SheetRemovalEvent //
-    //-------------------//
-    /**
-     * Event used to carry information about sheet removal performed.
-     */
-    public static class SheetRemovalEvent
-            extends ChangeEvent
-    {
-
-        /** Descriptor of the removed sheet. */
-        public final Descriptor descriptor;
-
-        /**
-         * Create a event to remove a sample sheet.
-         *
-         * @param descriptor sample sheet descriptor
-         * @param repo       impacted repository
-         */
-        public SheetRemovalEvent (Descriptor descriptor,
-                                  SampleRepository repo)
-        {
-            super(repo);
-            this.descriptor = descriptor;
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
-        private final Constant.Boolean useTribes = new Constant.Boolean(
-                false,
-                "Should we support tribes?");
     }
 
     //------------------------//
@@ -1900,6 +2116,33 @@ public class SampleRepository
         @Override
         public void willExit (EventObject eo)
         {
+        }
+    }
+
+    //-------------------//
+    // SheetRemovalEvent //
+    //-------------------//
+    /**
+     * Event used to carry information about sheet removal performed.
+     */
+    public static class SheetRemovalEvent
+            extends ChangeEvent
+    {
+
+        /** Descriptor of the removed sheet. */
+        public final Descriptor descriptor;
+
+        /**
+         * Create a event to remove a sample sheet.
+         *
+         * @param descriptor sample sheet descriptor
+         * @param repo       impacted repository
+         */
+        public SheetRemovalEvent (Descriptor descriptor,
+                                  SampleRepository repo)
+        {
+            super(repo);
+            this.descriptor = descriptor;
         }
     }
 }

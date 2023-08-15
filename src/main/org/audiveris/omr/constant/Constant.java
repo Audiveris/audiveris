@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.constant;
 
-import net.jcip.annotations.ThreadSafe;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import net.jcip.annotations.ThreadSafe;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -42,7 +42,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * Please refer to {@link ConstantManager} for a detailed explanation on how the current value of
  * any given Constant is determined at run-time.
  * <p>
- * The class <code>Constant</code> is not meant to be used directly (it is abstract), but rather through
+ * The class <code>Constant</code> is not meant to be used directly (it is abstract), but rather
+ * through
  * any of its subclasses:
  * <ul>
  * <li>{@link Constant.Angle}</li>
@@ -66,9 +67,10 @@ public abstract class Constant<E>
     private static final Logger logger = LoggerFactory.getLogger(Constant.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Data assigned at construction time
     //-----------------------------------
+
     /** Unit (if relevant) used by the quantity measured. */
     private final java.lang.String quantityUnit;
 
@@ -80,6 +82,7 @@ public abstract class Constant<E>
 
     // Data assigned at ConstantSet initMap time
     //------------------------------------------
+
     /** Name of the Constant. */
     private volatile java.lang.String name;
 
@@ -88,10 +91,12 @@ public abstract class Constant<E>
 
     // Data modified at any time
     //--------------------------
+
     /** Current data. */
     private AtomicReference<Tuple<E>> tuple = new AtomicReference<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a constant instance, while providing a default value,
      * in case the external property is not yet defined.
@@ -115,6 +120,49 @@ public abstract class Constant<E>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------------------//
+    // checkInitialized //
+    //------------------//
+    /**
+     * Check the unit+name have been assigned to this constant object.
+     * They are mandatory to link the constant to the persistency mechanism.
+     */
+    private void checkInitialized ()
+    {
+        int i = 0;
+
+        // Make sure everything is initialized properly
+        while (qualifiedName == null) {
+            i++;
+            UnitManager.getInstance().checkDirtySets();
+        }
+    }
+
+    //--------//
+    // decode //
+    //--------//
+    /**
+     * Convert a given string to proper object value, as implemented by each subclass.
+     *
+     * @param str the encoded string
+     * @return the decoded object
+     */
+    protected abstract E decode (java.lang.String str);
+
+    //----------------//
+    // getCachedValue //
+    //----------------//
+    /**
+     * Report the current value of the constant
+     *
+     * @return the (cached) current value
+     */
+    protected E getCachedValue ()
+    {
+        return getTuple().cachedValue;
+    }
+
     //----------------//
     // getDescription //
     //----------------//
@@ -206,17 +254,21 @@ public abstract class Constant<E>
         return getTuple().currentString;
     }
 
-    //----------------//
-    // setStringValue //
-    //----------------//
+    //----------//
+    // getTuple //
+    //----------//
     /**
-     * Modify the current value of the constant.
+     * Report the current tuple data, which may imply to trigger the
+     * assignment of qualified name to the constant, in order to get
+     * property data
      *
-     * @param string the new value, as a string to be checked
+     * @return the current tuple data
      */
-    public void setStringValue (java.lang.String string)
+    private Tuple<E> getTuple ()
     {
-        setValue(decode(string));
+        checkInitialized();
+
+        return tuple.get();
     }
 
     //----------//
@@ -232,17 +284,31 @@ public abstract class Constant<E>
         return getCachedValue();
     }
 
-    //----------//
-    // setValue //
-    //----------//
+    //----------------//
+    // getValueOrigin //
+    //----------------//
     /**
-     * Assign a new value to the constant.
+     * Convenient method, reporting the origin of the current value for
+     * this constant, either SRC or USR.
      *
-     * @param value new value
+     * @return a mnemonic for the value origin
      */
-    public void setValue (E value)
+    java.lang.String getValueOrigin ()
     {
-        setTuple(value.toString(), value);
+        ConstantManager mgr = ConstantManager.getInstance();
+        java.lang.String cur = getStringValue();
+        java.lang.String usr = mgr.getConstantUserValue(qualifiedName);
+        java.lang.String src = sourceString;
+
+        if (cur.equals(src)) {
+            return "SRC";
+        }
+
+        if (cur.equals(usr)) {
+            return "USR";
+        }
+
+        return "???";
     }
 
     //---------------//
@@ -270,60 +336,17 @@ public abstract class Constant<E>
         setTuple(sourceString, decode(sourceString));
     }
 
-    //------------------//
-    // toDetailedString //
-    //------------------//
-    /**
-     * Report detailed data about this constant
-     *
-     * @return data meant for end user
-     */
-    public java.lang.String toDetailedString ()
-    {
-        StringBuilder sb = new StringBuilder(getQualifiedName());
-        sb.append(" (").append(getStringValue()).append(")");
-        sb.append(" \"").append(getDescription()).append("\"");
-
-        return sb.toString();
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Used by UnitTreeTable to display the name of the constant,
-     * so only the unqualified name is returned.
-     *
-     * @return the (unqualified) constant name
-     */
-    @Override
-    public java.lang.String toString ()
-    {
-        return (name != null) ? name : "NO_NAME";
-    }
-
-    //--------//
-    // decode //
-    //--------//
-    /**
-     * Convert a given string to proper object value, as implemented by each subclass.
-     *
-     * @param str the encoded string
-     * @return the decoded object
-     */
-    protected abstract E decode (java.lang.String str);
-
     //----------------//
-    // getCachedValue //
+    // setStringValue //
     //----------------//
     /**
-     * Report the current value of the constant
+     * Modify the current value of the constant.
      *
-     * @return the (cached) current value
+     * @param string the new value, as a string to be checked
      */
-    protected E getCachedValue ()
+    public void setStringValue (java.lang.String string)
     {
-        return getTuple().cachedValue;
+        setValue(decode(string));
     }
 
     //----------//
@@ -397,69 +420,53 @@ public abstract class Constant<E>
         }
     }
 
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Assign a new value to the constant.
+     *
+     * @param value new value
+     */
+    public void setValue (E value)
+    {
+        setTuple(value.toString(), value);
+    }
+
     //------------------//
-    // checkInitialized //
+    // toDetailedString //
     //------------------//
     /**
-     * Check the unit+name have been assigned to this constant object.
-     * They are mandatory to link the constant to the persistency mechanism.
+     * Report detailed data about this constant
+     *
+     * @return data meant for end user
      */
-    private void checkInitialized ()
+    public java.lang.String toDetailedString ()
     {
-        int i = 0;
+        StringBuilder sb = new StringBuilder(getQualifiedName());
+        sb.append(" (").append(getStringValue()).append(")");
+        sb.append(" \"").append(getDescription()).append("\"");
 
-        // Make sure everything is initialized properly
-        while (qualifiedName == null) {
-            i++;
-            UnitManager.getInstance().checkDirtySets();
-        }
+        return sb.toString();
     }
 
     //----------//
-    // getTuple //
+    // toString //
     //----------//
     /**
-     * Report the current tuple data, which may imply to trigger the
-     * assignment of qualified name to the constant, in order to get
-     * property data
+     * Used by UnitTreeTable to display the name of the constant,
+     * so only the unqualified name is returned.
      *
-     * @return the current tuple data
+     * @return the (unqualified) constant name
      */
-    private Tuple<E> getTuple ()
+    @Override
+    public java.lang.String toString ()
     {
-        checkInitialized();
-
-        return tuple.get();
-    }
-
-    //----------------//
-    // getValueOrigin //
-    //----------------//
-    /**
-     * Convenient method, reporting the origin of the current value for
-     * this constant, either SRC or USR.
-     *
-     * @return a mnemonic for the value origin
-     */
-    java.lang.String getValueOrigin ()
-    {
-        ConstantManager mgr = ConstantManager.getInstance();
-        java.lang.String cur = getStringValue();
-        java.lang.String usr = mgr.getConstantUserValue(qualifiedName);
-        java.lang.String src = sourceString;
-
-        if (cur.equals(src)) {
-            return "SRC";
-        }
-
-        if (cur.equals(usr)) {
-            return "USR";
-        }
-
-        return "???";
+        return (name != null) ? name : "NO_NAME";
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------//
     // Angle //
     //-------//
@@ -505,6 +512,12 @@ public abstract class Constant<E>
             super(null, java.lang.Boolean.toString(defaultValue), description);
         }
 
+        @Override
+        protected java.lang.Boolean decode (java.lang.String str)
+        {
+            return java.lang.Boolean.valueOf(str);
+        }
+
         /**
          * Convenient method to access this boolean value
          *
@@ -513,12 +526,6 @@ public abstract class Constant<E>
         public boolean isSet ()
         {
             return getValue();
-        }
-
-        @Override
-        protected java.lang.Boolean decode (java.lang.String str)
-        {
-            return java.lang.Boolean.valueOf(str);
         }
     }
 
@@ -551,15 +558,15 @@ public abstract class Constant<E>
         }
 
         @Override
-        public void setValue (java.awt.Color val)
-        {
-            setTuple(encodeColor(val), val);
-        }
-
-        @Override
         protected java.awt.Color decode (java.lang.String str)
         {
             return decodeColor(str);
+        }
+
+        @Override
+        public void setValue (java.awt.Color val)
+        {
+            setTuple(encodeColor(val), val);
         }
 
         //-------------//
@@ -606,17 +613,17 @@ public abstract class Constant<E>
                 "dd-MMM-yyyy",
                 Locale.US);
 
-        public Date (java.util.Date defaultValue,
-                     java.lang.String description)
-        {
-            super(null, encode(defaultValue), description);
-        }
-
         public Date (java.lang.String str,
                      java.lang.String description)
         {
             super(null, str, description);
             setValue(str);
+        }
+
+        public Date (java.util.Date defaultValue,
+                     java.lang.String description)
+        {
+            super(null, encode(defaultValue), description);
         }
 
         @Override
@@ -631,20 +638,15 @@ public abstract class Constant<E>
             }
         }
 
-        @Override
-        public void setValue (java.util.Date date)
-        {
-            setTuple(encode(date), date);
-        }
-
         public final void setValue (java.lang.String str)
         {
             setTuple(str, decode(str));
         }
 
-        public static java.lang.String encode (java.util.Date date)
+        @Override
+        public void setValue (java.util.Date date)
         {
-            return DATE_FORMAT.format(date);
+            setTuple(encode(date), date);
         }
 
         public static java.util.Date decodeDate (java.lang.String str)
@@ -656,6 +658,11 @@ public abstract class Constant<E>
 
                 return null;
             }
+        }
+
+        public static java.lang.String encode (java.util.Date date)
+        {
+            return DATE_FORMAT.format(date);
         }
     }
 
@@ -735,6 +742,12 @@ public abstract class Constant<E>
         }
 
         @Override
+        protected E decode (java.lang.String str)
+        {
+            return java.lang.Enum.valueOf(classe, str);
+        }
+
+        @Override
         public E getSourceValue ()
         {
             return decode(getSourceString());
@@ -744,12 +757,6 @@ public abstract class Constant<E>
         public E getValue ()
         {
             return getCachedValue();
-        }
-
-        @Override
-        protected E decode (java.lang.String str)
-        {
-            return java.lang.Enum.valueOf(classe, str);
         }
     }
 
@@ -827,6 +834,18 @@ public abstract class Constant<E>
     {
 
         /**
+         * Specific constructor, where 'unit' and 'name' are assigned later
+         *
+         * @param defaultValue the (string) default value
+         * @param description  the semantic of the constant
+         */
+        public String (java.lang.String defaultValue,
+                       java.lang.String description)
+        {
+            super(null, defaultValue, description);
+        }
+
+        /**
          * Normal constructor, with a string type for default value
          *
          * @param unit         the enclosing unit
@@ -841,18 +860,6 @@ public abstract class Constant<E>
         {
             this(defaultValue, description);
             setUnitAndName(unit, name);
-        }
-
-        /**
-         * Specific constructor, where 'unit' and 'name' are assigned later
-         *
-         * @param defaultValue the (string) default value
-         * @param description  the semantic of the constant
-         */
-        public String (java.lang.String defaultValue,
-                       java.lang.String description)
-        {
-            super(null, defaultValue, description);
         }
 
         @Override

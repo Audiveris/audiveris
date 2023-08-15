@@ -1,16 +1,3 @@
-```diff
--- -------------------------------------------------------------------------------------------------
--- WARNING
--- Audiveris development is performed on "development" branch, while default "master" branch
--- is reserved for releases.
---
--- On "development" branch, you will need JDK 17
---
--- Due to recent closing of JCenter, a needed component (JPodRenderer v5.6) is no longer available,
--- it has been temporarily replaced by JPodRenderer v5.5.1
--- -------------------------------------------------------------------------------------------------
-```
-
 ![](https://github.com/Audiveris/docs/blob/master/images/SplashLogo.png)
 
 # Audiveris - Open-source Optical Music Recognition
@@ -42,53 +29,27 @@ Then the remaining mistakes can usually be quickly fixed via manual edition of a
 The core of engine music information (OMR data) is fully documented and made publicly available,
 either directly via XML-based `.omr` project files or via the Java API of this software.   
 Audiveris comes with an integrated exporter to write (a subset of) this OMR data into
-[MusicXML][musicxml] 3.0 format.
+[MusicXML][musicxml] 4.0 format.
 In the future, other exporters are expected to build upon OMR data to support other target formats.
 
-## Installing binaries (Windows)
+## Installation
 
-On GitHub [Releases][releases] page, an Audiveris installer is available for Windows.
+- For **Windows** only, an installer is provided.
+- For **Windows**, **MacOS**, **Linux** and **ArchLinux**, you can download and build from sources:
+    - Either from default "*master*" branch,
+    - Or, preferably, from "*development*" branch.
+    See details in the dedicated [Wiki article][workflow].
 
-It takes care of the whole installation, including needed libraries like Tesseract OCR,
-but assumes that you already have a suitable Java installed.
-* Audiveris 5.2 requires Java version 11
-* Audiveris 5.3 requires Java version 17
+Using the installer or building from sources, in both cases you will need two additional
+components:
+1. Java environment (Java 17 minimum)
+2. Tesseract language files (for version 4 and up)
 
-You can download them from [Oracle JDKs download site][jdk-downloads].
-
-And since Oracle provides Java 11 and above only for 64-bit architectures, the same restriction
-applies to Audiveris as well.
-Should you really need a 32-bit Audiveris version, you can still use old Audiveris 5.1 version
-from the [Releases][releases] page.
-
-For further installation details, please refer to HandBook [Binaries][binaries] section.
-
-## Building from sources (Windows, MacOS and Linux)
-
-**NOTA** for GitHub users:
-- Audiveris "*master*" branch is updated only when a new release is published.
-- Instead, Audiveris development happens continuously in "*development*" branch, so checkout and pull
-this *development* branch to get and build the latest version.
-- See workflow details in this dedicated [Wiki article][workflow].
-
-You will need the typical tools: git, gradle and Java Development Kit (JDK).
-
-All libraries, including Tesseract OCR libraries, will get pulled as Gradle dependencies
-but you will have to download Tesseract language data files.  
-
-And we have to make it clear, because the same issues are posted again and again:
-1. Audiveris needs the **old 3.04 Tesseract language files**,
-new 4.x Tesseract is not suitable for detecting and processing text on music images.
-2. No Tesseract executable needs to be installed, since Tesseract is used via **libraries**.
-3. You can have other Tesseract versions installed, they will not impede Audiveris behavior,
-provided that Audiveris can find its needed Tesseract language files
-(typically via **TESSDATA_PREFIX** environment variable).
-
-For further building details, please refer to HandBook [Sources][sources] section.
+Please read further information in [HandBook installation][installation] section.
 
 ## Further Information
 
-Users and Developers are advised to read the specific [User Handbook][handbook],
+Users and Developers are advised to read Audiveris [User Handbook][handbook],
 and the more general [Wiki][audiveris-wiki] set of articles.
 
 ## Releases
@@ -96,12 +57,9 @@ and the more general [Wiki][audiveris-wiki] set of articles.
 All releases are available on [Audiveris Releases][releases] page.
 
 [audiveris-wiki]: https://github.com/Audiveris/audiveris/wiki
-[workflow]:       https://github.com/Audiveris/audiveris/wiki/Git-Workflow
-[audiveris-eg]:   htps://github.com/Audiveris/audiveris-eg
-[musicxml]:       http://www.musicxml.com/
+[handbook]:       https://audiveris.github.io/audiveris/
 [imslp]:          https://imslp.org/
-[handbook]:       https://audiveris.github.io/audiveris/_pages/index-5.2/
-[binaries]:       https://audiveris.github.io/audiveris/_pages/install/binaries/
-[sources]:        https://audiveris.github.io/audiveris/_pages/install/sources/
+[installation]:   https://audiveris.github.io/audiveris/_pages/install/README/
+[musicxml]:       http://www.musicxml.com/
 [releases]:       https://github.com/Audiveris/audiveris/releases
-[jdk-downloads]:  https://www.oracle.com/java/technologies/downloads/
+[workflow]:       https://github.com/Audiveris/audiveris/wiki/Git-Workflow

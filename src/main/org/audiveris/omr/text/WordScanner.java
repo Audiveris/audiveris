@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,6 +42,7 @@ public abstract class WordScanner
     private static final Logger logger = LoggerFactory.getLogger(WordScanner.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The content string. */
     private final String content;
 
@@ -72,9 +73,7 @@ public abstract class WordScanner
     private int nextWordStop = -1;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //-------------//
-    // WordScanner //
-    //-------------//
+
     /**
      * Creates a new WordScanner object.
      *
@@ -95,64 +94,6 @@ public abstract class WordScanner
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // getWordChars //
-    //--------------//
-    /**
-     * Report the sequence of TextChar instances that correspond to the current word.
-     *
-     * @return the word sequence of TextChar's
-     */
-    public List<TextChar> getWordChars ()
-    {
-        return chars.subList(currentWordStart, currentWordStop + 1);
-    }
-
-    //---------//
-    // hasNext //
-    //---------//
-    /**
-     * Tell whether there is a next word.
-     *
-     * @return true if not finished, false otherwise
-     */
-    public boolean hasNext ()
-    {
-        return nextWord != null;
-    }
-
-    //------//
-    // next //
-    //------//
-    /**
-     * Make the next word current, and return it.
-     *
-     * @return the next word content
-     */
-    public String next ()
-    {
-        // Promote 'next' as 'current'
-        currentWord = nextWord;
-        currentWordStart = nextWordStart;
-        currentWordStop = nextWordStop;
-
-        // ¨Prepare the new 'next' if any
-        lookAhead();
-
-        return currentWord;
-    }
-
-    //--------------//
-    // stringToDesc //
-    //--------------//
-    /**
-     * Knowing the char strIndex in string content, determine the related position
-     * in the sequence of TextChar instances.
-     *
-     * @param strIndex strIndex in content
-     * @return position in sequence of TextChar instances
-     */
-    protected abstract int stringToDesc (int strIndex);
 
     //-------------//
     // getNextWord //
@@ -220,6 +161,32 @@ public abstract class WordScanner
         }
     }
 
+    //--------------//
+    // getWordChars //
+    //--------------//
+    /**
+     * Report the sequence of TextChar instances that correspond to the current word.
+     *
+     * @return the word sequence of TextChar's
+     */
+    public List<TextChar> getWordChars ()
+    {
+        return chars.subList(currentWordStart, currentWordStop + 1);
+    }
+
+    //---------//
+    // hasNext //
+    //---------//
+    /**
+     * Tell whether there is a next word.
+     *
+     * @return true if not finished, false otherwise
+     */
+    public boolean hasNext ()
+    {
+        return nextWord != null;
+    }
+
     //-----------//
     // lookAhead //
     //-----------//
@@ -231,7 +198,41 @@ public abstract class WordScanner
         nextWord = getNextWord();
     }
 
+    //------//
+    // next //
+    //------//
+    /**
+     * Make the next word current, and return it.
+     *
+     * @return the next word content
+     */
+    public String next ()
+    {
+        // Promote 'next' as 'current'
+        currentWord = nextWord;
+        currentWordStart = nextWordStart;
+        currentWordStop = nextWordStop;
+
+        // ¨Prepare the new 'next' if any
+        lookAhead();
+
+        return currentWord;
+    }
+
+    //--------------//
+    // stringToDesc //
+    //--------------//
+    /**
+     * Knowing the char strIndex in string content, determine the related position
+     * in the sequence of TextChar instances.
+     *
+     * @param strIndex strIndex in content
+     * @return position in sequence of TextChar instances
+     */
+    protected abstract int stringToDesc (int strIndex);
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------------//
     // ManualScanner //
     //---------------//

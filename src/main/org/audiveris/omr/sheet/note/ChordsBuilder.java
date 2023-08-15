@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.note;
 
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitch;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
@@ -52,7 +55,6 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -81,7 +83,9 @@ public class ChordsBuilder
     private static final Logger logger = LoggerFactory.getLogger(ChordsBuilder.class);
 
     /** To sort head-stem relations left to right. */
-    private static final Comparator<Relation> byHeadSide = (Relation o1, Relation o2) -> {
+    private static final Comparator<Relation> byHeadSide = (Relation o1,
+                                                            Relation o2) ->
+    {
         final HorizontalSide s1 = ((HeadStemRelation) o1).getHeadSide();
         final HorizontalSide s2 = ((HeadStemRelation) o2).getHeadSide();
 
@@ -89,6 +93,7 @@ public class ChordsBuilder
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -97,6 +102,7 @@ public class ChordsBuilder
     private final SIGraph sig;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>ChordsBuilder</code> object.
      *
@@ -109,6 +115,7 @@ public class ChordsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // buildHeadChords //
     //-----------------//
@@ -310,7 +317,7 @@ public class ChordsBuilder
                 chord.addMember(head);
             } else {
                 // Create a brand-new stem-based chord
-                boolean isSmall = head.getShape().isSmall();
+                boolean isSmall = head.getShape().isSmallHead();
                 chord = isSmall ? new SmallChordInter(null) : new HeadChordInter(null);
                 sig.addVertex(chord);
                 chord.setStem(stem);
@@ -394,6 +401,13 @@ public class ChordsBuilder
             }
 
             if (measure != null) {
+                // Case of chord which have changed of containing measure
+                // while being build head after head
+                final Measure chordMeasure = chord.getMeasure();
+                if ((chordMeasure != null) && (chordMeasure != measure)) {
+                    chordMeasure.removeInter(chord);
+                }
+
                 measure.addInter(chord);
             } else {
                 logger.warn("No containing measure for {}", inter);

@@ -8,7 +8,7 @@ has_children: true
 # Outputs
 
 Output files are generally located in the dedicated subfolder of the related book.
-See the [Folders](../folders/README) chapter.
+See the [Folders](../folders/README.md) chapter.
 
 This chapter presents the various output formats designated by their file extension.
 

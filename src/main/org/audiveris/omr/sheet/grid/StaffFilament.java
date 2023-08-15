@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -63,6 +63,7 @@ public class StaffFilament
     private static final Logger logger = LoggerFactory.getLogger(StaffFilament.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Combs where this filament appears. map (column index -> comb) */
     private SortedMap<Integer, FilamentComb> combs;
 
@@ -73,6 +74,7 @@ public class StaffFilament
     private int clusterPos;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new LineFilament object.
      * Nota: this constructor is needed for FilamentFactory which calls this
@@ -86,20 +88,6 @@ public class StaffFilament
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // yTranslated //
-    //-------------//
-    @Override
-    public LineInfo yTranslated (double dy)
-    {
-        final List<Point2D> virtualPoints = new ArrayList<>(points.size());
-
-        for (Point2D p : points) {
-            virtualPoints.add(new Point2D.Double(p.getX(), p.getY() + dy));
-        }
-
-        return new StaffLine(virtualPoints, getThickness());
-    }
 
     //---------//
     // addComb //
@@ -177,7 +165,8 @@ public class StaffFilament
 
                         for (int i = 1; i <= insert; i++) {
                             int x = (int) Math.rint(holeStart + (i * dx));
-                            Point2D pt = new Filler(x, pos, fils, virtualLength / 2).findInsertion();
+                            Point2D pt = new Filler(x, pos, fils, virtualLength / 2)
+                                    .findInsertion();
 
                             if (pt == null) {
                                 // Take default line point instead
@@ -288,6 +277,25 @@ public class StaffFilament
         that.clusterPos = this.clusterPos;
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        if (combs != null) {
+            sb.append(" combs:").append(combs.size());
+        }
+
+        if (cluster != null) {
+            sb.append(" cluster:").append(cluster.getId()).append("p").append(clusterPos);
+        }
+
+        return sb.toString();
+    }
+
     //---------------//
     // isWithinRange //
     //---------------//
@@ -348,15 +356,6 @@ public class StaffFilament
     // yAt //
     //-----//
     @Override
-    public int yAt (int x)
-    {
-        return (int) Math.rint(yAt((double) x));
-    }
-
-    //-----//
-    // yAt //
-    //-----//
-    @Override
     public double yAt (double x)
     {
         Point2D start = getEndPoint(LEFT);
@@ -372,26 +371,32 @@ public class StaffFilament
         }
     }
 
-    //-----------//
-    // internals //
-    //-----------//
+    //-----//
+    // yAt //
+    //-----//
     @Override
-    protected String internals ()
+    public int yAt (int x)
     {
-        StringBuilder sb = new StringBuilder(super.internals());
+        return (int) Math.rint(yAt((double) x));
+    }
 
-        if (combs != null) {
-            sb.append(" combs:").append(combs.size());
+    //-------------//
+    // yTranslated //
+    //-------------//
+    @Override
+    public LineInfo yTranslated (double dy)
+    {
+        final List<Point2D> virtualPoints = new ArrayList<>(points.size());
+
+        for (Point2D p : points) {
+            virtualPoints.add(new Point2D.Double(p.getX(), p.getY() + dy));
         }
 
-        if (cluster != null) {
-            sb.append(" cluster:").append(cluster.getId()).append("p").append(clusterPos);
-        }
-
-        return sb.toString();
+        return new StaffLine(virtualPoints, getThickness());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

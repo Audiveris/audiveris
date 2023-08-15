@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.Item;
 import org.audiveris.omr.sheet.Sheet;
@@ -34,6 +31,9 @@ import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
@@ -53,11 +53,15 @@ public class SheetParameters
 
     private static final Logger logger = LoggerFactory.getLogger(SheetParameters.class);
 
+    // JGoodies column specification:       SelBox     Item             Value
+    private static final String colSpec3 = "10dlu,1dlu,80dlu,1dlu,right:15dlu";
+
     /** Resource injection. */
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(SheetParameters.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The swing component of this panel. */
     private final ScopedPanel scopedPanel;
 
@@ -71,6 +75,7 @@ public class SheetParameters
     private final EnumMap<Item, ScalingParam> scalings = new EnumMap<>(Item.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SheetParameters</code> object.
      *
@@ -96,12 +101,13 @@ public class SheetParameters
             sheetPanes.add(new ScaledPane(key, null, ip));
         }
 
-        scopedPanel = new ScopedPanel("Sheet settings", sheetPanes);
+        scopedPanel = new ScopedPanel("Sheet settings", sheetPanes, colSpec3, 1);
 
         initialDisplay();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // commit //
     //--------//
@@ -177,6 +183,7 @@ public class SheetParameters
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------//
     // ScaledPane //
     //------------//
@@ -211,12 +218,13 @@ public class SheetParameters
         @Override
         public int defineLayout (PanelBuilder builder,
                                  CellConstraints cst,
+                                 int titleWidth,
                                  int r)
         {
-            // Draw the specific/inherit box
-            builder.add(selBox, cst.xyw(1, r, 1));
-            builder.add(title, cst.xyw(3, r, 3));
-            builder.add(data.getField(), cst.xyw(7, r, 1));
+            super.defineLayout(builder, cst, 1, r);
+
+            builder.add(title, cst.xyw(3, r, 1));
+            builder.add(data.getField(), cst.xyw(5, r, 1));
 
             return r + 2;
         }
@@ -258,6 +266,7 @@ public class SheetParameters
 
         ScalingParam (Item key)
         {
+            super(sheet);
             this.key = key;
         }
 
@@ -293,7 +302,7 @@ public class SheetParameters
                 }
 
                 scale.setItemValue(key, specific);
-                logger.info(key.getDescription() + " set to {}", specific);
+                logger.info(key.getDescription() + " set to {}", scale.getItemValue(key));
 
                 return true;
             }

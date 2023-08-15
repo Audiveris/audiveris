@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Inter editors
+title: Inter Editors
 parent: References
 nav_order: 0
 ---
 
-## Inter editors
+## Inter Editors
 {: .no_toc }
 
 This reference chapter gathers the description of all Inter editors variants,
@@ -14,7 +14,7 @@ It also presents the two variants (Lines and Global) of Staff editor,
 even though -- strictly speaking -- a Staff is not an Inter.
 
 ---
-Table of contents
+Table of contents (editors are presented in alphabetical order)
 {: .no_toc .text-delta }
 
 1. TOC
@@ -112,23 +112,27 @@ The key alter editor allows to move **horizontally** one KeyAlter member of the 
 If the key signature is a whole manual signature (e.g. it has been dropped from the ShapePalette),
 then the editor can shift the **whole key** horizontally.
 
-### TimeHalf/Time editor
-
-![](../assets/images/time_half_edited.png)
-
-If the time signature was recognized with two separate halves, each of these halves is an inter
-by itself, and can be shifted horizontally only.
-
-![](../assets/images/time_whole_edited.png)
-
-If the time signature is a whole signature then is can be shifted horizontally as a whole.
-
-Note this applies as well to signatures handled globally, such as a manual custom signature
-or even a two-part signature (such as 2/4) if it was recognized globally.
-
 ### Ledger editor
 
 ![](../assets/images/ledger_edited.png)
+
+### Multi-measure rest editor
+
+![](../assets/images/multiple_rest_edited.png)
+
+See details in [Multi-measure rest section](../specific/multi_rest.md#editing)
+
+### Octave shift editor
+
+Single-line editor:
+
+![](../assets/images/octave_shift_edited.png)
+
+Multiple-line editor:
+
+![](../assets/images/octave_shift_multiple_edited.png)
+
+See details in [Octave Shift section](../specific/octave_shift.md#editing)
 
 ### Slur editor
 ![](../assets/images/slur_edited.png)
@@ -146,7 +150,7 @@ This is the most complex editor:
 
 All the various lines handles in staff are available for individual vertical dragging.
 
-See Staff Edition [Lines mode](staff_editor.md#lines-mode).
+See Staff Editing [Lines mode](staff_editor.md#lines-mode).
 
 ### Staff global editor
 
@@ -159,13 +163,27 @@ Handles are located on the staff middle line but they work for all lines as a wh
 * Non-side handles can be dragged only vertically.
 
 
-See Staff Edition [Global mode](staff_editor.md#global-mode).
+See Staff Editing [Global mode](staff_editor.md#global-mode).
 
 ### Stem/Arpeggiato/Connector editor
 
 ![](../assets/images/stem_edited.png)
 
 The editor applies to Stem as well as Arpeggiato and Connector (of barlines or brackets)
+
+### TimeHalf/Time editor
+
+![](../assets/images/time_half_edited.png)
+
+If the time signature was recognized with two separate halves, each of these halves is an inter
+by itself, and can be shifted horizontally only.
+
+![](../assets/images/time_whole_edited.png)
+
+If the time signature is a whole signature then is can be shifted horizontally as a whole.
+
+Note this applies as well to signatures handled globally, such as a manual custom signature
+or even a two-part signature (such as 2/4) if it was recognized globally.
 
 ### Wedge editor
 

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,48 +49,61 @@ public class GeometricMoments
     public static final int size = 12 + (useHuCoefficients ? 7 : 0);
 
     /** Labels for better display */
-    private static final String[] labels = {
-        /**
-         * Unit-normalized stuff
-         */
-        "weight", // 0
-        "width", //  1
-        "height", // 2
+    private static final String[] labels =
+    {
+            /**
+             * Unit-normalized stuff
+             */
+            "weight", // 0
+            "width", //  1
+            "height", // 2
 
-        /**
-         * Mass-normalized central moments
-         */
-        "n20", // 3
-        "n11", // 4
-        "n02", // 5
-        "n30", // 6
-        "n21", // 7
-        "n12", // 8
-        "n03", // 9
+            /**
+             * Mass-normalized central moments
+             */
+            "n20", // 3
+            "n11", // 4
+            "n02", // 5
+            "n30", // 6
+            "n21", // 7
+            "n12", // 8
+            "n03", // 9
 
-        /**
-         * Mass center
-         */
-        "xBar", // 10
-        "yBar", // 11
+            /**
+             * Mass center
+             */
+            "xBar", // 10
+            "yBar", // 11
 
-        /**
-         * Hu coefficients, if any
-         */
-        "h1", // 12
-        "h2", // 13
-        "h3", // 14
-        "h4", // 15
-        "h5", // 16
-        "h6", // 17
-        "h7", // 18
+            /**
+             * Hu coefficients, if any
+             */
+            "h1", // 12
+            "h2", // 13
+            "h3", // 14
+            "h4", // 15
+            "h5", // 16
+            "h6", // 17
+            "h7", // 18
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The various moments, implemented as an array of double's. */
     private final double[] k = new double[size];
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    //------------------//
+    // GeometricMoments //
+    //------------------//
+    /**
+     * No-arg constructor, needed for XML binder.
+     */
+    public GeometricMoments ()
+    {
+    }
+
     /**
      * Creates a new GeometricMoments object.
      *
@@ -101,9 +114,6 @@ public class GeometricMoments
         System.arraycopy(that.k, 0, this.k, 0, size);
     }
 
-    //------------------//
-    // GeometricMoments //
-    //------------------//
     /**
      * Compute the moments for a set of points whose x and y coordinates are provided,
      * all values being normalized by the provided unit value.
@@ -226,39 +236,26 @@ public class GeometricMoments
             //
             k[i++] = ((n20 - n02) * (n20 - n02)) + (4 * n11 * n11);
             //
-            k[i++] = ((n30 - (3 * n12)) * (n30 - (3 * n12)))
-                             + ((n03 - (3 * n21)) * (n03 - (3 * n21)));
+            k[i++] = ((n30 - (3 * n12)) * (n30 - (3 * n12))) + ((n03 - (3 * n21)) * (n03 - (3
+                    * n21)));
             //
             k[i++] = ((n30 + n12) * (n30 + n12)) + ((n03 + n21) * (n03 + n21));
             //
-            k[i++] = ((n30 - (3 * n12)) * (n30 + n12) * (((n30 + n12) * (n30 + n12))
-                                                                 - (3 * (n21 + n03) * (n21 + n03))))
-                             + ((n03 - (3 * n21)) * (n03 + n21)
-                                        * (((n03 + n21) * (n03 + n21))
-                                                   - (3 * (n12 + n30) * (n12 + n30))));
+            k[i++] = ((n30 - (3 * n12)) * (n30 + n12) * (((n30 + n12) * (n30 + n12)) - (3 * (n21
+                    + n03) * (n21 + n03)))) + ((n03 - (3 * n21)) * (n03 + n21) * (((n03 + n21)
+                            * (n03 + n21)) - (3 * (n12 + n30) * (n12 + n30))));
             //
             k[i++] = ((n20 - n02) * (((n30 + n12) * (n30 + n12)) - ((n03 + n21) * (n03 + n21))))
-                             + (4 * n11 * (n30 + n12) * (n03 + n21));
+                    + (4 * n11 * (n30 + n12) * (n03 + n21));
             //
-            k[i++] = (((3 * n21) - n03) * (n30 + n12) * (((n30 + n12) * (n30 + n12))
-                                                                 - (3 * (n21 + n03) * (n21 + n03))))
-                             - (((3 * n12) - n30)
-                                        * (n03 + n21) * (((n03 + n21) * (n03 + n21))
-                                                                 - (3 * (n12 + n30) * (n12 + n30))));
+            k[i++] = (((3 * n21) - n03) * (n30 + n12) * (((n30 + n12) * (n30 + n12)) - (3 * (n21
+                    + n03) * (n21 + n03)))) - (((3 * n12) - n30) * (n03 + n21) * (((n03 + n21)
+                            * (n03 + n21)) - (3 * (n12 + n30) * (n12 + n30))));
         }
     }
 
-    //------------------//
-    // GeometricMoments //
-    //------------------//
-    /**
-     * No-arg constructor, needed for XML binder.
-     */
-    public GeometricMoments ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // getCentroid //
     //-------------//
@@ -380,6 +377,8 @@ public class GeometricMoments
 
         return sb.toString();
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------//
     // getLabel //

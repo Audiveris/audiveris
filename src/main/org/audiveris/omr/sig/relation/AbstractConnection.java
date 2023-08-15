@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,6 +53,7 @@ public abstract class AbstractConnection
     private static final Logger logger = LoggerFactory.getLogger(AbstractConnection.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * Horizontal gap at connection.
      * <p>
@@ -80,6 +81,7 @@ public abstract class AbstractConnection
     protected double dy;
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Report the horizontal gap (positive or negative) in interline fraction
      *
@@ -98,6 +100,68 @@ public abstract class AbstractConnection
     public double getDy ()
     {
         return dy;
+    }
+
+    /**
+     * Method to override to provide specific weights for xInGap and yGap.
+     *
+     * @return weights to use
+     */
+    protected double[] getInWeights ()
+    {
+        return InImpacts.WEIGHTS;
+    }
+
+    /**
+     * Method to override to provide specific weights for xOutGap and yGap.
+     *
+     * @return weights to use
+     */
+    protected double[] getOutWeights ()
+    {
+        return OutImpacts.WEIGHTS;
+    }
+
+    /**
+     * Report maximum acceptable abscissa overlap.
+     * <p>
+     * This method is disabled by default, to be overridden if overlap is possible
+     *
+     * @param profile desired profile level
+     * @return the maximum overlap acceptable
+     */
+    protected Scale.Fraction getXInGapMax (int profile)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Report the maximum acceptable for outer abscissa gap.
+     *
+     * @param profile desired profile level
+     * @return maximum x out gap
+     */
+    protected abstract Scale.Fraction getXOutGapMax (int profile);
+
+    /**
+     * Report the maximum acceptable ordinate gap.
+     *
+     * @param profile desired profile level
+     * @return max y gap
+     */
+    protected abstract Scale.Fraction getYGapMax (int profile);
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        // @formatter:off
+        return new StringBuilder(super.internals()).append("@(")
+                .append(String.format("%.2f", dx)).append(",")
+                .append(String.format("%.2f", dy)).append(")").toString();
+        // @formatter:on
     }
 
     /**
@@ -148,68 +212,28 @@ public abstract class AbstractConnection
         setInOutGaps(Math.abs(dx), dy, profile);
     }
 
-    /**
-     * Report maximum acceptable abscissa overlap.
-     * <p>
-     * This method is disabled by default, to be overridden if overlap is possible
-     *
-     * @param profile desired profile level
-     * @return the maximum overlap acceptable
-     */
-    protected Scale.Fraction getXInGapMax (int profile)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Report the maximum acceptable for outer abscissa gap.
-     *
-     * @param profile desired profile level
-     * @return maximum x out gap
-     */
-    protected abstract Scale.Fraction getXOutGapMax (int profile);
-
-    /**
-     * Report the maximum acceptable ordinate gap.
-     *
-     * @param profile desired profile level
-     * @return max y gap
-     */
-    protected abstract Scale.Fraction getYGapMax (int profile);
-
-    /**
-     * Method to override to provide specific weights for xInGap and yGap.
-     *
-     * @return weights to use
-     */
-    protected double[] getInWeights ()
-    {
-        return InImpacts.WEIGHTS;
-    }
-
-    /**
-     * Method to override to provide specific weights for xOutGap and yGap.
-     *
-     * @return weights to use
-     */
-    protected double[] getOutWeights ()
-    {
-        return OutImpacts.WEIGHTS;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return new StringBuilder(super.internals())
-                .append("@(").append(String.format("%.2f", dx))
-                .append(",").append(String.format("%.2f", dy)).append(")")
-                .toString();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Ratio xInWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for xInGap");
+
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(
+                2,
+                "Relative impact weight for xOutGap");
+
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for yGap");
+    }
+
     //-----------//
     // InImpacts //
     //-----------//
@@ -220,11 +244,12 @@ public abstract class AbstractConnection
             extends SupportImpacts
     {
 
-        private static final String[] NAMES = new String[]{"xInGap", "yGap"};
+        private static final String[] NAMES = new String[]
+        { "xInGap", "yGap" };
 
         // Default weights
-        private static final double[] WEIGHTS = new double[]{constants.xInWeight.getValue(),
-                                                             constants.yWeight.getValue()};
+        private static final double[] WEIGHTS = new double[]
+        { constants.xInWeight.getValue(), constants.yWeight.getValue() };
 
         /**
          * Create an InImpacts object.
@@ -253,11 +278,12 @@ public abstract class AbstractConnection
             extends SupportImpacts
     {
 
-        private static final String[] NAMES = new String[]{"xOutGap", "yGap"};
+        private static final String[] NAMES = new String[]
+        { "xOutGap", "yGap" };
 
         // Defaults weights
-        private static final double[] WEIGHTS = new double[]{constants.xOutWeight.getValue(),
-                                                             constants.yWeight.getValue()};
+        private static final double[] WEIGHTS = new double[]
+        { constants.xOutWeight.getValue(), constants.yWeight.getValue() };
 
         /**
          * Create an OutImpacts object.
@@ -274,25 +300,5 @@ public abstract class AbstractConnection
             setImpact(0, xOutGap);
             setImpact(1, yGap);
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Ratio xInWeight = new Constant.Ratio(
-                1,
-                "Relative impact weight for xInGap");
-
-        private final Constant.Ratio xOutWeight = new Constant.Ratio(
-                2,
-                "Relative impact weight for xOutGap");
-
-        private final Constant.Ratio yWeight = new Constant.Ratio(
-                1,
-                "Relative impact weight for yGap");
     }
 }

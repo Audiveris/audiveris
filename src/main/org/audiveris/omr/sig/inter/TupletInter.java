@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -69,6 +69,7 @@ public class TupletInter
     private static final Logger logger = LoggerFactory.getLogger(TupletInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Factor lazily computed
     private DurationFactor durationFactor;
 
@@ -76,6 +77,14 @@ public class TupletInter
     private Rational baseDuration;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private TupletInter ()
+    {
+    }
+
     /**
      * Creates a new <code>TupletInter</code> object.
      *
@@ -90,22 +99,7 @@ public class TupletInter
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private TupletInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 
     //-------//
     // added //
@@ -296,6 +290,8 @@ public class TupletInter
         return searchObsoletelinks(links, ChordTupletRelation.class);
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------//
     // createValid //
     //-------------//
@@ -318,11 +314,14 @@ public class TupletInter
     {
         final Rectangle luBox = glyph.getBounds();
         final Scale scale = system.getSheet().getScale();
-        luBox.grow(scale.toPixels(constants.maxTupletChordDx),
-                   scale.toPixels(constants.maxTupletChordDy));
+        luBox.grow(
+                scale.toPixels(constants.maxTupletChordDx),
+                scale.toPixels(constants.maxTupletChordDy));
 
-        final List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA,
-                                                            luBox);
+        final List<Inter> nearby = Inters.intersectedInters(
+                systemChords,
+                GeoOrder.BY_ABSCISSA,
+                luBox);
 
         if (nearby.isEmpty()) {
             logger.debug("Discarding isolated tuplet candidate glyph#{}", glyph.getId());
@@ -359,6 +358,7 @@ public class TupletInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

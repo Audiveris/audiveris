@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,7 +24,15 @@ package org.audiveris.omr.sheet.grid;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
-import static org.audiveris.omr.sheet.grid.StaffPeak.Attribute.*;
+import static org.audiveris.omr.sheet.grid.StaffPeak.Attribute.BRACE;
+import static org.audiveris.omr.sheet.grid.StaffPeak.Attribute.BRACE_BOTTOM;
+import static org.audiveris.omr.sheet.grid.StaffPeak.Attribute.BRACE_MIDDLE;
+import static org.audiveris.omr.sheet.grid.StaffPeak.Attribute.BRACE_TOP;
+import static org.audiveris.omr.sheet.grid.StaffPeak.Attribute.BRACKET_BOTTOM;
+import static org.audiveris.omr.sheet.grid.StaffPeak.Attribute.BRACKET_MIDDLE;
+import static org.audiveris.omr.sheet.grid.StaffPeak.Attribute.BRACKET_TOP;
+import static org.audiveris.omr.sheet.grid.StaffPeak.Attribute.STAFF_LEFT_END;
+import static org.audiveris.omr.sheet.grid.StaffPeak.Attribute.STAFF_RIGHT_END;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.Colors;
@@ -49,44 +57,8 @@ import java.util.Objects;
 public class StaffPeak
         implements Comparable<StaffPeak>
 {
-    //~ Enumerations -------------------------------------------------------------------------------
-
-    /**
-     * All attributes flags that can be assigned to a StaffPeak instance.
-     */
-    public static enum Attribute
-    {
-        /** This is a thin peak */
-        THIN,
-        /** This is a thick peak */
-        THICK,
-        /** This peak defines staff left end */
-        STAFF_LEFT_END,
-        /** This peak defines staff right end */
-        STAFF_RIGHT_END,
-        /** This peak is a top portion of a bracket */
-        BRACKET_TOP,
-        /** This peak is a middle portion of a bracket */
-        BRACKET_MIDDLE,
-        /** This peak is a bottom portion of a bracket */
-        BRACKET_BOTTOM,
-        /** This peak is the thick one of a C-Clef */
-        CCLEF_ONE,
-        /** This peak is the thin one of a C-Clef */
-        CCLEF_TWO,
-        /** This peak is part of the tail of a C-Clef */
-        CCLEF_TAIL,
-        /** This peak is a portion of a brace */
-        BRACE,
-        /** This peak is a top portion of a brace */
-        BRACE_TOP,
-        /** This peak is a middle portion of a brace */
-        BRACE_MIDDLE,
-        /** This peak is a bottom portion of a brace */
-        BRACE_BOTTOM;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Containing staff. */
     protected final Staff staff;
 
@@ -127,6 +99,7 @@ public class StaffPeak
     private BarColumn column;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>StaffPeak</code> object.
      *
@@ -153,6 +126,7 @@ public class StaffPeak
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // compareTo //
     //-----------//
@@ -250,19 +224,6 @@ public class StaffPeak
         return column;
     }
 
-    //-----------//
-    // setColumn //
-    //-----------//
-    /**
-     * Assign the containing column.
-     *
-     * @param column the column to set
-     */
-    public void setColumn (BarColumn column)
-    {
-        this.column = column;
-    }
-
     //---------------------//
     // getDeskewedAbscissa //
     //---------------------//
@@ -302,19 +263,6 @@ public class StaffPeak
         return filament;
     }
 
-    //-------------//
-    // setFilament //
-    //-------------//
-    /**
-     * Assign a related filament.
-     *
-     * @param filament the related filament
-     */
-    public void setFilament (Filament filament)
-    {
-        this.filament = filament;
-    }
-
     //------------//
     // getImpacts //
     //------------//
@@ -339,19 +287,6 @@ public class StaffPeak
     public Inter getInter ()
     {
         return inter;
-    }
-
-    //----------//
-    // setInter //
-    //----------//
-    /**
-     * Set the related Inter.
-     *
-     * @param inter the inter to set (instance of BraceInter or AbstractVerticalInter)
-     */
-    public void setInter (Inter inter)
-    {
-        this.inter = inter;
     }
 
     //-------------//
@@ -458,6 +393,25 @@ public class StaffPeak
         hash = (71 * hash) + this.start;
 
         return hash;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    /**
+     * Report a string description of class internals
+     *
+     * @return string description of internals
+     */
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        if (!attrs.isEmpty()) {
+            sb.append(" ").append(attrs);
+        }
+
+        return sb.toString();
     }
 
     //---------//
@@ -605,6 +559,45 @@ public class StaffPeak
         }
     }
 
+    //-----------//
+    // setColumn //
+    //-----------//
+    /**
+     * Assign the containing column.
+     *
+     * @param column the column to set
+     */
+    public void setColumn (BarColumn column)
+    {
+        this.column = column;
+    }
+
+    //-------------//
+    // setFilament //
+    //-------------//
+    /**
+     * Assign a related filament.
+     *
+     * @param filament the related filament
+     */
+    public void setFilament (Filament filament)
+    {
+        this.filament = filament;
+    }
+
+    //----------//
+    // setInter //
+    //----------//
+    /**
+     * Set the related Inter.
+     *
+     * @param inter the inter to set (instance of BraceInter or AbstractVerticalInter)
+     */
+    public void setInter (Inter inter)
+    {
+        this.inter = inter;
+    }
+
     //-------------//
     // setStaffEnd //
     //-------------//
@@ -656,22 +649,40 @@ public class StaffPeak
         attrs.remove(attr);
     }
 
-    //-----------//
-    // internals //
-    //-----------//
+    //~ Inner Classes ------------------------------------------------------------------------------
+
     /**
-     * Report a string description of class internals
-     *
-     * @return string description of internals
+     * All attributes flags that can be assigned to a StaffPeak instance.
      */
-    protected String internals ()
+    public static enum Attribute
     {
-        StringBuilder sb = new StringBuilder();
-
-        if (!attrs.isEmpty()) {
-            sb.append(" ").append(attrs);
-        }
-
-        return sb.toString();
+        /** This is a thin peak */
+        THIN,
+        /** This is a thick peak */
+        THICK,
+        /** This peak defines staff left end */
+        STAFF_LEFT_END,
+        /** This peak defines staff right end */
+        STAFF_RIGHT_END,
+        /** This peak is a top portion of a bracket */
+        BRACKET_TOP,
+        /** This peak is a middle portion of a bracket */
+        BRACKET_MIDDLE,
+        /** This peak is a bottom portion of a bracket */
+        BRACKET_BOTTOM,
+        /** This peak is the thick one of a C-Clef */
+        CCLEF_ONE,
+        /** This peak is the thin one of a C-Clef */
+        CCLEF_TWO,
+        /** This peak is part of the tail of a C-Clef */
+        CCLEF_TAIL,
+        /** This peak is a portion of a brace */
+        BRACE,
+        /** This peak is a top portion of a brace */
+        BRACE_TOP,
+        /** This peak is a middle portion of a brace */
+        BRACE_MIDDLE,
+        /** This peak is a bottom portion of a brace */
+        BRACE_BOTTOM;
     }
 }

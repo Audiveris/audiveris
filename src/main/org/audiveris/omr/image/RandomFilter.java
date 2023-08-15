@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,12 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
-import net.jcip.annotations.ThreadSafe;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
+import net.jcip.annotations.ThreadSafe;
 
 /**
  * Class <code>RandomFilter</code> is a specialization of {@link AdaptiveFilter} which
@@ -48,6 +47,7 @@ public class RandomFilter
     private static final Logger logger = LoggerFactory.getLogger(RandomFilter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an adaptive wrapper on a raw pixel source.
      *
@@ -69,6 +69,7 @@ public class RandomFilter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // MyTile //
     //--------//

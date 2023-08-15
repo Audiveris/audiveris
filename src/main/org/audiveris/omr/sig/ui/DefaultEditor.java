@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,7 +24,6 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.Inter;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
@@ -41,6 +40,7 @@ public class DefaultEditor
     private final Rectangle latestBounds;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>DefaultEditor</code> object.
      *
@@ -53,19 +53,19 @@ public class DefaultEditor
         originalBounds = inter.getBounds();
         latestBounds = inter.getBounds();
 
-        handles.add(
-                selectedHandle = new Handle(inter.getCenter())
+        handles.add(selectedHandle = new Handle(inter.getCenter())
         {
             @Override
-            public boolean move (Point vector)
+            public boolean move (int dx,
+                                 int dy)
             {
                 // Data
-                latestBounds.x += vector.x;
-                latestBounds.y += vector.y;
+                latestBounds.x += dx;
+                latestBounds.y += dy;
 
                 // Handle
                 for (Handle handle : handles) {
-                    PointUtil.add(handle.getHandleCenter(), vector);
+                    PointUtil.add(handle.getPoint(), dx, dy);
                 }
 
                 return true;
@@ -74,6 +74,14 @@ public class DefaultEditor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    @Override
+    protected void doit ()
+    {
+        getInter().setBounds(latestBounds);
+        super.doit(); // No more glyph
+    }
+
     @Override
     public String toString ()
     {
@@ -86,13 +94,6 @@ public class DefaultEditor
         sb.append('}');
 
         return sb.toString();
-    }
-
-    @Override
-    protected void doit ()
-    {
-        getInter().setBounds(latestBounds);
-        super.doit(); // No more glyph
     }
 
     @Override

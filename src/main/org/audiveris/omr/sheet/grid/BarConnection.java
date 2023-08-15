@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -51,6 +51,7 @@ public class BarConnection
     private Line2D median;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BarConnection object.
      *
@@ -78,6 +79,7 @@ public class BarConnection
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // equals //
     //--------//
@@ -124,8 +126,11 @@ public class BarConnection
             double xBot = bottomPeak.getStart() + (bottomPeak.getWidth() / 2d);
             // At this point in time, peak top & bottom are integers (inside extrema)
             // and thus these ordinate values must be adjusted
-            median = new Line2D.Double(xTop, topPeak.getBottom() + halfLine + 0.5,
-                                       xBot, bottomPeak.getTop() - halfLine + 0.5);
+            median = new Line2D.Double(
+                    xTop,
+                    topPeak.getBottom() + halfLine + 0.5,
+                    xBot,
+                    bottomPeak.getTop() - halfLine + 0.5);
         }
 
         return median;
@@ -154,6 +159,7 @@ public class BarConnection
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Impacts //
     //---------//
@@ -164,9 +170,11 @@ public class BarConnection
             extends GradeImpacts
     {
 
-        private static final String[] NAMES = new String[]{"align", "dWidth", "gap", "white"};
+        private static final String[] NAMES = new String[]
+        { "align", "dWidth", "gap", "white" };
 
-        private static final double[] WEIGHTS = new double[]{2, 1, 2, 2};
+        private static final double[] WEIGHTS = new double[]
+        { 2, 1, 2, 2 };
 
         /**
          * Create Impacts.

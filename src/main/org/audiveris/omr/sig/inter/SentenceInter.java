@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -29,11 +29,14 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Entities;
+import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -80,7 +84,9 @@ public class SentenceInter
     private static final Logger logger = LoggerFactory.getLogger(SentenceInter.class);
 
     /** For ordering sentences by their de-skewed ordinate. */
-    public static final Comparator<SentenceInter> byOrdinate = (s1, s2) -> {
+    public static final Comparator<SentenceInter> byOrdinate = (s1,
+                                                                s2) ->
+    {
         final Skew skew = s1.getSig().getSystem().getSkew();
 
         return Double.compare(
@@ -89,10 +95,10 @@ public class SentenceInter
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /** Average font for the sentence. */
     @XmlAttribute(name = "font")
     @XmlJavaTypeAdapter(FontInfo.JaxbAdapter.class)
@@ -103,6 +109,15 @@ public class SentenceInter
     protected TextRole role;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    protected SentenceInter ()
+    {
+        super(null, null, null, (Double) null);
+    }
+
     /**
      * Creates a new <code>SentenceInter</code> object.
      *
@@ -135,15 +150,8 @@ public class SentenceInter
         this.role = role;
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    protected SentenceInter ()
-    {
-        super(null, null, null, (Double) null);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -327,17 +335,13 @@ public class SentenceInter
         return role;
     }
 
-    //---------//
-    // setRole //
-    //---------//
-    /**
-     * Assign a new role.
-     *
-     * @param role the new role
-     */
-    public void setRole (TextRole role)
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
     {
-        this.role = role;
+        return "SENTENCE";
     }
 
     //----------//
@@ -370,6 +374,21 @@ public class SentenceInter
         }
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        sb.append(' ').append((meanFont != null) ? meanFont.getMnemo() : "NO_FONT");
+
+        sb.append(' ').append((role != null) ? role : "NO_ROLE");
+
+        return sb.toString();
+    }
+
     //-----------------//
     // invalidateCache //
     //-----------------//
@@ -391,79 +410,6 @@ public class SentenceInter
         }
 
         // TODO: should we update sentence grade?
-    }
-
-    //--------------//
-    // removeMember //
-    //--------------//
-    @Override
-    public void removeMember (Inter member)
-    {
-        if (!(member instanceof WordInter)) {
-            throw new IllegalArgumentException("Only WordInter can be removed from Sentence");
-        }
-
-        EnsembleHelper.removeMember(this, member);
-    }
-
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
-    {
-        return "SENTENCE";
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        sb.append(' ').append((meanFont != null) ? meanFont.getMnemo() : "NO_FONT");
-
-        sb.append(' ').append((role != null) ? role : "NO_ROLE");
-
-        return sb.toString();
-    }
-
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Create a <code>SentenceInter</code> from a TextLine.
-     *
-     * @param line the OCR'ed text line
-     * @return the sentence inter
-     */
-    public static SentenceInter create (TextLine line)
-    {
-        SentenceInter sentence = new SentenceInter(
-                line.getBounds(),
-                line.getGrade(),
-                line.getMeanFont(),
-                line.getRole());
-
-        return sentence;
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        if (role != TextRole.EndingNumber && role != TextRole.EndingText) {
-            return super.searchLinks(system);
-        }
-
-        // Look for a suitable EndingInter
-        final Link link = lookupEndingLink(system);
-
-        return (link != null) ? Collections.singleton(link) : Collections.emptySet();
     }
 
     //------------------//
@@ -488,5 +434,112 @@ public class SentenceInter
         }
 
         return null;
+    }
+
+    //--------//
+    // preAdd //
+    //--------//
+    @Override
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
+    {
+        if (role == TextRole.PartName) {
+            // Set pointer from part to this partName
+            staff.getPart().setName(this);
+        }
+
+        // Standard addition task for this sentence
+        return super.preAdd(cancel, toPublish);
+    }
+
+    //-----------//
+    // preRemove //
+    //-----------//
+    @Override
+    public Set<? extends Inter> preRemove (WrappedBoolean cancel)
+    {
+        if (role == TextRole.PartName) {
+            // Remove pointer from part to this partName
+            staff.getPart().removeName(this);
+        }
+
+        return super.preRemove(cancel);
+    }
+
+    //--------------//
+    // removeMember //
+    //--------------//
+    @Override
+    public void removeMember (Inter member)
+    {
+        if (!(member instanceof WordInter)) {
+            throw new IllegalArgumentException("Only WordInter can be removed from Sentence");
+        }
+
+        EnsembleHelper.removeMember(this, member);
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        if (role != TextRole.EndingNumber && role != TextRole.EndingText) {
+            return super.searchLinks(system);
+        }
+
+        // Look for a suitable EndingInter
+        final Link link = lookupEndingLink(system);
+
+        return (link != null) ? Collections.singleton(link) : Collections.emptySet();
+    }
+
+    //-------------//
+    // setMeanFont //
+    //-------------//
+    /**
+     * Assign the sentence mean font.
+     *
+     * @param meanFont the new mean Font
+     */
+    public void setMeanFont (FontInfo meanFont)
+    {
+        this.meanFont = meanFont;
+    }
+
+    //---------//
+    // setRole //
+    //---------//
+    /**
+     * Assign a new role.
+     *
+     * @param role the new role
+     */
+    public void setRole (TextRole role)
+    {
+        this.role = role;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a <code>SentenceInter</code> from a TextLine.
+     *
+     * @param line the OCR'ed text line
+     * @return the sentence inter
+     */
+    public static SentenceInter create (TextLine line)
+    {
+        SentenceInter sentence = new SentenceInter(
+                line.getBounds(),
+                line.getGrade(),
+                line.getMeanFont(),
+                line.getRole());
+
+        return sentence;
     }
 }

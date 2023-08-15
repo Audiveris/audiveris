@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,6 +44,7 @@ public class StructureElement
     static final String EOL = System.getProperty("line.separator");
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     public int type = FREE;
 
     public boolean offsetmodified = false;
@@ -63,35 +64,6 @@ public class StructureElement
     private int shift = 1;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new StructureElement object.
-     *
-     * @param amask DOCUMENT ME!
-     * @param width DOCUMENT ME!
-     */
-    public StructureElement (int[] amask,
-                             int width)
-    {
-        // this.width=(int) Math.sqrt(amask.length);
-        this.width = width;
-        this.height = amask.length / width;
-        this.shift = 0;
-        setMask(amask);
-        vect = calcVect(mask, width);
-    }
-
-    /**
-     * Creates a new StructureElement object.
-     *
-     * @param tokenString DOCUMENT ME!
-     */
-    public StructureElement (String tokenString)
-    {
-        this.shift = 0;
-        this.type = FREE;
-        mask = inputMask(tokenString);
-        vect = calcVect(mask, width);
-    }
 
     /**
      * Creates a new instance of a StructureElement.
@@ -121,25 +93,29 @@ public class StructureElement
         this.type = type;
 
         switch (type) {
-        case CIRCLE: {
+        case CIRCLE:
+        {
             mask = createCircularMask(shift, radius, offset);
 
             break;
         }
 
-        case DIAMOND: {
+        case DIAMOND:
+        {
             mask = createDiamondMask(shift, radius, offset);
 
             break;
         }
 
-        case SQARE: {
+        case SQARE:
+        {
             mask = createSquareMask(shift, 2 * radius, offset);
 
             break;
         }
 
-        case HLINE: {
+        case HLINE:
+        {
             //this.height=1;
             this.shift = 1;
             mask = createLineMask(shift, 2 * radius, 0, offset);
@@ -147,7 +123,8 @@ public class StructureElement
             break;
         }
 
-        case VLINE: {
+        case VLINE:
+        {
             //this.height=width;
             // this.width=1;
             this.shift = 1;
@@ -184,301 +161,131 @@ public class StructureElement
         vect = calcVect(mask, width);
     }
 
+    /**
+     * Creates a new StructureElement object.
+     *
+     * @param amask DOCUMENT ME!
+     * @param width DOCUMENT ME!
+     */
+    public StructureElement (int[] amask,
+                             int width)
+    {
+        // this.width=(int) Math.sqrt(amask.length);
+        this.width = width;
+        this.height = amask.length / width;
+        this.shift = 0;
+        setMask(amask);
+        vect = calcVect(mask, width);
+    }
+
+    /**
+     * Creates a new StructureElement object.
+     *
+     * @param tokenString DOCUMENT ME!
+     */
+    public StructureElement (String tokenString)
+    {
+        this.shift = 0;
+        this.type = FREE;
+        mask = inputMask(tokenString);
+        vect = calcVect(mask, width);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
-    public int[] Delta (int[] offset)
+
+    private int[][] calcVect (int[] perim,
+                              int w)
     {
-        int[] astrel = this.T(offset);
+        int N = 0;
+        int sz = perim.length;
 
-        //int index=0;
-        // for (int i=0; i<this.width-1;i++){
-        // for (int j=0;j<this.width;j++){
-        for (int index = 0; index < mask.length; index++) {
-            //        for (int i=0;i<height-1;i++){
-            //            for  (int j=0; j<width;j++){
-            // int i=c/width;
-            //int j=c%width;
-            //  index=j+this.width*i;
-            astrel[index] = mask[index] - astrel[index];
-
-            //}
-        }
-
-        return astrel;
-    }
-
-    public int[] H (int[] strel,
-                    int sign)
-    {
-        // int[] strel=new int[width*width];
-        for (int i = 0; i < strel.length; i++) {
-            if ((strel[i] * sign) >= 0) {
-                strel[i] = 0;
-            } else {
-                strel[i] = 255;
+        for (int i = 0; i < perim.length; i++) {
+            if (perim[i] > 0) {
+                N++;
             }
         }
 
-        return strel;
-    }
+        //System.out.println("nnz: "+N);
+        int h = sz / w;
+        int p = (int) Math.floor(h / 2.0);
+        int q = (int) Math.floor(w / 2.0);
 
-    public int[] T (int[] h)
-    {
-        int m;
-        int n;
-        int index;
-        int ind;
-
-        // int[] strel=new int[width*width];
-        int[] strel = new int[mask.length];
-
-        for (int i = 0; i < (height - 1); i++) {
-            for (int j = 0; j < width; j++) {
-                m = i + h[0]; // y - direction
-                n = j + h[1]; // x - direction
-
-                if (m < 0) {
-                    m = 0;
-                }
-
-                if (n < 0) {
-                    n = 0;
-                }
-
-                if (n > width) {
-                    n = width;
-                }
-
-                if (m > (width - 1)) {
-                    m = width - 1;
-                }
-
-                index = n + (width * m);
-                ind = j + (width * i);
-
-                try {
-                    // if (index>width*width) index=width*width;
-                    strel[ind] = mask[index];
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                    logger.warn("mask: " + mask.length);
-                    logger.warn("index2: " + index);
-                    logger.warn("index1: " + ind);
-                }
-            }
-        }
-
-        return strel;
-    }
-
-    public StructureElement Tr (int[] h)
-    {
-        return new StructureElement(T(h), this.width);
-    }
-
-    public int[][] VectTransform (int opt)
-    {
-        if (opt == PERIM) {
-            return calcVect(getBorder(), this.width);
-        } else {
-            return calcVect(this.mask, this.width);
-        }
-    }
-
-    public int getArea ()
-    {
-        int maskSize = 0;
-
-        for (int i = 0; i < mask.length; i++) {
-            if (mask[i] != 0) {
-                maskSize++;
-            }
-        }
-
-        return maskSize;
-    }
-
-    public int[] getBorder ()
-    {
-        int sz = this.mask.length;
-        int[] perim = new int[sz];
-        int k;
-        int l;
-        int m;
-        int n = -1;
+        // System.out.println("p: "+p);
+        //  System.out.println("q: "+q);
+        int[][] pg = new int[N][4];
         int i;
-        int j = 0;
+        int j;
+        int counter = 0;
 
+        // System.out.println("size:"+sz);
         for (int c = 0; c < sz; c++) {
-            //        for (int i=0;i<height-1;i++){
-            //            for  (int j=0; j<width;j++){
-            i = c / width;
-            j = c % width;
+            //        for (int  i=0;i<h-1;i++) {
+            //            for (int j=0;j<w;j++){
+            i = c / w;
+            j = c % w;
+
+            if (perim[c] > 0) {
+                pg[counter][0] = i - p;
+                pg[counter][1] = j - q;
+                pg[counter][2] = perim[c];
+
+                int[] a =
+                { pg[counter][1], pg[counter][0] };
+                double d = getDistance(a, this.type);
+                //System.out.println("i: "+pg[counter][0]+ " j: "+pg[counter][1] +"d: " +d);
+                pg[counter][3] = (int) Math.round(d);
+                // System.out.println("i: "+pg[counter][0]+ " j: "+pg[counter][1]+"index: "+counter);
+                counter++;
+
+                //int pp=i-p;
+                // int qq=j-q ;
+            }
 
             //System.out.println("i: "+i+ " j: "+j+"index: "+c);
-            if ((j + 1) > (width - 1)) {
-                k = 0;
-            } else {
-                k = mask[(i * width) + j + 1];
-            }
-
-            if ((i + 1) > (height - 1)) {
-                l = 0;
-            } else {
-                l = mask[((i + 1) * width) + j];
-            }
-
-            if (j == 0) {
-                m = 0;
-            } else {
-                m = mask[((i * width) + j) - 1];
-            }
-
-            if (i == 0) {
-                n = 0;
-            } else {
-                n = mask[((i - 1) * width) + j];
-            }
-
-            //  if (i*width+j<=mask.length)
-            //  if (mask[i*width+j]>k || mask[i*width+j]>m || mask[i*width+j]>l || mask[i*width+j]>n)
-            if ((mask[c] > k) || (mask[c] > m) || (mask[c] > l) || (mask[c] > n)) {
-                // perim[i*width+j]= mask[i*width+j];
-                perim[c] = mask[c];
-
-                //c++;
-            }
-
-            //System.out.println(perim[c]);
+            // }
         }
 
-        return perim;
+        return pg;
     }
 
-    public double getDistance (int[] X,
-                               int metrics)
+    private int[] createCircularMask (int shift,
+                                      double radius,
+                                      int[] offset)
     {
-        double d = 0d;
-        double g = 0;
+        //  if (radius<=2.0)  {
+        // this.width= ((int)(radius+shift+0.5))*2 ;
+        //offset= SWGRAD;
+        //}
+        //else
+        this.width = (((int) (radius + shift + 0.5)) * 2) + 1;
+        // this.width= ((int)(radius+shift))*2 + 1;
+        this.height = width;
 
-        //System.out.println("type: " +metrics);
-        switch (metrics) {
-        case CIRCLE: {
-            g = (X[0] * X[0]) + (X[1] * X[1]);
-            d = Math.sqrt(g + 1) + cor3;
+        // IJ.log("w="+width);
+        int[] mask = new int[this.width * this.width];
+        double r = (width / 2.0) - 0.5;
 
-            // if (g==2) d=2.0d;
-            break;
+        //if ((radius==1.5) && (r==3)) r=3.5;
+        double r2 = (radius * radius) + 1;
+
+        // IJ.log("radius "+radius+" r "+r +" r2 "+r2);
+        int index = 0;
+
+        for (double x = -r; x <= r; x++) {
+            for (double y = -r; y <= r; y++) {
+                //int index= (int)(r+x+width*(r+y));
+                //   if (x*x+y*y<r2){
+                if ((((x - offset[0]) * (x - offset[0])) + ((y - offset[1]) * (y
+                        - offset[1]))) < r2) {
+                    mask[index] = 255;
+                }
+
+                index++;
+            }
         }
 
-        case DIAMOND: {
-            d = (Math.abs(X[0]) + Math.abs(X[1]));
-
-            break;
-        }
-
-        case SQARE: {
-            d = Math.max(Math.abs(X[0]), Math.abs(X[1]));
-
-            break;
-        }
-
-        default:
-            d = Math.sqrt((X[0] * X[0]) + (X[1] * X[1]));
-        }
-
-        return d;
-    }
-
-    public int getHeight ()
-    {
-        return height;
-    }
-
-    public int[] getMask ()
-    {
+        // return mask;
         return mask;
-    }
-
-    public void setMask (int[] amask)
-    {
-        this.mask = amask;
-    }
-
-    public int getMaskAt (int index)
-    {
-        if (index < mask.length) {
-            return mask[index];
-        } else {
-            return -1;
-        }
-    }
-
-    public int getMaskAt (int x,
-                          int y)
-    {
-        if (x <= 0) {
-            x = 0;
-        }
-
-        if (x > height) {
-            x = height;
-        }
-
-        if (y <= 0) {
-            y = 0;
-        }
-
-        if (y >= width) {
-            y = width - 1;
-        }
-
-        int index = x + (this.width * y);
-
-        //      if (index<=this.width*this.width) {
-        return mask[index];
-
-        //     }
-        //  else return -1;
-    }
-
-    public int[] getOffset ()
-    {
-        return this.offset;
-    }
-
-    public void setOffset (int[] offset)
-    {
-        this.offset = offset;
-        offsetmodified = true;
-    }
-
-    public double getR ()
-    {
-        return radius;
-    }
-
-    public int getShift ()
-    {
-        return shift;
-    }
-
-    public int getType ()
-    {
-        return type;
-    }
-
-    public void setType (int type)
-    {
-        this.type = type;
-    }
-
-    public int[][] getVect ()
-    {
-        return vect; //calcVect(this.mask , this.width);
-    }
-
-    public int getWidth ()
-    {
-        return width;
     }
 
     private int[] createDiamondMask (int shift,
@@ -599,6 +406,245 @@ public class StructureElement
         return mask;
     }
 
+    public int[] Delta (int[] offset)
+    {
+        int[] astrel = this.T(offset);
+
+        //int index=0;
+        // for (int i=0; i<this.width-1;i++){
+        // for (int j=0;j<this.width;j++){
+        for (int index = 0; index < mask.length; index++) {
+            //        for (int i=0;i<height-1;i++){
+            //            for  (int j=0; j<width;j++){
+            // int i=c/width;
+            //int j=c%width;
+            //  index=j+this.width*i;
+            astrel[index] = mask[index] - astrel[index];
+
+            //}
+        }
+
+        return astrel;
+    }
+
+    public int getArea ()
+    {
+        int maskSize = 0;
+
+        for (int i = 0; i < mask.length; i++) {
+            if (mask[i] != 0) {
+                maskSize++;
+            }
+        }
+
+        return maskSize;
+    }
+
+    public int[] getBorder ()
+    {
+        int sz = this.mask.length;
+        int[] perim = new int[sz];
+        int k;
+        int l;
+        int m;
+        int n = -1;
+        int i;
+        int j = 0;
+
+        for (int c = 0; c < sz; c++) {
+            //        for (int i=0;i<height-1;i++){
+            //            for  (int j=0; j<width;j++){
+            i = c / width;
+            j = c % width;
+
+            //System.out.println("i: "+i+ " j: "+j+"index: "+c);
+            if ((j + 1) > (width - 1)) {
+                k = 0;
+            } else {
+                k = mask[(i * width) + j + 1];
+            }
+
+            if ((i + 1) > (height - 1)) {
+                l = 0;
+            } else {
+                l = mask[((i + 1) * width) + j];
+            }
+
+            if (j == 0) {
+                m = 0;
+            } else {
+                m = mask[((i * width) + j) - 1];
+            }
+
+            if (i == 0) {
+                n = 0;
+            } else {
+                n = mask[((i - 1) * width) + j];
+            }
+
+            //  if (i*width+j<=mask.length)
+            //  if (mask[i*width+j]>k || mask[i*width+j]>m || mask[i*width+j]>l || mask[i*width+j]>n)
+            if ((mask[c] > k) || (mask[c] > m) || (mask[c] > l) || (mask[c] > n)) {
+                // perim[i*width+j]= mask[i*width+j];
+                perim[c] = mask[c];
+
+                //c++;
+            }
+
+            //System.out.println(perim[c]);
+        }
+
+        return perim;
+    }
+
+    public double getDistance (int[] X,
+                               int metrics)
+    {
+        double d = 0d;
+        double g = 0;
+
+        //System.out.println("type: " +metrics);
+        switch (metrics) {
+        case CIRCLE:
+        {
+            g = (X[0] * X[0]) + (X[1] * X[1]);
+            d = Math.sqrt(g + 1) + cor3;
+
+            // if (g==2) d=2.0d;
+            break;
+        }
+
+        case DIAMOND:
+        {
+            d = (Math.abs(X[0]) + Math.abs(X[1]));
+
+            break;
+        }
+
+        case SQARE:
+        {
+            d = Math.max(Math.abs(X[0]), Math.abs(X[1]));
+
+            break;
+        }
+
+        default:
+            d = Math.sqrt((X[0] * X[0]) + (X[1] * X[1]));
+        }
+
+        return d;
+    }
+
+    public int getHeight ()
+    {
+        return height;
+    }
+
+    public int[] getMask ()
+    {
+        return mask;
+    }
+
+    public int getMaskAt (int index)
+    {
+        if (index < mask.length) {
+            return mask[index];
+        } else {
+            return -1;
+        }
+    }
+
+    public int getMaskAt (int x,
+                          int y)
+    {
+        if (x <= 0) {
+            x = 0;
+        }
+
+        if (x > height) {
+            x = height;
+        }
+
+        if (y <= 0) {
+            y = 0;
+        }
+
+        if (y >= width) {
+            y = width - 1;
+        }
+
+        int index = x + (this.width * y);
+
+        //      if (index<=this.width*this.width) {
+        return mask[index];
+
+        //     }
+        //  else return -1;
+    }
+
+    double getNum (StringTokenizer st)
+    {
+        Double d;
+        String token = st.nextToken();
+
+        try {
+            d = Double.valueOf(token);
+        } catch (NumberFormatException e) {
+            d = null;
+        }
+
+        if (d != null) {
+            return d;
+        } else {
+            return 0.0;
+        }
+    }
+
+    public int[] getOffset ()
+    {
+        return this.offset;
+    }
+
+    public double getR ()
+    {
+        return radius;
+    }
+
+    public int getShift ()
+    {
+        return shift;
+    }
+
+    public int getType ()
+    {
+        return type;
+    }
+
+    public int[][] getVect ()
+    {
+        return vect; //calcVect(this.mask , this.width);
+    }
+
+    public int getWidth ()
+    {
+        return width;
+    }
+
+    public int[] H (int[] strel,
+                    int sign)
+    {
+        // int[] strel=new int[width*width];
+        for (int i = 0; i < strel.length; i++) {
+            if ((strel[i] * sign) >= 0) {
+                strel[i] = 0;
+            } else {
+                strel[i] = 255;
+            }
+        }
+
+        return strel;
+    }
+
     private int[] inputMask (String tokenString)
     {
         StringTokenizer st = new StringTokenizer(tokenString);
@@ -623,116 +669,85 @@ public class StructureElement
         return k;
     }
 
-    private int[][] calcVect (int[] perim,
-                              int w)
+    public void setMask (int[] amask)
     {
-        int N = 0;
-        int sz = perim.length;
-
-        for (int i = 0; i < perim.length; i++) {
-            if (perim[i] > 0) {
-                N++;
-            }
-        }
-
-        //System.out.println("nnz: "+N);
-        int h = sz / w;
-        int p = (int) Math.floor(h / 2.0);
-        int q = (int) Math.floor(w / 2.0);
-
-        // System.out.println("p: "+p);
-        //  System.out.println("q: "+q);
-        int[][] pg = new int[N][4];
-        int i;
-        int j;
-        int counter = 0;
-
-        // System.out.println("size:"+sz);
-        for (int c = 0; c < sz; c++) {
-            //        for (int  i=0;i<h-1;i++) {
-            //            for (int j=0;j<w;j++){
-            i = c / w;
-            j = c % w;
-
-            if (perim[c] > 0) {
-                pg[counter][0] = i - p;
-                pg[counter][1] = j - q;
-                pg[counter][2] = perim[c];
-
-                int[] a = {pg[counter][1], pg[counter][0]};
-                double d = getDistance(a, this.type);
-                //System.out.println("i: "+pg[counter][0]+ " j: "+pg[counter][1] +"d: " +d);
-                pg[counter][3] = (int) Math.round(d);
-                // System.out.println("i: "+pg[counter][0]+ " j: "+pg[counter][1]+"index: "+counter);
-                counter++;
-
-                //int pp=i-p;
-                // int qq=j-q ;
-            }
-
-            //System.out.println("i: "+i+ " j: "+j+"index: "+c);
-            // }
-        }
-
-        return pg;
+        this.mask = amask;
     }
 
-    private int[] createCircularMask (int shift,
-                                      double radius,
-                                      int[] offset)
+    public void setOffset (int[] offset)
     {
-        //  if (radius<=2.0)  {
-        // this.width= ((int)(radius+shift+0.5))*2 ;
-        //offset= SWGRAD;
-        //}
-        //else
-        this.width = (((int) (radius + shift + 0.5)) * 2) + 1;
-        // this.width= ((int)(radius+shift))*2 + 1;
-        this.height = width;
+        this.offset = offset;
+        offsetmodified = true;
+    }
 
-        // IJ.log("w="+width);
-        int[] mask = new int[this.width * this.width];
-        double r = (width / 2.0) - 0.5;
+    public void setType (int type)
+    {
+        this.type = type;
+    }
 
-        //if ((radius==1.5) && (r==3)) r=3.5;
-        double r2 = (radius * radius) + 1;
+    public int[] T (int[] h)
+    {
+        int m;
+        int n;
+        int index;
+        int ind;
 
-        // IJ.log("radius "+radius+" r "+r +" r2 "+r2);
-        int index = 0;
+        // int[] strel=new int[width*width];
+        int[] strel = new int[mask.length];
 
-        for (double x = -r; x <= r; x++) {
-            for (double y = -r; y <= r; y++) {
-                //int index= (int)(r+x+width*(r+y));
-                //   if (x*x+y*y<r2){
-                if ((((x - offset[0]) * (x - offset[0])) + ((y - offset[1]) * (y - offset[1]))) < r2) {
-                    mask[index] = 255;
+        for (int i = 0; i < (height - 1); i++) {
+            for (int j = 0; j < width; j++) {
+                m = i + h[0]; // y - direction
+                n = j + h[1]; // x - direction
+
+                if (m < 0) {
+                    m = 0;
                 }
 
-                index++;
+                if (n < 0) {
+                    n = 0;
+                }
+
+                if (n > width) {
+                    n = width;
+                }
+
+                if (m > (width - 1)) {
+                    m = width - 1;
+                }
+
+                index = n + (width * m);
+                ind = j + (width * i);
+
+                try {
+                    // if (index>width*width) index=width*width;
+                    strel[ind] = mask[index];
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                    logger.warn("mask: " + mask.length);
+                    logger.warn("index2: " + index);
+                    logger.warn("index1: " + ind);
+                }
             }
         }
 
-        // return mask;
-        return mask;
+        return strel;
     }
 
-    double getNum (StringTokenizer st)
+    public StructureElement Tr (int[] h)
     {
-        Double d;
-        String token = st.nextToken();
+        return new StructureElement(T(h), this.width);
+    }
 
-        try {
-            d = Double.valueOf(token);
-        } catch (NumberFormatException e) {
-            d = null;
-        }
-
-        if (d != null) {
-            return d;
+    public int[][] VectTransform (int opt)
+    {
+        if (opt == PERIM) {
+            return calcVect(getBorder(), this.width);
         } else {
-            return 0.0;
+            return calcVect(this.mask, this.width);
         }
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     private static boolean validate (float var,
                                      int k)

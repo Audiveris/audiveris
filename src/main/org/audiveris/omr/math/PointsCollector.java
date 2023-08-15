@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,6 +47,7 @@ public class PointsCollector
     private int[] yy;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new PointsCollector object, with absolute roi area taken as capacity.
      *
@@ -72,6 +73,7 @@ public class PointsCollector
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------//
     // ensureCapacity //
     //----------------//
@@ -94,6 +96,32 @@ public class PointsCollector
             xx = Arrays.copyOf(xx, newCapacity);
             yy = Arrays.copyOf(yy, newCapacity);
         }
+    }
+
+    //--------//
+    // getRoi //
+    //--------//
+    /**
+     * Report the absolute region of interest for this collector
+     *
+     * @return the related ROI if any, null otherwise
+     */
+    public Rectangle getRoi ()
+    {
+        return roi;
+    }
+
+    //---------//
+    // getSize //
+    //---------//
+    /**
+     * Report the current number of points collected.
+     *
+     * @return the current number of points
+     */
+    public final int getSize ()
+    {
+        return size;
     }
 
     //------------//
@@ -138,32 +166,6 @@ public class PointsCollector
         xx[size] = x;
         yy[size] = y;
         size++;
-    }
-
-    //--------//
-    // getRoi //
-    //--------//
-    /**
-     * Report the absolute region of interest for this collector
-     *
-     * @return the related ROI if any, null otherwise
-     */
-    public Rectangle getRoi ()
-    {
-        return roi;
-    }
-
-    //----------//
-    // getSize //
-    //----------//
-    /**
-     * Report the current number of points collected.
-     *
-     * @return the current number of points
-     */
-    public final int getSize ()
-    {
-        return size;
     }
 
     //----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,7 +24,6 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.Inter;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
@@ -45,6 +44,7 @@ public class HorizontalEditor
     private final Rectangle latestBounds;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>HorizontalEditor</code> object.
      *
@@ -58,14 +58,12 @@ public class HorizontalEditor
         latestBounds = inter.getBounds();
 
         // Middle handle: move horizontally only
-        handles.add(
-                selectedHandle = new Handle(inter.getCenter())
+        handles.add(selectedHandle = new Handle(inter.getCenter())
         {
             @Override
-            public boolean move (Point vector)
+            public boolean move (int dx,
+                                 int dy)
             {
-                final double dx = vector.getX();
-
                 if (dx == 0) {
                     return false;
                 }
@@ -75,7 +73,7 @@ public class HorizontalEditor
 
                 // Handle
                 for (Handle handle : handles) {
-                    PointUtil.add(handle.getHandleCenter(), dx, 0);
+                    PointUtil.add(handle.getPoint(), dx, 0);
                 }
 
                 return true;
@@ -84,6 +82,7 @@ public class HorizontalEditor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     protected void doit ()
     {

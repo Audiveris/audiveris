@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,10 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.lag;
-
-import ij.process.ByteProcessor;
-
-import net.jcip.annotations.NotThreadSafe;
 
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.Run;
@@ -40,6 +36,9 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import ij.process.ByteProcessor;
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Class <code>SectionFactory</code> builds a collection of sections out of provided runs.
@@ -71,6 +70,7 @@ public class SectionFactory
     private static final Logger logger = LoggerFactory.getLogger(SectionFactory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The lag to populate, if any. */
     private final Lag lag;
 
@@ -84,6 +84,7 @@ public class SectionFactory
     private final Set<DynamicSection> processedSections = new LinkedHashSet<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an instance of SectionFactory with a target lag.
      *
@@ -115,6 +116,7 @@ public class SectionFactory
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------//
     // createSections //
     //----------------//
@@ -223,6 +225,7 @@ public class SectionFactory
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------//
     // Build //
     //-------//

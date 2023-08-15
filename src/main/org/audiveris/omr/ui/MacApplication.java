@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,6 +24,7 @@ package org.audiveris.omr.ui;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.sheet.Book;
+import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.util.UriUtil;
 
 import org.slf4j.Logger;
@@ -39,7 +40,6 @@ import java.net.URI;
 import java.nio.file.Paths;
 
 import javax.swing.ImageIcon;
-import org.audiveris.omr.sheet.ui.StubsController;
 
 /**
  * Class <code>MacApplication</code> provides dynamic hooks into the
@@ -67,6 +67,7 @@ public class MacApplication
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Invocation handler for
      * <code>
@@ -80,7 +81,7 @@ public class MacApplication
     public Object invoke (Object proxy,
                           Method method,
                           Object[] args)
-            throws Throwable
+        throws Throwable
     {
         String name = method.getName();
         String filename = null;
@@ -129,71 +130,7 @@ public class MacApplication
         return null;
     }
 
-    /**
-     * Registers actions for preferences, about, and quit.
-     *
-     * @return true if successful, false if platform is not
-     *         Mac OS X or if an error occurs
-     */
-    @SuppressWarnings("unchecked")
-    public static boolean setupMacMenus ()
-    {
-        if (!WellKnowns.MAC_OS_X) {
-            return false;
-        }
-
-        try {
-            //The class used to register hooks
-            Class<?> appClass = Class.forName("com.apple.eawt.Application");
-            Object app = appClass.newInstance();
-
-            //Enable the about menu item and the preferences menu item
-            for (String methodName : new String[]{
-                "setEnabledAboutMenu",
-                "setEnabledPreferencesMenu"}) {
-                Method method = appClass.getMethod(methodName, boolean.class);
-                method.invoke(app, true);
-            }
-
-            //The interface used to register hooks
-            Class<?> listenerClass = Class.forName("com.apple.eawt.ApplicationListener");
-
-            //Using the current class loader,
-            //generate, load, and instantiate a class implementing listenerClass,
-            //providing an instance of this class as a callback for any method invocation
-            Object listenerProxy = Proxy.newProxyInstance(
-                    MacApplication.class.getClassLoader(),
-                    new Class<?>[]{listenerClass},
-                    new MacApplication());
-
-            //Add the generated class as a hook
-            Method addListener = appClass.getMethod("addApplicationListener", listenerClass);
-            addListener.invoke(app, listenerProxy);
-
-            // display audiveris icon in the dock instead of default java one
-            Method getApplication = appClass.getMethod("getApplication");
-            Object application = getApplication.invoke(app);
-
-            URI uri = UriUtil.toURI(WellKnowns.RES_URI, "icon-256.png");
-            Image icon = new ImageIcon(uri.toURL()).getImage();
-
-            Method setDockImage = application.getClass().getMethod("setDockIconImage", Image.class);
-            setDockImage.invoke(application, icon);
-
-            return true;
-        } catch (ClassNotFoundException |
-                 IllegalAccessException |
-                 IllegalArgumentException |
-                 InstantiationException |
-                 NoSuchMethodException |
-                 SecurityException |
-                 InvocationTargetException |
-                 MalformedURLException ex) {
-            logger.warn("Unable to setup Mac OS X GUI integration", ex);
-
-            return false;
-        }
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     private static Object getEvent (Object[] args)
     {
@@ -224,11 +161,8 @@ public class MacApplication
             } else {
                 return (String) rval;
             }
-        } catch (IllegalAccessException |
-                 IllegalArgumentException |
-                 NoSuchMethodException |
-                 SecurityException |
-                 InvocationTargetException e) {
+        } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
+                | SecurityException | InvocationTargetException e) {
             return null;
         }
     }
@@ -238,11 +172,69 @@ public class MacApplication
         try {
             Method handled = eventClass.getMethod("setHandled", boolean.class);
             handled.invoke(event, true);
-        } catch (IllegalAccessException |
-                 IllegalArgumentException |
-                 NoSuchMethodException |
-                 SecurityException |
-                 InvocationTargetException e) {
+        } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
+                | SecurityException | InvocationTargetException e) {
+        }
+    }
+
+    /**
+     * Registers actions for preferences, about, and quit.
+     *
+     * @return true if successful, false if platform is not
+     *         Mac OS X or if an error occurs
+     */
+    @SuppressWarnings("unchecked")
+    public static boolean setupMacMenus ()
+    {
+        if (!WellKnowns.MAC_OS_X) {
+            return false;
+        }
+
+        try {
+            //The class used to register hooks
+            Class<?> appClass = Class.forName("com.apple.eawt.Application");
+            Object app = appClass.newInstance();
+
+            //Enable the about menu item and the preferences menu item
+            for (String methodName : new String[]
+            { "setEnabledAboutMenu", "setEnabledPreferencesMenu" }) {
+                Method method = appClass.getMethod(methodName, boolean.class);
+                method.invoke(app, true);
+            }
+
+            //The interface used to register hooks
+            Class<?> listenerClass = Class.forName("com.apple.eawt.ApplicationListener");
+
+            //Using the current class loader,
+            //generate, load, and instantiate a class implementing listenerClass,
+            //providing an instance of this class as a callback for any method invocation
+            Object listenerProxy = Proxy.newProxyInstance(
+                    MacApplication.class.getClassLoader(),
+                    new Class<?>[]
+                    { listenerClass },
+                    new MacApplication());
+
+            //Add the generated class as a hook
+            Method addListener = appClass.getMethod("addApplicationListener", listenerClass);
+            addListener.invoke(app, listenerProxy);
+
+            // display audiveris icon in the dock instead of default java one
+            Method getApplication = appClass.getMethod("getApplication");
+            Object application = getApplication.invoke(app);
+
+            URI uri = UriUtil.toURI(WellKnowns.RES_URI, "icon-256.png");
+            Image icon = new ImageIcon(uri.toURL()).getImage();
+
+            Method setDockImage = application.getClass().getMethod("setDockIconImage", Image.class);
+            setDockImage.invoke(application, icon);
+
+            return true;
+        } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
+                | InstantiationException | NoSuchMethodException | SecurityException
+                | InvocationTargetException | MalformedURLException ex) {
+            logger.warn("Unable to setup Mac OS X GUI integration", ex);
+
+            return false;
         }
     }
 }

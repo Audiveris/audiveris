@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -48,14 +48,19 @@ public class Arc
     private static final Logger logger = LoggerFactory.getLogger(Arc.class);
 
     /** Comparison by decreasing length. */
-    public static final Comparator<Arc> byReverseLength = (Arc a1, Arc a2)
-            -> Integer.compare(a2.getLength(), a1.getLength());
+    public static final Comparator<Arc> byReverseLength = (a1,
+                                                           a2) -> Integer.compare(
+                                                                   a2.getLength(),
+                                                                   a1.getLength());
 
     /** Comparison by decreasing x length. */
-    public static final Comparator<Arc> byReverseXLength = (Arc a1, Arc a2)
-            -> Double.compare(a2.getXLength(), a1.getXLength());
+    public static final Comparator<Arc> byReverseXLength = (a1,
+                                                            a2) -> Double.compare(
+                                                                    a2.getXLength(),
+                                                                    a1.getXLength());
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Sequence of arc points so far. */
     protected final List<Point> points = new ArrayList<>();
 
@@ -75,6 +80,7 @@ public class Arc
     private boolean assigned;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an arc with perhaps a firstJunction.
      *
@@ -121,6 +127,7 @@ public class Arc
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------------------//
     // checkOrientation //
     //------------------//
@@ -200,19 +207,6 @@ public class Arc
         return model;
     }
 
-    //----------//
-    // setModel //
-    //----------//
-    /**
-     * Assign the arc model.
-     *
-     * @param model the model to set
-     */
-    public void setModel (Model model)
-    {
-        this.model = model;
-    }
-
     //-----------//
     // getPoints //
     //-----------//
@@ -253,19 +247,6 @@ public class Arc
         return shape;
     }
 
-    //----------//
-    // setShape //
-    //----------//
-    /**
-     * Assign the arc shape.
-     *
-     * @param shape the shape to set
-     */
-    public void setShape (ArcShape shape)
-    {
-        this.shape = shape;
-    }
-
     //------------//
     // getXLength //
     //------------//
@@ -277,86 +258,6 @@ public class Arc
     public int getXLength ()
     {
         return Math.abs(points.get(points.size() - 1).x - points.get(0).x);
-    }
-
-    //------------//
-    // isAssigned //
-    //------------//
-    /**
-     * @return the assigned flag
-     */
-    public boolean isAssigned ()
-    {
-        return assigned;
-    }
-
-    //-------------//
-    // setAssigned //
-    //-------------//
-    /**
-     * Set the assigned fleg.
-     *
-     * @param assigned the assigned flag to set
-     */
-    public void setAssigned (boolean assigned)
-    {
-        this.assigned = assigned;
-    }
-
-    //---------//
-    // reverse //
-    //---------//
-    /**
-     * Reverse arc internal order (points &amp; junction points).
-     */
-    public void reverse ()
-    {
-        // Reverse junctions
-        Point temp = firstJunction;
-        firstJunction = lastJunction;
-        lastJunction = temp;
-
-        // Reverse points
-        Collections.reverse(points);
-
-        // Reverse model
-        if (model != null) {
-            model.reverse();
-        }
-    }
-
-    //-------------//
-    // setJunction //
-    //-------------//
-    /**
-     * Set a junction point.
-     *
-     * @param junction the point to set
-     * @param reverse  desired side
-     */
-    public void setJunction (Point junction,
-                             boolean reverse)
-    {
-        if (reverse) {
-            firstJunction = junction;
-        } else {
-            lastJunction = junction;
-        }
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{");
-
-        sb.append(internals());
-        sb.append("}");
-
-        return sb.toString();
     }
 
     //-----------//
@@ -386,6 +287,112 @@ public class Arc
         if (model != null) {
             sb.append(String.format(" dist:%.2f", model.getDistance()));
         }
+
+        return sb.toString();
+    }
+
+    //------------//
+    // isAssigned //
+    //------------//
+    /**
+     * @return the assigned flag
+     */
+    public boolean isAssigned ()
+    {
+        return assigned;
+    }
+
+    //---------//
+    // reverse //
+    //---------//
+    /**
+     * Reverse arc internal order (points &amp; junction points).
+     */
+    public void reverse ()
+    {
+        // Reverse junctions
+        Point temp = firstJunction;
+        firstJunction = lastJunction;
+        lastJunction = temp;
+
+        // Reverse points
+        Collections.reverse(points);
+
+        // Reverse model
+        if (model != null) {
+            model.reverse();
+        }
+    }
+
+    //-------------//
+    // setAssigned //
+    //-------------//
+    /**
+     * Set the assigned fleg.
+     *
+     * @param assigned the assigned flag to set
+     */
+    public void setAssigned (boolean assigned)
+    {
+        this.assigned = assigned;
+    }
+
+    //-------------//
+    // setJunction //
+    //-------------//
+    /**
+     * Set a junction point.
+     *
+     * @param junction the point to set
+     * @param reverse  desired side
+     */
+    public void setJunction (Point junction,
+                             boolean reverse)
+    {
+        if (reverse) {
+            firstJunction = junction;
+        } else {
+            lastJunction = junction;
+        }
+    }
+
+    //----------//
+    // setModel //
+    //----------//
+    /**
+     * Assign the arc model.
+     *
+     * @param model the model to set
+     */
+    public void setModel (Model model)
+    {
+        this.model = model;
+    }
+
+    //----------//
+    // setShape //
+    //----------//
+    /**
+     * Assign the arc shape.
+     *
+     * @param shape the shape to set
+     */
+    public void setShape (ArcShape shape)
+    {
+        this.shape = shape;
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
+
+        sb.append(internals());
+        sb.append("}");
 
         return sb.toString();
     }

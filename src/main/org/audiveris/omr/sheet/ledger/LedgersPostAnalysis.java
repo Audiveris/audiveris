@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -61,14 +61,18 @@ public class LedgersPostAnalysis
     private static final Logger logger = LoggerFactory.getLogger(LedgersPostAnalysis.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The sheet being processed. */
     private final Sheet sheet;
 
     /** Map system -> builder. */
     private final Map<SystemInfo, LedgersBuilder> builders;
 
-    /** Population of ordinate deltas with preceding staff line or ledger. */
-    private final Population popDelta = new Population();
+    /** Population above staff of ordinate deltas with staff line or ledger below. */
+    private final Population popDeltaAbove = new Population();
+
+    /** Population below staff of ordinate deltas with staff line or ledger above. */
+    private final Population popDeltaBelow = new Population();
 
     /** Population of heights. */
     private final Population popHeight = new Population();
@@ -83,6 +87,7 @@ public class LedgersPostAnalysis
     private final Map<SystemInfo, List<LedgerInter>> discarded = new TreeMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>LedgersPostAnalysis</code>.
      *
@@ -97,6 +102,171 @@ public class LedgersPostAnalysis
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //---------//
+    // collect //
+    //---------//
+    /**
+     * Collect ledger informations for the whole sheet, to measure mean and standard
+     * deviation for vertical distance between ledger and previous ledger or staff line.
+     */
+    private void collect ()
+    {
+        final int maxWidth = sheet.getScale().toPixels(constants.maxIsolatedLedgerWidth);
+
+        for (Staff staff : sheet.getStaffManager().getStaves()) {
+            final int il = staff.getSpecificInterline();
+            logger.debug("   staff#{} il:{} {}", staff.getId(), il, staff.isSmall() ? "SMALL" : "");
+
+            final SortedMap<Integer, List<LedgerInter>> map = staff.getLedgerMap();
+
+            for (Map.Entry<Integer, List<LedgerInter>> entry : map.entrySet()) {
+                final int key = entry.getKey();
+                logger.debug("     {}", key);
+                final List<LedgerInter> ledgers = entry.getValue();
+
+                for (LedgerInter ledger : ledgers) {
+                    final Line2D median = ledger.getMedian();
+                    final Point2D middle = PointUtil.middle(median);
+                    final double delta = staff.doubleDistanceTo(middle);
+                    final double dRatio = delta / (Math.abs(key) * il);
+                    final double height = ledger.getThickness();
+                    final double hRatio = height / il;
+                    final double width = median.getX2() - median.getX1();
+                    final double wRatio = width / il;
+                    final Info info = new Info(
+                            ledger,
+                            staff,
+                            key,
+                            delta,
+                            dRatio,
+                            height,
+                            hRatio,
+                            width,
+                            wRatio);
+                    infoMap.put(ledger, info);
+                    logger.debug("       {}", info);
+
+                    if (key < 0) {
+                        popDeltaAbove.includeValue(dRatio);
+                    } else {
+                        popDeltaBelow.includeValue(dRatio);
+                    }
+                    popHeight.includeValue(hRatio);
+
+                    if (wRatio <= maxWidth) {
+                        popWidth.includeValue(wRatio);
+                    }
+                }
+            }
+        }
+
+        logger.debug("deltaAboveRatio: {}", popDeltaAbove);
+        logger.debug("deltaBelowRatio: {}", popDeltaBelow);
+        logger.debug("heightRatio: {}", popHeight);
+        logger.debug("widthRatio: {}", popWidth);
+    }
+
+    //--------//
+    // filter //
+    //--------//
+    /**
+     * Filter out the suspicious ledgers.
+     * <p>
+     * We perform filtering based on:
+     * <ul>
+     * <li>Delta ordinate (only for ledgers found on lines -1 and +1 with respect to the staff)
+     * <li>Ledger height (regardless of line)
+     * </ul>
+     * Each value is checked to be in typical range [mean - 1*sigma .. mean + 1*sigma]
+     * But the sigma coefficients can be customized via their defining Constants.
+     */
+    private void filter ()
+    {
+        Double minDeltaAboveRatio = null;
+        Double maxDeltaAboveRatio = null;
+        Double minDeltaBelowRatio = null;
+        Double maxDeltaBelowRatio = null;
+        Double minHeightRatio = null;
+        Double maxHeightRatio = null;
+
+        if (popDeltaAbove.getCardinality() > 0) {
+            minDeltaAboveRatio = popDeltaAbove.getMeanValue() + constants.minDeltaSigmaCoeff
+                    .getValue() * popDeltaAbove.getStandardDeviation();
+            maxDeltaAboveRatio = popDeltaAbove.getMeanValue() + constants.maxDeltaSigmaCoeff
+                    .getValue() * popDeltaAbove.getStandardDeviation();
+        }
+
+        if (popDeltaBelow.getCardinality() > 0) {
+            minDeltaBelowRatio = popDeltaBelow.getMeanValue() + constants.minDeltaSigmaCoeff
+                    .getValue() * popDeltaBelow.getStandardDeviation();
+            maxDeltaBelowRatio = popDeltaBelow.getMeanValue() + constants.maxDeltaSigmaCoeff
+                    .getValue() * popDeltaBelow.getStandardDeviation();
+        }
+
+        if (popHeight.getCardinality() > 0) {
+            minHeightRatio = popHeight.getMeanValue() + constants.minHeightSigmaCoeff.getValue()
+                    * popHeight.getStandardDeviation();
+            maxHeightRatio = popHeight.getMeanValue() + constants.maxHeightSigmaCoeff.getValue()
+                    * popHeight.getStandardDeviation();
+        }
+
+        logger.debug(
+                "{}",
+                String.format(
+                        "Filter minDeltaAboveRatio:%.2f maxDeltaAboveRatio:%.2f"
+                                + " minDeltaBelowRatio:%.2f maxDeltaBelowRatio:%.2f"
+                                + " minHeightRatio:%.2f maxHeightRatio:%.2f",
+                        minDeltaAboveRatio,
+                        maxDeltaAboveRatio,
+                        minDeltaBelowRatio,
+                        maxDeltaBelowRatio,
+                        minHeightRatio,
+                        maxHeightRatio));
+
+        // Infos sorted by ledger ID are much more convenient for user review.
+        final List<Info> infos = new ArrayList<>(infoMap.values());
+        Collections.sort(infos, Info.byId);
+
+        for (Info info : infos) {
+            final int interline = info.staff.getSpecificInterline();
+
+            final int minDelta = (int) Math.floor(
+                    (info.key < 0 ? minDeltaAboveRatio : minDeltaBelowRatio) * interline);
+            final int maxDelta = (int) Math.ceil(
+                    (info.key < 0 ? maxDeltaAboveRatio : maxDeltaBelowRatio) * interline);
+            final String dD = (Math.abs(info.key) == 1) ? (Math.ceil(info.delta) < minDelta
+                    ? "delta"
+                    : (Math.floor(info.delta) > maxDelta ? "DELTA" : "     ")) : "     ";
+
+            final int minHeight = (int) Math.floor(minHeightRatio * interline);
+            final int maxHeight = (int) Math.ceil(maxHeightRatio * interline);
+            final String hH = Math.ceil(info.height) < minHeight ? "height"
+                    : (Math.floor(info.height) > maxHeight ? "HEIGHT" : "      ");
+
+            logger.debug(
+                    "{} {} {} deltaRange:[{}..{}] heightRange:[{}..{}]",
+                    dD,
+                    hH,
+                    info,
+                    minDelta,
+                    maxDelta,
+                    minHeight,
+                    maxHeight);
+
+            if (!dD.isBlank() || !hH.isBlank()) {
+                final SystemInfo system = info.staff.getSystem();
+                List<LedgerInter> list = discarded.get(system);
+
+                if (list == null) {
+                    discarded.put(system, list = new ArrayList<>());
+                }
+
+                list.add(info.ledger);
+            }
+        }
+    }
+
     //---------//
     // process //
     //---------//
@@ -123,118 +293,8 @@ public class LedgersPostAnalysis
         }
     }
 
-    //---------//
-    // collect //
-    //---------//
-    /**
-     * Collect ledger informations for the whole sheet, to measure mean and standard
-     * deviation for vertical distance between ledger and previous ledger or staff line.
-     */
-    private void collect ()
-    {
-        final int maxWidth = sheet.getScale().toPixels(constants.maxIsolatedLedgerWidth);
-
-        for (Staff staff : sheet.getStaffManager().getStaves()) {
-            final int il = staff.getSpecificInterline();
-            logger.debug("   staff#{} il:{} {}",
-                         staff.getId(),
-                         il,
-                         staff.isSmall() ? "SMALL" : "");
-
-            final SortedMap<Integer, List<LedgerInter>> map = staff.getLedgerMap();
-
-            for (Map.Entry<Integer, List<LedgerInter>> entry : map.entrySet()) {
-                final int key = entry.getKey();
-                logger.debug("     {}", key);
-                final List<LedgerInter> ledgers = entry.getValue();
-
-                for (LedgerInter ledger : ledgers) {
-                    final Line2D median = ledger.getMedian();
-                    final Point2D middle = PointUtil.middle(median);
-                    final double dist = staff.doubleDistanceTo(middle);
-                    final double dRatio = dist / (Math.abs(key) * il);
-                    final double hRatio = ledger.getThickness() / il;
-                    final double wRatio = (median.getX2() - median.getX1()) / il;
-                    final Info info = new Info(ledger, staff, key, dRatio, hRatio, wRatio);
-                    infoMap.put(ledger, info);
-                    logger.debug("{}", info);
-
-                    popDelta.includeValue(dRatio);
-                    popHeight.includeValue(hRatio);
-
-                    if (wRatio <= maxWidth) {
-                        popWidth.includeValue(wRatio);
-                    }
-                }
-            }
-        }
-
-        logger.debug("deltaRatio: {}", popDelta);
-        logger.debug("heightRatio: {}", popHeight);
-        logger.debug("widthRatio: {}", popWidth);
-    }
-
-    //--------//
-    // filter //
-    //--------//
-    /**
-     * Filter out the suspicious ledgers.
-     * <p>
-     * We perform filtering based on:
-     * <ul>
-     * <li>Delta ordinate (only for ledgers found on lines -1 and +1 with respect to the staff)
-     * <li>Ledger height (regardless of line)
-     * </ul>
-     * Each value is checked to be in range [mean - 1.5*sigma .. mean + 2*sigma]
-     * The sigma coefficients can be customized via their defining Constants.
-     */
-    private void filter ()
-    {
-        final double minDelta = popDelta.getMeanValue()
-                                        + constants.minDeltaSigmaCoeff.getValue()
-                                                  * popDelta.getStandardDeviation();
-        final double maxDelta = popDelta.getMeanValue()
-                                        + constants.maxDeltaSigmaCoeff.getValue()
-                                                  * popDelta.getStandardDeviation();
-
-        final double minHeight = popHeight.getMeanValue()
-                                         + constants.minHeightSigmaCoeff.getValue()
-                                                   * popHeight.getStandardDeviation();
-        final double maxHeight = popHeight.getMeanValue()
-                                         + constants.maxHeightSigmaCoeff.getValue()
-                                                   * popHeight.getStandardDeviation();
-
-        logger.debug("{}", String.format(
-                     "Filter minDelta:%.2f maxDelta:%.2f minHeight:%.2f maxHeight:%.2f",
-                     minDelta, maxDelta, minHeight, maxHeight));
-
-        // Infos sorted by ledger ID are much more convenient for user review.
-        final List<Info> infos = new ArrayList<>(infoMap.values());
-        Collections.sort(infos, Info.byId);
-
-        for (Info info : infos) {
-            final String dD = (Math.abs(info.key) == 1)
-                    ? (info.deltaRatio < minDelta ? "delta"
-                            : (info.deltaRatio > maxDelta ? "DELTA" : "     "))
-                    : "     ";
-            final String hH = info.heightRatio < minHeight ? "height"
-                    : (info.heightRatio > maxHeight ? "HEIGHT" : "      ");
-            logger.debug("{} {} {}", dD, hH, info);
-
-            if (!dD.isBlank() || !hH.isBlank()) {
-                final SystemInfo system = info.staff.getSystem();
-                List<LedgerInter> list = discarded.get(system);
-
-                if (list == null) {
-                    discarded.put(system, list = new ArrayList<>());
-                }
-
-                list.add(info.ledger);
-            }
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -248,22 +308,22 @@ public class LedgersPostAnalysis
 
         private final Constant.Double minDeltaSigmaCoeff = new Constant.Double(
                 "none",
-                -1.5,
+                -1,
                 "Coeff for standard deviation on minDelta");
 
         private final Constant.Double maxDeltaSigmaCoeff = new Constant.Double(
                 "none",
-                2.0,
+                1,
                 "Coeff for standard deviation on maxDelta");
 
         private final Constant.Double minHeightSigmaCoeff = new Constant.Double(
                 "none",
-                -1.5,
+                -1,
                 "Coeff for standard deviation on minHeight");
 
         private final Constant.Double maxHeightSigmaCoeff = new Constant.Double(
                 "none",
-                2.0,
+                1,
                 "Coeff for standard deviation on maxHeight");
     }
 
@@ -276,8 +336,10 @@ public class LedgersPostAnalysis
     private static class Info
     {
 
-        public static Comparator<Info> byId
-                = (Info o1, Info o2) -> Integer.compare(o1.ledger.getId(), o2.ledger.getId());
+        public static Comparator<Info> byId = (Info o1,
+                                               Info o2) -> Integer.compare(
+                                                       o1.ledger.getId(),
+                                                       o2.ledger.getId());
 
         public final LedgerInter ledger; // The ledger
 
@@ -285,33 +347,54 @@ public class LedgersPostAnalysis
 
         public final int key; // Line id with respect to staff
 
+        public final double delta; // Dy
+
         public final double deltaRatio; // Dy normalized by staff interline
 
+        public final double height; // Thickness
+
         public final double heightRatio; // Thickness normalized by staff interline
+
+        public final double width; // Width
 
         public final double widthRatio; // Width normalized by staff interline (not for decision)
 
         public Info (LedgerInter ledger,
                      Staff staff,
                      int key,
+                     double delta,
                      double deltaRatio,
+                     double height,
                      double heightRatio,
+                     double width,
                      double widthRatio)
         {
             this.ledger = ledger;
             this.staff = staff;
             this.key = key;
+            this.delta = delta;
             this.deltaRatio = deltaRatio;
+            this.height = height;
             this.heightRatio = heightRatio;
+            this.width = width;
             this.widthRatio = widthRatio;
         }
 
         @Override
         public String toString ()
         {
-            return String.format("#%d s#%2d(%2d) %2d delta:%.2f height:%.2f width:%.2f",
-                                 ledger.getId(), staff.getId(), staff.getSpecificInterline(),
-                                 key, deltaRatio, heightRatio, widthRatio);
+            return String.format(
+                    "#%d s#%2d(%2d) %2d delta:%.2f/%.2f height:%.2f/%.2f width:%.2f/%.2f",
+                    ledger.getId(),
+                    staff.getId(),
+                    staff.getSpecificInterline(),
+                    key,
+                    delta,
+                    deltaRatio,
+                    height,
+                    heightRatio,
+                    width,
+                    widthRatio);
         }
     }
 }

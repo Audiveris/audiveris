@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -35,7 +35,8 @@ import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
-import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.FontSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -44,7 +45,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.font.TextLayout;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -78,6 +78,7 @@ public class TupletGenerator
     private static final Logger logger = LoggerFactory.getLogger(TupletGenerator.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying measure. */
     private final Measure measure;
 
@@ -86,6 +87,7 @@ public class TupletGenerator
     private final Scale scale;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>TupletGenerator</code> object.
      *
@@ -100,213 +102,6 @@ public class TupletGenerator
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------------------//
-    // findImplicitTuplets //
-    //---------------------//
-    /**
-     * Inspect all measure voices for those that start in first slot and exhibit a
-     * duration (without any implicit tuplet) which is exactly 3/2 times the measure
-     * expected duration.
-     * <p>
-     * Then force tuplet injection to each such voice
-     *
-     * @return the collection of tuplet signs created, perhaps empty
-     */
-    public List<TupletInter> findImplicitTuplets ()
-    {
-        final Rational expected = measure.getStack().getExpectedDuration();
-        List<TupletInter> created = null;
-
-        for (Voice voice : measure.getVoices()) {
-            if (voice.isMeasureRest()) {
-                continue;
-            }
-
-            final List<AbstractChordInter> chords = voice.getChords();
-            final Rational start = chords.get(0).getTimeOffset();
-
-            if (!Rational.ZERO.equals(start)) {
-                continue;
-            }
-
-            final AbstractChordInter lastChord = chords.get(chords.size() - 1);
-
-            // Compute total voice duration, ignoring tuplets if any
-            // So, we cannot simply use lastChord end time
-            final Rational stop = voice.getDurationSansTuplet();
-            final Rational ratio = stop.divides(expected);
-
-            if (ratio.equals(THREE_OVER_TWO)) {
-                if (created == null) {
-                    created = new ArrayList<>();
-                }
-
-                created.addAll(forceTuplets(voice));
-                logger.info("{} {} rechecked with implicit tuplets", measure, voice);
-            }
-        }
-
-        if (created == null) {
-            return Collections.emptyList();
-        }
-
-        return created;
-    }
-
-    //-----------------//
-    // generateTuplets //
-    //-----------------//
-    /**
-     * Generate one or several implicit tuplets for the provided group of chords.
-     * <p>
-     * If the provided group of chords contains more than one beam group, it is split in 2.
-     *
-     * @param group    (input) the original group of chords
-     * @param extGroup (output) the extended group of chords
-     * @return the generated implicit tuplet(s)
-     */
-    public List<TupletInter> generateTuplets (List<AbstractChordInter> group,
-                                              List<AbstractChordInter> extGroup)
-    {
-        final List<TupletInter> tuplets = new ArrayList<>();
-
-        // Extend to beam group?
-        for (AbstractChordInter chord : group) {
-            BeamGroupInter bg = chord.getBeamGroup();
-
-            if (bg != null) {
-                for (AbstractChordInter c : bg.getAllChords()) {
-                    if (!extGroup.contains(c)) {
-                        extGroup.add(c);
-                    }
-                }
-            } else {
-                extGroup.add(chord);
-            }
-        }
-
-        Collections.sort(extGroup, Inters.byCenterAbscissa);
-
-        // Check if more than one beam group is present
-        final AbstractChordInter pivot = checkGroups(Arrays.asList(extGroup));
-
-        if (pivot != null) {
-            final int index = extGroup.indexOf(pivot);
-            tuplets.add(generateOneTuplet(extGroup.subList(0, index)));
-            tuplets.add(generateOneTuplet(extGroup.subList(index, extGroup.size())));
-        } else {
-            tuplets.add(generateOneTuplet(extGroup));
-        }
-
-        return tuplets;
-    }
-
-    //-------------------//
-    // generateOneTuplet //
-    //-------------------//
-    /**
-     * Generate one implicit tuplet for the provided group of chords.
-     * <p>
-     * We use the approximate number of notes in the provided beat group to choose between
-     * TUPLET_THREE and TUPLET_SIX for tuplet shape.
-     * <p>
-     * Working assumption: If a chord of a beam group is implied, link the whole beam group,
-     * including the interleaved rests.
-     *
-     * @param group the group of chords
-     * @return the generated implicit tuplet
-     */
-    public TupletInter generateOneTuplet (List<AbstractChordInter> group)
-    {
-        // Simplistic approach
-        final int size = group.size();
-        final int nb = (int) Math.rint(size / 3.0);
-        final Shape shape = (nb == 1) ? Shape.TUPLET_THREE : Shape.TUPLET_SIX;
-
-        final TupletInter tuplet = new TupletInter(null, shape, 1.0);
-        tuplet.setImplicit(true);
-
-        // Precise tuplet bounds, above or below group
-        tuplet.setBounds(inferTupletBounds(group, shape));
-
-        final SIGraph sig = system.getSig();
-        sig.addVertex(tuplet);
-        tuplet.setAbnormal(false);
-        measure.addInter(tuplet);
-
-        // Set relation between tuplet and every chord in group
-        for (AbstractChordInter ch : group) {
-            sig.addEdge(ch, tuplet, new ChordTupletRelation(shape));
-        }
-
-        return tuplet;
-    }
-
-    //------------//
-    // dumpVoices //
-    //------------//
-    /**
-     * Dump measure voices, except the whole rest voices.
-     */
-    private void dumpVoices ()
-    {
-        logger.info("{}", measure);
-
-        List<Voice> voices = new ArrayList<>(measure.getVoices());
-        Collections.sort(voices, Voices.byId);
-
-        for (Voice voice : voices) {
-            Rational end = null;
-
-            for (AbstractChordInter ch : voice.getChords()) {
-                Rational chDur = ch.getDuration();
-                end = (end == null) ? chDur : end.plus(chDur);
-            }
-
-            logger.info("   {} duration:{}", voice, end);
-        }
-    }
-
-    //--------------//
-    // forceTuplets //
-    //--------------//
-    /**
-     * Inject implicit tuplet(s) for the provided voice.
-     *
-     * @param voice the voice to be processed
-     * @return the collection of created tuplet signs
-     */
-    private List<TupletInter> forceTuplets (Voice voice)
-    {
-        // Use the time signature if available, otherwise assume 4 beats
-        final AbstractTimeInter timeSig = measure.getStack().getCurrentTimeSignature();
-        final Rational duration;
-
-        if (timeSig != null) {
-            duration = timeSig.getBeatValue();
-        } else {
-            duration = ONE_OVER_FOUR;
-        }
-
-        // Group chords by duration
-        List<List<AbstractChordInter>> groups = buildGroups(voice, duration);
-
-        // Check beam grouping in voice, is it consistent with beat value?
-        // At least we can do this for beat value of 1/2
-        if ((checkGroups(groups) != null) && duration.equals(Rational.HALF)) {
-            groups = buildGroups(voice, ONE_OVER_FOUR);
-        }
-
-        List<TupletInter> created = new ArrayList<>();
-
-        // Process each beat group
-        for (List<AbstractChordInter> group : groups) {
-            List<AbstractChordInter> extGroup = new ArrayList<>();
-            created.addAll(generateTuplets(group, extGroup));
-        }
-
-        return created;
-    }
 
     //-------------//
     // buildGroups //
@@ -376,6 +171,214 @@ public class TupletGenerator
         return null; // No different beam group found
     }
 
+    //------------//
+    // dumpVoices //
+    //------------//
+    /**
+     * Dump measure voices, except the whole rest voices.
+     */
+    private void dumpVoices ()
+    {
+        logger.info("{}", measure);
+
+        List<Voice> voices = new ArrayList<>(measure.getVoices());
+        Collections.sort(voices, Voices.byId);
+
+        for (Voice voice : voices) {
+            Rational end = null;
+
+            for (AbstractChordInter ch : voice.getChords()) {
+                Rational chDur = ch.getDuration();
+                end = (end == null) ? chDur : end.plus(chDur);
+            }
+
+            logger.info("   {} duration:{}", voice, end);
+        }
+    }
+
+    //---------------------//
+    // findImplicitTuplets //
+    //---------------------//
+    /**
+     * Inspect all measure voices for those that start in first slot and exhibit a
+     * duration (without any implicit tuplet) which is exactly 3/2 times the measure
+     * expected duration.
+     * <p>
+     * Then force tuplet injection to each such voice
+     *
+     * @return the collection of tuplet signs created, perhaps empty
+     */
+    public List<TupletInter> findImplicitTuplets ()
+    {
+        final Rational expected = measure.getStack().getExpectedDuration();
+        List<TupletInter> created = null;
+
+        for (Voice voice : measure.getVoices()) {
+            if (voice.isMeasureRest()) {
+                continue;
+            }
+
+            final List<AbstractChordInter> chords = voice.getChords();
+            final Rational start = chords.get(0).getTimeOffset();
+
+            if (!Rational.ZERO.equals(start)) {
+                continue;
+            }
+
+            final AbstractChordInter lastChord = chords.get(chords.size() - 1);
+
+            // Compute total voice duration, ignoring tuplets if any
+            // So, we cannot simply use lastChord end time
+            final Rational stop = voice.getDurationSansTuplet();
+            final Rational ratio = stop.divides(expected);
+
+            if (ratio.equals(THREE_OVER_TWO)) {
+                if (created == null) {
+                    created = new ArrayList<>();
+                }
+
+                created.addAll(forceTuplets(voice));
+                logger.info("{} {} rechecked with implicit tuplets", measure, voice);
+            }
+        }
+
+        if (created == null) {
+            return Collections.emptyList();
+        }
+
+        return created;
+    }
+
+    //--------------//
+    // forceTuplets //
+    //--------------//
+    /**
+     * Inject implicit tuplet(s) for the provided voice.
+     *
+     * @param voice the voice to be processed
+     * @return the collection of created tuplet signs
+     */
+    private List<TupletInter> forceTuplets (Voice voice)
+    {
+        // Use the time signature if available, otherwise assume 4 beats
+        final AbstractTimeInter timeSig = measure.getStack().getCurrentTimeSignature();
+        final Rational duration;
+
+        if (timeSig != null) {
+            duration = timeSig.getBeatValue();
+        } else {
+            duration = ONE_OVER_FOUR;
+        }
+
+        // Group chords by duration
+        List<List<AbstractChordInter>> groups = buildGroups(voice, duration);
+
+        // Check beam grouping in voice, is it consistent with beat value?
+        // At least we can do this for beat value of 1/2
+        if ((checkGroups(groups) != null) && duration.equals(Rational.HALF)) {
+            groups = buildGroups(voice, ONE_OVER_FOUR);
+        }
+
+        List<TupletInter> created = new ArrayList<>();
+
+        // Process each beat group
+        for (List<AbstractChordInter> group : groups) {
+            List<AbstractChordInter> extGroup = new ArrayList<>();
+            created.addAll(generateTuplets(group, extGroup));
+        }
+
+        return created;
+    }
+
+    //-------------------//
+    // generateOneTuplet //
+    //-------------------//
+    /**
+     * Generate one implicit tuplet for the provided group of chords.
+     * <p>
+     * We use the approximate number of notes in the provided beat group to choose between
+     * TUPLET_THREE and TUPLET_SIX for tuplet shape.
+     * <p>
+     * Working assumption: If a chord of a beam group is implied, link the whole beam group,
+     * including the interleaved rests.
+     *
+     * @param group the group of chords
+     * @return the generated implicit tuplet
+     */
+    public TupletInter generateOneTuplet (List<AbstractChordInter> group)
+    {
+        // Simplistic approach
+        final int size = group.size();
+        final int nb = (int) Math.rint(size / 3.0);
+        final Shape shape = (nb == 1) ? Shape.TUPLET_THREE : Shape.TUPLET_SIX;
+
+        final TupletInter tuplet = new TupletInter(null, shape, 1.0);
+        tuplet.setImplicit(true);
+
+        // Precise tuplet bounds, above or below group
+        tuplet.setBounds(inferTupletBounds(group, shape));
+
+        final SIGraph sig = system.getSig();
+        sig.addVertex(tuplet);
+        tuplet.setAbnormal(false);
+        measure.addInter(tuplet);
+
+        // Set relation between tuplet and every chord in group
+        for (AbstractChordInter ch : group) {
+            sig.addEdge(ch, tuplet, new ChordTupletRelation(shape));
+        }
+
+        return tuplet;
+    }
+
+    //-----------------//
+    // generateTuplets //
+    //-----------------//
+    /**
+     * Generate one or several implicit tuplets for the provided group of chords.
+     * <p>
+     * If the provided group of chords contains more than one beam group, it is split in 2.
+     *
+     * @param group    (input) the original group of chords
+     * @param extGroup (output) the extended group of chords
+     * @return the generated implicit tuplet(s)
+     */
+    public List<TupletInter> generateTuplets (List<AbstractChordInter> group,
+                                              List<AbstractChordInter> extGroup)
+    {
+        final List<TupletInter> tuplets = new ArrayList<>();
+
+        // Extend to beam group?
+        for (AbstractChordInter chord : group) {
+            BeamGroupInter bg = chord.getBeamGroup();
+
+            if (bg != null) {
+                for (AbstractChordInter c : bg.getAllChords()) {
+                    if (!extGroup.contains(c)) {
+                        extGroup.add(c);
+                    }
+                }
+            } else {
+                extGroup.add(chord);
+            }
+        }
+
+        Collections.sort(extGroup, Inters.byCenterAbscissa);
+
+        // Check if more than one beam group is present
+        final AbstractChordInter pivot = checkGroups(Arrays.asList(extGroup));
+
+        if (pivot != null) {
+            final int index = extGroup.indexOf(pivot);
+            tuplets.add(generateOneTuplet(extGroup.subList(0, index)));
+            tuplets.add(generateOneTuplet(extGroup.subList(index, extGroup.size())));
+        } else {
+            tuplets.add(generateOneTuplet(extGroup));
+        }
+
+        return tuplets;
+    }
+
     //-------------------//
     // inferTupletBounds //
     //-------------------//
@@ -391,15 +394,15 @@ public class TupletGenerator
                                          Shape shape)
     {
         // Tuplet dimension
-        MusicFont font = MusicFont.getBaseFont(scale.getInterline());
-        TextLayout layout = font.layout(shape);
-        Dimension dim = layout.getBounds().getBounds().getSize();
+        final MusicFamily family = system.getSheet().getStub().getMusicFamily();
+        final FontSymbol fs = shape.getFontSymbolByInterline(family, scale.getInterline());
+        final Dimension dim = fs.getDimension();
 
         // Vertical direction from group to tuplet, based on group tails side
-        TreeMap<Integer, List<AbstractChordInter>> dirs = new TreeMap<>();
+        final TreeMap<Integer, List<AbstractChordInter>> dirs = new TreeMap<>();
 
         for (AbstractChordInter ch : group) {
-            int dir = ch.getStemDir();
+            final int dir = ch.getStemDir();
 
             if (dir != 0) {
                 List<AbstractChordInter> chords = dirs.get(dir);
@@ -416,7 +419,7 @@ public class TupletGenerator
         int bestCount = 0;
 
         for (Map.Entry<Integer, List<AbstractChordInter>> entry : dirs.entrySet()) {
-            int count = entry.getValue().size();
+            final int count = entry.getValue().size();
 
             if ((dir == 0) || (bestCount < count)) {
                 dir = entry.getKey();
@@ -429,10 +432,10 @@ public class TupletGenerator
         }
 
         // Tuplet bounds
-        Rectangle box = Entities.getBounds(group);
-        Point center = GeoUtil.center(box);
-        int margin = dim.height / 10; // Small vertical margin between chord tail and tuplet
-        Rectangle tupletBox = new Rectangle(
+        final Rectangle box = Entities.getBounds(group);
+        final Point center = GeoUtil.center(box);
+        final int margin = dim.height / 10; // Small vertical margin between chord tail and tuplet
+        final Rectangle tupletBox = new Rectangle(
                 center.x - (dim.width / 2),
                 center.y + (dir * ((box.height / 2) + margin + ((dir < 0) ? dim.height : 0))),
                 dim.width,

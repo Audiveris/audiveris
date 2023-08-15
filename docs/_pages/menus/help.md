@@ -2,7 +2,7 @@
 layout: default
 title: Help menu
 grand_parent: References
-parent: Pulldown menus
+parent: Pulldown Menus
 nav_order: 9
 ---
 ## Help menu

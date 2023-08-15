@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,6 +50,9 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.FingeringInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.FretInter;
+import org.audiveris.omr.sig.inter.GraceChordInter;
+import org.audiveris.omr.sig.inter.GraceChordInter.HiddenHeadInter;
+import org.audiveris.omr.sig.inter.GraceChordInter.HiddenStemInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -59,14 +62,21 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.MeasureCountInter;
+import org.audiveris.omr.sig.inter.MeasureRepeatInter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
+import org.audiveris.omr.sig.inter.NumberInter;
+import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
+import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SegmentInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.SimileMarkInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
@@ -77,7 +87,9 @@ import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
+import org.audiveris.omr.sig.inter.TremoloInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.inter.VerticalSerifInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
@@ -91,6 +103,7 @@ import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
+import org.audiveris.omr.sig.relation.ChordGraceRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
@@ -109,13 +122,20 @@ import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
+import org.audiveris.omr.sig.relation.HeadFingeringRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
+import org.audiveris.omr.sig.relation.HeadPlayingRelation;
+import org.audiveris.omr.sig.relation.HeadPluckingRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.KeyAltersRelation;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
+import org.audiveris.omr.sig.relation.MeasureRepeatCountRelation;
 import org.audiveris.omr.sig.relation.MirrorRelation;
+import org.audiveris.omr.sig.relation.MultipleRestCountRelation;
+import org.audiveris.omr.sig.relation.MultipleRestSerifRelation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
+import org.audiveris.omr.sig.relation.OctaveShiftChordRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
@@ -126,6 +146,8 @@ import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
+import org.audiveris.omr.sig.relation.TremoloStemRelation;
+import org.audiveris.omr.sig.relation.TremoloWholeRelation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,6 +181,7 @@ public class SigValue
     private static final Logger logger = LoggerFactory.getLogger(SigValue.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // NOTA: For easier review, class names here below should be listed alphabetically.
     /**
      * All CONCRETE inters found in sig are gathered here as true defs.
@@ -166,61 +189,74 @@ public class SigValue
      * No abstract!
      */
     @XmlElementWrapper(name = "inters")
-    @XmlElementRefs({
-        @XmlElementRef(type = AlterInter.class),
-        @XmlElementRef(type = AugmentationDotInter.class),
-        @XmlElementRef(type = ArpeggiatoInter.class),
-        @XmlElementRef(type = ArticulationInter.class),
-        @XmlElementRef(type = BarConnectorInter.class),
-        @XmlElementRef(type = BarlineInter.class),
-        @XmlElementRef(type = BeamGroupInter.class),
-        @XmlElementRef(type = BeamHookInter.class),
-        @XmlElementRef(type = BeamInter.class),
-        @XmlElementRef(type = BraceInter.class),
-        @XmlElementRef(type = BracketConnectorInter.class),
-        @XmlElementRef(type = BracketInter.class),
-        @XmlElementRef(type = BreathMarkInter.class),
-        @XmlElementRef(type = CaesuraInter.class),
-        @XmlElementRef(type = ChordNameInter.class),
-        @XmlElementRef(type = ClefInter.class),
-        @XmlElementRef(type = ClutterInter.class),
-        @XmlElementRef(type = DynamicsInter.class),
-        @XmlElementRef(type = EndingInter.class),
-        @XmlElementRef(type = FermataDotInter.class),
-        @XmlElementRef(type = FermataArcInter.class),
-        @XmlElementRef(type = FermataInter.class),
-        @XmlElementRef(type = FingeringInter.class),
-        @XmlElementRef(type = FlagInter.class),
-        @XmlElementRef(type = FretInter.class),
-        @XmlElementRef(type = HeadChordInter.class),
-        @XmlElementRef(type = HeadInter.class),
-        @XmlElementRef(type = KeyAlterInter.class),
-        @XmlElementRef(type = KeyInter.class),
-        @XmlElementRef(type = LedgerInter.class),
-        @XmlElementRef(type = LyricItemInter.class),
-        @XmlElementRef(type = LyricLineInter.class),
-        @XmlElementRef(type = MarkerInter.class),
-        @XmlElementRef(type = OrnamentInter.class),
-        @XmlElementRef(type = PedalInter.class),
-        @XmlElementRef(type = PluckingInter.class),
-        @XmlElementRef(type = RepeatDotInter.class),
-        @XmlElementRef(type = RestChordInter.class),
-        @XmlElementRef(type = RestInter.class),
-        @XmlElementRef(type = SegmentInter.class),
-        @XmlElementRef(type = SentenceInter.class),
-        @XmlElementRef(type = SlurInter.class),
-        @XmlElementRef(type = SmallBeamInter.class),
-        @XmlElementRef(type = SmallChordInter.class),
-        @XmlElementRef(type = SmallFlagInter.class),
-        @XmlElementRef(type = StaffBarlineInter.class),
-        @XmlElementRef(type = StemInter.class),
-        @XmlElementRef(type = TimeCustomInter.class),
-        @XmlElementRef(type = TimeNumberInter.class),
-        @XmlElementRef(type = TimePairInter.class),
-        @XmlElementRef(type = TimeWholeInter.class),
-        @XmlElementRef(type = TupletInter.class),
-        @XmlElementRef(type = WedgeInter.class),
-        @XmlElementRef(type = WordInter.class)})
+    @XmlElementRefs(
+    {
+            @XmlElementRef(type = AlterInter.class),
+            @XmlElementRef(type = AugmentationDotInter.class),
+            @XmlElementRef(type = ArpeggiatoInter.class),
+            @XmlElementRef(type = ArticulationInter.class),
+            @XmlElementRef(type = BarConnectorInter.class),
+            @XmlElementRef(type = BarlineInter.class),
+            @XmlElementRef(type = BeamGroupInter.class),
+            @XmlElementRef(type = BeamHookInter.class),
+            @XmlElementRef(type = BeamInter.class),
+            @XmlElementRef(type = BraceInter.class),
+            @XmlElementRef(type = BracketConnectorInter.class),
+            @XmlElementRef(type = BracketInter.class),
+            @XmlElementRef(type = BreathMarkInter.class),
+            @XmlElementRef(type = CaesuraInter.class),
+            @XmlElementRef(type = ChordNameInter.class),
+            @XmlElementRef(type = ClefInter.class),
+            @XmlElementRef(type = ClutterInter.class),
+            @XmlElementRef(type = DynamicsInter.class),
+            @XmlElementRef(type = EndingInter.class),
+            @XmlElementRef(type = FermataDotInter.class),
+            @XmlElementRef(type = FermataArcInter.class),
+            @XmlElementRef(type = FermataInter.class),
+            @XmlElementRef(type = FingeringInter.class),
+            @XmlElementRef(type = FlagInter.class),
+            @XmlElementRef(type = FretInter.class),
+            @XmlElementRef(type = GraceChordInter.class),
+            @XmlElementRef(type = HeadChordInter.class),
+            @XmlElementRef(type = HeadInter.class),
+            @XmlElementRef(type = HiddenHeadInter.class),
+            @XmlElementRef(type = HiddenStemInter.class),
+            @XmlElementRef(type = KeyAlterInter.class),
+            @XmlElementRef(type = KeyInter.class),
+            @XmlElementRef(type = LedgerInter.class),
+            @XmlElementRef(type = LyricItemInter.class),
+            @XmlElementRef(type = LyricLineInter.class),
+            @XmlElementRef(type = MarkerInter.class),
+            @XmlElementRef(type = MeasureCountInter.class),
+            @XmlElementRef(type = MeasureRepeatInter.class),
+            @XmlElementRef(type = MultipleRestInter.class),
+            @XmlElementRef(type = NumberInter.class),
+            @XmlElementRef(type = OctaveShiftInter.class),
+            @XmlElementRef(type = OrnamentInter.class),
+            @XmlElementRef(type = PedalInter.class),
+            @XmlElementRef(type = PlayingInter.class),
+            @XmlElementRef(type = PluckingInter.class),
+            @XmlElementRef(type = RepeatDotInter.class),
+            @XmlElementRef(type = RestChordInter.class),
+            @XmlElementRef(type = RestInter.class),
+            @XmlElementRef(type = SegmentInter.class),
+            @XmlElementRef(type = SentenceInter.class),
+            @XmlElementRef(type = SimileMarkInter.class), // Temporarily...
+            @XmlElementRef(type = SlurInter.class),
+            @XmlElementRef(type = SmallBeamInter.class),
+            @XmlElementRef(type = SmallChordInter.class),
+            @XmlElementRef(type = SmallFlagInter.class),
+            @XmlElementRef(type = StaffBarlineInter.class),
+            @XmlElementRef(type = StemInter.class),
+            @XmlElementRef(type = TimeCustomInter.class),
+            @XmlElementRef(type = TimeNumberInter.class),
+            @XmlElementRef(type = TimePairInter.class),
+            @XmlElementRef(type = TimeWholeInter.class),
+            @XmlElementRef(type = TremoloInter.class),
+            @XmlElementRef(type = TupletInter.class),
+            @XmlElementRef(type = VerticalSerifInter.class),
+            @XmlElementRef(type = WedgeInter.class),
+            @XmlElementRef(type = WordInter.class) })
     private final ArrayList<AbstractInter> inters = new ArrayList<>();
 
     /** Sig edges: relations between inters. */
@@ -229,6 +265,7 @@ public class SigValue
     private final ArrayList<RelationValue> relations = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * No-arg constructor meant for JAXB.
      */
@@ -237,6 +274,7 @@ public class SigValue
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Method to be called only when SigValue IDREFs have been fully unmarshalled,
      * to populate the target SIG.
@@ -277,13 +315,12 @@ public class SigValue
     @Override
     public String toString ()
     {
-        return new StringBuilder("SigValue{")
-                .append("inters:").append(inters.size())
-                .append(" relations:").append(relations.size())
-                .append('}').toString();
+        return new StringBuilder("SigValue{").append("inters:").append(inters.size()).append(
+                " relations:").append(relations.size()).append('}').toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // JaxbAdapter //
     //-------------//
@@ -303,7 +340,7 @@ public class SigValue
          */
         @Override
         public SigValue marshal (SIGraph sig)
-                throws Exception
+            throws Exception
         {
             SigValue sigValue = new SigValue();
 
@@ -329,7 +366,7 @@ public class SigValue
          */
         @Override
         public SIGraph unmarshal (SigValue sigValue)
-                throws Exception
+            throws Exception
         {
             return new SIGraph(sigValue);
         }
@@ -358,53 +395,71 @@ public class SigValue
          * <p>
          * Here we list alphabetically all CONCRETE relation types. No abstract!
          */
-        @XmlElementRefs({
-            @XmlElementRef(type = AlterHeadRelation.class),
-            @XmlElementRef(type = AugmentationRelation.class),
-            @XmlElementRef(type = BarConnectionRelation.class),
-            @XmlElementRef(type = BarGroupRelation.class),
-            @XmlElementRef(type = BeamBeamRelation.class),
-            @XmlElementRef(type = BeamHeadRelation.class),
-            @XmlElementRef(type = BeamRestRelation.class),
-            @XmlElementRef(type = BeamStemRelation.class),
-            @XmlElementRef(type = ChordArpeggiatoRelation.class),
-            @XmlElementRef(type = ChordArticulationRelation.class),
-            @XmlElementRef(type = ChordDynamicsRelation.class),
-            @XmlElementRef(type = ChordNameRelation.class),
-            @XmlElementRef(type = ChordOrnamentRelation.class),
-            @XmlElementRef(type = ChordPedalRelation.class),
-            @XmlElementRef(type = ChordSentenceRelation.class),
-            @XmlElementRef(type = ChordStemRelation.class),
-            @XmlElementRef(type = ChordSyllableRelation.class),
-            @XmlElementRef(type = ChordTupletRelation.class),
-            @XmlElementRef(type = ChordWedgeRelation.class),
-            @XmlElementRef(type = ClefKeyRelation.class),
-            @XmlElementRef(type = Containment.class),
-            @XmlElementRef(type = DotFermataRelation.class),
-            @XmlElementRef(type = DoubleDotRelation.class),
-            @XmlElementRef(type = EndingBarRelation.class),
-            @XmlElementRef(type = EndingSentenceRelation.class),
-            @XmlElementRef(type = Exclusion.class),
-            @XmlElementRef(type = FermataBarRelation.class),
-            @XmlElementRef(type = FermataChordRelation.class),
-            @XmlElementRef(type = FlagStemRelation.class),
-            @XmlElementRef(type = HeadHeadRelation.class),
-            @XmlElementRef(type = HeadStemRelation.class),
-            @XmlElementRef(type = KeyAltersRelation.class),
-            @XmlElementRef(type = MarkerBarRelation.class),
-            @XmlElementRef(type = MirrorRelation.class),
-            @XmlElementRef(type = NextInVoiceRelation.class),
-            @XmlElementRef(type = NoExclusion.class),
-            @XmlElementRef(type = RepeatDotBarRelation.class),
-            @XmlElementRef(type = RepeatDotPairRelation.class),
-            @XmlElementRef(type = SameTimeRelation.class),
-            @XmlElementRef(type = SameVoiceRelation.class),
-            @XmlElementRef(type = SeparateTimeRelation.class),
-            @XmlElementRef(type = SeparateVoiceRelation.class),
-            @XmlElementRef(type = SlurHeadRelation.class),
-            @XmlElementRef(type = StemAlignmentRelation.class),
-            @XmlElementRef(type = TimeTopBottomRelation.class)})
+        @XmlElementRefs(
+        {
+                @XmlElementRef(type = AlterHeadRelation.class),
+                @XmlElementRef(type = AugmentationRelation.class),
+                @XmlElementRef(type = BarConnectionRelation.class),
+                @XmlElementRef(type = BarGroupRelation.class),
+                @XmlElementRef(type = BeamBeamRelation.class),
+                @XmlElementRef(type = BeamHeadRelation.class),
+                @XmlElementRef(type = BeamRestRelation.class),
+                @XmlElementRef(type = BeamStemRelation.class),
+                @XmlElementRef(type = ChordArpeggiatoRelation.class),
+                @XmlElementRef(type = ChordArticulationRelation.class),
+                @XmlElementRef(type = ChordDynamicsRelation.class),
+                @XmlElementRef(type = ChordGraceRelation.class),
+                @XmlElementRef(type = ChordNameRelation.class),
+                @XmlElementRef(type = ChordOrnamentRelation.class),
+                @XmlElementRef(type = ChordPedalRelation.class),
+                @XmlElementRef(type = ChordSentenceRelation.class),
+                @XmlElementRef(type = ChordStemRelation.class),
+                @XmlElementRef(type = ChordSyllableRelation.class),
+                @XmlElementRef(type = ChordTupletRelation.class),
+                @XmlElementRef(type = ChordWedgeRelation.class),
+                @XmlElementRef(type = ClefKeyRelation.class),
+                @XmlElementRef(type = Containment.class),
+                @XmlElementRef(type = DotFermataRelation.class),
+                @XmlElementRef(type = DoubleDotRelation.class),
+                @XmlElementRef(type = EndingBarRelation.class),
+                @XmlElementRef(type = EndingSentenceRelation.class),
+                @XmlElementRef(type = Exclusion.class),
+                @XmlElementRef(type = FermataBarRelation.class),
+                @XmlElementRef(type = FermataChordRelation.class),
+                @XmlElementRef(type = FlagStemRelation.class),
+                @XmlElementRef(type = HeadFingeringRelation.class),
+                @XmlElementRef(type = HeadHeadRelation.class),
+                @XmlElementRef(type = HeadPlayingRelation.class),
+                @XmlElementRef(type = HeadPluckingRelation.class),
+                @XmlElementRef(type = HeadStemRelation.class),
+                @XmlElementRef(type = KeyAltersRelation.class),
+                @XmlElementRef(type = MarkerBarRelation.class),
+                @XmlElementRef(type = MirrorRelation.class),
+                @XmlElementRef(type = MultipleRestCountRelation.class),
+                @XmlElementRef(type = MultipleRestSerifRelation.class),
+                @XmlElementRef(type = NextInVoiceRelation.class),
+                @XmlElementRef(type = NoExclusion.class),
+                @XmlElementRef(type = OctaveShiftChordRelation.class),
+                @XmlElementRef(type = RepeatDotBarRelation.class),
+                @XmlElementRef(type = RepeatDotPairRelation.class),
+                @XmlElementRef(type = SameTimeRelation.class),
+                @XmlElementRef(type = SameVoiceRelation.class),
+                @XmlElementRef(type = SeparateTimeRelation.class),
+                @XmlElementRef(type = SeparateVoiceRelation.class),
+                @XmlElementRef(type = MeasureRepeatCountRelation.class),
+                @XmlElementRef(type = SlurHeadRelation.class),
+                @XmlElementRef(type = StemAlignmentRelation.class),
+                @XmlElementRef(type = TimeTopBottomRelation.class),
+                @XmlElementRef(type = TremoloStemRelation.class),
+                @XmlElementRef(type = TremoloWholeRelation.class) })
         public Relation relation;
+
+        /**
+         * No-arg constructor meant for JAXB.
+         */
+        private RelationValue ()
+        {
+        }
 
         /**
          * Creates a new <code>RelationValue</code> object.
@@ -420,13 +475,6 @@ public class SigValue
             this.sourceId = source.getId();
             this.targetId = target.getId();
             this.relation = relation;
-        }
-
-        /**
-         * No-arg constructor meant for JAXB.
-         */
-        private RelationValue ()
-        {
         }
 
         @Override

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,33 +50,10 @@ public class DoubleDotRelation
 
     private static final Logger logger = LoggerFactory.getLogger(DoubleDotRelation.class);
 
-    private static final double[] OUT_WEIGHTS = new double[]{constants.xOutWeight.getValue(),
-                                                             constants.yWeight.getValue()};
+    private static final double[] OUT_WEIGHTS = new double[]
+    { constants.xOutWeight.getValue(), constants.yWeight.getValue() };
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
-    }
-
-    //-------------------//
-    // getXOutGapMinimum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMinimum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.xOutGapMin, profile);
-    }
-
-    //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum (int profile)
-    {
-        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
-    }
 
     //-------//
     // added //
@@ -86,37 +63,6 @@ public class DoubleDotRelation
     {
         final AugmentationDotInter secondDot = (AugmentationDotInter) e.getEdgeSource();
         secondDot.checkAbnormal();
-    }
-
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return true;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return true;
-    }
-
-    //---------//
-    // removed //
-    //---------//
-    @Override
-    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
-    {
-        final AugmentationDotInter secondDot = (AugmentationDotInter) e.getEdgeSource();
-
-        if (!secondDot.isRemoved()) {
-            secondDot.checkAbnormal();
-        }
     }
 
     //---------------//
@@ -152,7 +98,65 @@ public class DoubleDotRelation
         return getYGapMaximum(profile);
     }
 
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final AugmentationDotInter secondDot = (AugmentationDotInter) e.getEdgeSource();
+
+        if (!secondDot.isRemoved()) {
+            secondDot.checkAbnormal();
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMax, profile);
+    }
+
+    //-------------------//
+    // getXOutGapMinimum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMinimum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.xOutGapMin, profile);
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum (int profile)
+    {
+        return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

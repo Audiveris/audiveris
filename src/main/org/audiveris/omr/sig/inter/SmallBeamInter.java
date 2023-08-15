@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -29,7 +29,8 @@ import java.awt.geom.Line2D;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>SmallBeamInter</code> represents a small (cue) beam.
+ * Class <code>SmallBeamInter</code> represents a small (cue) beam, with a height smaller than
+ * standard beams.
  *
  * @author Hervé Bitteur
  */
@@ -38,6 +39,25 @@ public class SmallBeamInter
         extends AbstractBeamInter
 {
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    @SuppressWarnings("unused")
+    private SmallBeamInter ()
+    {
+        super((Shape) null, (GradeImpacts) null, null, 0);
+    }
+
+    /**
+     * Creates manually a new SmallBeamInter ghost object.
+     *
+     * @param grade quality grade
+     */
+    public SmallBeamInter (Double grade)
+    {
+        super(Shape.BEAM_SMALL, grade);
+    }
 
     /**
      * Creates a new SmallBeamInter object.
@@ -53,21 +73,14 @@ public class SmallBeamInter
         super(Shape.BEAM_SMALL, impacts, median, height);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private SmallBeamInter ()
-    {
-        super(null, null, null, 0);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
+
+    //---------//
+    // isSmall //
+    //---------//
     @Override
-    public void accept (InterVisitor visitor)
+    public boolean isSmall ()
     {
-        visitor.visit(this);
+        return true;
     }
 }

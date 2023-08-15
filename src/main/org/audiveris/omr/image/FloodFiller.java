@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -39,6 +39,7 @@ public class FloodFiller
     private final int height;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new FloodFiller object.
      *
@@ -52,10 +53,12 @@ public class FloodFiller
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Flood fill the area from provided (x,y) location by recursively converting
      * pixels from oldColor to newColor.
-     * Simplistic implementation, but sufficient for the time being.
+     * <p>
+     * This implementation flood fills only vertically and horizontally, not in diagonal.
      *
      * @param x        the abscissa of the pixel to process
      * @param y        the ordinate of the pixel to process
@@ -72,11 +75,45 @@ public class FloodFiller
 
             if ((pix == oldColor) && (pix != newColor)) {
                 image.setRGB(x, y, newColor);
-                fill(x - 1, y, oldColor, newColor);
-                fill(x + 1, y, oldColor, newColor);
-                fill(x, y - 1, oldColor, newColor);
-                fill(x, y + 1, oldColor, newColor);
+                fill(x - 1, y, oldColor, newColor); // Left
+                fill(x, y - 1, oldColor, newColor); // Top
+                fill(x, y + 1, oldColor, newColor); // Bottom
+                fill(x + 1, y, oldColor, newColor); // Right
             }
         }
+    }
+
+    /**
+     * Check if the pixel at provided (x,y) location is an isolated pixel, and if so,
+     * replace it by newColor.
+     *
+     * @param x        the abscissa of the pixel to process
+     * @param y        the ordinate of the pixel to process
+     * @param newColor the color to replace with
+     */
+    public void adjust (int x,
+                        int y,
+                        int newColor)
+    {
+        // Check if pixel is isolated (no vertical/horizontal neighbor w/ same color)
+        final int pix = image.getRGB(x, y);
+
+        if (image.getRGB(x - 1, y) == pix) {
+            return;
+        }
+
+        if (image.getRGB(x, y - 1) == pix) {
+            return;
+        }
+
+        if (image.getRGB(x, y + 1) == pix) {
+            return;
+        }
+
+        if (image.getRGB(x + 1, y) == pix) {
+            return;
+        }
+
+        image.setRGB(x, y, newColor);
     }
 }

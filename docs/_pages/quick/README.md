@@ -25,4 +25,8 @@ All we have to do is, in sequence:
 
 For the impatient, note that if we have defined a [plugin](../advanced/plugins.md) to a sequencer
 like MuseScore, the sub-sequence of bullets \#3, \#4 and \#5 could conveniently be replaced by just
-pressing the plugin button.
+pressing the plugin button.  
+This would give:
+1. Launch Audiveris,
+2. Load the input image,
+3. Press the Plugin button.

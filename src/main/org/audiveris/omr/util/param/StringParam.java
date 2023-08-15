@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -31,6 +31,13 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 public class StringParam
         extends Param<String>
 {
+    //~ Constructors -------------------------------------------------------------------------------
+
+    public StringParam (Object scope)
+    {
+        super(scope);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
 
     /**
@@ -42,7 +49,7 @@ public class StringParam
 
         @Override
         public String marshal (StringParam val)
-                throws Exception
+            throws Exception
         {
             if (val == null) {
                 return null;
@@ -53,9 +60,9 @@ public class StringParam
 
         @Override
         public StringParam unmarshal (String str)
-                throws Exception
+            throws Exception
         {
-            StringParam sp = new StringParam();
+            StringParam sp = new StringParam(null);
             sp.setSpecific(str);
 
             return sp;

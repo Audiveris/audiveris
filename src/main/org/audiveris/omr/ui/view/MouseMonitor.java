@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -57,6 +57,15 @@ public interface MouseMonitor
                           MouseMovement movement);
 
     /**
+     * Selection (by left button double-click)
+     *
+     * @param pt       the selected point in model pixel coordinates
+     * @param movement the mouse movement
+     */
+    void objectSelected (Point pt,
+                         MouseMovement movement);
+
+    /**
      * Selection (by left button click + control) of an additional point
      *
      * @param pt       the added point in model pixel coordinates
@@ -73,15 +82,6 @@ public interface MouseMonitor
      */
     void pointSelected (Point pt,
                         MouseMovement movement);
-
-    /**
-     * Selection (by left button double-click)
-     *
-     * @param pt       the selected point in model pixel coordinates
-     * @param movement the mouse movement
-     */
-    void objectSelected (Point pt,
-                         MouseMovement movement);
 
     /**
      * Selection (by left or right button drag + shift) of a rectangle

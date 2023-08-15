@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,6 +45,7 @@ public class GlyphsModel
     private static final Logger logger = LoggerFactory.getLogger(GlyphsModel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying glyph service. */
     protected final EntityService<? extends Glyph> glyphService;
 
@@ -55,6 +56,7 @@ public class GlyphsModel
     protected Shape latestShape;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an instance of GlyphsModel, with its underlying glyph glyphService.
      *
@@ -71,6 +73,7 @@ public class GlyphsModel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // assignGlyph //
     //-------------//
@@ -160,81 +163,6 @@ public class GlyphsModel
         return glyph;
     }
 
-    //    //-------------//
-    //    // assignGlyph //
-    //    //-------------//
-    //    /**
-    //     * Assign a shape to the selected collection of glyphs.
-    //     *
-    //     * @param glyph the glyph to be assigned
-    //     * @param shape the shape to be assigned
-    //     * @param staff the related staff
-    //     * @param grade the grade we have wrt the assigned shape
-    //     */
-    //    public void assignGlyph (Glyph glyph,
-    //                             Shape shape,
-    //                             Staff staff,
-    //                             double grade)
-    //    {
-    //        // NO! interline is wrong!!!
-    //        assignGlyph(glyph, sheet.getScale().getInterline(), shape, grade);
-    //    }
-    //
-    //-----------------//
-    // getGlyphService //
-    //-----------------//
-    /**
-     * Report the underlying glyph glyphService.
-     *
-     * @return the related glyph glyphService
-     */
-    public EntityService<? extends Glyph> getGlyphService ()
-    {
-        return glyphService;
-    }
-
-    //----------------//
-    // getLatestShape //
-    //----------------//
-    /**
-     * Report the latest non null shape that was assigned, or null if
-     * none.
-     *
-     * @return latest shape assigned, or null if none
-     */
-    public Shape getLatestShape ()
-    {
-        return latestShape;
-    }
-
-    //----------------//
-    // setLatestShape //
-    //----------------//
-    /**
-     * Assign the latest useful shape.
-     *
-     * @param shape the current / latest shape
-     */
-    public void setLatestShape (Shape shape)
-    {
-        if (shape != Shape.GLYPH_PART) {
-            latestShape = shape;
-        }
-    }
-
-    //----------//
-    // getSheet //
-    //----------//
-    /**
-     * Report the model underlying sheet.
-     *
-     * @return the underlying sheet instance
-     */
-    public Sheet getSheet ()
-    {
-        return sheet;
-    }
-
     //---------------//
     // deassignGlyph //
     //---------------//
@@ -286,5 +214,80 @@ public class GlyphsModel
         //        }
         //
         //        nest.removeGlyph(glyph);
+    }
+
+    //    //-------------//
+    //    // assignGlyph //
+    //    //-------------//
+    //    /**
+    //     * Assign a shape to the selected collection of glyphs.
+    //     *
+    //     * @param glyph the glyph to be assigned
+    //     * @param shape the shape to be assigned
+    //     * @param staff the related staff
+    //     * @param grade the grade we have wrt the assigned shape
+    //     */
+    //    public void assignGlyph (Glyph glyph,
+    //                             Shape shape,
+    //                             Staff staff,
+    //                             double grade)
+    //    {
+    //        // NO! interline is wrong!!!
+    //        assignGlyph(glyph, sheet.getScale().getInterline(), shape, grade);
+    //    }
+    //
+    //-----------------//
+    // getGlyphService //
+    //-----------------//
+    /**
+     * Report the underlying glyph glyphService.
+     *
+     * @return the related glyph glyphService
+     */
+    public EntityService<? extends Glyph> getGlyphService ()
+    {
+        return glyphService;
+    }
+
+    //----------------//
+    // getLatestShape //
+    //----------------//
+    /**
+     * Report the latest non null shape that was assigned, or null if
+     * none.
+     *
+     * @return latest shape assigned, or null if none
+     */
+    public Shape getLatestShape ()
+    {
+        return latestShape;
+    }
+
+    //----------//
+    // getSheet //
+    //----------//
+    /**
+     * Report the model underlying sheet.
+     *
+     * @return the underlying sheet instance
+     */
+    public Sheet getSheet ()
+    {
+        return sheet;
+    }
+
+    //----------------//
+    // setLatestShape //
+    //----------------//
+    /**
+     * Assign the latest useful shape.
+     *
+     * @param shape the current / latest shape
+     */
+    public void setLatestShape (Shape shape)
+    {
+        if (shape != Shape.GLYPH_PART) {
+            latestShape = shape;
+        }
     }
 }

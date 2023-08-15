@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -25,7 +25,11 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
-import static java.awt.geom.PathIterator.*;
+import static java.awt.geom.PathIterator.SEG_CLOSE;
+import static java.awt.geom.PathIterator.SEG_CUBICTO;
+import static java.awt.geom.PathIterator.SEG_LINETO;
+import static java.awt.geom.PathIterator.SEG_MOVETO;
+import static java.awt.geom.PathIterator.SEG_QUADTO;
 import java.awt.geom.Point2D;
 
 /**
@@ -68,6 +72,7 @@ public class GeoPath
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // getFirstPoint //
     //---------------//
@@ -126,181 +131,6 @@ public class GeoPath
         }
 
         return new Point2D.Double(x, y);
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{");
-
-        double[] buffer = new double[6];
-
-        for (PathIterator it = getPathIterator(null); !it.isDone(); it.next()) {
-            int segmentKind = it.currentSegment(buffer);
-
-            sb.append(" ").append(labelOf(segmentKind)).append("(");
-
-            int coords = countOf(segmentKind);
-            boolean firstCoord = true;
-
-            for (int ic = 0; ic < (coords - 1); ic += 2) {
-                if (!firstCoord) {
-                    sb.append(",");
-                    firstCoord = false;
-                }
-
-                sb.append("[").append((float) buffer[ic]).append(",")
-                        .append((float) buffer[ic + 1]).append("]");
-            }
-
-            sb.append(")");
-        }
-
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    //------//
-    // xAtY //
-    //------//
-    /**
-     * Report the abscissa value of the spline at provided ordinate
-     * (assuming true function)
-     *
-     * @param y the provided ordinate (must be in y range of the spline)
-     * @return the abscissa value at this ordinate
-     */
-    public double xAtY (double y)
-    {
-        final double[] coords = new double[6];
-        final Point2D.Double p1 = new Point2D.Double();
-        final Point2D.Double p2 = new Point2D.Double();
-        final int segmentKind = getYSegment(y, coords, p1, p2);
-        final double t = (y - p1.y) / (p2.y - p1.y);
-        final double u = 1 - t;
-
-        switch (segmentKind) {
-        case SEG_LINETO:
-            return p1.x + (t * (p2.x - p1.x));
-
-        case SEG_QUADTO: {
-            double cpx = coords[0];
-
-            return (p1.x * u * u) + (2 * cpx * t * u) + (p2.x * t * t);
-        }
-
-        case SEG_CUBICTO: {
-            double cpx1 = coords[0];
-            double cpx2 = coords[2];
-
-            return (p1.x * u * u * u)
-                           + (3 * cpx1 * t * u * u)
-                           + (3 * cpx2 * t * t * u)
-                           + (p2.x * t * t * t);
-        }
-
-        default:
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
-    }
-
-    //---------//
-    // xAtYExt //
-    //---------//
-    /**
-     * Similar functionality as xAtY, but also accepts ordinates outside the line
-     * ordinate range by extrapolating the line based on start and stop points.
-     *
-     * @param y the provided ordinate
-     * @return the abscissa value at this ordinate
-     */
-    public double xAtYExt (double y)
-    {
-        Point2D startPoint = getFirstPoint();
-        Point2D stopPoint = getLastPoint();
-
-        if ((y < startPoint.getY()) || (y > stopPoint.getY())) {
-            double sl = (stopPoint.getX() - startPoint.getX()) / (stopPoint.getY() - startPoint
-                    .getY());
-
-            return startPoint.getX() + (sl * (y - startPoint.getY()));
-        } else {
-            return xAtY(y);
-        }
-    }
-
-    //------//
-    // yAtX //
-    //------//
-    /**
-     * Report the ordinate value of the spline at provided abscissa
-     * (assuming true function)
-     *
-     * @param x the provided abscissa (must be in x range of the spline)
-     * @return the ordinate value at this abscissa
-     */
-    public double yAtX (double x)
-    {
-        final double[] coords = new double[6];
-        final Point2D.Double p1 = new Point2D.Double();
-        final Point2D.Double p2 = new Point2D.Double();
-        final int segmentKind = getXSegment(x, coords, p1, p2);
-        final double t = (x - p1.x) / (p2.x - p1.x);
-        final double u = 1 - t;
-
-        switch (segmentKind) {
-        case SEG_LINETO:
-            return p1.y + (t * (p2.y - p1.y));
-
-        case SEG_QUADTO: {
-            double cpy = coords[1];
-
-            return (p1.y * u * u) + (2 * cpy * t * u) + (p2.y * t * t);
-        }
-
-        case SEG_CUBICTO: {
-            double cpy1 = coords[1];
-            double cpy2 = coords[3];
-
-            return (p1.y * u * u * u)
-                           + (3 * cpy1 * t * u * u)
-                           + (3 * cpy2 * t * t * u)
-                           + (p2.y * t * t * t);
-        }
-
-        default:
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
-    }
-
-    //---------//
-    // yAtXExt //
-    //---------//
-    /**
-     * Similar functionality as yAtX, but also accepts abscissae outside the spline
-     * abscissa range by extrapolating the line based on start and stop points.
-     *
-     * @param x the provided abscissa
-     * @return the ordinate value at this abscissa
-     */
-    public double yAtXExt (double x)
-    {
-        Point2D startPoint = getFirstPoint();
-        Point2D stopPoint = getLastPoint();
-
-        if ((x < startPoint.getX()) || (x > stopPoint.getX())) {
-            double sl = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX() - startPoint
-                    .getX());
-
-            return startPoint.getY() + (sl * (x - startPoint.getX()));
-        } else {
-            return yAtX(x);
-        }
     }
 
     //-------------//
@@ -395,6 +225,213 @@ public class GeoPath
         throw new RuntimeException("Ordinate not in range: " + y);
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append("{");
+
+        double[] buffer = new double[6];
+
+        for (PathIterator it = getPathIterator(null); !it.isDone(); it.next()) {
+            int segmentKind = it.currentSegment(buffer);
+
+            sb.append(" ").append(labelOf(segmentKind)).append("(");
+
+            int coords = countOf(segmentKind);
+            boolean firstCoord = true;
+
+            for (int ic = 0; ic < (coords - 1); ic += 2) {
+                if (!firstCoord) {
+                    sb.append(",");
+                    firstCoord = false;
+                }
+
+                sb.append("[").append((float) buffer[ic]).append(",").append((float) buffer[ic + 1])
+                        .append("]");
+            }
+
+            sb.append(")");
+        }
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    //------//
+    // xAtY //
+    //------//
+    /**
+     * Report the abscissa value of the spline at provided ordinate
+     * (assuming true function)
+     *
+     * @param y the provided ordinate (must be in y range of the spline)
+     * @return the abscissa value at this ordinate
+     */
+    public double xAtY (double y)
+    {
+        final double[] coords = new double[6];
+        final Point2D.Double p1 = new Point2D.Double();
+        final Point2D.Double p2 = new Point2D.Double();
+        final int segmentKind = getYSegment(y, coords, p1, p2);
+        final double t = (y - p1.y) / (p2.y - p1.y);
+        final double u = 1 - t;
+
+        switch (segmentKind) {
+        case SEG_LINETO:
+            return p1.x + (t * (p2.x - p1.x));
+
+        case SEG_QUADTO:
+        {
+            double cpx = coords[0];
+
+            return (p1.x * u * u) + (2 * cpx * t * u) + (p2.x * t * t);
+        }
+
+        case SEG_CUBICTO:
+        {
+            double cpx1 = coords[0];
+            double cpx2 = coords[2];
+
+            return (p1.x * u * u * u) + (3 * cpx1 * t * u * u) + (3 * cpx2 * t * t * u) + (p2.x * t
+                    * t * t);
+        }
+
+        default:
+            throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        }
+    }
+
+    //---------//
+    // xAtYExt //
+    //---------//
+    /**
+     * Similar functionality as xAtY, but also accepts ordinates outside the line
+     * ordinate range by extrapolating the line based on start and stop points.
+     *
+     * @param y the provided ordinate
+     * @return the abscissa value at this ordinate
+     */
+    public double xAtYExt (double y)
+    {
+        Point2D startPoint = getFirstPoint();
+        Point2D stopPoint = getLastPoint();
+
+        if ((y < startPoint.getY()) || (y > stopPoint.getY())) {
+            double sl = (stopPoint.getX() - startPoint.getX()) / (stopPoint.getY() - startPoint
+                    .getY());
+
+            return startPoint.getX() + (sl * (y - startPoint.getY()));
+        } else {
+            return xAtY(y);
+        }
+    }
+
+    //------//
+    // yAtX //
+    //------//
+    /**
+     * Report the ordinate value of the spline at provided abscissa
+     * (assuming true function)
+     *
+     * @param x the provided abscissa (must be in x range of the spline)
+     * @return the ordinate value at this abscissa
+     */
+    public double yAtX (double x)
+    {
+        final double[] coords = new double[6];
+        final Point2D.Double p1 = new Point2D.Double();
+        final Point2D.Double p2 = new Point2D.Double();
+        final int segmentKind = getXSegment(x, coords, p1, p2);
+        final double t = (x - p1.x) / (p2.x - p1.x);
+        final double u = 1 - t;
+
+        switch (segmentKind) {
+        case SEG_LINETO:
+            return p1.y + (t * (p2.y - p1.y));
+
+        case SEG_QUADTO:
+        {
+            double cpy = coords[1];
+
+            return (p1.y * u * u) + (2 * cpy * t * u) + (p2.y * t * t);
+        }
+
+        case SEG_CUBICTO:
+        {
+            double cpy1 = coords[1];
+            double cpy2 = coords[3];
+
+            return (p1.y * u * u * u) + (3 * cpy1 * t * u * u) + (3 * cpy2 * t * t * u) + (p2.y * t
+                    * t * t);
+        }
+
+        default:
+            throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        }
+    }
+
+    //---------//
+    // yAtXExt //
+    //---------//
+    /**
+     * Similar functionality as yAtX, but also accepts abscissae outside the spline
+     * abscissa range by extrapolating the line based on start and stop points.
+     *
+     * @param x the provided abscissa
+     * @return the ordinate value at this abscissa
+     */
+    public double yAtXExt (double x)
+    {
+        Point2D startPoint = getFirstPoint();
+        Point2D stopPoint = getLastPoint();
+
+        if ((x < startPoint.getX()) || (x > stopPoint.getX())) {
+            double sl = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX() - startPoint
+                    .getX());
+
+            return startPoint.getY() + (sl * (x - startPoint.getX()));
+        } else {
+            return yAtX(x);
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //---------//
+    // countOf //
+    //---------//
+    /**
+     * Report how many coordinate values a path segment contains.
+     *
+     * @param segmentKind the int-based segment kind
+     * @return the number of coordinates values
+     */
+    protected static int countOf (int segmentKind)
+    {
+        switch (segmentKind) {
+        case SEG_MOVETO:
+        case SEG_LINETO:
+            return 2;
+
+        case SEG_QUADTO:
+            return 4;
+
+        case SEG_CUBICTO:
+            return 6;
+
+        case SEG_CLOSE:
+            return 0;
+
+        default:
+            throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        }
+    }
+
     //---------//
     // labelOf //
     //---------//
@@ -421,36 +458,6 @@ public class GeoPath
 
         case SEG_CLOSE:
             return "SEG_CLOSE";
-
-        default:
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
-    }
-
-    //---------//
-    // countOf //
-    //---------//
-    /**
-     * Report how many coordinate values a path segment contains.
-     *
-     * @param segmentKind the int-based segment kind
-     * @return the number of coordinates values
-     */
-    protected static int countOf (int segmentKind)
-    {
-        switch (segmentKind) {
-        case SEG_MOVETO:
-        case SEG_LINETO:
-            return 2;
-
-        case SEG_QUADTO:
-            return 4;
-
-        case SEG_CUBICTO:
-            return 6;
-
-        case SEG_CLOSE:
-            return 0;
 
         default:
             throw new RuntimeException("Illegal segmentKind " + segmentKind);

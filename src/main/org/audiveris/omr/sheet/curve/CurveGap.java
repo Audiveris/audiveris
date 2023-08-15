@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,12 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.curve;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.math.GeoPath;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -48,6 +48,7 @@ public abstract class CurveGap
     protected static final int MARGIN = 1;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** End point of curve. */
     protected final Point p1;
 
@@ -61,6 +62,7 @@ public abstract class CurveGap
     protected int[] vector;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new CurveGap object.
      *
@@ -75,6 +77,7 @@ public abstract class CurveGap
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Compute the gap vector based on foreground pixels found in gap area.
      *
@@ -154,6 +157,8 @@ public abstract class CurveGap
     protected abstract void populateVector (int x,
                                             int y);
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     /**
      * Factory method to create the CurveGap instance with proper orientation.
      *
@@ -177,6 +182,7 @@ public abstract class CurveGap
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     /**
      * For rather horizontal gaps.
      */
@@ -198,13 +204,6 @@ public abstract class CurveGap
             area = computeArea();
         }
 
-        @Override
-        protected final void populateVector (int x,
-                                             int y)
-        {
-            vector[x] = 1;
-        }
-
         private Area computeArea ()
         {
             final GeoPath path;
@@ -220,6 +219,13 @@ public abstract class CurveGap
             path.closePath();
 
             return new Area(path);
+        }
+
+        @Override
+        protected final void populateVector (int x,
+                                             int y)
+        {
+            vector[x] = 1;
         }
     }
 
@@ -244,13 +250,6 @@ public abstract class CurveGap
             area = computeArea();
         }
 
-        @Override
-        protected final void populateVector (int x,
-                                             int y)
-        {
-            vector[y] = 1;
-        }
-
         private Area computeArea ()
         {
             final GeoPath path;
@@ -266,6 +265,13 @@ public abstract class CurveGap
             path.closePath();
 
             return new Area(path);
+        }
+
+        @Override
+        protected final void populateVector (int x,
+                                             int y)
+        {
+            vector[y] = 1;
         }
     }
 }

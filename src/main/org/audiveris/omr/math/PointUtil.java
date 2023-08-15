@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -39,12 +39,15 @@ public abstract class PointUtil
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare points on abscissa. */
-    public static final Comparator<Point> byAbscissa = (p1, p2) -> Integer.compare(p1.x, p2.x);
+    public static final Comparator<Point> byAbscissa = (p1,
+                                                        p2) -> Integer.compare(p1.x, p2.x);
 
     /** To compare points on ordinate. */
-    public static final Comparator<Point> byOrdinate = (p1, p2) -> Integer.compare(p1.y, p2.y);
+    public static final Comparator<Point> byOrdinate = (p1,
+                                                        p2) -> Integer.compare(p1.y, p2.y);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Not meant to be instantiated.
      */
@@ -52,7 +55,37 @@ public abstract class PointUtil
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    /**
+     * Add to point p the provided (dx, dy) vector.
+     *
+     * @param p  point to be modified
+     * @param dx abscissa to be added
+     * @param dy ordinate to be added
+     */
+    public static void add (Point2D p,
+                            double dx,
+                            double dy)
+    {
+        p.setLocation(p.getX() + dx, p.getY() + dy);
+    }
+
+    //-----//
+    // add //
+    //-----//
+    /**
+     * Add to point p the provided vector.
+     *
+     * @param p      point to be modified
+     * @param vector vector to be added
+     */
+    public static void add (Point2D p,
+                            Point2D vector)
+    {
+        add(p, vector.getX(), vector.getY());
+    }
+
     //----------//
     // addition //
     //----------//
@@ -83,35 +116,6 @@ public abstract class PointUtil
                                     Point2D p2)
     {
         return new Point2D.Double(p1.getX() + p2.getX(), p1.getY() + p2.getY());
-    }
-
-    //-----//
-    // add //
-    //-----//
-    /**
-     * Add to point p the provided vector.
-     *
-     * @param p      point to be modified
-     * @param vector vector to be added
-     */
-    public static void add (Point2D p,
-                            Point2D vector)
-    {
-        add(p, vector.getX(), vector.getY());
-    }
-
-    /**
-     * Add to point p the provided (dx, dy) vector.
-     *
-     * @param p  point to be modified
-     * @param dx abscissa to be added
-     * @param dy ordinate to be added
-     */
-    public static void add (Point2D p,
-                            double dx,
-                            double dy)
-    {
-        p.setLocation(p.getX() + dx, p.getY() + dy);
     }
 
     //----------//
@@ -204,22 +208,6 @@ public abstract class PointUtil
     // middle //
     //--------//
     /**
-     * Report the middle point between the two provided points.
-     *
-     * @param p1 a point
-     * @param p2 another point
-     * @return the middle point between p1 and p2
-     */
-    public static Point2D middle (Point2D p1,
-                                  Point2D p2)
-    {
-        return new Point2D.Double((p1.getX() + p2.getX()) / 2.0, (p1.getY() + p2.getY()) / 2.0);
-    }
-
-    //--------//
-    // middle //
-    //--------//
-    /**
      * Report the middle point of a Line2D.
      *
      * @param line provided line2D
@@ -230,6 +218,22 @@ public abstract class PointUtil
         return new Point2D.Double(
                 (line.getX1() + line.getX2()) / 2.0,
                 (line.getY1() + line.getY2()) / 2.0);
+    }
+
+    //--------//
+    // middle //
+    //--------//
+    /**
+     * Report the middle point between the two provided points.
+     *
+     * @param p1 a point
+     * @param p2 another point
+     * @return the middle point between p1 and p2
+     */
+    public static Point2D middle (Point2D p1,
+                                  Point2D p2)
+    {
+        return new Point2D.Double((p1.getX() + p2.getX()) / 2.0, (p1.getY() + p2.getY()) / 2.0);
     }
 
     //---------//
@@ -254,23 +258,7 @@ public abstract class PointUtil
     // subtraction //
     //-------------//
     /**
-     * Report the vector which represent p2 - p1.
-     *
-     * @param p1 a vector
-     * @param p2 another vector
-     * @return the geometric subtraction
-     */
-    public static Point2D subtraction (Point2D p1,
-                                       Point2D p2)
-    {
-        return new Point2D.Double(p1.getX() - p2.getX(), p1.getY() - p2.getY());
-    }
-
-    //-------------//
-    // subtraction //
-    //-------------//
-    /**
-     * Report the vector which represent p2 - p1.
+     * Report the vector from p2 to p1 (that is p1 - p2).
      *
      * @param p1 a vector
      * @param p2 another vector
@@ -283,6 +271,22 @@ public abstract class PointUtil
         Objects.requireNonNull(p2, "PointUtil.subtraction. p2 must be non-null");
 
         return new Point(p1.x - p2.x, p1.y - p2.y);
+    }
+
+    //-------------//
+    // subtraction //
+    //-------------//
+    /**
+     * Report the vector from p2 to p1 (that is p1 - p2).
+     *
+     * @param p1 a vector
+     * @param p2 another vector
+     * @return the geometric subtraction
+     */
+    public static Point2D subtraction (Point2D p1,
+                                       Point2D p2)
+    {
+        return new Point2D.Double(p1.getX() - p2.getX(), p1.getY() - p2.getY());
     }
 
     //-------//
@@ -307,6 +311,24 @@ public abstract class PointUtil
     /**
      * A toString() that can cope with null instance.
      *
+     * @param p Point instance
+     * @return string value
+     */
+    public static String toString (Point p)
+    {
+        if (p == null) {
+            return "nullPoint";
+        }
+
+        return String.format("[%d,%df]", p.x, p.y);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * A toString() that can cope with null instance.
+     *
      * @param p Point2D instance
      * @return string value
      */
@@ -319,21 +341,37 @@ public abstract class PointUtil
         return String.format("[%.1f,%.1f]", p.getX(), p.getY());
     }
 
-    //----------//
-    // toString //
-    //----------//
+    //-----------//
+    // translate //
+    //-----------//
     /**
-     * A toString() that can cope with null instance.
+     * Translate the provided Point along the (dx, dy) vector.
      *
-     * @param p Point instance
-     * @return string value
+     * @param point the point to translate
+     * @param dx    translation in abscissa
+     * @param dy    translation in ordinate
      */
-    public static String toString (Point p)
+    public static void translate (Point point,
+                                  int dx,
+                                  int dy)
     {
-        if (p == null) {
-            return "nullPoint";
-        }
+        point.setLocation(point.x + dx, point.y + dy);
+    }
 
-        return String.format("[%d,%df]", p.x, p.y);
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Translate the provided Point2D along the (dx, dy) vector.
+     *
+     * @param point the point to translate
+     * @param dx    translation in abscissa
+     * @param dy    translation in ordinate
+     */
+    public static void translate (Point2D point,
+                                  double dx,
+                                  double dy)
+    {
+        point.setLocation(point.getX() + dx, point.getY() + dy);
     }
 }

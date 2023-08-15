@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -84,6 +84,7 @@ public class StickFactory
     private static final Logger logger = LoggerFactory.getLogger(StickFactory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Sticks orientation. */
     private final Orientation orientation;
 
@@ -112,6 +113,7 @@ public class StickFactory
     private final Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>StickFactory</code> object.
      *
@@ -142,61 +144,6 @@ public class StickFactory
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * At system level, retrieve all candidate sticks (stem seeds / ledgers).
-     *
-     * @param systemSections   all sections to process (vertical for stem, horizontal for ledgers)
-     *                         already ordered by full position.
-     * @param oppositeStickers opposite stickers if any (some horizontal sections for stems)
-     * @return the collection of seeds built.
-     */
-    public List<StraightFilament> retrieveSticks (List<Section> systemSections,
-                                                  List<Section> oppositeStickers)
-    {
-        StopWatch watch = new StopWatch("StickFactory S#" + system.getId());
-
-        try {
-            // All sections in desired orientation
-            watch.start("buildSectionGraph");
-            this.allSections = buildSectionGraph(systemSections);
-
-            // Additional external stickers, organized by position
-            if (oppositeStickers != null) {
-                watch.start("getOppositeStickers");
-                oppStickers = getOppositeStickers(oppositeStickers);
-            }
-
-            // Pick up core sections (slim and long enough)
-            watch.start("getCoreSections");
-
-            List<LinkedSection> coreSections = getCoreSections();
-
-            // Build sticks from the core sections
-            watch.start("buildSticks");
-
-            return buildSticks(coreSections);
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
-    }
-
-    //-------------//
-    // isProcessed //
-    //-------------//
-    private boolean isProcessed (LinkedSection section)
-    {
-        return section.isProcessed();
-    }
-
-    //--------------//
-    // setProcessed //
-    //--------------//
-    private void setProcessed (LinkedSection section)
-    {
-        section.setProcessed();
-    }
 
     //-------------//
     // addStickers //
@@ -211,7 +158,8 @@ public class StickFactory
         final Set<Section> members = fil.getMembers();
         final Set<Section> stickers = new LinkedHashSet<>();
 
-        for (boolean reverse : new boolean[]{true, false}) {
+        for (boolean reverse : new boolean[]
+        { true, false }) {
             for (Section s : members) {
                 LinkedSection ls = (LinkedSection) s;
 
@@ -219,7 +167,7 @@ public class StickFactory
                 for (LinkedSection linked : getNeighbors(ls, reverse)) {
                     // Must be thin & isolated on the border
                     if ((linked.getCompound() == null) && (linked.getRunCount() == 1)
-                                && getNeighbors(linked, reverse).isEmpty()) {
+                            && getNeighbors(linked, reverse).isEmpty()) {
                         stickers.add(linked);
                     }
                 }
@@ -358,8 +306,8 @@ public class StickFactory
 
         // Discard too thick or too short sections
         for (LinkedSection ls : allSections) {
-            if ((ls.getRunCount() <= params.maxStickThickness)
-                        && (ls.getLength(orientation) >= params.minCoreSectionLength)) {
+            if ((ls.getRunCount() <= params.maxStickThickness) && (ls.getLength(
+                    orientation) >= params.minCoreSectionLength)) {
                 if ((predicate == null) || predicate.test(ls)) {
                     candidates.add(ls);
                 }
@@ -367,9 +315,12 @@ public class StickFactory
         }
 
         // Sort candidates by decreasing length
-        Collections.sort(candidates, (Section ls1, Section ls2)
-                         -> Integer.compare(ls2.getLength(orientation),
-                                            ls1.getLength(orientation)));
+        Collections.sort(
+                candidates,
+                (Section ls1,
+                 Section ls2) -> Integer.compare(
+                         ls2.getLength(orientation),
+                         ls1.getLength(orientation)));
 
         return candidates;
     }
@@ -460,6 +411,62 @@ public class StickFactory
         return sideSections;
     }
 
+    //-------------//
+    // isProcessed //
+    //-------------//
+    private boolean isProcessed (LinkedSection section)
+    {
+        return section.isProcessed();
+    }
+
+    /**
+     * At system level, retrieve all candidate sticks (stem seeds / ledgers).
+     *
+     * @param systemSections   all sections to process (vertical for stem, horizontal for ledgers)
+     *                         already ordered by full position.
+     * @param oppositeStickers opposite stickers if any (some horizontal sections for stems)
+     * @return the collection of seeds built.
+     */
+    public List<StraightFilament> retrieveSticks (List<Section> systemSections,
+                                                  List<Section> oppositeStickers)
+    {
+        StopWatch watch = new StopWatch("StickFactory S#" + system.getId());
+
+        try {
+            // All sections in desired orientation
+            watch.start("buildSectionGraph");
+            this.allSections = buildSectionGraph(systemSections);
+
+            // Additional external stickers, organized by position
+            if (oppositeStickers != null) {
+                watch.start("getOppositeStickers");
+                oppStickers = getOppositeStickers(oppositeStickers);
+            }
+
+            // Pick up core sections (slim and long enough)
+            watch.start("getCoreSections");
+
+            List<LinkedSection> coreSections = getCoreSections();
+
+            // Build sticks from the core sections
+            watch.start("buildSticks");
+
+            return buildSticks(coreSections);
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+    }
+
+    //--------------//
+    // setProcessed //
+    //--------------//
+    private void setProcessed (LinkedSection section)
+    {
+        section.setProcessed();
+    }
+
     //-----------------//
     // thickenFilament //
     //-----------------//
@@ -486,7 +493,8 @@ public class StickFactory
 
             // Look on source side, then on target side
             SideLoop:
-            for (boolean reverse : new boolean[]{true, false}) {
+            for (boolean reverse : new boolean[]
+            { true, false }) {
                 if (TRUE.equals(finished.get(reverse))) {
                     continue;
                 }
@@ -515,7 +523,7 @@ public class StickFactory
                             final int thickness = neighbor.getRunCount();
 
                             if (((thickness + filMeanThickness) > params.maxStickThickness)
-                                        || ((predicate != null) && !predicate.test(neighbor))) {
+                                    || ((predicate != null) && !predicate.test(neighbor))) {
                                 it.remove();
                             } else {
                                 int length = neighbor.getLength(orientation);
@@ -568,10 +576,12 @@ public class StickFactory
                     finished.put(reverse, Boolean.TRUE); // We can't go any further on this side
                 }
             }
-        } while (grown && (Math.rint(fil.getMeanThickness(orientation)) < params.maxStickThickness));
+        } while (grown && (Math.rint(
+                fil.getMeanThickness(orientation)) < params.maxStickThickness));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

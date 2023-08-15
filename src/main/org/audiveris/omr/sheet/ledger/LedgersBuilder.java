@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,8 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.ledger;
-
-import ij.process.ByteProcessor;
 
 import org.audiveris.omr.check.Check;
 import org.audiveris.omr.check.CheckBoard;
@@ -38,7 +36,7 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.*;
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
@@ -62,7 +60,7 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import org.audiveris.omr.util.NamedDouble;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
@@ -70,6 +68,8 @@ import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -106,7 +106,8 @@ public class LedgersBuilder
     private static final Logger logger = LoggerFactory.getLogger(LedgersBuilder.class);
 
     /** Events this entity is interested in. */
-    private static final Class<?>[] eventClasses = new Class<?>[]{EntityListEvent.class};
+    private static final Class<?>[] eventClasses = new Class<?>[]
+    { EntityListEvent.class };
 
     /** Failure codes. */
     private static final Failure TOO_SHORT = new Failure("Hori-TooShort");
@@ -122,6 +123,7 @@ public class LedgersBuilder
     private static final Failure TOO_SHIFTED = new Failure("Hori-TooShifted");
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -162,6 +164,7 @@ public class LedgersBuilder
     private final NamedDouble minLengthHigh;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * @param system the related system to process
      */
@@ -183,6 +186,7 @@ public class LedgersBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // addCheckBoard //
     //---------------//
@@ -194,6 +198,36 @@ public class LedgersBuilder
         SheetAssembly assembly = sheet.getStub().getAssembly();
         assembly.addBoard(SheetTab.DATA_TAB, new LedgerCheckBoard(sheet));
         assembly.addBoard(SheetTab.LEDGER_TAB, new LedgerCheckBoard(sheet));
+    }
+
+    //-------------//
+    // beamOverlap //
+    //-------------//
+    /**
+     * Check whether stick middle point is contained by a good beam.
+     *
+     * @param stick the candidate to check
+     * @return true if a beam overlap was detected
+     */
+    private boolean beamOverlap (Filament stick)
+    {
+        Point2D middle = getMiddle(stick);
+
+        for (Inter inter : sortedSystemBeams) {
+            AbstractBeamInter beam = (AbstractBeamInter) inter;
+
+            if (beam.getArea().contains(middle)) {
+                if (stick.isVip() || logger.isDebugEnabled()) {
+                    logger.info("ledger stick#{} overlaps beam#{}", stick.getId(), beam.getId());
+                }
+
+                return true;
+            } else if (beam.getBounds().getLocation().x > middle.getX()) {
+                return false;
+            }
+        }
+
+        return false;
     }
 
     //--------------//
@@ -228,70 +262,6 @@ public class LedgersBuilder
         } catch (Throwable ex) {
             logger.warn("Error retrieving ledgers. " + ex, ex);
         }
-    }
-
-    //----------------//
-    // rebuildLedgers //
-    //----------------//
-    /**
-     * Remove the provided ledgers to discard and rebuild ledgers for the impacted staves.
-     *
-     * @param discarded the discarded ledgers
-     */
-    public void rebuildLedgers (List<LedgerInter> discarded)
-    {
-        logger.debug("{} Discarded ledgers:   {}", system, Inters.ids(discarded));
-        final List<LedgerInter> systemLedgers = new ArrayList<>(stick2ledger.values());
-
-        final Set<Staff> impactedStaves = new LinkedHashSet<>();
-        discarded.forEach((LedgerInter ledger) -> {
-            impactedStaves.add(ledger.getStaff());
-            ledgerCandidates.remove(ledger2stick.get(ledger));
-            ledger.remove();
-        });
-
-        impactedStaves.forEach(staff -> {
-            staff.clearLedgers();
-            filterLedgers(staff);
-        });
-
-        // Remove the system ledgers left unassigned
-        system.getStaves().forEach(
-                staff -> staff.getLedgerMap().values().forEach(
-                        list -> list.forEach(
-                                ledger -> systemLedgers.remove(ledger))));
-        systemLedgers.forEach(ledger -> ledger.remove());
-        logger.debug("{} All removed ledgers: {}", system, Inters.ids(systemLedgers));
-    }
-
-    //-------------//
-    // beamOverlap //
-    //-------------//
-    /**
-     * Check whether stick middle point is contained by a good beam.
-     *
-     * @param stick the candidate to check
-     * @return true if a beam overlap was detected
-     */
-    private boolean beamOverlap (Filament stick)
-    {
-        Point2D middle = getMiddle(stick);
-
-        for (Inter inter : sortedSystemBeams) {
-            AbstractBeamInter beam = (AbstractBeamInter) inter;
-
-            if (beam.getArea().contains(middle)) {
-                if (stick.isVip() || logger.isDebugEnabled()) {
-                    logger.info("ledger stick#{} overlaps beam#{}", stick.getId(), beam.getId());
-                }
-
-                return true;
-            } else if (beam.getBounds().getLocation().x > middle.getX()) {
-                return false;
-            }
-        }
-
-        return false;
     }
 
     //---------------//
@@ -617,6 +587,41 @@ public class LedgersBuilder
         }
     }
 
+    //----------------//
+    // rebuildLedgers //
+    //----------------//
+    /**
+     * Remove the provided ledgers to discard and rebuild ledgers for the impacted staves.
+     *
+     * @param discarded the discarded ledgers
+     */
+    public void rebuildLedgers (List<LedgerInter> discarded)
+    {
+        logger.debug("{} Discarded ledgers:   {}", system, Inters.ids(discarded));
+        final List<LedgerInter> systemLedgers = new ArrayList<>(stick2ledger.values());
+
+        final Set<Staff> impactedStaves = new LinkedHashSet<>();
+        discarded.forEach( (LedgerInter ledger) ->
+        {
+            impactedStaves.add(ledger.getStaff());
+            ledgerCandidates.remove(ledger2stick.get(ledger));
+            ledger.remove();
+        });
+
+        impactedStaves.forEach(staff ->
+        {
+            staff.clearLedgers();
+            filterLedgers(staff);
+        });
+
+        // Remove the system ledgers left unassigned
+        system.getStaves().forEach(
+                staff -> staff.getLedgerMap().values().forEach(
+                        list -> list.forEach(ledger -> systemLedgers.remove(ledger))));
+        systemLedgers.forEach(ledger -> ledger.remove());
+        logger.debug("{} All removed ledgers: {}", system, Inters.ids(systemLedgers));
+    }
+
     //---------------//
     // reduceLedgers //
     //---------------//
@@ -647,8 +652,8 @@ public class LedgersBuilder
             for (LedgerInter other : ledgers.subList(i + 1, ledgers.size())) {
                 if (GeoUtil.xOverlap(ledgerBox, other.getBounds()) > 0) {
                     // Abscissa overlap
-                    exclusions.add(sig.insertExclusion(ledger, other,
-                                                       Exclusion.ExclusionCause.OVERLAP));
+                    exclusions.add(
+                            sig.insertExclusion(ledger, other, Exclusion.ExclusionCause.OVERLAP));
                 } else {
                     break; // End of reachable neighbors
                 }
@@ -666,6 +671,8 @@ public class LedgersBuilder
             ledgers.removeAll(deletions);
         }
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-----------//
     // getMiddle //
@@ -687,6 +694,7 @@ public class LedgersBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -699,7 +707,7 @@ public class LedgersBuilder
                 "Should we print out the stop watch?");
 
         private final Constant.Ratio minSideRatio = new Constant.Ratio(
-                0.8,
+                0.9, // 0.8 was too low, sometimes resulting in too thick ledger candidates
                 "Minimum ratio of filament length to be actually enlarged");
 
         private final Constant.Double convexityLow = new Constant.Double(
@@ -810,12 +818,15 @@ public class LedgersBuilder
                     final Filament fil = listEvent.getEntity();
 
                     // Make sure we have a rather horizontal stick
-                    if ((fil != null) && (fil instanceof StraightFilament) && (Math.abs(fil
-                            .getSlope()) <= constants.maxSlopeForCheck.getValue())) {
+                    if ((fil != null) && (fil instanceof StraightFilament) && (Math.abs(
+                            fil.getSlope()) <= constants.maxSlopeForCheck.getValue())) {
                         // Use the closest staff
                         Point2D center = fil.getCenter2D();
                         StaffManager mgr = sheet.getStaffManager();
                         Staff staff = mgr.getClosestStaff(center);
+                        if (staff.isTablature()) {
+                            return;
+                        }
                         LedgersBuilder builder = new LedgersBuilder(staff.getSystem());
                         int interline = staff.getSpecificInterline();
                         CheckSuite<StickContext> suite = builder.suites.getSuite(interline);
@@ -840,32 +851,6 @@ public class LedgersBuilder
             } catch (Exception ex) {
                 logger.warn(getClass().getName() + " onEvent error", ex);
             }
-        }
-    }
-
-    //--------------//
-    // StickContext //
-    //--------------//
-    private static class StickContext
-    {
-
-        /** The stick being checked. */
-        final StraightFilament stick;
-
-        /** Target ordinate. */
-        final double yTarget;
-
-        StickContext (StraightFilament stick,
-                      double yTarget)
-        {
-            this.stick = stick;
-            this.yTarget = yTarget;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "stick#" + stick.getId();
         }
     }
 
@@ -1102,6 +1087,32 @@ public class LedgersBuilder
 
                 return largeScale.pixelsToFrac(stick.getMeanDistance());
             }
+        }
+    }
+
+    //--------------//
+    // StickContext //
+    //--------------//
+    private static class StickContext
+    {
+
+        /** The stick being checked. */
+        final StraightFilament stick;
+
+        /** Target ordinate. */
+        final double yTarget;
+
+        StickContext (StraightFilament stick,
+                      double yTarget)
+        {
+            this.stick = stick;
+            this.yTarget = yTarget;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "stick#" + stick.getId();
         }
     }
 

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,15 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.lag;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.math.Barycenter;
 import org.audiveris.omr.math.BasicLine;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Line;
 import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.*;
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -37,6 +36,8 @@ import org.audiveris.omr.util.AbstractEntity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -76,6 +77,7 @@ public class BasicSection
     private static final Logger logger = LoggerFactory.getLogger(BasicSection.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Position of first run */
     @XmlAttribute(name = "first-pos")
     protected int firstPos;
@@ -110,15 +112,6 @@ public class BasicSection
     protected Line orientedLine;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new BasicSection.
-     *
-     * @param orientation provided orientation for the section
-     */
-    public BasicSection (Orientation orientation)
-    {
-        this.orientation = orientation;
-    }
 
     /**
      * Creates a new <code>BasicSection</code> object from a {@link DynamicSection} instance.
@@ -139,7 +132,46 @@ public class BasicSection
         orientedLine = ds.getOrientedLine();
     }
 
+    /**
+     * Creates a new BasicSection.
+     *
+     * @param orientation provided orientation for the section
+     */
+    public BasicSection (Orientation orientation)
+    {
+        this.orientation = orientation;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
+    //---------------------//
+    // computeOrientedLine //
+    //---------------------//
+    /**
+     * Compute the oriented approximating line.
+     *
+     * @return the oriented line
+     */
+    protected Line computeOrientedLine ()
+    {
+        // Compute the section line
+        Line oLine = new BasicLine();
+
+        int y = getFirstPos();
+
+        for (Run run : runs) {
+            int stop = run.getStop();
+
+            for (int x = run.getStart(); x <= stop; x++) {
+                oLine.includePoint(x, y);
+            }
+
+            y++;
+        }
+
+        return oLine;
+    }
+
     //----------//
     // contains //
     //----------//
@@ -497,19 +529,6 @@ public class BasicSection
         return lag;
     }
 
-    //--------//
-    // setLag //
-    //--------//
-    @Override
-    public void setLag (Lag lag)
-    {
-        this.lag = lag;
-
-        if (lag != null) {
-            orientation = lag.getOrientation();
-        }
-    }
-
     //------------//
     // getLastPos //
     //------------//
@@ -636,7 +655,9 @@ public class BasicSection
         cumulate(barycenter, absRoi);
 
         if (barycenter.getWeight() != 0) {
-            return new Point((int) Math.rint(barycenter.getX()), (int) Math.rint(barycenter.getY()));
+            return new Point(
+                    (int) Math.rint(barycenter.getX()),
+                    (int) Math.rint(barycenter.getY()));
         } else {
             return null;
         }
@@ -715,13 +736,13 @@ public class BasicSection
         return hash;
     }
 
-    //------------//
-    // intersects //
-    //------------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    public boolean intersects (Rectangle rect)
+    protected String internals ()
     {
-        return getPolygon().intersects(rect);
+        return orientation.isVertical() ? "V" : "H";
     }
 
     //------------//
@@ -734,9 +755,11 @@ public class BasicSection
 
         for (Run run : runs) {
             final int start = run.getStart();
-            final Rectangle runBox = (orientation == HORIZONTAL)
-                    ? new Rectangle(start, pos, run.getLength(), 1)
-                    : new Rectangle(pos, start, 1, run.getLength());
+            final Rectangle runBox = (orientation == HORIZONTAL) ? new Rectangle(
+                    start,
+                    pos,
+                    run.getLength(),
+                    1) : new Rectangle(pos, start, 1, run.getLength());
 
             if (shape.intersects(runBox)) {
                 return true;
@@ -746,6 +769,15 @@ public class BasicSection
         }
 
         return false;
+    }
+
+    //------------//
+    // intersects //
+    //------------//
+    @Override
+    public boolean intersects (Rectangle rect)
+    {
+        return getPolygon().intersects(rect);
     }
 
     //------------//
@@ -840,6 +872,19 @@ public class BasicSection
         }
     }
 
+    //--------//
+    // setLag //
+    //--------//
+    @Override
+    public void setLag (Lag lag)
+    {
+        this.lag = lag;
+
+        if (lag != null) {
+            orientation = lag.getOrientation();
+        }
+    }
+
     //---------//
     // touches //
     //---------//
@@ -858,9 +903,11 @@ public class BasicSection
 
         for (Run run : runs) {
             final int start = run.getStart();
-            final Rectangle r1 = (orientation == HORIZONTAL)
-                    ? new Rectangle(start, pos, run.getLength(), 1)
-                    : new Rectangle(pos, start, 1, run.getLength());
+            final Rectangle r1 = (orientation == HORIZONTAL) ? new Rectangle(
+                    start,
+                    pos,
+                    run.getLength(),
+                    1) : new Rectangle(pos, start, 1, run.getLength());
 
             if (thatFatBox.intersects(r1)) {
                 // Check contact between this run and one of that runs
@@ -869,9 +916,11 @@ public class BasicSection
                 for (Run thatRun : that.getRuns()) {
                     final int thatStart = thatRun.getStart();
                     final int thatLength = thatRun.getLength();
-                    final Rectangle r2 = (that.getOrientation() == HORIZONTAL)
-                            ? new Rectangle(thatStart, thatPos, thatLength, 1)
-                            : new Rectangle(thatPos, thatStart, 1, thatLength);
+                    final Rectangle r2 = (that.getOrientation() == HORIZONTAL) ? new Rectangle(
+                            thatStart,
+                            thatPos,
+                            thatLength,
+                            1) : new Rectangle(thatPos, thatStart, 1, thatLength);
 
                     if (GeoUtil.touch(r1, r2)) {
                         return true;
@@ -916,42 +965,7 @@ public class BasicSection
         }
     }
 
-    //---------------------//
-    // computeOrientedLine //
-    //---------------------//
-    /**
-     * Compute the oriented approximating line.
-     *
-     * @return the oriented line
-     */
-    protected Line computeOrientedLine ()
-    {
-        // Compute the section line
-        Line oLine = new BasicLine();
-
-        int y = getFirstPos();
-
-        for (Run run : runs) {
-            int stop = run.getStop();
-
-            for (int x = run.getStart(); x <= stop; x++) {
-                oLine.includePoint(x, y);
-            }
-
-            y++;
-        }
-
-        return oLine;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return orientation.isVertical() ? "V" : "H";
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //---------------//
     // allocateTable //
@@ -1009,6 +1023,7 @@ public class BasicSection
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // JaxbAdapter //
     //-------------//

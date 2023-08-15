@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,6 +45,7 @@ public class StaffSelection
     private static final Logger logger = LoggerFactory.getLogger(StaffSelection.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Resource injection. */
     private final ResourceMap resources = Application.getInstance().getContext().getResourceMap(
             StaffSelection.class);
@@ -52,10 +53,11 @@ public class StaffSelection
     private final String className = getClass().getSimpleName();
 
     /** Options objects for dialog. */
-    private final Object[] options = new Object[]{resources.getImageIcon(className + ".UP.icon"),
-                                                  resources.getImageIcon(
-                                                  className + ".DOWN.icon"), resources.getString(
-                                                  className + ".cancel")};
+    private final Object[] options = new Object[]
+    {
+            resources.getImageIcon(className + ".UP.icon"),
+            resources.getImageIcon(className + ".DOWN.icon"),
+            resources.getString(className + ".cancel") };
 
     /** Option pane. */
     private final JOptionPane pane = new JOptionPane(
@@ -71,18 +73,6 @@ public class StaffSelection
             resources.getString(className + ".title"));
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class in application.
-     *
-     * @return the instance
-     */
-    public static StaffSelection getInstance ()
-    {
-        return LazySingleton.INSTANCE;
-    }
 
     /**
      * Prompt the user for staff selection.
@@ -108,7 +98,23 @@ public class StaffSelection
         return CLOSED_OPTION; // Either closed or cancelled
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class in application.
+     *
+     * @return the instance
+     */
+    public static StaffSelection getInstance ()
+    {
+        return LazySingleton.INSTANCE;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------------//
     // LazySingleton //
     //---------------//

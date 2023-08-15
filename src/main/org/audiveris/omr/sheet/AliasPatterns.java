@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import java.io.IOException;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -30,6 +29,7 @@ import org.audiveris.omr.util.UriUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
@@ -65,9 +65,11 @@ public class AliasPatterns
     private static final String ALIAS_PATTERNS_FILENAME = "alias-patterns.xml";
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final List<Pattern> patterns = loadAliasPatterns();
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getAlias //
     //----------//
@@ -109,9 +111,10 @@ public class AliasPatterns
         final List<Pattern> patternList = new ArrayList<>();
 
         if (useAliasPatterns()) {
-            URI[] uris = new URI[]{
-                WellKnowns.CONFIG_FOLDER.resolve(ALIAS_PATTERNS_FILENAME).toUri().normalize(),
-                UriUtil.toURI(WellKnowns.RES_URI, ALIAS_PATTERNS_FILENAME)};
+            URI[] uris = new URI[]
+            {
+                    WellKnowns.CONFIG_FOLDER.resolve(ALIAS_PATTERNS_FILENAME).toUri().normalize(),
+                    UriUtil.toURI(WellKnowns.RES_URI, ALIAS_PATTERNS_FILENAME) };
 
             for (int i = 0; i < uris.length; i++) {
                 URI uri = uris[i];
@@ -149,6 +152,8 @@ public class AliasPatterns
         return patternList;
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------------------//
     // useAliasPatterns //
     //------------------//
@@ -163,6 +168,7 @@ public class AliasPatterns
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

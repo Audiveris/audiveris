@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,10 +46,20 @@ public class ChordTupletRelation
     private static final Constants constants = new Constants();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Assigned tuplet support coefficient. */
     private final double tupletCoeff;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB and user allocation.
+     */
+    public ChordTupletRelation ()
+    {
+        this.tupletCoeff = 0;
+    }
+
     /**
      * Creates a new <code>TupletChordRelation</code> object.
      *
@@ -60,15 +70,8 @@ public class ChordTupletRelation
         tupletCoeff = getTupletCoeff(shape);
     }
 
-    /**
-     * No-arg constructor meant for JAXB and user allocation.
-     */
-    public ChordTupletRelation ()
-    {
-        this.tupletCoeff = 0;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // added //
     //-------//
@@ -79,6 +82,32 @@ public class ChordTupletRelation
 
         if (!tuplet.isImplicit()) {
             tuplet.checkAbnormal();
+        }
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    @Override
+    protected double getTargetCoeff ()
+    {
+        return tupletCoeff;
+    }
+
+    //----------------//
+    // getTupletCoeff //
+    //----------------//
+    private double getTupletCoeff (Shape shape)
+    {
+        switch (shape) {
+        case TUPLET_THREE:
+            return constants.tupletThreeSupportCoeff.getValue();
+
+        case TUPLET_SIX:
+            return constants.tupletSixSupportCoeff.getValue();
+
+        default:
+            throw new IllegalArgumentException("Illegal tuplet shape " + shape);
         }
     }
 
@@ -113,33 +142,8 @@ public class ChordTupletRelation
         }
     }
 
-    //----------------//
-    // getTargetCoeff //
-    //----------------//
-    @Override
-    protected double getTargetCoeff ()
-    {
-        return tupletCoeff;
-    }
-
-    //----------------//
-    // getTupletCoeff //
-    //----------------//
-    private double getTupletCoeff (Shape shape)
-    {
-        switch (shape) {
-        case TUPLET_THREE:
-            return constants.tupletThreeSupportCoeff.getValue();
-
-        case TUPLET_SIX:
-            return constants.tupletSixSupportCoeff.getValue();
-
-        default:
-            throw new IllegalArgumentException("Illegal tuplet shape " + shape);
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

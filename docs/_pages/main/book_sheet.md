@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Book vs Sheet
+title: Book of Sheets
 grand_parent: Main Features
-parent: Main entities
+parent: Main Entities
 nav_order: 1
 ---
-### Book vs Sheet
+### Book of Sheets
 
 An image file fed into OMR software contains one or several images.
 Typically PDF and TIFF formats support the notion of multi-image files while, for example,
@@ -20,5 +20,6 @@ This happens for example for a title or illustration or simply a blank sheet.
 In that case, the sheet will later be recognized as "_invalid_" (from the OMR point of view)
 and flagged as such.
 
-A (super-) Book instance could recursively contain (sub-) Book instances,
-although this feature is not fully implemented yet.
+With Audiveris 5.3, we can now split a book into smaller ones or, conversely,
+merge small books into a larger one.  
+This feature is documented in the [Split and Merge](split_merge.md) section.

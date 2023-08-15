@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.math;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.util.Table;
+
+import ij.process.ByteProcessor;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -42,35 +42,7 @@ public abstract class TableUtil
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Print out a table of int values.
-     *
-     * @param title a title for the print
-     * @param table the input table
-     */
-    public static void dump (String title,
-                             int[][] table)
-    {
-        final int width = table.length;
-        final int height = table[0].length;
-
-        if (title != null) {
-            System.out.println(title);
-        }
-
-        final String yFormat = printAbscissae(width, height, 4);
-
-        for (int y = 0; y < height; y++) {
-            System.out.printf(yFormat, y);
-
-            for (int x = 0; x < width; x++) {
-                System.out.printf("%4d", table[x][y]);
-            }
-
-            System.out.println();
-        }
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     /**
      * Print out a table of boolean values.
@@ -95,35 +67,6 @@ public abstract class TableUtil
 
             for (int x = 0; x < width; x++) {
                 System.out.printf("%3s", table[x][y] ? "X" : " ");
-            }
-
-            System.out.println();
-        }
-    }
-
-    /**
-     * Print out a table of double values.
-     *
-     * @param title a title for the print
-     * @param table the input table
-     */
-    public static void dump (String title,
-                             double[][] table)
-    {
-        final int width = table.length;
-        final int height = table[0].length;
-
-        if (title != null) {
-            System.out.println(title);
-        }
-
-        final String yFormat = printAbscissae(width, height, 6);
-
-        for (int y = 0; y < height; y++) {
-            System.out.printf(yFormat, y);
-
-            for (int x = 0; x < width; x++) {
-                System.out.printf("%6.3f", table[x][y]);
             }
 
             System.out.println();
@@ -181,6 +124,64 @@ public abstract class TableUtil
 
             for (int x = 0; x < width; x++) {
                 System.out.printf("%4d", buf.get(x, y));
+            }
+
+            System.out.println();
+        }
+    }
+
+    /**
+     * Print out a table of double values.
+     *
+     * @param title a title for the print
+     * @param table the input table
+     */
+    public static void dump (String title,
+                             double[][] table)
+    {
+        final int width = table.length;
+        final int height = table[0].length;
+
+        if (title != null) {
+            System.out.println(title);
+        }
+
+        final String yFormat = printAbscissae(width, height, 6);
+
+        for (int y = 0; y < height; y++) {
+            System.out.printf(yFormat, y);
+
+            for (int x = 0; x < width; x++) {
+                System.out.printf("%6.3f", table[x][y]);
+            }
+
+            System.out.println();
+        }
+    }
+
+    /**
+     * Print out a table of int values.
+     *
+     * @param title a title for the print
+     * @param table the input table
+     */
+    public static void dump (String title,
+                             int[][] table)
+    {
+        final int width = table.length;
+        final int height = table[0].length;
+
+        if (title != null) {
+            System.out.println(title);
+        }
+
+        final String yFormat = printAbscissae(width, height, 4);
+
+        for (int y = 0; y < height; y++) {
+            System.out.printf(yFormat, y);
+
+            for (int x = 0; x < width; x++) {
+                System.out.printf("%4d", table[x][y]);
             }
 
             System.out.println();

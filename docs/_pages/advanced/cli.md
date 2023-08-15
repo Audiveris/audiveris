@@ -43,7 +43,7 @@ Options:
  CHORDS | CURVES | SYMBOLS | LINKS | RHYTHMS |       
  PAGE]                                               
  -force                                           : Force step/transcribe re-processing
- -output <output-folder>                          : Define base output folder
+ -output <output-folder>                          : Define target output folder
  -playlist <file.xml>                             : Build a compound book from playlist
  -export                                          : Export MusicXML
  -print                                           : Print out book
@@ -98,7 +98,8 @@ Exports each book music as a MusicXML file.
 #### -force
 
 Forces reprocessing even if target step has already been reached.  
-This option is effective only when a target step is specified (see the `-step` option) or the `-transcribe` option is present.
+This option is effective only when a target step is specified
+(see the `-step` option) or the `-transcribe` option is present.
 
 #### -help
 
@@ -114,9 +115,11 @@ This is the CLI equivalent of the GUI pulldown menu `Tools | Options`.
 
 #### -output DIRNAME
 
-Defines the path to the default base output folder.
+Defines the path to the target output folder, that is the precise folder where all output files
+(``.omr``, ``.mxl``, etc) should be stored.
 
-This output folder will be the parent of any subfolder created according to an input file name.
+if this option is not present, a default output folder is chosen according to the policy described
+in [Standard folders](../folders/standard.md) section.
 
 #### -playlist FILE.XML
 

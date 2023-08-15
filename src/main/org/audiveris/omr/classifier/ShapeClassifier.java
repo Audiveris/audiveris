@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -27,7 +27,6 @@ import org.audiveris.omr.util.OmrExecutors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 /**
@@ -44,7 +43,8 @@ public abstract class ShapeClassifier
     private static final Logger logger = LoggerFactory.getLogger(ShapeClassifier.class);
 
     /** A future which reflects whether instance has been initialized. */
-    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit(() -> {
+    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit( () ->
+    {
         try {
             logger.debug("Allocating instances for ShapeClassifier...");
             ShapeClassifier.getInstance();
@@ -54,17 +54,19 @@ public abstract class ShapeClassifier
             logger.warn("Error pre-loading ShapeClassifier", ex);
             throw ex;
         }
-        
+
         return null;
     });
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private ShapeClassifier ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     /**
      * Report the classifier instance in use.
      *
@@ -104,7 +106,6 @@ public abstract class ShapeClassifier
     {
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
     //    /**
     //     * Tell whether we are using DeepClassifier (rather than old BasicClassifier).
     //     *
@@ -114,7 +115,9 @@ public abstract class ShapeClassifier
     //    {
     //        return constants.useDeepClassifier.isSet();
     //    }
-    //
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

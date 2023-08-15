@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -40,7 +40,24 @@ public abstract class NaturalSpec
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------//
+    // decode //
+    //--------//
+    /**
+     * Decode a specification into a list of naturals, with no maxValue provided.
+     *
+     * @param spec            the specification string to decode
+     * @param checkIncreasing true to verify if values are strictly increasing
+     * @return the sequence of naturals
+     */
+    public static List<Integer> decode (String spec,
+                                        boolean checkIncreasing)
+    {
+        return decode(spec, checkIncreasing, null);
+    }
+
     //--------//
     // decode //
     //--------//
@@ -124,22 +141,6 @@ public abstract class NaturalSpec
     }
 
     //--------//
-    // decode //
-    //--------//
-    /**
-     * Decode a specification into a list of naturals, with no maxValue provided.
-     *
-     * @param spec            the specification string to decode
-     * @param checkIncreasing true to verify if values are strictly increasing
-     * @return the sequence of naturals
-     */
-    public static List<Integer> decode (String spec,
-                                        boolean checkIncreasing)
-    {
-        return decode(spec, checkIncreasing, null);
-    }
-
-    //--------//
     // encode //
     //--------//
     /**
@@ -194,9 +195,8 @@ public abstract class NaturalSpec
     public static String getCounts (String spec,
                                     int maxValue)
     {
-        return new StringBuilder()
-                .append((spec != null) ? decode(spec, false, maxValue).size() : maxValue)
-                .append(" of ")
+        return new StringBuilder().append(
+                (spec != null) ? decode(spec, false, maxValue).size() : maxValue).append(" of ")
                 .append(maxValue).toString();
     }
 

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,14 +45,16 @@ public class MeasureFiller
     private static final Logger logger = LoggerFactory.getLogger(MeasureFiller.class);
 
     /** Filling classes. (Clefs and Key signatures) */
-    private static final Class<?>[] FILLING_CLASSES
-            = new Class<?>[]{ClefInter.class, KeyInter.class};
+    private static final Class<?>[] FILLING_CLASSES = new Class<?>[]
+    { ClefInter.class, KeyInter.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Containing system. */
     private final SystemInfo system;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>MeasureFiller</code> object.
      *
@@ -64,6 +66,7 @@ public class MeasureFiller
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Fill all system measures with Clef and Key entities.
      */

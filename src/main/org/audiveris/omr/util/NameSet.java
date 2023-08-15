@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import net.jcip.annotations.ThreadSafe;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.ui.util.AbstractMenuListener;
 
@@ -36,6 +34,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+
+import net.jcip.annotations.ThreadSafe;
 
 /**
  * Class <code>NameSet</code> encapsulates the handling of a list of names,
@@ -59,6 +59,7 @@ public class NameSet
     private static final String SEPARATOR = ";";
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Global name for this set. */
     private final String setName;
 
@@ -75,6 +76,7 @@ public class NameSet
     private final PairPredicate<String> predicate;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new set of names, with some customizing parameters.
      *
@@ -102,6 +104,7 @@ public class NameSet
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----//
     // add //
     //-----//

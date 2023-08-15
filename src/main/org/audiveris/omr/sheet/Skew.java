@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,10 +50,10 @@ public class Skew
     private static final Logger logger = LoggerFactory.getLogger(Skew.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     // Persistent data
     //----------------
-    //
+
     /**
      * Value of skew slope (which is the tangent of angle value).
      */
@@ -63,7 +63,7 @@ public class Skew
 
     // Transient data
     //---------------
-    //
+
     /** Corresponding angle (in radians). */
     private double angle;
 
@@ -77,6 +77,19 @@ public class Skew
     private double deskewedHeight;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    public Skew ()
+    {
+        this.slope = 0;
+        this.angle = 0;
+        this.at = null;
+        this.deskewedWidth = 0;
+        this.deskewedHeight = 0;
+    }
+
     /**
      * Creates a new Skew object.
      *
@@ -91,19 +104,22 @@ public class Skew
         initTransients(sheet);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
     /**
-     * No-arg constructor needed for JAXB.
+     * Called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
      */
-    public Skew ()
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
     {
-        this.slope = 0;
-        this.angle = 0;
-        this.at = null;
-        this.deskewedWidth = 0;
-        this.deskewedHeight = 0;
+        initTransients((Sheet) parent);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // deskewed //
     //----------//
@@ -166,6 +182,39 @@ public class Skew
         return slope;
     }
 
+    //----------------//
+    // initTransients //
+    //----------------//
+    private void initTransients (Sheet sheet)
+    {
+        angle = Math.atan(slope);
+
+        // Rotation for deskew
+        final double deskewAngle = -angle;
+        at = AffineTransform.getRotateInstance(deskewAngle);
+
+        // Origin translation for deskew
+        final int w = sheet.getWidth();
+        final int h = sheet.getHeight();
+        final Point2D topRight = at.transform(new Point2D.Double(w, 0), null);
+        final Point2D bottomLeft = at.transform(new Point2D.Double(0, h), null);
+        final Point2D bottomRight = at.transform(new Point2D.Double(w, h), null);
+        double dx = 0;
+        double dy = 0;
+
+        if (deskewAngle <= 0) { // Counter-clockwise deskew
+            deskewedWidth = bottomRight.getX();
+            dy = -topRight.getY();
+            deskewedHeight = bottomLeft.getY() + dy;
+        } else { // Clockwise deskew
+            dx = -bottomLeft.getX();
+            deskewedWidth = topRight.getX() + dx;
+            deskewedHeight = bottomRight.getY();
+        }
+
+        at.translate(dx, dy);
+    }
+
     //--------//
     // skewed //
     //--------//
@@ -198,10 +247,9 @@ public class Skew
      */
     public Line2D skewedHorizontal (Point2D pt)
     {
-        final int DX = 1_000; // Not significant
+        final int DX=1_000; // Not significant
 
-        return new Line2D.Double(pt.getX(), pt.getY(),
-                                 pt.getX() + DX, pt.getY() + DX * slope);
+        return new Line2D.Double(pt.getX(),pt.getY(),pt.getX()+DX,pt.getY()+DX*slope);
     }
 
     //----------------//
@@ -215,10 +263,9 @@ public class Skew
      */
     public Line2D skewedVertical (Point2D pt)
     {
-        final int DY = 1_000; // Not significant
+        final int DY=1_000; // Not significant
 
-        return new Line2D.Double(pt.getX(), pt.getY(),
-                                 pt.getX() - DY * slope, pt.getY() + DY);
+        return new Line2D.Double(pt.getX(),pt.getY(),pt.getX()-DY*slope,pt.getY()+DY);
     }
 
     //----------//
@@ -227,56 +274,7 @@ public class Skew
     @Override
     public String toString ()
     {
-        return new StringBuilder(new StringBuilder(getClass().getSimpleName()))
-                .append('{')
-                .append("slope:").append(slope)
-                .append('}').toString();
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled for this object,
-     * but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        initTransients((Sheet) parent);
-    }
-
-    //----------------//
-    // initTransients //
-    //----------------//
-    private void initTransients (Sheet sheet)
-    {
-        angle = Math.atan(slope);
-
-        // Rotation for deskew
-        final double deskewAngle = -angle;
-        at = AffineTransform.getRotateInstance(deskewAngle);
-
-        // Origin translation for deskew
-        final int w = sheet.getWidth();
-        final int h = sheet.getHeight();
-        final Point2D topRight = at.transform(new Point2D.Double(w, 0), null);
-        final Point2D bottomLeft = at.transform(new Point2D.Double(0, h), null);
-        final Point2D bottomRight = at.transform(new Point2D.Double(w, h), null);
-        double dx = 0;
-        double dy = 0;
-
-        if (deskewAngle <= 0) { // Counter-clockwise deskew
-            deskewedWidth = bottomRight.getX();
-            dy = -topRight.getY();
-            deskewedHeight = bottomLeft.getY() + dy;
-        } else { // Clockwise deskew
-            dx = -bottomLeft.getX();
-            deskewedWidth = topRight.getX() + dx;
-            deskewedHeight = bottomRight.getY();
-        }
-
-        at.translate(dx, dy);
+        return new StringBuilder(new StringBuilder(getClass().getSimpleName())).append('{').append(
+                "slope:").append(slope).append('}').toString();
     }
 }

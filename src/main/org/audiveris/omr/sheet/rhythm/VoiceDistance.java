@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,9 +55,11 @@ public abstract class VoiceDistance
     public static final int INCOMPATIBLE = 10_000; // Forbidden
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     protected final Scale scale;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>VoiceDistance</code> object.
      *
@@ -69,6 +71,7 @@ public abstract class VoiceDistance
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Report the distance between two chords, assumed to be in different time slots.
      *
@@ -82,6 +85,7 @@ public abstract class VoiceDistance
                                      StringBuilder details);
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Merged //
     //--------//
@@ -120,6 +124,21 @@ public abstract class VoiceDistance
             super(scale);
         }
 
+        private String detailsOf (int dStaff,
+                                  int dStem,
+                                  int nis,
+                                  int nar,
+                                  int dy)
+        {
+            return String.format(
+                    "dStaff=%d dStem=%d nis=%d nar=%d dy=%d",
+                    dStaff,
+                    dStem,
+                    nis,
+                    nar,
+                    dy);
+        }
+
         @Override
         public int getDistance (AbstractChordInter left,
                                 AbstractChordInter right,
@@ -144,7 +163,8 @@ public abstract class VoiceDistance
             int dStaff = (right.getTopStaff() != left.getTopStaff()) ? STAFF_DIFF : 0;
 
             // Penalty for a chord which originated in a different staff
-            int nis = (left.getVoice().getStartingStaff() != right.getTopStaff()) ? NEW_IN_STAFF : 0;
+            int nis = (left.getVoice().getStartingStaff() != right.getTopStaff()) ? NEW_IN_STAFF
+                    : 0;
 
             // A rest is a placeholder, hence bonus for rest (implemented by penalty on non-rest)
             int nar = (left instanceof HeadChordInter) ? NOT_A_REST : 0;
@@ -169,21 +189,6 @@ public abstract class VoiceDistance
             }
 
             return d;
-        }
-
-        private String detailsOf (int dStaff,
-                                  int dStem,
-                                  int nis,
-                                  int nar,
-                                  int dy)
-        {
-            return String.format(
-                    "dStaff=%d dStem=%d nis=%d nar=%d dy=%d",
-                    dStaff,
-                    dStem,
-                    nis,
-                    nar,
-                    dy);
         }
     }
 
@@ -214,6 +219,21 @@ public abstract class VoiceDistance
         public Separated (Scale scale)
         {
             super(scale);
+        }
+
+        private String detailsOf (int dStaff,
+                                  int dStem,
+                                  int nis,
+                                  int nar,
+                                  int dp)
+        {
+            return String.format(
+                    "dStaff=%d dStem=%d nis=%d nar=%d dPitch=%d",
+                    dStaff,
+                    dStem,
+                    nis,
+                    nar,
+                    dp);
         }
 
         @Override
@@ -301,21 +321,6 @@ public abstract class VoiceDistance
             }
 
             return d;
-        }
-
-        private String detailsOf (int dStaff,
-                                  int dStem,
-                                  int nis,
-                                  int nar,
-                                  int dp)
-        {
-            return String.format(
-                    "dStaff=%d dStem=%d nis=%d nar=%d dPitch=%d",
-                    dStaff,
-                    dStem,
-                    nis,
-                    nar,
-                    dp);
         }
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -66,11 +66,13 @@ public class UnitTreeTable
     private static final Color zebraColor = new Color(248, 248, 255);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final TableCellRenderer valueRenderer = new ValueRenderer();
 
     private final TableCellRenderer pixelRenderer = new PixelRenderer();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a User Interface JTreeTable dedicated to the handling of
      * unit constants.
@@ -101,6 +103,23 @@ public class UnitTreeTable
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //---------------//
+    // adjustColumns //
+    //---------------//
+    /**
+     * Allows to adjust the related columnModel, for each and every column.
+     */
+    private void adjustColumns ()
+    {
+        TableColumnModel cModel = getColumnModel();
+
+        // Columns widths
+        for (UnitModel.Column c : UnitModel.Column.values()) {
+            cModel.getColumn(c.ordinal()).setPreferredWidth(c.getWidth());
+        }
+    }
+
     //---------------//
     // getCellEditor //
     //---------------//
@@ -111,7 +130,8 @@ public class UnitTreeTable
         UnitModel.Column column = UnitModel.Column.values()[col];
 
         switch (column) {
-        case MODIF: {
+        case MODIF:
+        {
             Object node = nodeForRow(row);
 
             if (node instanceof Constant) {
@@ -119,9 +139,10 @@ public class UnitTreeTable
             }
         }
 
-        break;
+            break;
 
-        case VALUE: {
+        case VALUE:
+        {
             Object obj = getModel().getValueAt(row, col);
 
             if (obj instanceof Boolean) {
@@ -129,7 +150,7 @@ public class UnitTreeTable
             }
         }
 
-        break;
+            break;
 
         default:
         }
@@ -156,7 +177,8 @@ public class UnitTreeTable
         UnitModel.Column column = UnitModel.Column.values()[col];
 
         switch (column) {
-        case MODIF: {
+        case MODIF:
+        {
             Object obj = getModel().getValueAt(row, col);
 
             if (obj instanceof Boolean) {
@@ -168,7 +190,8 @@ public class UnitTreeTable
             }
         }
 
-        case VALUE: {
+        case VALUE:
+        {
             Object obj = getModel().getValueAt(row, col);
 
             if (obj instanceof Boolean) {
@@ -183,6 +206,60 @@ public class UnitTreeTable
 
         default:
             return getDefaultRenderer(getColumnClass(col));
+        }
+    }
+
+    //---------//
+    // getPath //
+    //---------//
+    private TreePath getPath (Object object,
+                              String fullName)
+    {
+        UnitManager unitManager = UnitManager.getInstance();
+        List<Object> objects = new ArrayList<>();
+        objects.add(unitManager.getRoot());
+
+        int dotPos = -1;
+
+        while ((dotPos = fullName.indexOf('.', dotPos + 1)) != -1) {
+            String path = fullName.substring(0, dotPos);
+            objects.add(unitManager.getNode(path));
+        }
+
+        objects.add(object);
+
+        logger.debug("path to {} objects:{}", fullName, objects);
+
+        return new TreePath(objects.toArray());
+    }
+
+    //------------//
+    // nodeForRow //
+    //------------//
+    /**
+     * Return the tree node facing the provided table row
+     *
+     * @param row the provided row
+     * @return the corresponding tree node
+     */
+    private Object nodeForRow (int row)
+    {
+        return ((TreeTableModelAdapter) getModel()).nodeForRow(row);
+    }
+
+    //-------------------//
+    // preExpandPackages //
+    //-------------------//
+    /**
+     * Before displaying the tree, expand all nodes that correspond to
+     * packages (PackageNode).
+     */
+    private void preExpandPackages ()
+    {
+        for (int row = 0; row < tree.getRowCount(); row++) {
+            if (tree.isCollapsed(row)) {
+                tree.expandRow(row);
+            }
         }
     }
 
@@ -258,77 +335,8 @@ public class UnitTreeTable
         return rows;
     }
 
-    //---------------//
-    // adjustColumns //
-    //---------------//
-    /**
-     * Allows to adjust the related columnModel, for each and every column.
-     */
-    private void adjustColumns ()
-    {
-        TableColumnModel cModel = getColumnModel();
-
-        // Columns widths
-        for (UnitModel.Column c : UnitModel.Column.values()) {
-            cModel.getColumn(c.ordinal()).setPreferredWidth(c.getWidth());
-        }
-    }
-
-    //---------//
-    // getPath //
-    //---------//
-    private TreePath getPath (Object object,
-                              String fullName)
-    {
-        UnitManager unitManager = UnitManager.getInstance();
-        List<Object> objects = new ArrayList<>();
-        objects.add(unitManager.getRoot());
-
-        int dotPos = -1;
-
-        while ((dotPos = fullName.indexOf('.', dotPos + 1)) != -1) {
-            String path = fullName.substring(0, dotPos);
-            objects.add(unitManager.getNode(path));
-        }
-
-        objects.add(object);
-
-        logger.debug("path to {} objects:{}", fullName, objects);
-
-        return new TreePath(objects.toArray());
-    }
-
-    //------------//
-    // nodeForRow //
-    //------------//
-    /**
-     * Return the tree node facing the provided table row
-     *
-     * @param row the provided row
-     * @return the corresponding tree node
-     */
-    private Object nodeForRow (int row)
-    {
-        return ((TreeTableModelAdapter) getModel()).nodeForRow(row);
-    }
-
-    //-------------------//
-    // preExpandPackages //
-    //-------------------//
-    /**
-     * Before displaying the tree, expand all nodes that correspond to
-     * packages (PackageNode).
-     */
-    private void preExpandPackages ()
-    {
-        for (int row = 0; row < tree.getRowCount(); row++) {
-            if (tree.isCollapsed(row)) {
-                tree.expandRow(row);
-            }
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------------//
     // PixelRenderer //
     //---------------//

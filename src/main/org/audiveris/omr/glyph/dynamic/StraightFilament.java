@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,6 +52,7 @@ public class StraightFilament
     protected BasicLine line;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>StraightFilament</code> object.
      *
@@ -63,6 +64,20 @@ public class StraightFilament
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------//
+    // checkLine //
+    //-----------//
+    /**
+     * Make sure the approximating line is available
+     */
+    private void checkLine ()
+    {
+        if (line == null) {
+            computeLine();
+        }
+    }
+
     //-------------//
     // computeLine //
     //-------------//
@@ -123,6 +138,17 @@ public class StraightFilament
         return line;
     }
 
+    //---------------//
+    // getCenterLine //
+    //---------------//
+    @Override
+    public Line2D getCenterLine ()
+    {
+        checkLine();
+
+        return line.toCenterLine();
+    }
+
     //------------------//
     // getInvertedSlope //
     //------------------//
@@ -179,17 +205,6 @@ public class StraightFilament
         }
     }
 
-    //---------------//
-    // getCenterLine //
-    //---------------//
-    @Override
-    public Line2D getCenterLine ()
-    {
-        checkLine();
-
-        return line.toCenterLine();
-    }
-
     //------------//
     // getSlopeAt //
     //------------//
@@ -244,6 +259,15 @@ public class StraightFilament
     // renderLine //
     //------------//
     @Override
+    public void renderLine (Graphics2D g)
+    {
+        renderLine(g, false, 0);
+    }
+
+    //------------//
+    // renderLine //
+    //------------//
+    @Override
     public void renderLine (Graphics2D g,
                             boolean showPoints,
                             double pointWidth)
@@ -261,7 +285,8 @@ public class StraightFilament
                     double r = pointWidth / 2; // Point radius
                     Ellipse2D ellipse = new Ellipse2D.Double();
 
-                    for (Point2D p : new Point2D[]{startPoint, stopPoint}) {
+                    for (Point2D p : new Point2D[]
+                    { startPoint, stopPoint }) {
                         ellipse.setFrame(p.getX() - r, p.getY() - r, 2 * r, 2 * r);
                         g.fill(ellipse);
                     }
@@ -270,29 +295,8 @@ public class StraightFilament
         }
     }
 
-    //------------//
-    // renderLine //
-    //------------//
-    @Override
-    public void renderLine (Graphics2D g)
-    {
-        renderLine(g, false, 0);
-    }
-
-    //-----------//
-    // checkLine //
-    //-----------//
-    /**
-     * Make sure the approximating line is available
-     */
-    private void checkLine ()
-    {
-        if (line == null) {
-            computeLine();
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // Constructor //
     //-------------//

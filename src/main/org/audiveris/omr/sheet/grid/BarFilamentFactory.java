@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.grid;
 
+import static org.audiveris.omr.run.Orientation.VERTICAL;
+
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.dynamic.CurvedFilament;
@@ -28,7 +30,6 @@ import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.glyph.dynamic.FilamentFactory;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.GeoUtil;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.StopWatch;
@@ -64,6 +65,7 @@ public class BarFilamentFactory
     private static final Logger logger = LoggerFactory.getLogger(BarFilamentFactory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related scale. */
     private final Scale scale;
 
@@ -71,6 +73,7 @@ public class BarFilamentFactory
     private final Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>BarFilamentFactory</code> object.
      *
@@ -83,6 +86,7 @@ public class BarFilamentFactory
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------------------//
     // buildBarFilament //
     //------------------//
@@ -217,6 +221,7 @@ public class BarFilamentFactory
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

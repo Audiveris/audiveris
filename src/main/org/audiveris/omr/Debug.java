@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -26,6 +26,7 @@ import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubDependent;
 import org.audiveris.omr.sheet.ui.StubsController;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 
 import org.jdesktop.application.Action;
 
@@ -53,6 +54,7 @@ public class Debug
     private static final Logger logger = LoggerFactory.getLogger(Debug.class);
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------//
     // checkSources //
     //--------------//
@@ -75,51 +77,6 @@ public class Debug
         }
     }
 
-    //    //------------------//
-    //    // injectChordNames //
-    //    //------------------//
-    //    @Action(enabledProperty = SHEET_AVAILABLE)
-    //    public void injectChordNames (ActionEvent e)
-    //    {
-    //        Score score = ScoreController.getCurrentScore();
-    //
-    //        if (score == null) {
-    //            return;
-    //        }
-    //
-    //        ScoreSystem system = score.getFirstPage()
-    //                                  .getFirstSystem();
-    //        system.acceptChildren(new ChordInjector());
-    //    }
-    //    //---------------//
-    //    // ChordInjector //
-    //    //---------------//
-    //    private static class ChordInjector
-    //        extends AbstractScoreVisitor
-    //    {
-    //
-    //        /** List of symbols to inject. */
-    //        private static final String[] shelf = new String[] {
-    //                                                  "BMaj7/D#", "BMaj7", "G#m9",
-    //                                                  "F#", "C#7sus4", "F#"
-    //                                              };
-    //
-    //
-    //        /** Current index to symbol to inject. */
-    //        private int symbolCount = 0;
-    //
-    //
-    //        @Override
-    //        public boolean visit (ChordSymbol symbol)
-    //        {
-    //            // Replace chord info by one taken from the shelf
-    //            if (symbolCount < shelf.length) {
-    //                symbol.info = ChordInfo.create(shelf[symbolCount++]);
-    //            }
-    //
-    //            return false;
-    //        }
-    //    }
     //----------------//
     // checkTemplates //
     //----------------//
@@ -133,9 +90,11 @@ public class Debug
     {
         TemplateFactory factory = TemplateFactory.getInstance();
 
-        for (int i = 40; i < 160; i++) {
-            logger.info("Catalog for point size {}", i);
-            factory.getCatalog(i);
+        for (MusicFamily family : MusicFamily.values()) {
+            for (int i = 40; i < 160; i++) {
+                logger.info("Catalog for point size {}", i);
+                factory.getCatalog(family, i);
+            }
         }
 
         logger.info("Done.");

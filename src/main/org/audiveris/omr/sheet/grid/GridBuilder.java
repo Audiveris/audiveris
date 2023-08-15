@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -51,7 +51,8 @@ import java.util.Collection;
  * Class <code>GridBuilder</code> computes the grid of systems of a sheet picture, based on
  * the retrieval of horizontal staff lines and of vertical bar lines.
  * <p>
- * The actual processing is delegated to 3 companions:<ul>
+ * The actual processing is delegated to 3 companions:
+ * <ul>
  * <li>{@link LinesRetriever} for retrieving horizontal staff lines.</li>
  * <li>{@link BarsRetriever} for retrieving vertical bar lines.</li>
  * <li>Optionally, {@link TargetBuilder} for building the target grid.</li>
@@ -68,6 +69,7 @@ public class GridBuilder
     private static final Logger logger = LoggerFactory.getLogger(GridBuilder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Companion in charge of staff lines. */
     public final LinesRetriever linesRetriever;
 
@@ -79,6 +81,7 @@ public class GridBuilder
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Retrieve the frames of all staff lines.
      *
@@ -98,6 +101,36 @@ public class GridBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------//
+    // buildAllLags //
+    //--------------//
+    /**
+     * From the BINARY table, build the horizontal lag (for staff lines) and the
+     * vertical lag (for barlines).
+     */
+    private void buildAllLags ()
+    {
+        final StopWatch watch = new StopWatch("buildAllLags");
+
+        try {
+            // We already have all foreground pixels as vertical runs
+
+            // hLag creation
+            watch.start("buildHorizontalLag");
+
+            RunTable longVertTable = linesRetriever.buildHorizontalLag();
+
+            // vLag creation
+            watch.start("buildVerticalLag");
+            sheet.getLagManager().buildVerticalLag(longVertTable);
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+    }
+
     //-----------//
     // buildInfo //
     //-----------//
@@ -107,7 +140,7 @@ public class GridBuilder
      * @throws StepException if step was stopped
      */
     public void buildInfo ()
-            throws StepException
+        throws StepException
     {
         StopWatch watch = new StopWatch("GridBuilder");
 
@@ -136,8 +169,9 @@ public class GridBuilder
                     assembly.addViewTab(
                             FILAMENT_TAB,
                             new ScrollView(view),
-                            new BoardsPane(new PixelBoard(sheet),
-                                           new FilamentBoard(fService, true)));
+                            new BoardsPane(
+                                    new PixelBoard(sheet),
+                                    new FilamentBoard(fService, true)));
                 }
             }
 
@@ -152,19 +186,9 @@ public class GridBuilder
             watch.start("retrieveBarlines");
             barsRetriever.process();
 
-            // Complete the staff lines w/ short sections & filaments left over
+            // Complete the staff lines w/ sections & filaments left over
             watch.start("completeLines");
             linesRetriever.completeLines();
-
-            /** Companion in charge of target grid. */
-            // Define the destination grid, if so desired
-            if (constants.buildDewarpedTarget.isSet()) {
-                watch.start("targetBuilder");
-
-                TargetBuilder targetBuilder = new TargetBuilder(sheet);
-                sheet.addItemRenderer(targetBuilder);
-                targetBuilder.buildInfo();
-            }
         } catch (StepException se) {
             throw se;
         } catch (Throwable ex) {
@@ -203,36 +227,8 @@ public class GridBuilder
         //        barsRetriever.adjustSystemBars();
     }
 
-    //--------------//
-    // buildAllLags //
-    //--------------//
-    /**
-     * From the BINARY table, build the horizontal lag (for staff lines) and the
-     * vertical lag (for barlines).
-     */
-    private void buildAllLags ()
-    {
-        final StopWatch watch = new StopWatch("buildAllLags");
-
-        try {
-            // We already have all foreground pixels as vertical runs
-
-            // hLag creation
-            watch.start("buildHorizontalLag");
-
-            RunTable longVertTable = linesRetriever.buildHorizontalLag();
-
-            // vLag creation
-            watch.start("buildVerticalLag");
-            sheet.getLagManager().buildVerticalLag(longVertTable);
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -243,10 +239,6 @@ public class GridBuilder
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
-
-        private final Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
-                false,
-                "Should we build a dewarped target?");
 
         private final Constant.Boolean showGrid = new Constant.Boolean(
                 false,

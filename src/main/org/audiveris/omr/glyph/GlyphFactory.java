@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.run.MarkedRun;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.Run;
@@ -32,6 +30,8 @@ import org.audiveris.omr.util.ByteUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -62,6 +62,7 @@ public class GlyphFactory
     private static final Logger logger = LoggerFactory.getLogger(GlyphFactory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Source runs. */
     private final RunTable runTable;
 
@@ -87,6 +88,7 @@ public class GlyphFactory
     private int[] lut;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private GlyphFactory (RunTable runTable,
                           Point offset,
                           GlyphGroup group)
@@ -104,6 +106,7 @@ public class GlyphFactory
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Build all the ancestor glyphs from the markedTable.
      */
@@ -328,6 +331,8 @@ public class GlyphFactory
         }
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------------//
     // buildGlyph //
     //------------//
@@ -387,6 +392,7 @@ public class GlyphFactory
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // Sequence //
     //----------//

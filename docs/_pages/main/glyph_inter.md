@@ -2,14 +2,14 @@
 layout: default
 title: Glyph vs Inter
 grand_parent: Main Features
-parent: Main entities
-nav_order: 3
+parent: Main Entities
+nav_order: 4
 ---
 ### Glyph vs Inter
 
 #### Glyph
 
-A **Glyph** is nothing more than an immutable set of foreground (black) pixels, precisely located
+A **Glyph** is nothing more than a set of foreground (black) pixels
 in a sheet binary image.
 
 It carries no shape.
@@ -26,10 +26,11 @@ These restrictions on Glyph don't apply to glyph interpretations (Inter).
 An interpretation, or **Inter** for short, is precisely meant to formalize any reasonable
 interpretation of a glyph.
 
-There may be several reasonable interpretations for a given glyph and, in many cases, OMR cannot
-immediately decide on the right interpretation among these mutually exclusive interpretations.
+There may be several reasonable interpretations for a given glyph and, in many cases,
+the OMR engine cannot immediately decide on the right interpretation among these mutually
+exclusive interpretations.
 This decision will then be postponed until later down in the OMR process,
-when additional information (such as other Inter instances located nearby) gets available
+when additional information (such as other Inter instances located nearby) becomes available
 and helps clarify the configuration.
 
 As opposed to a Glyph, an Inter belongs to a system and is often related to a staff.

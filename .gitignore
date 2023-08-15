@@ -30,6 +30,7 @@ data/args/*
 data/benches
 data/campaign
 data/print
+data/ocr
 data/output/*
 data/projects
 data/scores
@@ -41,6 +42,7 @@ data/train/*.csv
 data/www/docs/api
 data/www/docs/guides
 private/*
+schemas/bin/
 schemas/build
 schemas/build/*
 target/*
@@ -72,3 +74,4 @@ gradle.properties
 docs/.jekyll-metadata
 docs/Gemfile.lock
 docs/_site/
+docs/pdf/build

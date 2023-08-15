@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,6 +52,7 @@ public class ChordsMapper
     private final Set<ChordPair> whiteList;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a <code>ChordsMapper</code> object.
      *
@@ -78,6 +79,7 @@ public class ChordsMapper
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Perform the mapping.
      *
@@ -106,6 +108,7 @@ public class ChordsMapper
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Mapping //
     //---------//
@@ -117,23 +120,6 @@ public class ChordsMapper
 
         /** Proposed mapping. */
         public List<ChordPair> pairs = new ArrayList<>();
-
-        /**
-         * Report the active chord which is mapped to the provided incoming.
-         *
-         * @param ch provided incoming
-         * @return the related active chord if any, null otherwise
-         */
-        public AbstractChordInter ref (AbstractChordInter ch)
-        {
-            for (ChordPair pair : pairs) {
-                if (pair.one == ch) {
-                    return pair.two;
-                }
-            }
-
-            return null;
-        }
 
         /**
          * Report the mapped pairs relevant for the provided collection of chords.
@@ -162,6 +148,23 @@ public class ChordsMapper
             }
 
             return found;
+        }
+
+        /**
+         * Report the active chord which is mapped to the provided incoming.
+         *
+         * @param ch provided incoming
+         * @return the related active chord if any, null otherwise
+         */
+        public AbstractChordInter ref (AbstractChordInter ch)
+        {
+            for (ChordPair pair : pairs) {
+                if (pair.one == ch) {
+                    return pair.two;
+                }
+            }
+
+            return null;
         }
     }
 

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,8 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.beam;
-
-import ij.process.ByteProcessor;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -39,11 +37,14 @@ import org.audiveris.omr.sheet.Scale.BlackHeadScale;
 import org.audiveris.omr.sheet.Scale.MusicFontScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.util.Dumping;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -82,66 +83,6 @@ public class BlackHeadSizer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Infer typical black head size (width and height) from relevant spots.
-     * <p>
-     * TODO: This is based on beam-targeted spots, perhaps a specific closing for heads would be
-     * more appropriate to avoid any ledger portions.
-     *
-     * @param spots spots retrieved for beams
-     */
-    public void process (List<Glyph> spots)
-    {
-        final float radius = (float) (params.diameter - 1) / 2;
-        logger.info(
-                "Spots black-head retrieval diameter: {}",
-                String.format("%.1f", params.diameter));
-
-        final int[] seOffset = {0, 0};
-        final StructureElement se = new StructureElement(0, 1, radius, seOffset);
-        final MorphoProcessor mp = new MorphoProcessor(se);
-
-        // Filter the spots based on typical weight, width and height.
-        // Then derive main width and main height.
-        // For visual check, use group BLACK_HEAD_SPOT and BLACK_STACK_SPOT
-        final List<Glyph> singles = new ArrayList<>();
-        final List<Glyph> stacks = new ArrayList<>();
-
-        for (Glyph glyph : spots) {
-            // First check on glyph
-            if (!checkSpot(glyph)) {
-                continue;
-            }
-
-            // Perform blackHead-oriented closing
-            glyph = closeBlackHead(mp, glyph);
-
-            // Re-check glyph which may have dramatically changed
-            if ((glyph == null) || !checkSpot(glyph)) {
-                continue;
-            }
-
-            final int height = glyph.getHeight();
-            final int weight = glyph.getWeight();
-
-            if ((height <= params.maxHeight) && (weight <= params.maxWeight)) {
-                glyph.addGroup(GlyphGroup.BLACK_HEAD_SPOT);
-                singles.add(glyph);
-            } else if ((height >= params.minStackHeight) && (weight >= params.minStackWeight)) {
-                glyph.addGroup(GlyphGroup.BLACK_STACK_SPOT);
-                stacks.add(glyph);
-            }
-        }
-
-        logger.debug("singles: {}", Glyphs.ids(singles));
-        logger.debug("stacks: {}", Glyphs.ids(stacks));
-
-        measureSingles(singles);
-    }
-
     //-----------//
     // checkSpot //
     //-----------//
@@ -244,12 +185,74 @@ public class BlackHeadSizer
                 heights.getMeanValue(),
                 heights.getStandardDeviation());
         sheet.getScale().setBlackHeadScale(blackHeadScale);
-        logger.info("Core black head count: {} {}", core.size(), blackHeadScale);
+        logger.debug("Core black head count: {} {}", core.size(), blackHeadScale);
 
         final double w = blackHeadScale.getWidthMean();
-        final MusicFontScale musicFontScale = MusicFont.buildMusicFontScale(w);
+        final MusicFamily family = sheet.getStub().getMusicFamily();
+        final MusicFont font = MusicFont.getHeadFont(family, sheet.getScale(), 0);
+        final MusicFontScale musicFontScale = font.buildMusicFontScale(w);
         sheet.getScale().setMusicFontScale(musicFontScale);
-        logger.info("{}", musicFontScale);
+        logger.debug("{}", musicFontScale);
+    }
+
+    //---------//
+    // process //
+    //---------//
+    /**
+     * Infer typical black head size (width and height) from relevant spots.
+     * <p>
+     * TODO: This is based on beam-targeted spots, perhaps a specific closing for heads would be
+     * more appropriate to avoid any ledger portions.
+     *
+     * @param spots spots retrieved for beams
+     */
+    public void process (List<Glyph> spots)
+    {
+        final float radius = (float) (params.diameter - 1) / 2;
+        logger.debug(
+                "Spots black-head retrieval diameter: {}",
+                String.format("%.1f", params.diameter));
+
+        final int[] seOffset = {0, 0};
+        final StructureElement se = new StructureElement(0, 1, radius, seOffset);
+        final MorphoProcessor mp = new MorphoProcessor(se);
+
+        // Filter the spots based on typical weight, width and height.
+        // Then derive main width and main height.
+        // For visual check, use group BLACK_HEAD_SPOT and BLACK_STACK_SPOT
+        final List<Glyph> singles = new ArrayList<>();
+        final List<Glyph> stacks = new ArrayList<>();
+
+        for (Glyph glyph : spots) {
+            // First check on glyph
+            if (!checkSpot(glyph)) {
+                continue;
+            }
+
+            // Perform blackHead-oriented closing
+            glyph = closeBlackHead(mp, glyph);
+
+            // Re-check glyph which may have dramatically changed
+            if ((glyph == null) || !checkSpot(glyph)) {
+                continue;
+            }
+
+            final int height = glyph.getHeight();
+            final int weight = glyph.getWeight();
+
+            if ((height <= params.maxHeight) && (weight <= params.maxWeight)) {
+                glyph.addGroup(GlyphGroup.BLACK_HEAD_SPOT);
+                singles.add(glyph);
+            } else if ((height >= params.minStackHeight) && (weight >= params.minStackWeight)) {
+                glyph.addGroup(GlyphGroup.BLACK_STACK_SPOT);
+                stacks.add(glyph);
+            }
+        }
+
+        logger.debug("singles: {}", Glyphs.ids(singles));
+        logger.debug("stacks: {}", Glyphs.ids(stacks));
+
+        measureSingles(singles);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,6 +20,8 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.text;
+
+import org.audiveris.omr.sheet.Sheet;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -38,17 +40,8 @@ public interface OCR
     /** Standard NO_OCR message: {@value}. */
     static String NO_OCR = "No OCR is available!";
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    /** Handling of image layout. */
-    enum LayoutMode
-    {
-        /** Automatic discovery of multi block layout */
-        MULTI_BLOCK,
-        /** No layout processing, a single block is assumed */
-        SINGLE_BLOCK;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Report the set of supported language codes
      *
@@ -80,7 +73,7 @@ public interface OCR
     /**
      * Launch the recognition of the provided image, whose language is specified.
      *
-     * @param interline    typical interline value
+     * @param sheet        the containing sheet
      * @param image        the provided image
      * @param topLeft      absolute coordinates of the image top left corner, or null
      * @param languageCode language specification or null
@@ -91,14 +84,32 @@ public interface OCR
      *         The coordinates of any returned TextLine are absolute coordinates thanks to the
      *         topLeft parameter.
      */
-    List<TextLine> recognize (int interline,
+    List<TextLine> recognize (Sheet sheet,
                               BufferedImage image,
                               Point topLeft,
                               String languageCode,
                               LayoutMode layoutMode,
                               String label);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    //------------//
+    // LayoutMode //
+    //------------//
+    /** Handling of image layout. */
+    static enum LayoutMode
+    {
+        /** Automatic discovery of multi block layout */
+        MULTI_BLOCK,
+        /** No layout processing, a single block is assumed */
+        SINGLE_BLOCK;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-------------------------//
+    // UnavailableOcrException //
+    //-------------------------//
     /**
      * Exception used to signal that no OCR is actually available.
      */

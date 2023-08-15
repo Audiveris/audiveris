@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.lag;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.math.Barycenter;
 import org.audiveris.omr.math.Line;
 import org.audiveris.omr.math.PointsCollector;
@@ -30,6 +28,8 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.Oriented;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.util.Entity;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -74,23 +74,33 @@ public interface Section
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** A section comparator, using section id. */
-    public static final Comparator<Section> idComparator = (Section s1, Section s2)
-            -> Integer.compare(s1.getId(), s2.getId());
+    public static final Comparator<Section> idComparator = (s1,
+                                                            s2) -> Integer.compare(
+                                                                    s1.getId(),
+                                                                    s2.getId());
 
     /** For comparing Section instances on their decreasing weight. */
-    public static final Comparator<Section> reverseWeightComparator = (Section s1, Section s2)
-            -> Integer.signum(s2.getWeight() - s1.getWeight());
+    public static final Comparator<Section> reverseWeightComparator = (s1,
+                                                                       s2) -> Integer.compare(
+                                                                               s2.getWeight(),
+                                                                               s1.getWeight());
 
     /** For comparing Section instances on their start value. */
-    public static final Comparator<Section> byCoordinate = (Section s1, Section s2)
-            -> s1.getStartCoord() - s2.getStartCoord();
+    public static final Comparator<Section> byCoordinate = (s1,
+                                                            s2) -> Integer.compare(
+                                                                    s1.getStartCoord(),
+                                                                    s2.getStartCoord());
 
     /** For comparing Section instances on their position value. */
-    public static final Comparator<Section> byPosition = (Section s1, Section s2)
-            -> s1.getFirstPos() - s2.getFirstPos();
+    public static final Comparator<Section> byPosition = (s1,
+                                                          s2) -> Integer.compare(
+                                                                  s1.getFirstPos(),
+                                                                  s2.getFirstPos());
 
     /** For comparing Section instances on their position, then coordinate values. */
-    public static final Comparator<Section> byFullPosition = (Section s1, Section s2) -> {
+    public static final Comparator<Section> byFullPosition = (s1,
+                                                              s2) ->
+    {
         final int p1 = s1.getFirstPos();
         final int p2 = s2.getFirstPos();
 
@@ -105,11 +115,15 @@ public interface Section
     };
 
     /** For comparing Section instances on their absolute abscissa. */
-    public static final Comparator<Section> byAbscissa = (Section s1, Section s2)
-            -> Integer.compare(s1.getBounds().x, s2.getBounds().x);
+    public static final Comparator<Section> byAbscissa = (s1,
+                                                          s2) -> Integer.compare(
+                                                                  s1.getBounds().x,
+                                                                  s2.getBounds().x);
 
     /** For comparing Section instances on their absolute abscissa, ordinate, id. */
-    public static final Comparator<Section> byFullAbscissa = (Section s1, Section s2) -> {
+    public static final Comparator<Section> byFullAbscissa = (s1,
+                                                              s2) ->
+    {
         if (s1 == s2) {
             return 0;
         }
@@ -135,7 +149,10 @@ public interface Section
         return Integer.compare(s1.getId(), s2.getId());
     };
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Predicate to check whether the given absolute point is located
      * inside the section.
@@ -401,20 +418,20 @@ public interface Section
     public int getWeight ();
 
     /**
-     * Check whether this section intersects the provided absolute rectangle.
-     *
-     * @param rectangle absolute rectangle
-     * @return true if intersection is not empty
-     */
-    public boolean intersects (Rectangle rectangle);
-
-    /**
      * Check whether this section intersects the provided shape.
      *
      * @param shape the shape to intersect
      * @return true if intersection is not empty
      */
     public boolean intersects (java.awt.Shape shape);
+
+    /**
+     * Check whether this section intersects the provided absolute rectangle.
+     *
+     * @param rectangle absolute rectangle
+     * @return true if intersection is not empty
+     */
+    public boolean intersects (Rectangle rectangle);
 
     /**
      * Check whether this section intersects that other section.

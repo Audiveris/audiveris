@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -48,11 +48,13 @@ public class Sections
     private static final Logger logger = LoggerFactory.getLogger(Sections.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private Sections ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-----------------//
     // byReverseLength //
     //-----------------//
@@ -65,7 +67,39 @@ public class Sections
      */
     public static Comparator<Section> byReverseLength (final Orientation orientation)
     {
-        return (s1, s2) -> Integer.signum(s2.getLength(orientation) - s1.getLength(orientation));
+        return (s1,
+                s2) -> Integer.signum(s2.getLength(orientation) - s1.getLength(orientation));
+    }
+
+    //-----//
+    // ids //
+    //-----//
+    /**
+     * Convenient method, to build a string with just the ids of the section collection,
+     * introduced by the label "sections".
+     *
+     * @param sections the collection of sections
+     * @return the string built
+     */
+    public static String ids (Collection<? extends Section> sections)
+    {
+        return Entities.ids("sections", sections);
+    }
+
+    //-----//
+    // ids //
+    //-----//
+    /**
+     * Delegates to {@link Entities#ids(java.lang.String, java.util.Collection)}.
+     *
+     * @param label    a string to introduce the list of IDs
+     * @param sections collection of sections
+     * @return string of IDs
+     */
+    public static String ids (String label,
+                              Collection<? extends Section> sections)
+    {
+        return Entities.ids(label, sections);
     }
 
     //-----------------//
@@ -154,37 +188,6 @@ public class Sections
         }
 
         return found;
-    }
-
-    //-----//
-    // ids //
-    //-----//
-    /**
-     * Delegates to {@link Entities#ids(java.lang.String, java.util.Collection)}.
-     *
-     * @param label    a string to introduce the list of IDs
-     * @param sections collection of sections
-     * @return string of IDs
-     */
-    public static String ids (String label,
-                              Collection<? extends Section> sections)
-    {
-        return Entities.ids(label, sections);
-    }
-
-    //-----//
-    // ids //
-    //-----//
-    /**
-     * Convenient method, to build a string with just the ids of the section collection,
-     * introduced by the label "sections".
-     *
-     * @param sections the collection of sections
-     * @return the string built
-     */
-    public static String ids (Collection<? extends Section> sections)
-    {
-        return Entities.ids("sections", sections);
     }
 }
 //

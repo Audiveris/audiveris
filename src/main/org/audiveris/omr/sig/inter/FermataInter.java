@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -74,10 +74,19 @@ public class FermataInter
     private static final Logger logger = LoggerFactory.getLogger(FermataInter.class);
 
     // Arc then dot
-    private static Comparator<Inter> byFermataOrder = (Inter o1, Inter o2)
-            -> (o1 instanceof FermataArcInter) ? (-1) : (+1);
+    private static Comparator<Inter> byFermataOrder = (o1,
+                                                       o2) -> (o1 instanceof FermataArcInter) ? (-1)
+                                                               : (+1);
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private FermataInter ()
+    {
+    }
+
     /**
      * Creates a new <code>FermataInter</code> object.
      *
@@ -90,22 +99,7 @@ public class FermataInter
         super(null, null, shape, grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private FermataInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 
     //-----------//
     // addMember //
@@ -253,47 +247,6 @@ public class FermataInter
         return false;
     }
 
-    //--------------//
-    // removeMember //
-    //--------------//
-    @Override
-    public void removeMember (Inter member)
-    {
-        if (!(member instanceof FermataArcInter) && !(member instanceof FermataDotInter)) {
-            throw new IllegalArgumentException(
-                    "Only FermataArcInter or FermataDotInter can be removed from FermataInter");
-        }
-
-        EnsembleHelper.removeMember(this, member);
-    }
-
-    //-------------//
-    // searchLinks //
-    //-------------//
-    @Override
-    public Collection<Link> searchLinks (SystemInfo system)
-    {
-        final int profile = Math.max(getProfile(), system.getProfile());
-
-        Link link = lookupBarlineLink(system, profile);
-
-        if (link == null) {
-            link = lookupChordLink(system, profile);
-        }
-
-        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
-    }
-
-    //---------------//
-    // searchUnlinks //
-    //---------------//
-    @Override
-    public Collection<Link> searchUnlinks (SystemInfo system,
-                                           Collection<Link> links)
-    {
-        return searchObsoletelinks(links, FermataBarRelation.class, FermataChordRelation.class);
-    }
-
     //-------------------//
     // lookupBarlineLink //
     //-------------------//
@@ -363,8 +316,8 @@ public class FermataInter
             return null;
         }
 
-        final Collection<AbstractChordInter> chords = (shape == Shape.FERMATA_BELOW)
-                ? stack.getStandardChordsAbove(center, bounds)
+        final Collection<AbstractChordInter> chords = (shape == Shape.FERMATA_BELOW) ? stack
+                .getStandardChordsAbove(center, bounds)
                 : stack.getStandardChordsBelow(center, bounds);
 
         // Look for a suitable chord related to this fermata
@@ -409,6 +362,49 @@ public class FermataInter
         return new Link(chord, new FermataChordRelation(), true);
     }
 
+    //--------------//
+    // removeMember //
+    //--------------//
+    @Override
+    public void removeMember (Inter member)
+    {
+        if (!(member instanceof FermataArcInter) && !(member instanceof FermataDotInter)) {
+            throw new IllegalArgumentException(
+                    "Only FermataArcInter or FermataDotInter can be removed from FermataInter");
+        }
+
+        EnsembleHelper.removeMember(this, member);
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system)
+    {
+        final int profile = Math.max(getProfile(), system.getProfile());
+
+        Link link = lookupBarlineLink(system, profile);
+
+        if (link == null) {
+            link = lookupChordLink(system, profile);
+        }
+
+        return (link == null) ? Collections.emptyList() : Collections.singleton(link);
+    }
+
+    //---------------//
+    // searchUnlinks //
+    //---------------//
+    @Override
+    public Collection<Link> searchUnlinks (SystemInfo system,
+                                           Collection<Link> links)
+    {
+        return searchObsoletelinks(links, FermataBarRelation.class, FermataChordRelation.class);
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------//
     // createAdded //
     //-------------//
@@ -445,6 +441,7 @@ public class FermataInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

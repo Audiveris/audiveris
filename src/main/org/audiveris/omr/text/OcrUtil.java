@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,13 +21,20 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.text.OCR.LayoutMode;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,6 +46,10 @@ public abstract class OcrUtil
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(OcrUtil.class);
+
     /** The related OCR. */
     private static final OCR ocr = TesseractOCR.getInstance();
 
@@ -48,7 +59,7 @@ public abstract class OcrUtil
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
     //--------//
     // getOcr //
     //--------//
@@ -67,20 +78,21 @@ public abstract class OcrUtil
     //------//
     /**
      * Scan the provided image for lines of text.
+     * <p>
+     * Tesseract OCR generally gives better results if the processed image exhibits white pixels
+     * on the image contour, so here we (transparently) add a white margin around the buffer.
      *
      * @param image      the provided image
-     * @param margin     amount of white pixels added around the image (can be zero)
      * @param layoutMode MULTI_BLOCK or SINGLE_BLOCK
      * @param language   language specification
-     * @param interline  scaling interline
+     * @param sheet      the related sheet
      * @param label      some label meant for debugging
      * @return the raw lines of text found, with coordinates relative to image origin
      */
     public static List<TextLine> scan (BufferedImage image,
-                                       int margin,
                                        LayoutMode layoutMode,
                                        String language,
-                                       int interline,
+                                       Sheet sheet,
                                        String label)
     {
         final int width = image.getWidth();
@@ -88,6 +100,7 @@ public abstract class OcrUtil
         final Point origin = new Point(0, 0);
 
         // Add some white some white margin around the image?
+        final int margin = constants.whiteMarginAdded.getValue();
         final BufferedImage bi;
 
         if (margin > 0) {
@@ -108,6 +121,37 @@ public abstract class OcrUtil
             bi = image;
         }
 
-        return ocr.recognize(interline, bi, origin, language, layoutMode, label);
+        final List<TextLine> lines = ocr.recognize(sheet, bi, origin, language, layoutMode, label);
+
+        if (lines == null) {
+            logger.info("No OCR'ed lines");
+            return Collections.emptyList();
+        }
+        
+        Collections.sort(lines, TextLine.byOrdinate(sheet.getSkew()));
+
+        if (logger.isDebugEnabled()) {
+            TextLine.dump("Raw OCR'ed lines:", lines, constants.dumpWords.isSet());
+        }
+
+        return lines;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Integer whiteMarginAdded = new Constant.Integer(
+                "pixels",
+                10,
+                "Margin of white pixels added around image to OCR");
+
+        private final Constant.Boolean dumpWords = new Constant.Boolean(
+                false,
+                "Should we dump words when we dump lines?");
     }
 }

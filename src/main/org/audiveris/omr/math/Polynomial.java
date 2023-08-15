@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -36,6 +36,7 @@ public class Polynomial
     private static final double EPSILON = 1E-5;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The degree of polynomial. */
     protected int degree;
 
@@ -43,6 +44,7 @@ public class Polynomial
     protected double[] coefficients;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Polynomial object (actually just a monomial).
      * Example new Polynomial(3,2) = 3x^2
@@ -63,24 +65,6 @@ public class Polynomial
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // degree //
-    //--------//
-    /**
-     * Report the actual degree.
-     *
-     * @return the degree of this polynomial (0 for the zero polynomial)
-     */
-    public final int degree ()
-    {
-        for (int i = coefficients.length - 1; i >= 0; i--) {
-            if (coefficients[i] != 0) {
-                return i;
-            }
-        }
-
-        return 0;
-    }
 
     //---------//
     // compose //
@@ -101,6 +85,25 @@ public class Polynomial
         }
 
         return result;
+    }
+
+    //--------//
+    // degree //
+    //--------//
+    /**
+     * Report the actual degree.
+     *
+     * @return the degree of this polynomial (0 for the zero polynomial)
+     */
+    public final int degree ()
+    {
+        for (int i = coefficients.length - 1; i >= 0; i--) {
+            if (coefficients[i] != 0) {
+                return i;
+            }
+        }
+
+        return 0;
     }
 
     //------------//
@@ -228,6 +231,28 @@ public class Polynomial
     // times //
     //-------//
     /**
+     * Simple multiplication by a scalar
+     *
+     * @param scalar the scalar multiplicator value
+     * @return the new polynomial (this * scalar)
+     */
+    public Polynomial times (double scalar)
+    {
+        Polynomial result = new Polynomial(0, degree);
+
+        for (int i = 0; i <= degree; i++) {
+            result.coefficients[i] = coefficients[i] * scalar;
+        }
+
+        result.degree = result.degree();
+
+        return result;
+    }
+
+    //-------//
+    // times //
+    //-------//
+    /**
      * Report this * that.
      *
      * @param that other polynomial
@@ -241,28 +266,6 @@ public class Polynomial
             for (int j = 0; j <= that.degree; j++) {
                 result.coefficients[i + j] += (this.coefficients[i] * that.coefficients[j]);
             }
-        }
-
-        result.degree = result.degree();
-
-        return result;
-    }
-
-    //-------//
-    // times //
-    //-------//
-    /**
-     * Simple multiplication by a scalar
-     *
-     * @param scalar the scalar multiplicator value
-     * @return the new polynomial (this * scalar)
-     */
-    public Polynomial times (double scalar)
-    {
-        Polynomial result = new Polynomial(0, degree);
-
-        for (int i = 0; i <= degree; i++) {
-            result.coefficients[i] = coefficients[i] * scalar;
         }
 
         result.degree = result.degree();
@@ -310,7 +313,8 @@ public class Polynomial
         return sb.toString();
     }
 
-    //
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //    //------//
     //    // main //
     //    //------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -124,6 +124,7 @@ public class AnnotationsBuilder
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The sheet to process. */
     private final Sheet sheet;
 
@@ -134,6 +135,7 @@ public class AnnotationsBuilder
     private final SheetAnnotations annotations = new SheetAnnotations();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>AnnotationsBuilder</code> object.
      *
@@ -148,6 +150,7 @@ public class AnnotationsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Process the sheet to generate the corresponding annotations.
      *
@@ -156,9 +159,7 @@ public class AnnotationsBuilder
      * @throws XMLStreamException for any XML error
      */
     public void processSheet ()
-            throws IOException,
-                   JAXBException,
-                   XMLStreamException
+        throws IOException, JAXBException, XMLStreamException
     {
         // Global informations
         annotations.setVersion("1.0");
@@ -179,6 +180,8 @@ public class AnnotationsBuilder
         logger.info("Sheet annotated as {}", path);
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     /**
      * Check whether the provided Inter subclass is excluded for Annotations.
      *
@@ -197,6 +200,7 @@ public class AnnotationsBuilder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------------//
     // SystemAnnotator //
     //-----------------//
@@ -257,7 +261,12 @@ public class AnnotationsBuilder
                 for (Inter item : items) {
                     OmrShape oShape = OmrShapeMapping.omrShapeOf(item.getShape());
                     inners.add(
-                            new SymbolInfo(oShape, interline, item.getId(), null, item.getBounds()));
+                            new SymbolInfo(
+                                    oShape,
+                                    interline,
+                                    item.getId(),
+                                    null,
+                                    item.getBounds()));
                 }
 
                 // Determine the outer shape
@@ -475,7 +484,7 @@ public class AnnotationsBuilder
 
             if (above == null) {
                 // No relation, use position WRT related staff
-                if (inter.getStaff() != null) {
+                if ((inter.getStaff() != null) && !inter.getStaff().isTablature()) {
                     above = inter.getStaff().pitchPositionOf(inter.getCenter()) < 0;
                 }
             }
@@ -575,6 +584,10 @@ public class AnnotationsBuilder
         {
             final Rectangle ledgerBox = ledger.getBounds();
             final Staff staff = ledger.getStaff();
+            if (staff.isTablature()) {
+                return false;
+            }
+
             final int ledgerPitch = (int) Math.rint(staff.pitchPositionOf(ledger.getCenter()));
             final List<Inter> heads = Inters.intersectedInters(
                     allHeads,

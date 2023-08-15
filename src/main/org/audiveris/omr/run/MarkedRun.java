@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -35,19 +35,6 @@ public class MarkedRun
     /** Assigned mark. */
     private int mark;
 
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new <code>MarkedRun</code> object.
-     *
-     * @param run  a standard run
-     * @param mark the assigned mark
-     */
-    public MarkedRun (Run run,
-                      int mark)
-    {
-        this(run.getStart(), run.getLength(), mark);
-    }
-
     /**
      * Creates a new <code>MarkedRun</code> object.
      *
@@ -63,7 +50,22 @@ public class MarkedRun
         this.mark = mark;
     }
 
+    //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new <code>MarkedRun</code> object.
+     *
+     * @param run  a standard run
+     * @param mark the assigned mark
+     */
+    public MarkedRun (Run run,
+                      int mark)
+    {
+        this(run.getStart(), run.getLength(), mark);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Report the assigned mark.
      *

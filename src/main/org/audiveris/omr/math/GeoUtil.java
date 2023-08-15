@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -41,37 +41,20 @@ public abstract class GeoUtil
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // center2D //
-    //----------//
-    /**
-     * Report the center Point2D of the provided rectangle
-     *
-     * @param rect the provided rectangle
-     * @return the geometric rectangle center
-     */
-    public static Point2D center2D (Rectangle2D rect)
-    {
-        return new Point2D.Double(rect.getX() + (rect.getWidth() / 2.0),
-                                  rect.getY() + (rect.getHeight() / 2.0));
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
-    //-------------//
-    // translate2D //
-    //-------------//
+    //--------//
+    // center //
+    //--------//
     /**
-     * Translate the Rectangle2D according to vector (dx, dy).
+     * Report the center Point of the provided line
      *
-     * @param rect rectangle to translate
-     * @param dx   abscissa translation
-     * @param dy   ordinate translation
+     * @param line the provided line
+     * @return the line center
      */
-    public static void translate2D (Rectangle2D rect,
-                                    double dx,
-                                    double dy)
+    public static Point center (Line2D line)
     {
-        rect.setRect(rect.getX() + dx, rect.getY() + dy, rect.getWidth(), rect.getHeight());
+        return PointUtil.rounded(center2D(line));
     }
 
     //--------//
@@ -86,6 +69,65 @@ public abstract class GeoUtil
     public static Point center (Rectangle rect)
     {
         return new Point(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
+    }
+
+    //----------//
+    // center2D //
+    //----------//
+    /**
+     * Report the center Point2D of the provided line
+     *
+     * @param line the provided line
+     * @return the line center
+     */
+    public static Point2D center2D (Line2D line)
+    {
+        return new Point2D.Double(
+                0.5 * (line.getX1() + line.getX2()),
+                0.5 * (line.getY1() + line.getY2()));
+    }
+
+    //----------//
+    // center2D //
+    //----------//
+    /**
+     * Report the center Point2D of the provided rectangle
+     *
+     * @param rect the provided rectangle
+     * @return the geometric rectangle center
+     */
+    public static Point2D center2D (Rectangle2D rect)
+    {
+        return new Point2D.Double(
+                rect.getX() + (rect.getWidth() / 2.0),
+                rect.getY() + (rect.getHeight() / 2.0));
+    }
+
+    //-----//
+    // iou //
+    //-----//
+    /**
+     * Report the "intersection over union" of the provided rectangles.
+     *
+     * @param one first provided rectangle
+     * @param two the other provided rectangle
+     * @return a ratio between 0.0 and 1.0
+     */
+    public static double iou (Rectangle one,
+                              Rectangle two)
+    {
+        final Rectangle inter = one.intersection(two);
+        final int interArea = inter.width * inter.height;
+
+        if (interArea == 0) {
+            return 0;
+        }
+
+        final int oneArea = one.width * one.height;
+        final int twoArea = two.width * two.height;
+        final int unionArea = oneArea + twoArea - interArea;
+
+        return (double) interArea / unionArea;
     }
 
     //--------------//
@@ -152,6 +194,23 @@ public abstract class GeoUtil
         }
 
         return (xOver > 0) || (yOver > 0);
+    }
+
+    //-------------//
+    // translate2D //
+    //-------------//
+    /**
+     * Translate the Rectangle2D according to vector (dx, dy).
+     *
+     * @param rect rectangle to translate
+     * @param dx   abscissa translation
+     * @param dy   ordinate translation
+     */
+    public static void translate2D (Rectangle2D rect,
+                                    double dx,
+                                    double dy)
+    {
+        rect.setRect(rect.getX() + dx, rect.getY() + dy, rect.getWidth(), rect.getHeight());
     }
 
     //----------//

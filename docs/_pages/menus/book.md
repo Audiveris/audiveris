@@ -2,7 +2,7 @@
 layout: default
 title: Book menu
 grand_parent: References
-parent: Pulldown menus
+parent: Pulldown Menus
 nav_order: 2
 ---
 ## Book menu
@@ -30,30 +30,45 @@ Table of contents
 Open a list of recently saved books.
 After selection, the book is opened in the state it was saved.
 
-### Open Book
+### Most recent Book
+
+Open the book most recently closed.
+
+### Open Books
 
 Open a dialog box allowing to select a book that has been saved before.
 
-### Reset Book
+### Split and Merge
 
-Reset all sheets of a book to the initial state, as if it were just loaded as a plain image
+Open a dialog to select and combine inputs from different sources (books, image files).
+
+See [Split and Merge](../main/split_merge.md) section.
+
+### Set Book Parameters
+
+Modify parameters for transcription, at global level, book level and sheets level.
+
+See [Book parameters](../main/book_parameters.md).
+
+### Reset Book to Gray
+
+Reset all sheets of a book to the initial state, as if it were just loaded as a plain image.
 
 ### Reset Book to Binary
 
-Same as `Reset Book` above, except that the initial processing of the images from grey-scale to
-B&W image is kept.
+Same as `Reset Book to Gray` above, except that the initial processing of the images
+from gray-scale to B&W image is kept.
 
 ### Transcribe Book
 
-Start the transcription of all sheets of a book.
+Start the transcription of all sheets of the book.
 
 Transcription is by default performed sheet by sheet.
 During processing, the user may start editing sheets that have already been transcribed.
 
-### Set Parameters
+### Rebuild Scores
 
-Modify parameters for transcription.
-See [Score parameters ](../main/score_parameters.md).
+Force the rebuilding of scores, out of the processed sheets.
 
 ### Swap Book Sheets
 
@@ -62,28 +77,35 @@ Swap to disk all the sheets of current book (except the current sheet).
 This is useful to save memory when working on a book with numerous sheets.
 When needed, a swapped sheet is transparently reloaded.
 
+### Select sheets
+
+Select some sheets out of the current book, and limit processing to these sheets.
+
+See [Sheets Selection](../main/sheets_selection.md) section.
 
 ### Print Book
 
 Save the transcribed book in PDF format, so that it can be printed or saved for further purposes.
 The name of the output file is derived from the book name.
 
-The file is saved into book folder, a (newly created) subdirectory of the base output directory.
+By default, the file is saved into book folder, a (newly created) subdirectory of the base output directory.  
+But we can modify this policy.
 
 ### Print Book as
 
-Same as above, except that the user can define the file name and the directory where the file is saved.
+Same as above, except that we can define the file name and the directory where the file is saved.
 
 ### Export Book
 
 Export the transcribed score as a MusicXML `.mxl` file for exchange with a notation program.
 See [Outputs Formats](../main/output_formats.md).
 
-The file is saved into book folder, a (newly created) subdirectory of the base output directory.
+By default, the file is saved into book folder, a (newly created) subdirectory of the base output directory.  
+But we can modify this policy.
 
 ### Export Book as
 
-Same as above except that the user can define the file name and the directory where the file is saved.
+Same as above except that we can define the file name and the directory where the file is saved.
 
 ### Sample Book Symbols
 
@@ -91,7 +113,7 @@ Populate the book sample repository with samples derived from relevant inters of
 
 (needs `SAMPLES` topic, see [Samples section](../advanced/samples.md))  
 
-### View Book Repository
+### Browse Book Repository
 
 Open a window to browse, check and filter the samples of book repository.
 
@@ -116,11 +138,12 @@ classifiers (Page and/or Patch).
 
 Save the collection of all book sheets with the current state of transcription.
 
-The file is saved into book folder, a (newly created) subdirectory of the base output directory.
+By default, the file is saved into book folder, a (newly created) subdirectory of the base output directory.  
+But we can modify this policy.
 
 ### Save Book as
 
-Same as above except that the user can define the file name and the directory where the file is saved.
+Same as above except that we can define the file name and the directory where the file is saved.
 
 ### Close Book
 

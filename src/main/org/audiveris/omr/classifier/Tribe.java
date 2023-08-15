@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -56,6 +56,15 @@ public class Tribe
     private final List<Sample> members = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private Tribe ()
+    {
+        this.head = null;
+    }
+
     /**
      * Creates a new <code>Tribe</code> object.
      *
@@ -66,15 +75,8 @@ public class Tribe
         this.head = best;
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private Tribe ()
-    {
-        this.head = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Add a good sample.
      *

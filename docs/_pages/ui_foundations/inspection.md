@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Inspection
-grand_parent: User Edition
+grand_parent: User Editing
 parent: UI Foundations
 nav_order: 3
 ---
@@ -28,11 +28,11 @@ Table of contents
 ---
 ### Measure background
 
-A pink measure background is the most obvious sign, meant to call user attention on a measure,
+A pink measure background is the most obvious sign, meant to call user attention to a measure,
 as in the following page view which displays two measures (#5P1 and #10P2) with a pink
 background and the others with standard white background:  
-[Unless you have disabled this feature via the menu item `View | Show score Errors`
-or `F9` function  key or the related toolbar icon]
+[Unless we have disabled this feature via the menu item `View | Show score Errors`
+or the `F9` function  key or the related toolbar icon]
 
 ![](../assets/images/pink_measures.png)
 
@@ -49,10 +49,10 @@ A measure is detected as _abnormal_ -- and thus displayed in pink -- if, for at 
 voices:
 - Voice **starting time cannot be determined**, or
 - Voice **ending time exceeds measure expected duration**
-   -- as defined by current time signature
+   -- as defined by the current time signature
 
 Note that, conversely, a measure not detected as abnormal
--- and thus displayed with standard white background --
+-- and thus displayed with the standard white background --
 may still exhibit errors that the OMR engine could not reliably detect.
 We'll see examples of these cases that today only the human reader can detect and fix.
 
@@ -60,17 +60,17 @@ We'll see examples of these cases that today only the human reader can detect an
 
 ![](../assets/images/voice_color_check.png)
 
-The interest of choosing to colorize voices
+The interest in choosing to colorize voices
 (see [Voice colors](../main/voice_colors.md#voice-colors))
 is to visually check the content of every voice.
 
-On the example above, voice 6 which appears on the bottom right corner of the
-measure is really suspicious (although measure is not flagged as _abnormal_).
+In the example above, voice 6 which appears in the bottom right corner of the
+measure is really suspicious (although the measure is not flagged as _abnormal_).
 
 ### Chords IDs
 
 By default, chord IDs are not displayed in sheet view because they look too invasive.
-To set them on, use pull-down menu `View | Show chord IDs`.
+To set them on, we use the pull-down menu `View | Show chord IDs`.
 
 This gives the new picture below, where it is clear that we could merge chord 3963 and chord 3964
 into a single chord:
@@ -79,10 +79,10 @@ into a single chord:
 
 ### Measure strip
 
-A right-click within a measure N leads to measure contextual menu which offers to dump voices
-for the measure at hand.  
+A right-click within a measure N leads to a measure contextual menu which offers to print out
+all voices for the measure at hand.  
 
-For example, let's focus on the measure here below:
+For example, let's focus on the measure below:
 
 ![](../assets/images/chord_id_check.png)
 
@@ -97,21 +97,23 @@ Here is a measure strip at stack level (with part P1 and part P2):
 ![](../assets/images/strip_check.png)
 
 Strip legend:
-- Strip top line displays the time offset of each slot within measure.
-- It then displays one part after the other, with one horizontal line per voice in part.
+- The strip top line displays the time offset of each slot within the measure.
+- It then displays one part after the other, with one horizontal line per voice in the part.
 - A voice line gives the voice ID, then each chord ID vertically aligned with its starting slot.
-- A "====" segment indicates voice is active, while a "...." segment indicates voice is inactive.
-- A voice line may end with a string (ts:N/D) to indicate that this voice looks like a typical
-   measure in a N/D time signature.
-   [This could be used to infer actual time signature, but this feature is now disabled].
+- A "====" segment indicates the voice is active, while a "...." segment indicates the voice is inactive.
+- A voice line may end with a string (ts:Num/Den) to indicate that this voice looks like a typical
+   measure in a Numerator/Denominator time signature.
+   [This could be used to infer the actual time signature, but this feature is now disabled].
 
 When compared with the corresponding measure image above, the strip at hand shows 2 anomalies:
-1. Voice P1/V1 ends at offset 3/4, while on image we would expect this voice to end at offset 1.
+1. Voice P1/V1 ends at offset 3/4, while on the image we would expect this voice to end at offset 1.  
+Moreover, Ch#3979 starts at offset 1/2, whereas on the image it starts at offset 3/4.
+(Evidently the dot on Ch#3970 has been overlooked by the engine.)
 2. Voice P2/V2 also ends at offset 3/4.
    This is consistent with the image: there is a non-detected chord just below chord 3997.
 
 Here again there is nothing, from the OMR engine point of view, to flag this measure as abnormal
--- all voices can be computed and all of them complete within measure time limit.
+-- all voices can be computed and all of them complete within the measure time limit.
 
 ### Time slots
 
@@ -148,9 +150,9 @@ Which looks strange.
 
 A more readable output is available, but only in ![](../assets/images/ModeCombined.png)
 combined mode.
-Simply press mouse right button and move it near a time slot,
+We simply press the right mouse button and move it near a time slot,
 while staying vertically within part stave(s).
-This highlights both the designated slot and the slot-related chords as in the pictures here below:
+This highlights both the designated slot and the slot-related chords as in the pictures below:
 
 | Correct slot #1 at offset 0 | | Abnormal slot #3 at offset 1/2 |
 | :---: | --- | :---: |
@@ -158,5 +160,6 @@ This highlights both the designated slot and the slot-related chords as in the p
 
 We can immediately see that slot at offset 1/2 wrongly contains chords 4010 and 3979.
 
-A closer look near chord 3978 in slot #1 (time offset 0), at upper left corner of the measure,
-indicates that there is an unrecognized augmentation dot on the right of chord note head.
+A closer look near chord 3978 in slot #1 (time offset 0), at the upper left corner of the measure,
+indicates that there is an unrecognized augmentation dot on the right of the chord note head,
+which is the actual root cause of all the aforementioned time slot problems.

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,14 +55,23 @@ public class TimeNumberInter
     private static final Constants constants = new Constants();
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
+
     /** Top or bottom. */
     @XmlAttribute
     protected VerticalSide side;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new TimeNumberInter object.
+     * No-arg constructor meant for JAXB.
+     */
+    private TimeNumberInter ()
+    {
+        super((Glyph) null, (Shape) null, 0.0);
+    }
+
+    /**
+     * Creates a new <code>TimeNumberInter</code> object.
      *
      * @param glyph underlying glyph
      * @param shape precise shape
@@ -79,23 +88,7 @@ public class TimeNumberInter
         this.side = side;
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private TimeNumberInter ()
-    {
-        super((Glyph) null, null, 0.0);
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 
     //-----------//
     // getEditor //
@@ -132,6 +125,11 @@ public class TimeNumberInter
         this.side = side;
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------//
+    // create //
+    //--------//
     /**
      * (Try to) create a top or bottom number for time signature.
      *
@@ -146,13 +144,15 @@ public class TimeNumberInter
                                           double grade,
                                           Staff staff)
     {
+        if (staff.isTablature()) {
+            return null;
+        }
+
         // Check pitch of item
         Point centroid = glyph.getCentroid();
         double pitch = staff.pitchPositionOf(centroid);
-        double absPitch = Math.abs(pitch);
 
-        if ((absPitch < constants.minAbsolutePitch.getValue())
-                    || (absPitch > constants.maxAbsolutePitch.getValue())) {
+        if (!isPitchValid(pitch)) {
             return null;
         }
 
@@ -164,16 +164,22 @@ public class TimeNumberInter
         return inter;
     }
 
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
+    //--------------//
+    // isPitchValid //
+    //--------------//
+    /**
+     * Report whether the provided pitch position is valid for a TimeNumberInter candidate.
+     */
+    public static boolean isPitchValid (double pitch)
     {
-        return "TIME_" + getValue();
+        double absPitch = Math.abs(pitch);
+
+        return (absPitch >= constants.minAbsolutePitch.getValue())
+                && (absPitch <= constants.maxAbsolutePitch.getValue());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

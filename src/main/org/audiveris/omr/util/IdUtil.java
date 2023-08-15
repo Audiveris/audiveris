@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -40,14 +40,17 @@ public abstract class IdUtil
     private static final Logger logger = LoggerFactory.getLogger(IdUtil.class);
 
     /** To compare Entity instances according to their id. */
-    public static final Comparator<String> byId = (id1, id2) -> IdUtil.compare(id1, id2);
+    public static final Comparator<String> byId = (id1,
+                                                   id2) -> IdUtil.compare(id1, id2);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private IdUtil ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     /**
      * Compare the integer values of two provided IDs, checking that they share the
      * same prefix.
@@ -84,6 +87,27 @@ public abstract class IdUtil
         }
 
         return null;
+    }
+
+    /**
+     * Return the position of first digit found in ID string.
+     *
+     * @param id the provided ID string
+     * @return the string position of first digit, or -1 if none
+     */
+    private static int getIntStart (String id)
+    {
+        if ((id == null) || id.isEmpty()) {
+            return -1;
+        }
+
+        for (int i = 0; i < id.length(); i++) {
+            if (Character.isDigit(id.charAt(i))) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /**
@@ -137,26 +161,5 @@ public abstract class IdUtil
         }
 
         return null;
-    }
-
-    /**
-     * Return the position of first digit found in ID string.
-     *
-     * @param id the provided ID string
-     * @return the string position of first digit, or -1 if none
-     */
-    private static int getIntStart (String id)
-    {
-        if ((id == null) || id.isEmpty()) {
-            return -1;
-        }
-
-        for (int i = 0; i < id.length(); i++) {
-            if (Character.isDigit(id.charAt(i))) {
-                return i;
-            }
-        }
-
-        return -1;
     }
 }

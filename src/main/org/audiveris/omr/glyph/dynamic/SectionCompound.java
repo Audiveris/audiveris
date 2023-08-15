@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,7 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.dynamic;
 
-import ij.process.ByteProcessor;
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
 
 import org.audiveris.omr.glyph.AbstractWeightedEntity;
 import org.audiveris.omr.glyph.Glyph;
@@ -32,7 +33,6 @@ import org.audiveris.omr.math.Barycenter;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.*;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.util.ByteUtil;
@@ -44,6 +44,8 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import ij.process.ByteProcessor;
 
 /**
  * Class <code>SectionCompound</code> represents a dynamic collection of sections, allowing
@@ -73,6 +75,7 @@ public class SectionCompound
     private Integer weight;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a new <code>SectionCompound</code> object.
      */
@@ -90,6 +93,7 @@ public class SectionCompound
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------------//
     // addSection //
     //------------//
@@ -103,6 +107,29 @@ public class SectionCompound
         Objects.requireNonNull(section, "Cannot add a null section");
         members.add(section);
         invalidateCache();
+    }
+
+    //-------------//
+    // checkBounds //
+    //-------------//
+    /**
+     *
+     */
+    protected void checkBounds ()
+    {
+        if (bounds == null) {
+            Rectangle theBounds = null;
+
+            for (Section section : members) {
+                if (theBounds == null) {
+                    theBounds = section.getBounds(); // Already a copy of section bounds
+                } else {
+                    theBounds.add(section.getBounds());
+                }
+            }
+
+            bounds = theBounds;
+        }
     }
 
     //----------//
@@ -173,19 +200,6 @@ public class SectionCompound
         checkBounds();
 
         return new Rectangle(bounds);
-    }
-
-    //-----------//
-    // setBounds //
-    //-----------//
-    /**
-     * Force the compound contour bounds (when start and stop points are forced).
-     *
-     * @param bounds the forced contour box
-     */
-    public void setBounds (Rectangle bounds)
-    {
-        this.bounds = bounds;
     }
 
     //-----------//
@@ -327,19 +341,6 @@ public class SectionCompound
         return partOf;
     }
 
-    //-----------//
-    // setPartOf //
-    //-----------//
-    /**
-     * Record the link to the compound which has "stolen" the sections of this compound.
-     *
-     * @param compound the containing compound, if any
-     */
-    public void setPartOf (SectionCompound compound)
-    {
-        partOf = compound;
-    }
-
     //--------//
     // getTop //
     //--------//
@@ -390,6 +391,33 @@ public class SectionCompound
         return bounds.width;
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        if (partOf != null) {
+            sb.append(" anc:").append(getAncestor());
+        }
+
+        return sb.toString();
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    /**
+     * Invalidate cached data.
+     */
+    protected void invalidateCache ()
+    {
+        weight = null;
+        bounds = null;
+    }
+
     //---------------//
     // removeSection //
     //---------------//
@@ -405,6 +433,32 @@ public class SectionCompound
         invalidateCache();
 
         return bool;
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    /**
+     * Force the compound contour bounds (when start and stop points are forced).
+     *
+     * @param bounds the forced contour box
+     */
+    public void setBounds (Rectangle bounds)
+    {
+        this.bounds = bounds;
+    }
+
+    //-----------//
+    // setPartOf //
+    //-----------//
+    /**
+     * Record the link to the compound which has "stolen" the sections of this compound.
+     *
+     * @param compound the containing compound, if any
+     */
+    public void setPartOf (SectionCompound compound)
+    {
+        partOf = compound;
     }
 
     //---------------//
@@ -496,57 +550,8 @@ public class SectionCompound
         return false;
     }
 
-    //-------------//
-    // checkBounds //
-    //-------------//
-    /**
-     *
-     */
-    protected void checkBounds ()
-    {
-        if (bounds == null) {
-            Rectangle theBounds = null;
-
-            for (Section section : members) {
-                if (theBounds == null) {
-                    theBounds = section.getBounds(); // Already a copy of section bounds
-                } else {
-                    theBounds.add(section.getBounds());
-                }
-            }
-
-            bounds = theBounds;
-        }
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        if (partOf != null) {
-            sb.append(" anc:").append(getAncestor());
-        }
-
-        return sb.toString();
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    /**
-     * Invalidate cached data.
-     */
-    protected void invalidateCache ()
-    {
-        weight = null;
-        bounds = null;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // Constructor //
     //-------------//

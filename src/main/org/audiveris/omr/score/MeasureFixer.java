@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,18 +21,21 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class <code>MeasureFixer</code> visits the score hierarchy to fix measures:.
@@ -42,6 +45,7 @@ import org.slf4j.LoggerFactory;
  * <li>Detect implicit measures (as second half repeats)</li>
  * <li>Detect inside barlines (empty measures)</li>
  * <li>Detect cautionary measures (CKT changes at end of staff)</li>
+ * <li>Handle multiple measure rests</li>
  * <li>Assign final page-based measure IDs</li>
  * </ul>
  *
@@ -54,6 +58,7 @@ public class MeasureFixer
     private static final Logger logger = LoggerFactory.getLogger(MeasureFixer.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Current stack of measures in current system. */
     private MeasureStack stack;
 
@@ -73,6 +78,7 @@ public class MeasureFixer
     private Integer lastId;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new MeasureFixer object.
      */
@@ -81,47 +87,6 @@ public class MeasureFixer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // process Page //
-    //--------------//
-    /**
-     * Process the provided page.
-     *
-     * @param page the page to process
-     */
-    public void process (Page page)
-    {
-        logger.debug("{} Visiting {}", getClass().getSimpleName(), page);
-
-        for (SystemInfo system : page.getSystems()) {
-            process(system);
-        }
-
-        // Remember the number of measures in this page
-        page.computeMeasureCount();
-
-        // Remember the delta of measure ids in this page
-        page.setDeltaMeasureId(page.getLastSystem().getLastStack().getIdValue());
-    }
-
-    //---------------//
-    // process Score //
-    //---------------//
-    /**
-     * Process the provided score.
-     * <p>
-     * Currently not used.
-     *
-     * @param score the score to process
-     */
-    public void process (Score score)
-    {
-        logger.debug("{} Visiting {}", getClass().getSimpleName(), score);
-
-        for (Page page : score.getPages()) {
-            process(page);
-        }
-    }
 
     //---------------------//
     // getStackTermination //
@@ -151,12 +116,23 @@ public class MeasureFixer
     // isEmpty //
     //---------//
     /**
-     * Check for an empty stack: perhaps clef and key or time, but no note or rest.
+     * Check for an empty stack: perhaps clef and key or time, but no note or rest or
+     * measure repeat sign.
      *
      * @return true if so
      */
     private boolean isEmpty (MeasureStack stack)
     {
+        if (stack.isMultiRest()) {
+            return false;
+        }
+
+        for (Measure measure : stack.getMeasures()) {
+            if (!measure.getMeasureRepeats().isEmpty()) {
+                return false;
+            }
+        }
+
         final Rational actualDuration = stack.getActualDuration();
 
         return (actualDuration != null) ? actualDuration.equals(Rational.ZERO) : false;
@@ -175,10 +151,8 @@ public class MeasureFixer
     {
         final SystemInfo system = stack.getSystem();
 
-        return (system.getIndexInPage() == 0)
-                       && (stack == system.getFirstStack())
-                       && (stackTermination != null)
-                       && (stackTermination.compareTo(Rational.ZERO) < 0);
+        return (system.getIndexInPage() == 0) && (stack == system.getFirstStack())
+                && (stackTermination != null) && (stackTermination.compareTo(Rational.ZERO) < 0);
     }
 
     //-------------//
@@ -208,7 +182,8 @@ public class MeasureFixer
     private boolean isSecondRepeatHalf ()
     {
         // Check for partial first half
-        if ((prevStackTermination == null) || (prevStackTermination.compareTo(Rational.ZERO) >= 0)) {
+        if ((prevStackTermination == null) || (prevStackTermination.compareTo(
+                Rational.ZERO) >= 0)) {
             return false;
         }
 
@@ -226,8 +201,31 @@ public class MeasureFixer
         }
 
         // Check for an exact duration sum (TODO: is this too strict?)
-        return prevStackTermination.plus(stackTermination).abs()
-                .equals(prevStack.getExpectedDuration());
+        return prevStackTermination.plus(stackTermination).abs().equals(
+                prevStack.getExpectedDuration());
+    }
+
+    //--------------//
+    // process Page //
+    //--------------//
+    /**
+     * Process the provided page.
+     *
+     * @param page the page to process
+     */
+    public void process (Page page)
+    {
+        logger.debug("{} Visiting {}", getClass().getSimpleName(), page);
+
+        for (SystemInfo system : page.getSystems()) {
+            process(system);
+        }
+
+        // Remember the number of measures in this page
+        page.computeMeasureCount();
+
+        // Remember the delta of measure ids in this page
+        page.setDeltaMeasureId(page.getLastSystem().getLastStack().getIdValue());
     }
 
     //----------------//
@@ -240,12 +238,23 @@ public class MeasureFixer
     {
         logger.debug("{} processing {}", getClass().getSimpleName(), system);
 
+        // Multiple measure rests
+        final List<Inter> multipleRests = system.getSig().inters(MultipleRestInter.class);
+
         // To gather all warnings about missing time signature in this system
         final List<String> warnings = new ArrayList<>();
 
         // Loop on stacks in system (the list of stacks being modified on the fly)
         for (int idx = 0; idx < system.getStacks().size(); idx++) {
             stack = system.getStacks().get(idx);
+            stack.resetSpecial();
+
+            // Multiple measure rest in this stack?
+            final Integer multipleRestCount = stack.getMultipleMeasureCount(multipleRests);
+            if (multipleRestCount != null) {
+                logger.debug("multiple measure rest: {}", multipleRestCount);
+                stack.setMultiRest();
+            }
 
             // First, compute voices terminations
             if (stack.getExpectedDuration() != null) {
@@ -263,14 +272,14 @@ public class MeasureFixer
                     (stackTermination != null) ? ("=" + stackTermination) : "");
 
             if (isEmpty(stack)) {
+                // This whole stack is empty (no notes/rests, hence no voices)
                 logger.debug("empty");
 
-                // This whole stack is empty (no notes/rests, hence no voices)
-                // We will merge with the following stack, if any
                 if (stack != system.getLastStack()) {
-                    setId((lastId != null)
-                            ? (lastId + 1)
-                            : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
+                    // We will merge with the following stack
+                    setId(
+                            (lastId != null) ? (lastId + 1)
+                                    : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
                 } else {
                     // This is just a cautionary stack at right end of system
                     logger.debug("cautionary");
@@ -281,12 +290,18 @@ public class MeasureFixer
                         setId(lastId);
                     }
                 }
+            } else if (stack.isMultiRest()) {
+                logger.debug("multiple measure rest: {}", multipleRestCount);
+                setId(
+                        (lastId != null) ? (lastId + 1)
+                                : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
+                lastId += (multipleRestCount - 1);
             } else if (isPickup(stack)) {
                 logger.debug("pickup");
                 stack.setPickup();
-                setId((lastId != null)
-                        ? (-lastId)
-                        : ((prevSystemLastId != null) ? (-prevSystemLastId) : 0));
+                setId(
+                        (lastId != null) ? (-lastId)
+                                : ((prevSystemLastId != null) ? (-prevSystemLastId) : 0));
             } else if (isSecondRepeatHalf()) {
                 logger.debug("secondHalf");
 
@@ -325,9 +340,11 @@ public class MeasureFixer
         }
 
         if (!warnings.isEmpty()) {
-            logger.warn("{} No target duration for measures local IDs {}"
-                                + ", please check time signatures",
-                        system, warnings);
+            logger.warn(
+                    "{} No target duration for measures local IDs {}"
+                            + ", please check time signatures",
+                    system,
+                    warnings);
         }
 
         // For next system

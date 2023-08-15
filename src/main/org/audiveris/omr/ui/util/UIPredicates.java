@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,7 +22,11 @@
 package org.audiveris.omr.ui.util;
 
 import org.audiveris.omr.WellKnowns;
-import static java.awt.event.InputEvent.*;
+
+import static java.awt.event.InputEvent.BUTTON1_DOWN_MASK;
+import static java.awt.event.InputEvent.BUTTON2_DOWN_MASK;
+import static java.awt.event.InputEvent.BUTTON3_DOWN_MASK;
+import static java.awt.event.InputEvent.SHIFT_DOWN_MASK;
 import java.awt.event.MouseEvent;
 
 import javax.swing.SwingUtilities;
@@ -43,7 +47,8 @@ public abstract class UIPredicates
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------------------//
     // isAdditionWanted //
     //------------------//
@@ -63,7 +68,7 @@ public abstract class UIPredicates
             return left && command && !e.isPopupTrigger();
         } else {
             return (SwingUtilities.isRightMouseButton(e) != SwingUtilities.isLeftMouseButton(e))
-                           && e.isControlDown();
+                    && e.isControlDown();
         }
     }
 

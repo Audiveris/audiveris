@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -54,6 +54,7 @@ public class ErrorsEditor
     private static final Logger logger = LoggerFactory.getLogger(ErrorsEditor.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet */
     private final Sheet sheet;
 
@@ -73,6 +74,7 @@ public class ErrorsEditor
     private final DefaultListModel<Record> model = new DefaultListModel<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create an instance of ErrorsEditor (one per sheet / score).
      *
@@ -89,6 +91,7 @@ public class ErrorsEditor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //    //----------//
     //    // addError //
     //    //----------//
@@ -252,7 +255,82 @@ public class ErrorsEditor
         return scrollPane;
     }
 
+    //    //----------------//
+    //    // getCurrentStep //
+    //    //----------------//
+    //    /**
+    //     * Retrieve the step being performed on the sheet.
+    //     * Beware, during SCORE step and following steps, just the first sheet has a current step
+    //     * assigned.
+    //     *
+    //     * @return the step being done
+    //     */
+    //    private OmrStep getCurrentStep ()
+    //    {
+    //        return sheet.getCurrentStep();
+    //    }
+    //
+    //------------//
+    // MyListener //
+    //------------//
+    /**
+     * A specific listener to handle user selection in the list of errors.
+     */
+    private class MyListener
+            implements ListSelectionListener
+    {
+
+        @Override
+        public void valueChanged (ListSelectionEvent e)
+        {
+            //            if ((e.getSource() == list) && !e.getValueIsAdjusting()) {
+            //                Record record = list.getSelectedValue();
+            //
+            //                if (record != null) {
+            //                    logger.debug("value={}", record);
+            //
+            //                    // Use glyph location if available
+            //                    if (record.glyph != null) {
+            //                        sheet.getGlyphNest().getGlyphService().publish(
+            //                                new GlyphEvent(this, SelectionHint.GLYPH_INIT, null, record.glyph));
+            //                    } else {
+            //                        // Otherwise use node location as possible
+            //                        try {
+            //                            Point pixPt = null;
+            //
+            //                            try {
+            //                                pixPt = record.node.getCenter();
+            //                            } catch (Exception ex) {
+            //                            }
+            //
+            //                            if (pixPt == null) {
+            //                                if (record.node instanceof OldMeasureNode) {
+            //                                    OldMeasureNode mn = (OldMeasureNode) record.node;
+            //                                    OldMeasure measure = mn.getMeasure();
+            //
+            //                                    if (measure != null) {
+            //                                        pixPt = measure.getCenter();
+            //                                    }
+            //                                }
+            //                            }
+            //
+            //                            sheet.getLocationService().publish(
+            //                                    new LocationEvent(
+            //                                            ErrorsEditor.this,
+            //                                            SelectionHint.LOCATION_INIT,
+            //                                            null,
+            //                                            new Rectangle(pixPt)));
+            //                        } catch (Exception ex) {
+            //                            logger.warn("Failed pointing to " + record.node, ex);
+            //                        }
+            //                    }
+            //                }
+            //            }
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Record //
     //--------//
@@ -332,80 +410,6 @@ public class ErrorsEditor
             sb.append(" ").append(text);
 
             return sb.toString();
-        }
-    }
-
-    //    //----------------//
-    //    // getCurrentStep //
-    //    //----------------//
-    //    /**
-    //     * Retrieve the step being performed on the sheet.
-    //     * Beware, during SCORE step and following steps, just the first sheet has a current step
-    //     * assigned.
-    //     *
-    //     * @return the step being done
-    //     */
-    //    private OmrStep getCurrentStep ()
-    //    {
-    //        return sheet.getCurrentStep();
-    //    }
-    //
-    //------------//
-    // MyListener //
-    //------------//
-    /**
-     * A specific listener to handle user selection in the list of errors.
-     */
-    private class MyListener
-            implements ListSelectionListener
-    {
-
-        @Override
-        public void valueChanged (ListSelectionEvent e)
-        {
-            //            if ((e.getSource() == list) && !e.getValueIsAdjusting()) {
-            //                Record record = list.getSelectedValue();
-            //
-            //                if (record != null) {
-            //                    logger.debug("value={}", record);
-            //
-            //                    // Use glyph location if available
-            //                    if (record.glyph != null) {
-            //                        sheet.getGlyphNest().getGlyphService().publish(
-            //                                new GlyphEvent(this, SelectionHint.GLYPH_INIT, null, record.glyph));
-            //                    } else {
-            //                        // Otherwise use node location as possible
-            //                        try {
-            //                            Point pixPt = null;
-            //
-            //                            try {
-            //                                pixPt = record.node.getCenter();
-            //                            } catch (Exception ex) {
-            //                            }
-            //
-            //                            if (pixPt == null) {
-            //                                if (record.node instanceof OldMeasureNode) {
-            //                                    OldMeasureNode mn = (OldMeasureNode) record.node;
-            //                                    OldMeasure measure = mn.getMeasure();
-            //
-            //                                    if (measure != null) {
-            //                                        pixPt = measure.getCenter();
-            //                                    }
-            //                                }
-            //                            }
-            //
-            //                            sheet.getLocationService().publish(
-            //                                    new LocationEvent(
-            //                                            ErrorsEditor.this,
-            //                                            SelectionHint.LOCATION_INIT,
-            //                                            null,
-            //                                            new Rectangle(pixPt)));
-            //                        } catch (Exception ex) {
-            //                            logger.warn("Failed pointing to " + record.node, ex);
-            //                        }
-            //                    }
-            //                }
-            //            }
         }
     }
 }

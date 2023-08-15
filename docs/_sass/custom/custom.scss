@@ -23,18 +23,33 @@ h4,
   text-transform: none;
 }
 
-.nota {
-  color: pink !important;
+/* Reference to a footnote */
+.footnote::before {
+    content: "[";
+    color: blue;
+}
+.footnote::after {
+    content: "]";
+    color: blue;
 }
 
-.nota-bg {
-  background-color: LightYellow !important;
+/* Footnotes */
+.footnotes::before {
+    content: "Footnotes";
+    color: blue;
+}
+.footnotes {
+    border: 1px dotted blue;
 }
 
-.warning {
-  color: red !important;
+/* Page number */
+@page {  
+  @bottom-right {
+    content: "Page " counter(page);
+  }       
 }
 
-.warning-bg {
-  background-color: LightPink !important;
+/* Better table sizing in PDF */
+.table-wrapper { 
+  display: flex;
 }

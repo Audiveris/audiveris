@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -69,6 +69,7 @@ public class MeasuresStep
     }
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>MeasuresStep</code> object.
      */
@@ -77,13 +78,65 @@ public class MeasuresStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------------------------//
+    // buildFromStaffBarlines //
+    //------------------------//
+    /**
+     * Build the list of PartBarline's that corresponds to the StaffBarline's in seq.
+     * <p>
+     * Assumption: all staffBarlines must be present, one per staff and in proper order!
+     *
+     * @param staffBarlines list of StaffBarline instances, to be gathered per part
+     * @return the corresponding list of PartBarline instances
+     */
+    private List<PartBarline> buildFromStaffBarlines (List<Inter> staffBarlines)
+    {
+        final List<PartBarline> partBarlineList = new ArrayList<>();
+
+        Part previousPart = null;
+        PartBarline partBarline = null;
+
+        for (Inter inter : staffBarlines) {
+            final StaffBarlineInter staffBarline = (StaffBarlineInter) inter;
+            final Part part = staffBarline.getStaff().getPart();
+
+            if (part != previousPart) {
+                // New part encountered, create its PartBarline
+                partBarline = new PartBarline();
+                partBarlineList.add(partBarline);
+                previousPart = part;
+            }
+
+            // Group each StaffBarline into its PartBarline
+            partBarline.addStaffBarline(staffBarline);
+        }
+
+        return partBarlineList;
+    }
+
+    //----------//
+    // doEpilog //
+    //----------//
+    @Override
+    protected void doEpilog (Sheet sheet,
+                             Void context)
+        throws StepException
+    {
+        // Assign basic measure ids
+        for (Page page : sheet.getPages()) {
+            page.numberMeasures();
+            page.dumpMeasureCounts();
+        }
+    }
+
     //----------//
     // doSystem //
     //----------//
     @Override
     public void doSystem (SystemInfo system,
                           Void context)
-            throws StepException
+        throws StepException
     {
         new MeasuresBuilder(system).buildMeasures();
     }
@@ -124,8 +177,8 @@ public class MeasuresStep
             final int margin = scale.toPixels(StaffBarlineInter.getMaxStaffBarlineShift());
             final MeasureStack stack = system.getStackAt(centerRight, margin);
 
-            if ((!isAddition && (opKind != UITask.OpKind.UNDO))
-                        || (isAddition && (opKind == UITask.OpKind.UNDO))) {
+            if ((!isAddition && (opKind != UITask.OpKind.UNDO)) || (isAddition
+                    && (opKind == UITask.OpKind.UNDO))) {
                 if (stack == null) {
                     // Safeguard on removal
                     if (opKind != UITask.OpKind.UNDO) {
@@ -181,66 +234,6 @@ public class MeasuresStep
         }
     }
 
-    //--------------//
-    // isImpactedBy //
-    //--------------//
-    @Override
-    public boolean isImpactedBy (Class<?> classe)
-    {
-        return isImpactedBy(classe, impactingClasses);
-    }
-
-    //----------//
-    // doEpilog //
-    //----------//
-    @Override
-    protected void doEpilog (Sheet sheet,
-                             Void context)
-            throws StepException
-    {
-        // Assign basic measure ids
-        for (Page page : sheet.getPages()) {
-            page.numberMeasures();
-            page.dumpMeasureCounts();
-        }
-    }
-
-    //------------------------//
-    // buildFromStaffBarlines //
-    //------------------------//
-    /**
-     * Build the list of PartBarline's that corresponds to the StaffBarline's in seq.
-     * <p>
-     * Assumption: all staffBarlines must be present, one per staff and in proper order!
-     *
-     * @param staffBarlines list of StaffBarline instances, to be gathered per part
-     * @return the corresponding list of PartBarline instances
-     */
-    private List<PartBarline> buildFromStaffBarlines (List<Inter> staffBarlines)
-    {
-        final List<PartBarline> partBarlineList = new ArrayList<>();
-
-        Part previousPart = null;
-        PartBarline partBarline = null;
-
-        for (Inter inter : staffBarlines) {
-            final StaffBarlineInter staffBarline = (StaffBarlineInter) inter;
-            final Part part = staffBarline.getStaff().getPart();
-
-            if (part != previousPart) {
-                // New part encountered, create its PartBarline
-                partBarline = new PartBarline();
-                partBarlineList.add(partBarline);
-                previousPart = part;
-            }
-
-            // Group each StaffBarline into its PartBarline
-            partBarline.addStaffBarline(staffBarline);
-        }
-
-        return partBarlineList;
-    }
-
     //------------//
     // isAddition //
     //------------//
@@ -257,5 +250,14 @@ public class MeasuresStep
         }
 
         return false;
+    }
+
+    //--------------//
+    // isImpactedBy //
+    //--------------//
+    @Override
+    public boolean isImpactedBy (Class<?> classe)
+    {
+        return isImpactedBy(classe, impactingClasses);
     }
 }

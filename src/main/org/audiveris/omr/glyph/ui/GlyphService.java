@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,10 +55,11 @@ public class GlyphService
     private static final Logger logger = LoggerFactory.getLogger(GlyphService.class);
 
     /** Events that can be published on a glyph service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{IdEvent.class,
-                                                                   EntityListEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]
+    { IdEvent.class, EntityListEvent.class };
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>GlyphService</code> object.
      *
@@ -72,6 +73,7 @@ public class GlyphService
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // getMostRelevant //
     //-----------------//

@@ -14,7 +14,7 @@ Note: To use this feature, make sure the advanced `SAMPLES` topic is activated.
 If not, select the `SAMPLES` topic in the `Tools | Advanced Topics...` menu
 (and restart the application).
 
-Audiveris 5.1 basic classifier is a Glyph classifier, which means that it needs to be trained with
+Audiveris basic classifier is a Glyph classifier, which means that it needs to be trained with
 glyph samples (a sample is basically a glyph with the related shape).
 
 ---
@@ -26,10 +26,13 @@ Table of contents
 ---
 ### Initial samples
 
-There is an Audiveris 5.1 Google drive located at
-[https://drive.google.com/drive/folders/1yS8DDSZjn3kWKkHvgJqyAEGwnOu0Gpc_?usp=sharing](https://drive.google.com/drive/folders/1yS8DDSZjn3kWKkHvgJqyAEGwnOu0Gpc_?usp=sharing)
+There is an Audiveris Google drive located at
+[https://drive.google.com/drive/u/1/folders/0B9_F5tULPk_oeEU0a2Z1U0gwLTg?resourcekey=0-W_yyQcPj9JL9Bc2bKTAtrg](https://drive.google.com/drive/u/1/folders/0B9_F5tULPk_oeEU0a2Z1U0gwLTg?resourcekey=0-W_yyQcPj9JL9Bc2bKTAtrg)
 
-This folder contains several files:
+It contains training data, organized by folders.
+Let's inspect folder 5.3 which is the more recent folder as of this writing.
+ 
+This folder contains three files:
 
 | File Name              | Size     | Content                 |
 | :--------------------- | -------: | :---------------------- |
@@ -39,22 +42,22 @@ This folder contains several files:
 
 The `samples.zip` file is the `global` repository.
 It's the one that has been used to train the Glyph classifier provided with
-5.1 release.
+latest Audiveris release.
 
-Begin by downloading this archive (without expanding it) into your own `config/train` folder
+We begin by downloading this archive (without expanding it) into our own `config/train` folder
 (see its precise location in [Folders] section).  
-You will then be able to augment this collection on your own.
+We will then be able to augment this collection on our own.
 
-You can also download the `images.zip` file which is not mandatory for training, but which will
-help you see most samples within their sheet context.
+We can also download the `images.zip` file which is not mandatory for training, but which will
+help us see most samples within their sheet context.
 
 ### Sampling a Sheet or a Book
 
-After perhaps some manual corrections, when you are really satisfied with all the glyphs recognized
-in a given sheet, you can save the sheet data as training samples.
+After perhaps some manual corrections, when we are really satisfied with all the glyphs recognized
+in a given sheet, we can save the sheet data as training samples.
 This is done via the pulldown `Sheet | Sample sheet Symbols` menu.
 
-You can also use the pulldown `Book | Sample book Symbols` menu if you are comfortable with all the
+We can also use the pulldown `Book | Sample book Symbols` menu if we are comfortable with all the
 book sheets.
 
 Data is saved under two zip archives located in the book folder.
@@ -75,12 +78,12 @@ Using them as part of the training base could severely impact Audiveris recognit
 So the strategy, when such a wrong sample has been identified, is to remove it from the
 repository or to assign it a correct shape.
 
-To work on the **GLOBAL** repository, use the `Tools | Browse Global Repository...` pulldown menu.
-It will work on the `samples.zip` and `images.zip` files if any are found in your own `config/train`
-folder (see [Folders] section).
+To work on the **GLOBAL** repository, we use the `Tools | Browse Global Repository...` pulldown menu.
+It will work on the `samples.zip` and `images.zip` files if any are found in our own `config/train`
+folder (see [Train folder](../folders/essential.md#train-folder) section).
 
-To work on a **book** repository, use the `Book | View Book Repository...` pulldown menu.
-You will be able to pick and merge book repositories into the GLOBAL repository later on,
+To work on a **book** repository, we use the `Book | View Book Repository...` pulldown menu.
+We will be able to pick and merge book repositories into the GLOBAL repository later on,
 because the training process uses only the GLOBAL repository.
 
 Either way, the repository user interface is the same:
@@ -104,17 +107,17 @@ The repository interface is organized as follows:
   sheets names.  
   These are the sheets available in the underlying repository (either the book sheets for a book
   repository, or all registered sheets so far for the global repository).  
-  There is a special sheet, named `ALL_FONT_BASED_SYMBOLS`, which is not a real sheet, but gathers
-  all the synthetic samples built from Audiveris musical font.  
-  You can select one or several sheets in the Sheets selector.
+  There are a few special sheets, all prefixed by `# SYMBOLS FROM FONT #`, which are not real sheets,
+  but gather all the synthetic samples built from Audiveris musical and textual font families.  
+  We can select one or several sheets in the Sheets selector.
 
 2. The `Shapes` selector gets populated as soon as sheets are selected.  
-You can now select the shapes of interest.
+We can now select the shapes of interest.
 
 3. The `Samples` selector gets populated as soon as shapes get selected.  
   The samples are gathered by shape.
-  In a shape collection, via a right-click, you can sort samples by width, height, height or grade.
-  The synthetic sample (there is exactly one of it in each shape collection) is displayed with a
+  In a shape collection, via a right-click, we can sort samples by width, height, height or grade.  
+  The synthetic samples (there are a handful of these in each shape collection) are displayed with a
   green background.  
   Only one sample can be selected at a time.
 
@@ -122,7 +125,7 @@ You can now select the shapes of interest.
   panel displays the selected sample in its sheet context.  
   This can be helpful for visual checking.
 
-#### Sample Edition
+#### Sample Editing
 
 The selected sample can be:
 * **Removed** from the repository.  
@@ -134,10 +137,7 @@ The selected sample can be:
 
 ### Merging Repositories
 
-When you are satisfied with a book repository you can push its content to the global repository.
+When we are satisfied with a book repository we can push its content to the global repository.
 
-You do so from the book repository interface, by selecting the pulldown menu
+We do so from the book repository interface, by selecting the pulldown menu
 `Repository | Push to Global`.
-
-
-[Folders]:  /folders/essential.md

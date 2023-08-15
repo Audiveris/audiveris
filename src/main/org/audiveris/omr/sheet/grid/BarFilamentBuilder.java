@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,9 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.grid;
 
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
+
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.lag.Section;
-import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.util.Navigable;
 
@@ -48,6 +49,7 @@ public class BarFilamentBuilder
     private final BarFilamentFactory factory;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>BarFilamentBuilder</code> object.
      *
@@ -61,6 +63,7 @@ public class BarFilamentBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // buildFilament //
     //---------------//
@@ -78,7 +81,7 @@ public class BarFilamentBuilder
     {
         final Rectangle peakBox = peak.getBounds();
 
-        // Increase height slightly beyond staff
+        // Increase height slightly beyond peak bounds?
         peakBox.grow(0, verticalExtension);
 
         final int xBreak = peakBox.x + peakBox.width;

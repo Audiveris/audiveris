@@ -1,0 +1,46 @@
+
+@supports (content: leader(dotted)) {
+    .nav-list a[href]::after { 
+        content: leader(dotted) target-counter(attr(href url), page);
+    }
+}
+
+.nav-list, .nav-list ul {
+    list-style-type: none;
+}
+
+.nav-list {
+    padding: 0;
+}
+
+#site-nav > ul > li {
+    margin-top: 20px;
+}
+
+#site-nav > ul > li > a {
+    font-weight: bold;
+}
+
+.nav-list li > a {
+    text-decoration: none;
+    display: grid;
+    align-items: end;
+}
+
+.nav-list li > a .leaders::after {
+    position: absolute;
+    content: " . . . . . . . . . . . . . . . . . . . "
+        ". . . . . . . . . . . . . . . . . . . . . . . "
+        ". . . . . . . . . . . . . . . . . . . . . . . "
+        ". . . . . . . . . . . . . . . . . . . . . . . "
+        ". . . . . . . . . . . . . . . . . . . . . . . "
+        ". . . . . . . . . . . . . . . . . . . . . . . "
+        ". . . . . . . . . . . . . . . . . . . . . . . ";
+    text-align: right;
+}
+
+@page {
+    background: rgba(60, 60, 60, 0.14) !important;
+		
+	@top-center {content: "Handbook Chapters";}
+}

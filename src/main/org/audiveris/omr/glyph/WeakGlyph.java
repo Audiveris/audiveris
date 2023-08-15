@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,6 +49,7 @@ public class WeakGlyph
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public int compareTo (WeakGlyph that)
     {
@@ -156,16 +157,6 @@ public class WeakGlyph
         return 0;
     }
 
-    @Override
-    public void setId (int id)
-    {
-        final Glyph glyph = get();
-
-        if (glyph != null) {
-            glyph.setId(id);
-        }
-    }
-
     //----------//
     // hashCode //
     //----------//
@@ -193,6 +184,16 @@ public class WeakGlyph
         }
 
         return false;
+    }
+
+    @Override
+    public void setId (int id)
+    {
+        final Glyph glyph = get();
+
+        if (glyph != null) {
+            glyph.setId(id);
+        }
     }
 
     @Override

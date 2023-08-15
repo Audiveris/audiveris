@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import org.audiveris.omr.util.Jaxb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,9 +51,10 @@ public abstract class AbstractEntity
     private static final Logger logger = LoggerFactory.getLogger(AbstractEntity.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /**
      * Unique integer id within the containing sheet.
      */
@@ -65,11 +65,12 @@ public abstract class AbstractEntity
 
     // Transient data
     //---------------
-    //
+
     /** (Debug) flag this as VIP. */
     protected boolean vip;
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // dumpOf //
     //--------//
@@ -97,13 +98,17 @@ public abstract class AbstractEntity
         return id;
     }
 
-    //-------//
-    // setId //
-    //-------//
-    @Override
-    public void setId (int id)
+    //-----------//
+    // internals //
+    //-----------//
+    /**
+     * Reports description of object internals.
+     *
+     * @return internals description
+     */
+    protected String internals ()
     {
-        this.id = id;
+        return "";
     }
 
     //-------//
@@ -113,6 +118,15 @@ public abstract class AbstractEntity
     public boolean isVip ()
     {
         return vip;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    @Override
+    public void setId (int id)
+    {
+        this.id = id;
     }
 
     //--------//
@@ -130,9 +144,8 @@ public abstract class AbstractEntity
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(getClass().getSimpleName()).append("{").append("#").append(id);
+        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append('#').append(id).append('{');
 
         try {
             sb.append(internals());
@@ -142,21 +155,8 @@ public abstract class AbstractEntity
             sb.append("<invalid-internals>");
         }
 
-        sb.append("}");
+        sb.append('}');
 
         return sb.toString();
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    /**
-     * Reports description of object internals.
-     *
-     * @return internals description
-     */
-    protected String internals ()
-    {
-        return "";
     }
 }

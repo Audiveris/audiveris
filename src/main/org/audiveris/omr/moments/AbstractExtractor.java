@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,6 +53,7 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
     protected D descriptor;
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // extract //
     //---------//
@@ -85,15 +86,6 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
         radius = findRadius();
 
         extractMoments();
-    }
-
-    //---------------//
-    // setDescriptor //
-    //---------------//
-    @Override
-    public void setDescriptor (D descriptor)
-    {
-        this.descriptor = descriptor;
     }
 
     //----------------//
@@ -142,5 +134,14 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
         }
 
         return Math.hypot(dxMax, dyMax);
+    }
+
+    //---------------//
+    // setDescriptor //
+    //---------------//
+    @Override
+    public void setDescriptor (D descriptor)
+    {
+        this.descriptor = descriptor;
     }
 }

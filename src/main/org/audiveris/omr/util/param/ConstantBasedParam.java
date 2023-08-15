@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -30,9 +30,9 @@ import org.slf4j.LoggerFactory;
  * Class <code>ConstantBasedParam</code> is a {@link Param} backed by an application constant
  * as is the case for many default Param.
  *
- * @author Hervé Bitteur
  * @param <E> type for value
  * @param <C> type for value constant
+ * @author Hervé Bitteur
  */
 public class ConstantBasedParam<E, C extends Constant<E>>
         extends Param<E>
@@ -42,20 +42,26 @@ public class ConstantBasedParam<E, C extends Constant<E>>
     private static final Logger logger = LoggerFactory.getLogger(ConstantBasedParam.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     private final C cst;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>ConstantBasedParam</code> object.
      *
      * @param constant the underlying constant
+     * @param scope    the owning object
      */
-    public ConstantBasedParam (C constant)
+    public ConstantBasedParam (C constant,
+                               Object scope)
     {
+        super(scope);
         this.cst = constant;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public E getSourceValue ()
     {
@@ -93,8 +99,9 @@ public class ConstantBasedParam<E, C extends Constant<E>>
             if (specific == null) {
                 if (!cst.isSourceValue()) {
                     cst.resetToSource();
-                    logger.info("Default " + cst.getDescription() + " reset to {}",
-                                cst.getSourceValue());
+                    logger.info(
+                            "Default " + cst.getDescription() + " reset to {}",
+                            cst.getSourceValue());
 
                     return true;
                 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -153,6 +153,14 @@ public class DynamicsInter
     }
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private DynamicsInter ()
+    {
+    }
+
     /**
      * Creates a new DynamicsInter object.
      *
@@ -167,22 +175,7 @@ public class DynamicsInter
         super(glyph, null, shape, grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private DynamicsInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 
     //---------------//
     // getSoundLevel //
@@ -255,6 +248,83 @@ public class DynamicsInter
         return true;
     }
 
+    //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Look up system for a potential link.
+     *
+     * @param system containing system
+     * @return link or null
+     */
+    private Link lookupLink (SystemInfo system)
+    {
+        if (isVip()) {
+            logger.info("VIP lookupLink for {}", this);
+        }
+
+        // Look for a suitable chord related to this dynamics element
+        final Point center = getCenter();
+        final MeasureStack stack = system.getStackAt(center);
+
+        if (stack == null) {
+            return null;
+        }
+
+        final Scale scale = system.getSheet().getScale();
+        final int maxDy = scale.toPixels(constants.maxDy);
+        final int maxXGap = scale.toPixels(constants.maxXGap);
+        final Rectangle widenedBounds = getBounds();
+        widenedBounds.grow(maxXGap, 0);
+
+        for (VerticalSide side : VerticalSide.values()) {
+            final boolean lookAbove = side == VerticalSide.TOP;
+            AbstractChordInter chord = lookAbove ? stack.getStandardChordAbove(
+                    center,
+                    widenedBounds) : stack.getStandardChordBelow(center, widenedBounds);
+
+            if ((chord == null) || chord instanceof RestChordInter) {
+                continue;
+            }
+
+            double dyChord = GeoUtil.yGap(widenedBounds, chord.getBounds());
+
+            // If chord is mirrored, select the closest vertically
+            if (chord.getMirror() != null) {
+                double dyMirror = GeoUtil.yGap(widenedBounds, chord.getMirror().getBounds());
+
+                if (dyMirror < dyChord) {
+                    dyChord = dyMirror;
+                    chord = (AbstractChordInter) chord.getMirror();
+
+                    if (isVip()) {
+                        logger.info("VIP {} selecting mirror {}", this, chord);
+                    }
+                }
+            }
+
+            // Check vertical distance between element and chord
+            if (dyChord > maxDy) {
+                // Check vertical distance between element and staff
+                final Staff chordStaff = lookAbove ? chord.getBottomStaff() : chord.getTopStaff();
+                final double dyStaff = chordStaff.gapTo(widenedBounds);
+
+                if (dyStaff > maxDy) {
+                    if (isVip()) {
+                        logger.info("VIP {} too far from staff/chord: {}", this, dyStaff);
+                    }
+
+                    continue;
+                }
+            }
+
+            // For dynamics & for chord
+            return new Link(chord, new ChordDynamicsRelation(), false);
+        }
+
+        return null;
+    }
+
     //-------------//
     // searchLinks //
     //-------------//
@@ -299,9 +369,8 @@ public class DynamicsInter
             final DynamicsInter shorter = (DynamicsInter) inter;
             final String shortString = shorter.getSymbolString();
 
-            if ((shorter == this)
-                        || (shortString.length() >= cplLength)
-                        || !cplString.contains(shortString)) {
+            if ((shorter == this) || (shortString.length() >= cplLength) || !cplString.contains(
+                    shortString)) {
                 continue;
             }
 
@@ -324,84 +393,8 @@ public class DynamicsInter
         }
     }
 
-    //------------//
-    // lookupLink //
-    //------------//
-    /**
-     * Look up system for a potential link.
-     *
-     * @param system containing system
-     * @return link or null
-     */
-    private Link lookupLink (SystemInfo system)
-    {
-        if (isVip()) {
-            logger.info("VIP lookupLink for {}", this);
-        }
-
-        // Look for a suitable chord related to this dynamics element
-        final Point center = getCenter();
-        final MeasureStack stack = system.getStackAt(center);
-
-        if (stack == null) {
-            return null;
-        }
-
-        final Scale scale = system.getSheet().getScale();
-        final int maxDy = scale.toPixels(constants.maxDy);
-        final int maxXGap = scale.toPixels(constants.maxXGap);
-        final Rectangle widenedBounds = getBounds();
-        widenedBounds.grow(maxXGap, 0);
-
-        for (VerticalSide side : VerticalSide.values()) {
-            final boolean lookAbove = side == VerticalSide.TOP;
-            AbstractChordInter chord = lookAbove
-                    ? stack.getStandardChordAbove(center, widenedBounds)
-                    : stack.getStandardChordBelow(center, widenedBounds);
-
-            if ((chord == null) || chord instanceof RestChordInter) {
-                continue;
-            }
-
-            double dyChord = GeoUtil.yGap(widenedBounds, chord.getBounds());
-
-            // If chord is mirrored, select the closest vertically
-            if (chord.getMirror() != null) {
-                double dyMirror = GeoUtil.yGap(widenedBounds, chord.getMirror().getBounds());
-
-                if (dyMirror < dyChord) {
-                    dyChord = dyMirror;
-                    chord = (AbstractChordInter) chord.getMirror();
-
-                    if (isVip()) {
-                        logger.info("VIP {} selecting mirror {}", this, chord);
-                    }
-                }
-            }
-
-            // Check vertical distance between element and chord
-            if (dyChord > maxDy) {
-                // Check vertical distance between element and staff
-                final Staff chordStaff = lookAbove ? chord.getBottomStaff() : chord.getTopStaff();
-                final double dyStaff = chordStaff.gapTo(widenedBounds);
-
-                if (dyStaff > maxDy) {
-                    if (isVip()) {
-                        logger.info("VIP {} too far from staff/chord: {}", this, dyStaff);
-                    }
-
-                    continue;
-                }
-            }
-
-            // For dynamics & for chord
-            return new Link(chord, new ChordDynamicsRelation(), false);
-        }
-
-        return null;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

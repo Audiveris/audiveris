@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,54 +44,12 @@ public abstract class OmrShapeMapping
     private static final Map<OmrShape, Shape> OMRSHAPE_TO_SHAPE = buildOmrShapeMap();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private OmrShapeMapping ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Report the mapped OmrShape, if any, for a given TimePairInter.
-     *
-     * @param timePair the provided TimePairInter instance
-     * @return the corresponding OmrShape or null
-     */
-    public static OmrShape getTimeCombo (TimePairInter timePair)
-    {
-        int num = timePair.getNum().getValue();
-        int den = timePair.getDen().getValue();
-
-        for (Map.Entry<OmrShape, OmrShapes.NumDen> entry : COMBO_MAP.entrySet()) {
-            OmrShapes.NumDen nd = entry.getValue();
-
-            if ((nd.num == num) && (nd.den == den)) {
-                return entry.getKey();
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Report the OmrShape that corresponds to the provided shape.
-     *
-     * @param shape provided shape
-     * @return related OmrShape or null
-     */
-    public static OmrShape omrShapeOf (Shape shape)
-    {
-        return SHAPE_TO_OMRSHAPE.get(shape);
-    }
-
-    /**
-     * Report the Shape that corresponds to the provided omrShape.
-     *
-     * @param omrShape provided omrShape
-     * @return related Shape or null
-     */
-    public static Shape shapeOf (OmrShape omrShape)
-    {
-        return OMRSHAPE_TO_SHAPE.get(omrShape);
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     /**
      * Build the map (OmrShape -> Shape) as the reverse of SHAPE_TO_OMRSHAPE.
@@ -199,8 +157,8 @@ public abstract class OmrShapeMapping
         map.put(Shape.TIME_THREE_EIGHT, OmrShape.timeSig3over8);
         map.put(Shape.TIME_SIX_EIGHT, OmrShape.timeSig6over8);
         map.put(Shape.TIME_TWELVE_EIGHT, OmrShape.timeSig12over8);
-        map.put(Shape.OTTAVA_ALTA, OmrShape.ottavaAlta);
-        map.put(Shape.OTTAVA_BASSA, OmrShape.ottavaBassaVb);
+        //        map.put(Shape.OTTAVA_ALTA, OmrShape.ottavaAlta);
+        //        map.put(Shape.OTTAVA_BASSA, OmrShape.ottavaBassaVb);
         map.put(Shape.LONG_REST, OmrShape.restLonga);
         map.put(Shape.BREVE_REST, OmrShape.restDoubleWhole);
         map.put(Shape.QUARTER_REST, OmrShape.restQuarter);
@@ -210,17 +168,17 @@ public abstract class OmrShapeMapping
         map.put(Shape.ONE_64TH_REST, OmrShape.rest64th);
         map.put(Shape.ONE_128TH_REST, OmrShape.rest128th);
         map.put(Shape.FLAG_1, OmrShape.flag8thUp);
-        map.put(Shape.FLAG_1_UP, OmrShape.flag8thDown);
         map.put(Shape.FLAG_2, OmrShape.flag16thUp);
-        map.put(Shape.FLAG_2_UP, OmrShape.flag16thDown);
         map.put(Shape.FLAG_3, OmrShape.flag32ndUp);
-        map.put(Shape.FLAG_3_UP, OmrShape.flag32ndDown);
         map.put(Shape.FLAG_4, OmrShape.flag64thUp);
-        map.put(Shape.FLAG_4_UP, OmrShape.flag64thDown);
         map.put(Shape.FLAG_5, OmrShape.flag128thUp);
-        map.put(Shape.FLAG_5_UP, OmrShape.flag128thDown);
+        map.put(Shape.FLAG_1_DOWN, OmrShape.flag8thDown);
+        map.put(Shape.FLAG_2_DOWN, OmrShape.flag16thDown);
+        map.put(Shape.FLAG_3_DOWN, OmrShape.flag32ndDown);
+        map.put(Shape.FLAG_4_DOWN, OmrShape.flag64thDown);
+        map.put(Shape.FLAG_5_DOWN, OmrShape.flag128thDown);
         map.put(Shape.SMALL_FLAG, OmrShape.flag8thUpSmall);
-        //        map.put(Shape.SMALL_FLAG_SLASH, OmrShape.none);
+        //        map.put(Shape.FLAG_SLASH_SMALL, OmrShape.none);
         map.put(Shape.BREVE, OmrShape.noteheadDoubleWhole);
         //        map.put(Shape.ACCENT, OmrShape.none); // articAccentAbove or articAccentBelow
         //        map.put(Shape.TENUTO, OmrShape.none); // articTenutoAbove or articTenutoBelow
@@ -325,11 +283,57 @@ public abstract class OmrShapeMapping
         map.put(Shape.STEM, OmrShape.stem);
         //        map.put(Shape.KEY_FLAT_1, OmrShape.keyFlat);
         //        map.put(Shape.KEY_SHARP_1, OmrShape.keySharp);
-        map.put(Shape.GRACE_NOTE_SLASH, OmrShape.graceNoteAcciaccaturaStemUp);
         map.put(Shape.GRACE_NOTE, OmrShape.graceNoteAppoggiaturaStemUp);
+        map.put(Shape.GRACE_NOTE_DOWN, OmrShape.graceNoteAppoggiaturaStemDown);
+        map.put(Shape.GRACE_NOTE_SLASH, OmrShape.graceNoteAcciaccaturaStemUp);
+        map.put(Shape.GRACE_NOTE_SLASH_DOWN, OmrShape.graceNoteAcciaccaturaStemDown);
         map.put(Shape.FERMATA, OmrShape.fermataAbove);
         map.put(Shape.FERMATA_BELOW, OmrShape.fermataBelow);
 
         return map;
+    }
+
+    /**
+     * Report the mapped OmrShape, if any, for a given TimePairInter.
+     *
+     * @param timePair the provided TimePairInter instance
+     * @return the corresponding OmrShape or null
+     */
+    public static OmrShape getTimeCombo (TimePairInter timePair)
+    {
+        int num = timePair.getNum().getValue();
+        int den = timePair.getDen().getValue();
+
+        for (Map.Entry<OmrShape, OmrShapes.NumDen> entry : COMBO_MAP.entrySet()) {
+            OmrShapes.NumDen nd = entry.getValue();
+
+            if ((nd.num == num) && (nd.den == den)) {
+                return entry.getKey();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Report the OmrShape that corresponds to the provided shape.
+     *
+     * @param shape provided shape
+     * @return related OmrShape or null
+     */
+    public static OmrShape omrShapeOf (Shape shape)
+    {
+        return SHAPE_TO_OMRSHAPE.get(shape);
+    }
+
+    /**
+     * Report the Shape that corresponds to the provided omrShape.
+     *
+     * @param omrShape provided omrShape
+     * @return related Shape or null
+     */
+    public static Shape shapeOf (OmrShape omrShape)
+    {
+        return OMRSHAPE_TO_SHAPE.get(omrShape);
     }
 }

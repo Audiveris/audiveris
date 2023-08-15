@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.selection.SelectionHint;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**
  * Class <code>InterAction</code> is the base for Inter actions, with or without relations.
@@ -47,10 +48,12 @@ public class InterAction
     private static final Logger logger = LoggerFactory.getLogger(InterAction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The underlying interpretation. */
     private final Inter inter;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new InterAction object.
      *
@@ -72,11 +75,13 @@ public class InterAction
     {
         this.inter = inter;
 
-        Shape shape = inter.getShape();
         putValue(NAME, (text != null) ? text : inter.toString());
 
-        if (shape != null) {
-            putValue(SMALL_ICON, shape.getDecoratedSymbol());
+        final MusicFamily family = (inter.getSig() != null) ? inter.getSig().getSystem().getSheet()
+                .getStub().getMusicFamily() : MusicFont.getDefaultMusicFamily();
+        final ShapeSymbol shapeSymbol = inter.getShapeSymbol(family);
+        if (shapeSymbol != null) {
+            putValue(SMALL_ICON, shapeSymbol);
         }
 
         final String details = inter.getDetails();
@@ -87,6 +92,7 @@ public class InterAction
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // actionPerformed //
     //-----------------//

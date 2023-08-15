@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,12 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
-import ij.process.ByteProcessor;
 
 import org.audiveris.omr.image.AdaptiveDescriptor;
 import org.audiveris.omr.image.AdaptiveFilter.AdaptiveContext;
@@ -44,6 +38,12 @@ import org.audiveris.omr.ui.util.Panel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
+import ij.process.ByteProcessor;
+
 import java.awt.Rectangle;
 
 /**
@@ -60,12 +60,14 @@ public class BinarizationBoard
     private static final Logger logger = LoggerFactory.getLogger(BinarizationBoard.class);
 
     /** Events this entity is interested in */
-    private static final Class<?>[] eventClasses = new Class<?>[]{LocationEvent.class};
+    private static final Class<?>[] eventClasses = new Class<?>[]
+    { LocationEvent.class };
 
     /** Format used for every double field. */
     private static final String format = "%.2f";
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related sheet. */
     private final Sheet sheet;
 
@@ -83,6 +85,7 @@ public class BinarizationBoard
     private final LDoubleField threshold = new LDoubleField(false, "Thres.", "Threshold", format);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BinarizationBoard object.
      *
@@ -105,26 +108,27 @@ public class BinarizationBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
-    @Override
-    public void onEvent (UserEvent event)
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
     {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
+        FormLayout layout = Panel.makeFormLayout(1, 3);
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
 
-            logger.debug("BinarizationBoard: {}", event);
+        ///builder.setDefaultDialogBorder();
+        CellConstraints cst = new CellConstraints();
 
-            if (event instanceof LocationEvent) {
-                handleLocationEvent((LocationEvent) event);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
+        int r = 1; // --------------------------------
+        builder.add(mean.getLabel(), cst.xy(1, r));
+        builder.add(mean.getField(), cst.xy(3, r));
+
+        builder.add(stdDev.getLabel(), cst.xy(5, r));
+        builder.add(stdDev.getField(), cst.xy(7, r));
+
+        builder.add(threshold.getLabel(), cst.xy(9, r));
+        builder.add(threshold.getField(), cst.xy(11, r));
     }
 
     //---------------------//
@@ -141,7 +145,7 @@ public class BinarizationBoard
         Rectangle rect = sheetLocation.getData();
 
         if (rect != null) {
-            FilterDescriptor desc = sheet.getStub().getBinarizationFilter().getValue();
+            FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
             ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.GRAY);
 
             if (source != null) {
@@ -180,25 +184,25 @@ public class BinarizationBoard
         threshold.setText("");
     }
 
-    //--------------//
-    // defineLayout //
-    //--------------//
-    private void defineLayout ()
+    //---------//
+    // onEvent //
+    //---------//
+    @Override
+    public void onEvent (UserEvent event)
     {
-        FormLayout layout = Panel.makeFormLayout(1, 3);
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
 
-        ///builder.setDefaultDialogBorder();
-        CellConstraints cst = new CellConstraints();
+            logger.debug("BinarizationBoard: {}", event);
 
-        int r = 1; // --------------------------------
-        builder.add(mean.getLabel(), cst.xy(1, r));
-        builder.add(mean.getField(), cst.xy(3, r));
-
-        builder.add(stdDev.getLabel(), cst.xy(5, r));
-        builder.add(stdDev.getField(), cst.xy(7, r));
-
-        builder.add(threshold.getLabel(), cst.xy(9, r));
-        builder.add(threshold.getField(), cst.xy(11, r));
+            if (event instanceof LocationEvent) {
+                handleLocationEvent((LocationEvent) event);
+            }
+        } catch (Exception ex) {
+            logger.warn(getClass().getName() + " onEvent error", ex);
+        }
     }
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,15 +50,21 @@ public class PathHistory
                         Constant.String folderConstant,
                         int maxSize)
     {
-        super(name, constant, folderConstant, maxSize,
-              (s1, s2) -> Paths.get(s1).equals(Paths.get(s2)));
+        super(
+                name,
+                constant,
+                folderConstant,
+                maxSize,
+                (s1,
+                 s2) -> Paths.get(s1).equals(Paths.get(s2)));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
-    protected Path getParent (Path path)
+    protected Path decode (String str)
     {
-        return path.toAbsolutePath().getParent();
+        return Paths.get(str);
     }
 
     @Override
@@ -68,8 +74,8 @@ public class PathHistory
     }
 
     @Override
-    protected Path decode (String str)
+    protected Path getParent (Path path)
     {
-        return Paths.get(str);
+        return path.toAbsolutePath().getParent();
     }
 }

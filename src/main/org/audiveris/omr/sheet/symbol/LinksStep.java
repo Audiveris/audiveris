@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -33,6 +33,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.TremoloInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterTask;
@@ -84,6 +85,7 @@ public class LinksStep
     }
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>LinksStep</code> object.
      */
@@ -92,13 +94,33 @@ public class LinksStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------//
+    // doEpilog //
+    //----------//
+    @Override
+    protected void doEpilog (Sheet sheet,
+                             Void context)
+        throws StepException
+    {
+        // Check for ties in same staff, now that head alterations and clef changes are available
+        for (SystemInfo system : sheet.getSystems()) {
+            List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+
+            for (Inter inter : system.getSig().inters(SlurInter.class)) {
+                SlurInter slur = (SlurInter) inter;
+                slur.checkStaffTie(systemHeadChords);
+            }
+        }
+    }
+
     //----------//
     // doSystem //
     //----------//
     @Override
     public void doSystem (SystemInfo system,
                           Void context)
-            throws StepException
+        throws StepException
     {
         StopWatch watch = new StopWatch("LinksStep doSystem #" + system.getId());
 
@@ -107,7 +129,10 @@ public class LinksStep
 
         // Reduction
         watch.start("reduceLinks");
-        new SigReducer(system, false).reduceLinks();
+        new SigReducer(system, true).reduceLinks();
+
+        // Aggregate tremolos whenever needed
+        TremoloInter.aggregate(system);
 
         // Complete each measure with clef(s) and key if any
         new MeasureFiller(system).process();
@@ -138,28 +163,23 @@ public class LinksStep
         logger.debug("LINKS impact {} {}", opKind, seq);
 
         for (UITask task : seq.getTasks()) {
-            if (task instanceof InterTask) {
-                InterTask interTask = (InterTask) task;
+            if (task instanceof InterTask interTask) {
                 Inter inter = interTask.getInter();
                 SystemInfo system = inter.getSig().getSystem();
                 Class interClass = inter.getClass();
 
                 if (isImpactedBy(interClass, forTexts)) {
-                    if (inter instanceof LyricItemInter) {
-                        LyricItemInter item = (LyricItemInter) inter;
-
+                    if (inter instanceof LyricItemInter item) {
                         if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
                             final int profile = Math.max(item.getProfile(), system.getProfile());
                             item.mapToChord(profile);
                         }
-                    } else if (inter instanceof SentenceInter) {
-                        SentenceInter sentence = (SentenceInter) inter;
+                    } else if (inter instanceof SentenceInter sentence) {
                         SymbolsLinker linker = new SymbolsLinker(system);
 
                         if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
                             linker.linkOneSentence(sentence);
-                        } else if (task instanceof SentenceRoleTask) {
-                            SentenceRoleTask roleTask = (SentenceRoleTask) interTask;
+                        } else if (task instanceof SentenceRoleTask roleTask) {
                             linker.unlinkOneSentence(
                                     sentence,
                                     (opKind == OpKind.UNDO) ? roleTask.getNewRole()
@@ -181,26 +201,8 @@ public class LinksStep
         return isImpactedBy(classe, impactingClasses);
     }
 
-    //----------//
-    // doEpilog //
-    //----------//
-    @Override
-    protected void doEpilog (Sheet sheet,
-                             Void context)
-            throws StepException
-    {
-        // Check for ties in same staff, now that head alterations and clef changes are available
-        for (SystemInfo system : sheet.getSystems()) {
-            List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
-
-            for (Inter inter : system.getSig().inters(SlurInter.class)) {
-                SlurInter slur = (SlurInter) inter;
-                slur.checkStaffTie(systemHeadChords);
-            }
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

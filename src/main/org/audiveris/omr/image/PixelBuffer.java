@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,15 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
-import net.jcip.annotations.ThreadSafe;
-import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.Table;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
+import net.jcip.annotations.ThreadSafe;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -55,22 +54,7 @@ public class PixelBuffer
     private static final Logger logger = LoggerFactory.getLogger(PixelBuffer.class);
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new PixelBuffer object.
-     *
-     * @param dimension the buffer dimension
-     */
-    public PixelBuffer (Dimension dimension)
-    {
-        super(dimension.width, dimension.height);
 
-        // Initialize the whole buffer with background color value
-        fill(BACKGROUND);
-    }
-
-    //-------------//
-    // PixelBuffer //
-    //-------------//
     /**
      * Creates a PixelBuffer from (the first band of) a BufferedImage.
      *
@@ -98,9 +82,19 @@ public class PixelBuffer
         ///watch.print();
     }
 
-    //-------------//
-    // PixelBuffer //
-    //-------------//
+    /**
+     * Creates a new PixelBuffer object.
+     *
+     * @param dimension the buffer dimension
+     */
+    public PixelBuffer (Dimension dimension)
+    {
+        super(dimension.width, dimension.height);
+
+        // Initialize the whole buffer with background color value
+        fill(BACKGROUND);
+    }
+
     /**
      * Creates a new PixelBuffer object from a PixelFilter.
      *
@@ -125,6 +119,7 @@ public class PixelBuffer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public ByteProcessor filteredImage ()
     {

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,6 +45,7 @@ public class Parabola
     private final double dist;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Parabola object.
      *
@@ -69,15 +70,6 @@ public class Parabola
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Report the mean distance from fitting points to parabola.
-     *
-     * @return mean distance to parabola
-     */
-    public double getMeanDistance ()
-    {
-        return dist;
-    }
 
     private double computeDistance (double[] xx,
                                     double[] yy)
@@ -126,13 +118,23 @@ public class Parabola
             s21 += (x2 * y);
         }
 
-        double den = ((s00 * s20 * s40) - (s10 * s10 * s40) - (s00 * s30 * s30)
-                              + (2 * s10 * s20 * s30)) - (s20 * s20 * s20);
-        a = (((s01 * s10 * s30) - (s11 * s00 * s30) - (s01 * s20 * s20) + (s11 * s10 * s20)
-                      + (s21 * s00 * s20)) - (s21 * s10 * s10)) / den;
-        b = (((s11 * s00 * s40) - (s01 * s10 * s40) + (s01 * s20 * s30)) - (s21 * s00 * s30)
-                     - (s11 * s20 * s20) + (s21 * s10 * s20)) / den;
-        c = (((s01 * s20 * s40) - (s11 * s10 * s40) - (s01 * s30 * s30) + (s11 * s20 * s30)
-                      + (s21 * s10 * s30)) - (s21 * s20 * s20)) / den;
+        double den = ((s00 * s20 * s40) - (s10 * s10 * s40) - (s00 * s30 * s30) + (2 * s10 * s20
+                * s30)) - (s20 * s20 * s20);
+        a = (((s01 * s10 * s30) - (s11 * s00 * s30) - (s01 * s20 * s20) + (s11 * s10 * s20) + (s21
+                * s00 * s20)) - (s21 * s10 * s10)) / den;
+        b = (((s11 * s00 * s40) - (s01 * s10 * s40) + (s01 * s20 * s30)) - (s21 * s00 * s30) - (s11
+                * s20 * s20) + (s21 * s10 * s20)) / den;
+        c = (((s01 * s20 * s40) - (s11 * s10 * s40) - (s01 * s30 * s30) + (s11 * s20 * s30) + (s21
+                * s10 * s30)) - (s21 * s20 * s20)) / den;
+    }
+
+    /**
+     * Report the mean distance from fitting points to parabola.
+     *
+     * @return mean distance to parabola
+     */
+    public double getMeanDistance ()
+    {
+        return dist;
     }
 }

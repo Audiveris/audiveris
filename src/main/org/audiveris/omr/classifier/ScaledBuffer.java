@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,12 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
-import ij.process.Blitter;
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.util.ByteUtil;
+
+import ij.process.Blitter;
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 
@@ -49,7 +49,10 @@ public class ScaledBuffer
     /** Target height. */
     public static final int HEIGHT = 48; // 48 = 6 * 2**3
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Compute the scaled buffer for the provided glyph, using related staff interline
      * value.

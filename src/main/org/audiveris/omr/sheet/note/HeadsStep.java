@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class <code>HeadsStep</code> implements <b>HEADS</b> step, which uses distance matching
+ * Class <code>HeadsStep</code> implements <b>HEADS</b> step, which uses template matching
  * technique to retrieve all possible interpretations of note heads (black, void or
  * whole) but no note rests.
  *
@@ -51,6 +51,7 @@ public class HeadsStep
     private static final Logger logger = LoggerFactory.getLogger(HeadsStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>HeadsStep</code> object.
      */
@@ -59,19 +60,20 @@ public class HeadsStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
-    // doSystem //
+    // doEpilog //
     //----------//
     @Override
-    public void doSystem (SystemInfo system,
-                          Context context)
-            throws StepException
+    protected void doEpilog (Sheet sheet,
+                             Context context)
+        throws StepException
     {
-        new NoteHeadsBuilder(system,
-                             context.distanceTable,
-                             context.sheetSpots.get(system),
-                             context.tallies.get(system))
-                .buildHeads();
+        // Remove HEAD_SPOTS image from disk
+        sheet.getPicture().discardImage(Picture.ImageKey.HEAD_SPOTS);
+
+        // Analyze seed-head data
+        HeadSeedTally.analyze(sheet, context.tallies.values());
     }
 
     //----------//
@@ -79,7 +81,7 @@ public class HeadsStep
     //----------//
     @Override
     protected Context doProlog (Sheet sheet)
-            throws StepException
+        throws StepException
     {
         // Build proper distance table and make it available for system-level processing
         DistanceTable distances = new DistancesBuilder(sheet).buildDistances();
@@ -98,21 +100,24 @@ public class HeadsStep
     }
 
     //----------//
-    // doEpilog //
+    // doSystem //
     //----------//
     @Override
-    protected void doEpilog (Sheet sheet,
-                             Context context)
-            throws StepException
+    public void doSystem (SystemInfo system,
+                          Context context)
+        throws StepException
     {
-        // Remove HEAD_SPOTS image from disk
-        sheet.getPicture().discardImage(Picture.ImageKey.HEAD_SPOTS);
-
-        // Analyze seed-head data
-        HeadSeedTally.analyze(sheet, context.tallies.values());
+        new NoteHeadsBuilder(
+                system,
+                context.distanceTable,
+                context.sheetSpots.get(system),
+                context.tallies.get(system),
+                context.stdDumped,
+                context.drumDumped).buildHeads();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // Context //
     //---------//
@@ -130,6 +135,12 @@ public class HeadsStep
 
         /** Seed-head tally per system. */
         public final Map<SystemInfo, HeadSeedTally> tallies;
+
+        // Debug: Already dumped the head shapes for a standard staff?
+        public Boolean stdDumped = false;
+
+        // Debug: Already dumped the head shapes per pitch and per kind for a drum staff?
+        public final Map<Integer, Map<String, Boolean>> drumDumped = new TreeMap<>();
 
         /**
          * Create a Context.

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -57,6 +57,7 @@ public class GlyphCluster
     private static final Logger logger = LoggerFactory.getLogger(GlyphCluster.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Environment adapter. */
     private final GlyphAdapter adapter;
 
@@ -64,6 +65,7 @@ public class GlyphCluster
     private final GlyphGroup group;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Cluster object, with an adapter to the environment.
      *
@@ -78,6 +80,7 @@ public class GlyphCluster
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------//
     // decompose //
     //-----------//
@@ -186,6 +189,8 @@ public class GlyphCluster
         }
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //-------------//
     // getSubGraph //
     //-------------//
@@ -228,74 +233,11 @@ public class GlyphCluster
         return subGraph;
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
-    //--------------//
-    // GlyphAdapter //
-    //--------------//
-    /**
-     * Interface to be implemented by a user of GlyphCluster.
-     */
-    public static interface GlyphAdapter
-    {
-
-        /**
-         * Evaluate a provided glyph and create all acceptable inter instances.
-         *
-         * @param glyph the glyph to evaluate
-         * @param parts the parts that compose this glyph
-         */
-        void evaluateGlyph (Glyph glyph,
-                            Set<Glyph> parts);
-
-        /**
-         * Report the neighboring parts of the provided one.
-         *
-         * @param part the provided part
-         * @return the neighbors
-         */
-        List<Glyph> getNeighbors (Glyph part);
-
-        /**
-         * Report the parts to play with.
-         *
-         * @return the parts to assemble
-         */
-        List<Glyph> getParts ();
-
-        /**
-         * Check whether glyph weight value is too high
-         *
-         * @param weight glyph weight
-         * @return true if too high
-         */
-        boolean isTooHeavy (int weight);
-
-        /**
-         * Check whether glyph box is too large (too high values for height or width)
-         *
-         * @param bounds glyph bounds
-         * @return true if too large
-         */
-        boolean isTooLarge (Rectangle bounds);
-
-        /**
-         * Check whether glyph weight value is too low
-         *
-         * @param weight glyph weight
-         * @return true if too low
-         */
-        boolean isTooLight (int weight);
-
-        /**
-         * Check whether glyph box is too small (too low values for height or width)
-         *
-         * @param bounds glyph bounds
-         * @return true if too small
-         */
-        boolean isTooSmall (Rectangle bounds);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------------//
+    // AbstractAdapter //
+    //-----------------//
     public abstract static class AbstractAdapter
             implements GlyphAdapter
     {
@@ -365,5 +307,73 @@ public class GlyphCluster
         {
             return false;
         }
+    }
+
+    //~ Inner Interfaces ---------------------------------------------------------------------------
+
+    //--------------//
+    // GlyphAdapter //
+    //--------------//
+    /**
+     * Interface to be implemented by a user of GlyphCluster.
+     */
+    public static interface GlyphAdapter
+    {
+
+        /**
+         * Evaluate a provided glyph and create all acceptable inter instances.
+         *
+         * @param glyph the glyph to evaluate
+         * @param parts the parts that compose this glyph
+         */
+        void evaluateGlyph (Glyph glyph,
+                            Set<Glyph> parts);
+
+        /**
+         * Report the neighboring parts of the provided one.
+         *
+         * @param part the provided part
+         * @return the neighbors
+         */
+        List<Glyph> getNeighbors (Glyph part);
+
+        /**
+         * Report the parts to play with.
+         *
+         * @return the parts to assemble
+         */
+        List<Glyph> getParts ();
+
+        /**
+         * Check whether glyph weight value is too high
+         *
+         * @param weight glyph weight
+         * @return true if too high
+         */
+        boolean isTooHeavy (int weight);
+
+        /**
+         * Check whether glyph box is too large (too high values for height or width)
+         *
+         * @param bounds glyph bounds
+         * @return true if too large
+         */
+        boolean isTooLarge (Rectangle bounds);
+
+        /**
+         * Check whether glyph weight value is too low
+         *
+         * @param weight glyph weight
+         * @return true if too low
+         */
+        boolean isTooLight (int weight);
+
+        /**
+         * Check whether glyph box is too small (too low values for height or width)
+         *
+         * @param bounds glyph bounds
+         * @return true if too small
+         */
+        boolean isTooSmall (Rectangle bounds);
     }
 }

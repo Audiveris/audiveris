@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,14 +24,10 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Link;
-import org.audiveris.omr.sig.relation.Relation;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * Class <code>InterTask</code> is the elementary task (focused on an Inter) that can be
@@ -54,6 +50,7 @@ public abstract class InterTask
     protected Collection<Link> links;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>InterTask</code> object.
      *
@@ -79,6 +76,7 @@ public abstract class InterTask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Getter for involved inter.
      *
@@ -99,6 +97,7 @@ public abstract class InterTask
     {
         StringBuilder sb = new StringBuilder(actionName);
         sb.append(" ").append(inter);
+        sb.append(" @").append(Integer.toHexString(inter.hashCode()));
 
         if (links != null) {
             for (Link link : links) {
@@ -107,35 +106,5 @@ public abstract class InterTask
         }
 
         return sb.toString();
-    }
-
-    //---------//
-    // linksOf //
-    //---------//
-    /**
-     * Retrieve the current links around the provided inter.
-     *
-     * @param inter the provided inter
-     * @return its links, perhaps empty
-     */
-    protected static Collection<Link> linksOf (Inter inter)
-    {
-        final SIGraph sig = inter.getSig();
-        Set<Link> links = null;
-
-        for (Relation rel : sig.edgesOf(inter)) {
-            if (links == null) {
-                links = new LinkedHashSet<>();
-            }
-
-            final Inter partner = sig.getOppositeInter(inter, rel);
-            links.add(new Link(partner, rel, sig.getEdgeTarget(rel) == partner));
-        }
-
-        if (links == null) {
-            return Collections.emptySet();
-        }
-
-        return links;
     }
 }

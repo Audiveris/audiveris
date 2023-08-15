@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -33,18 +33,6 @@ public class LIntegerField
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Create a (constant) integer labeled field
-     *
-     * @param label string to be used as label text
-     * @param tip   related tool tip text
-     */
-    public LIntegerField (String label,
-                          String tip)
-    {
-        super(true, label, tip);
-    }
-
-    /**
      * Create an integer labeled field
      *
      * @param editable tells whether the field is editable
@@ -58,7 +46,36 @@ public class LIntegerField
         super(editable, label, tip);
     }
 
+    /**
+     * Create an integer labeled field
+     *
+     * @param editable tells whether the field is editable
+     * @param label    string to be used as label text
+     * @param tip      related tool tip text
+     * @param width    field width in characters
+     */
+    public LIntegerField (boolean editable,
+                          String label,
+                          String tip,
+                          int width)
+    {
+        super(editable, label, tip, width);
+    }
+
+    /**
+     * Create a (constant) integer labeled field
+     *
+     * @param label string to be used as label text
+     * @param tip   related tool tip text
+     */
+    public LIntegerField (String label,
+                          String tip)
+    {
+        super(true, label, tip);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getValue //
     //----------//

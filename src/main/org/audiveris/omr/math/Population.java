@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,6 +45,7 @@ public class Population
     public static final boolean BIASED = false;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Sum of measured values. */
     @XmlAttribute(name = "sum")
     private double s = 0d;
@@ -58,6 +59,7 @@ public class Population
     private int n = 0;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Construct a structure to cumulate the measured values.
      */
@@ -66,6 +68,7 @@ public class Population
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------//
     // excludeValue //
     //--------------//

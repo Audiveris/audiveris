@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -34,24 +34,21 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Exclusion
         extends Relation
 {
-    //~ Enumerations -------------------------------------------------------------------------------
-
-    /**
-     * Enum <code>ExclusionCause</code> describes the cause for exclusion.
-     */
-    public enum ExclusionCause
-    {
-        /** Physical overlap. */
-        OVERLAP,
-        /** Some logical exclusion. */
-        INCOMPATIBLE;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     @XmlAttribute
     public final ExclusionCause cause;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private Exclusion ()
+    {
+        this.cause = null;
+    }
+
     /**
      * Creates a new Exclusion object.
      *
@@ -62,15 +59,17 @@ public class Exclusion
         this.cause = cause;
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private Exclusion ()
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
     {
-        this.cause = null;
+        return super.internals() + cause;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // isSingleSource //
     //----------------//
@@ -89,12 +88,14 @@ public class Exclusion
         return false;
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
+    /**
+     * Enum <code>ExclusionCause</code> describes the cause for exclusion.
+     */
+    public enum ExclusionCause
     {
-        return super.internals() + cause;
+        /** Physical overlap. */
+        OVERLAP,
+        /** Some logical exclusion. */
+        INCOMPATIBLE;
     }
 }

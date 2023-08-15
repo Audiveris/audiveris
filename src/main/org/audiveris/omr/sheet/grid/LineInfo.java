@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -90,20 +90,20 @@ public interface LineInfo
                      double pointWidth);
 
     /**
-     * Retrieve the staff line ordinate at given abscissa x, using int values
-     *
-     * @param x the given abscissa
-     * @return the corresponding y value
-     */
-    int yAt (int x);
-
-    /**
      * Retrieve the staff line ordinate at given abscissa x, using double values
      *
      * @param x the given abscissa
      * @return the corresponding y value
      */
     double yAt (double x);
+
+    /**
+     * Retrieve the staff line ordinate at given abscissa x, using int values
+     *
+     * @param x the given abscissa
+     * @return the corresponding y value
+     */
+    int yAt (int x);
 
     /**
      * Report the same line translated vertically.

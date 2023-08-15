@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.curve;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.math.CubicUtil;
 import org.audiveris.omr.math.LineUtil;
@@ -31,6 +29,8 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.geom.CubicCurve2D;
@@ -60,6 +60,7 @@ public class GlyphSlurInfo
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // getCurve //
     //----------//
@@ -82,6 +83,8 @@ public class GlyphSlurInfo
     {
         return CubicUtil.getMidPoint(curve);
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     /**
      * Create proper GlyphSlurInfo for a slur defined by its glyph.
@@ -110,6 +113,7 @@ public class GlyphSlurInfo
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------------//
     // KeyPointsBuilder //
     //------------------//
@@ -145,27 +149,6 @@ public class GlyphSlurInfo
             rt = table;
         }
 
-        public List<Point> retrieveKeyPoints ()
-        {
-            // Retrieve the 4 points WRT glyph bounds
-            final int width = glyph.getWidth();
-            final List<Point> points = new ArrayList<>(4);
-            points.add(vectorAtX(0));
-            points.add(vectorAtX((int) Math.rint(width / 3.0)));
-            points.add(vectorAtX((int) Math.rint((2 * width) / 3.0)));
-            points.add(vectorAtX(width - 1));
-
-            // Use sheet coordinates rather than glyph-based coordinates
-            final int dx = glyph.getLeft();
-            final int dy = glyph.getTop();
-
-            for (Point point : points) {
-                point.translate(dx, dy);
-            }
-
-            return points;
-        }
-
         private Point lookLeft (int x0)
         {
             for (int x = x0 - 1; x >= 0; x--) {
@@ -192,6 +175,27 @@ public class GlyphSlurInfo
             }
 
             return null;
+        }
+
+        public List<Point> retrieveKeyPoints ()
+        {
+            // Retrieve the 4 points WRT glyph bounds
+            final int width = glyph.getWidth();
+            final List<Point> points = new ArrayList<>(4);
+            points.add(vectorAtX(0));
+            points.add(vectorAtX((int) Math.rint(width / 3.0)));
+            points.add(vectorAtX((int) Math.rint((2 * width) / 3.0)));
+            points.add(vectorAtX(width - 1));
+
+            // Use sheet coordinates rather than glyph-based coordinates
+            final int dx = glyph.getLeft();
+            final int dy = glyph.getTop();
+
+            for (Point point : points) {
+                point.translate(dx, dy);
+            }
+
+            return points;
         }
 
         /**

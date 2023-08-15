@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,6 +42,7 @@ public class HeadersStep
     private static final Logger logger = LoggerFactory.getLogger(HeadersStep.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>HeadersStep</code> object.
      */
@@ -50,13 +51,14 @@ public class HeadersStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // doSystem //
     //----------//
     @Override
     public void doSystem (SystemInfo system,
                           Void context)
-            throws StepException
+        throws StepException
     {
         new HeaderBuilder(system).processHeader(); // -> Staff clef + key + time
     }

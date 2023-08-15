@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,6 +53,7 @@ public class HeadSpotsBuilder
     Map<SystemInfo, List<Glyph>> glyphMap = new HashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>HeadSpotsBuilder</code> object.
      *
@@ -64,6 +65,40 @@ public class HeadSpotsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------------//
+    // dispatchSheetSpots //
+    //--------------------//
+    /**
+     * Dispatch sheet spots according to their containing system(s),
+     * and keeping only those within system width.
+     *
+     * @param spots the spots to dispatch
+     */
+    private Map<SystemInfo, List<Glyph>> dispatchSheetSpots (List<Glyph> spots)
+    {
+        final SystemManager systemManager = sheet.getSystemManager();
+        final Map<SystemInfo, List<Glyph>> spotMap = new TreeMap<>();
+        for (SystemInfo system : systemManager.getSystems()) {
+            spotMap.put(system, new ArrayList<>());
+        }
+
+        for (Glyph spot : spots) {
+            final Point center = spot.getCentroid();
+            final List<SystemInfo> relevants = systemManager.getSystemsOf(center);
+
+            for (SystemInfo system : relevants) {
+                // Check glyph is within system abscissa boundaries
+                if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
+                    spot.addGroup(GlyphGroup.HEAD_SPOT); // Needed
+                    spotMap.get(system).add(spot);
+                }
+            }
+        }
+
+        return spotMap;
+    }
+
     //----------//
     // getSpots //
     //----------//
@@ -82,43 +117,5 @@ public class HeadSpotsBuilder
 
         // Dispatch spots per system(s)
         return dispatchSheetSpots(spots);
-    }
-
-    //--------------------//
-    // dispatchSheetSpots //
-    //--------------------//
-    /**
-     * Dispatch sheet spots according to their containing system(s),
-     * and keeping only those within system width.
-     *
-     * @param spots the spots to dispatch
-     */
-    private Map<SystemInfo, List<Glyph>> dispatchSheetSpots (List<Glyph> spots)
-    {
-        Map<SystemInfo, List<Glyph>> spotMap = new TreeMap<>();
-
-        List<SystemInfo> relevants = new ArrayList<>();
-        SystemManager systemManager = sheet.getSystemManager();
-
-        for (Glyph spot : spots) {
-            Point center = spot.getCentroid();
-            systemManager.getSystemsOf(center, relevants);
-
-            for (SystemInfo system : relevants) {
-                // Check glyph is within system abscissa boundaries
-                if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
-                    List<Glyph> list = spotMap.get(system);
-
-                    if (list == null) {
-                        spotMap.put(system, list = new ArrayList<>());
-                    }
-
-                    spot.addGroup(GlyphGroup.HEAD_SPOT); // Needed
-                    list.add(spot);
-                }
-            }
-        }
-
-        return spotMap;
     }
 }

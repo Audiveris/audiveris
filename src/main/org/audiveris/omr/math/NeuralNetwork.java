@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -72,6 +72,7 @@ public class NeuralNetwork
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Size of input layer. */
     @XmlAttribute(name = "input-size")
     private final int inputSize;
@@ -115,6 +116,17 @@ public class NeuralNetwork
     private transient volatile boolean stopping = false;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /** Private no-arg constructor meant for the JAXB compiler only. */
+    private NeuralNetwork ()
+    {
+        inputSize = -1;
+        hiddenSize = -1;
+        outputSize = -1;
+        inputLabels = null;
+        outputLabels = null;
+    }
+
     /**
      * Create a neural network, with specified number of cells in each
      * layer, and default values.
@@ -197,17 +209,8 @@ public class NeuralNetwork
         this.epochs = epochs;
     }
 
-    /** Private no-arg constructor meant for the JAXB compiler only. */
-    private NeuralNetwork ()
-    {
-        inputSize = -1;
-        hiddenSize = -1;
-        outputSize = -1;
-        inputLabels = null;
-        outputLabels = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // backup //
     //--------//
@@ -251,6 +254,73 @@ public class NeuralNetwork
         sb.append(String.format("%nOutputs : %d cells%n", outputSize));
 
         logger.info(sb.toString());
+    }
+
+    //------------//
+    // dumpMatrix //
+    //------------//
+    /**
+     * Dump a matrix (assumed to be a true rectangular matrix,
+     * with all rows of the same length).
+     *
+     * @param matrix the matrix to dump
+     * @return the matrix representation
+     */
+    private String dumpOfMatrix (double[][] matrix)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (int col = 0; col < matrix[0].length; col++) {
+            sb.append(String.format("%14d", col));
+        }
+
+        sb.append(String.format("%n"));
+
+        for (int row = 0; row < matrix.length; row++) {
+            sb.append(String.format("%2d:", row));
+
+            for (int col = 0; col < matrix[0].length; col++) {
+                sb.append(String.format("%14e", matrix[row][col]));
+            }
+
+            sb.append(String.format("%n"));
+        }
+
+        return sb.toString();
+    }
+
+    //---------//
+    // forward //
+    //---------//
+    /**
+     * Re-entrant method.
+     *
+     * @param ins     input cells
+     * @param weights applied weights
+     * @param outs    output cells
+     */
+    private void forward (double[] ins,
+                          double[][] weights,
+                          double[] outs)
+    {
+        double sum;
+        double[] ws;
+
+        for (int o = outs.length - 1; o >= 0; o--) {
+            sum = 0;
+            ws = weights[o];
+
+            for (int i = ins.length - 1; i >= 0; i--) {
+                sum += (ws[i + 1] * ins[i]);
+            }
+
+            // Bias
+            sum += ws[0];
+
+            outs[o] = sigmoid(sum);
+
+            ///outs[o] = relu(sum);
+        }
     }
 
     //---------------//
@@ -330,12 +400,20 @@ public class NeuralNetwork
      * @throws IOException        if something goes wrong during IO operations
      */
     public void marshal (OutputStream os)
-            throws JAXBException,
-                   XMLStreamException,
-                   IOException
+        throws JAXBException, XMLStreamException, IOException
     {
         Jaxb.marshal(this, os, getJaxbContext());
         logger.debug("Network marshalled");
+    }
+
+    private double relu (double val)
+    {
+        return Math.max(0, val);
+    }
+
+    private double reluDif (double val)
+    {
+        return (val >= 0) ? 1 : 0;
     }
 
     //---------//
@@ -357,9 +435,9 @@ public class NeuralNetwork
 
         // Make sure backup is compatible with this neural network
         if ((backup.hiddenWeights.length != hiddenSize)
-                    || (backup.hiddenWeights[0].length != (inputSize + 1))
-                    || (backup.outputWeights.length != outputSize)
-                    || (backup.outputWeights[0].length != (hiddenSize + 1))) {
+                || (backup.hiddenWeights[0].length != (inputSize + 1))
+                || (backup.outputWeights.length != outputSize)
+                || (backup.outputWeights[0].length != (hiddenSize + 1))) {
             throw new IllegalArgumentException("Incompatible backup");
         }
 
@@ -460,6 +538,25 @@ public class NeuralNetwork
         this.momentum = momentum;
     }
 
+    //---------//
+    // sigmoid //
+    //---------//
+    /**
+     * Simple sigmoid function, with a step around 0 abscissa.
+     *
+     * @param val abscissa
+     * @return the related function value
+     */
+    private double sigmoid (double val)
+    {
+        return 1.0d / (1.0d + Math.exp(-val));
+    }
+
+    private double sigmoidDif (double val)
+    {
+        return val * (1 - val);
+    }
+
     //------//
     // stop //
     //------//
@@ -487,242 +584,70 @@ public class NeuralNetwork
                        TrainingMonitor listener,
                        int iterPeriod)
     {
-        stopping = false;
+        stopping=false;
 
-        Objects.requireNonNull(inputs, "inputs array is null");
-        Objects.requireNonNull(desiredOutputs, "desiredOutputs array is null");
-        logger.info("Network is being trained on {} epochs...", epochs);
+        Objects.requireNonNull(inputs,"inputs array is null");Objects.requireNonNull(desiredOutputs,"desiredOutputs array is null");logger.info("Network is being trained on {} epochs...",epochs);
 
-        final int patterns = inputs.length;
-        final long startTime = System.currentTimeMillis();
+        final int patterns=inputs.length;final long startTime=System.currentTimeMillis();
 
         // Allocate needed arrays
-        final double[] gottenOutputs = new double[outputSize];
-        final double[] hiddenGrads = new double[hiddenSize];
-        final double[] outputGrads = new double[outputSize];
-        final double[][] hiddenDeltas = createMatrix(hiddenSize, inputSize + 1, 0);
-        final double[][] outputDeltas = createMatrix(outputSize, hiddenSize + 1, 0);
-        final double[] hiddens = new double[hiddenSize];
-        int iter = 0;
+        final double[]gottenOutputs=new double[outputSize];final double[]hiddenGrads=new double[hiddenSize];final double[]outputGrads=new double[outputSize];final double[][]hiddenDeltas=createMatrix(hiddenSize,inputSize+1,0);final double[][]outputDeltas=createMatrix(outputSize,hiddenSize+1,0);final double[]hiddens=new double[hiddenSize];int iter=0;
 
-        for (int ie = 1; ie <= epochs; ie++) {
-            iter++; // For this old engine, iter = epoch
+        for(int ie=1;ie<=epochs;ie++){iter++; // For this old engine, iter = epoch
 
-            if (listener != null) {
-                listener.epochStarted(ie);
-            }
+        if(listener!=null){listener.epochStarted(ie);}
 
-            // Loop on all input patterns
-            for (int ip = 0; ip < patterns; ip++) {
-                // Run the network with input values and current weights
-                run(inputs[ip], hiddens, gottenOutputs);
+        // Loop on all input patterns
+        for(int ip=0;ip<patterns;ip++){
+        // Run the network with input values and current weights
+        run(inputs[ip],hiddens,gottenOutputs);
 
-                // Compute the output layer error terms
-                for (int io = outputSize - 1; io >= 0; io--) {
-                    double out = gottenOutputs[io];
-                    double dif = desiredOutputs[ip][io] - out;
-                    ///outputGrads[io] = dif * out * (1 - out); // Sigmoid'
-                    outputGrads[io] = dif * sigmoidDif(out); // Sigmoid'
-                    ///outputGrads[io] = dif * reluDif(out); // ReLU'
-                }
-
-                // Compute the hidden layer error terms
-                for (int ih = hiddenSize - 1; ih >= 0; ih--) {
-                    double sum = 0;
-                    double hid = hiddens[ih];
-
-                    for (int o = outputSize - 1; o >= 0; o--) {
-                        sum += (outputGrads[o] * outputWeights[o][ih + 1]);
-                    }
-
-                    ///hiddenGrads[h] = sum * hid * (1 - hid); // Sigmoid'
-                    hiddenGrads[ih] = sum * sigmoidDif(hid); // Sigmoid'
-                    ///hiddenGrads[h] = sum * reluDif(hid); // ReLU'
-                }
-
-                // Update the output weights
-                for (int io = outputSize - 1; io >= 0; io--) {
-                    for (int ih = hiddenSize - 1; ih >= 0; ih--) {
-                        double dw = (learningRate * outputGrads[io] * hiddens[ih]) + (momentum
-                                                                                              * outputDeltas[io][ih
-                                                                                                                 + 1]);
-                        outputWeights[io][ih + 1] += dw;
-                        outputDeltas[io][ih + 1] = dw;
-                    }
-
-                    // Bias
-                    double dw = (learningRate * outputGrads[io]) + (momentum * outputDeltas[io][0]);
-                    outputWeights[io][0] += dw;
-                    outputDeltas[io][0] = dw;
-                }
-
-                // Update the hidden weights
-                for (int ih = hiddenSize - 1; ih >= 0; ih--) {
-                    for (int i = inputSize - 1; i >= 0; i--) {
-                        double dw = (learningRate * hiddenGrads[ih] * inputs[ip][i]) + (momentum
-                                                                                                * hiddenDeltas[ih][i
-                                                                                                                   + 1]);
-                        hiddenWeights[ih][i + 1] += dw;
-                        hiddenDeltas[ih][i + 1] = dw;
-                    }
-
-                    // Bias
-                    double dw = (learningRate * hiddenGrads[ih]) + (momentum * hiddenDeltas[ih][0]);
-                    hiddenWeights[ih][0] += dw;
-                    hiddenDeltas[ih][0] = dw;
-                }
-            }
-
-            if (listener != null) {
-                if ((iter % iterPeriod) == 0) {
-                    double mse = 0d; // Mean Squared Error
-
-                    for (int ip = 0; ip < patterns; ip++) {
-                        final double[] patternDesiredOutputs = desiredOutputs[ip];
-                        run(inputs[ip], hiddens, gottenOutputs);
-
-                        for (int o = outputSize - 1; o >= 0; o--) {
-                            double out = gottenOutputs[o];
-                            double dif = patternDesiredOutputs[o] - out;
-                            mse += (dif * dif);
-                        }
-                    }
-
-                    mse /= patterns;
-                    listener.iterationPeriodDone(iter, mse);
-                }
-            }
-
-            // Stop required?
-            if (stopping) {
-                logger.info("Stopping.");
-
-                break;
-            }
+        // Compute the output layer error terms
+        for(int io=outputSize-1;io>=0;io--){double out=gottenOutputs[io];double dif=desiredOutputs[ip][io]-out;
+        ///outputGrads[io] = dif * out * (1 - out); // Sigmoid'
+        outputGrads[io]=dif*sigmoidDif(out); // Sigmoid'
+        ///outputGrads[io] = dif * reluDif(out); // ReLU'
         }
 
-        final long dur = System.currentTimeMillis() - startTime;
-        logger.info(String.format("Duration %,d seconds, %d iterations on %d patterns", dur / 1_000,
-                                  epochs, patterns));
-        stopping = false;
-    }
+        // Compute the hidden layer error terms
+        for(int ih=hiddenSize-1;ih>=0;ih--){double sum=0;double hid=hiddens[ih];
 
-    //------------//
-    // dumpMatrix //
-    //------------//
-    /**
-     * Dump a matrix (assumed to be a true rectangular matrix,
-     * with all rows of the same length).
-     *
-     * @param matrix the matrix to dump
-     * @return the matrix representation
-     */
-    private String dumpOfMatrix (double[][] matrix)
-    {
-        StringBuilder sb = new StringBuilder();
+        for(int o=outputSize-1;o>=0;o--){sum+=(outputGrads[o]*outputWeights[o][ih+1]);}
 
-        for (int col = 0; col < matrix[0].length; col++) {
-            sb.append(String.format("%14d", col));
+        ///hiddenGrads[h] = sum * hid * (1 - hid); // Sigmoid'
+        hiddenGrads[ih]=sum*sigmoidDif(hid); // Sigmoid'
+        ///hiddenGrads[h] = sum * reluDif(hid); // ReLU'
         }
 
-        sb.append(String.format("%n"));
+        // Update the output weights
+        for(int io=outputSize-1;io>=0;io--){for(int ih=hiddenSize-1;ih>=0;ih--){double dw=(learningRate*outputGrads[io]*hiddens[ih])+(momentum*outputDeltas[io][ih+1]);outputWeights[io][ih+1]+=dw;outputDeltas[io][ih+1]=dw;}
 
-        for (int row = 0; row < matrix.length; row++) {
-            sb.append(String.format("%2d:", row));
+        // Bias
+        double dw=(learningRate*outputGrads[io])+(momentum*outputDeltas[io][0]);outputWeights[io][0]+=dw;outputDeltas[io][0]=dw;}
 
-            for (int col = 0; col < matrix[0].length; col++) {
-                sb.append(String.format("%14e", matrix[row][col]));
-            }
+        // Update the hidden weights
+        for(int ih=hiddenSize-1;ih>=0;ih--){for(int i=inputSize-1;i>=0;i--){double dw=(learningRate*hiddenGrads[ih]*inputs[ip][i])+(momentum*hiddenDeltas[ih][i+1]);hiddenWeights[ih][i+1]+=dw;hiddenDeltas[ih][i+1]=dw;}
 
-            sb.append(String.format("%n"));
-        }
+        // Bias
+        double dw=(learningRate*hiddenGrads[ih])+(momentum*hiddenDeltas[ih][0]);hiddenWeights[ih][0]+=dw;hiddenDeltas[ih][0]=dw;}}
 
-        return sb.toString();
+        if(listener!=null){if((iter%iterPeriod)==0){double mse=0d; // Mean Squared Error
+
+        for(int ip=0;ip<patterns;ip++){final double[]patternDesiredOutputs=desiredOutputs[ip];run(inputs[ip],hiddens,gottenOutputs);
+
+        for(int o=outputSize-1;o>=0;o--){double out=gottenOutputs[o];double dif=patternDesiredOutputs[o]-out;mse+=(dif*dif);}}
+
+        mse/=patterns;listener.iterationPeriodDone(iter,mse);}}
+
+        // Stop required?
+        if(stopping){logger.info("Stopping.");
+
+        break;}}
+
+        final long dur=System.currentTimeMillis()-startTime;logger.info(String.format("Duration %,d seconds, %d iterations on %d patterns",dur/1_000,epochs,patterns));stopping=false;
     }
 
-    //---------//
-    // forward //
-    //---------//
-    /**
-     * Re-entrant method.
-     *
-     * @param ins     input cells
-     * @param weights applied weights
-     * @param outs    output cells
-     */
-    private void forward (double[] ins,
-                          double[][] weights,
-                          double[] outs)
-    {
-        double sum;
-        double[] ws;
-
-        for (int o = outs.length - 1; o >= 0; o--) {
-            sum = 0;
-            ws = weights[o];
-
-            for (int i = ins.length - 1; i >= 0; i--) {
-                sum += (ws[i + 1] * ins[i]);
-            }
-
-            // Bias
-            sum += ws[0];
-
-            outs[o] = sigmoid(sum);
-
-            ///outs[o] = relu(sum);
-        }
-    }
-
-    private double relu (double val)
-    {
-        return Math.max(0, val);
-    }
-
-    private double reluDif (double val)
-    {
-        return (val >= 0) ? 1 : 0;
-    }
-
-    //---------//
-    // sigmoid //
-    //---------//
-    /**
-     * Simple sigmoid function, with a step around 0 abscissa.
-     *
-     * @param val abscissa
-     * @return the related function value
-     */
-    private double sigmoid (double val)
-    {
-        return 1.0d / (1.0d + Math.exp(-val));
-    }
-
-    private double sigmoidDif (double val)
-    {
-        return val * (1 - val);
-    }
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the provided XML stream to allocate the corresponding NeuralNetwork.
-     *
-     * @param in the input stream that contains the network definition in XML format.
-     *           The stream is not closed by this method
-     * @return the allocated network.
-     * @exception JAXBException raised when unmarshalling goes wrong
-     */
-    public static NeuralNetwork unmarshal (InputStream in)
-            throws JAXBException
-    {
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
-        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
-        logger.debug("Network unmarshalled");
-
-        return nn;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------//
     // cloneMatrix //
@@ -781,7 +706,7 @@ public class NeuralNetwork
     // getJaxbContext //
     //----------------//
     private static JAXBContext getJaxbContext ()
-            throws JAXBException
+        throws JAXBException
     {
         // Lazy creation
         if (jaxbContext == null) {
@@ -791,7 +716,29 @@ public class NeuralNetwork
         return jaxbContext;
     }
 
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding NeuralNetwork.
+     *
+     * @param in the input stream that contains the network definition in XML format.
+     *           The stream is not closed by this method
+     * @return the allocated network.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static NeuralNetwork unmarshal (InputStream in)
+        throws JAXBException
+    {
+        Unmarshaller um = getJaxbContext().createUnmarshaller();
+        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
+        logger.debug("Network unmarshalled");
+
+        return nn;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------//
     // Backup //
     //--------//

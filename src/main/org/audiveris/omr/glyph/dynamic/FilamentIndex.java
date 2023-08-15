@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,15 +55,17 @@ public class FilamentIndex
     private static final Logger logger = LoggerFactory.getLogger(FilamentIndex.class);
 
     /** Events that can be published on filament service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{EntityListEvent.class,
-                                                                   IdEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]
+    { EntityListEvent.class, IdEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>FilamentIndex</code> object.
      *
@@ -109,6 +111,7 @@ public class FilamentIndex
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // getName //
     //---------//
@@ -147,11 +150,12 @@ public class FilamentIndex
                     MouseMovement.PRESSING,
                     filament);
 
-            SwingUtilities.invokeLater(() -> entityService.publish(event));
+            SwingUtilities.invokeLater( () -> entityService.publish(event));
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

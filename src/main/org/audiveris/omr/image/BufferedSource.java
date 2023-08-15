@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -48,6 +48,7 @@ public class BufferedSource
     private final int[] pixelArray;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new BufferedSource object around a given BufferedImage
      * instance.
@@ -64,7 +65,21 @@ public class BufferedSource
         pixelArray = new int[4];
     }
 
+    private int clamp (int val)
+    {
+        if (val < 0) {
+            return 0;
+        }
+
+        if (val > 255) {
+            return 255;
+        }
+
+        return val;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public int get (int x,
                     int y)
@@ -93,18 +108,5 @@ public class BufferedSource
     public int getWidth ()
     {
         return image.getWidth();
-    }
-
-    private int clamp (int val)
-    {
-        if (val < 0) {
-            return 0;
-        }
-
-        if (val > 255) {
-            return 255;
-        }
-
-        return val;
     }
 }

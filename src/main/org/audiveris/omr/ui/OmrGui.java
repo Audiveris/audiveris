@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -149,6 +149,8 @@ public abstract class OmrGui
      * Notify that one or several new log records are available for display.
      */
     public abstract void notifyLog ();
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //----------------//
     // getApplication //

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,12 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.TableUtil;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.MusicFont;
 
 import org.junit.Test;
+
+import ij.process.ByteProcessor;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,57 +41,57 @@ import java.util.List;
 public class ChamferMatchingTest
 {
 
-    private static final String[] imageRows = new String[]{
-        "                                    ",
-        "                                    ",
-        "                                    ",
-        "                                    ",
-        "                    XXXXXXX         ",
-        "                 XXXXXXXXXXXXX      ",
-        "               XXXXXXXXXXXXXXXX     ",
-        "             XXXXXXXXXXXXXXXXXX     ",
-        "            XXXXXXXXXXXXXXXXXXX     ",
-        "           XXXXXXXXXXXXXXXXXXXXX    ",
-        "           XXXXXXXXXXXXXXXXXXXXX    ",
-        "           XXXXXXXXXXXXXXXXXXXX     ",
-        "           XXXXXXXXXXXXXXXXXXXX     ",
-        "          XXXXXXXXXXXXXXXXXXXXX     ",
-        "           XXXXXXXXXXXXXXXXXXX      ",
-        "           XXXXXXXXXXXXXXXXXX       ",
-        "            XXXXXXXXXXXXXXXX        ",
-        "               XXXXXXXXXXXXXX       ",
-        "               XXXXXXXXXXXXXXX      ",
-        "             XXXXXXXXXXXXXXXXXX     ",
-        "            XXXXXXXXXXXXXXXXXXX     ",
-        "           XXXXXXXXXXXXXXXXXXXXX    ",
-        "           XXXXXXXXXXXXXXXXXXXXX    ",
-        "          XXXXXXXXXXXXXXXXXXXXXXX   ",
-        "          XXXXXXXXXXXXXXXXXXXXXXX   ",
-        "           XXXXXXXXXXXXXXXXXXXXXX   ",
-        "            XXXXXXXXXXXXXXXXXXXXX   ",
-        "             XXXXXXXXXXXXXXXXXXX    ",
-        "              XXXXXXXXXXXXXXXXX     ",
-        "               XXXXXXXXXXXXXX       ",
-        "                 XXXXXXXXX          "
-    };
+    private static final String[] imageRows = new String[]
+    {
+            "                                    ",
+            "                                    ",
+            "                                    ",
+            "                                    ",
+            "                    XXXXXXX         ",
+            "                 XXXXXXXXXXXXX      ",
+            "               XXXXXXXXXXXXXXXX     ",
+            "             XXXXXXXXXXXXXXXXXX     ",
+            "            XXXXXXXXXXXXXXXXXXX     ",
+            "           XXXXXXXXXXXXXXXXXXXXX    ",
+            "           XXXXXXXXXXXXXXXXXXXXX    ",
+            "           XXXXXXXXXXXXXXXXXXXX     ",
+            "           XXXXXXXXXXXXXXXXXXXX     ",
+            "          XXXXXXXXXXXXXXXXXXXXX     ",
+            "           XXXXXXXXXXXXXXXXXXX      ",
+            "           XXXXXXXXXXXXXXXXXX       ",
+            "            XXXXXXXXXXXXXXXX        ",
+            "               XXXXXXXXXXXXXX       ",
+            "               XXXXXXXXXXXXXXX      ",
+            "             XXXXXXXXXXXXXXXXXX     ",
+            "            XXXXXXXXXXXXXXXXXXX     ",
+            "           XXXXXXXXXXXXXXXXXXXXX    ",
+            "           XXXXXXXXXXXXXXXXXXXXX    ",
+            "          XXXXXXXXXXXXXXXXXXXXXXX   ",
+            "          XXXXXXXXXXXXXXXXXXXXXXX   ",
+            "           XXXXXXXXXXXXXXXXXXXXXX   ",
+            "            XXXXXXXXXXXXXXXXXXXXX   ",
+            "             XXXXXXXXXXXXXXXXXXX    ",
+            "              XXXXXXXXXXXXXXXXX     ",
+            "               XXXXXXXXXXXXXX       ",
+            "                 XXXXXXXXX          " };
 
-    private static final String[] templateRows = new String[]{
-        "          XXXXXXX     ",
-        "       XXXXXXXXXXXXX  ",
-        "     XXXXXXXXXXXXXXXX ",
-        "   XXXXXXXXXXXXXXXXXX ",
-        "  XXXXXXXXXXXXXXXXXXX ",
-        " XXXXXXXXXXXXXXXXXXXXX",
-        " XXXXXXXXXXXXXXXXXXXXX",
-        " XXXXXXXXXXXXXXXXXXXX ",
-        " XXXXXXXXXXXXXXXXXXXX ",
-        "XXXXXXXXXXXXXXXXXXXXX ",
-        " XXXXXXXXXXXXXXXXXXX  ",
-        " XXXXXXXXXXXXXXXXXX   ",
-        "  XXXXXXXXXXXXXXXX    ",
-        "     XXXXXXXXXXXX     ",
-        "       XXXXXXXXX      "
-    };
+    private static final String[] templateRows = new String[]
+    {
+            "          XXXXXXX     ",
+            "       XXXXXXXXXXXXX  ",
+            "     XXXXXXXXXXXXXXXX ",
+            "   XXXXXXXXXXXXXXXXXX ",
+            "  XXXXXXXXXXXXXXXXXXX ",
+            " XXXXXXXXXXXXXXXXXXXXX",
+            " XXXXXXXXXXXXXXXXXXXXX",
+            " XXXXXXXXXXXXXXXXXXXX ",
+            " XXXXXXXXXXXXXXXXXXXX ",
+            "XXXXXXXXXXXXXXXXXXXXX ",
+            " XXXXXXXXXXXXXXXXXXX  ",
+            " XXXXXXXXXXXXXXXXXX   ",
+            "  XXXXXXXXXXXXXXXX    ",
+            "     XXXXXXXXXXXX     ",
+            "       XXXXXXXXX      " };
 
     /**
      * Test of matchAll method, of class DistanceMatching.
@@ -99,7 +101,10 @@ public class ChamferMatchingTest
     {
         System.out.println("match");
 
-        Template template = TemplateFactory.getInstance().getCatalog(56)
+        // Make sure all music family symbols are loaded
+        MusicFont.checkMusicFont();
+
+        Template template = TemplateFactory.getInstance().getCatalog(MusicFamily.Bravura, 56)
                 .getTemplate(Shape.NOTEHEAD_BLACK);
         template.dump();
 

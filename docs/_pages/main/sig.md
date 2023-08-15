@@ -2,39 +2,39 @@
 layout: default
 title: SIG
 grand_parent: Main Features
-parent: Main entities
-nav_order: 4
+parent: Main Entities
+nav_order: 5
 ---
 ### Symbol Interpretation Graph
 
 #### Relation
 
-A Relation instance formalizes a relationship between a source Inter instance and a (different)
+A Relation instance formalizes a relationship between a source Inter instance and a (separate)
 target Inter instance.
 
 There are 3 kinds of relation:
 
-* A positive relation represents a **mutual support** between two Inter instances.  
+* A _positive_ relation represents a **mutual support** between two Inter instances.  
 ![](../assets/images/head_stem.png)
-Here is a typical example: a black head interpretation and a stem interpretation nearby with a
+Here we have a typical example: a filled head interpretation and a stem interpretation nearby with a
 suitable _HeadStemRelation_ between them, shown as a "_HeadStem_"-labelled green segment
 (the "_Relation_" suffix is always omitted in relation name display).  
 Support relations _increase_ the contextual grade of their linked Inter instances.
-Doing so, even rather low-quality interpretations, when well combined through supporting relations,
+In this way, even rather low-quality interpretations, when well combined through supporting relations,
 may end up with acceptable contextual grade.
 
-* A negative relation represents a **mutual exclusion** between two Inter instances.
+* A _negative_ relation represents a **mutual exclusion** between two Inter instances.
 Typically, two different interpretations for the same underlying glyph will compete with one another
 and will thus be linked by an _Exclusion_ relation.  
-An exclusion tells that the two Inter instances cannot coexist in the final configuration,
-so at least one of them will disappear at some point in the transcription process.
+An exclusion tells the engine that the two Inter instances cannot coexist in the final configuration,
+so at least one of them will be discarded at some point in the transcription process.
 
-* A neutral relation is neither positive nor negative, it just conveys information between two
+* A _neutral_ relation is neither positive nor negative, it just conveys information between two
 Inter instances.  
 For example a head-chord is an ensemble composed of one or several heads and often one stem.
 There is one _Containment_ relation between the chord ensemble and each of its heads members.
 If the chord has a stem, there is a _ChordStemRelation_ between chord and stem
-(beside a supporting _HeadStemRelation_ between each head and the stem).
+(along with a supporting _HeadStemRelation_ between each head and the stem).
 
 The image below shows a higher level of relation:
 * We can see two Inter instances (a treble clef followed by a 2-flat key) linked by a supporting
@@ -52,10 +52,10 @@ clef and this key (because the vertical positions of this key are not compatible
 A **S**ymbol **I**nterpretation **G**raph (SIG), is simply a graph with Inter instances as vertices
 and Relation instances as edges.
 
-The SIG plays the central role in Audiveris V5.
+The SIG plays a central role in Audiveris V5.
 Its main purpose is to host all candidate Interpretations and to formalize and manage the Relations
 (mutual exclusions, supporting relations) within the population of candidate interpretations.
 
-There is one SIG per system, and at some points in OMR pipeline (typically the REDUCTION step and
-the LINKS step), the SIG is _reduced_ so that all exclusions are resolved and no Inter with weak
+There is one SIG per system, and at precise points in the OMR engine pipeline (the REDUCTION step and
+the LINKS step), each SIG is _reduced_ so that all exclusions are resolved and no Inter with weak
 contextual grade remains in its graph.

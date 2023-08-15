@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,10 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.ui;
-
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
@@ -41,6 +37,10 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -49,6 +49,7 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.nio.file.Path;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -74,55 +75,15 @@ public class AboutAction
 
     // Resource injection
     private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(
-                    AboutAction.class);
-
-    //~ Enumerations -------------------------------------------------------------------------------
-    //-------//
-    // Topic //
-    //-------//
-    private static enum Topic
-    {
-        /** Longer application description */
-        description(new JLabel()),
-        /** Current version */
-        version(new JLabel()),
-        /** Precise classes */
-        classes(new JLabel()),
-        /** Link to web site */
-        home(new JEditorPane("text/html", "")),
-        /** Link to project site */
-        project(new JEditorPane("text/html", "")),
-        /** License */
-        license(new JLabel()),
-        /** OCR version */
-        ocr(new JLabel()),
-        /** Java vendor */
-        javaVendor(new JLabel()),
-        /** Java version */
-        javaVersion(new JLabel()),
-        /** Java runtime */
-        javaRuntime(new JLabel()),
-        /** Java VM */
-        javaVm(new JLabel()),
-        /** OS */
-        os(new JLabel()),
-        /** Arch */
-        osArch(new JLabel());
-
-        public final JComponent comp;
-
-        Topic (JComponent comp)
-        {
-            this.comp = comp;
-        }
-    }
+            .getResourceMap(AboutAction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Panel
     private JPanel aboutBox = null;
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -176,9 +137,11 @@ public class AboutAction
         iRow += 2;
 
         final JLabel titleLabel = new JLabel();
-        titleLabel.setFont(new Font("Arial",
-                                    Font.BOLD,
-                                    UIUtil.adjustedSize(constants.titleFontSize.getValue())));
+        titleLabel.setFont(
+                new Font(
+                        "Arial",
+                        Font.BOLD,
+                        UIUtil.adjustedSize(constants.titleFontSize.getValue())));
         titleLabel.setName("aboutTitleLabel");
         builder.add(titleLabel, cst.xyw(1, iRow, 3));
 
@@ -196,12 +159,12 @@ public class AboutAction
             // Content on right
             topic.comp.setName(topic + "TextField");
 
-            if (topic.comp instanceof JTextComponent) {
-                ((JTextComponent) topic.comp).setEditable(false);
+            if (topic.comp instanceof JTextComponent jTextComponent) {
+                jTextComponent.setEditable(false);
             }
 
-            if (topic.comp instanceof JEditorPane) {
-                ((JEditorPane) topic.comp).addHyperlinkListener(linkListener);
+            if (topic.comp instanceof JEditorPane jEditorPane) {
+                jEditorPane.addHyperlinkListener(linkListener);
             } else {
                 topic.comp.setFocusable(false);
             }
@@ -229,7 +192,11 @@ public class AboutAction
 
         ((JLabel) Topic.license.comp).setText("GNU Affero GPL v3");
 
-        ((JLabel) Topic.ocr.comp).setText(TesseractOCR.getInstance().identify());
+        final TesseractOCR tesseract = TesseractOCR.getInstance();
+        ((JLabel) Topic.ocr.comp).setText(tesseract.identify());
+
+        final Path ocrFolder = tesseract.getOcrFolder();
+        ((JLabel) Topic.ocrFolder.comp).setText(ocrFolder != null ? ocrFolder.toString() : "null");
 
         ((JLabel) Topic.javaVendor.comp).setText(System.getProperty("java.vendor"));
 
@@ -237,11 +204,11 @@ public class AboutAction
 
         ((JLabel) Topic.javaRuntime.comp).setText(
                 System.getProperty("java.runtime.name") + " (build " + System.getProperty(
-                "java.runtime.version") + ")");
+                        "java.runtime.version") + ")");
 
         ((JLabel) Topic.javaVm.comp).setText(
                 System.getProperty("java.vm.name") + " (build " + System.getProperty(
-                "java.vm.version") + ", " + System.getProperty("java.vm.info") + ")");
+                        "java.vm.version") + ", " + System.getProperty("java.vm.info") + ")");
 
         ((JLabel) Topic.os.comp).setText(
                 System.getProperty("os.name") + " " + System.getProperty("os.version"));
@@ -252,6 +219,7 @@ public class AboutAction
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -301,6 +269,50 @@ public class AboutAction
         public void paintComponent (Graphics g)
         {
             g.drawImage(img, 1, 1, null);
+        }
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    //-------//
+    // Topic //
+    //-------//
+    private static enum Topic
+    {
+        /** Longer application description */
+        description(new JLabel()),
+        /** Current version */
+        version(new JLabel()),
+        /** Precise classes */
+        classes(new JLabel()),
+        /** Link to web site */
+        home(new JEditorPane("text/html", "")),
+        /** Link to project site */
+        project(new JEditorPane("text/html", "")),
+        /** License */
+        license(new JLabel()),
+        /** OCR version */
+        ocr(new JLabel()),
+        /** OCR version */
+        ocrFolder(new JLabel()),
+        /** Java vendor */
+        javaVendor(new JLabel()),
+        /** Java version */
+        javaVersion(new JLabel()),
+        /** Java runtime */
+        javaRuntime(new JLabel()),
+        /** Java VM */
+        javaVm(new JLabel()),
+        /** OS */
+        os(new JLabel()),
+        /** Arch */
+        osArch(new JLabel());
+
+        public final JComponent comp;
+
+        Topic (JComponent comp)
+        {
+            this.comp = comp;
         }
     }
 }

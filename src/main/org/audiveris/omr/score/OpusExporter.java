@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -51,10 +51,12 @@ public class OpusExporter
     private static final Logger logger = LoggerFactory.getLogger(OpusExporter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related book. */
     private final Book book;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>OpusExporter</code> object on a related book.
      *
@@ -66,29 +68,6 @@ public class OpusExporter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // export //
-    //--------//
-    /**
-     * Export the opus to a file.
-     *
-     * @param path     full target path to write (cannot be null)
-     * @param rootName opus root name
-     * @param signed   should we inject ProxyMusic signature?
-     * @param scores   the scores to export
-     * @throws Exception if something goes wrong
-     */
-    public void export (Path path,
-                        String rootName,
-                        boolean signed,
-                        List<Score> scores)
-            throws Exception
-    {
-        try (OutputStream os = new FileOutputStream(path.toString())) {
-            export(os, signed, rootName, scores);
-            logger.info("Opus {} exported to {}", rootName, path);
-        }
-    }
 
     //--------//
     // export //
@@ -106,7 +85,7 @@ public class OpusExporter
                         boolean signed,
                         String rootName,
                         List<Score> scores)
-            throws Exception
+        throws Exception
     {
         if (os == null) {
             throw new IllegalArgumentException("Trying to export a book to a null output stream");
@@ -131,7 +110,7 @@ public class OpusExporter
         for (Score score : scores) {
             // Reference each score/movement in opus
             String entryName = rootName + (multi ? (".mvt" + score.getId()) : "")
-                                       + OMR.SCORE_EXTENSION;
+                    + OMR.SCORE_EXTENSION;
             org.audiveris.proxymusic.opus.Score oScore = opusFactory.createScore();
             oScore.setHref(entryName);
             oScore.setNewPage(YesNo.YES);
@@ -150,5 +129,29 @@ public class OpusExporter
 
         // The end
         mof.close();
+    }
+
+    //--------//
+    // export //
+    //--------//
+    /**
+     * Export the opus to a file.
+     *
+     * @param path     full target path to write (cannot be null)
+     * @param rootName opus root name
+     * @param signed   should we inject ProxyMusic signature?
+     * @param scores   the scores to export
+     * @throws Exception if something goes wrong
+     */
+    public void export (Path path,
+                        String rootName,
+                        boolean signed,
+                        List<Score> scores)
+        throws Exception
+    {
+        try (OutputStream os = new FileOutputStream(path.toString())) {
+            export(os, signed, rootName, scores);
+            logger.info("Opus {} exported to {}", rootName, path);
+        }
     }
 }

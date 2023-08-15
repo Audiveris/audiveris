@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -33,8 +33,7 @@ import java.util.Objects;
  * we can't have one in a staff and the other in another staff within the same column.
  * <li>CUT_TIME and 2/2 (either whole "2/2" or pair "2","2") are NOT equivalent (similar as above).
  * <li>But "2/4" (whole specificShape) is equivalent to pair of shapes ("2","4"), because the way
- * shapes
- * were segmented by time builder software does not matter.
+ * shapes were segmented by time builder software does not matter.
  * </ul>
  *
  * @author Hervé Bitteur
@@ -50,6 +49,7 @@ public class TimeValue
     public final TimeRational timeRational;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>TimeValue</code> object.
      *
@@ -69,6 +69,7 @@ public class TimeValue
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // equals //
     //--------//

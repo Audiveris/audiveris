@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
@@ -31,7 +33,6 @@ import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Relations;
 import org.audiveris.omr.sig.relation.Support;
-import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -61,6 +62,7 @@ public class SelectionPainter
     private static final Logger logger = LoggerFactory.getLogger(SelectionPainter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SelectionPainter</code> object.
      *
@@ -76,36 +78,41 @@ public class SelectionPainter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // drawLink //
     //----------//
     /**
      * Draw the link between two inters.
      *
-     * @param one       first inter
-     * @param two       second inter
-     * @param linkClass provided link class
+     * @param one      first inter
+     * @param two      second inter
+     * @param relation the relation instance
      */
     public void drawLink (Inter one,
                           Inter two,
-                          Class<? extends Relation> linkClass)
+                          Relation relation)
     {
         final double zoom = g.getTransform().getScaleX();
 
         // Draw link line
-        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 2f);
-        g.setColor(NoExclusion.class.isAssignableFrom(linkClass) ? Color.GRAY
-                : Support.class.isAssignableFrom(linkClass) ? Color.GREEN : Color.ORANGE);
+        final Stroke oldStroke = UIUtil.setAbsoluteDashedStroke(g, 1f);
+        final Class<? extends Relation> linkClass = relation.getClass();
+        g.setColor(
+                NoExclusion.class.isAssignableFrom(linkClass) ? Color.GRAY
+                        : Support.class.isAssignableFrom(linkClass) ? Color.GREEN.darker()
+                                : Color.ORANGE);
 
         final double r = 2 / zoom; // Radius
-        final Point2D oneCenter = one.getRelationCenter();
+        final Point2D oneCenter = one.getRelationCenter(relation);
         g.fill(new Ellipse2D.Double(oneCenter.getX() - r, oneCenter.getY() - r, 2 * r, 2 * r));
 
-        final Point2D twoCenter = two.getRelationCenter();
+        final Point2D twoCenter = two.getRelationCenter(relation);
         g.fill(new Ellipse2D.Double(twoCenter.getX() - r, twoCenter.getY() - r, 2 * r, 2 * r));
 
         final Line2D line = new Line2D.Double(oneCenter, twoCenter);
         g.draw(line);
+        g.setStroke(oldStroke);
 
         // Print link name at center of line?
         if (zoom >= constants.minZoomForLinkNames.getValue()) {
@@ -115,6 +122,15 @@ public class SelectionPainter
             final TextLayout layout = basicLayout(Relations.nameOf(linkClass), at);
             paint(layout, GeoUtil.center2D(line.getBounds()), AREA_CENTER);
         }
+    }
+
+    //---------------//
+    // getSigPainter //
+    //---------------//
+    @Override
+    protected SigPainter getSigPainter ()
+    {
+        return sigPainter;
     }
 
     //--------//
@@ -130,16 +146,8 @@ public class SelectionPainter
         inter.accept(sigPainter);
     }
 
-    //---------------//
-    // getSigPainter //
-    //---------------//
-    @Override
-    protected SigPainter getSigPainter ()
-    {
-        return sigPainter;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

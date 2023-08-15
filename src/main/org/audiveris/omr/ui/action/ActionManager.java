@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -68,6 +68,7 @@ public class ActionManager
     private static final ClassLoader classLoader = ActionManager.class.getClassLoader();
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The map of all menus, so that we can directly provide some. */
     private final Map<String, JMenu> menuMap = new HashMap<>();
 
@@ -78,6 +79,7 @@ public class ActionManager
     private final JMenuBar menuBar = new JMenuBar();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Meant to be instantiated at most once.
      */
@@ -86,6 +88,7 @@ public class ActionManager
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //-------------------//
     // getActionInstance //
     //-------------------//
@@ -181,9 +184,10 @@ public class ActionManager
     public void loadAllDescriptors ()
     {
         // Load classes first for system actions, then for user actions if any
-        URI[] uris = new URI[]{
-            UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
-            WellKnowns.CONFIG_FOLDER.resolve("user-actions.xml").toUri().normalize()};
+        URI[] uris = new URI[]
+        {
+                UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
+                WellKnowns.CONFIG_FOLDER.resolve("user-actions.xml").toUri().normalize() };
 
         for (int i = 0; i < uris.length; i++) {
             URI uri = uris[i];
@@ -201,61 +205,6 @@ public class ActionManager
                 }
             } catch (JAXBException ex) {
                 logger.warn("Error loading actions from " + uri, ex);
-            }
-        }
-    }
-
-    //--------------------//
-    // registerAllActions //
-    //--------------------//
-    /**
-     * Register all actions as listed in the descriptor files, and organize them
-     * according to the various domains defined.
-     * There is one pull-down menu generated for each domain found.
-     */
-    public void registerAllActions ()
-    {
-        // Insert an initial separator, to let user easily grab the toolBar
-        toolBar.addSeparator();
-
-        DomainLoop:
-        for (String domain : Actions.getDomainNames()) {
-            // Create dedicated menu for this range, if not already existing
-            JMenu menu = menuMap.get(domain);
-
-            if (menu == null) {
-                logger.debug("Creating menu:{}", domain);
-                menu = new SeparableMenu(domain);
-                menuMap.put(domain, menu);
-            } else {
-                logger.debug("Augmenting menu:{}", domain);
-            }
-
-            // Proper menu decoration
-            ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(
-                    Actions.class);
-            menu.setText(domain); // As default
-            menu.setName(domain);
-
-            // Register all actions in the given domain
-            registerDomainActions(domain, menu);
-            resource.injectComponents(menu); // Localized
-
-            SeparableMenu.trimSeparator(menu); // No separator at end of menu
-
-            // Smart insertion of the menu into the menu bar, and separators into the toolBar
-            if (menu.getItemCount() > 0) {
-                final int toolCount = toolBar.getComponentCount();
-
-                if (toolCount > 0) {
-                    Component comp = toolBar.getComponent(toolCount - 1);
-
-                    if (!(comp instanceof JToolBar.Separator)) {
-                        toolBar.addSeparator();
-                    }
-                }
-
-                menuBar.add(menu);
             }
         }
     }
@@ -312,16 +261,67 @@ public class ActionManager
             } else {
                 logger.error("Unknown action {} in class {}", desc.methodName, desc.className);
             }
-        } catch (ClassNotFoundException |
-                 IllegalAccessException |
-                 IllegalArgumentException |
-                 InstantiationException |
-                 SecurityException |
-                 InvocationTargetException ex) {
+        } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
+                | InstantiationException | SecurityException | InvocationTargetException ex) {
             logger.warn("Error while registering " + desc, ex);
         }
 
         return action;
+    }
+
+    //--------------------//
+    // registerAllActions //
+    //--------------------//
+    /**
+     * Register all actions as listed in the descriptor files, and organize them
+     * according to the various domains defined.
+     * There is one pull-down menu generated for each domain found.
+     */
+    public void registerAllActions ()
+    {
+        // Insert an initial separator, to let user easily grab the toolBar
+        toolBar.addSeparator();
+
+        DomainLoop:
+        for (String domain : Actions.getDomainNames()) {
+            // Create dedicated menu for this range, if not already existing
+            JMenu menu = menuMap.get(domain);
+
+            if (menu == null) {
+                logger.debug("Creating menu:{}", domain);
+                menu = new SeparableMenu(domain);
+                menuMap.put(domain, menu);
+            } else {
+                logger.debug("Augmenting menu:{}", domain);
+            }
+
+            // Proper menu decoration
+            ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(
+                    Actions.class);
+            menu.setText(domain); // As default
+            menu.setName(domain);
+
+            // Register all actions in the given domain
+            registerDomainActions(domain, menu);
+            resource.injectComponents(menu); // Localized
+
+            SeparableMenu.trimSeparator(menu); // No separator at end of menu
+
+            // Smart insertion of the menu into the menu bar, and separators into the toolBar
+            if (menu.getItemCount() > 0) {
+                final int toolCount = toolBar.getComponentCount();
+
+                if (toolCount > 0) {
+                    Component comp = toolBar.getComponent(toolCount - 1);
+
+                    if (!(comp instanceof JToolBar.Separator)) {
+                        toolBar.addSeparator();
+                    }
+                }
+
+                menuBar.add(menu);
+            }
+        }
     }
 
     //-----------------------//
@@ -380,15 +380,16 @@ public class ActionManager
                             item.setName(desc.menuName);
                             menu.add(item);
                         }
-                    } catch (ClassNotFoundException |
-                             IllegalAccessException |
-                             InstantiationException ex) {
+                    } catch (ClassNotFoundException | IllegalAccessException
+                            | InstantiationException ex) {
                         logger.warn("Error with " + desc.itemClassName, ex);
                     }
                 }
             }
         }
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------//
     // getInstance //
@@ -404,6 +405,7 @@ public class ActionManager
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------------//
     // LazySingleton //
     //---------------//

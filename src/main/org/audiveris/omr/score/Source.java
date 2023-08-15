@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,6 +53,7 @@ import java.util.List;
  * In MusicXML, such Source data is encoded using the miscellaneous element.
  * <br>
  * Using file:
+ *
  * <pre>
  * &lt;miscellaneous&gt;
  *     &lt;miscellaneous-field name="source-file"&gt;D:\soft\scores\morphology\recordare\MozartTrio.png&lt;/miscellaneous-field&gt;
@@ -64,6 +65,7 @@ import java.util.List;
  * </pre>
  * <p>
  * Using uri:
+ *
  * <pre>
  * &lt;miscellaneous&gt;
  *     &lt;miscellaneous-field name="source-uri"&gt;file:///MozartTrio.png&lt;/miscellaneous-field&gt;
@@ -87,6 +89,7 @@ public class Source
     private static final String SHEET_PREFIX = "sheet-";
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Path to source image file, if any. */
     private String file;
 
@@ -97,6 +100,7 @@ public class Source
     private final List<SheetSystems> sheets = new ArrayList<>();
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //------------//
     // encodePage //
     //------------//
@@ -185,14 +189,6 @@ public class Source
     }
 
     /**
-     * @param file the file to set
-     */
-    public void setFile (String file)
-    {
-        this.file = file;
-    }
-
-    /**
      * @return the sheetSystems
      */
     public List<SheetSystems> getSheets ()
@@ -206,6 +202,14 @@ public class Source
     public URI getUri ()
     {
         return uri;
+    }
+
+    /**
+     * @param file the file to set
+     */
+    public void setFile (String file)
+    {
+        this.file = file;
     }
 
     /**
@@ -236,6 +240,8 @@ public class Source
 
         return sb.toString();
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // decode //
@@ -341,6 +347,7 @@ public class Source
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------------//
     // SheetSystems //
     //--------------//

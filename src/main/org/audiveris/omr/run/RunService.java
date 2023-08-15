@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -50,16 +50,20 @@ public class RunService
     private static final Logger logger = LoggerFactory.getLogger(RunService.class);
 
     /** Events allowed to be published on this run service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{RunEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]
+    { RunEvent.class };
 
     /** Events observed on location service. */
-    private static final Class<?>[] locEventsRead = new Class<?>[]{LocationEvent.class};
+    private static final Class<?>[] locEventsRead = new Class<?>[]
+    { LocationEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The underlying run table. */
     private final RunTable table;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>RunService</code> object.
      *
@@ -74,6 +78,7 @@ public class RunService
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------------------//
     // cutLocationService //
     //--------------------//
@@ -86,6 +91,39 @@ public class RunService
     {
         for (Class<?> eventClass : locEventsRead) {
             locationService.unsubscribe(eventClass, this);
+        }
+    }
+
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Interest in location &rArr; Run
+     *
+     * @param locationEvent the location event
+     */
+    protected void handleLocationEvent (LocationEvent locationEvent)
+    {
+        ///logger.info("RunTable location: {}", locationEvent);
+        Rectangle rect = locationEvent.getData();
+
+        if (rect == null) {
+            return;
+        }
+
+        SelectionHint hint = locationEvent.hint;
+        MouseMovement movement = locationEvent.movement;
+
+        if (!hint.isLocation() && !hint.isContext()) {
+            return;
+        }
+
+        if ((rect.width == 0) && (rect.height == 0)) {
+            Point pt = rect.getLocation();
+
+            // Publish Run information
+            Run run = table.getRunAt(pt.x, pt.y);
+            publish(new RunEvent(this, hint, movement, run));
         }
     }
 
@@ -125,39 +163,6 @@ public class RunService
     {
         for (Class<?> eventClass : locEventsRead) {
             locationService.subscribeStrongly(eventClass, this);
-        }
-    }
-
-    //---------------------//
-    // handleLocationEvent //
-    //---------------------//
-    /**
-     * Interest in location &rArr; Run
-     *
-     * @param locationEvent the location event
-     */
-    protected void handleLocationEvent (LocationEvent locationEvent)
-    {
-        ///logger.info("RunTable location: {}", locationEvent);
-        Rectangle rect = locationEvent.getData();
-
-        if (rect == null) {
-            return;
-        }
-
-        SelectionHint hint = locationEvent.hint;
-        MouseMovement movement = locationEvent.movement;
-
-        if (!hint.isLocation() && !hint.isContext()) {
-            return;
-        }
-
-        if ((rect.width == 0) && (rect.height == 0)) {
-            Point pt = rect.getLocation();
-
-            // Publish Run information
-            Run run = table.getRunAt(pt.x, pt.y);
-            publish(new RunEvent(this, hint, movement, run));
         }
     }
 }

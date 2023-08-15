@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,10 +49,12 @@ public class RunTableView
     private static final Logger logger = LoggerFactory.getLogger(RunTableView.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The underlying table of runs. */
     private final RunTable table;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>RunTableView</code> object.
      *
@@ -75,15 +77,6 @@ public class RunTableView
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // render //
-    //--------//
-    @Override
-    public void render (Graphics2D g)
-    {
-        // Render all table runs
-        table.render(g, new Point(0, 0));
-    }
 
     //
     //    @Override
@@ -134,5 +127,15 @@ public class RunTableView
 
         // Publish Run information
         table.getRunService().publish(new RunEvent(this, hint, movement, run));
+    }
+
+    //--------//
+    // render //
+    //--------//
+    @Override
+    public void render (Graphics2D g)
+    {
+        // Render all table runs
+        table.render(g, new Point(0, 0));
     }
 }

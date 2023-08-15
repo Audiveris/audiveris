@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -47,6 +47,14 @@ public class BreathMarkInter
     private static final Logger logger = LoggerFactory.getLogger(BreathMarkInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private BreathMarkInter ()
+    {
+    }
+
     /**
      * Creates a new <code>BreathMarkInter</code> object.
      *
@@ -59,22 +67,7 @@ public class BreathMarkInter
         super(glyph, (glyph != null) ? glyph.getBounds() : null, Shape.BREATH_MARK, grade);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private BreathMarkInter ()
-    {
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
     // create //

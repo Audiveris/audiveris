@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,6 +46,7 @@ public class RunSmallStaffCheck
     private static final Logger logger = LoggerFactory.getLogger(RunSmallStaffCheck.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>RunSmallStaffCheck</code> object.
      *
@@ -59,10 +60,11 @@ public class RunSmallStaffCheck
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public void process ()
     {
-        for (SheetStub stub : book.getValidStubs()) {
+        for (SheetStub stub : book.getValidSelectedStubs()) {
             if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
                 if (stub.isDone(OmrStep.GRID)) {
                     Sheet sheet = stub.getSheet();

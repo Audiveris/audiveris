@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.check;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.ui.util.Panel;
@@ -32,6 +28,10 @@ import org.audiveris.omr.util.NamedDouble;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -76,6 +76,7 @@ public class CheckPanel<C>
     private static final int FIELD_WIDTH = 4;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related check suite (the model). */
     private CheckSuite<C> suite;
 
@@ -95,6 +96,7 @@ public class CheckPanel<C>
     private C checkable;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a check panel for a given suite.
      *
@@ -111,95 +113,6 @@ public class CheckPanel<C>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the UI component.
-     *
-     * @return the concrete component
-     */
-    public JComponent getComponent ()
-    {
-        return component;
-    }
-
-    //----------//
-    // passForm //
-    //----------//
-    /**
-     * Pass the whole suite on the provided checkable object, and
-     * display the results.
-     *
-     * @param checkable the object to be checked
-     */
-    public void passForm (C checkable)
-    {
-        // Remember the 'current' checkable object
-        this.checkable = checkable;
-
-        resetValues();
-
-        if (checkable == null) {
-            return;
-        }
-
-        // Run the suite
-        GradeImpacts impacts = suite.getImpacts(checkable);
-
-        // Fill one row per check
-        List<Check<C>> checks = suite.getChecks();
-
-        for (int index = 0; index < checks.size(); index++) {
-            final Check<C> check = checks.get(index);
-            final double value = suite.getChecks().get(index).getValue(checkable); ////impacts.getValue(index);
-
-            // Update proper field to display check result
-            final int col = (value <= check.getLow()) ? 0 : ((value < check.getHigh()) ? 1 : 2);
-            values[index][col].setText(textOf(value));
-        }
-
-        // Global suite result
-        final double grade = impacts.getGrade();
-
-        if (grade >= suite.getGoodThreshold()) {
-            globalField.setForeground(GREEN_COLOR);
-            globalField.setToolTipText("Good result!");
-        } else if (grade >= suite.getMinThreshold()) {
-            globalField.setForeground(ORANGE_COLOR);
-            globalField.setToolTipText("Acceptable result!");
-        } else {
-            globalField.setForeground(RED_COLOR);
-            globalField.setToolTipText("Check has totally failed!");
-        }
-
-        globalField.setText(textOf(grade));
-    }
-
-    //----------//
-    // setSuite //
-    //----------//
-    /**
-     * Assign a (new) suite to the check pane.
-     *
-     * @param suite the (new) check suite to be used
-     */
-    public final void setSuite (CheckSuite<C> suite)
-    {
-        this.suite = suite;
-
-        if (suite != null) {
-            createValueFields(); // Values
-            createBoundFields(); // Bounds
-            buildComponent(); // Create/update component
-        }
-
-        // Refresh the display
-        if (component != null) {
-            component.validate();
-            component.repaint();
-        }
-    }
 
     //----------------//
     // buildComponent //
@@ -323,7 +236,7 @@ public class CheckPanel<C>
                 field.setText(textOf(constant.getValue()));
                 field.setToolTipText(
                         "<html>" + constant.getName() + "<br/>" + constant.getDescription()
-                        + "</html>");
+                                + "</html>");
             }
         }
     }
@@ -373,6 +286,71 @@ public class CheckPanel<C>
         }
     }
 
+    //--------------//
+    // getComponent //
+    //--------------//
+    /**
+     * Report the UI component.
+     *
+     * @return the concrete component
+     */
+    public JComponent getComponent ()
+    {
+        return component;
+    }
+
+    //----------//
+    // passForm //
+    //----------//
+    /**
+     * Pass the whole suite on the provided checkable object, and
+     * display the results.
+     *
+     * @param checkable the object to be checked
+     */
+    public void passForm (C checkable)
+    {
+        // Remember the 'current' checkable object
+        this.checkable = checkable;
+
+        resetValues();
+
+        if (checkable == null) {
+            return;
+        }
+
+        // Run the suite
+        GradeImpacts impacts = suite.getImpacts(checkable);
+
+        // Fill one row per check
+        List<Check<C>> checks = suite.getChecks();
+
+        for (int index = 0; index < checks.size(); index++) {
+            final Check<C> check = checks.get(index);
+            final double value = suite.getChecks().get(index).getValue(checkable); ////impacts.getValue(index);
+
+            // Update proper field to display check result
+            final int col = (value <= check.getLow()) ? 0 : ((value < check.getHigh()) ? 1 : 2);
+            values[index][col].setText(textOf(value));
+        }
+
+        // Global suite result
+        final double grade = impacts.getGrade();
+
+        if (grade >= suite.getGoodThreshold()) {
+            globalField.setForeground(GREEN_COLOR);
+            globalField.setToolTipText("Good result!");
+        } else if (grade >= suite.getMinThreshold()) {
+            globalField.setForeground(ORANGE_COLOR);
+            globalField.setToolTipText("Acceptable result!");
+        } else {
+            globalField.setForeground(RED_COLOR);
+            globalField.setToolTipText("Check has totally failed!");
+        }
+
+        globalField.setText(textOf(grade));
+    }
+
     //-------------//
     // resetValues //
     //-------------//
@@ -382,6 +360,31 @@ public class CheckPanel<C>
             for (JTextField field : seq) {
                 field.setText("");
             }
+        }
+    }
+
+    //----------//
+    // setSuite //
+    //----------//
+    /**
+     * Assign a (new) suite to the check pane.
+     *
+     * @param suite the (new) check suite to be used
+     */
+    public final void setSuite (CheckSuite<C> suite)
+    {
+        this.suite = suite;
+
+        if (suite != null) {
+            createValueFields(); // Values
+            createBoundFields(); // Bounds
+            buildComponent(); // Create/update component
+        }
+
+        // Refresh the display
+        if (component != null) {
+            component.validate();
+            component.repaint();
         }
     }
 
@@ -414,6 +417,7 @@ public class CheckPanel<C>
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // ParamAction //
     //-------------//
@@ -472,8 +476,8 @@ public class CheckPanel<C>
                         try {
                             constant.setValue(valueOf(newString));
                             modified = true;
-                            sb.append(" modified from ").append(oldString).append(" to ")
-                                    .append(newString);
+                            sb.append(" modified from ").append(oldString).append(" to ").append(
+                                    newString);
                             logger.info(sb.toString());
                         } catch (Exception ex) {
                             logger.warn("Error in {}, {}", context, ex.getLocalizedMessage());

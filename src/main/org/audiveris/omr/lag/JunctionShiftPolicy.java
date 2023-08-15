@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -40,6 +40,7 @@ public class JunctionShiftPolicy
     private final int maxShift;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates an instance of policy based on shift of runs.
      *
@@ -51,6 +52,7 @@ public class JunctionShiftPolicy
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // consistentRun //
     //---------------//
@@ -69,8 +71,8 @@ public class JunctionShiftPolicy
         // Check based on positions of the two runs
         Run last = section.getLastRun();
 
-        return (Math.abs(run.getStart() - last.getStart()) <= maxShift)
-                       && (Math.abs(run.getStop() - last.getStop()) <= maxShift);
+        return (Math.abs(run.getStart() - last.getStart()) <= maxShift) && (Math.abs(
+                run.getStop() - last.getStop()) <= maxShift);
     }
 
     //----------//

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,10 +46,12 @@ public class DistanceBoard
     private static final Logger logger = LoggerFactory.getLogger(DistanceBoard.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The distance table to browse. */
     private final DistanceTable table;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a <code>DistanceBoard</code> object.
      *
@@ -68,6 +70,7 @@ public class DistanceBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------------------//
     // handleLocationEvent //
     //---------------------//

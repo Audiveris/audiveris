@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
@@ -40,9 +39,15 @@ import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.text.TextBuilder;
 import org.audiveris.omr.text.TextWord;
-import static org.audiveris.omr.util.HorizontalSide.*;
-import static org.audiveris.omr.util.StringUtil.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import static org.audiveris.omr.util.StringUtil.ELISION_CHAR;
+import static org.audiveris.omr.util.StringUtil.ELISION_STRING;
+import static org.audiveris.omr.util.StringUtil.EXTENSIONS;
+import static org.audiveris.omr.util.StringUtil.HYPHEN;
+import static org.audiveris.omr.util.StringUtil.HYPHEN_STRING;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,44 +79,8 @@ public class LyricItemInter
 
     private static final Logger logger = LoggerFactory.getLogger(LyricItemInter.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    //---------------//
-    // LyricItemKind //
-    //---------------//
-    /**
-     * Enum <code>LyricItemKind</code> describes the kind of a lyric item.
-     */
-    public static enum LyricItemKind
-    {
-        /** Just an elision. */
-        Elision,
-        /** Just an extension. */
-        Extension,
-        /** A hyphen between syllables. */
-        Hyphen,
-        /** A real syllable. */
-        Syllable;
-    }
-
-    //--------------//
-    // SyllabicType //
-    //--------------//
-    /**
-     * Describes more precisely a syllable inside a word.
-     */
-    public static enum SyllabicType
-    {
-        /** Single-syllable word */
-        SINGLE,
-        /** Syllable that begins a word */
-        BEGIN,
-        /** Syllable at the middle of a word */
-        MIDDLE,
-        /** Syllable that ends a word */
-        END;
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Lyrics kind. */
     @XmlAttribute(name = "kind")
     private LyricItemKind itemKind;
@@ -121,6 +90,36 @@ public class LyricItemInter
     private SyllabicType syllabicType;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private LyricItemInter ()
+    {
+    }
+
+    /**
+     * Creates a new <code>LyricItemInter</code> object meant for manual assignment.
+     *
+     * @param grade inter grade
+     */
+    public LyricItemInter (Double grade)
+    {
+        super(Shape.LYRICS, grade);
+    }
+
+    /**
+     * Creates a new LyricItemInter object.
+     *
+     * @param textWord the OCR'ed text word
+     */
+    public LyricItemInter (TextWord textWord)
+    {
+        super(textWord, Shape.LYRICS);
+
+        itemKind = inferItemKind();
+    }
+
     /**
      * Creates a new LyricItemInter object from a WordInter.
      *
@@ -140,44 +139,7 @@ public class LyricItemInter
         itemKind = inferItemKind();
     }
 
-    /**
-     * Creates a new LyricItemInter object.
-     *
-     * @param textWord the OCR'ed text word
-     */
-    public LyricItemInter (TextWord textWord)
-    {
-        super(textWord, Shape.LYRICS);
-
-        itemKind = inferItemKind();
-    }
-
-    /**
-     * Creates a new <code>LyricItemInter</code> object meant for manual assignment.
-     *
-     * @param grade inter grade
-     */
-    public LyricItemInter (Double grade)
-    {
-        super(Shape.LYRICS, grade);
-    }
-
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private LyricItemInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
 
     //-------//
     // added //
@@ -260,19 +222,6 @@ public class LyricItemInter
         return itemKind;
     }
 
-    //-------------//
-    // setItemKind //
-    //-------------//
-    /**
-     * Set the item kind.
-     *
-     * @param itemKind item kind
-     */
-    public void setItemKind (LyricItemKind itemKind)
-    {
-        this.itemKind = itemKind;
-    }
-
     //--------------//
     // getLyricLine //
     //--------------//
@@ -284,6 +233,25 @@ public class LyricItemInter
     public LyricLineInter getLyricLine ()
     {
         return (LyricLineInter) getEnsemble();
+    }
+
+    //----------------------//
+    // getReferenceAbscissa //
+    //----------------------//
+    /**
+     * Report the reference abscissa of this lyric item to be used for chord link test.
+     * <p>
+     * NOTA: Some words width are very exaggerated by OCR, hence we use a standard abscissa distance
+     * off of word start abscissa.
+     *
+     * @return the x to use to chord link test
+     */
+    private double getReferenceAbscissa ()
+    {
+        final Scale scale = sig.getSystem().getSheet().getScale();
+        final int xShift = scale.toPixels(constants.leftShift);
+
+        return getLocation().getX() + xShift;
     }
 
     //-----------------//
@@ -299,49 +267,6 @@ public class LyricItemInter
         return syllabicType;
     }
 
-    //-----------------//
-    // setSyllabicType //
-    //-----------------//
-    /**
-     * Set the syllabic type.
-     *
-     * @param syllabicType the syllabic type for this item
-     */
-    public void setSyllabicType (SyllabicType syllabicType)
-    {
-        this.syllabicType = syllabicType;
-    }
-
-    //----------//
-    // setValue //
-    //----------//
-    /**
-     * Assign a new text value, which may impact the lyric item kind.
-     *
-     * @param value the new value
-     */
-    @Override
-    public void setValue (String value)
-    {
-        super.setValue(value);
-
-        LyricItemKind oldKind = itemKind;
-        itemKind = inferItemKind();
-
-        if ((sig != null) && (itemKind != oldKind)) {
-            if (itemKind == LyricItemKind.Syllable) {
-                // Try to set relation with chord
-                final int profile = Math.max(getProfile(), sig.getSystem().getProfile());
-                mapToChord(profile);
-            } else {
-                // Remove any chord relation
-                for (Relation rel : sig.getRelations(this, ChordSyllableRelation.class)) {
-                    sig.removeEdge(rel);
-                }
-            }
-        }
-    }
-
     //----------//
     // getVoice //
     //----------//
@@ -355,6 +280,159 @@ public class LyricItemInter
         }
 
         return null;
+    }
+
+    //---------------//
+    // inferItemKind //
+    //---------------//
+    /**
+     * Infer item kind from content.
+     */
+    private LyricItemKind inferItemKind ()
+    {
+        if (ELISION_STRING.equals(value)) {
+            return LyricItemKind.Elision;
+        } else if (EXTENSIONS.contains(value)) {
+            return LyricItemKind.Extension;
+        } else if (HYPHEN_STRING.equals(value)) {
+            return LyricItemKind.Hyphen;
+        } else {
+            return LyricItemKind.Syllable;
+        }
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder(super.internals());
+
+        if (itemKind != null) {
+            sb.append(" ").append(itemKind);
+        }
+
+        if (getSyllabicType() != null) {
+            sb.append(" ").append(getSyllabicType());
+        }
+
+        return sb.toString();
+    }
+
+    //------------//
+    // isSyllable //
+    //------------//
+    /**
+     * Report whether this item is a syllable (rather than hyphen, extension or elision).
+     *
+     * @return true if so
+     */
+    public boolean isSyllable ()
+    {
+        return itemKind == LyricItemKind.Syllable;
+    }
+
+    //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Try to detect a link between this lyric item and a HeadChord nearby.
+     *
+     * @param theStaff  staff to be looked up
+     * @param blackList head chords black-listed, perhaps null
+     * @param profile   desired profile level
+     * @return the link found or null
+     */
+    public Link lookupLink (Staff theStaff,
+                            Collection<HeadChordInter> blackList,
+                            int profile)
+    {
+        final double refX = getReferenceAbscissa();
+        final double refY = getLocation().getY();
+        final boolean lookAbove = theStaff.isPointBelow(location);
+
+        final Part thePart = theStaff.getPart();
+        final Scale scale = theStaff.getSystem().getSheet().getScale();
+        final int maxDx = scale.toPixels(
+                (Scale.Fraction) constants.getConstant(constants.maxItemDx, profile));
+
+        // A word can start in a measure and finish in the next measure
+        // Look for head-chords in proper staff that are compatible abscissawise with syllable
+        // Then select the closest one, using euclidean distance.
+        double bestD2 = Double.MAX_VALUE;
+        HeadChordInter bestChord = null;
+
+        for (Measure measure : thePart.getMeasures()) {
+            // Select only possible measures
+            if ((measure.getAbscissa(LEFT, theStaff) - maxDx) > refX) {
+                break;
+            }
+
+            if ((measure.getAbscissa(RIGHT, theStaff) + maxDx) < refX) {
+                continue;
+            }
+
+            if (lookAbove) {
+                Collection<HeadChordInter> chords = measure.getHeadChordsAbove(getLocation());
+
+                if (blackList != null) {
+                    chords.removeAll(blackList);
+                }
+
+                for (HeadChordInter chord : chords) {
+                    if (chord.getBottomStaff() == theStaff) {
+                        Point chordCenter = chord.getCenter();
+                        double dx = Math.abs(chordCenter.x - refX);
+
+                        if (dx <= maxDx) {
+                            double d2 = Point2D.distanceSq(
+                                    refX,
+                                    refY,
+                                    chordCenter.x,
+                                    chordCenter.y);
+
+                            if (d2 < bestD2) {
+                                bestD2 = d2;
+                                bestChord = chord;
+                            }
+                        }
+                    }
+                }
+            } else {
+                Collection<HeadChordInter> chords = measure.getHeadChordsBelow(getLocation());
+
+                if (blackList != null) {
+                    chords.removeAll(blackList);
+                }
+
+                for (HeadChordInter chord : chords) {
+                    if (chord.getTopStaff() == theStaff) {
+                        Point chordCenter = chord.getCenter();
+                        double dx = Math.abs(chordCenter.x - refX);
+
+                        if (dx <= maxDx) {
+                            double d2 = Point2D.distanceSq(
+                                    refX,
+                                    refY,
+                                    chordCenter.x,
+                                    chordCenter.y);
+
+                            if (d2 < bestD2) {
+                                bestD2 = d2;
+                                bestChord = chord;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (bestChord == null) {
+            return null;
+        }
+
+        return new Link(bestChord, new ChordSyllableRelation(), false);
     }
 
     //------------//
@@ -428,10 +506,11 @@ public class LyricItemInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         // Standard addition task for this lyric item
-        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel, toPublish));
 
         // Look for a containing lyric line
         final Point2D loc = getLocation();
@@ -450,100 +529,6 @@ public class LyricItemInter
         tasks.add(new LinkTask(system.getSig(), line, this, new Containment()));
 
         return tasks;
-    }
-
-    //------------//
-    // lookupLink //
-    //------------//
-    /**
-     * Try to detect a link between this lyric item and a HeadChord nearby.
-     *
-     * @param theStaff  staff to be looked up
-     * @param blackList head chords black-listed, perhaps null
-     * @param profile   desired profile level
-     * @return the link found or null
-     */
-    public Link lookupLink (Staff theStaff,
-                            Collection<HeadChordInter> blackList,
-                            int profile)
-    {
-        final double refX = getReferenceAbscissa();
-        final double refY = getLocation().getY();
-        final boolean lookAbove = theStaff.pitchPositionOf(location) >= 0;
-
-        final Part thePart = theStaff.getPart();
-        final Scale scale = theStaff.getSystem().getSheet().getScale();
-        final int maxDx = scale.toPixels(
-                (Scale.Fraction) constants.getConstant(constants.maxItemDx, profile));
-
-        // A word can start in a measure and finish in the next measure
-        // Look for head-chords in proper staff that are compatible abscissawise with syllable
-        // Then select the closest one, using euclidean distance.
-        double bestD2 = Double.MAX_VALUE;
-        HeadChordInter bestChord = null;
-
-        for (Measure measure : thePart.getMeasures()) {
-            // Select only possible measures
-            if ((measure.getAbscissa(LEFT, theStaff) - maxDx) > refX) {
-                break;
-            }
-
-            if ((measure.getAbscissa(RIGHT, theStaff) + maxDx) < refX) {
-                continue;
-            }
-
-            if (lookAbove) {
-                Collection<HeadChordInter> chords = measure.getHeadChordsAbove(getLocation());
-
-                if (blackList != null) {
-                    chords.removeAll(blackList);
-                }
-
-                for (HeadChordInter chord : chords) {
-                    if (chord.getBottomStaff() == theStaff) {
-                        Point chordCenter = chord.getCenter();
-                        double dx = Math.abs(chordCenter.x - refX);
-
-                        if (dx <= maxDx) {
-                            double d2 = Point2D.distanceSq(refX, refY, chordCenter.x, chordCenter.y);
-
-                            if (d2 < bestD2) {
-                                bestD2 = d2;
-                                bestChord = chord;
-                            }
-                        }
-                    }
-                }
-            } else {
-                Collection<HeadChordInter> chords = measure.getHeadChordsBelow(getLocation());
-
-                if (blackList != null) {
-                    chords.removeAll(blackList);
-                }
-
-                for (HeadChordInter chord : chords) {
-                    if (chord.getTopStaff() == theStaff) {
-                        Point chordCenter = chord.getCenter();
-                        double dx = Math.abs(chordCenter.x - refX);
-
-                        if (dx <= maxDx) {
-                            double d2 = Point2D.distanceSq(refX, refY, chordCenter.x, chordCenter.y);
-
-                            if (d2 < bestD2) {
-                                bestD2 = d2;
-                                bestChord = chord;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (bestChord == null) {
-            return null;
-        }
-
-        return new Link(bestChord, new ChordSyllableRelation(), false);
     }
 
     //-------------//
@@ -573,50 +558,63 @@ public class LyricItemInter
         return searchObsoletelinks(links, ChordSyllableRelation.class);
     }
 
-    //----------------------//
-    // getReferenceAbscissa //
-    //----------------------//
+    //-------------//
+    // setItemKind //
+    //-------------//
     /**
-     * Report the reference abscissa of this lyric item to be used for chord link test.
+     * Set the item kind.
      *
-     * @return the x to use to chord link test
+     * @param itemKind item kind
      */
-    private double getReferenceAbscissa ()
+    public void setItemKind (LyricItemKind itemKind)
     {
-        return getLocation().getX() + (getBounds().width * constants.widthRatio.getValue());
+        this.itemKind = itemKind;
     }
 
-    //-----------//
-    // internals //
-    //-----------//
+    //-----------------//
+    // setSyllabicType //
+    //-----------------//
+    /**
+     * Set the syllabic type.
+     *
+     * @param syllabicType the syllabic type for this item
+     */
+    public void setSyllabicType (SyllabicType syllabicType)
+    {
+        this.syllabicType = syllabicType;
+    }
+
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Assign a new text value, which may impact the lyric item kind.
+     *
+     * @param value the new value
+     */
     @Override
-    protected String internals ()
+    public void setValue (String value)
     {
-        StringBuilder sb = new StringBuilder(super.internals());
+        super.setValue(value);
 
-        if (itemKind != null) {
-            sb.append(" ").append(itemKind);
+        LyricItemKind oldKind = itemKind;
+        itemKind = inferItemKind();
+
+        if ((sig != null) && (itemKind != oldKind)) {
+            if (itemKind == LyricItemKind.Syllable) {
+                // Try to set relation with chord
+                final int profile = Math.max(getProfile(), sig.getSystem().getProfile());
+                mapToChord(profile);
+            } else {
+                // Remove any chord relation
+                for (Relation rel : sig.getRelations(this, ChordSyllableRelation.class)) {
+                    sig.removeEdge(rel);
+                }
+            }
         }
-
-        if (getSyllabicType() != null) {
-            sb.append(" ").append(getSyllabicType());
-        }
-
-        return sb.toString();
     }
 
-    //------------//
-    // isSyllable //
-    //------------//
-    /**
-     * Report whether this item is a syllable (rather than hyphen, extension or elision).
-     *
-     * @return true if so
-     */
-    public boolean isSyllable ()
-    {
-        return itemKind == LyricItemKind.Syllable;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------//
     // isSeparator //
@@ -632,26 +630,8 @@ public class LyricItemInter
         return (ch == HYPHEN) || (ch == ELISION_CHAR) || (EXTENSIONS.indexOf(ch) != -1);
     }
 
-    //---------------//
-    // inferItemKind //
-    //---------------//
-    /**
-     * Infer item kind from content.
-     */
-    private LyricItemKind inferItemKind ()
-    {
-        if (ELISION_STRING.equals(value)) {
-            return LyricItemKind.Elision;
-        } else if (EXTENSIONS.contains(value)) {
-            return LyricItemKind.Extension;
-        } else if (HYPHEN_STRING.equals(value)) {
-            return LyricItemKind.Hyphen;
-        } else {
-            return LyricItemKind.Syllable;
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -663,8 +643,46 @@ public class LyricItemInter
                 3,
                 "Maximum horizontal distance between a note and its lyric item");
 
-        private final Constant.Ratio widthRatio = new Constant.Ratio(
-                0.5,
-                "Reference abscissa as ratio of item width");
+        private final Scale.Fraction leftShift = new Scale.Fraction(
+                1.0,
+                "Shift of left item abscissa");
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    //---------------//
+    // LyricItemKind //
+    //---------------//
+    /**
+     * Enum <code>LyricItemKind</code> describes the kind of a lyric item.
+     */
+    public static enum LyricItemKind
+    {
+        /** Just an elision. */
+        Elision,
+        /** Just an extension. */
+        Extension,
+        /** A hyphen between syllables. */
+        Hyphen,
+        /** A real syllable. */
+        Syllable;
+    }
+
+    //--------------//
+    // SyllabicType //
+    //--------------//
+    /**
+     * Describes more precisely a syllable inside a word.
+     */
+    public static enum SyllabicType
+    {
+        /** Single-syllable word */
+        SINGLE,
+        /** Syllable that begins a word */
+        BEGIN,
+        /** Syllable at the middle of a word */
+        MIDDLE,
+        /** Syllable that ends a word */
+        END;
     }
 }

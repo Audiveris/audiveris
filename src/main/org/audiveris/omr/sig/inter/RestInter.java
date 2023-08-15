@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,14 @@ public class RestInter
     private static final Logger logger = LoggerFactory.getLogger(RestInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB (and dummy measure).
+     */
+    protected RestInter ()
+    {
+    }
+
     /**
      * Creates a new RestInter object.
      *
@@ -83,14 +92,8 @@ public class RestInter
         super(glyph, null, shape, grade, staff, pitch);
     }
 
-    /**
-     * No-arg constructor meant for JAXB (and dummy measure).
-     */
-    protected RestInter ()
-    {
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // accept //
     //--------//
@@ -118,24 +121,28 @@ public class RestInter
     // preAdd //
     //--------//
     @Override
-    public List<? extends UITask> preAdd (WrappedBoolean cancel)
+    public List<? extends UITask> preAdd (WrappedBoolean cancel,
+                                          Wrapper<Inter> toPublish)
     {
         // Standard addition task for this rest
-        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel));
+        final List<UITask> tasks = new ArrayList<>(super.preAdd(cancel, toPublish));
 
         // Wrap this rest within a rest chord
         final RestChordInter restChord = new RestChordInter(null);
         restChord.setManual(true);
         restChord.setStaff(staff);
 
-        tasks.add(new AdditionTask(
-                staff.getSystem().getSig(),
-                restChord,
-                getBounds(),
-                Arrays.asList(new Link(this, new Containment(), true))));
+        tasks.add(
+                new AdditionTask(
+                        staff.getSystem().getSig(),
+                        restChord,
+                        getBounds(),
+                        Arrays.asList(new Link(this, new Containment(), true))));
 
         return tasks;
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------//
     // createValid //
@@ -163,7 +170,7 @@ public class RestInter
         // Pick up the closest staff
         final Staff restStaff = system.getClosestStaff(centroid);
 
-        if (restStaff == null) {
+        if ((restStaff == null) || restStaff.isTablature()) {
             return null;
         }
 
@@ -183,16 +190,16 @@ public class RestInter
         // All head-chords in staff measure
         final int left = measure.getAbscissa(HorizontalSide.LEFT, restStaff);
         final int right = measure.getAbscissa(HorizontalSide.RIGHT, restStaff);
-        final List<Inter> measureChords
-                = Inters.inters(systemHeadChords, (Inter inter) -> {
-                            if (inter.getStaff() != restStaff) {
-                                return false;
-                            }
+        final List<Inter> measureChords = Inters.inters(systemHeadChords, (Inter inter) ->
+        {
+            if (inter.getStaff() != restStaff) {
+                return false;
+            }
 
-                            final Point center = inter.getCenter();
+            final Point center = inter.getCenter();
 
-                            return (center.x >= left) && (center.x <= right);
-                        });
+            return (center.x >= left) && (center.x <= right);
+        });
 
         for (Inter chord : measureChords) {
             if (fatBox.intersects(chord.getBounds())) {
@@ -218,6 +225,7 @@ public class RestInter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

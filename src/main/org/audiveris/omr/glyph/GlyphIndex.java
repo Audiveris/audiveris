@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -72,18 +72,20 @@ public class GlyphIndex
     private static final Logger logger = LoggerFactory.getLogger(GlyphIndex.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
+
     /*
      * See {@link #getEntities()} and {@link #setEntities(java.util.ArrayList)} methods
      * which are called by private methods
      * Sheet#getGlyphIndexContent() and Sheet#setGlyphIndexContent()
      * triggered by JAXB (un)marshalling.
      */
-    //
+
     // Transient data
     //---------------
-    //
+
     /** Underlying index to weak glyphs. */
     private final WeakGlyphIndex weakIndex = new WeakGlyphIndex();
 
@@ -94,6 +96,7 @@ public class GlyphIndex
     private GlyphService glyphService;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>GlyphIndex</code> object.
      */
@@ -102,6 +105,7 @@ public class GlyphIndex
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------------//
     // getContainedEntities //
     //----------------------//
@@ -140,24 +144,6 @@ public class GlyphIndex
         return glyphs;
     }
 
-    //-------------//
-    // setEntities //
-    //-------------//
-    /**
-     * Populate the weak index.
-     *
-     * @param glyphs populating glyphs
-     */
-    @Override
-    public void setEntities (Collection<Glyph> glyphs)
-    {
-        for (Glyph glyph : glyphs) {
-            WeakGlyph weak = new WeakGlyph(glyph);
-            weakIndex.insert(weak);
-            originals.putIfAbsent(weak, weak);
-        }
-    }
-
     @Override
     public Glyph getEntity (int id)
     {
@@ -174,16 +160,6 @@ public class GlyphIndex
     public GlyphService getEntityService ()
     {
         return glyphService;
-    }
-
-    //------------------//
-    // setEntityService //
-    //------------------//
-    @Override
-    public void setEntityService (EntityService<Glyph> entityService)
-    {
-        this.glyphService = (GlyphService) entityService;
-        entityService.connect();
     }
 
     @Override
@@ -211,15 +187,6 @@ public class GlyphIndex
     public int getLastId ()
     {
         return weakIndex.getLastId();
-    }
-
-    //-----------//
-    // setLastId //
-    //-----------//
-    @Override
-    public void setLastId (int lastId)
-    {
-        weakIndex.setLastId(lastId);
     }
 
     //---------//
@@ -283,6 +250,10 @@ public class GlyphIndex
         // ID generator
         weakIndex.setIdGenerator(sheet.getPersistentIdGenerator());
 
+        if (!sheet.getStub().isValid()) {
+            reset();
+        }
+
         // Declared VIP IDs?
         final String vipIds = constants.vipGlyphs.getValue();
 
@@ -291,14 +262,16 @@ public class GlyphIndex
             weakIndex.setVipIds(vipIds);
         }
 
-        for (Iterator<Glyph> it = iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
+        if (sheet.getStub().isValid()) {
+            for (Iterator<Glyph> it = iterator(); it.hasNext();) {
+                Glyph glyph = it.next();
 
-            if (glyph != null) {
-                glyph.setIndex(this);
+                if (glyph != null) {
+                    glyph.setIndex(this);
 
-                if (isVipId(glyph.getId())) {
-                    glyph.setVip(true);
+                    if (isVipId(glyph.getId())) {
+                        glyph.setVip(true);
+                    }
                 }
             }
         }
@@ -337,6 +310,32 @@ public class GlyphIndex
         return new SkippingIterator(weakIndex.iterator());
     }
 
+    //-----------------//
+    // privateRegister //
+    //-----------------//
+    /**
+     * NOTA: This method is meant to be called <b>ONLY</b> from
+     * {@link #registerOriginal(omr.glyph.Glyph)} in this class.
+     *
+     * @param glyph the glyph to register in glyphIndex
+     * @return the glyph ID
+     */
+    private int privateRegister (Glyph glyph)
+    {
+        int id = glyph.getId();
+
+        if (id == 0) {
+            WeakGlyph weak = new WeakGlyph(glyph);
+
+            // Register in index
+            id = weakIndex.register(weak);
+
+            glyph.setIndex(this);
+        }
+
+        return id;
+    }
+
     //---------//
     // publish //
     //---------//
@@ -369,7 +368,7 @@ public class GlyphIndex
                     MouseMovement.PRESSING,
                     glyph);
 
-            SwingUtilities.invokeLater(() -> glyphService.publish(event));
+            SwingUtilities.invokeLater( () -> glyphService.publish(event));
         }
     }
 
@@ -437,6 +436,43 @@ public class GlyphIndex
         originals.clear();
     }
 
+    //-------------//
+    // setEntities //
+    //-------------//
+    /**
+     * Populate the weak index.
+     *
+     * @param glyphs populating glyphs
+     */
+    @Override
+    public void setEntities (Collection<Glyph> glyphs)
+    {
+        for (Glyph glyph : glyphs) {
+            WeakGlyph weak = new WeakGlyph(glyph);
+            weakIndex.insert(weak);
+            originals.putIfAbsent(weak, weak);
+        }
+    }
+
+    //------------------//
+    // setEntityService //
+    //------------------//
+    @Override
+    public void setEntityService (EntityService<Glyph> entityService)
+    {
+        this.glyphService = (GlyphService) entityService;
+        entityService.connect();
+    }
+
+    //-----------//
+    // setLastId //
+    //-----------//
+    @Override
+    public void setLastId (int lastId)
+    {
+        weakIndex.setLastId(lastId);
+    }
+
     //----------//
     // toString //
     //----------//
@@ -446,33 +482,8 @@ public class GlyphIndex
         return ClassUtil.nameOf(this);
     }
 
-    //-----------------//
-    // privateRegister //
-    //-----------------//
-    /**
-     * NOTA: This method is meant to be called <b>ONLY</b> from
-     * {@link #registerOriginal(omr.glyph.Glyph)} in this class.
-     *
-     * @param glyph the glyph to register in glyphIndex
-     * @return the glyph ID
-     */
-    private int privateRegister (Glyph glyph)
-    {
-        int id = glyph.getId();
-
-        if (id == 0) {
-            WeakGlyph weak = new WeakGlyph(glyph);
-
-            // Register in index
-            id = weakIndex.register(weak);
-
-            glyph.setIndex(this);
-        }
-
-        return id;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -505,6 +516,20 @@ public class GlyphIndex
             nextGlyph = findNextGlyph();
         }
 
+        private Glyph findNextGlyph ()
+        {
+            while (weakIt.hasNext()) {
+                WeakGlyph weak = weakIt.next();
+                Glyph glyph = weak.get();
+
+                if (glyph != null) {
+                    return glyph;
+                }
+            }
+
+            return null;
+        }
+
         @Override
         public boolean hasNext ()
         {
@@ -528,20 +553,6 @@ public class GlyphIndex
         public void remove ()
         {
             throw new UnsupportedOperationException();
-        }
-
-        private Glyph findNextGlyph ()
-        {
-            while (weakIt.hasNext()) {
-                WeakGlyph weak = weakIt.next();
-                Glyph glyph = weak.get();
-
-                if (glyph != null) {
-                    return glyph;
-                }
-            }
-
-            return null;
         }
     }
 

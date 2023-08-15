@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -20,8 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
-
-import ij.process.ByteProcessor;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -52,6 +50,8 @@ import org.audiveris.omr.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -81,6 +81,7 @@ public class StemScaler
     private static final Logger logger = LoggerFactory.getLogger(StemScaler.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -91,6 +92,7 @@ public class StemScaler
     private Range peak;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new StemScaler object.
      *
@@ -102,55 +104,6 @@ public class StemScaler
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // displayChart //
-    //--------------//
-    /**
-     * Display the stem scale histogram.
-     */
-    public void displayChart ()
-    {
-        final StemScale stemScale = retrieveStemWidth();
-
-        if (histoKeeper != null) {
-            histoKeeper.writePlot(stemScale);
-        } else {
-            logger.info("No stem data available yet");
-        }
-    }
-
-    //-------------------//
-    // retrieveStemWidth //
-    //-------------------//
-    /**
-     * Retrieve the global stem thickness for the sheet.
-     *
-     * @return the stem scale data
-     */
-    public StemScale retrieveStemWidth ()
-    {
-        StopWatch watch = new StopWatch("Stem scaler for " + sheet.getId());
-
-        try {
-            // Use a buffer focused on staff areas with barlines and connectors removed
-            watch.start("getBuffer");
-
-            ByteProcessor buffer = getBuffer();
-
-            // Look at histogram for stem thickness
-            watch.start("stem retrieval");
-
-            RunTableFactory runFactory = new RunTableFactory(Orientation.HORIZONTAL);
-            RunTable horiTable = runFactory.createTable(buffer);
-            histoKeeper = new HistoKeeper(horiTable, sheet.getScale().getInterline());
-
-            return computeStem();
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
-    }
 
     //-------------//
     // computeStem //
@@ -191,6 +144,23 @@ public class StemScaler
         }
 
         return new StemScale(mainStem, maxStem);
+    }
+
+    //--------------//
+    // displayChart //
+    //--------------//
+    /**
+     * Display the stem scale histogram.
+     */
+    public void displayChart ()
+    {
+        final StemScale stemScale = retrieveStemWidth();
+
+        if (histoKeeper != null) {
+            histoKeeper.writePlot(stemScale);
+        } else {
+            logger.info("No stem data available yet");
+        }
     }
 
     //-----------//
@@ -246,8 +216,8 @@ public class StemScaler
             ByteProcessor buffer = new ByteProcessor(image);
 
             // Keep a copy on disk?
-            if (constants.keepStemImage.isSet()) {
-                ImageUtil.saveOnDisk(image, sheet.getId() + ".stem");
+            if (constants.saveStemImage.isSet()) {
+                ImageUtil.saveOnDisk(image, sheet.getId(), "stems");
             }
 
             return buffer;
@@ -258,7 +228,41 @@ public class StemScaler
         }
     }
 
+    //-------------------//
+    // retrieveStemWidth //
+    //-------------------//
+    /**
+     * Retrieve the global stem thickness for the sheet.
+     *
+     * @return the stem scale data
+     */
+    public StemScale retrieveStemWidth ()
+    {
+        StopWatch watch = new StopWatch("Stem scaler for " + sheet.getId());
+
+        try {
+            // Use a buffer focused on staff areas with barlines and connectors removed
+            watch.start("getBuffer");
+
+            ByteProcessor buffer = getBuffer();
+
+            // Look at histogram for stem thickness
+            watch.start("stem retrieval");
+
+            RunTableFactory runFactory = new RunTableFactory(Orientation.HORIZONTAL);
+            RunTable horiTable = runFactory.createTable(buffer);
+            histoKeeper = new HistoKeeper(horiTable, sheet.getScale().getInterline());
+
+            return computeStem();
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -270,9 +274,9 @@ public class StemScaler
                 false,
                 "Should we print the StopWatch on stem computation?");
 
-        private final Constant.Boolean keepStemImage = new Constant.Boolean(
+        private final Constant.Boolean saveStemImage = new Constant.Boolean(
                 false,
-                "Should we store stem images on disk?");
+                "Should we save stem images on disk?");
 
         private final Constant.Boolean useHeader = new Constant.Boolean(
                 true,
@@ -326,15 +330,6 @@ public class StemScaler
             peakFinder = new HiLoPeakFinder("stem", function);
         }
 
-        public void writePlot (StemScale stemScale)
-        {
-            final String title = sheet.getId() + " " + peakFinder.name;
-            ChartPlotter plotter = new ChartPlotter(
-                    title, "Stem thickness - Scale " + stemScale, "Counts");
-            peakFinder.plot(plotter, true);
-            plotter.display(new Point(80, 80));
-        }
-
         private void populateFunction (RunTable horiTable)
         {
             final int height = horiTable.getHeight();
@@ -349,6 +344,17 @@ public class StemScaler
                     }
                 }
             }
+        }
+
+        public void writePlot (StemScale stemScale)
+        {
+            final String title = sheet.getId() + " " + peakFinder.name;
+            ChartPlotter plotter = new ChartPlotter(
+                    title,
+                    "Stem thickness - Scale " + stemScale,
+                    "Counts");
+            peakFinder.plot(plotter, true);
+            plotter.display(new Point(80, 80));
         }
     }
 

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -38,25 +38,16 @@ public class PartGroup
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare groups by their first staff ID. */
-    public static final Comparator<PartGroup> byFirstId = (PartGroup pg1, PartGroup pg2)
-            -> Integer.compare(pg1.firstStaffId, pg2.firstStaffId);
-
-    //~ Enumerations -------------------------------------------------------------------------------
-    /**
-     * Enum <code>PartGroupingSymbol</code> describes all symbols that can be used to
-     * define a group of parts.
-     */
-    public static enum PartGroupingSymbol
-    {
-        bracket,
-        brace,
-        square;
-    }
+    public static final Comparator<PartGroup> byFirstId = (pg1,
+                                                           pg2) -> Integer.compare(
+                                                                   pg1.firstStaffId,
+                                                                   pg2.firstStaffId);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /** Grouping level, counted from 1. */
     @XmlAttribute
     private final int number;
@@ -86,6 +77,18 @@ public class PartGroup
     private String abbreviation;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private PartGroup ()
+    {
+        this.number = 0;
+        this.symbol = null;
+        this.barline = false;
+        this.firstStaffId = 0;
+    }
+
     /**
      * Build a <code>PartGroup</code> object.
      *
@@ -107,34 +110,14 @@ public class PartGroup
         lastStaffId = firstStaffId; // Initially
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private PartGroup ()
-    {
-        this.number = 0;
-        this.symbol = null;
-        this.barline = false;
-        this.firstStaffId = 0;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * @return the abbreviation
      */
     public String getAbbreviation ()
     {
         return abbreviation;
-    }
-
-    /**
-     * Set group abbreviation.
-     *
-     * @param abbreviation the abbreviation to set
-     */
-    public void setAbbreviation (String abbreviation)
-    {
-        this.abbreviation = abbreviation;
     }
 
     /**
@@ -158,16 +141,6 @@ public class PartGroup
     }
 
     /**
-     * Set group first staff id.
-     *
-     * @param lastStaffId ID of the lastStaff
-     */
-    public void setLastStaffId (int lastStaffId)
-    {
-        this.lastStaffId = lastStaffId;
-    }
-
-    /**
      * Report group name, if any
      *
      * @return the name
@@ -175,16 +148,6 @@ public class PartGroup
     public String getName ()
     {
         return name;
-    }
-
-    /**
-     * Assign group name.
-     *
-     * @param name the name to set
-     */
-    public void setName (String name)
-    {
-        this.name = name;
     }
 
     /**
@@ -227,6 +190,36 @@ public class PartGroup
         return symbol == PartGroupingSymbol.brace;
     }
 
+    /**
+     * Set group abbreviation.
+     *
+     * @param abbreviation the abbreviation to set
+     */
+    public void setAbbreviation (String abbreviation)
+    {
+        this.abbreviation = abbreviation;
+    }
+
+    /**
+     * Set group first staff id.
+     *
+     * @param lastStaffId ID of the lastStaff
+     */
+    public void setLastStaffId (int lastStaffId)
+    {
+        this.lastStaffId = lastStaffId;
+    }
+
+    /**
+     * Assign group name.
+     *
+     * @param name the name to set
+     */
+    public void setName (String name)
+    {
+        this.name = name;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -258,5 +251,18 @@ public class PartGroup
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //~ Enumerations -------------------------------------------------------------------------------
+
+    /**
+     * Enum <code>PartGroupingSymbol</code> describes all symbols that can be used to
+     * define a group of parts.
+     */
+    public static enum PartGroupingSymbol
+    {
+        bracket,
+        brace,
+        square;
     }
 }

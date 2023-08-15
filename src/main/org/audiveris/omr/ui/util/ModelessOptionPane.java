@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,7 +53,41 @@ public class ModelessOptionPane
 
     private static final Logger logger = LoggerFactory.getLogger(ModelessOptionPane.class);
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-----------------------//
+    // getWindowForComponent //
+    //-----------------------//
+    private static Window getWindowForComponent (Component parentComponent)
+        throws HeadlessException
+    {
+        if (parentComponent == null) {
+            return getRootFrame();
+        }
+
+        if (parentComponent instanceof Frame || parentComponent instanceof Dialog) {
+            return (Window) parentComponent;
+        }
+
+        return getWindowForComponent(parentComponent.getParent());
+    }
+
+    //----------//
+    // optionOf //
+    //----------//
+    private static int optionOf (JOptionPane pane)
+    {
+        Object selectedValue = pane.getValue();
+
+        if (selectedValue == null) {
+            return JOptionPane.CLOSED_OPTION;
+        } else if (selectedValue instanceof Integer) {
+            return ((Integer) selectedValue);
+        } else {
+            return JOptionPane.CLOSED_OPTION;
+        }
+    }
+
     //-------------------//
     // showConfirmDialog //
     //-------------------//
@@ -62,7 +96,8 @@ public class ModelessOptionPane
      * <code>optionType</code> parameter.
      *
      * @param parentComponent determines the <code>Frame</code> in which the dialog is displayed; if
-     *                        <code>null</code>, or if the <code>parentComponent</code> has no <code>Frame</code>,
+     *                        <code>null</code>, or if the <code>parentComponent</code> has no
+     *                        <code>Frame</code>,
      *                        a default <code>Frame</code> is used
      * @param message         the <code>Object</code> to display
      * @param title           the title string for the dialog
@@ -70,14 +105,15 @@ public class ModelessOptionPane
      *                        <code>YES_NO_OPTION</code>, <code>YES_NO_CANCEL_OPTION</code>, or
      *                        <code>OK_CANCEL_OPTION</code>
      * @return an int indicating the option selected by the user
-     * @exception HeadlessException if <code>GraphicsEnvironment</code>/code} returns <code>true</code>
+     * @exception HeadlessException if <code>GraphicsEnvironment</code>/code} returns
+     *                              <code>true</code>
      * @see java.awt.GraphicsEnvironment#isHeadless
      */
     public static int showModelessConfirmDialog (Component parentComponent,
                                                  Object message,
                                                  String title,
                                                  int optionType)
-            throws HeadlessException
+        throws HeadlessException
     {
         final Exchanger<Integer> exchanger = new Exchanger<>();
 
@@ -92,16 +128,6 @@ public class ModelessOptionPane
             private boolean gotFocus = false;
 
             @Override
-            public void windowGainedFocus (WindowEvent we)
-            {
-                // Once window gets focus, set initial focus
-                if (!gotFocus) {
-                    pane.selectInitialValue();
-                    gotFocus = true;
-                }
-            }
-
-            @Override
             public void windowClosing (WindowEvent e)
             {
                 e.getWindow().dispose();
@@ -110,6 +136,16 @@ public class ModelessOptionPane
                     exchanger.exchange(optionOf(pane));
                 } catch (InterruptedException ex) {
                     logger.warn("Exchange got interrupted", ex);
+                }
+            }
+
+            @Override
+            public void windowGainedFocus (WindowEvent we)
+            {
+                // Once window gets focus, set initial focus
+                if (!gotFocus) {
+                    pane.selectInitialValue();
+                    gotFocus = true;
                 }
             }
         };
@@ -125,14 +161,14 @@ public class ModelessOptionPane
                 pane.setValue(JOptionPane.UNINITIALIZED_VALUE);
             }
         });
-        pane.addPropertyChangeListener((PropertyChangeEvent event) -> {
+        pane.addPropertyChangeListener( (PropertyChangeEvent event) ->
+        {
             // Let the defaultCloseOperation handle the closing
             // if the user closed the window without selecting a button
             // (newValue = null in that case).  Otherwise, close the dialog.
-            if (dialog.isVisible() && (event.getSource() == pane)
-                        && (event.getPropertyName().equals(VALUE_PROPERTY))
-                        && (event.getNewValue() != null)
-                        && (event.getNewValue() != JOptionPane.UNINITIALIZED_VALUE)) {
+            if (dialog.isVisible() && (event.getSource() == pane) && (event.getPropertyName()
+                    .equals(VALUE_PROPERTY)) && (event.getNewValue() != null) && (event
+                            .getNewValue() != JOptionPane.UNINITIALIZED_VALUE)) {
                 JOptionPane srcPane = (JOptionPane) event.getSource();
 
                 dialog.setVisible(false);
@@ -160,39 +196,6 @@ public class ModelessOptionPane
             logger.warn("Exchange got interrupted", ex);
 
             return JOptionPane.CANCEL_OPTION;
-        }
-    }
-
-    //-----------------------//
-    // getWindowForComponent //
-    //-----------------------//
-    private static Window getWindowForComponent (Component parentComponent)
-            throws HeadlessException
-    {
-        if (parentComponent == null) {
-            return getRootFrame();
-        }
-
-        if (parentComponent instanceof Frame || parentComponent instanceof Dialog) {
-            return (Window) parentComponent;
-        }
-
-        return getWindowForComponent(parentComponent.getParent());
-    }
-
-    //----------//
-    // optionOf //
-    //----------//
-    private static int optionOf (JOptionPane pane)
-    {
-        Object selectedValue = pane.getValue();
-
-        if (selectedValue == null) {
-            return JOptionPane.CLOSED_OPTION;
-        } else if (selectedValue instanceof Integer) {
-            return ((Integer) selectedValue);
-        } else {
-            return JOptionPane.CLOSED_OPTION;
         }
     }
 }

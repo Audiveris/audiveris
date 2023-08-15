@@ -5,7 +5,6 @@
 //----------------------------------------------------------------------------//
 package org.audiveris.omr.ui.treetable;
 
-
 /*
  * @(#)AbstractTreeTableModel.java 1.2 98/10/27
  *
@@ -26,7 +25,7 @@ import javax.swing.tree.TreePath;
 /**
  * @author Philip Milne
  * @version 1.2 10/27/98 An abstract implementation of the TreeTableModel
- * interface, handling the list of listeners.
+ *          interface, handling the list of listeners.
  */
 public abstract class AbstractTreeTableModel
         implements TreeTableModel
@@ -44,6 +43,7 @@ public abstract class AbstractTreeTableModel
     protected Object root;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new AbstractTreeTableModel object.
      *
@@ -55,6 +55,7 @@ public abstract class AbstractTreeTableModel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------------------//
     // addTreeModelListener //
     //----------------------//
@@ -67,132 +68,6 @@ public abstract class AbstractTreeTableModel
     public void addTreeModelListener (TreeModelListener l)
     {
         listenerList.add(TreeModelListener.class, l);
-    }
-
-    //----------------//
-    // getColumnClass //
-    //----------------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @param column DOCUMENT ME!
-     * @return DOCUMENT ME!
-     */
-    @Override
-    public Class<?> getColumnClass (int column)
-    {
-        return Object.class;
-    }
-
-    //-----------------//
-    // getIndexOfChild //
-    //-----------------//
-    // This is not called in the JTree's default mode: use a naive implementation.
-    /**
-     * DOCUMENT ME!
-     *
-     * @param parent DOCUMENT ME!
-     * @param child  DOCUMENT ME!
-     * @return DOCUMENT ME!
-     */
-    @Override
-    public int getIndexOfChild (Object parent,
-                                Object child)
-    {
-        for (int i = 0; i < getChildCount(parent); i++) {
-            if (getChild(parent, i).equals(child)) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    //---------//
-    // getRoot //
-    //---------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    @Override
-    public Object getRoot ()
-    {
-        return root;
-    }
-
-    /**
-     * By default, make the column with the Tree in it the only editable one.
-     * Making this column editable causes the JTable to forward mouse and
-     * keyboard events in the Tree column to the underlying JTree.
-     */
-    @Override
-    public boolean isCellEditable (Object node,
-                                   int column)
-    {
-        return getColumnClass(column) == TreeTableModel.class;
-    }
-
-    //--------//
-    // isLeaf //
-    //--------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @param node DOCUMENT ME!
-     * @return DOCUMENT ME!
-     */
-    @Override
-    public boolean isLeaf (Object node)
-    {
-        return getChildCount(node) == 0;
-    }
-
-    //-------------------------//
-    // removeTreeModelListener //
-    //-------------------------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @param l DOCUMENT ME!
-     */
-    @Override
-    public void removeTreeModelListener (TreeModelListener l)
-    {
-        listenerList.remove(TreeModelListener.class, l);
-    }
-
-    //------------//
-    // setValueAt //
-    //------------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @param aValue DOCUMENT ME!
-     * @param node   DOCUMENT ME!
-     * @param column DOCUMENT ME!
-     */
-    @Override
-    public void setValueAt (Object aValue,
-                            Object node,
-                            int column)
-    {
-    }
-
-    //---------------------//
-    // valueForPathChanged //
-    //---------------------//
-    /**
-     * DOCUMENT ME!
-     *
-     * @param path     DOCUMENT ME!
-     * @param newValue DOCUMENT ME!
-     */
-    @Override
-    public void valueForPathChanged (TreePath path,
-                                     Object newValue)
-    {
     }
 
     /*
@@ -329,6 +204,132 @@ public abstract class AbstractTreeTableModel
                 ((TreeModelListener) listeners[i + 1]).treeStructureChanged(e);
             }
         }
+    }
+
+    //----------------//
+    // getColumnClass //
+    //----------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param column DOCUMENT ME!
+     * @return DOCUMENT ME!
+     */
+    @Override
+    public Class<?> getColumnClass (int column)
+    {
+        return Object.class;
+    }
+
+    //-----------------//
+    // getIndexOfChild //
+    //-----------------//
+    // This is not called in the JTree's default mode: use a naive implementation.
+    /**
+     * DOCUMENT ME!
+     *
+     * @param parent DOCUMENT ME!
+     * @param child  DOCUMENT ME!
+     * @return DOCUMENT ME!
+     */
+    @Override
+    public int getIndexOfChild (Object parent,
+                                Object child)
+    {
+        for (int i = 0; i < getChildCount(parent); i++) {
+            if (getChild(parent, i).equals(child)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    //---------//
+    // getRoot //
+    //---------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    @Override
+    public Object getRoot ()
+    {
+        return root;
+    }
+
+    /**
+     * By default, make the column with the Tree in it the only editable one.
+     * Making this column editable causes the JTable to forward mouse and
+     * keyboard events in the Tree column to the underlying JTree.
+     */
+    @Override
+    public boolean isCellEditable (Object node,
+                                   int column)
+    {
+        return getColumnClass(column) == TreeTableModel.class;
+    }
+
+    //--------//
+    // isLeaf //
+    //--------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param node DOCUMENT ME!
+     * @return DOCUMENT ME!
+     */
+    @Override
+    public boolean isLeaf (Object node)
+    {
+        return getChildCount(node) == 0;
+    }
+
+    //-------------------------//
+    // removeTreeModelListener //
+    //-------------------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param l DOCUMENT ME!
+     */
+    @Override
+    public void removeTreeModelListener (TreeModelListener l)
+    {
+        listenerList.remove(TreeModelListener.class, l);
+    }
+
+    //------------//
+    // setValueAt //
+    //------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param aValue DOCUMENT ME!
+     * @param node   DOCUMENT ME!
+     * @param column DOCUMENT ME!
+     */
+    @Override
+    public void setValueAt (Object aValue,
+                            Object node,
+                            int column)
+    {
+    }
+
+    //---------------------//
+    // valueForPathChanged //
+    //---------------------//
+    /**
+     * DOCUMENT ME!
+     *
+     * @param path     DOCUMENT ME!
+     * @param newValue DOCUMENT ME!
+     */
+    @Override
+    public void valueForPathChanged (TreePath path,
+                                     Object newValue)
+    {
     }
 
     // Left to be implemented in the subclass:

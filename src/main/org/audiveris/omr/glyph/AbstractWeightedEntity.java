@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,9 +55,10 @@ public abstract class AbstractWeightedEntity
     private static final EnumSet<GlyphGroup> NO_GROUP = EnumSet.noneOf(GlyphGroup.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /**
      * This is the set of <code>GlyphGroup</code> instance this entity is part of.
      */
@@ -67,11 +68,12 @@ public abstract class AbstractWeightedEntity
 
     // Transient data
     //---------------
-    //
+
     /** Potential attachments. */
     protected AttachmentHolder attachments;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>AbstractSymbol</code> object.
      */
@@ -80,6 +82,7 @@ public abstract class AbstractWeightedEntity
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public void addAttachment (String id,
                                java.awt.Shape attachment)
@@ -102,6 +105,21 @@ public abstract class AbstractWeightedEntity
             }
 
             groups.add(group);
+        }
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    /**
+     * Called immediately before the marshalling of this object begins.
+     */
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        // Nullify 'groups', so that no empty element appears in XML output.
+        if ((groups != null) && groups.isEmpty()) {
+            groups = null;
         }
     }
 
@@ -172,21 +190,6 @@ public abstract class AbstractWeightedEntity
     {
         if (attachments != null) {
             attachments.renderAttachments(g);
-        }
-    }
-
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    /**
-     * Called immediately before the marshalling of this object begins.
-     */
-    @SuppressWarnings("unused")
-    private void beforeMarshal (Marshaller m)
-    {
-        // Nullify 'groups', so that no empty element appears in XML output.
-        if ((groups != null) && groups.isEmpty()) {
-            groups = null;
         }
     }
 }

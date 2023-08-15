@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -27,7 +27,6 @@ import java.util.Objects;
  * Class <code>Pair</code> is a pair of compatible items.
  *
  * @author Hervé Bitteur
- *
  * @param <E> type of pair item
  */
 public class Pair<E>
@@ -39,6 +38,7 @@ public class Pair<E>
     public final E two;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>Pair</code> object.
      *
@@ -53,6 +53,7 @@ public class Pair<E>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public boolean equals (Object obj)
     {

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,14 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.ui.util;
 
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.PixelCount;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -60,10 +60,12 @@ public class Panel
     private static Insets DEFAULT_INSETS;
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Room for potential specific insets */
     private Insets insets;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new Panel object.
      */
@@ -73,6 +75,23 @@ public class Panel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------------------//
+    // getDefaultInsets //
+    //------------------//
+    private Insets getDefaultInsets ()
+    {
+        if (DEFAULT_INSETS == null) {
+            DEFAULT_INSETS = new Insets(
+                    constants.insetTop.getValue(),
+                    constants.insetLeft.getValue(),
+                    constants.insetBottom.getValue(),
+                    constants.insetRight.getValue());
+        }
+
+        return DEFAULT_INSETS;
+    }
+
     //-----------//
     // getInsets //
     //-----------//
@@ -89,6 +108,23 @@ public class Panel
         } else {
             return getDefaultInsets();
         }
+    }
+
+    //----------------//
+    // paintComponent //
+    //----------------//
+    /**
+     * This method is redefined to give a chance to draw the cell boundaries
+     * if so desired.
+     *
+     * @param g the graphic context
+     */
+    @Override
+    protected void paintComponent (Graphics g)
+    {
+        // Note: Uncomment following line for FormDebugPanel
+        ///setPaintInBackground(true);
+        super.paintComponent(g);
     }
 
     //-----------//
@@ -121,38 +157,7 @@ public class Panel
         insets = new Insets(0, 0, 0, 0);
     }
 
-    //----------------//
-    // paintComponent //
-    //----------------//
-    /**
-     * This method is redefined to give a chance to draw the cell boundaries
-     * if so desired.
-     *
-     * @param g the graphic context
-     */
-    @Override
-    protected void paintComponent (Graphics g)
-    {
-        // Note: Uncomment following line for FormDebugPanel
-        ///setPaintInBackground(true);
-        super.paintComponent(g);
-    }
-
-    //------------------//
-    // getDefaultInsets //
-    //------------------//
-    private Insets getDefaultInsets ()
-    {
-        if (DEFAULT_INSETS == null) {
-            DEFAULT_INSETS = new Insets(
-                    constants.insetTop.getValue(),
-                    constants.insetLeft.getValue(),
-                    constants.insetBottom.getValue(),
-                    constants.insetRight.getValue());
-        }
-
-        return DEFAULT_INSETS;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     /**
      * Selector to the default button width.
@@ -271,9 +276,8 @@ public class Panel
                 sbc.append(",");
             }
 
-            sbc.append(labelAlignment).append(labelWidth)
-                    .append(",").append(labelInterval)
-                    .append(",").append(fieldWidth);
+            sbc.append(labelAlignment).append(labelWidth).append(",").append(labelInterval).append(
+                    ",").append(fieldWidth);
         }
 
         return sbc.toString();
@@ -367,9 +371,7 @@ public class Panel
                                                String labelInterval,
                                                String labelWidth)
     {
-        return new FormLayout(
-                makeLabelsColumns(cols, labelInterval, labelWidth),
-                makeRows(rows));
+        return new FormLayout(makeLabelsColumns(cols, labelInterval, labelWidth), makeRows(rows));
     }
 
     //----------//
@@ -413,6 +415,7 @@ public class Panel
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

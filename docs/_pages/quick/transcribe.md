@@ -20,7 +20,7 @@ It can also be launched via the pulldown menu `Book | Transcribe Book`:
 Note this command applies to all images (sheets) in the input file (book).
 
 There is also the pulldown menu `Sheet | Transcribe Sheet` which applies only to the current sheet.
-In the simple case at hand, since we have just one image in the input file, book-level and
+In the simple case at hand, since we have just one image in the input file, the book-level and
 sheet-level commands are equivalent.
 
 After some time, we get the following image of transcribed music:

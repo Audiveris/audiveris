@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,6 +45,8 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.FixedWidthIcon;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -132,9 +134,11 @@ public class SampleBrowser
     private static boolean standAlone = false;
 
     /** Events that can be published on the local sample service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]{EntityListEvent.class};
+    private static final Class<?>[] eventsAllowed = new Class<?>[]
+    { EntityListEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Repository of training samples. */
     private final SampleRepository repository;
 
@@ -166,6 +170,15 @@ public class SampleBrowser
     private ShapeSelector shapeSelector;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor, used when in stand-alone.
+     */
+    public SampleBrowser ()
+    {
+        this(SampleRepository.getGlobalInstance());
+    }
+
     /**
      * Create an instance of <code>SampleBrowser</code>.
      *
@@ -205,15 +218,65 @@ public class SampleBrowser
         }
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------//
+    // buildMenuBar //
+    //--------------//
     /**
-     * No-arg constructor, used when in stand-alone.
+     * Build the menu bar for SampleBrowser frame.
+     *
+     * @return the populated menu bar
      */
-    public SampleBrowser ()
+    private JMenuBar buildMenuBar ()
     {
-        this(SampleRepository.getGlobalInstance());
+        JMenuBar menuBar = new JMenuBar();
+        JMenu repoMenu = new JMenu();
+        repoMenu.setName("SampleBrowserRepoMenu");
+        menuBar.add(repoMenu);
+
+        ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
+        // Refresh viewer
+        repoMenu.add(new JMenuItem(actionMap.get("refresh")));
+        // Load sheet images
+        repoMenu.add(new JMenuItem(actionMap.get("loadImages")));
+        repoMenu.addSeparator(); // -----------------------
+        // Check for sample duplicates/conflicts
+
+        repoMenu.add(new JMenuItem(actionMap.get("checkRepository")));
+
+        if (SampleRepository.USE_TRIBES) {
+            // Check for tribes classification
+            repoMenu.add(new JMenuItem(actionMap.get("checkTribes")));
+        }
+
+        repoMenu.addSeparator(); // -----------------------
+
+        if (repository.isGlobal()) {
+            // Launch trainer
+            repoMenu.add(new JMenuItem(actionMap.get("launchTrainer")));
+        } else {
+            // Push local repository to global repository
+            repoMenu.add(new JMenuItem(actionMap.get("pushRepository")));
+        }
+
+        repoMenu.addSeparator(); // -----------------------
+        // Save repository
+
+        repoMenu.add(new JMenuItem(actionMap.get("save")));
+        // Export to CSV file
+        repoMenu.add(new JMenuItem(actionMap.get("exportFeatures")));
+        repoMenu.addSeparator(); // -----------------------
+        // Purge sheets
+
+        repoMenu.add(new JMenuItem(actionMap.get("purgeSheets")));
+
+        //        // Shrink the whole repository
+        //        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("shrinkRepository")));
+        //
+        return menuBar;
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // checkRepository //
     //-----------------//
@@ -328,6 +391,123 @@ public class SampleBrowser
         }
     }
 
+    //------------------//
+    // connectSelectors //
+    //------------------//
+    private void connectSelectors (boolean bool)
+    {
+        if (bool) {
+            sheetSelector.setListener(shapeSelector);
+            shapeSelector.setListener(sampleListing);
+        } else {
+            sheetSelector.setListener(null);
+            shapeSelector.setListener(null);
+        }
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define the layout of components within the provided frame.
+     *
+     * @param frame the bare frame
+     * @return the populated frame
+     */
+    private JFrame defineLayout (JFrame frame)
+    {
+        frame.setName("SampleBrowserFrame"); // For SAF life cycle
+
+        // |- left --||-- center ---|--------------- right ---------------|
+        //
+        // +=========++=============+=====================================+
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . sheet . . | . . . . . . . . shape 1 pane. . . . |
+        // | . . . . || . . . . . . | . . sample. . . . . . . . . . . . . |
+        // | . . . . || . selector. | . . . . . . . . shape 2 pane. . . . |
+        // | . . . . || . . . . . . | . . listing . . . . . . . . . . . . |
+        // | . . . . ||=============| . . . . . . . . shape 3 pane. . . . |
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . sample. . |=====================================|
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . board . . | . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | shape . ||-------------| . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | selector|| . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . eval. . . | . . . . sample. . . . . . . . . . . |
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . board . . | . . . . context . . . . . . . . . . |
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
+        // +=========++=============+=====================================+
+        //
+        // Left = shapeSelector
+        shapeSelector.setName("shapeSelector");
+
+        // Center
+        BoardsPane boardsPane = new BoardsPane();
+        boardsPane.addBoard(new SampleBoard(sampleController));
+        boardsPane.addBoard(
+                new SampleEvaluationBoard(sampleController, BasicClassifier.getInstance()));
+
+        //        boardsPane.addBoard(
+        //                new SampleEvaluationBoard(sampleController, DeepClassifier.getInstance()));
+        //
+        JSplitPane centerPane = new JSplitPane(
+                VERTICAL_SPLIT,
+                sheetSelector,
+                boardsPane.getComponent());
+        centerPane.setBorder(null);
+        centerPane.setOneTouchExpandable(true);
+        centerPane.setName("centerPane");
+
+        // Right
+        JSplitPane rightPane = new JSplitPane(
+                VERTICAL_SPLIT,
+                sampleListing,
+                sampleContext.getComponent());
+        rightPane.setBorder(null);
+        rightPane.setOneTouchExpandable(true);
+        rightPane.setName("rightPane");
+
+        // Center + Right
+        JSplitPane centerPlusRightPane = new JSplitPane(HORIZONTAL_SPLIT, centerPane, rightPane);
+        centerPlusRightPane.setBorder(null);
+        centerPlusRightPane.setOneTouchExpandable(true);
+        centerPlusRightPane.setName("centerPlusRightPane");
+
+        // Global
+        JSplitPane mainPane = new JSplitPane(HORIZONTAL_SPLIT, shapeSelector, centerPlusRightPane);
+        mainPane.setBorder(null);
+        mainPane.setOneTouchExpandable(true);
+        mainPane.setResizeWeight(0d); // Give all free space to center+right part
+        mainPane.setName("mainPane");
+
+        frame.add(mainPane);
+
+        // Menu bar
+        frame.setJMenuBar(buildMenuBar());
+
+        // Resource injection
+        ResourceMap resources = OmrGui.getApplication().getContext().getResourceMap(getClass());
+        resources.injectComponents(frame);
+        frame.setIconImage(OmrGui.getApplication().getMainFrame().getIconImage());
+
+        // Wiring
+        boardsPane.connect();
+
+        // Initialize sheet selector with all repository sheet names
+        sheetSelector.stateChanged(null);
+
+        return frame;
+    }
+
     //------------//
     // displayAll //
     //------------//
@@ -404,6 +584,35 @@ public class SampleBrowser
         return sampleController;
     }
 
+    /**
+     * (Package private) Report the selected shapes
+     *
+     * @return the selected shapes
+     */
+    List<Shape> getSelectedShapes ()
+    {
+        return shapeSelector.list.getSelectedValuesList();
+    }
+
+    /**
+     * (Package private) Report the selected sheets descriptors
+     *
+     * @return the selected sheet descriptors
+     */
+    List<Descriptor> getSelectedSheets ()
+    {
+        return sheetSelector.list.getSelectedValuesList();
+    }
+
+    //------------//
+    // initialize // Method called only when in stand-alone mode
+    //------------//
+    @Override
+    protected void initialize (String[] args)
+    {
+        logger.debug("SampleBrowser. 1/initialize");
+    }
+
     //---------------//
     // launchTrainer //
     //---------------//
@@ -431,6 +640,19 @@ public class SampleBrowser
     {
         repository.loadAllImages();
         sampleContext.refresh();
+    }
+
+    //---------------//
+    // publishSample //
+    //---------------//
+    void publishSample (Sample sample)
+    {
+        sampleService.publish(
+                new EntityListEvent<>(
+                        this,
+                        SelectionHint.ENTITY_INIT,
+                        MouseMovement.PRESSING,
+                        sample));
     }
 
     //-------------//
@@ -461,6 +683,31 @@ public class SampleBrowser
         } else {
             SampleRepository global = SampleRepository.getGlobalInstance();
             global.includeRepository(repository);
+        }
+    }
+
+    //-------//
+    // ready // Method called only when in stand-alone mode
+    //-------//
+    @Override
+    protected void ready ()
+    {
+        logger.debug("SampleBrowser. 3/ready");
+
+        frame.addWindowListener(new WindowAdapter()
+        {
+            @Override
+            public void windowClosing (WindowEvent e)
+            {
+                System.exit(0); // That's all folks !
+            }
+        });
+
+        // Set application exit listener
+        addExitListener(repository.getExitListener());
+
+        if (!repoChecked) {
+            checkRepository(null);
         }
     }
 
@@ -593,6 +840,29 @@ public class SampleBrowser
         repository.shrink(2_000);
     }
 
+    //---------//
+    // startup // Method called only when in stand-alone mode
+    //---------//
+    @Override
+    protected void startup ()
+    {
+        logger.debug("SampleBrowser. 2/startup");
+
+        sampleController = new SampleController(sampleModel);
+        sheetSelector = new SheetSelector();
+        shapeSelector = new ShapeSelector();
+
+        // Connect selectors (sheets -> shapes -> samples)
+        sampleListing = new SampleListing(this, repository);
+        connectSelectors(true);
+
+        frame = defineLayout(getMainFrame());
+        frame.setTitle(repository.toString());
+        frame.addWindowListener(new ClosingAdapter());
+
+        show(frame); // Here we go...
+    }
+
     //--------------//
     // stateChanged //
     //--------------//
@@ -657,270 +927,7 @@ public class SampleBrowser
         }
     }
 
-    //------------//
-    // initialize // Method called only when in stand-alone mode
-    //------------//
-    @Override
-    protected void initialize (String[] args)
-    {
-        logger.debug("SampleBrowser. 1/initialize");
-    }
-
-    //-------//
-    // ready // Method called only when in stand-alone mode
-    //-------//
-    @Override
-    protected void ready ()
-    {
-        logger.debug("SampleBrowser. 3/ready");
-
-        frame.addWindowListener(
-                new WindowAdapter()
-        {
-            @Override
-            public void windowClosing (WindowEvent e)
-            {
-                System.exit(0); // That's all folks !
-            }
-        });
-
-        // Set application exit listener
-        addExitListener(repository.getExitListener());
-
-        if (!repoChecked) {
-            checkRepository(null);
-        }
-    }
-
-    //---------//
-    // startup // Method called only when in stand-alone mode
-    //---------//
-    @Override
-    protected void startup ()
-    {
-        logger.debug("SampleBrowser. 2/startup");
-
-        sampleController = new SampleController(sampleModel);
-        sheetSelector = new SheetSelector();
-        shapeSelector = new ShapeSelector();
-
-        // Connect selectors (sheets -> shapes -> samples)
-        sampleListing = new SampleListing(this, repository);
-        connectSelectors(true);
-
-        frame = defineLayout(getMainFrame());
-        frame.setTitle(repository.toString());
-        frame.addWindowListener(new ClosingAdapter());
-
-        show(frame); // Here we go...
-    }
-
-    //--------------//
-    // buildMenuBar //
-    //--------------//
-    /**
-     * Build the menu bar for SampleBrowser frame.
-     *
-     * @return the populated menu bar
-     */
-    private JMenuBar buildMenuBar ()
-    {
-        JMenuBar menuBar = new JMenuBar();
-        JMenu repoMenu = new JMenu();
-        repoMenu.setName("SampleBrowserRepoMenu");
-        menuBar.add(repoMenu);
-
-        ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
-        // Refresh viewer
-        repoMenu.add(new JMenuItem(actionMap.get("refresh")));
-        // Load sheet images
-        repoMenu.add(new JMenuItem(actionMap.get("loadImages")));
-        repoMenu.addSeparator(); // -----------------------
-        // Check for sample duplicates/conflicts
-
-        repoMenu.add(new JMenuItem(actionMap.get("checkRepository")));
-
-        if (SampleRepository.USE_TRIBES) {
-            // Check for tribes classification
-            repoMenu.add(new JMenuItem(actionMap.get("checkTribes")));
-        }
-
-        repoMenu.addSeparator(); // -----------------------
-
-        if (repository.isGlobal()) {
-            // Launch trainer
-            repoMenu.add(new JMenuItem(actionMap.get("launchTrainer")));
-        } else {
-            // Push local repository to global repository
-            repoMenu.add(new JMenuItem(actionMap.get("pushRepository")));
-        }
-
-        repoMenu.addSeparator(); // -----------------------
-        // Save repository
-
-        repoMenu.add(new JMenuItem(actionMap.get("save")));
-        // Export to CSV file
-        repoMenu.add(new JMenuItem(actionMap.get("exportFeatures")));
-        repoMenu.addSeparator(); // -----------------------
-        // Purge sheets
-
-        repoMenu.add(new JMenuItem(actionMap.get("purgeSheets")));
-
-        //        // Shrink the whole repository
-        //        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("shrinkRepository")));
-        //
-        return menuBar;
-    }
-
-    //------------------//
-    // connectSelectors //
-    //------------------//
-    private void connectSelectors (boolean bool)
-    {
-        if (bool) {
-            sheetSelector.setListener(shapeSelector);
-            shapeSelector.setListener(sampleListing);
-        } else {
-            sheetSelector.setListener(null);
-            shapeSelector.setListener(null);
-        }
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define the layout of components within the provided frame.
-     *
-     * @param frame the bare frame
-     * @return the populated frame
-     */
-    private JFrame defineLayout (JFrame frame)
-    {
-        frame.setName("SampleBrowserFrame"); // For SAF life cycle
-
-        // |- left --||-- center ---|--------------- right ---------------|
-        //
-        // +=========++=============+=====================================+
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . sheet . . | . . . . . . . . shape 1 pane. . . . |
-        // | . . . . || . . . . . . | . . sample. . . . . . . . . . . . . |
-        // | . . . . || . selector. | . . . . . . . . shape 2 pane. . . . |
-        // | . . . . || . . . . . . | . . listing . . . . . . . . . . . . |
-        // | . . . . ||=============| . . . . . . . . shape 3 pane. . . . |
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . sample. . |=====================================|
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . board . . | . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | shape . ||-------------| . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | selector|| . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . eval. . . | . . . . sample. . . . . . . . . . . |
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . board . . | . . . . context . . . . . . . . . . |
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-        // +=========++=============+=====================================+
-        //
-        // Left = shapeSelector
-        shapeSelector.setName("shapeSelector");
-
-        // Center
-        BoardsPane boardsPane = new BoardsPane();
-        boardsPane.addBoard(new SampleBoard(sampleController));
-        boardsPane.addBoard(
-                new SampleEvaluationBoard(sampleController, BasicClassifier.getInstance()));
-
-        //        boardsPane.addBoard(
-        //                new SampleEvaluationBoard(sampleController, DeepClassifier.getInstance()));
-        //
-        JSplitPane centerPane = new JSplitPane(
-                VERTICAL_SPLIT,
-                sheetSelector,
-                boardsPane.getComponent());
-        centerPane.setBorder(null);
-        centerPane.setOneTouchExpandable(true);
-        centerPane.setName("centerPane");
-
-        // Right
-        JSplitPane rightPane = new JSplitPane(
-                VERTICAL_SPLIT,
-                sampleListing,
-                sampleContext.getComponent());
-        rightPane.setBorder(null);
-        rightPane.setOneTouchExpandable(true);
-        rightPane.setName("rightPane");
-
-        // Center + Right
-        JSplitPane centerPlusRightPane = new JSplitPane(HORIZONTAL_SPLIT, centerPane, rightPane);
-        centerPlusRightPane.setBorder(null);
-        centerPlusRightPane.setOneTouchExpandable(true);
-        centerPlusRightPane.setName("centerPlusRightPane");
-
-        // Global
-        JSplitPane mainPane = new JSplitPane(HORIZONTAL_SPLIT, shapeSelector, centerPlusRightPane);
-        mainPane.setBorder(null);
-        mainPane.setOneTouchExpandable(true);
-        mainPane.setResizeWeight(0d); // Give all free space to center+right part
-        mainPane.setName("mainPane");
-
-        frame.add(mainPane);
-
-        // Menu bar
-        frame.setJMenuBar(buildMenuBar());
-
-        // Resource injection
-        ResourceMap resources = OmrGui.getApplication().getContext().getResourceMap(getClass());
-        resources.injectComponents(frame);
-        frame.setIconImage(OmrGui.getApplication().getMainFrame().getIconImage());
-
-        // Wiring
-        boardsPane.connect();
-
-        // Initialize sheet selector with all repository sheet names
-        sheetSelector.stateChanged(null);
-
-        return frame;
-    }
-
-    /**
-     * (Package private) Report the selected shapes
-     *
-     * @return the selected shapes
-     */
-    List<Shape> getSelectedShapes ()
-    {
-        return shapeSelector.list.getSelectedValuesList();
-    }
-
-    /**
-     * (Package private) Report the selected sheets descriptors
-     *
-     * @return the selected sheet descriptors
-     */
-    List<Descriptor> getSelectedSheets ()
-    {
-        return sheetSelector.list.getSelectedValuesList();
-    }
-
-    //---------------//
-    // publishSample //
-    //---------------//
-    void publishSample (Sample sample)
-    {
-        sampleService.publish(
-                new EntityListEvent<>(
-                        this,
-                        SelectionHint.ENTITY_INIT,
-                        MouseMovement.PRESSING,
-                        sample));
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------//
     // getInstance //
@@ -974,49 +981,31 @@ public class SampleBrowser
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //--------//
-    // Waiter //
-    //--------//
-    /**
-     * A specific waiting task to display a temporary message while the underlying
-     * SampleBrowser instance is being built.
-     * <p>
-     * Building of the sample browser must be done in method <code>doInBackground</code> of subclass.
-     */
-    public abstract static class Waiter
-            extends WaitingTask<SampleBrowser, Void>
+
+    //----------------//
+    // ClosingAdapter //
+    //----------------//
+    private class ClosingAdapter
+            extends WindowAdapter
     {
 
-        /**
-         * Create the waiter, and launch proper browser.
-         *
-         * @param dialogMessage waiting message for the specific browser
-         */
-        public Waiter (String dialogMessage)
+        @Override
+        public void windowClosing (WindowEvent e)
         {
-            super(OmrGui.getApplication(), dialogMessage);
-        }
-    }
+            // Check for modified repo
+            Application.ExitListener exitListener = repository.getExitListener();
+            boolean ok = exitListener.canExit(e);
 
-    //-------------//
-    // TitledPanel //
-    //-------------//
-    /**
-     * A panel surrounded by an EmptyBorder and a title.
-     */
-    static class TitledPanel
-            extends Panel
-    {
+            if (ok) {
+                OmrGui.getApplication().removeExitListener(exitListener);
 
-        TitledPanel (String title)
-        {
-            setBorder(
-                    BorderFactory.createTitledBorder(
-                            new EmptyBorder(20, 5, 0, 0), // TLBR
-                            title,
-                            TitledBorder.LEFT,
-                            TitledBorder.TOP));
-            this.setInsets(25, 5, 0, 0);
+                if (repository.isGlobal()) {
+                    INSTANCE = null;
+                }
+
+                repository.close();
+                frame.dispose(); // Do close
+            }
         }
     }
 
@@ -1096,8 +1085,7 @@ public class SampleBrowser
             setPreferredSize(new Dimension(180, 200));
 
             // To be informed of mouse (de)selections (not programmatic)
-            list.addListSelectionListener(
-                    new ListSelectionListener()
+            list.addListSelectionListener(new ListSelectionListener()
             {
                 @Override
                 public void valueChanged (ListSelectionEvent e)
@@ -1109,8 +1097,7 @@ public class SampleBrowser
             });
 
             // Same action whatever the subclass: select all items
-            selectAll.addActionListener(
-                    new ActionListener()
+            selectAll.addActionListener(new ActionListener()
             {
                 @Override
                 public void actionPerformed (ActionEvent e)
@@ -1120,8 +1107,7 @@ public class SampleBrowser
             });
 
             // Same action whatever the subclass: deselect all items
-            cancelAll.addActionListener(
-                    new ActionListener()
+            cancelAll.addActionListener(new ActionListener()
             {
                 @Override
                 public void actionPerformed (ActionEvent e)
@@ -1241,36 +1227,15 @@ public class SampleBrowser
 
             setFont(list.getFont());
             setText(shape.toString());
-            setIcon(new FixedWidthIcon(shape.getDecoratedSymbol()));
+
+            final ShapeSymbol symbol = shape.getDecoratedSymbol(MusicFamily.Bravura);
+            if (symbol != null) {
+                setIcon(new FixedWidthIcon(symbol));
+            } else {
+                logger.warn("Needed symbol for shape {} in {}", shape, MusicFamily.Bravura);
+            }
 
             return this;
-        }
-    }
-
-    //----------------//
-    // ClosingAdapter //
-    //----------------//
-    private class ClosingAdapter
-            extends WindowAdapter
-    {
-
-        @Override
-        public void windowClosing (WindowEvent e)
-        {
-            // Check for modified repo
-            Application.ExitListener exitListener = repository.getExitListener();
-            boolean ok = exitListener.canExit(e);
-
-            if (ok) {
-                OmrGui.getApplication().removeExitListener(exitListener);
-
-                if (repository.isGlobal()) {
-                    INSTANCE = null;
-                }
-
-                repository.close();
-                frame.dispose(); // Do close
-            }
         }
     }
 
@@ -1377,6 +1342,53 @@ public class SampleBrowser
                 add(new JMenuItem(actionMap.get("removeSheets")));
                 add(new JMenuItem(actionMap.get("validateSheets")));
             }
+        }
+    }
+
+    //-------------//
+    // TitledPanel //
+    //-------------//
+    /**
+     * A panel surrounded by an EmptyBorder and a title.
+     */
+    static class TitledPanel
+            extends Panel
+    {
+
+        TitledPanel (String title)
+        {
+            setBorder(
+                    BorderFactory.createTitledBorder(
+                            new EmptyBorder(20, 5, 0, 0), // TLBR
+                            title,
+                            TitledBorder.LEFT,
+                            TitledBorder.TOP));
+            this.setInsets(25, 5, 0, 0);
+        }
+    }
+
+    //--------//
+    // Waiter //
+    //--------//
+    /**
+     * A specific waiting task to display a temporary message while the underlying
+     * SampleBrowser instance is being built.
+     * <p>
+     * Building of the sample browser must be done in method <code>doInBackground</code> of
+     * subclass.
+     */
+    public abstract static class Waiter
+            extends WaitingTask<SampleBrowser, Void>
+    {
+
+        /**
+         * Create the waiter, and launch proper browser.
+         *
+         * @param dialogMessage waiting message for the specific browser
+         */
+        public Waiter (String dialogMessage)
+        {
+            super(OmrGui.getApplication(), dialogMessage);
         }
     }
 }

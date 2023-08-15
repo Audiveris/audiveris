@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -37,39 +37,18 @@ public abstract class StemLinker
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Report whether this linker has been closed, preventing any link.
+     * Report the half linkers managed by this linker.
      *
-     * @return true if so
+     * @return top and bottom linkers, if any
      */
-    public abstract boolean isClosed ();
+    public abstract Collection<? extends StemHalfLinker> getHalfLinkers ();
 
     /**
-     * Set the closed status.
+     * Report a unique ID.
      *
-     * @param closed the new closed value
+     * @return linker unique id
      */
-    public abstract void setClosed (boolean closed);
-
-    /**
-     * Report whether this linker has been successfully linked.
-     *
-     * @return true if so
-     */
-    public abstract boolean isLinked ();
-
-    /**
-     * Set the linked status.
-     *
-     * @param linked the new linked value
-     */
-    public abstract void setLinked (boolean linked);
-
-    /**
-     * Report the source Inter instance (Head or Beam) the stem is to be linked to.
-     *
-     * @return the inter instance to connect with stem
-     */
-    public abstract Inter getSource ();
+    public abstract String getId ();
 
     /**
      * Report the head or beam reference point for the stem connection.
@@ -79,6 +58,13 @@ public abstract class StemLinker
     public abstract Point2D getReferencePoint ();
 
     /**
+     * Report the source Inter instance (Head or Beam) the stem is to be linked to.
+     *
+     * @return the inter instance to connect with stem
+     */
+    public abstract Inter getSource ();
+
+    /**
      * Report the starting stump glyph, if any, around the reference point.
      *
      * @return the stump glyph or null
@@ -86,9 +72,30 @@ public abstract class StemLinker
     public abstract Glyph getStump ();
 
     /**
-     * Report the half linkers managed by this linker.
+     * Report whether this linker has been closed, preventing any link.
      *
-     * @return top and bottom linkers, if any
+     * @return true if so
      */
-    public abstract Collection<? extends StemHalfLinker> getHalfLinkers ();
+    public abstract boolean isClosed ();
+
+    /**
+     * Report whether this linker has been successfully linked.
+     *
+     * @return true if so
+     */
+    public abstract boolean isLinked ();
+
+    /**
+     * Set the closed status.
+     *
+     * @param closed the new closed value
+     */
+    public abstract void setClosed (boolean closed);
+
+    /**
+     * Set the linked status.
+     *
+     * @param linked the new linked value
+     */
+    public abstract void setLinked (boolean linked);
 }

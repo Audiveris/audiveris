@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -93,6 +93,7 @@ public class SlursBuilder
     private static final Color SLUR_MODELS = new Color(255, 255, 0, 100);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Scale-dependent parameters. */
     private final Parameters params;
 
@@ -109,6 +110,7 @@ public class SlursBuilder
     private Integer maxLength = null;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SlursBuilder object.
      *
@@ -123,121 +125,6 @@ public class SlursBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // buildSlurs //
-    //------------//
-    /**
-     * Build slurs for the system.
-     */
-    public void buildSlurs ()
-    {
-        try {
-            final List<Arc> relevants = getSeedArcs();
-            maxLength = null;
-
-            // Build slurs from initial SLUR seed
-            // Extend slur seeds as much as possible through junction points & small gaps
-            for (Arc arc : relevants) {
-                if (!arc.isAssigned() && (arc.getShape() == ArcShape.SLUR)) {
-                    buildCurve(arc);
-                }
-            }
-
-            // Build slurs from NO initial SLUR seed
-            // Since arcs are sorted by decreasing length, extension should
-            // never try to include an arc longer than the initial one.
-            for (Arc arc : relevants) {
-                if (!arc.isAssigned() && (arc.getShape() != ArcShape.SLUR)) {
-                    maxLength = arc.getLength();
-                    buildCurve(arc);
-                }
-            }
-
-            // Handle tie collisions on same chord, although ties are not fully known
-            // (because alterations & clefs have not been handled yet)
-            handleTieCollisions();
-
-            logger.info("Slurs: {}", pageSlurs.size());
-            logger.debug("Slur maxClumpSize: {}", maxClumpSize);
-
-            // Dispatch slurs to their containing parts
-            dispatchToParts();
-
-            // Try to connect orphans across systems (and purge the ones that don't connect)
-            for (Page page : sheet.getPages()) {
-                page.connectOrphanSlurs();
-            }
-
-            // Handle slurs collision on same head (TODO: just for information right now)
-            handleCollisions();
-        } catch (Throwable ex) {
-            logger.warn("Error in SlursBuilder: " + ex, ex);
-        }
-    }
-
-    //-------------//
-    // renderItems //
-    //-------------//
-    @Override
-    public void renderItems (Graphics2D g)
-    {
-        final Rectangle clip = g.getClipBounds();
-
-        // Render info attachments
-        Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-
-        for (SlurInfo info : pageInfos) {
-            info.renderAttachments(g);
-        }
-
-        g.setStroke(oldStroke);
-
-        // Render slurs points
-        g.setColor(SLUR_POINTS);
-
-        for (SlurInter slur : pageSlurs) {
-            for (Point p : slur.getInfo().getPoints()) {
-                g.fillRect(p.x, p.y, 1, 1);
-            }
-        }
-
-        // Render slurs curves
-        g.setColor(SLUR_CURVES);
-
-        Stroke lineStroke = new BasicStroke(
-                sheet.getScale().getFore(),
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND);
-        g.setStroke(lineStroke);
-
-        for (SlurInter slur : pageSlurs) {
-            CubicCurve2D curve = slur.getCurve();
-
-            if (curve != null) {
-                if ((clip == null) || clip.intersects(curve.getBounds())) {
-                    g.draw(curve);
-                }
-            }
-
-            // Draw osculatory portions, if any
-            SlurInfo info = slur.getInfo();
-
-            if (info.getSideModel(true) != info.getSideModel(false)) {
-                Color oldColor = g.getColor();
-                g.setColor(SLUR_MODELS);
-
-                for (boolean rev : new boolean[]{true, false}) {
-                    Model sideModel = info.getSideModel(rev);
-
-                    if (sideModel != null) {
-                        g.draw(sideModel.getCurve());
-                    }
-                }
-
-                g.setColor(oldColor);
-            }
-        }
-    }
 
     //--------//
     // addArc //
@@ -316,6 +203,58 @@ public class SlursBuilder
         }
     }
 
+    //------------//
+    // buildSlurs //
+    //------------//
+    /**
+     * Build slurs for the system.
+     */
+    public void buildSlurs ()
+    {
+        try {
+            final List<Arc> relevants = getSeedArcs();
+            maxLength = null;
+
+            // Build slurs from initial SLUR seed
+            // Extend slur seeds as much as possible through junction points & small gaps
+            for (Arc arc : relevants) {
+                if (!arc.isAssigned() && (arc.getShape() == ArcShape.SLUR)) {
+                    buildCurve(arc);
+                }
+            }
+
+            // Build slurs from NO initial SLUR seed
+            // Since arcs are sorted by decreasing length, extension should
+            // never try to include an arc longer than the initial one.
+            for (Arc arc : relevants) {
+                if (!arc.isAssigned() && (arc.getShape() != ArcShape.SLUR)) {
+                    maxLength = arc.getLength();
+                    buildCurve(arc);
+                }
+            }
+
+            // Handle tie collisions on same chord, although ties are not fully known
+            // (because alterations & clefs have not been handled yet)
+            handleTieCollisions();
+
+            logger.info("Slurs: {}", pageSlurs.size());
+            logger.debug("Slur maxClumpSize: {}", maxClumpSize);
+
+            // Dispatch slurs to their containing parts
+            dispatchToParts();
+
+            // Try to connect orphans across systems (and purge the ones that don't connect)
+            for (Page page : sheet.getPages()) {
+                page.connectOrphanSlurs();
+            }
+
+            // Handle slurs collision on same head (TODO: just for information right now)
+            handleCollisions();
+        } catch (Throwable ex) {
+            logger.warn("Error in SlursBuilder: " + ex, ex);
+        }
+    }
+
     //----------------//
     // computeImpacts //
     //----------------//
@@ -343,7 +282,8 @@ public class SlursBuilder
         if (bothSides) {
             double sum = 0;
 
-            for (boolean bool : new boolean[]{true, false}) {
+            for (boolean bool : new boolean[]
+            { true, false }) {
                 Model sideModel = slur.getSideModel(bool);
 
                 if (sideModel == null) {
@@ -385,7 +325,7 @@ public class SlursBuilder
         }
 
         double angleImpact = (params.maxArcAngleHigh - arcAngle) / (params.maxArcAngleHigh
-                                                                            - params.maxArcAngleLow);
+                - params.maxArcAngleLow);
 
         // Features below are relevant only for full slur evaluations
         if (!bothSides) {
@@ -410,8 +350,7 @@ public class SlursBuilder
         }
 
         double vertImpact = (fromVertical - params.minAngleFromVerticalLow)
-                                    / (params.minAngleFromVerticalHigh
-                                               - params.minAngleFromVerticalLow);
+                / (params.minAngleFromVerticalHigh - params.minAngleFromVerticalLow);
 
         List<Point> points = slur.getPoints();
         Point p0 = points.get(0);
@@ -428,7 +367,7 @@ public class SlursBuilder
         }
 
         double widthImpact = (width - params.minSlurWidthLow) / (params.minSlurWidthHigh
-                                                                         - params.minSlurWidthLow);
+                - params.minSlurWidthLow);
 
         // Slur high enough (bent enough)
         double height = Line2D.ptLineDist(p0.x, p0.y, p2.x, p2.y, p1.x, p1.y);
@@ -440,7 +379,7 @@ public class SlursBuilder
         }
 
         double heightImpact = (height - params.minSlurHeightLow) / (params.minSlurHeightHigh
-                                                                            - params.minSlurHeightLow);
+                - params.minSlurHeightLow);
 
         return new SlurInter.Impacts(
                 distImpact,
@@ -496,8 +435,9 @@ public class SlursBuilder
             final double r1 = rough.getRadius();
             final double r2 = fitted.getRadius();
 
-            if (Double.isInfinite(r1)
-                        || ((abs(r1 - r2) / (max(r1, r2))) <= params.similarRadiusRatio)) {
+            if (Double.isInfinite(r1) || ((abs(r1 - r2) / (max(
+                    r1,
+                    r2))) <= params.similarRadiusRatio)) {
                 circle = fitted;
                 dist = circle.getDistance();
             } else {
@@ -555,105 +495,13 @@ public class SlursBuilder
         SlurInfo slur = (SlurInfo) seq;
         GradeImpacts impacts = computeImpacts(slur, true);
 
-        if ((impacts != null) && (impacts.getGrade() >= SlurInter.getMinGrade())
-                    && (slur.getCurve() != null)) {
-            slur.retrieveGlyph(sheet, params.maxRunDistance);
+        if ((impacts != null) && (impacts.getGrade() >= SlurInter.getMinGrade()) && (slur
+                .getCurve() != null)) {
+            slur.retrieveGlyph(sheet, params.maxRunDistance, params.minRunRatio);
 
             if (slur.getGlyph() != null) {
                 inters.add(new SlurInter(slur, impacts));
             }
-        }
-    }
-
-    //-------------------//
-    // getArcCheckLength //
-    //-------------------//
-    @Override
-    protected Integer getArcCheckLength ()
-    {
-        return params.arcCheckLength;
-    }
-
-    //--------------//
-    // getEndVector //
-    //--------------//
-    @Override
-    protected Point2D getEndVector (Curve seq)
-    {
-        SlurInfo info = (SlurInfo) seq;
-        Model model = needGlobalModel(info);
-
-        if (model == null) {
-            return null;
-        } else {
-            return model.getEndVector(reverse);
-        }
-    }
-
-    //------------//
-    // pruneClump //
-    //------------//
-    @Override
-    protected void pruneClump (Set<Inter> clump)
-    {
-        // Delegate final selection to ClumpPruner
-        SlurInter selected = clumpPruner.prune(clump);
-
-        if (selected != null) {
-            selected.getInfo().assign(); // Assign arcs
-            pageSlurs.add(selected);
-        }
-    }
-
-    //------//
-    // weed //
-    //------//
-    @Override
-    protected void weed (Set<Curve> clump)
-    {
-        // Compute grades
-        List<SlurInter> inters = new ArrayList<>();
-
-        for (Curve seq : clump) {
-            SlurInfo slur = (SlurInfo) seq;
-            GradeImpacts impacts = computeImpacts(slur, false);
-
-            if (impacts != null) {
-                try {
-                    inters.add(new SlurInter(slur, impacts));
-                } catch (Exception ex) {
-                    logger.warn("Could not create SlurInter from {}", slur, ex);
-                }
-            }
-        }
-
-        clump.clear();
-
-        // In the provided clump, all candidates start from the same point.
-        // If several candidates stop at the same point, keep the one with best grade.
-        purgeIdenticalEndings(inters);
-
-        // Discard candidates that end as a portion of staff line
-        purgeStaffLines(inters);
-
-        // Discard the ones with too short distance from one end to the other
-        SlurInter longest = purgeShortests(inters);
-
-        if (longest == null) {
-            return;
-        }
-
-        // Discard those with grade lower than grade of longest candidate
-        double longestGrade = longest.getGrade();
-
-        for (Iterator<SlurInter> it = inters.iterator(); it.hasNext();) {
-            if (it.next().getGrade() < longestGrade) {
-                it.remove();
-            }
-        }
-
-        for (SlurInter slur : inters) {
-            clump.add(slur.getInfo());
         }
     }
 
@@ -691,6 +539,15 @@ public class SlursBuilder
         }
     }
 
+    //-------------------//
+    // getArcCheckLength //
+    //-------------------//
+    @Override
+    protected Integer getArcCheckLength ()
+    {
+        return params.arcCheckLength;
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -715,6 +572,22 @@ public class SlursBuilder
         }
 
         return box;
+    }
+
+    //--------------//
+    // getEndVector //
+    //--------------//
+    @Override
+    protected Point2D getEndVector (Curve seq)
+    {
+        SlurInfo info = (SlurInfo) seq;
+        Model model = needGlobalModel(info);
+
+        if (model == null) {
+            return null;
+        } else {
+            return model.getEndVector(reverse);
+        }
     }
 
     //-------------//
@@ -874,6 +747,21 @@ public class SlursBuilder
         }
     }
 
+    //------------//
+    // pruneClump //
+    //------------//
+    @Override
+    protected void pruneClump (Set<Inter> clump)
+    {
+        // Delegate final selection to ClumpPruner
+        SlurInter selected = clumpPruner.prune(clump);
+
+        if (selected != null) {
+            selected.getInfo().assign(); // Assign arcs
+            pageSlurs.add(selected);
+        }
+    }
+
     //-----------------------//
     // purgeIdenticalEndings //
     //-----------------------//
@@ -973,11 +861,14 @@ public class SlursBuilder
 
             // Vertical distance from slur end to closest staff line
             Staff staff = sheet.getStaffManager().getClosestStaff(end);
-            LineInfo line = staff.getClosestStaffLine(end);
-            double toLine = line.yAt(end.x) - end.y;
 
-            if (abs(toLine) > params.maxStaffLineDy) {
-                continue;
+            if (!staff.isTablature()) {
+                final LineInfo line = staff.getClosestStaffLine(end);
+                final double toLine = line.yAt(end.x) - end.y;
+
+                if (abs(toLine) > params.maxStaffLineDy) {
+                    continue;
+                }
             }
 
             // Delete slur ending as a STAFF_ARC
@@ -1077,7 +968,125 @@ public class SlursBuilder
         }
     }
 
+    //-------------//
+    // renderItems //
+    //-------------//
+    @Override
+    public void renderItems (Graphics2D g)
+    {
+        final Rectangle clip = g.getClipBounds();
+
+        // Render info attachments
+        Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+
+        for (SlurInfo info : pageInfos) {
+            info.renderAttachments(g);
+        }
+
+        g.setStroke(oldStroke);
+
+        // Render slurs points
+        g.setColor(SLUR_POINTS);
+
+        for (SlurInter slur : pageSlurs) {
+            for (Point p : slur.getInfo().getPoints()) {
+                g.fillRect(p.x, p.y, 1, 1);
+            }
+        }
+
+        // Render slurs curves
+        g.setColor(SLUR_CURVES);
+
+        Stroke lineStroke = new BasicStroke(
+                sheet.getScale().getFore(),
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND);
+        g.setStroke(lineStroke);
+
+        for (SlurInter slur : pageSlurs) {
+            CubicCurve2D curve = slur.getCurve();
+
+            if (curve != null) {
+                if ((clip == null) || clip.intersects(curve.getBounds())) {
+                    g.draw(curve);
+                }
+            }
+
+            // Draw osculatory portions, if any
+            SlurInfo info = slur.getInfo();
+
+            if (info.getSideModel(true) != info.getSideModel(false)) {
+                Color oldColor = g.getColor();
+                g.setColor(SLUR_MODELS);
+
+                for (boolean rev : new boolean[]
+                { true, false }) {
+                    Model sideModel = info.getSideModel(rev);
+
+                    if (sideModel != null) {
+                        g.draw(sideModel.getCurve());
+                    }
+                }
+
+                g.setColor(oldColor);
+            }
+        }
+    }
+
+    //------//
+    // weed //
+    //------//
+    @Override
+    protected void weed (Set<Curve> clump)
+    {
+        // Compute grades
+        List<SlurInter> inters = new ArrayList<>();
+
+        for (Curve seq : clump) {
+            SlurInfo slur = (SlurInfo) seq;
+            GradeImpacts impacts = computeImpacts(slur, false);
+
+            if (impacts != null) {
+                try {
+                    inters.add(new SlurInter(slur, impacts));
+                } catch (Exception ex) {
+                    logger.warn("Could not create SlurInter from {}", slur, ex);
+                }
+            }
+        }
+
+        clump.clear();
+
+        // In the provided clump, all candidates start from the same point.
+        // If several candidates stop at the same point, keep the one with best grade.
+        purgeIdenticalEndings(inters);
+
+        // Discard candidates that end as a portion of staff line
+        purgeStaffLines(inters);
+
+        // Discard the ones with too short distance from one end to the other
+        SlurInter longest = purgeShortests(inters);
+
+        if (longest == null) {
+            return;
+        }
+
+        // Discard those with grade lower than grade of longest candidate
+        double longestGrade = longest.getGrade();
+
+        for (Iterator<SlurInter> it = inters.iterator(); it.hasNext();) {
+            if (it.next().getGrade() < longestGrade) {
+                it.remove();
+            }
+        }
+
+        for (SlurInter slur : inters) {
+            clump.add(slur.getInfo());
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -1181,6 +1190,10 @@ public class SlursBuilder
         private final Scale.Fraction maxRunDistance = new Scale.Fraction(
                 0.25,
                 "Maximum distance from any run end to curve points");
+
+        private final Constant.Ratio minRunRatio = new Constant.Ratio(
+                0.75,
+                "Minimum runs count as ratio of slur width");
     }
 
     //------------//
@@ -1238,6 +1251,8 @@ public class SlursBuilder
 
         final double maxRunDistance;
 
+        final double minRunRatio;
+
         /**
          * Creates a new Parameters object.
          *
@@ -1268,6 +1283,7 @@ public class SlursBuilder
             quorumRatio = constants.quorumRatio.getValue();
             minProjection = scale.toPixelsDouble(constants.minProjection);
             maxRunDistance = scale.toPixelsDouble(constants.maxRunDistance);
+            minRunRatio = constants.minRunRatio.getValue();
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);

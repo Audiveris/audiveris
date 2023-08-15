@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,6 +55,7 @@ public class EntityView<E extends Entity>
     private static final Logger logger = LoggerFactory.getLogger(EntityView.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying entity service. */
     protected final EntityService<E> entityService;
 
@@ -62,6 +63,7 @@ public class EntityView<E extends Entity>
     protected final EntityIndex<E> entityIndex;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>EntityView</code> object.
      *
@@ -83,6 +85,29 @@ public class EntityView<E extends Entity>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
+    /**
+     * Interest in EntityList to display entities contour.
+     *
+     * @param listEvent list of entities
+     */
+    protected final void handleEntityListEvent (EntityListEvent<E> listEvent)
+    {
+        List<E> list = listEvent.getData();
+
+        if (!list.isEmpty() && (listEvent.hint != SelectionHint.ENTITY_TRANSIENT)) {
+            locationService.publish(
+                    new LocationEvent(
+                            this,
+                            SelectionHint.ENTITY_TRANSIENT,
+                            null,
+                            Entities.getBounds(list)));
+        }
+    }
+
     //---------//
     // onEvent //
     //---------//
@@ -113,24 +138,5 @@ public class EntityView<E extends Entity>
     public void propertyChange (PropertyChangeEvent evt)
     {
         repaint(); // For any property change, we simply repaint the view
-    }
-
-    //-----------------------//
-    // handleEntityListEvent //
-    //-----------------------//
-    /**
-     * Interest in EntityList to display entities contour.
-     *
-     * @param listEvent list of entities
-     */
-    protected final void handleEntityListEvent (EntityListEvent<E> listEvent)
-    {
-        List<E> list = listEvent.getData();
-
-        if (!list.isEmpty() && (listEvent.hint != SelectionHint.ENTITY_TRANSIENT)) {
-            locationService.publish(
-                    new LocationEvent(this, SelectionHint.ENTITY_TRANSIENT, null,
-                                      Entities.getBounds(list)));
-        }
     }
 }

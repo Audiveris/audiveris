@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,11 +45,13 @@ public class SchemaGeneration
     private static final Logger logger = LoggerFactory.getLogger(SchemaGeneration.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private SchemaGeneration ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     //------//
     // main //
     //------//
@@ -72,17 +74,12 @@ public class SchemaGeneration
         try {
             final Class<?> classe = Class.forName(className);
             final Method getJaxbContext = classe.getDeclaredMethod("getJaxbContext", new Class[0]);
-            final JAXBContext context = (JAXBContext) getJaxbContext.invoke(
-                    null, new Object[]{});
+            final JAXBContext context = (JAXBContext) getJaxbContext.invoke(null, new Object[] {});
             final SchemaOutputResolver sor = new Jaxb.OmrSchemaOutputResolver(outputFileName);
             context.generateSchema(sor);
-        } catch (IOException |
-                 ClassNotFoundException |
-                 IllegalAccessException |
-                 IllegalArgumentException |
-                 NoSuchMethodException |
-                 SecurityException |
-                 InvocationTargetException ex) {
+        } catch (IOException | ClassNotFoundException | IllegalAccessException
+                | IllegalArgumentException | NoSuchMethodException | SecurityException
+                | InvocationTargetException ex) {
             logger.error("Error processing schema for class {}", className, ex);
         }
     }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,11 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
+import org.audiveris.omr.ui.util.Panel;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
-import org.audiveris.omr.ui.util.Panel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,22 +40,40 @@ public class ScopedPanel
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Standard column spec for 4 fields. */
-    private static final String colSpec4 = "12dlu,1dlu,100dlu,1dlu,35dlu,1dlu,right:12dlu";
+    // JGoodies column specification:       SelBox     Item1       Item2            Box
+    private static final String colSpec4 = "10dlu,1dlu,100dlu,1dlu,55dlu,1dlu,right:10dlu";
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Collection of individual data panes. */
-    private final List<XactDataPane> panes = new ArrayList<>();
 
-    //~ Constructors -------------------------------------------------------------------------------
+    /** Collection of individual data panes. */
+    protected final List<XactDataPane> panes = new ArrayList<>();
+
     /**
-     * Creates a new <code>ScopedPanel</code> object.
+     * Creates a new <code>ScopedPanel</code> object, using default colSpec4.
      *
      * @param name  panel name
      * @param panes contained data panes
      */
     public ScopedPanel (String name,
                         List<XactDataPane> panes)
+    {
+        this(name, panes, colSpec4, 3);
+    }
+
+    //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new <code>ScopedPanel</code> object.
+     *
+     * @param name       panel name
+     * @param panes      contained data panes
+     * @param colSpec    specific column specification
+     * @param titleWidth number of cells for title, either 1 (just Item1) or 3 (Item1,|,Item2)
+     */
+    public ScopedPanel (String name,
+                        List<XactDataPane> panes,
+                        String colSpec,
+                        int titleWidth)
     {
         setName(name);
 
@@ -65,7 +83,7 @@ public class ScopedPanel
             }
         }
 
-        defineLayout();
+        defineLayout(colSpec, titleWidth);
 
         for (XactDataPane pane : this.panes) {
             // Pane is pre-selected if model has specific data
@@ -77,21 +95,31 @@ public class ScopedPanel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
-     * Report the contained pane of proper class.
+     * Define layout of the pane.
      *
-     * @param classe desired class
-     * @return the pane found or null
+     * @param colSpec    column specification offering either 3 or 4 logical fields
+     * @param titleWidth number of cells for title
      */
-    public XactDataPane getPane (Class<?> classe)
+    private void defineLayout (String colSpec,
+                               int titleWidth)
     {
+        // Compute the total number of logical rows
+        int logicalRowCount = 0;
+
         for (XactDataPane pane : panes) {
-            if (classe.isAssignableFrom(pane.getClass())) {
-                return pane;
-            }
+            logicalRowCount += pane.getLogicalRowCount();
         }
 
-        return null;
+        FormLayout layout = new FormLayout(colSpec, Panel.makeRows(logicalRowCount));
+        PanelBuilder builder = new PanelBuilder(layout, this);
+        CellConstraints cst = new CellConstraints();
+        int r = 1;
+
+        for (XactDataPane pane : panes) {
+            r = pane.defineLayout(builder, cst, titleWidth, r);
+        }
     }
 
     /**
@@ -102,27 +130,5 @@ public class ScopedPanel
     public List<XactDataPane> getPanes ()
     {
         return panes;
-    }
-
-    /**
-     * Define layout of the pane.
-     */
-    private void defineLayout ()
-    {
-        // Compute the total number of logical rows
-        int logicalRowCount = 0;
-
-        for (XactDataPane pane : panes) {
-            logicalRowCount += pane.getLogicalRowCount();
-        }
-
-        FormLayout layout = new FormLayout(colSpec4, Panel.makeRows(logicalRowCount));
-        PanelBuilder builder = new PanelBuilder(layout, this);
-        CellConstraints cst = new CellConstraints();
-        int r = 1;
-
-        for (XactDataPane pane : panes) {
-            r = pane.defineLayout(builder, cst, r);
-        }
     }
 }

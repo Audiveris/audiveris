@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -45,17 +45,53 @@ public abstract class PoorManAlgebra
     private static final Logger logger = LoggerFactory.getLogger(PoorManAlgebra.class);
 
     //~ Constructors -------------------------------------------------------------------------------
+
     private PoorManAlgebra ()
     {
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static Methods -----------------------------------------------------------------------------
+
     private static String format (double val)
     {
         return String.format("%.2f", val);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //---------//
+    // DataSet //
+    //---------//
+    public static class DataSet
+    {
+
+        private final INDArray features;
+
+        private final INDArray labels;
+
+        public DataSet (INDArray features,
+                        INDArray labels,
+                        INDArray featuresMask, // Unused
+                        INDArray labelsMask) // Unused
+
+        {
+            this.features = features;
+            this.labels = labels;
+        }
+
+        public INDArray getFeatures ()
+        {
+            return features;
+        }
+
+        public INDArray getLabels ()
+        {
+            return labels;
+        }
+    }
+
     //~ Inner Interfaces ---------------------------------------------------------------------------
+
     //----------//
     // INDArray //
     //----------//
@@ -132,111 +168,6 @@ public abstract class PoorManAlgebra
          * @return the result of the subtraction
          */
         INDArray subiRowVector (INDArray rowVector);
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // DataSet //
-    //---------//
-    public static class DataSet
-    {
-
-        private final INDArray features;
-
-        private final INDArray labels;
-
-        public DataSet (INDArray features,
-                        INDArray labels,
-                        INDArray featuresMask, // Unused
-                        INDArray labelsMask) // Unused
-
-        {
-            this.features = features;
-            this.labels = labels;
-        }
-
-        public INDArray getFeatures ()
-        {
-            return features;
-        }
-
-        public INDArray getLabels ()
-        {
-            return labels;
-        }
-    }
-
-    //------//
-    // Nd4j //
-    //------//
-    public static class Nd4j
-    {
-
-        public static final double EPS_THRESHOLD = 1e-5;
-
-        private Nd4j ()
-        {
-        }
-
-        /**
-         * Create an INDArray based on the given data layout
-         *
-         * @param data the data to use
-         * @return an INDArray with the given data layout
-         */
-        public static INDArray create (double[][] data)
-        {
-            return new Matrix(data);
-        }
-
-        /**
-         * Create an INDArray based on the given data layout
-         *
-         * @param data the data to use
-         * @return an INDArray with the given data layout
-         */
-        public static INDArray create (double[] data)
-        {
-            return new Vector(data);
-        }
-
-        /**
-         * Read in an INDArray from a data input stream
-         *
-         * @param dis the data input stream to read from
-         * @return the INDArray
-         * @throws IOException if anything goes wrong in Input
-         */
-        public static INDArray read (DataInputStream dis)
-                throws IOException
-        {
-            throw new UnsupportedOperationException("PoorManAlgebra.Nd4j.read() not supported.");
-        }
-
-        /**
-         * Create a scalar nd array with the specified value and offset
-         *
-         * @param value the value of the scalar
-         * @return the scalar nd array
-         */
-        public static INDArray scalar (double value)
-        {
-            return new Scalar(value);
-        }
-
-        /**
-         * Write an INDArray to the specified output stream
-         *
-         * @param arr              the array to write
-         * @param dataOutputStream the data output stream to write to
-         * @throws IOException if anything goes wrong in Output
-         */
-        public static void write (INDArray arr,
-                                  DataOutputStream dataOutputStream)
-                throws IOException
-        {
-            throw new UnsupportedOperationException("PoorManAlgebra.Nd4j.write() not supported.");
-        }
     }
 
     //--------//
@@ -405,6 +336,79 @@ public abstract class PoorManAlgebra
         }
     }
 
+    //------//
+    // Nd4j //
+    //------//
+    public static class Nd4j
+    {
+
+        public static final double EPS_THRESHOLD = 1e-5;
+
+        private Nd4j ()
+        {
+        }
+
+        /**
+         * Create an INDArray based on the given data layout
+         *
+         * @param data the data to use
+         * @return an INDArray with the given data layout
+         */
+        public static INDArray create (double[] data)
+        {
+            return new Vector(data);
+        }
+
+        /**
+         * Create an INDArray based on the given data layout
+         *
+         * @param data the data to use
+         * @return an INDArray with the given data layout
+         */
+        public static INDArray create (double[][] data)
+        {
+            return new Matrix(data);
+        }
+
+        /**
+         * Read in an INDArray from a data input stream
+         *
+         * @param dis the data input stream to read from
+         * @return the INDArray
+         * @throws IOException if anything goes wrong in Input
+         */
+        public static INDArray read (DataInputStream dis)
+            throws IOException
+        {
+            throw new UnsupportedOperationException("PoorManAlgebra.Nd4j.read() not supported.");
+        }
+
+        /**
+         * Create a scalar nd array with the specified value and offset
+         *
+         * @param value the value of the scalar
+         * @return the scalar nd array
+         */
+        public static INDArray scalar (double value)
+        {
+            return new Scalar(value);
+        }
+
+        /**
+         * Write an INDArray to the specified output stream
+         *
+         * @param arr              the array to write
+         * @param dataOutputStream the data output stream to write to
+         * @throws IOException if anything goes wrong in Output
+         */
+        public static void write (INDArray arr,
+                                  DataOutputStream dataOutputStream)
+            throws IOException
+        {
+            throw new UnsupportedOperationException("PoorManAlgebra.Nd4j.write() not supported.");
+        }
+    }
+
     //--------//
     // Scalar //
     //--------//
@@ -495,16 +499,16 @@ public abstract class PoorManAlgebra
 
         private final double[] data;
 
-        Vector (double[] data)
-        {
-            this.data = new double[data.length];
-            System.arraycopy(data, 0, this.data, 0, data.length);
-        }
-
         // Meant for JAXB
         private Vector ()
         {
             data = null;
+        }
+
+        Vector (double[] data)
+        {
+            this.data = new double[data.length];
+            System.arraycopy(data, 0, this.data, 0, data.length);
         }
 
         @Override

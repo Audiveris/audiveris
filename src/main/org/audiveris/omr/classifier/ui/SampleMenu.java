@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -28,6 +28,7 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.util.SeparableMenu;
 
 import org.slf4j.Logger;
@@ -54,6 +55,7 @@ public class SampleMenu
     private static final Logger logger = LoggerFactory.getLogger(SampleMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Containing sheet. */
     private final Sheet sheet;
 
@@ -61,6 +63,7 @@ public class SampleMenu
     private final Glyph glyph;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SampleMenu</code> object.
      *
@@ -77,16 +80,6 @@ public class SampleMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getGlyph //
-    //----------//
-    /**
-     * @return the glyph
-     */
-    public Glyph getGlyph ()
-    {
-        return glyph;
-    }
 
     //-----------//
     // addSample //
@@ -97,6 +90,17 @@ public class SampleMenu
         final Book book = sheet.getStub().getBook();
         final SampleRepository repository = book.getSampleRepository();
         repository.addSample(shape, glyph, sheet);
+    }
+
+    //----------//
+    // getGlyph //
+    //----------//
+    /**
+     * @return the glyph
+     */
+    public Glyph getGlyph ()
+    {
+        return glyph;
     }
 
     //-----------//
@@ -134,6 +138,7 @@ public class SampleMenu
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //------------//
     // AssignMenu //
     //------------//
@@ -141,9 +146,10 @@ public class SampleMenu
             extends JMenu
     {
 
-        private final ActionListener listener = (ActionEvent e) -> {
-            JMenuItem source = (JMenuItem) e.getSource();
-            Shape shape = Shape.valueOf(source.getText());
+        private final ActionListener listener = (ActionEvent e) ->
+        {
+            final JMenuItem source = (JMenuItem) e.getSource();
+            final Shape shape = Shape.valueOf(source.getText());
             addSample(shape);
         };
 
@@ -156,8 +162,12 @@ public class SampleMenu
 
         private void populate (Set<Shape> shapes)
         {
+            final MusicFamily family = sheet.getStub().getMusicFamily();
+
             for (Shape shape : shapes) {
-                JMenuItem menuItem = new JMenuItem(shape.toString(), shape.getDecoratedSymbol());
+                final JMenuItem menuItem = new JMenuItem(
+                        shape.toString(),
+                        shape.getDecoratedSymbol(family));
                 menuItem.addActionListener(listener);
                 add(menuItem);
             }
@@ -180,7 +190,8 @@ public class SampleMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(this, (ActionEvent e) -> {
+            ShapeSet.addAllShapes(sheet.getStub().getMusicFamily(), this, (ActionEvent e) ->
+            {
                 JMenuItem source = (JMenuItem) e.getSource();
                 Shape shape = Shape.valueOf(source.getText());
                 addSample(shape);

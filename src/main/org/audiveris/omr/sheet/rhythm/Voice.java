@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -26,9 +26,10 @@ import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Mark;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
-import static org.audiveris.omr.sheet.rhythm.SlotVoice.ChordStatus;
+import org.audiveris.omr.sheet.rhythm.SlotVoice.ChordStatus;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.Navigable;
@@ -65,65 +66,11 @@ public class Voice
 
     private static final Logger logger = LoggerFactory.getLogger(Voice.class);
 
-    //~ Enumerations -------------------------------------------------------------------------------
-    //--------//
-    // Family //
-    //--------//
-    /**
-     * To classify voices (and specifically their ID) according to their "height".
-     */
-    public static enum Family
-    {
-
-        /** Started in first staff, or chord with upward stem in merged grand staff. */
-        HIGH,
-        /** Started in second staff, or chord with downward stem in merged grand staff. */
-        LOW,
-        /** Started in third staff. */
-        INFRA;
-
-        /**
-         * Offset in voice ID, according to voice family.
-         * <ol>
-         * <li>1-4 for HIGH family (first staff in standard part, upward stem in merged part)
-         * <li>5-8 for LOW family (second staff in standard part, downward stem in merged part)
-         * <li>9-12 for INFRA family (third staff in a 3-staff organ system)
-         * </ol>
-         */
-        private static final int ID_FAMILY_OFFSET = 4;
-
-        /**
-         * Report the offset to be used for voice IDs within this family.
-         *
-         * @return the family ID offset
-         */
-        public int idOffset ()
-        {
-            return ID_FAMILY_OFFSET * ordinal();
-        }
-
-        /**
-         * Report the id values for this family.
-         *
-         * @return array of family id values
-         */
-        public int[] ids ()
-        {
-            final int[] ids = new int[ID_FAMILY_OFFSET];
-            final int offset = idOffset();
-
-            for (int i = 0; i < ID_FAMILY_OFFSET; i++) {
-                ids[i] = 1 + offset + i;
-            }
-
-            return ids;
-        }
-    }
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Persistent data
     //----------------
-    //
+
     /** The voice id. */
     @XmlAttribute
     private int id;
@@ -166,7 +113,7 @@ public class Voice
 
     // Transient data
     //---------------
-    //
+
     /** Containing measure. */
     @Navigable(false)
     private Measure measure;
@@ -174,8 +121,8 @@ public class Voice
     /** The staff in which this voice started. */
     private Staff startingStaff;
 
-    /** The related family. */
-    private Family family;
+    /** The related voice kind. */
+    private VoiceKind kind;
 
     /** The sequence of chords. */
     private List<AbstractChordInter> chords;
@@ -193,6 +140,14 @@ public class Voice
     private TimeRational inferredTimeSig;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private Voice ()
+    {
+    }
+
     /**
      * Creates a new Voice object.
      *
@@ -206,9 +161,9 @@ public class Voice
 
         startingStaff = chord.getTopStaff();
 
-        family = measure.inferVoiceFamily(chord);
+        kind = measure.inferVoiceKind(chord);
 
-        id = measure.generateVoiceId(family);
+        id = measure.generateVoiceId(kind);
 
         if (chord.isMeasureRest()) {
             measureRestChord = (RestChordInter) chord;
@@ -219,14 +174,25 @@ public class Voice
         logger.debug("Created voice#{}", id);
     }
 
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private Voice ()
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //----------//
+    // addChord //
+    //----------//
+    public void addChord (AbstractChordInter chord)
     {
+        if (chords == null) {
+            chords = new ArrayList<>();
+        }
+
+        if (!chords.contains(chord)) {
+            chords.add(chord);
+
+            // Keep voice chords ordered by abscissa
+            Collections.sort(chords, Inters.byCenterAbscissa);
+        }
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // afterReload //
     //-------------//
@@ -274,7 +240,7 @@ public class Voice
             if (isMeasureRest()) {
                 setTermination(null); // we can't tell anything
             } else if ((chords != null) && !chords.isEmpty()) {
-                AbstractChordInter last = chords.get(chords.size() - 1);
+                AbstractChordInter last = getLastChord();
 
                 if (last.getTimeOffset() == null) {
                     measure.setAbnormal(true);
@@ -290,7 +256,8 @@ public class Voice
                         logger.info("{} {} too long", measure, this);
                         measure.setAbnormal(true);
 
-                        if ((stack.getExcess() == null) || (delta.compareTo(stack.getExcess()) > 0)) {
+                        if ((stack.getExcess() == null) || (delta.compareTo(
+                                stack.getExcess()) > 0)) {
                             stack.setExcess(delta); // For stack
                         }
                     }
@@ -316,8 +283,8 @@ public class Voice
             SlotVoice info = getSlotInfo(slot);
 
             if (info == null) {
-                if ((prevChord != null)
-                            && (prevChord.getEndTime().compareTo(slot.getTimeOffset()) > 0)) {
+                if ((prevChord != null) && (prevChord.getEndTime().compareTo(
+                        slot.getTimeOffset()) > 0)) {
                     putSlotInfo(slot, new SlotVoice(prevChord, ChordStatus.CONTINUE));
                 }
             } else {
@@ -376,6 +343,18 @@ public class Voice
         }
 
         return prevChord;
+    }
+
+    //-----------//
+    // getChords //
+    //-----------//
+    public List<AbstractChordInter> getChords ()
+    {
+        if (chords != null) {
+            return Collections.unmodifiableList(chords);
+        }
+
+        return Collections.emptyList();
     }
 
     //-------------//
@@ -442,19 +421,6 @@ public class Voice
         return voiceDur;
     }
 
-    //-----------//
-    // getFamily //
-    //-----------//
-    /**
-     * Report the family (HIGH, LOW, INFRA) this voice belongs to.
-     *
-     * @return the family
-     */
-    public Family getFamily ()
-    {
-        return family;
-    }
-
     //---------------//
     // getFirstChord //
     //---------------//
@@ -487,20 +453,6 @@ public class Voice
     public int getId ()
     {
         return id;
-    }
-
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * Change the voice id (to rename voices)
-     *
-     * @param id the new id value
-     */
-    public void setId (int id)
-    {
-        ///logger.debug("measure#{} {} renamed as {}", measure.getIdValue(), this, id);
-        this.id = id;
     }
 
     //--------------------------//
@@ -634,6 +586,19 @@ public class Voice
         return inferredTimeSig;
     }
 
+    //---------//
+    // getKind //
+    //---------//
+    /**
+     * Report the voice kind (HIGH, LOW, INFRA) this voice belongs to.
+     *
+     * @return the voice kind
+     */
+    public VoiceKind getKind ()
+    {
+        return kind;
+    }
+
     //--------------//
     // getLastChord //
     //--------------//
@@ -664,17 +629,6 @@ public class Voice
     public Measure getMeasure ()
     {
         return measure;
-    }
-
-    //------------//
-    // setMeasure //
-    //------------//
-    /**
-     * @param measure the measure to set
-     */
-    public void setMeasure (Measure measure)
-    {
-        this.measure = measure;
     }
 
     //----------//
@@ -777,14 +731,6 @@ public class Voice
         return found;
     }
 
-    //----------------//
-    // setTermination //
-    //----------------//
-    private void setTermination (Rational termination)
-    {
-        this.termination = termination;
-    }
-
     //---------------//
     // getWholeChord //
     //---------------//
@@ -807,6 +753,28 @@ public class Voice
     public final void initTransient (Measure measure)
     {
         this.measure = measure;
+    }
+
+    //---------------//
+    // insertForward //
+    //---------------//
+    private void insertForward (Rational duration,
+                                Mark.Position position,
+                                AbstractChordInter chord)
+    {
+        //        Point point = new Point(
+        //                chord.getHeadLocation().x,
+        //                (chord.getHeadLocation().y + chord.getTailLocation().y) / 2);
+        //
+        //        if (position == Mark.Position.AFTER) {
+        //            point.x += 10;
+        //        } else if (position == Mark.Position.BEFORE) {
+        //            point.x -= 10;
+        //        }
+        //
+        //        Mark mark = new Mark(chord.getSystem(), point, position, Symbols.SYMBOL_MARK, duration);
+        //
+        //        chord.addMark(mark);
     }
 
     //--------//
@@ -865,6 +833,101 @@ public class Voice
         }
 
         logger.debug("putSlotInfo slot#{} {}", slot.getId(), this);
+    }
+
+    //-------------//
+    // removeChord //
+    //-------------//
+    /**
+     * Try to remove the provided chord from the chord list of this voice.
+     *
+     * @param chord the chord to remove from voice
+     * @return true if chord was actually removed
+     */
+    public boolean removeChord (AbstractChordInter chord)
+    {
+        if (chords == null) {
+            return false;
+        }
+
+        return chords.remove(chord);
+    }
+
+    //-------------//
+    // resetChords //
+    //-------------//
+    public void resetChords ()
+    {
+        chords = null;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Change the voice id (to rename voices)
+     *
+     * @param id the new id value
+     */
+    public void setId (int id)
+    {
+        ///logger.debug("measure#{} {} renamed as {}", measure.getIdValue(), this, id);
+        this.id = id;
+    }
+
+    //------------//
+    // setMeasure //
+    //------------//
+    /**
+     * @param measure the measure to set
+     */
+    public void setMeasure (Measure measure)
+    {
+        this.measure = measure;
+    }
+
+    //----------------//
+    // setTermination //
+    //----------------//
+    private void setTermination (Rational termination)
+    {
+        this.termination = termination;
+    }
+
+    //-----------//
+    // timeSigOf //
+    //-----------//
+    /**
+     * Based on the number of common groups, derive the proper time rational value.
+     *
+     * @param count  the number of groups
+     * @param common the common time duration of each group
+     * @return the inferred time rational
+     */
+    private TimeRational timeSigOf (int count,
+                                    Rational common)
+    {
+        // Determine the time rational value of measure total duration
+        TimeRational timeRational = new TimeRational(count * common.num, common.den);
+
+        int gcd = GCD.gcd(count, timeRational.num);
+
+        // Make sure num is a multiple of count
+        timeRational = new TimeRational(
+                (count / gcd) * timeRational.num,
+                (count / gcd) * timeRational.den);
+
+        // No 1 as num
+        if (timeRational.num == 1) {
+            timeRational = new TimeRational(2 * timeRational.num, 2 * timeRational.den);
+        }
+
+        // All 1/2 values resolve as 2/4
+        if (timeRational.getValue().equals(Rational.HALF)) {
+            timeRational = new TimeRational(2, 4);
+        }
+
+        return timeRational;
     }
 
     //----------//
@@ -954,115 +1017,27 @@ public class Voice
         return sb.toString();
     }
 
-    //---------------//
-    // insertForward //
-    //---------------//
-    private void insertForward (Rational duration,
-                                Mark.Position position,
-                                AbstractChordInter chord)
-    {
-        //        Point point = new Point(
-        //                chord.getHeadLocation().x,
-        //                (chord.getHeadLocation().y + chord.getTailLocation().y) / 2);
-        //
-        //        if (position == Mark.Position.AFTER) {
-        //            point.x += 10;
-        //        } else if (position == Mark.Position.BEFORE) {
-        //            point.x -= 10;
-        //        }
-        //
-        //        Mark mark = new Mark(chord.getSystem(), point, position, Symbols.SYMBOL_MARK, duration);
-        //
-        //        chord.addMark(mark);
-    }
-
-    //-----------//
-    // timeSigOf //
-    //-----------//
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
     /**
-     * Based on the number of common groups, derive the proper time rational value.
+     * Upgrade from oldWholeRestChord to measureRestChord.
      *
-     * @param count  the number of groups
-     * @param common the common time duration of each group
-     * @return the inferred time rational
+     * @return true if really upgraded
      */
-    private TimeRational timeSigOf (int count,
-                                    Rational common)
+    public boolean upgradeOldStuff ()
     {
-        // Determine the time rational value of measure total duration
-        TimeRational timeRational = new TimeRational(count * common.num, common.den);
+        if (oldWholeRestChord != null) {
+            measureRestChord = oldWholeRestChord;
+            oldWholeRestChord = null;
 
-        int gcd = GCD.gcd(count, timeRational.num);
-
-        // Make sure num is a multiple of count
-        timeRational = new TimeRational(
-                (count / gcd) * timeRational.num,
-                (count / gcd) * timeRational.den);
-
-        // No 1 as num
-        if (timeRational.num == 1) {
-            timeRational = new TimeRational(2 * timeRational.num, 2 * timeRational.den);
+            return true;
         }
 
-        // All 1/2 values resolve as 2/4
-        if (timeRational.getValue().equals(Rational.HALF)) {
-            timeRational = new TimeRational(2, 4);
-        }
-
-        return timeRational;
+        return false;
     }
 
-    //----------//
-    // addChord //
-    //----------//
-    public void addChord (AbstractChordInter chord)
-    {
-        if (chords == null) {
-            chords = new ArrayList<>();
-        }
-
-        if (!chords.contains(chord)) {
-            chords.add(chord);
-        }
-    }
-
-    //-----------//
-    // getChords //
-    //-----------//
-    public List<AbstractChordInter> getChords ()
-    {
-        if (chords != null) {
-            return Collections.unmodifiableList(chords);
-        }
-
-        return Collections.emptyList();
-    }
-
-    //-------------//
-    // removeChord //
-    //-------------//
-    /**
-     * Try to remove the provided chord from the chord list of this voice.
-     *
-     * @param chord the chord to remove from voice
-     * @return true if chord was actually removed
-     */
-    public boolean removeChord (AbstractChordInter chord)
-    {
-        if (chords == null) {
-            return false;
-        }
-
-        return chords.remove(chord);
-    }
-
-    //-------------//
-    // resetChords //
-    //-------------//
-    public void resetChords ()
-    {
-        chords = null;
-    }
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------------//
     // createMeasureRestVoice //
@@ -1085,23 +1060,59 @@ public class Voice
         return voice;
     }
 
-    //-----------------//
-    // upgradeOldStuff //
-    //-----------------//
-    /**
-     * Upgrade from oldWholeRestChord to measureRestChord.
-     *
-     * @return true if really upgraded
-     */
-    public boolean upgradeOldStuff ()
-    {
-        if (oldWholeRestChord != null) {
-            measureRestChord = oldWholeRestChord;
-            oldWholeRestChord = null;
+    //~ Enumerations -------------------------------------------------------------------------------
 
-            return true;
+    //-----------//
+    // VoiceKind //
+    //-----------//
+    /**
+     * To classify voices (and specifically their ID) according to their "height".
+     */
+    public static enum VoiceKind
+    {
+
+        /** Started in first staff, or chord with upward stem in merged grand staff. */
+        HIGH,
+        /** Started in second staff, or chord with downward stem in merged grand staff. */
+        LOW,
+        /** Started in third staff. */
+        INFRA;
+
+        /**
+         * Offset in voice ID, according to voice family.
+         * <ol>
+         * <li>1-4 for HIGH family (first staff in standard part, upward stem in merged part)
+         * <li>5-8 for LOW family (second staff in standard part, downward stem in merged part)
+         * <li>9-12 for INFRA family (third staff in a 3-staff organ system)
+         * </ol>
+         */
+        private static final int ID_FAMILY_OFFSET = 4;
+
+        /**
+         * Report the offset to be used for voice IDs within this family.
+         *
+         * @return the family ID offset
+         */
+        public int idOffset ()
+        {
+            return ID_FAMILY_OFFSET * ordinal();
         }
 
-        return false;
+        /**
+         * Report the id values for this family.
+         *
+         * @return array of family id values
+         */
+        public int[] ids ()
+        {
+            final int[] ids = new int[ID_FAMILY_OFFSET];
+            final int offset = idOffset();
+
+            for (int i = 0; i < ID_FAMILY_OFFSET; i++) {
+                ids[i] = 1 + offset + i;
+            }
+
+            return ids;
+        }
     }
 }

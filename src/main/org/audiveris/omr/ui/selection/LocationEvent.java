@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -40,6 +40,7 @@ public class LocationEvent
     private static final Logger logger = LoggerFactory.getLogger(LocationEvent.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * The location rectangle, which can be degenerated to a point when both
      * width and height values equal zero.
@@ -47,6 +48,7 @@ public class LocationEvent
     private final Rectangle rectangle;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new LocationEvent object.
      *
@@ -65,6 +67,7 @@ public class LocationEvent
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // getData //
     //---------//

@@ -23,8 +23,6 @@ package org.audiveris.schema;
  * specific language governing permissions and limitations
  * under the License.
  */
-import com.thoughtworks.qdox.JavaProjectBuilder;
-import com.thoughtworks.qdox.model.JavaAnnotatedElement;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.JavaDocData;
 import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.SearchableDocumentation;
@@ -36,6 +34,8 @@ import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.location.
 import org.codehaus.mojo.jaxb2.shared.FileSystemUtilities;
 import org.codehaus.mojo.jaxb2.shared.Validate;
 
+import com.thoughtworks.qdox.JavaProjectBuilder;
+import com.thoughtworks.qdox.model.JavaAnnotatedElement;
 import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaField;
@@ -64,10 +64,12 @@ import javax.xml.bind.annotation.XmlType;
  * The schemagen tool operates on compiled bytecode, where JavaDoc comments are not present.
  * However, the javadoc documentation present in java source files is required within the generated
  * XSD to increase usability and produce an XSD which does not loose out on important usage
- * information.</p>
+ * information.
+ * </p>
  * <p>
  * The JavaDocExtractor is used as a post processor after creating the XSDs within the compilation
- * unit, and injects XSD annotations into the appropriate XSD elements or types.</p>
+ * unit, and injects XSD annotations into the appropriate XSD elements or types.
+ * </p>
  * <p>
  * HB: This is a modified version of class
  * org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.JavaDocExtractor
@@ -129,7 +131,7 @@ public class MyJavaDocExtractor
      *                                  properly.
      */
     public MyJavaDocExtractor addSourceFiles (final List<File> sourceCodeFiles)
-            throws IllegalArgumentException
+        throws IllegalArgumentException
     {
 
         // Check sanity
@@ -140,9 +142,10 @@ public class MyJavaDocExtractor
             try {
                 builder.addSource(current);
             } catch (IOException e) {
-                throw new IllegalArgumentException("Could not add file ["
-                                                           + FileSystemUtilities.getCanonicalPath(
-                                current) + "]", e);
+                throw new IllegalArgumentException(
+                        "Could not add file [" + FileSystemUtilities.getCanonicalPath(current)
+                                + "]",
+                        e);
             }
         }
 
@@ -159,7 +162,7 @@ public class MyJavaDocExtractor
      *                                  properly.
      */
     public MyJavaDocExtractor addSourceURLs (final List<URL> sourceCodeURLs)
-            throws IllegalArgumentException
+        throws IllegalArgumentException
     {
 
         // Check sanity
@@ -170,8 +173,9 @@ public class MyJavaDocExtractor
             try {
                 builder.addSource(current);
             } catch (IOException e) {
-                throw new IllegalArgumentException("Could not add URL [" + current.toString() + "]",
-                                                   e);
+                throw new IllegalArgumentException(
+                        "Could not add URL [" + current.toString() + "]",
+                        e);
             }
         }
 
@@ -194,7 +198,7 @@ public class MyJavaDocExtractor
         final Collection<JavaSource> sources = builder.getSources();
 
         if (log.isInfoEnabled()) {
-            log.info("Processing [" + sources.size() + "] java sources.");
+            log.info("Processing " + sources.size() + " java sources.");
         }
 
         for (JavaSource current : sources) {
@@ -224,10 +228,19 @@ public class MyJavaDocExtractor
         // Add the class-level JavaDoc
         final String simpleClassName = currentClass.getName();
         final String classXmlName = getAnnotationAttributeValueFrom(
-                XmlType.class, "name", currentClass.getAnnotations());
+                XmlType.class,
+                "name",
+                currentClass.getAnnotations());
+
+        // HB. Replaced packageName with a more relevant containerName
+        final JavaClass declaringClass = currentClass.getDeclaringClass();
+        final String containerName = (declaringClass == null) ? packageName
+                : declaringClass.getFullyQualifiedName();
 
         final ClassLocation classLocation = new ClassLocation(
-                packageName, simpleClassName, classXmlName);
+                containerName, // HB was: packageName,
+                simpleClassName,
+                classXmlName);
 
         addEntry(dataHolder, classLocation, currentClass);
 
@@ -238,8 +251,7 @@ public class MyJavaDocExtractor
         // Fields
         for (JavaField currentField : currentClass.getFields()) {
 
-            final List<JavaAnnotation> currentFieldAnnotations = currentField
-                    .getAnnotations();
+            final List<JavaAnnotation> currentFieldAnnotations = currentField.getAnnotations();
             String annotatedXmlName = null;
 
             //
@@ -300,7 +312,7 @@ public class MyJavaDocExtractor
 
             // Add the field-level JavaDoc
             final FieldLocation fieldLocation = new FieldLocation(
-                    packageName,
+                    containerName, // HB. was packageName,
                     simpleClassName,
                     classXmlName,
                     currentField.getName(),
@@ -316,8 +328,7 @@ public class MyJavaDocExtractor
         // Methods
         for (JavaMethod currentMethod : currentClass.getMethods()) {
 
-            final List<JavaAnnotation> currentMethodAnnotations = currentMethod
-                    .getAnnotations();
+            final List<JavaAnnotation> currentMethodAnnotations = currentMethod.getAnnotations();
             String annotatedXmlName = null;
 
             //
@@ -371,12 +382,13 @@ public class MyJavaDocExtractor
             }
 
             // Add the method-level JavaDoc
-            final MethodLocation location = new MethodLocation(packageName,
-                                                               simpleClassName,
-                                                               classXmlName,
-                                                               currentMethod.getName(),
-                                                               annotatedXmlName,
-                                                               currentMethod.getParameters());
+            final MethodLocation location = new MethodLocation(
+                    containerName, // HB. was packageName,
+                    simpleClassName,
+                    classXmlName,
+                    currentMethod.getName(),
+                    annotatedXmlName,
+                    currentMethod.getParameters());
             addEntry(dataHolder, location, currentMethod);
 
             if (log.isDebugEnabled()) {
@@ -386,6 +398,9 @@ public class MyJavaDocExtractor
 
         // HB: Recursion to inner classes if any
         for (JavaClass innerClass : currentClass.getNestedClasses()) {
+            if (log.isDebugEnabled()) {
+                log.debug("Recursion  from " + currentClass + " to inner " + innerClass);
+            }
             processClass(innerClass, packageName, dataHolder);
         }
     }
@@ -404,10 +419,9 @@ public class MyJavaDocExtractor
      *         List, or {@code null} if none was found.
      * @since 2.2
      */
-    private static String getAnnotationAttributeValueFrom (
-            final Class<?> annotationType,
-            final String attributeName,
-            final List<JavaAnnotation> annotations)
+    private static String getAnnotationAttributeValueFrom (final Class<?> annotationType,
+                                                           final String attributeName,
+                                                           final List<JavaAnnotation> annotations)
     {
 
         // QDox uses the fully qualified class name of the annotation for comparison.
@@ -436,7 +450,9 @@ public class MyJavaDocExtractor
 
                     // Remove initial and trailing " chars, if present.
                     if (toReturn.startsWith("\"") && toReturn.endsWith("\"")) {
-                        toReturn = (((String) nameValue).trim()).substring(1, toReturn.length() - 1);
+                        toReturn = (((String) nameValue).trim()).substring(
+                                1,
+                                toReturn.length() - 1);
                     }
                 }
             }
@@ -471,9 +487,17 @@ public class MyJavaDocExtractor
                            final SortableLocation key,
                            final JavaAnnotatedElement value)
     {
+        if (log.isDebugEnabled()) {
+            try {
+                log.debug("addEntry key: " + key + " value: " + value);
+            } catch (Exception ex) {
+                log.debug("Exception: " + ex);
+            }
+        }
 
         // Check sanity
         if (map.containsKey(key)) {
+            final String given = "[" + value.getClass().getName() + "]: " + value;
 
             // Get something to compare with
             final JavaDocData existing = map.get(key);
@@ -492,14 +516,17 @@ public class MyJavaDocExtractor
                     }
                     return;
                 } else if (emptyExisting && log.isWarnEnabled()) {
-                    log.warn("Overwriting empty Package javadoc from [" + key + "]");
+                    log.warn(
+                            "Overwriting empty Package javadoc " //
+                                    + "\n       Key: " + key //
+                                    + "\n     Given: " + given //
+                                    + "\n  Existing: " + "[" + existing.getClass().getName() + "]: "
+                                    + existing);
                 }
             } else {
-                final String given = "[" + value.getClass().getName() + "]: " + value.getComment();
-                throw new IllegalArgumentException("Not processing duplicate SortableLocation ["
-                                                           + key + "]. "
-                                                           + "\n Existing: " + existing
-                                                           + ".\n Given: [" + given + "]");
+                throw new IllegalArgumentException(
+                        "Not processing duplicate SortableLocation [" + key + "]. "
+                                + "\n Existing: " + existing + ".\n Given: [" + given + "]");
             }
         }
 

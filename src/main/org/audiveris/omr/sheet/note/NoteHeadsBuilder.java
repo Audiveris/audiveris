@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.note;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -31,8 +29,12 @@ import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
+import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
 import org.audiveris.omr.image.Anchored.Anchor;
-import static org.audiveris.omr.image.Anchored.Anchor.*;
+import static org.audiveris.omr.image.Anchored.Anchor.LEFT_STEM;
+import static org.audiveris.omr.image.Anchored.Anchor.MIDDLE_LEFT;
+import static org.audiveris.omr.image.Anchored.Anchor.RIGHT_STEM;
+import org.audiveris.omr.image.ChamferDistance;
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.Template;
@@ -40,11 +42,14 @@ import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.image.TemplateFactory.Catalog;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoPath;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.ReversePathIterator;
 import org.audiveris.omr.run.Orientation;
+import org.audiveris.omr.score.DrumSet;
+import org.audiveris.omr.score.DrumSet.DrumInstrument;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
@@ -54,6 +59,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.AbstractVerticalInter;
@@ -64,14 +70,19 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterPairPredicate;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
+import org.audiveris.omr.sig.relation.Exclusion;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
@@ -80,14 +91,14 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import org.audiveris.omr.sig.inter.AbstractBeamInter;
-import org.audiveris.omr.sig.relation.Exclusion;
+import java.util.TreeMap;
 
 /**
  * Class <code>NoteHeadsBuilder</code> retrieves the void note heads, the black note heads,
@@ -97,11 +108,11 @@ import org.audiveris.omr.sig.relation.Exclusion;
  * shape, with a combination of foreground and background information.
  * <p>
  * We don't need to check each and every location in the system, but only the locations where such
- * note kind is possible:
+ * head kind is possible:
  * <ul>
  * <li>We can stick to staff lines and ledgers locations.</li>
  * <li>We cannot fully use stems, since at this time we just have vertical seeds and not all stems
- * will contain seeds. However, if a vertical seed exists nearby we can use it to evaluate a note
+ * will contain seeds. However, if a vertical seed exists nearby we can use it to evaluate a head
  * candidate at proper location.</li>
  * <li>We can reasonably skip the locations where a really good beam or a really good bar line has
  * been detected.</li>
@@ -120,21 +131,23 @@ public class NoteHeadsBuilder
     private static final double EPSILON = 1E-5;
 
     /** Shapes of note head competitors. */
-    private static final Set<Shape> COMPETING_SHAPES = EnumSet.copyOf(
-            Arrays.asList(
-                    Shape.THICK_BARLINE,
-                    Shape.THIN_BARLINE,
-                    Shape.THICK_CONNECTOR,
-                    Shape.THIN_CONNECTOR,
-                    Shape.BEAM,
-                    Shape.BEAM_HOOK,
-                    Shape.BEAM_SMALL,
-                    Shape.BEAM_HOOK_SMALL));
-
-    /** Specific value for no offsets. */
-    private static final int[] NO_OFFSETS = new int[]{0};
+    private static final Set<Shape> COMPETING_SHAPES = EnumSet.of(
+            Shape.THICK_BARLINE,
+            Shape.THIN_BARLINE,
+            Shape.THICK_CONNECTOR,
+            Shape.THIN_CONNECTOR,
+            Shape.BEAM,
+            Shape.BEAM_HOOK,
+            Shape.BEAM_SMALL,
+            Shape.BEAM_HOOK_SMALL,
+            Shape.MULTIPLE_REST,
+            Shape.TREMOLO_1,
+            Shape.TREMOLO_2,
+            Shape.TREMOLO_3,
+            Shape.VERTICAL_SERIF);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -147,14 +160,14 @@ public class NoteHeadsBuilder
     @Navigable(false)
     private final Sheet sheet;
 
-    /** Sheet scale. */
+    /** The sheet scale. */
     @Navigable(false)
     private final Scale scale;
 
     /** The distance table to use. */
     private final DistanceTable distances;
 
-    /** The note-oriented spots for this system. */
+    /** The head-oriented spots for this system. */
     private final List<Glyph> systemSpots;
 
     /** Scale-dependent constants. */
@@ -181,24 +194,34 @@ public class NoteHeadsBuilder
     /** Offsets tried around a given (stem-based) abscissa. */
     private final int[] xOffsets;
 
-    /** All note templates for this sheet. */
-    private final EnumSet<Shape> sheetTemplateNotes;
+    /** All head templates for this sheet. */
+    private final EnumSet<Shape> sheetTemplateNotesAll;
 
-    /** All stem note templates for this sheet. */
-    private final EnumSet<Shape> sheetStemTemplateNotes;
+    /** All stem head templates for this sheet. */
+    private final EnumSet<Shape> sheetTemplateNotesStem;
 
-    /** All void note templates for this sheet. */
-    private final EnumSet<Shape> sheetVoidTemplateNotes;
+    /** All hollow head templates for this sheet. */
+    private final EnumSet<Shape> sheetTemplateNotesHollow;
 
     /** Collector for seed-based heads. */
     private final HeadSeedTally tally;
+
+    /** Max template half width. */
+    private final int templateHalf;
 
     // Debug
     private final Perf seedsPerf = new Perf();
 
     private final Perf rangePerf = new Perf();
 
+    // Debug: Already dumped the head shapes for a standard staff?
+    public Boolean stdDumped;
+
+    // Debug: Already dumped the head shapes per pitch and per kind for a drum staff?
+    public final Map<Integer, Map<String, Boolean>> drumDumped;
+
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>NoteHeadsBuilder</code> object.
      *
@@ -206,24 +229,30 @@ public class NoteHeadsBuilder
      * @param distances   the distance table
      * @param systemSpots spots detected for this system
      * @param tally       (output) data on seed-head distance
+     * @param stdDumped   debug: to avoid repetitive dumps
+     * @param drumDumped  debug: to avoid repetitive dumps
      */
     public NoteHeadsBuilder (SystemInfo system,
                              DistanceTable distances,
                              List<Glyph> systemSpots,
-                             HeadSeedTally tally)
+                             HeadSeedTally tally,
+                             Boolean stdDumped,
+                             Map<Integer, Map<String, Boolean>> drumDumped)
     {
         this.system = system;
         this.distances = distances;
         this.systemSpots = systemSpots;
         this.tally = tally;
+        this.stdDumped = stdDumped;
+        this.drumDumped = drumDumped;
 
         sig = system.getSig();
         sheet = system.getSheet();
         scale = sheet.getScale();
 
-        sheetTemplateNotes = ShapeSet.getTemplateNotes(sheet);
-        sheetStemTemplateNotes = ShapeSet.getStemTemplateNotes(sheet);
-        sheetVoidTemplateNotes = ShapeSet.getVoidTemplateNotes(sheet);
+        sheetTemplateNotesAll = ShapeSet.getTemplateNotesAll(sheet);
+        sheetTemplateNotesStem = ShapeSet.getTemplateNotesStem(sheet);
+        sheetTemplateNotesHollow = ShapeSet.getTemplateNotesHollow(sheet);
 
         params = new Parameters(scale);
 
@@ -236,100 +265,17 @@ public class NoteHeadsBuilder
 
         // Compute a reasonable minTemplateWidth
         minTemplateWidth = computeMinTemplateWidth();
+        templateHalf = computeTemplateHalf();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // buildHeads //
-    //------------//
-    /**
-     * Retrieve all void heads, black heads, (cross heads) and whole notes in the system
-     * both for standard and small (cue/grace) sizes.
-     */
-    public void buildHeads ()
-    {
-        StopWatch watch = new StopWatch("buildHeads S#" + system.getId());
-        systemBarAreas = getSystemBarAreas();
-        systemCompetitors = getSystemCompetitors(); // Competitors
-        systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED); // Vertical seeds
-        Collections.sort(systemSeeds, Glyphs.byOrdinate);
-        Collections.sort(systemSpots, Glyphs.byOrdinate);
-        image = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
-
-        for (Staff staff : system.getStaves()) {
-            if (staff.isTablature()) {
-                continue;
-            }
-
-            logger.debug("Staff #{}", staff.getId());
-
-            // Determine the proper catalog, based on staff size
-            final int pointSize = staff.getHeadPointSize();
-            catalog = TemplateFactory.getInstance().getCatalog(pointSize);
-
-            final List<HeadInter> ch = new ArrayList<>(); // Created Heads, for this staff
-
-            // First, process all seed-based heads for the staff
-            watch.start("Staff #" + staff.getId() + " seed");
-            ch.addAll(processStaff(staff, true));
-
-            // Consider seed-based heads as special competitors for x-based notes
-            systemCompetitors.addAll(ch);
-            Collections.sort(systemCompetitors, Inters.byOrdinate);
-
-            // Second, process x-based notes for the staff
-            watch.start("Staff #" + staff.getId() + " range");
-            ch.addAll(processStaff(staff, false));
-
-            // Remove duplicates for current staff
-            Collections.sort(ch, Inters.byFullAbscissa);
-            watch.start("Staff #" + staff.getId() + " duplicates");
-            final int duplicates = purge(ch, "duplicate", (h1, h2) -> h1.isSameAs(h2), true);
-
-            if (duplicates > 0) {
-                logger.debug("Staff#{} {} duplicates", staff.getId(), duplicates);
-            }
-
-            // Overlaps for current staff are formalized as exclusions
-            watch.start("Staff #" + staff.getId() + " overlaps");
-            final int overlaps = purge(ch, "overlap", (h1, h2) -> h1.overlaps(h2), false);
-
-            if (overlaps > 0) {
-                logger.debug("Staff#{} {} overlaps", staff.getId(), overlaps);
-            }
-
-            // Purge tally of discarded heads
-            tally.purgeRemovedHeads();
-
-            for (Inter inter : ch) {
-                // Boost head shapes that don't expect stem
-                if (ShapeSet.StemLessHeads.contains(inter.getShape())) {
-                    inter.increase(constants.wholeBoost.getValue());
-                }
-
-                // Keep created heads in staff
-                staff.addNote((AbstractNoteInter) inter);
-            }
-        }
-
-        // Purge small beams defeated by good heads
-        watch.start("Purging beams");
-        purgeSmallBeams();
-
-        if (constants.printWatch.isSet()) {
-            watch.print();
-        }
-
-        logger.debug("S#{} seeds {}", system.getId(), seedsPerf);
-        logger.debug("    range {}", rangePerf);
-    }
 
     //------------------//
     // aggregateMatches //
     //------------------//
     private List<HeadInter> aggregateMatches (List<HeadInter> heads)
     {
-        // Sort by decreasing grade
+        // Sort heads by decreasing grade, whatever their shape
         Collections.sort(heads, Inters.byReverseGrade);
 
         // Gather matches per close locations
@@ -369,6 +315,102 @@ public class NoteHeadsBuilder
         return filtered;
     }
 
+    //------------//
+    // buildHeads //
+    //------------//
+    /**
+     * Retrieve all heads in the system both for standard and small (cue/grace) sizes.
+     */
+    public void buildHeads ()
+    {
+        final MusicFamily family = sheet.getStub().getMusicFamily();
+        StopWatch watch = new StopWatch("buildHeads S#" + system.getId());
+        systemBarAreas = getSystemBarAreas();
+        systemCompetitors = getSystemCompetitors(); // Competitors
+        systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED); // Vertical seeds
+        Collections.sort(systemSeeds, Glyphs.byOrdinate);
+        Collections.sort(systemSpots, Glyphs.byOrdinate);
+        image = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
+
+        for (Staff staff : system.getStaves()) {
+            if (staff.isTablature()) {
+                continue;
+            }
+
+            logger.debug("Staff #{}", staff.getId());
+
+            // Determine the proper catalog, based on staff size
+            watch.start("Staff #" + staff.getId() + " catalog");
+            final int pointSize = staff.getHeadPointSize();
+            catalog = TemplateFactory.getInstance().getCatalog(family, pointSize);
+
+            final List<HeadInter> ch = new ArrayList<>(); // Created Heads, for this staff
+
+            // First, process all seed-based heads for the staff
+            watch.start("Staff #" + staff.getId() + " seed");
+            ch.addAll(processStaff(staff, true));
+
+            // Consider seed-based heads as special competitors for x-based notes
+            systemCompetitors.addAll(ch);
+            Collections.sort(systemCompetitors, Inters.byOrdinate);
+
+            // Second, process x-based notes for the staff
+            watch.start("Staff #" + staff.getId() + " range");
+            ch.addAll(processStaff(staff, false));
+
+            // Remove duplicates for current staff
+            Collections.sort(ch, Inters.byFullAbscissa);
+            watch.start("Staff #" + staff.getId() + " duplicates");
+            final int duplicates = purge(
+                    ch,
+                    "duplicate",
+                    (h1,
+                     h2) -> h1.isSameAs(h2),
+                    true);
+
+            if (duplicates > 0) {
+                logger.debug("Staff#{} {} duplicates", staff.getId(), duplicates);
+            }
+
+            // Overlaps for current staff are formalized as exclusions
+            watch.start("Staff #" + staff.getId() + " overlaps");
+            final int overlaps = purge(
+                    ch,
+                    "overlap",
+                    (h1,
+                     h2) -> h1.overlaps(h2),
+                    false);
+
+            if (overlaps > 0) {
+                logger.debug("Staff#{} {} overlaps", staff.getId(), overlaps);
+            }
+
+            // Purge tally of discarded heads
+            tally.purgeRemovedHeads();
+
+            for (Inter inter : ch) {
+                // Boost head shapes that don't expect stem
+                if (ShapeSet.StemLessHeads.contains(inter.getShape())) {
+                    inter.increase(getStemLessBoost());
+                }
+
+                // Keep created heads in staff
+                staff.addNote((AbstractNoteInter) inter);
+            }
+        }
+
+        // Purge small beams defeated by good heads
+        watch.start("Purging beams");
+        purgeSmallBeams();
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
+
+        logger.debug("S#{} seeds {}", system.getId(), seedsPerf);
+        logger.debug("    range {}", rangePerf);
+    }
+
     //-------------------------//
     // computeMinTemplateWidth //
     //-------------------------//
@@ -380,6 +422,14 @@ public class NoteHeadsBuilder
     private int computeMinTemplateWidth ()
     {
         return sheet.getScale().getInterline(); // Not too stupid...
+    }
+
+    //---------------------//
+    // computeTemplateHalf //
+    //---------------------//
+    private int computeTemplateHalf ()
+    {
+        return (3 * sheet.getScale().getInterline()) / 2; // Not too stupid...
     }
 
     //-----------------//
@@ -399,8 +449,9 @@ public class NoteHeadsBuilder
             length++;
         }
 
-        int[] offsets = new int[length];
+        final int[] offsets = new int[length];
 
+        // 0, -1, +1, -2, +2, ...
         for (int i = 0; i < length; i++) {
             if ((i % 2) == 0) {
                 offsets[i] = -(i / 2);
@@ -422,7 +473,7 @@ public class NoteHeadsBuilder
      * @param anchor position of location WRT shape
      * @param shape  the shape tested
      * @param staff  the related staff
-     * @param pitch  the note pitch
+     * @param pitch  the head pitch
      * @return the head inter created, if any
      */
     private HeadInter createInter (PixelDistance loc,
@@ -444,6 +495,50 @@ public class NoteHeadsBuilder
         final Rectangle box = template.getSlimBoundsAt(loc.x, loc.y, anchor);
 
         return new HeadInter(box, shape, impacts, staff, pitch);
+    }
+
+    //---------------//
+    // dumpShapeList //
+    //---------------//
+    /**
+     * A debugging utility to list which precise template notes are used, per kind
+     * (and per pitch when on a drum staff).
+     *
+     * @param pitch scanner pitch position (null for a non-drum staff)
+     * @param kind  template collection kind (all, stem, hollow)
+     * @param coll  the collection of template notes
+     */
+    private void dumpShapeList (Integer pitch,
+                                String kind,
+                                Collection<Shape> coll)
+    {
+        if (pitch == null) {
+            // A standard non-drum staff
+            if (!stdDumped) {
+                System.out.println(String.format("Scanner kind: %s", kind));
+                for (Shape shape : coll) {
+                    System.out.println(String.format("    %s", shape));
+                }
+
+                stdDumped = true;
+            }
+        } else {
+            // A pitch line for a drum staff
+            Map<String, Boolean> kindMap = drumDumped.get(pitch);
+            if (kindMap == null) {
+                drumDumped.put(pitch, kindMap = new TreeMap<>());
+            }
+
+            final Boolean dumped = kindMap.get(kind);
+            if (dumped == null || !dumped) {
+                System.out.println(String.format("Scanner pitch: %2d kind: %s", pitch, kind));
+                for (Shape shape : coll) {
+                    System.out.println(String.format("    %s", shape));
+                }
+
+                kindMap.put(kind, true);
+            }
+        }
     }
 
     //---------------------//
@@ -573,9 +668,9 @@ public class NoteHeadsBuilder
     private List<Area> getSystemBarAreas ()
     {
         final List<Area> areas = new ArrayList<>();
-        final List<Inter> inters = sig.inters(inter
-                -> inter.isFrozen() && (inter instanceof BarlineInter
-                                                || inter instanceof BarConnectorInter));
+        final List<Inter> inters = sig.inters(
+                inter -> inter.isFrozen() && (inter instanceof BarlineInter
+                        || inter instanceof BarConnectorInter));
         Collections.sort(inters, Inters.byOrdinate);
 
         for (Inter inter : inters) {
@@ -597,7 +692,8 @@ public class NoteHeadsBuilder
      */
     private List<Inter> getSystemCompetitors ()
     {
-        final List<Inter> comps = sig.inters(inter -> {
+        final List<Inter> comps = sig.inters(inter ->
+        {
             if (!inter.isGood() || !COMPETING_SHAPES.contains(inter.getShape())) {
                 return false;
             }
@@ -667,7 +763,7 @@ public class NoteHeadsBuilder
     // overlapSeed //
     //-------------//
     /**
-     * We check overlap with seed-based note and return true only when
+     * We check overlap with seed-based head and return true only when
      * the overlapping seed-based inter has a rather similar or better grade.
      *
      * @param head        the x-based head to check
@@ -689,8 +785,12 @@ public class NoteHeadsBuilder
             Rectangle cBox = comp.getBounds();
 
             if (cBox.intersects(box)) {
-                if (comp.getGrade() >= loweredGrade) {
-                    return true;
+                final double iou = GeoUtil.iou(cBox, box);
+
+                if (iou >= constants.minIouHeads.getValue()) {
+                    if (comp.getGrade() >= loweredGrade) {
+                        return true;
+                    }
                 }
             } else if (cBox.x > xMax) {
                 break;
@@ -719,31 +819,42 @@ public class NoteHeadsBuilder
         final List<HeadInter> ch = new ArrayList<>(); // Created heads
 
         // Use all staff lines
-        int pitch = -5; // Current pitch
+        final int lineNb = staff.getLineCount();
+        final int minPitch = (lineNb == 1) ? 0 : -5;
+        final int maxPitch = (lineNb == 1) ? 0 : 5;
+        int pitch = minPitch; // Current pitch
         LineAdapter prevAdapter = null;
 
         for (LineInfo line : staff.getLines()) {
             LineAdapter adapter = new StaffLineAdapter(staff, line);
 
-            // Look above line
-            ch.addAll(new Scanner(adapter, prevAdapter, -1, pitch++, useSeeds).lookup());
+            // Look above line?
+            if (lineNb > 1) {
+                ch.addAll(new Scanner(adapter, prevAdapter, -1, pitch++, useSeeds).lookup());
+            }
 
             // Look exactly on line
             ch.addAll(new Scanner(adapter, null, 0, pitch++, useSeeds).lookup());
 
             // For the last line only, look just below line
-            if (pitch == 5) {
+            if ((lineNb > 1) && pitch == maxPitch) {
                 ch.addAll(new Scanner(adapter, null, 1, pitch++, useSeeds).lookup());
             }
 
             prevAdapter = adapter;
         }
 
+        if (lineNb == 1) {
+            // No ledger on a 1-line staff!
+            return ch;
+        }
+
         // Use all ledgers, above staff, then below staff
         // For merged grand staff, don't look further than middle ledger (C4)
         final Part part = staff.getPart();
 
-        for (int dir : new int[]{-1, 1}) {
+        for (int dir : new int[]
+        { -1, 1 }) {
             // Limitation to last ledger in the specific case of merged grand staff
             boolean lookFurther = true;
 
@@ -919,65 +1030,6 @@ public class NoteHeadsBuilder
         return h2;
     }
 
-    //-----------------//
-    // purgeSmallBeams //
-    //-----------------//
-    /**
-     * During the BEAMS step, some heads may have been mistaken for small beams to be now
-     * purged.
-     * <p>
-     * Note that the areas of non-small beams were protected against creation of heads.
-     */
-    private void purgeSmallBeams ()
-    {
-        final List<Inter> purgedBeams = new ArrayList<>();
-        final List<Inter> purgedHeads = new ArrayList<>();
-        final List<Inter> heads = sig.inters(HeadInter.class);
-        Collections.sort(heads, Inters.byOrdinate);
-
-        final List<Inter> smallBeams = sig.inters(inter
-                -> ShapeSet.Beams.contains(inter.getShape())
-                           && inter.getBounds().width < params.minBeamWidth);
-
-        for (Iterator<Inter> itb = smallBeams.iterator(); itb.hasNext();) {
-            final Inter iBeam = itb.next();
-            sig.computeContextualGrade(iBeam);
-            final Area beamArea = iBeam.getArea();
-            final double beamGrade = iBeam.getContextualGrade();
-            final Rectangle beamBox = iBeam.getBounds();
-            final int beamBottom = beamBox.y + beamBox.height - 1;
-
-            for (Iterator<Inter> ith = heads.iterator(); ith.hasNext();) {
-                Inter iHead = ith.next();
-                final Rectangle headBox = iHead.getBounds();
-
-                if (beamArea.intersects(headBox)) {
-                    if (iHead.getGrade() > beamGrade) {
-                        iBeam.remove();
-                        itb.remove();
-                        purgedBeams.add(iBeam);
-                        break;
-                    } else {
-                        iHead.remove();
-                        ith.remove();
-                        purgedHeads.add(iHead);
-                    }
-                } else if (headBox.y > beamBottom) {
-                    break;
-                }
-            }
-        }
-
-        if (!purgedBeams.isEmpty()) {
-            logger.debug("{} {} beams purged", system, purgedBeams.size());
-        }
-
-        if (!purgedHeads.isEmpty()) {
-            logger.debug("{} {} heads purged", system, purgedHeads.size());
-        }
-    }
-
-    //~ Inner classes ------------------------------------------------------------------------------
     //---------------//
     // purgeOverlaps //
     //---------------//
@@ -1032,6 +1084,198 @@ public class NoteHeadsBuilder
         return removed.size();
     }
 
+    //-----------------//
+    // purgeSmallBeams //
+    //-----------------//
+    /**
+     * During the BEAMS step, some heads may have been mistaken for small beams to be now
+     * purged.
+     * <p>
+     * Note that the areas of non-small beams were protected against creation of heads.
+     */
+    private void purgeSmallBeams ()
+    {
+        final List<Inter> purgedBeams = new ArrayList<>();
+        final List<Inter> purgedHeads = new ArrayList<>();
+        final List<Inter> heads = sig.inters(HeadInter.class);
+        Collections.sort(heads, Inters.byOrdinate);
+
+        final List<Inter> smallBeams = sig.inters(
+                inter -> ShapeSet.Beams.contains(inter.getShape()) && inter
+                        .getBounds().width < params.minBeamWidth);
+
+        for (Iterator<Inter> itb = smallBeams.iterator(); itb.hasNext();) {
+            final Inter iBeam = itb.next();
+            sig.computeContextualGrade(iBeam);
+            final Area beamArea = iBeam.getArea();
+            final double beamGrade = iBeam.getContextualGrade();
+            final Rectangle beamBox = iBeam.getBounds();
+            final int beamBottom = beamBox.y + beamBox.height - 1;
+
+            for (Iterator<Inter> ith = heads.iterator(); ith.hasNext();) {
+                Inter iHead = ith.next();
+                final Rectangle headBox = iHead.getBounds();
+
+                if (beamArea.intersects(headBox)) {
+                    if (iHead.getGrade() > beamGrade) {
+                        iBeam.remove();
+                        itb.remove();
+                        purgedBeams.add(iBeam);
+                        break;
+                    } else {
+                        iHead.remove();
+                        ith.remove();
+                        purgedHeads.add(iHead);
+                    }
+                } else if (headBox.y > beamBottom) {
+                    break;
+                }
+            }
+        }
+
+        if (!purgedBeams.isEmpty()) {
+            logger.debug("{} {} beams purged", system, purgedBeams.size());
+        }
+
+        if (!purgedHeads.isEmpty()) {
+            logger.debug("{} {} heads purged", system, purgedHeads.size());
+        }
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //------------------//
+    // getStemLessBoost //
+    //------------------//
+    /**
+     * Report the boost value for stem-less heads since they can't expect support from stem.
+     *
+     * @return the boost value
+     */
+    public static double getStemLessBoost ()
+    {
+        return constants.stemLessBoost.getValue();
+    }
+
+    //~ Inner classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Aggregate //
+    //-----------//
+    /**
+     * Describes an aggregate of matches around similar locations.
+     */
+    private static class Aggregate
+    {
+
+        Point2D point;
+
+        List<HeadInter> matches = new ArrayList<>();
+
+        public void add (HeadInter head)
+        {
+            if (point == null) {
+                point = head.getCenter2D();
+            }
+
+            matches.add(head);
+        }
+
+        public HeadInter getMainInter ()
+        {
+            return matches.get(0);
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            sb.append("{");
+
+            if (point != null) {
+                sb.append(" point:").append(PointUtil.toString(point));
+            }
+
+            sb.append(" ").append(matches.size()).append(" matches: ");
+
+            for (Inter match : matches) {
+                sb.append(match);
+            }
+
+            sb.append("}");
+
+            return sb.toString();
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+
+        private final Constant.Boolean dumpTemplateNotes = new Constant.Boolean(
+                false,
+                "Should we dump the template notes for standard and drum staves?");
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Constant.Boolean printParameters = new Constant.Boolean(
+                false,
+                "Should we print out the class parameters?");
+
+        private final Constant.Boolean allowAttachments = new Constant.Boolean(
+                false,
+                "Should we allow staff attachments for created areas?");
+
+        private final Scale.Fraction maxTemplateDx = new Scale.Fraction(
+                0.375,
+                "Maximum dx between similar template instances");
+
+        private final Scale.Fraction maxClosedDy = new Scale.Fraction(
+                0,
+                "Extension allowed in y when located on line/ledger");
+
+        private final Scale.Fraction maxOpenDy = new Scale.Fraction(
+                0.2,
+                "Extension allowed in y when located in space");
+
+        private final Constant.Ratio gradeMargin = new Constant.Ratio(
+                0.1,
+                "Grade margin to boost seed-based competitors");
+
+        private final Constant.Ratio minIouHeads = new Constant.Ratio(
+                0.1,
+                "Minimum intersection over union for head overlapping");
+
+        private final Constant.Ratio pitchMargin = new Constant.Ratio(
+                0.75,
+                "Vertical margin for intercepting stem seed around a target pitch");
+
+        private final Constant.Ratio stemLessBoost = new Constant.Ratio(
+                0, // Was 0.38,
+                "How much do we boost stem-less heads (always isolated)");
+
+        private final Constant.Ratio crossBoost = new Constant.Ratio(
+                0.0, // Was 0.1,
+                "How much do we boost cross heads (badly recognized by template matching)");
+
+        private final Scale.Fraction minBeamWidth = new Scale.Fraction(
+                2.5,
+                "Minimum good beam width to exclude heads");
+
+        private final Scale.Fraction barVerticalMargin = new Scale.Fraction(
+                2.0,
+                "Vertical margin around frozen barline or connector");
+
+        private final Constant.Ratio minHoleWhiteRatio = new Constant.Ratio(
+                0.2,
+                "Minimum ratio of hole white pixel to reassign Black to Void");
+    }
+
     //---------------//
     // LedgerAdapter //
     //---------------//
@@ -1042,8 +1286,6 @@ public class NoteHeadsBuilder
             extends LineAdapter
     {
 
-        private final Glyph ledger;
-
         private final Point2D left;
 
         private final Point2D right;
@@ -1053,7 +1295,6 @@ public class NoteHeadsBuilder
                        Glyph ledger)
         {
             super(staff, prefix);
-            this.ledger = ledger;
             left = ledger.getStartPoint(Orientation.HORIZONTAL);
             right = ledger.getStopPoint(Orientation.HORIZONTAL);
         }
@@ -1085,15 +1326,138 @@ public class NoteHeadsBuilder
         }
 
         @Override
+        public double yAt (double x)
+        {
+            return LineUtil.yAtX(left, right, x);
+        }
+
+        @Override
         public int yAt (int x)
         {
             return (int) Math.rint(yAt((double) x));
         }
+    }
+
+    //-------------//
+    // LineAdapter //
+    //-------------//
+    /**
+     * Such adapter is needed to interact with staff LineInfo or ledger glyph line in a
+     * consistent way.
+     */
+    private abstract static class LineAdapter
+    {
+
+        private final Staff staff;
+
+        private final String prefix;
+
+        LineAdapter (Staff staff,
+                     String prefix)
+        {
+            this.staff = staff;
+            this.prefix = prefix;
+        }
+
+        /**
+         * Report the competitors lookup area, according to limits above
+         * and below, defined as ordinate shifts relative to the reference line.
+         *
+         * @param above offset (positive or negative) from line to top limit.
+         * @param below offset (positive or negative) from line to bottom limit.
+         */
+        public abstract Area getArea (double above,
+                                      double below);
+
+        /** Report the abscissa at beginning of line. */
+        public abstract int getLeftAbscissa ();
+
+        /** Needed to allow various attachments on the same staff. */
+        public String getPrefix ()
+        {
+            return prefix;
+        }
+
+        /** Report the abscissa at end of line. */
+        public abstract int getRightAbscissa ();
+
+        public Staff getStaff ()
+        {
+            return staff;
+        }
+
+        /** Report the precise ordinate at provided precise abscissa. */
+        public abstract double yAt (double x);
+
+        /** Report the ordinate at provided abscissa. */
+        public abstract int yAt (int x);
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class <code>Parameters</code> gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+
+        final double maxDistanceLow;
+
+        final double reallyBadDistance;
+
+        final int maxTemplateDx;
+
+        final int maxClosedDy;
+
+        final int maxOpenDy;
+
+        final int minBeamWidth;
+
+        final double vBarMargin;
+
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        Parameters (Scale scale)
+        {
+            maxDistanceLow = Template.maxDistanceLow();
+            reallyBadDistance = Template.reallyBadDistance();
+
+            maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
+            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
+            maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
+            minBeamWidth = scale.toPixels(constants.minBeamWidth);
+
+            vBarMargin = scale.toPixelsDouble(constants.barVerticalMargin);
+        }
+    }
+
+    /**
+     * DEBUG: meant to precisely measure behavior of heads retrieval.
+     */
+    private static class Perf
+    {
+
+        int bars;
+
+        int overlaps;
+
+        int evals;
+
+        int abandons;
 
         @Override
-        public double yAt (double x)
+        public String toString ()
         {
-            return LineUtil.yAtX(left, right, x);
+            return String.format(
+                    "%7d bars, %7d overlaps, %7d evals, %7d abandons",
+                    bars,
+                    overlaps,
+                    evals,
+                    abandons);
         }
     }
 
@@ -1135,6 +1499,13 @@ public class NoteHeadsBuilder
         /** Offsets tried around a given ordinate. */
         private final int[] yOffsets;
 
+        /** Shapes relevant only for the scanner line. */
+        private final EnumSet<Shape> scannerTemplateNotesAll;
+
+        private final EnumSet<Shape> scannerTemplateNotesHollow;
+
+        private final EnumSet<Shape> scannerTemplateNotesStem;
+
         /**
          * Create a Scanner.
          *
@@ -1156,7 +1527,7 @@ public class NoteHeadsBuilder
             this.pitch = pitch;
             this.useSeeds = useSeeds;
 
-            // Open line?
+            // Open line (in staff space) or closed line (on staff line/ledger)?
             isOpen = ((pitch % 2) != 0) && ((line2 == null) || (Math.abs(pitch) == 5));
             yOffsets = computeYOffsets();
 
@@ -1182,9 +1553,8 @@ public class NoteHeadsBuilder
 
             {
                 // Horizontal slice to detect bars/connectors
-                final double vMargin = scale.toPixelsDouble(constants.barVerticalMargin);
-                final double above = ((interline * dir) / 2.0) - vMargin;
-                final double below = ((interline * dir) / 2.0) + vMargin;
+                final double above = ((interline * dir) / 2.0) - params.vBarMargin;
+                final double below = ((interline * dir) / 2.0) + params.vBarMargin;
                 Area barsArea = line.getArea(above, below);
                 barAreas = getBarAreas(barsArea);
             }
@@ -1195,11 +1565,30 @@ public class NoteHeadsBuilder
             }
 
             competitors = getCompetitorsSlice(competitorsArea);
-        }
 
-        public List<HeadInter> lookup ()
-        {
-            return useSeeds ? lookupSeeds() : lookupRange();
+            // Determine shapes relevant for this scanner pitch value.
+            final EnumSet<Shape> scannerShapes = buildShapeList();
+
+            scannerTemplateNotesAll = scannerShapes.clone();
+            scannerTemplateNotesAll.retainAll(sheetTemplateNotesAll);
+
+            scannerTemplateNotesStem = scannerShapes.clone();
+            scannerTemplateNotesStem.retainAll(sheetTemplateNotesStem);
+
+            scannerTemplateNotesHollow = scannerShapes.clone();
+            scannerTemplateNotesHollow.retainAll(sheetTemplateNotesHollow);
+
+            if (constants.dumpTemplateNotes.isSet()) {
+                if (!line.getStaff().isDrum()) {
+                    dumpShapeList(null, "all", scannerTemplateNotesAll);
+                    dumpShapeList(null, "stem", scannerTemplateNotesStem);
+                    dumpShapeList(null, "hollow", scannerTemplateNotesHollow);
+                } else {
+                    dumpShapeList(pitch, "all", scannerTemplateNotesAll);
+                    dumpShapeList(pitch, "stem", scannerTemplateNotesStem);
+                    dumpShapeList(pitch, "hollow", scannerTemplateNotesHollow);
+                }
+            }
         }
 
         //-------------//
@@ -1223,6 +1612,44 @@ public class NoteHeadsBuilder
             return false;
         }
 
+        //----------------//
+        // buildShapeList //
+        //----------------//
+        private EnumSet<Shape> buildShapeList ()
+        {
+            final Staff staff = line.getStaff();
+            if (!staff.isDrum()) {
+                return sheetTemplateNotesAll;
+            }
+
+            final EnumSet<Shape> allShapes = EnumSet.noneOf(Shape.class);
+            final DrumSet drumSet = DrumSet.getInstance();
+            final int lineCount = staff.getLineCount();
+            final Map<Integer, Map<DrumSet.MotifSign, DrumInstrument>> staffSet = drumSet
+                    .getStaffSet(lineCount);
+
+            if (staffSet == null) {
+                logger.warn("No DrumSet defined for staff size {}", lineCount);
+            } else {
+                final Map<DrumSet.MotifSign, DrumInstrument> msMap = staffSet.get(pitch);
+
+                if (msMap == null) {
+                    return allShapes; // Nothing on this pitch value
+                }
+
+                for (DrumInstrument inst : msMap.values()) {
+                    if (inst != null) {
+                        // Motif + Sign (not used at template time)
+                        final HeadMotif motif = inst.headMotif;
+                        final List<Shape> shapes = ShapeSet.getMotifSet(motif);
+                        allShapes.addAll(shapes);
+                    }
+                }
+            }
+
+            return allShapes;
+        }
+
         //-----------------//
         // computeYOffsets //
         //-----------------//
@@ -1233,8 +1660,8 @@ public class NoteHeadsBuilder
          */
         private int[] computeYOffsets ()
         {
-            if (isOpen) {
-                int[] offsets = new int[1 + params.maxOpenDy];
+            if (isOpen) { // InSpace
+                final int[] offsets = new int[1 + params.maxOpenDy];
 
                 for (int i = 0; i < offsets.length; i++) {
                     // According to 'dir' sign:
@@ -1262,14 +1689,15 @@ public class NoteHeadsBuilder
                 }
 
                 return offsets;
-            } else {
-                int[] offsets = new int[1 + params.maxClosedDy];
+            } else { // OnLine
+                final int[] offsets = new int[1 + params.maxClosedDy];
 
+                // 0, -1, +1, -2, +2, ...
                 for (int i = 0; i < offsets.length; i++) {
                     if ((i % 2) == 0) {
-                        offsets[i] = -(i / 2);
+                        offsets[i] = i / 2;
                     } else {
-                        offsets[i] = ((i + 1) / 2);
+                        offsets[i] = -((i + 1) / 2);
                     }
                 }
 
@@ -1385,7 +1813,7 @@ public class NoteHeadsBuilder
         // getRelevantBlackAbscissae //
         //---------------------------//
         /**
-         * Select the x values that are intersected by note spots and thus could
+         * Select the x values that are intersected by head spots and thus could
          * correspond to black heads.
          *
          * @param scanLeft  range starting abscissa
@@ -1437,7 +1865,8 @@ public class NoteHeadsBuilder
                     //TODO: refine using width of template?
                     if (Math.abs(pitch) > 5) {
                         for (LedgerAdapter ledger : ledgers) {
-                            if ((x >= ledger.getLeftAbscissa()) && (x <= ledger.getRightAbscissa())) {
+                            if ((x >= ledger.getLeftAbscissa()) && (x <= ledger
+                                    .getRightAbscissa())) {
                                 return (int) Math.rint(
                                         (line.yAt((double) x) + ledger.yAt((double) x)) / 2);
                             }
@@ -1458,22 +1887,60 @@ public class NoteHeadsBuilder
             }
         }
 
+        //--------------------//
+        // isWeakStemLessHead //
+        //--------------------//
+        /**
+         * Check whether the candidate head is a stemless shape with too low grade.
+         * <p>
+         * These heads can't expect support for stem nearby, so we can discard weak candidates now.
+         *
+         * @param shape head shape
+         * @param loc   pixel distance
+         * @return true if candidate can be discarded
+         */
+        private boolean isWeakStemLessHead (Shape shape,
+                                            PixelDistance loc)
+        {
+            if (!ShapeSet.StemLessHeads.contains(shape)) {
+                return false;
+            }
+
+            // Compute final grade
+            double grade = new HeadInter.Impacts(Template.impactOf(loc.d)).getGrade();
+            grade = AbstractInter.increaseGrade(grade, getStemLessBoost());
+
+            return grade < Grades.minContextualGrade;
+        }
+
+        //--------//
+        // lookup //
+        //--------//
+        public List<HeadInter> lookup ()
+        {
+            return useSeeds ? lookupSeeds() : lookupRange();
+        }
+
         //-------------//
         // lookupRange //
         //-------------//
         /**
          * Try every relevant abscissa in the provided range of the line.
          * <p>
-         * For a staff line, if every abscissa in range were checked, the cost of lookupRange()
+         * For a staff line, if all abscissae in range were checked, then the cost of lookupRange()
          * would be about 3 times the cost of lookupSeed().
          * Hence, to limit the number of abscissa values to browse for black heads, we first check
-         * with note spots. Void notes however can exist without detected note spots.
+         * with head spots.
+         * Void heads however can exist without detected head spots.
+         * <p>
+         * We simply use the sheet distances table to check whether there is some foreground in
+         * the next template space and, if not, we just skip the template width range.
          * <p>
          * Regarding the template shapes, it would be tempting to restrain range browsing to
          * stem-less shapes (wholes & cue wholes).
          * However we cannot skip the check for stem-based shapes because some stems are so poor
          * that we don't have stem seeds of proper length for them, and range browsing is then the
-         * only way to reach note heads with such poor stems.
+         * only way to reach heads with such poor stems.
          *
          * @return the head inters created
          */
@@ -1486,16 +1953,25 @@ public class NoteHeadsBuilder
                 return heads;
             }
 
-            // Use the note spots to limit the abscissae to be checked for blacks
+            // Use the head spots to limit the abscissae to be checked for all heads
             boolean[] blackRelevants = getRelevantBlackAbscissae(scanLeft, scanRight);
 
             // Scan from left to right
             for (int x0 = scanLeft; x0 <= scanRight; x0++) {
                 final int y0 = getTheoreticalOrdinate(x0);
 
+                // Make sure there is some foreground within template reach
+                final double d = distances.getValue(x0 + templateHalf, y0);
+                if (d / ChamferDistance.DEFAULT_NORMALIZER > templateHalf) {
+                    x0 += 2 * templateHalf - 1;
+                    continue;
+                }
+
                 // Shapes to try depend on whether location belongs to a black spot
-                EnumSet<Shape> shapeSet = blackRelevants[x0 - scanLeft] ? sheetTemplateNotes
-                        : sheetVoidTemplateNotes;
+                final EnumSet<Shape> shapeSet = blackRelevants[x0 - scanLeft]
+                        ? scannerTemplateNotesAll
+                        : scannerTemplateNotesHollow;
+
                 ShapeLoop:
                 for (Shape shape : shapeSet) {
                     PixelDistance bestLoc = null;
@@ -1529,8 +2005,17 @@ public class NoteHeadsBuilder
                             }
                         }
 
+                        // Weak stemless heads can be discarded immediately
+                        if (isWeakStemLessHead(shape, bestLoc)) {
+                            continue;
+                        }
+
                         final HeadInter head = createInter(
-                                bestLoc, MIDDLE_LEFT, shape, line.getStaff(), pitch);
+                                bestLoc,
+                                MIDDLE_LEFT,
+                                shape,
+                                line.getStaff(),
+                                pitch);
 
                         if (head != null) {
                             heads.add(head);
@@ -1544,9 +2029,11 @@ public class NoteHeadsBuilder
             // Check conflict with seed-based instances
             heads = filterSeedConflicts(heads, competitors);
 
+            // Make sure we have an underlying glyph for each head
             for (Iterator<HeadInter> it = heads.iterator(); it.hasNext();) {
-                HeadInter inter = it.next();
-                Glyph glyph = inter.retrieveGlyph(image);
+                final HeadInter inter = it.next();
+                final Template template = catalog.getTemplate(inter.getShape());
+                final Glyph glyph = inter.retrieveGlyph(template, image);
 
                 if (glyph != null) {
                     sig.addVertex(inter);
@@ -1577,7 +2064,8 @@ public class NoteHeadsBuilder
             final List<Glyph> seeds = getGlyphsSlice(systemSeeds, seedsArea);
 
             // Use one anchor for each horizontal side of the stem seed
-            final Anchor[] anchors = new Anchor[]{LEFT_STEM, RIGHT_STEM};
+            final Anchor[] anchors = new Anchor[]
+            { LEFT_STEM, RIGHT_STEM };
 
             for (Glyph seed : seeds) {
                 if (seed.isVip()) {
@@ -1598,7 +2086,7 @@ public class NoteHeadsBuilder
                     // For each stem side and for each possible shape,
                     // keep the best match (if acceptable) among all locations tried.
                     ShapeLoop:
-                    for (Shape shape : sheetStemTemplateNotes) {
+                    for (Shape shape : scannerTemplateNotesStem) {
                         PixelDistance bestLoc = null;
 
                         // Brute force: explore the whole rectangle around (x0, y0)
@@ -1638,13 +2126,18 @@ public class NoteHeadsBuilder
                             }
                         }
 
-                        final HeadInter head = createInter(bestLoc, anchor, shape, line.getStaff(),
-                                                           pitch);
+                        final HeadInter head = createInter(
+                                bestLoc,
+                                anchor,
+                                shape,
+                                line.getStaff(),
+                                pitch);
                         if (head == null) {
                             continue;
                         }
 
-                        final Glyph glyph = head.retrieveGlyph(image);
+                        final Template template = catalog.getTemplate(shape);
+                        final Glyph glyph = head.retrieveGlyph(template, image);
 
                         if (glyph == null) {
                             continue;
@@ -1661,8 +2154,7 @@ public class NoteHeadsBuilder
                         // Dx is positive if outside head box and negative if inside
                         final HorizontalSide hSide = (anchor == LEFT_STEM) ? LEFT : RIGHT;
                         final Rectangle box = head.getBounds();
-                        final double dx = (hSide == LEFT)
-                                ? box.x - x0 + 0.5
+                        final double dx = (hSide == LEFT) ? box.x - x0 + 0.5
                                 : x0 + 0.5 - (box.x + box.width - 1);
                         tally.putDx(head, hSide, dx);
                     }
@@ -1726,253 +2218,15 @@ public class NoteHeadsBuilder
         }
 
         @Override
-        public int yAt (int x)
-        {
-            return line.yAt(x);
-        }
-
-        @Override
         public double yAt (double x)
         {
             return line.yAt(x);
         }
-    }
-
-    //-------------//
-    // LineAdapter //
-    //-------------//
-    /**
-     * Such adapter is needed to interact with staff LineInfo or ledger glyph line in a
-     * consistent way.
-     */
-    private abstract static class LineAdapter
-    {
-
-        private final Staff staff;
-
-        private final String prefix;
-
-        LineAdapter (Staff staff,
-                     String prefix)
-        {
-            this.staff = staff;
-            this.prefix = prefix;
-        }
-
-        /**
-         * Report the competitors lookup area, according to limits above
-         * and below, defined as ordinate shifts relative to the reference line.
-         *
-         * @param above offset (positive or negative) from line to top limit.
-         * @param below offset (positive or negative) from line to bottom limit.
-         */
-        public abstract Area getArea (double above,
-                                      double below);
-
-        /** Report the abscissa at beginning of line. */
-        public abstract int getLeftAbscissa ();
-
-        /** Needed to allow various attachments on the same staff. */
-        public String getPrefix ()
-        {
-            return prefix;
-        }
-
-        /** Report the abscissa at end of line. */
-        public abstract int getRightAbscissa ();
-
-        public Staff getStaff ()
-        {
-            return staff;
-        }
-
-        /** Report the ordinate at provided abscissa. */
-        public abstract int yAt (int x);
-
-        /** Report the precise ordinate at provided precise abscissa. */
-        public abstract double yAt (double x);
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
-        private final Constant.Boolean printParameters = new Constant.Boolean(
-                false,
-                "Should we print out the class parameters?");
-
-        private final Constant.Boolean allowAttachments = new Constant.Boolean(
-                false,
-                "Should we allow staff attachments for created areas?");
-
-        private final Scale.Fraction maxTemplateDx = new Scale.Fraction(
-                0.375,
-                "Maximum dx between similar template instances");
-
-        private final Scale.Fraction maxClosedDy = new Scale.Fraction(
-                0.0,
-                "Extension allowed in y for closed lines");
-
-        private final Scale.Fraction maxOpenDy = new Scale.Fraction(
-                0.2,
-                "Extension allowed in y for open lines");
-
-        private final Constant.Ratio gradeMargin = new Constant.Ratio(
-                0.1,
-                "Grade margin to boost seed-based competitors");
-
-        private final Constant.Ratio pitchMargin = new Constant.Ratio(
-                0.75,
-                "Vertical margin for intercepting stem seed around a target pitch");
-
-        private final Constant.Ratio wholeBoost = new Constant.Ratio(
-                0.38,
-                "How much do we boost whole notes (always isolated)");
-
-        private final Constant.Ratio crossBoost = new Constant.Ratio(
-                0.1,
-                "How much do we boost cross head notes (badly recognized by template matching)");
-
-        private final Scale.Fraction minBeamWidth = new Scale.Fraction(
-                2.5,
-                "Minimum good beam width to exclude heads");
-
-        private final Scale.Fraction barHorizontalMargin = new Scale.Fraction(
-                0.1,
-                "Horizontal margin around frozen barline or connector");
-
-        private final Scale.Fraction barVerticalMargin = new Scale.Fraction(
-                2.0,
-                "Vertical margin around frozen barline or connector");
-
-        private final Constant.Ratio minHoleWhiteRatio = new Constant.Ratio(
-                0.2,
-                "Minimum ratio of hole white pixel to reassign Black to Void");
-    }
-
-    //-----------//
-    // Aggregate //
-    //-----------//
-    /**
-     * Describes an aggregate of matches around similar location.
-     */
-    private static class Aggregate
-    {
-
-        Point2D point;
-
-        List<HeadInter> matches = new ArrayList<>();
-
-        public void add (HeadInter head)
-        {
-            if (point == null) {
-                point = head.getCenter2D();
-            }
-
-            matches.add(head);
-        }
-
-        public HeadInter getMainInter ()
-        {
-            return matches.get(0);
-        }
 
         @Override
-        public String toString ()
+        public int yAt (int x)
         {
-            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-            sb.append("{");
-
-            if (point != null) {
-                sb.append(" point:").append(PointUtil.toString(point));
-            }
-
-            sb.append(" ").append(matches.size()).append(" matches: ");
-
-            for (Inter match : matches) {
-                sb.append(match);
-            }
-
-            sb.append("}");
-
-            return sb.toString();
-        }
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class <code>Parameters</code> gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-
-        final double maxDistanceLow;
-
-        final double maxDistanceHigh;
-
-        final double reallyBadDistance;
-
-        final int maxTemplateDx;
-
-        final int maxClosedDy;
-
-        final int maxOpenDy;
-
-        final int minBeamWidth;
-
-        final int hBarMargin;
-
-        final int vBarMargin;
-
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        Parameters (Scale scale)
-        {
-            maxDistanceLow = Template.maxDistanceLow();
-            maxDistanceHigh = Template.maxDistanceHigh();
-            reallyBadDistance = Template.reallyBadDistance();
-
-            maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
-            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
-            maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
-            minBeamWidth = scale.toPixels(constants.minBeamWidth);
-
-            hBarMargin = scale.toPixels(constants.barHorizontalMargin);
-            vBarMargin = scale.toPixels(constants.barVerticalMargin);
-        }
-    }
-
-    /**
-     * DEBUG: meant to precisely measure behavior of notes retrieval.
-     */
-    private static class Perf
-    {
-
-        int bars;
-
-        int overlaps;
-
-        int evals;
-
-        int abandons;
-
-        @Override
-        public String toString ()
-        {
-            return String.format("%7d bars, %7d overlaps, %7d evals, %7d abandons",
-                                 bars, overlaps, evals, abandons);
+            return line.yAt(x);
         }
     }
 }

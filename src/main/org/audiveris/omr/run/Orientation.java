@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -39,69 +39,7 @@ public enum Orientation
     HORIZONTAL,
     VERTICAL;
 
-    //----------//
-    // opposite //
-    //----------//
-    /**
-     * Report the orientation opposite to this one
-     *
-     * @return the opposite orientation
-     */
-    public Orientation opposite ()
-    {
-        switch (this) {
-        case HORIZONTAL:
-            return VERTICAL;
-
-        default:
-        case VERTICAL:
-            return HORIZONTAL;
-        }
-    }
-
-    //------------//
-    // isVertical //
-    //------------//
-    /**
-     * Return true if the entity is vertical, false if horizontal.
-     * Not a very object-oriented approach but who cares?
-     *
-     * @return true if vertical, false otherwise
-     */
-    public boolean isVertical ()
-    {
-        return this == VERTICAL;
-    }
-
-    //----------//
-    // oriented //
-    //----------//
-    /**
-     * Given a point (x, y) in the absolute space, return the corresponding
-     * (coord, pos) oriented point taking the entity orientation into account.
-     *
-     * @param xy the absolute (x, y) point
-     * @return the corresponding oriented (coord, pos) point
-     */
-    public Point oriented (Point xy)
-    {
-        return new Point(absolute(xy)); // Since involutive
-    }
-
-    //----------//
-    // oriented //
-    //----------//
-    /**
-     * Given a point (x, y) in the absolute space, return the corresponding
-     * (coord, pos) oriented point taking the entity orientation into account.
-     *
-     * @param xy the absolute (x, y) point
-     * @return the corresponding oriented (coord, pos) point
-     */
-    public Point2D oriented (Point2D xy)
-    {
-        return absolute(xy); // Since involutive
-    }
+    //~ Methods ------------------------------------------------------------------------------------
 
     //----------//
     // absolute //
@@ -193,6 +131,86 @@ public enum Orientation
         }
     }
 
+    //------------//
+    // isVertical //
+    //------------//
+    /**
+     * Return true if the entity is vertical, false if horizontal.
+     * Not a very object-oriented approach but who cares?
+     *
+     * @return true if vertical, false otherwise
+     */
+    public boolean isVertical ()
+    {
+        return this == VERTICAL;
+    }
+
+    //----------//
+    // opposite //
+    //----------//
+    /**
+     * Report the orientation opposite to this one
+     *
+     * @return the opposite orientation
+     */
+    public Orientation opposite ()
+    {
+        switch (this) {
+        case HORIZONTAL:
+            return VERTICAL;
+
+        default:
+        case VERTICAL:
+            return HORIZONTAL;
+        }
+    }
+
+    //----------//
+    // oriented //
+    //----------//
+    /**
+     * Given a point (x, y) in the absolute space, return the corresponding
+     * (coord, pos) oriented point taking the entity orientation into account.
+     *
+     * @param xy the absolute (x, y) point
+     * @return the corresponding oriented (coord, pos) point
+     */
+    public Point oriented (Point xy)
+    {
+        return new Point(absolute(xy)); // Since involutive
+    }
+
+    //----------//
+    // oriented //
+    //----------//
+    /**
+     * Given a point (x, y) in the absolute space, return the corresponding
+     * (coord, pos) oriented point taking the entity orientation into account.
+     *
+     * @param xy the absolute (x, y) point
+     * @return the corresponding oriented (coord, pos) point
+     */
+    public Point2D oriented (Point2D xy)
+    {
+        return absolute(xy); // Since involutive
+    }
+
+    //----------//
+    // oriented //
+    //----------//
+    /**
+     * Given an absolute rectangle (x, y, width, height) return the
+     * corresponding oriented rectangle (coord, pos, length, thickness).
+     *
+     * @param xywh absolute rectangle (x, y, width, height).
+     * @return the corresponding oriented rectangle (coord, pos, length, thickness)
+     */
+    public Rectangle oriented (Rectangle xywh)
+    {
+        // Use the fact that 'absolute' is involutive
+        return new Rectangle(absolute(xywh));
+    }
+
     //-----------//
     // switchRef //
     //-----------//
@@ -220,21 +238,5 @@ public enum Orientation
         case VERTICAL:
             return relLine.swappedCoordinates();
         }
-    }
-
-    //----------//
-    // oriented //
-    //----------//
-    /**
-     * Given an absolute rectangle (x, y, width, height) return the
-     * corresponding oriented rectangle (coord, pos, length, thickness).
-     *
-     * @param xywh absolute rectangle (x, y, width, height).
-     * @return the corresponding oriented rectangle (coord, pos, length, thickness)
-     */
-    public Rectangle oriented (Rectangle xywh)
-    {
-        // Use the fact that 'absolute' is involutive
-        return new Rectangle(absolute(xywh));
     }
 }

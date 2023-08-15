@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -78,6 +78,7 @@ public class SheetAssembly
     private static final Logger logger = LoggerFactory.getLogger(SheetAssembly.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Link with sheet stub. */
     @Navigable(false)
     private final SheetStub stub;
@@ -116,6 +117,7 @@ public class SheetAssembly
     private SheetView viewBeingRemoved;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Create a new <code>SheetAssembly</code> instance dedicated to one sheet stub.
      *
@@ -139,6 +141,7 @@ public class SheetAssembly
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     //----------//
     // addBoard //
     //----------//
@@ -153,9 +156,8 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(() -> addBoard(tab, board));
-            } catch (InterruptedException |
-                     InvocationTargetException ex) {
+                SwingUtilities.invokeAndWait( () -> addBoard(tab, board));
+            } catch (InterruptedException | InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -200,9 +202,8 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(() -> addViewTab(label, scrollView, boardsPane));
-            } catch (InterruptedException |
-                     InvocationTargetException ex) {
+                SwingUtilities.invokeAndWait( () -> addViewTab(label, scrollView, boardsPane));
+            } catch (InterruptedException | InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -276,16 +277,43 @@ public class SheetAssembly
     }
 
     //--------------//
-    // getComponent //
+    // defineLayout //
     //--------------//
     /**
-     * Report the UI component.
-     *
-     * @return the concrete component
+     * Define the layout of this assembly.
      */
-    public JComponent getComponent ()
+    private void defineLayout ()
     {
-        return component;
+        component.setLayout(new BorderLayout());
+        component.setNoInsets();
+        component.add(slider, BorderLayout.WEST);
+        component.add(viewsPane, BorderLayout.CENTER);
+        component.setName("SheetAssemblyPanel");
+
+        // Avoid slider to react on (and consume) page up/down keys or arrow keys
+        InputMap inputMap = slider.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        inputMap.put(KeyStroke.getKeyStroke("PAGE_UP"), "none");
+        inputMap.put(KeyStroke.getKeyStroke("PAGE_DOWN"), "none");
+        inputMap.put(KeyStroke.getKeyStroke("LEFT"), "none");
+        inputMap.put(KeyStroke.getKeyStroke("RIGHT"), "none");
+        inputMap.put(KeyStroke.getKeyStroke("UP"), "none");
+        inputMap.put(KeyStroke.getKeyStroke("DOWN"), "none");
+    }
+
+    //---------------//
+    // displayBoards //
+    //---------------//
+    /**
+     * Make the boards pane visible (for this sheet & view).
+     */
+    private void displayBoards ()
+    {
+        // Make sure the view tab is ready
+        final SheetView view = getCurrentView();
+
+        if (view != null) {
+            view.displayBoards();
+        }
     }
 
     //--------------------//
@@ -299,21 +327,32 @@ public class SheetAssembly
         return commonDividerLocation;
     }
 
-    //--------------------//
-    // setDividerLocation //
-    //--------------------//
+    //--------------//
+    // getComponent //
+    //--------------//
     /**
-     * @param dividerLocation the dividerLocation to set
+     * Report the UI component.
+     *
+     * @return the concrete component
      */
-    public void setCommonDividerLocation (Integer dividerLocation)
+    public JComponent getComponent ()
     {
-        this.commonDividerLocation = dividerLocation;
+        return component;
+    }
 
-        if (dividerLocation != null) {
-            for (SheetView view : views) {
-                view.getComponent().setDividerLocation(dividerLocation);
-            }
-        }
+    //----------------//
+    // getCurrentView //
+    //----------------//
+    /**
+     * Report the SheetView currently selected, if any.
+     *
+     * @return the current SheetView, or null
+     */
+    public SheetView getCurrentView ()
+    {
+        final int index = viewsPane.getSelectedIndex();
+
+        return (index < 0) ? null : views.get(index);
     }
 
     //--------------//
@@ -325,17 +364,6 @@ public class SheetAssembly
     public Dimension getModelSize ()
     {
         return modelSize;
-    }
-
-    //--------------//
-    // setModelSize //
-    //--------------//
-    /**
-     * @param modelSize the modelSize to set
-     */
-    public void setModelSize (Dimension modelSize)
-    {
-        this.modelSize = modelSize;
     }
 
     //-----------//
@@ -360,15 +388,19 @@ public class SheetAssembly
         return scrollValues;
     }
 
-    //-----------------//
-    // setScrollValues //
-    //-----------------//
+    //-----------------------//
+    // getSelectedScrollView //
+    //-----------------------//
     /**
-     * @param scrollValues the scrollValues to set
+     * Report the ScrollView currently selected.
+     *
+     * @return the ScrollView component of current view
      */
-    public void setScrollValues (ScrollValues scrollValues)
+    public ScrollView getSelectedScrollView ()
     {
-        this.scrollValues = scrollValues;
+        final SheetView view = getCurrentView();
+
+        return (view != null) ? view.getScrollView() : null;
     }
 
     //---------------------//
@@ -384,21 +416,6 @@ public class SheetAssembly
         final SheetView view = getCurrentView();
 
         return (view != null) ? view.getTitle() : null;
-    }
-
-    //-----------------------//
-    // getSelectedScrollView //
-    //-----------------------//
-    /**
-     * Report the ScrollView currently selected.
-     *
-     * @return the ScrollView component of current view
-     */
-    public ScrollView getSelectedScrollView ()
-    {
-        final SheetView view = getCurrentView();
-
-        return (view != null) ? view.getScrollView() : null;
     }
 
     //----------//
@@ -532,9 +549,8 @@ public class SheetAssembly
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
-                SwingUtilities.invokeAndWait(() -> reset());
-            } catch (InterruptedException |
-                     InvocationTargetException ex) {
+                SwingUtilities.invokeAndWait( () -> reset());
+            } catch (InterruptedException | InvocationTargetException ex) {
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
@@ -579,6 +595,45 @@ public class SheetAssembly
         }
     }
 
+    //--------------------//
+    // setDividerLocation //
+    //--------------------//
+    /**
+     * @param dividerLocation the dividerLocation to set
+     */
+    public void setCommonDividerLocation (Integer dividerLocation)
+    {
+        this.commonDividerLocation = dividerLocation;
+
+        if (dividerLocation != null) {
+            for (SheetView view : views) {
+                view.getComponent().setDividerLocation(dividerLocation);
+            }
+        }
+    }
+
+    //--------------//
+    // setModelSize //
+    //--------------//
+    /**
+     * @param modelSize the modelSize to set
+     */
+    public void setModelSize (Dimension modelSize)
+    {
+        this.modelSize = modelSize;
+    }
+
+    //-----------------//
+    // setScrollValues //
+    //-----------------//
+    /**
+     * @param scrollValues the scrollValues to set
+     */
+    public void setScrollValues (ScrollValues scrollValues)
+    {
+        this.scrollValues = scrollValues;
+    }
+
     //--------------//
     // setZoomRatio //
     //--------------//
@@ -609,8 +664,12 @@ public class SheetAssembly
     public void stateChanged (ChangeEvent e)
     {
         final SheetView view = getCurrentView();
-        logger.debug("{} SheetAssembly stateChanged previous:{} current:{} removed:{}",
-                     stub, previousView, view, viewBeingRemoved);
+        logger.debug(
+                "{} SheetAssembly stateChanged previous:{} current:{} removed:{}",
+                stub,
+                previousView,
+                view,
+                viewBeingRemoved);
 
         if (view == viewBeingRemoved) {
             return;
@@ -629,62 +688,8 @@ public class SheetAssembly
         previousView = view;
     }
 
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define the layout of this assembly.
-     */
-    private void defineLayout ()
-    {
-        component.setLayout(new BorderLayout());
-        component.setNoInsets();
-        component.add(slider, BorderLayout.WEST);
-        component.add(viewsPane, BorderLayout.CENTER);
-        component.setName("SheetAssemblyPanel");
-
-        // Avoid slider to react on (and consume) page up/down keys or arrow keys
-        InputMap inputMap = slider.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        inputMap.put(KeyStroke.getKeyStroke("PAGE_UP"), "none");
-        inputMap.put(KeyStroke.getKeyStroke("PAGE_DOWN"), "none");
-        inputMap.put(KeyStroke.getKeyStroke("LEFT"), "none");
-        inputMap.put(KeyStroke.getKeyStroke("RIGHT"), "none");
-        inputMap.put(KeyStroke.getKeyStroke("UP"), "none");
-        inputMap.put(KeyStroke.getKeyStroke("DOWN"), "none");
-    }
-
-    //---------------//
-    // displayBoards //
-    //---------------//
-    /**
-     * Make the boards pane visible (for this sheet & view).
-     */
-    private void displayBoards ()
-    {
-        // Make sure the view tab is ready
-        final SheetView view = getCurrentView();
-
-        if (view != null) {
-            view.displayBoards();
-        }
-    }
-
-    //----------------//
-    // getCurrentView //
-    //----------------//
-    /**
-     * Report the SheetView currently selected, if any.
-     *
-     * @return the current SheetView, or null
-     */
-    public SheetView getCurrentView ()
-    {
-        final int index = viewsPane.getSelectedIndex();
-
-        return (index < 0) ? null : views.get(index);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------------//
     // ScrollValues //
     //--------------//
@@ -704,18 +709,6 @@ public class SheetAssembly
             vert = copy(scrollView.getComponent().getVerticalScrollBar().getModel());
         }
 
-        public void applyTo (JScrollPane scrollPane)
-        {
-            apply(hori, scrollPane.getHorizontalScrollBar().getModel());
-            apply(vert, scrollPane.getVerticalScrollBar().getModel());
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "ScrollValues{hori:" + hori + ", vert:" + vert + "}";
-        }
-
         private void apply (BoundedRangeModel src,
                             BoundedRangeModel tgt)
         {
@@ -727,6 +720,12 @@ public class SheetAssembly
                     false);
         }
 
+        public void applyTo (JScrollPane scrollPane)
+        {
+            apply(hori, scrollPane.getHorizontalScrollBar().getModel());
+            apply(vert, scrollPane.getVerticalScrollBar().getModel());
+        }
+
         private DefaultBoundedRangeModel copy (BoundedRangeModel m)
         {
             return new DefaultBoundedRangeModel(
@@ -734,6 +733,12 @@ public class SheetAssembly
                     m.getExtent(),
                     m.getMinimum(),
                     m.getMaximum());
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "ScrollValues{hori:" + hori + ", vert:" + vert + "}";
         }
     }
 

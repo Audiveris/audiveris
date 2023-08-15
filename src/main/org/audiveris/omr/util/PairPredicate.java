@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -25,7 +25,6 @@ package org.audiveris.omr.util;
  * Interface <code>PairPredicate</code>
  *
  * @author Hervé Bitteur
- *
  * @param <E> type of entity
  */
 public interface PairPredicate<E>
@@ -37,7 +36,8 @@ public interface PairPredicate<E>
      *
      * @param one an entity
      * @param two another entity
-     * @return <code>true</code> if the input argument matches the predicate, otherwise <code>false</code>
+     * @return <code>true</code> if the input argument matches the predicate, otherwise
+     *         <code>false</code>
      */
     boolean test (E one,
                   E two);

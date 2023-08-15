@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -52,6 +52,7 @@ public class SymbolInfo
     private static final Logger logger = LoggerFactory.getLogger(SymbolInfo.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     @XmlAttribute(name = "interline")
     @XmlJavaTypeAdapter(value = Jaxb.Double3Adapter.class, type = double.class)
     private final double interline;
@@ -79,6 +80,19 @@ public class SymbolInfo
     private boolean invalid;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private SymbolInfo ()
+    {
+        omrShape = null;
+        interline = 0;
+        id = null;
+        scale = null;
+        bounds = null;
+    }
+
     /**
      * Creates a new <code>SymbolInfo</code> object.
      *
@@ -101,19 +115,8 @@ public class SymbolInfo
         this.bounds = bounds;
     }
 
-    /**
-     * No-arg constructor needed for JAXB.
-     */
-    private SymbolInfo ()
-    {
-        omrShape = null;
-        interline = 0;
-        id = null;
-        scale = null;
-        bounds = null;
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Add an inner symbol within this one.
      *
@@ -126,6 +129,19 @@ public class SymbolInfo
         }
 
         innerSymbols.add(symbol);
+    }
+
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled
+     * for this object, but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        if (omrShape == null) {
+            logger.warn("*** Null shape {}", this);
+        }
     }
 
     /**
@@ -154,16 +170,6 @@ public class SymbolInfo
     }
 
     /**
-     * Assign ID value.
-     *
-     * @param id new ID value
-     */
-    public void setId (int id)
-    {
-        this.id = id;
-    }
-
-    /**
      * Report the inner symbols, if any
      *
      * @return un-mutable list of inner symbols, perhaps empty but never null
@@ -186,24 +192,6 @@ public class SymbolInfo
     }
 
     /**
-     * Report whether symbol is invalid.
-     *
-     * @return the invalid
-     */
-    public boolean isInvalid ()
-    {
-        return invalid;
-    }
-
-    /**
-     * Set symbol as invalid.
-     */
-    public void setInvalid ()
-    {
-        this.invalid = true;
-    }
-
-    /**
      * @return the omrShape, perhaps null
      */
     public OmrShape getOmrShape ()
@@ -217,62 +205,6 @@ public class SymbolInfo
     public Double getScale ()
     {
         return scale;
-    }
-
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder("Symbol{");
-        sb.append("shape:").append(omrShape);
-
-        if (invalid) {
-            sb.append(" INVALID");
-        }
-
-        if ((innerSymbols != null) && !innerSymbols.isEmpty()) {
-            sb.append(" OUTER");
-        }
-
-        sb.append(" interline:").append(interline);
-
-        if (id != null) {
-            sb.append(" id:").append(id);
-        }
-
-        if (scale != null) {
-            sb.append(" scale:").append(scale);
-        }
-
-        sb.append(" ").append(bounds);
-
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    /**
-     * If there is a special name for a smaller version of this symbol, use it.
-     */
-    public void useSmallName ()
-    {
-        OmrShape smallShape = getSmallShape(omrShape);
-
-        if (smallShape != null) {
-            setOmrShape(smallShape);
-        }
-    }
-
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled
-     * for this object, but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        if (omrShape == null) {
-            logger.warn("*** Null shape {}", this);
-        }
     }
 
     /**
@@ -337,6 +269,34 @@ public class SymbolInfo
     }
 
     /**
+     * Report whether symbol is invalid.
+     *
+     * @return the invalid
+     */
+    public boolean isInvalid ()
+    {
+        return invalid;
+    }
+
+    /**
+     * Assign ID value.
+     *
+     * @param id new ID value
+     */
+    public void setId (int id)
+    {
+        this.id = id;
+    }
+
+    /**
+     * Set symbol as invalid.
+     */
+    public void setInvalid ()
+    {
+        this.invalid = true;
+    }
+
+    /**
      * @param omrShape the omrShape to set
      */
     private void setOmrShape (OmrShape omrShape)
@@ -345,7 +305,51 @@ public class SymbolInfo
         this.omrShape = omrShape;
     }
 
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder("Symbol{");
+        sb.append("shape:").append(omrShape);
+
+        if (invalid) {
+            sb.append(" INVALID");
+        }
+
+        if ((innerSymbols != null) && !innerSymbols.isEmpty()) {
+            sb.append(" OUTER");
+        }
+
+        sb.append(" interline:").append(interline);
+
+        if (id != null) {
+            sb.append(" id:").append(id);
+        }
+
+        if (scale != null) {
+            sb.append(" scale:").append(scale);
+        }
+
+        sb.append(" ").append(bounds);
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    /**
+     * If there is a special name for a smaller version of this symbol, use it.
+     */
+    public void useSmallName ()
+    {
+        OmrShape smallShape = getSmallShape(omrShape);
+
+        if (smallShape != null) {
+            setOmrShape(smallShape);
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------------//
     // OmrShapeAdapter //
     //-----------------//
@@ -358,7 +362,7 @@ public class SymbolInfo
 
         @Override
         public String marshal (OmrShape shape)
-                throws Exception
+            throws Exception
         {
             if (shape == null) {
                 return null;
@@ -369,7 +373,7 @@ public class SymbolInfo
 
         @Override
         public OmrShape unmarshal (String string)
-                throws Exception
+            throws Exception
         {
             try {
                 return OmrShape.valueOf(string);

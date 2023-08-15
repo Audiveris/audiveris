@@ -8,7 +8,7 @@ nav_exclude: true
 
 - [HandBook](_pages/handbook)
 {: .d-inline-block }
-being updated
+updated for 5.3
 {: .label .label-yellow }
 
 ## For the developer

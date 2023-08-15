@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.curve;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.image.PixelSource.BACKGROUND;
@@ -34,7 +32,14 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.SystemInfo;
-import static org.audiveris.omr.sheet.curve.Skeleton.*;
+import static org.audiveris.omr.sheet.curve.Skeleton.PROCESSED;
+import static org.audiveris.omr.sheet.curve.Skeleton.dxs;
+import static org.audiveris.omr.sheet.curve.Skeleton.dys;
+import static org.audiveris.omr.sheet.curve.Skeleton.getDir;
+import static org.audiveris.omr.sheet.curve.Skeleton.isJunction;
+import static org.audiveris.omr.sheet.curve.Skeleton.isProcessed;
+import static org.audiveris.omr.sheet.curve.Skeleton.isSide;
+import static org.audiveris.omr.sheet.curve.Skeleton.scans;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.InterIndex;
 import org.audiveris.omr.sig.inter.Inter;
@@ -44,6 +49,8 @@ import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -79,10 +86,13 @@ public abstract class CurvesBuilder
     private static final Logger logger = LoggerFactory.getLogger(CurvesBuilder.class);
 
     /** To sort Extension instances by decreasing grade. */
-    private static final Comparator<Extension> byReverseGrade = (Extension e1, Extension e2)
-            -> Double.compare(e2.getGrade(), e1.getGrade());
+    private static final Comparator<Extension> byReverseGrade = (e1,
+                                                                 e2) -> Double.compare(
+                                                                         e2.getGrade(),
+                                                                         e1.getGrade());
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related sheet. */
     @Navigable(false)
     protected final Sheet sheet;
@@ -118,6 +128,7 @@ public abstract class CurvesBuilder
     private final Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SequencesBuilder object.
      *
@@ -135,6 +146,7 @@ public abstract class CurvesBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Try to append one arc to an existing curve and thus create a new curve.
      *
@@ -144,6 +156,92 @@ public abstract class CurvesBuilder
      */
     protected abstract Curve addArc (ArcView arcView,
                                      Curve curve);
+
+    //-------------//
+    // arcDistance //
+    //-------------//
+    /**
+     * Measure the mean distance from additional arc to provided (side) model.
+     * <p>
+     * Not all arc points are checked, only the ones close to curve end.
+     *
+     * @param model   the reference model
+     * @param arcView properly oriented view on the extension arc to be checked for compatibility
+     * @return the average distance of arc points to the curve model
+     */
+    protected double arcDistance (Model model,
+                                  ArcView arcView)
+    {
+        // First, determine the collection of points to measure (junction + first arc points)
+        List<Point> points = new ArrayList<>();
+        Point junction = arcView.getJunction(!reverse);
+
+        if (junction != null) {
+            points.add(junction);
+        }
+
+        points.addAll(arcView.getSidePoints(getArcCheckLength(), !reverse));
+
+        // Second, compute their distance to the model
+        return model.computeDistance(points);
+    }
+
+    //------------//
+    // buildCurve //
+    //------------//
+    /**
+     * Build one curve starting from a seed arc.
+     *
+     * @param arc the line seed
+     */
+    protected void buildCurve (Arc arc)
+    {
+        debugArc = curves.checkBreak(arc); // Debug
+
+        Curve trunk = createCurve(arc, arc.getModel());
+
+        if (debugArc) {
+            logger.info("Trunk: {}", trunk);
+        }
+
+        if (arc.getModel() != null) {
+            trunk.setModel(arc.getModel());
+        } else {
+            trunk.setModel(computeModel(arc.getPoints(), true));
+        }
+
+        // Try to extend the trunk as much as possible, on right end then on left end.
+        final Set<Curve> leftClump = new LinkedHashSet<>();
+        final Set<Curve> rightClump = new LinkedHashSet<>();
+
+        for (boolean rev : new boolean[]
+        { false, true }) {
+            Set<Curve> clump = rev ? leftClump : rightClump;
+            reverse = rev;
+            extend(trunk, clump);
+
+            weed(clump); // Filter out the least interesting candidates
+            maxClumpSize = Math.max(maxClumpSize, clump.size());
+        }
+
+        // Combine candidates from both sides
+        Set<Inter> clump = new LinkedHashSet<>();
+
+        // Connect lefts & rights
+        // Both endings must be OK, hence none of the side clumps is allowed to be empty
+        for (Curve sl : leftClump) {
+            for (Curve sr : rightClump) {
+                Curve curve = (sl == sr) ? sl : createCurve(sl, sr);
+                createInter(curve, clump);
+            }
+        }
+
+        // Finally, filter candidates using their potential links to embraced head-chords
+        if (!clump.isEmpty()) {
+            ///register(clump); // For DEBUG only
+            pruneClump(clump);
+        }
+    }
 
     /**
      * Compute impacts for curve candidate.
@@ -224,146 +322,6 @@ public abstract class CurvesBuilder
         return createInstance(firstJunction, lastJunction, points, model, parts);
     }
 
-    /**
-     * Create a curve instance of proper type.
-     *
-     * @param firstJunction first junction point, if any
-     * @param lastJunction  second junction point, if any
-     * @param points        provided list of points
-     * @param model         an already computed model if any
-     * @param parts         all arcs used for this curve
-     * @return the created curve instance
-     */
-    protected abstract Curve createInstance (Point firstJunction,
-                                             Point lastJunction,
-                                             List<Point> points,
-                                             Model model,
-                                             Collection<Arc> parts);
-
-    /**
-     * (Try to) create an Inter instance from a curve candidate
-     *
-     * @param curve  the candidate
-     * @param inters (output) to be appended with created Inter instances
-     */
-    protected abstract void createInter (Curve curve,
-                                         Set<Inter> inters);
-
-    /**
-     * Report the number of points at beginning of arc tested for connection.
-     *
-     * @return the number of points for which distance will be checked, or null for no limit
-     */
-    protected abstract Integer getArcCheckLength ();
-
-    /**
-     * Report the tangent unit vector at curve end.
-     *
-     * @param curve the curve
-     * @return the unit vector which extends the curve end
-     */
-    protected abstract Point2D getEndVector (Curve curve);
-
-    /**
-     * Additional filtering if any on the provided clump.
-     *
-     * @param clump the collection of slur candidates to be pruned down to one slur
-     */
-    protected abstract void pruneClump (Set<Inter> clump);
-
-    /**
-     * Among the clump of curves built from a common trunk on 'reverse' side, weed out
-     * some of them.
-     *
-     * @param clump the competing curves on the same side of a given seed
-     */
-    protected abstract void weed (Set<Curve> clump);
-
-    //-------------//
-    // arcDistance //
-    //-------------//
-    /**
-     * Measure the mean distance from additional arc to provided (side) model.
-     * <p>
-     * Not all arc points are checked, only the ones close to curve end.
-     *
-     * @param model   the reference model
-     * @param arcView properly oriented view on the extension arc to be checked for compatibility
-     * @return the average distance of arc points to the curve model
-     */
-    protected double arcDistance (Model model,
-                                  ArcView arcView)
-    {
-        // First, determine the collection of points to measure (junction + first arc points)
-        List<Point> points = new ArrayList<>();
-        Point junction = arcView.getJunction(!reverse);
-
-        if (junction != null) {
-            points.add(junction);
-        }
-
-        points.addAll(arcView.getSidePoints(getArcCheckLength(), !reverse));
-
-        // Second, compute their distance to the model
-        return model.computeDistance(points);
-    }
-
-    //------------//
-    // buildCurve //
-    //------------//
-    /**
-     * Build one curve starting from a seed arc.
-     *
-     * @param arc the line seed
-     */
-    protected void buildCurve (Arc arc)
-    {
-        debugArc = curves.checkBreak(arc); // Debug
-
-        Curve trunk = createCurve(arc, arc.getModel());
-
-        if (debugArc) {
-            logger.info("Trunk: {}", trunk);
-        }
-
-        if (arc.getModel() != null) {
-            trunk.setModel(arc.getModel());
-        } else {
-            trunk.setModel(computeModel(arc.getPoints(), true));
-        }
-
-        // Try to extend the trunk as much as possible, on right end then on left end.
-        final Set<Curve> leftClump = new LinkedHashSet<>();
-        final Set<Curve> rightClump = new LinkedHashSet<>();
-
-        for (boolean rev : new boolean[]{false, true}) {
-            Set<Curve> clump = rev ? leftClump : rightClump;
-            reverse = rev;
-            extend(trunk, clump);
-
-            weed(clump); // Filter out the least interesting candidates
-            maxClumpSize = Math.max(maxClumpSize, clump.size());
-        }
-
-        // Combine candidates from both sides
-        Set<Inter> clump = new LinkedHashSet<>();
-
-        // Connect lefts & rights
-        // Both endings must be OK, hence none of the side clumps is allowed to be empty
-        for (Curve sl : leftClump) {
-            for (Curve sr : rightClump) {
-                Curve curve = (sl == sr) ? sl : createCurve(sl, sr);
-                createInter(curve, clump);
-            }
-        }
-
-        // Finally, filter candidates using their potential links to embraced head-chords
-        if (!clump.isEmpty()) {
-            ///register(clump); // For DEBUG only
-            pruneClump(clump);
-        }
-    }
-
     //-------------//
     // createCurve //
     //-------------//
@@ -406,6 +364,31 @@ public abstract class CurvesBuilder
                 parts);
     }
 
+    /**
+     * Create a curve instance of proper type.
+     *
+     * @param firstJunction first junction point, if any
+     * @param lastJunction  second junction point, if any
+     * @param points        provided list of points
+     * @param model         an already computed model if any
+     * @param parts         all arcs used for this curve
+     * @return the created curve instance
+     */
+    protected abstract Curve createInstance (Point firstJunction,
+                                             Point lastJunction,
+                                             List<Point> points,
+                                             Model model,
+                                             Collection<Arc> parts);
+
+    /**
+     * (Try to) create an Inter instance from a curve candidate
+     *
+     * @param curve  the candidate
+     * @param inters (output) to be appended with created Inter instances
+     */
+    protected abstract void createInter (Curve curve,
+                                         Set<Inter> inters);
+
     //---------------//
     // defineExtArea //
     //---------------//
@@ -432,14 +415,18 @@ public abstract class CurvesBuilder
 
         double dl1 = params.gapBoxDeltaIn;
         Point2D dlVect = new Point2D.Double(-dl1 * uv.getY(), dl1 * uv.getX());
-        path = new GeoPath(new Line2D.Double(PointUtil.addition(ce, dlVect),
-                                             PointUtil.subtraction(ce, dlVect)));
+        path = new GeoPath(
+                new Line2D.Double(
+                        PointUtil.addition(ce, dlVect),
+                        PointUtil.subtraction(ce, dlVect)));
 
         double dl2 = params.gapBoxDeltaOut;
         dlVect = new Point2D.Double(-dl2 * uv.getY(), dl2 * uv.getX());
-        path.append(new Line2D.Double(PointUtil.subtraction(ce2, dlVect),
-                                      PointUtil.addition(ce2, dlVect)),
-                    true);
+        path.append(
+                new Line2D.Double(
+                        PointUtil.subtraction(ce2, dlVect),
+                        PointUtil.addition(ce2, dlVect)),
+                true);
         path.closePath();
 
         Area area = new Area(path);
@@ -447,58 +434,6 @@ public abstract class CurvesBuilder
         curve.addAttachment(reverse ? "t" : "f", area);
 
         return area;
-    }
-
-    //-----------------//
-    // needGlobalModel //
-    //-----------------//
-    /**
-     * Make sure the curve has a global model and report it.
-     *
-     * @param curve the curve at hand
-     * @return the curve global model
-     */
-    protected Model needGlobalModel (Curve curve)
-    {
-        Model model = curve.getModel();
-
-        if (model == null) {
-            model = computeModel(curve.getPoints(), false);
-            curve.setModel(model);
-        }
-
-        return model;
-    }
-
-    //------------//
-    // projection //
-    //------------//
-    /**
-     * Report the projection of extension arc on curve end direction
-     *
-     * @param arcView proper view of extension arc
-     * @param model   curve model
-     * @return projection of arc on curve end unit vector
-     */
-    protected double projection (ArcView arcView,
-                                 Model model)
-    {
-        Point a1 = arcView.getEnd(!reverse);
-
-        if (a1 == null) {
-            a1 = arcView.getJunction(!reverse);
-        }
-
-        Point a2 = arcView.getEnd(reverse);
-
-        if (a2 == null) {
-            a2 = arcView.getJunction(reverse);
-        }
-
-        Point arcVector = new Point(a2.x - a1.x, a2.y - a1.y);
-        Point2D unit = model.getEndVector(reverse);
-
-        return PointUtil.dotProduct(arcVector, unit);
     }
 
     //--------------//
@@ -752,6 +687,21 @@ public abstract class CurvesBuilder
         return reachableArcs;
     }
 
+    /**
+     * Report the number of points at beginning of arc tested for connection.
+     *
+     * @return the number of points for which distance will be checked, or null for no limit
+     */
+    protected abstract Integer getArcCheckLength ();
+
+    /**
+     * Report the tangent unit vector at curve end.
+     *
+     * @param curve the curve
+     * @return the unit vector which extends the curve end
+     */
+    protected abstract Point2D getEndVector (Curve curve);
+
     //-----------------//
     // getExtensionBox //
     //-----------------//
@@ -859,6 +809,65 @@ public abstract class CurvesBuilder
 
         return hole <= params.gapMaxLength;
     }
+
+    //-----------------//
+    // needGlobalModel //
+    //-----------------//
+    /**
+     * Make sure the curve has a global model and report it.
+     *
+     * @param curve the curve at hand
+     * @return the curve global model
+     */
+    protected Model needGlobalModel (Curve curve)
+    {
+        Model model = curve.getModel();
+
+        if (model == null) {
+            model = computeModel(curve.getPoints(), false);
+            curve.setModel(model);
+        }
+
+        return model;
+    }
+
+    //------------//
+    // projection //
+    //------------//
+    /**
+     * Report the projection of extension arc on curve end direction
+     *
+     * @param arcView proper view of extension arc
+     * @param model   curve model
+     * @return projection of arc on curve end unit vector
+     */
+    protected double projection (ArcView arcView,
+                                 Model model)
+    {
+        Point a1 = arcView.getEnd(!reverse);
+
+        if (a1 == null) {
+            a1 = arcView.getJunction(!reverse);
+        }
+
+        Point a2 = arcView.getEnd(reverse);
+
+        if (a2 == null) {
+            a2 = arcView.getJunction(reverse);
+        }
+
+        Point arcVector = new Point(a2.x - a1.x, a2.y - a1.y);
+        Point2D unit = model.getEndVector(reverse);
+
+        return PointUtil.dotProduct(arcVector, unit);
+    }
+
+    /**
+     * Additional filtering if any on the provided clump.
+     *
+     * @param clump the collection of slur candidates to be pruned down to one slur
+     */
+    protected abstract void pruneClump (Set<Inter> clump);
 
     /**
      * Kept for debugging
@@ -1007,7 +1016,16 @@ public abstract class CurvesBuilder
         }
     }
 
+    /**
+     * Among the clump of curves built from a common trunk on 'reverse' side, weed out
+     * some of them.
+     *
+     * @param clump the competing curves on the same side of a given seed
+     */
+    protected abstract void weed (Set<Curve> clump);
+
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
@@ -1051,56 +1069,6 @@ public abstract class CurvesBuilder
                 "extensions",
                 50,
                 "Maximum rookies when extending a curve");
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * All pre-scaled constants.
-     */
-    private static class Parameters
-    {
-
-        final double gapMaxLength;
-
-        final double gapBoxLength;
-
-        final double gapBoxDeltaIn;
-
-        final double gapBoxDeltaOut;
-
-        final double lineBoxLength;
-
-        final double lineBoxIn;
-
-        final double lineBoxDeltaIn;
-
-        final double lineBoxDeltaOut;
-
-        final int maxExtensionRookies;
-
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        Parameters (Scale scale)
-        {
-            gapMaxLength = scale.toPixels(constants.gapMaxLength);
-            gapBoxLength = scale.toPixels(constants.gapBoxLength);
-            gapBoxDeltaIn = scale.toPixels(constants.gapBoxDeltaIn);
-            gapBoxDeltaOut = scale.toPixels(constants.gapBoxDeltaOut);
-            lineBoxLength = scale.toPixels(constants.lineBoxLength);
-            lineBoxIn = scale.toPixels(constants.lineBoxIn);
-            lineBoxDeltaIn = scale.toPixels(constants.lineBoxDeltaIn);
-            lineBoxDeltaOut = scale.toPixels(constants.lineBoxDeltaOut);
-            maxExtensionRookies = constants.maxExtensionRookies.getValue();
-
-            if (logger.isDebugEnabled()) {
-                new Dumping().dump(this);
-            }
-        }
     }
 
     //-----------//
@@ -1151,6 +1119,56 @@ public abstract class CurvesBuilder
             sb.append('}');
 
             return sb.toString();
+        }
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * All pre-scaled constants.
+     */
+    private static class Parameters
+    {
+
+        final double gapMaxLength;
+
+        final double gapBoxLength;
+
+        final double gapBoxDeltaIn;
+
+        final double gapBoxDeltaOut;
+
+        final double lineBoxLength;
+
+        final double lineBoxIn;
+
+        final double lineBoxDeltaIn;
+
+        final double lineBoxDeltaOut;
+
+        final int maxExtensionRookies;
+
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        Parameters (Scale scale)
+        {
+            gapMaxLength = scale.toPixels(constants.gapMaxLength);
+            gapBoxLength = scale.toPixels(constants.gapBoxLength);
+            gapBoxDeltaIn = scale.toPixels(constants.gapBoxDeltaIn);
+            gapBoxDeltaOut = scale.toPixels(constants.gapBoxDeltaOut);
+            lineBoxLength = scale.toPixels(constants.lineBoxLength);
+            lineBoxIn = scale.toPixels(constants.lineBoxIn);
+            lineBoxDeltaIn = scale.toPixels(constants.lineBoxDeltaIn);
+            lineBoxDeltaOut = scale.toPixels(constants.lineBoxDeltaOut);
+            maxExtensionRookies = constants.maxExtensionRookies.getValue();
+
+            if (logger.isDebugEnabled()) {
+                new Dumping().dump(this);
+            }
         }
     }
 }

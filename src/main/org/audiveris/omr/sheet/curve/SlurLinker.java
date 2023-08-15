@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -23,14 +23,19 @@ package org.audiveris.omr.sheet.curve;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import static org.audiveris.omr.math.CubicUtil.*;
+import static org.audiveris.omr.math.CubicUtil.above;
+import static org.audiveris.omr.math.CubicUtil.getEndVector1;
+import static org.audiveris.omr.math.CubicUtil.getEndVector2;
 import org.audiveris.omr.math.GeoPath;
 import org.audiveris.omr.math.LineUtil;
 import static org.audiveris.omr.math.LineUtil.bisector;
 import static org.audiveris.omr.math.LineUtil.intersection;
 import static org.audiveris.omr.math.LineUtil.intersectionAtX;
 import org.audiveris.omr.math.PointUtil;
-import static org.audiveris.omr.math.PointUtil.*;
+import static org.audiveris.omr.math.PointUtil.dotProduct;
+import static org.audiveris.omr.math.PointUtil.extension;
+import static org.audiveris.omr.math.PointUtil.rounded;
+import static org.audiveris.omr.math.PointUtil.subtraction;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -45,7 +50,8 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,10 +98,12 @@ public class SlurLinker
     private static final Logger logger = LoggerFactory.getLogger(SlurLinker.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Scale-dependent parameters. */
     private final Parameters params;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new <code>SlurLinker</code> object.
      *
@@ -107,6 +115,64 @@ public class SlurLinker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-------------//
+    // canBeOrphan //
+    //-------------//
+    /**
+     * Check whether the provided slur can be a legal orphan on the specified side.
+     *
+     * @param slur   the slur to check
+     * @param side   which side is orphaned
+     * @param system containing system
+     * @return true if legal
+     */
+    private boolean canBeOrphan (SlurInter slur,
+                                 HorizontalSide side,
+                                 SystemInfo system)
+    {
+        final CubicCurve2D curve = slur.getCurve();
+
+        // Check if slur is rather horizontal
+        if (abs(LineUtil.getSlope(curve.getP1(), curve.getP2())) > params.maxOrphanSlope) {
+            logger.debug("{} too sloped orphan", slur);
+
+            return false;
+        }
+
+        // A left orphan must start in first measure.
+        // A right orphan must stop in last measure.
+        Point2D slurEnd = (side == LEFT) ? curve.getP1() : curve.getP2();
+        Staff staff = system.getClosestStaff(slurEnd);
+
+        if (staff.isTablature()) {
+            logger.debug("{} orphan side in tablature", slur);
+
+            return false;
+        }
+
+        Part part = staff.getPart();
+        Measure sideMeasure = (side == LEFT) ? part.getFirstMeasure() : part.getLastMeasure();
+        Measure endMeasure = part.getMeasureAt(slurEnd);
+
+        if (endMeasure != sideMeasure) {
+            logger.debug("{} orphan side not in part side measure", slur);
+
+            return false;
+        }
+
+        // Also, check horizontal gap to staff limit
+        int staffEnd = (side == LEFT) ? staff.getHeaderStop() : staff.getAbscissa(side);
+
+        if (abs(slurEnd.getX() - staffEnd) > params.maxOrphanDx) {
+            logger.debug("{} too far orphan", slur);
+
+            return false;
+        }
+
+        return true;
+    }
+
     //----------------//
     // defineAreaPair //
     //----------------//
@@ -232,6 +298,111 @@ public class SlurLinker
         slur.addAttachment("L", lastArea);
 
         return areaMap;
+    }
+
+    /**
+     * Compute bisector vector.
+     *
+     * @param slur is the slur above (or below)
+     * @return the unit bisector
+     */
+    private Point2D getBisUnit (SlurInter slur)
+    {
+        final boolean above = slur.isAbove();
+        final CubicCurve2D curve = slur.getCurve();
+        final Point2D one = above ? curve.getP1() : curve.getP2();
+        final Point2D two = above ? curve.getP2() : curve.getP1();
+
+        Line2D bisector = LineUtil.bisector(one, two);
+
+        // Normalization
+        double length = bisector.getP1().distance(bisector.getP2());
+
+        return new Point2D.Double(
+                (bisector.getX2() - bisector.getX1()) / length,
+                (bisector.getY2() - bisector.getY1()) / length);
+    }
+
+    //----------------//
+    // getTargetPoint //
+    //----------------//
+    /**
+     * Report the precise target point for a head connection on desired side of a slur.
+     *
+     * @param slur the slur to process
+     * @param side the desired slur side
+     * @return the target connection point, slightly away from slur end
+     */
+    private Point2D getTargetPoint (SlurInter slur,
+                                    HorizontalSide side)
+    {
+        final CubicCurve2D curve = slur.getCurve();
+        final Point2D end = (side == LEFT) ? curve.getP1() : curve.getP2();
+        final Point2D vector = (side == LEFT) ? getEndVector1(curve) : getEndVector2(curve);
+        final double ext = params.targetExtension;
+
+        return PointUtil.addition(end, PointUtil.times(vector, ext));
+    }
+
+    //--------------//
+    // isHorizontal //
+    //--------------//
+    /**
+     * Report whether the provided slur is rather horizontal (vs rather vertical).
+     *
+     * @param slur the provided slur
+     * @return true if rather horizontal
+     */
+    private boolean isHorizontal (SlurInter slur)
+    {
+        final CubicCurve2D curve = slur.getCurve();
+        final Point2D first = curve.getP1();
+        final Point2D last = curve.getP2();
+        final double slurWidth = abs(last.getX() - first.getX());
+
+        return (abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator)
+                || (slurWidth >= params.wideSlurWidth);
+    }
+
+    //--------//
+    // lookup //
+    //--------//
+    /**
+     * Retrieve the best head embraced by the slur side.
+     *
+     * @param slur   the provided slur
+     * @param side   desired side
+     * @param area   lookup area on slur side
+     * @param chords candidate chords on desired side
+     * @return the map of heads found, perhaps empty, with their data
+     */
+    private Map<Inter, SlurHeadLink> lookup (SlurInter slur,
+                                             HorizontalSide side,
+                                             Area area,
+                                             List<Inter> chords)
+    {
+        final Map<Inter, SlurHeadLink> found = new HashMap<>();
+        final CubicCurve2D curve = slur.getCurve();
+        final Point2D end = (side == LEFT) ? curve.getP1() : curve.getP2();
+        final Point2D target = getTargetPoint(slur, side);
+        final Point2D bisUnit = getBisUnit(slur);
+
+        // Look for intersected chords
+        for (Inter chordInter : chords) {
+            AbstractChordInter chord = (AbstractChordInter) chordInter;
+            Rectangle chordBox = chord.getBounds();
+
+            if (area.intersects(chordBox)) {
+                // Check the chord contains at least one suitable head on desired slur side
+                HeadInter head = selectBestHead(slur, chord, end, target, bisUnit, area);
+
+                if (head != null) {
+                    found.put(chord, SlurHeadLink.create(target, side, chord, head));
+                }
+            }
+        }
+
+        return found;
     }
 
     //----------------//
@@ -395,168 +566,6 @@ public class SlurLinker
         return linkPair;
     }
 
-    //-------------//
-    // canBeOrphan //
-    //-------------//
-    /**
-     * Check whether the provided slur can be a legal orphan on the specified side.
-     *
-     * @param slur   the slur to check
-     * @param side   which side is orphaned
-     * @param system containing system
-     * @return true if legal
-     */
-    private boolean canBeOrphan (SlurInter slur,
-                                 HorizontalSide side,
-                                 SystemInfo system)
-    {
-        final CubicCurve2D curve = slur.getCurve();
-
-        // Check if slur is rather horizontal
-        if (abs(LineUtil.getSlope(curve.getP1(), curve.getP2())) > params.maxOrphanSlope) {
-            logger.debug("{} too sloped orphan", slur);
-
-            return false;
-        }
-
-        // A left orphan must start in first measure.
-        // A right orphan must stop in last measure.
-        Point2D slurEnd = (side == LEFT) ? curve.getP1() : curve.getP2();
-        Staff staff = system.getClosestStaff(slurEnd);
-
-        if (staff.isTablature()) {
-            logger.debug("{} orphan side in tablature", slur);
-
-            return false;
-        }
-
-        Part part = staff.getPart();
-        Measure sideMeasure = (side == LEFT) ? part.getFirstMeasure() : part.getLastMeasure();
-        Measure endMeasure = part.getMeasureAt(slurEnd);
-
-        if (endMeasure != sideMeasure) {
-            logger.debug("{} orphan side not in part side measure", slur);
-
-            return false;
-        }
-
-        // Also, check horizontal gap to staff limit
-        int staffEnd = (side == LEFT) ? staff.getHeaderStop() : staff.getAbscissa(side);
-
-        if (abs(slurEnd.getX() - staffEnd) > params.maxOrphanDx) {
-            logger.debug("{} too far orphan", slur);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    //----------------//
-    // getTargetPoint //
-    //----------------//
-    /**
-     * Report the precise target point for a head connection on desired side of a slur.
-     *
-     * @param slur the slur to process
-     * @param side the desired slur side
-     * @return the target connection point, slightly away from slur end
-     */
-    private Point2D getTargetPoint (SlurInter slur,
-                                    HorizontalSide side)
-    {
-        final CubicCurve2D curve = slur.getCurve();
-        final Point2D end = (side == LEFT) ? curve.getP1() : curve.getP2();
-        final Point2D vector = (side == LEFT) ? getEndVector1(curve) : getEndVector2(curve);
-        final double ext = params.targetExtension;
-
-        return PointUtil.addition(end, PointUtil.times(vector, ext));
-    }
-
-    /**
-     * Compute bisector vector.
-     *
-     * @param slur is the slur above (or below)
-     * @return the unit bisector
-     */
-    private Point2D getBisUnit (SlurInter slur)
-    {
-        final boolean above = slur.isAbove();
-        final CubicCurve2D curve = slur.getCurve();
-        final Point2D one = above ? curve.getP1() : curve.getP2();
-        final Point2D two = above ? curve.getP2() : curve.getP1();
-
-        Line2D bisector = LineUtil.bisector(one, two);
-
-        // Normalization
-        double length = bisector.getP1().distance(bisector.getP2());
-
-        return new Point2D.Double(
-                (bisector.getX2() - bisector.getX1()) / length,
-                (bisector.getY2() - bisector.getY1()) / length);
-    }
-
-    //--------------//
-    // isHorizontal //
-    //--------------//
-    /**
-     * Report whether the provided slur is rather horizontal (vs rather vertical).
-     *
-     * @param slur the provided slur
-     * @return true if rather horizontal
-     */
-    private boolean isHorizontal (SlurInter slur)
-    {
-        final CubicCurve2D curve = slur.getCurve();
-        final Point2D first = curve.getP1();
-        final Point2D last = curve.getP2();
-        final double slurWidth = abs(last.getX() - first.getX());
-
-        return (abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator)
-                       || (slurWidth >= params.wideSlurWidth);
-    }
-
-    //--------//
-    // lookup //
-    //--------//
-    /**
-     * Retrieve the best head embraced by the slur side.
-     *
-     * @param slur   the provided slur
-     * @param side   desired side
-     * @param area   lookup area on slur side
-     * @param chords candidate chords on desired side
-     * @return the map of heads found, perhaps empty, with their data
-     */
-    private Map<Inter, SlurHeadLink> lookup (SlurInter slur,
-                                             HorizontalSide side,
-                                             Area area,
-                                             List<Inter> chords)
-    {
-        final Map<Inter, SlurHeadLink> found = new HashMap<>();
-        final CubicCurve2D curve = slur.getCurve();
-        final Point2D end = (side == LEFT) ? curve.getP1() : curve.getP2();
-        final Point2D target = getTargetPoint(slur, side);
-        final Point2D bisUnit = getBisUnit(slur);
-
-        // Look for intersected chords
-        for (Inter chordInter : chords) {
-            AbstractChordInter chord = (AbstractChordInter) chordInter;
-            Rectangle chordBox = chord.getBounds();
-
-            if (area.intersects(chordBox)) {
-                // Check the chord contains at least one suitable head on desired slur side
-                HeadInter head = selectBestHead(slur, chord, end, target, bisUnit, area);
-
-                if (head != null) {
-                    found.put(chord, SlurHeadLink.create(target, side, chord, head));
-                }
-            }
-        }
-
-        return found;
-    }
-
     //----------------//
     // selectBestHead //
     //----------------//
@@ -615,6 +624,7 @@ public class SlurLinker
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

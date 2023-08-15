@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2022. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ledger;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -34,6 +32,7 @@ import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.SectionFactory;
 import org.audiveris.omr.lag.SectionService;
+import org.audiveris.omr.lag.Sections;
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
@@ -47,12 +46,17 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
 import org.audiveris.omr.sheet.ui.LagController;
 import org.audiveris.omr.sheet.ui.SheetTab;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.util.IntUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -74,6 +78,7 @@ public class LedgersFilter
     private static final Logger logger = LoggerFactory.getLogger(LedgersFilter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -81,6 +86,7 @@ public class LedgersFilter
     final List<Integer> vipSections;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new LedgersFilter object.
      *
@@ -99,6 +105,78 @@ public class LedgersFilter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //------------------------//
+    // dispatchLedgerSections //
+    //------------------------//
+    /**
+     * Dispatch the various horizontal ledger sections among systems.
+     */
+    private Map<SystemInfo, List<Section>> dispatchLedgerSections (Collection<Section> sections)
+    {
+        final SystemManager systemManager = sheet.getSystemManager();
+        final Map<SystemInfo, List<Section>> sectionMap = new TreeMap<>();
+        for (SystemInfo system : systemManager.getSystems()) {
+            sectionMap.put(system, new ArrayList<>());
+        }
+
+        for (Section section : sections) {
+            final Point center = section.getCentroid();
+            final List<SystemInfo> relevants = systemManager.getSystemsOf(center);
+
+            for (SystemInfo system : relevants) {
+                // Check section is within system abscissa boundaries
+                if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
+                    sectionMap.get(system).add(section);
+                }
+            }
+        }
+
+        return sectionMap;
+    }
+
+    //----------------------//
+    // filterLedgerSections //
+    //----------------------//
+    /**
+     * Additional filtering on ledger candidate sections, run at system level.
+     * <p>
+     * Candidate sections that intersect a beam are discarded.
+     *
+     * @param sectionMap (input/output) map system -> sections
+     */
+    private void filterLedgerSections (Map<SystemInfo, List<Section>> sectionMap)
+    {
+        final SystemManager systemManager = sheet.getSystemManager();
+
+        for (SystemInfo system : systemManager.getSystems()) {
+            final List<Inter> beams = system.getSig().inters(AbstractBeamInter.class);
+            final List<Section> discarded = new ArrayList<>();
+            final List<Section> candidates = sectionMap.get(system);
+
+            for (Section s : candidates) {
+                final Rectangle sBox = s.getBounds();
+
+                for (Inter bi : beams) {
+                    final Rectangle bBox = bi.getBounds();
+
+                    if (sBox.intersects(bBox)) {
+                        AbstractBeamInter beam = (AbstractBeamInter) bi;
+
+                        if (beam.getArea().intersects(sBox)) {
+                            discarded.add(s);
+                        }
+                    }
+                }
+            }
+
+            if (!discarded.isEmpty()) {
+                logger.debug("{} discarded ledger sections: {}", system, Sections.ids(discarded));
+                candidates.removeAll(discarded);
+            }
+        }
+    }
+
     //---------//
     // process //
     //---------//
@@ -117,7 +195,10 @@ public class LedgersFilter
         final StaffManager staffManager = sheet.getStaffManager();
 
         // Filter to keep only the runs which stand outside of staves cores.
-        final RunTableFactory.Filter filter = (int x, int y, int length) -> {
+        final RunTableFactory.Filter filter = (int x,
+                                               int y,
+                                               int length) ->
+        {
             final Point center = new Point(x + (length / 2), y);
             final Staff staff = staffManager.getClosestStaff(center);
 
@@ -152,38 +233,9 @@ public class LedgersFilter
                     new FilamentBoard(sheet.getFilamentIndex().getEntityService(), true));
         }
 
-        return dispatchLedgerSections(lag.getEntities());
-    }
+        final Map<SystemInfo, List<Section>> sectionMap = dispatchLedgerSections(lag.getEntities());
 
-    //------------------------//
-    // dispatchLedgerSections //
-    //------------------------//
-    /**
-     * Dispatch the various horizontal ledger sections among systems.
-     */
-    private Map<SystemInfo, List<Section>> dispatchLedgerSections (Collection<Section> sections)
-    {
-        Map<SystemInfo, List<Section>> sectionMap = new TreeMap<>();
-        List<SystemInfo> relevants = new ArrayList<>();
-        SystemManager systemManager = sheet.getSystemManager();
-
-        for (Section section : sections) {
-            Point center = section.getCentroid();
-            systemManager.getSystemsOf(center, relevants);
-
-            for (SystemInfo system : relevants) {
-                // Check section is within system abscissa boundaries
-                if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
-                    List<Section> list = sectionMap.get(system);
-
-                    if (list == null) {
-                        sectionMap.put(system, list = new ArrayList<>());
-                    }
-
-                    list.add(section);
-                }
-            }
-        }
+        filterLedgerSections(sectionMap);
 
         return sectionMap;
     }
@@ -205,6 +257,7 @@ public class LedgersFilter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
