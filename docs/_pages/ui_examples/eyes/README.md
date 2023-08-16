@@ -37,11 +37,20 @@ Table of contents
 
 ## Input
 
--- Note: We can ask our browser to display each of these sheet images in a separate tab --
-
+{: .note }
+If we are reading this handbook via a web browser,
+we can ask the browser to display each of these sheet images in a separate tab.
+<!--
 | Sheet#1 | Sheet#2 | Sheet#3 |
 | :---: | :---: | :---: |
 | ![](./sheet1.png) | ![](./sheet2.png) | ![](./sheet3.png) |
+-->
+
+| Sheet ID | Input image |
+| :---: | :---: |
+| Sheet#1 | ![](./sheet1.png) |
+| Sheet#2 | ![](./sheet2.png) |
+| Sheet#3 | ![](./sheet3.png) |
 
 ## Book parameters
 
