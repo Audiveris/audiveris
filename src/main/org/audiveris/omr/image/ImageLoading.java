@@ -21,15 +21,16 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.ImageType;
-import org.apache.pdfbox.rendering.PDFRenderer;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.FileUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -59,13 +60,15 @@ import javax.imageio.stream.ImageInputStream;
  * </ol>
  * This class leverages several software pieces, each with its own Loader subclass:
  * <ul>
- * <li><b>Apache PDFBox</b> for PDF files. This replaces former use of JPod/GhostScript sub-process.</li>
+ * <li><b>Apache PDFBox</b> for PDF files.
+ * This replaces former use of JPodRenderer which had replaced GhostScript sub-process.</li>
  * <li><b>ImageIO</b> for all files except PDF.</li>
  * </ul>
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
  * @author Maxim Poliakovski
+ * @author Peter Greth
  */
 public abstract class ImageLoading
 {
@@ -291,9 +294,9 @@ public abstract class ImageLoading
         }
     }
 
-    //--------   ---//
+    //--------------//
     // PdfBoxLoader //
-    //-----   ------//
+    //--------------//
     private static class PdfboxLoader
             extends AbstractLoader
     {
@@ -325,18 +328,17 @@ public abstract class ImageLoading
             final int pageIndex = id - 1;
 
             RenderingHints renderingHints = new RenderingHints(null);
-            renderingHints.put(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_OFF);
+            renderingHints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
             renderingHints.put(
                     RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 
             PDFRenderer renderer = new PDFRenderer(doc);
             renderer.setRenderingHints(renderingHints);
-            return renderer.renderImageWithDPI(pageIndex,
-                                               constants.pdfResolution.getValue(),
-                                               ImageType.GRAY);
+            return renderer.renderImageWithDPI(
+                    pageIndex,
+                    constants.pdfResolution.getValue(),
+                    ImageType.GRAY);
         }
     }
 
