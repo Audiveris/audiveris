@@ -100,6 +100,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -107,6 +108,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 
 /**
@@ -895,10 +897,12 @@ public class SigReducer
      */
     private int checkLedgers ()
     {
+        final int fixedLedgers = fixAllSharedLedgers();
+
         logger.debug("S#{} checkLedgers", system.getId());
 
         // All system note heads, sorted by abscissa
-        List<Inter> allHeads = sig.inters(ShapeSet.Heads);
+        final List<Inter> allHeads = sig.inters(ShapeSet.Heads);
         Collections.sort(allHeads, Inters.byAbscissa);
 
         final List<LedgerInter> toDelete = new ArrayList<>();
@@ -915,14 +919,14 @@ public class SigReducer
                 SortedMap<Integer, List<LedgerInter>> map = staff.getLedgerMap();
 
                 // Need a read-only copy to avoid concurrent modifications
-                List<Entry<Integer, List<LedgerInter>>> staffLedgers;
-                staffLedgers = new ArrayList<>(map.entrySet());
+                final List<Entry<Integer, List<LedgerInter>>> staffLedgers //
+                        = new ArrayList<>(map.entrySet());
 
                 for (Entry<Integer, List<LedgerInter>> entry : staffLedgers) {
-                    int index = entry.getKey();
+                    final int index = entry.getKey();
 
                     // Need a list copy to avoid concurrent modifications
-                    List<LedgerInter> lineLedgers = new ArrayList<>(entry.getValue());
+                    final List<LedgerInter> lineLedgers = new ArrayList<>(entry.getValue());
 
                     for (LedgerInter ledger : lineLedgers) {
                         if (!ledgerHasHeadOrLedger(staff, index, ledger, allHeads)) {
@@ -944,7 +948,7 @@ public class SigReducer
             }
         }
 
-        return toDelete.size();
+        return fixedLedgers + toDelete.size();
     }
 
     //--------------------//
@@ -1399,6 +1403,158 @@ public class SigReducer
 
         if (leftSig.noSupport(left, right)) {
             leftSig.insertExclusion(left, right, OVERLAP);
+        }
+    }
+
+    //---------------------//
+    // fixAllSharedLedgers //
+    //---------------------//
+    /**
+     * Process the pathologic cases where the same ledgers appear in different staves.
+     *
+     * @return the number of cases fixed
+     */
+    private int fixAllSharedLedgers ()
+    {
+        logger.debug("S#{} fixSharedLedgers", system.getId());
+
+        int shareCount = 0;
+        final List<Staff> staves = system.getStaves();
+
+        for (int idx = 1; idx < staves.size(); idx++) {
+            // Check if ledgers (below) upper staff appear also (above) lower staff
+            final Staff upper = staves.get(idx - 1);
+            final SortedMap<Integer, List<LedgerInter>> upperMap = upper.getLedgerMap();
+            final List<LedgerInter> firstLedgers = upperMap.get(1);
+            if (firstLedgers == null || firstLedgers.isEmpty()) {
+                continue; // No ledger below upper staff
+            }
+
+            final Staff lower = staves.get(idx);
+            final SortedMap<Integer, List<LedgerInter>> lowerMap = lower.getLedgerMap();
+            final TreeSet<Integer> lowerKeys = new TreeSet<>(lowerMap.keySet());
+            if (!lowerKeys.contains(-1)) {
+                continue; // No ledger above lower staff
+            }
+
+            final List<LedgerInter> lastLedgers = lowerMap.get(lowerKeys.first());
+            final List<LedgerInter> sharedLedgers = new ArrayList<>(firstLedgers);
+            sharedLedgers.retainAll(lastLedgers);
+
+            if (!sharedLedgers.isEmpty()) {
+                logger.info(
+                        "Ledgers shared between staves #{} and #{}: {}",
+                        upper.getId(),
+                        lower.getId(),
+                        Inters.ids(sharedLedgers));
+                shareCount += sharedLedgers.size();
+
+                for (LedgerInter ledger : sharedLedgers) {
+                    fixSharedLedger(ledger, upper, lower);
+                }
+            }
+        }
+
+        return shareCount;
+    }
+
+    //-----------------//
+    // fixSharedLedger //
+    //-----------------//
+    /**
+     * Fix a shared ledger, found just below the upper staff.
+     * <p>
+     * We consider the column area of ledgers composed of the provided ledger and of the ledgers
+     * aligned below, to retrieve just the best graded note head found there.
+     * <p>
+     * The chosen owner staff is the one vertically farther from the best note head.
+     * If there is not head at all, the whole column of ledgers can be discarded.
+     * <p>
+     * We then clean up the column area between these two staves (ledgers, heads, stems).
+     *
+     * @param ledger the shared ledger to fix
+     * @param upper  the upper staff
+     * @param lower  the lower staff
+     */
+    private void fixSharedLedger (LedgerInter ledger,
+                                  Staff upper,
+                                  Staff lower)
+    {
+        // Define column area based on the provided ledger
+        final Point ledgerCenter = ledger.getCenter();
+        final int upperY = upper.getLastLine().yAt(ledgerCenter.x);
+        final int lowerY = lower.getFirstLine().yAt(ledgerCenter.x);
+        final double iRatio = constants.ledgerVerticalMarginRatio.getValue();
+        final Rectangle luBox = ledger.getBounds();
+        luBox.add(ledgerCenter.x, upperY + (int) Math.rint(upper.getSpecificInterline() * iRatio));
+        luBox.add(ledgerCenter.x, lowerY - (int) Math.rint(lower.getSpecificInterline() * iRatio));
+
+        final List<Inter> ledgers = ledger.getSig().inters(
+                inter -> inter instanceof LedgerInter && inter.getBounds().intersects(luBox));
+        final List<Inter> heads = ledger.getSig().inters(
+                inter -> inter instanceof HeadInter && luBox.contains(inter.getCenter()));
+        Collections.sort(heads, Inters.byReverseBestGrade);
+
+        logger.info(
+                "For {}, luBox:{}, ledgers:{} heads:{}",
+                ledger,
+                luBox,
+                Inters.ids(ledgers),
+                Inters.ids(heads));
+
+        if (!heads.isEmpty()) {
+            final HeadInter head = (HeadInter) heads.get(0);
+            final Point headCenter = head.getCenter();
+            final int upperDist = headCenter.y - upperY;
+            final int upperDp = (int) Math.rint(upperDist / (0.5 * upper.getSpecificInterline()));
+            final int lowerDist = lowerY - headCenter.y;
+            final int lowerDp = (int) Math.rint(lowerDist / (0.5 * lower.getSpecificInterline()));
+            final Staff owner = (lowerDp > upperDp) ? lower : upper;
+            final Staff other = (owner == upper) ? lower : upper;
+            logger.info("upperDp: {} lowerDp: {}", upperDp, lowerDp);
+            logger.info("Owner: {} other: {}", owner, other);
+
+            ledgers.stream().forEach(inter -> inter.setStaff(owner));
+            heads.stream().forEach(inter ->
+            {
+                final HeadInter h = (HeadInter) inter;
+                if (h.getStaff() != owner) {
+                    h.setPitch(null); // To force new pitch computation
+                    h.setStaff(owner);
+                    owner.addNote(h);
+                }
+
+                other.removeNote(h);
+            });
+
+            purgeStaffLedgers(other, ledgers);
+        } else {
+            purgeStaffLedgers(upper, ledgers);
+            purgeStaffLedgers(lower, ledgers);
+        }
+    }
+
+    //-------------------//
+    // purgeStaffLedgers //
+    //-------------------//
+    /**
+     * Purge a given staff of the provided ledgers.
+     *
+     * @param staff    the given staff
+     * @param toRemove the ledgers to remove
+     */
+    private void purgeStaffLedgers (Staff staff,
+                                    List<Inter> toRemove)
+    {
+        for (Iterator<Entry<Integer, List<LedgerInter>>> it = staff.getLedgerMap().entrySet()
+                .iterator(); it.hasNext();) {
+            final Entry<Integer, List<LedgerInter>> entry = it.next();
+            final List<LedgerInter> ledgers = entry.getValue();
+            ledgers.removeAll(toRemove);
+
+            if (ledgers.isEmpty()) {
+                it.remove();
+            }
         }
     }
 
@@ -2176,6 +2332,10 @@ public class SigReducer
         private final Constant.Ratio minIouStemHead = new Constant.Ratio(
                 0.02,
                 "Minimum IOU between stem and intersected heads");
+
+        private final Constant.Ratio ledgerVerticalMarginRatio = new Constant.Ratio(
+                0.33,
+                "Ratio of staff interline to fix shared ledgers");
     }
 
     //------------------//
