@@ -113,16 +113,13 @@ public class MainGui
     /** The related concrete frame. */
     private JFrame frame;
 
-    /** Bottom pane split between the logPane and the errorsPane. */
-    private JSplitPane bottomPane;
-
     /** Log pane, which displays logging info. */
     private LogPane logPane;
 
     /** GlassPane needed to handle drag and drop from shape palette. */
     private final OmrGlassPane glassPane = new OmrGlassPane();
 
-    /** Main pane with Sheet on top and Log+Errors on bottom. */
+    /** Main pane with Sheet on top and Log on bottom. */
     private JSplitPane mainPane;
 
     /** Step menu. */
@@ -177,7 +174,7 @@ public class MainGui
         // |i| | +===================================+=============+ | | |
         // |n| +=====================================================+ | |
         // |P+=========================================================+ |
-        // |a| bottomPane (logPane)                                    | |
+        // |a| logPane                                                 | |
         // |n|                                                         | |
         // |e|                                                         | |
         // | +=========================================================+ |
@@ -201,15 +198,9 @@ public class MainGui
         content.add(mainPane, BorderLayout.CENTER);
         mainPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, this);
 
-        // Bottom = Log (other things removed)
+        // Bottom: Log
         logPane = new LogPane();
-
-        bottomPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        bottomPane.setBorder(null);
-        bottomPane.setDividerSize(1);
-        bottomPane.setResizeWeight(0.5d); // Cut in half initially
-        bottomPane.setLeftComponent(logPane.getComponent());
-        mainPane.setBottomComponent(bottomPane);
+        mainPane.setBottomComponent(logPane.getComponent());
     }
 
     //-------------//

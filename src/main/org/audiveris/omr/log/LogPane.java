@@ -23,6 +23,8 @@ package org.audiveris.omr.log;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.ui.util.SeparablePopupMenu;
+import static org.audiveris.omr.ui.util.UIPredicates.isContextWanted;
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -33,9 +35,15 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 
 import java.awt.Color;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Map;
 
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -86,6 +94,8 @@ public class LogPane
         logArea.setEditable(false);
         logArea.setMargin(new Insets(5, 5, 5, 5));
         document = (AbstractDocument) logArea.getStyledDocument();
+
+        logArea.addMouseListener(new MyMouseAdapter());
 
         // Let the scroll pane display the log area
         component.setViewportView(logArea);
@@ -205,5 +215,41 @@ public class LogPane
         private final Constant.String fontName = new Constant.String(
                 "Lucida Console",
                 "Font name for log pane");
+    }
+
+    //-------------//
+    // ClearAction //
+    //-------------//
+    private class ClearAction
+            extends AbstractAction
+    {
+        ClearAction ()
+        {
+            putValue(NAME, "Clear");
+            putValue(SHORT_DESCRIPTION, "Clear this display (the log file is not modified)");
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            clearLog();
+        }
+    }
+
+    //----------------//
+    // MyMouseAdapter //
+    //----------------//
+    private class MyMouseAdapter
+            extends MouseAdapter
+    {
+        @Override
+        public void mousePressed (MouseEvent e)
+        {
+            if (isContextWanted(e)) {
+                final JPopupMenu popup = new SeparablePopupMenu();
+                popup.add(new JMenuItem(new ClearAction()));
+                popup.show(logArea, e.getX(), e.getY());
+            }
+        }
     }
 }
