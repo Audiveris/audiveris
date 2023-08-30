@@ -24,6 +24,7 @@ package org.audiveris.omr.plugin;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
+import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.util.VoidTask;
 
 import org.jdesktop.application.Task;
@@ -290,8 +291,9 @@ public class Plugin
     {
         try {
             // Target export file(s)
-            final Collection<Path> paths = BookManager.useOpus() ? Arrays.asList(
-                    book.getOpusExportPath()) : book.getScoreExportPaths(book.getScores()).values();
+            final Collection<Path> paths = BookManager.useOpus() //
+                    ? Arrays.asList(book.getOpusExportPath())
+                    : book.getScoreExportPaths(book.getScores()).values();
 
             // Reuse existing export?
             if (!book.isModified()) {
@@ -308,10 +310,10 @@ public class Plugin
 
             // We must (re-) export
             deleteFiles(paths);
-            book.export(book.getValidSelectedStubs(), book.getScores());
-
-            if (exportIsOk(null, paths)) {
-                return paths; // We can use new export
+            if (book.export(book.getValidSelectedStubs(), book.getScores())) {
+                if (exportIsOk(null, paths)) {
+                    return paths; // We can use new export
+                }
             }
         } catch (IOException ex) {
             logger.warn("Error getting export file(s) {}", ex.toString(), ex);
@@ -334,7 +336,7 @@ public class Plugin
         final Collection<Path> exportPaths = retrieveExportFiles(book);
 
         if (exportPaths == null) {
-            logger.warn("No suitable export file(s)");
+            logger.info("No suitable export file(s)");
 
             return null;
         }
@@ -417,6 +419,13 @@ public class Plugin
             throws InterruptedException
         {
             return Plugin.this.runPlugin(book);
+        }
+
+        @Override
+        protected void succeeded (Void result)
+        {
+            // Needed to update the pause button
+            StubsController.getInstance().refresh();
         }
     }
 }

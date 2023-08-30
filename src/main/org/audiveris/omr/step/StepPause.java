@@ -31,7 +31,7 @@ package org.audiveris.omr.step;
  * @author Hervé Bitteur
  */
 public class StepPause
-        extends StepException
+        extends ProcessingCancellationException
 {
     //~ Constructors -------------------------------------------------------------------------------
 

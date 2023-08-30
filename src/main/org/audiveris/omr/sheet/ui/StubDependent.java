@@ -75,6 +75,9 @@ public abstract class StubDependent
     /** Name of property linked to book transcription ability. */
     public static final String BOOK_TRANSCRIBABLE = "bookTranscribable";
 
+    /** Name of property linked to book transcription pause. */
+    public static final String BOOK_PAUSABLE = "bookPausable";
+
     /** Name of property linked to book upgrade ability. */
     public static final String BOOK_UPGRADABLE = "bookUpgradable";
 
@@ -118,6 +121,9 @@ public abstract class StubDependent
 
     /** Indicates whether the current book can be transcribed. */
     protected boolean bookTranscribable = false;
+
+    /** Indicates whether the current book can be paused. */
+    protected boolean bookPausable = false;
 
     /** Indicates whether the current book can be upgraded. */
     protected boolean bookUpgradable = false;
@@ -203,6 +209,19 @@ public abstract class StubDependent
     public boolean isBookModifiedOrUpgraded ()
     {
         return bookModifiedOrUpgraded;
+    }
+
+    //----------------//
+    // isBookPausable //
+    //----------------//
+    /**
+     * Getter for bookPausable property
+     *
+     * @return the current property value
+     */
+    public boolean isBookPausable ()
+    {
+        return bookPausable;
     }
 
     //---------------------//
@@ -407,10 +426,15 @@ public abstract class StubDependent
                 final boolean idle = isBookIdle(stub.getBook());
                 setBookIdle(idle);
                 setBookTranscribable(idle && isBookTranscribable(stub.getBook()));
+                setBookPausable(!idle);
+                if (idle) {
+                    stub.getBook().setPauseRequired(false);
+                }
                 setBookUpgradable(idle && !stub.getBook().getStubsToUpgrade().isEmpty());
             } else {
                 setBookIdle(false);
                 setBookTranscribable(false);
+                setBookPausable(false);
                 setBookUpgradable(false);
             }
 
@@ -492,6 +516,24 @@ public abstract class StubDependent
 
         if (bookModifiedOrUpgraded != oldValue) {
             firePropertyChange(BOOK_MODIFIED_OR_UPGRADED, oldValue, this.bookModifiedOrUpgraded);
+        }
+    }
+
+    //-----------------//
+    // setBookPausable //
+    //-----------------//
+    /**
+     * Setter for bookPausable property.
+     *
+     * @param bookPausable the new property value
+     */
+    public void setBookPausable (boolean bookPausable)
+    {
+        boolean oldValue = this.bookPausable;
+        this.bookPausable = bookPausable;
+
+        if (bookPausable != oldValue) {
+            firePropertyChange(BOOK_PAUSABLE, oldValue, this.bookPausable);
         }
     }
 

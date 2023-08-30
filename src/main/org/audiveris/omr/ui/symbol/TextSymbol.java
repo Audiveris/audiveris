@@ -54,7 +54,7 @@ public class TextSymbol
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The text font family to use. */
-    protected TextFamily textFamily;
+    protected volatile TextFamily textFamily;
 
     /** The text string to use. */
     protected final String str;

@@ -1327,6 +1327,27 @@ public class BookActions
         OmrGui.getApplication().show(new SplitAndMerge(playListPath).getComponent());
     }
 
+    //-------------------//
+    // stopTranscription //
+    //-------------------//
+    /**
+     * Stop the book transcription ASAP.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = BOOK_PAUSABLE)
+    public void stopTranscription (ActionEvent e)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book == null) {
+            return;
+        }
+
+        book.setPauseRequired(true);
+        logger.info("Pause required for book {} ...", book.getRadix());
+    }
+
     //------------//
     // swapSheets //
     //------------//

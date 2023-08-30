@@ -50,6 +50,7 @@ import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.ProcessingCancellationException;
+import org.audiveris.omr.step.StepPause;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.ui.Colors;
@@ -187,7 +188,7 @@ public class Book
      */
     @XmlElement(name = "binarization")
     @XmlJavaTypeAdapter(FilterParam.JaxbAdapter.class)
-    private FilterParam binarizationFilter;
+    private volatile FilterParam binarizationFilter;
 
     /**
      * Specification of the MusicFont family to use in this book.
@@ -197,7 +198,7 @@ public class Book
      */
     @XmlElement(name = "music-font")
     @XmlJavaTypeAdapter(MusicFamily.MyParam.JaxbAdapter.class)
-    private MusicFamily.MyParam musicFamily;
+    private volatile MusicFamily.MyParam musicFamily;
 
     /**
      * Specification of the TextFont family to use in this book.
@@ -207,7 +208,7 @@ public class Book
      */
     @XmlElement(name = "text-font")
     @XmlJavaTypeAdapter(TextFamily.MyParam.JaxbAdapter.class)
-    private TextFamily.MyParam textFamily;
+    private volatile TextFamily.MyParam textFamily;
 
     /**
      * Specification of the input quality to use in this book.
@@ -217,7 +218,7 @@ public class Book
      */
     @XmlElement(name = "input-quality")
     @XmlJavaTypeAdapter(InputQualityParam.JaxbAdapter.class)
-    private InputQualityParam inputQuality;
+    private volatile InputQualityParam inputQuality;
 
     /**
      * Specification of beam thickness for this whole book.
@@ -226,7 +227,7 @@ public class Book
      */
     @XmlElement(name = "beam-specification")
     @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
-    private IntegerParam beamSpecification;
+    private volatile IntegerParam beamSpecification;
 
     /**
      * This string specifies the dominant language(s) for this whole book.
@@ -239,7 +240,7 @@ public class Book
      */
     @XmlElement(name = "ocr-languages")
     @XmlJavaTypeAdapter(StringParam.JaxbAdapter.class)
-    private StringParam ocrLanguages;
+    private volatile StringParam ocrLanguages;
 
     /**
      * This is a set of specific processing switches for this book.
@@ -248,7 +249,7 @@ public class Book
      */
     @XmlElement(name = "processing")
     @XmlJavaTypeAdapter(ProcessingSwitches.JaxbAdapter.class)
-    private ProcessingSwitches switches;
+    private volatile ProcessingSwitches switches;
 
     /**
      * This string, if any, is a specification of sheets selection.
@@ -265,7 +266,7 @@ public class Book
      * If this specification is null or empty, all (valid) sheets will be processed.
      */
     @XmlElement(name = "sheets-selection")
-    private String sheetsSelection;
+    private volatile String sheetsSelection;
 
     /**
      * This is the sequence of all sheets stubs.
@@ -308,14 +309,17 @@ public class Book
     /** Browser on this book. */
     private BookBrowser bookBrowser;
 
+    /** Flag to signal that book processing should pause. */
+    private volatile boolean pauseRequired;
+
     /** Flag to indicate this book is being closed. */
     private volatile boolean closing;
 
     /** Set if the book itself has been modified. */
-    private boolean modified = false;
+    private volatile boolean modified = false;
 
     /** Book-level sample repository. */
-    private SampleRepository repository;
+    private volatile SampleRepository repository;
 
     /** Has book already been prompted for upgrade?. */
     private boolean promptedForUpgrade = false;
@@ -624,14 +628,20 @@ public class Book
      *
      * @param theStubs  the valid selected stubs
      * @param theScores (output) the scores to populate
+     * @return true if successful
      */
-    public void export (List<SheetStub> theStubs,
-                        List<Score> theScores)
+    public boolean export (List<SheetStub> theStubs,
+                           List<Score> theScores)
     {
         // Make sure material is ready
         final boolean swap = (OMR.gui == null) || Main.getCli().isSwap() || BookActions
                 .swapProcessedSheets();
-        transcribe(theStubs, theScores, swap);
+        final boolean ok = transcribe(theStubs, theScores, swap);
+
+        if (!ok) {
+            logger.info("Could not export since transcription did not complete successfully");
+            return false;
+        }
 
         // path/to/scores/Book
         final Path bookPathSansExt = BookManager.getActualPath(
@@ -669,6 +679,8 @@ public class Book
                 }
             }
         }
+
+        return true;
     }
 
     //----------//
@@ -1798,6 +1810,19 @@ public class Book
         return stubs.size() > 1;
     }
 
+    //-----------------//
+    // isPauseRequired //
+    //-----------------//
+    /**
+     * Should this book pause ASAP?
+     *
+     * @return true if so
+     */
+    public boolean isPauseRequired ()
+    {
+        return pauseRequired;
+    }
+
     //------------//
     // isUpgraded //
     //------------//
@@ -2004,7 +2029,11 @@ public class Book
                                     someFailure = true;
                                 }
                             } catch (InterruptedException | ExecutionException ex) {
-                                logger.warn("Future exception", ex);
+                                if (ex.getCause() instanceof StepPause) {
+                                    logger.debug("StepPause in Future {}", future);
+                                } else {
+                                    logger.warn("Future exception", ex);
+                                }
                                 someFailure = true;
                             }
                         }
@@ -2024,10 +2053,21 @@ public class Book
                             } else {
                                 someFailure = true;
                             }
-                        } catch (Exception ex) {
+                        } catch (StepPause ex) {
+                            // Book pause required
+                            // Stop processing for the other stubs
+                            logger.info("Book processing stopped by user.");
+                            someFailure = true;
+                            break;
+                        } catch (ProcessingCancellationException ex) {
                             // Exception (such as timeout) raised on stub
                             // Let processing continue for the other stubs
                             logger.warn("Error processing stub");
+                            someFailure = true;
+                        } catch (Exception ex) {
+                            // Exception raised on stub
+                            // Let processing continue for the other stubs
+                            logger.warn("Error processing stub {}", ex);
                             someFailure = true;
                         } finally {
                             if (swap) {
@@ -2287,6 +2327,19 @@ public class Book
     public void setParameterDialog (JDialog dialog)
     {
         parameterDialog = dialog;
+    }
+
+    //------------------//
+    // setPauseRequired //
+    //------------------//
+    /**
+     * Setter for pauseRequired.
+     *
+     * @param bool new value
+     */
+    public void setPauseRequired (boolean bool)
+    {
+        pauseRequired = bool;
     }
 
     //--------------//
@@ -2576,11 +2629,13 @@ public class Book
     {
         boolean ok = reachBookStep(OmrStep.last(), false, theStubs, swap);
 
-        if (theScores.isEmpty()) {
-            createScores(theStubs, theScores);
-        }
+        if (ok) {
+            if (theScores.isEmpty()) {
+                createScores(theStubs, theScores);
+            }
 
-        reduceScores(theStubs, theScores);
+            reduceScores(theStubs, theScores);
+        }
 
         return ok;
     }

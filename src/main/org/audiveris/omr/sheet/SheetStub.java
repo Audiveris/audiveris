@@ -194,7 +194,7 @@ public class SheetStub
      */
     @XmlElement(name = "input-quality")
     @XmlJavaTypeAdapter(InputQualityParam.JaxbAdapter.class)
-    private InputQualityParam inputQuality;
+    private volatile InputQualityParam inputQuality;
 
     /**
      * Specification of beam thickness to use in this sheet.
@@ -1352,6 +1352,10 @@ public class SheetStub
             }
 
             for (final OmrStep step : neededSteps) {
+                if (book.isPauseRequired()) {
+                    throw new StepPause("Pause required");
+                }
+
                 watch.start(step.name());
                 StepMonitoring.notifyMsg(step.toString());
                 logger.debug("reachStep {} towards {}", step, target);
@@ -1359,16 +1363,18 @@ public class SheetStub
             }
 
             ok = true;
+        } catch (StepPause sp) {
+            ok = false;
+            logger.info("Processing stopped.");
+            throw sp;
         } catch (ProcessingCancellationException pce) {
+            ok = false;
             throw pce;
         } catch (StepException ignored) {
             logger.info("StepException detected in " + neededSteps);
         } catch (ExecutionException ex) {
             // A StepException may have been wrapped into an ExecutionException
-            if (ex.getCause() instanceof StepPause) {
-                logger.info("Processing stopped. Cause: {}", ex.getCause().getMessage());
-                ok = false;
-            } else if (ex.getCause() instanceof StepException) {
+            if (ex.getCause() instanceof StepException) {
                 logger.info("StepException cause detected in " + neededSteps);
             } else {
                 logger.warn("Error in performing {} {}", neededSteps, ex.toString(), ex);

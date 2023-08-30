@@ -27,6 +27,7 @@
     <action domain="BOOK" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetBookToGray"/>
     <action domain="BOOK" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetBookToBinary"/>
     <action domain="BOOK" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="transcribeBook"       button="javax.swing.JButton"/>
+    <action domain="BOOK" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="stopTranscription"    button="javax.swing.JButton"/>
     <action domain="BOOK" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="rebuildScores"/>
     <action domain="BOOK" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="swapSheets"/>
     <action domain="BOOK" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="selectSheets"/>
