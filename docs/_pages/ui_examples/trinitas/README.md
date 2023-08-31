@@ -156,12 +156,16 @@ We have selected `View | Show score voice` or `F8` command so that voices in the
 are displayed in different colors.
 
 {: .note }
-If we are reading this handbook via a web browser,
-we can ask the browser to display each of these sheet images in a separate tab.
+If you are reading this handbook via a web browser,
+you can ask the browser to display each of these sheet images in a separate tab.
 
-| Sheet#1 | Sheet#2 | Sheet#3 | Sheet#4 | Sheet#5 |
-| :---: | :---: | :---: | :---: | :---: |
-| ![](sheet1_init.png) | ![](sheet2_init.png) | ![](sheet3_init.png) | ![](sheet4_init.png) | ![](sheet5_init.png) |
+| Sheet ID | Raw result |
+| :---: | :---: |
+| Sheet#1 | ![](./sheet1_init.png) |
+| Sheet#2 | ![](./sheet2_init.png) |
+| Sheet#3 | ![](./sheet3_init.png) |
+| Sheet#4 | ![](./sheet4_init.png) |
+| Sheet#5 | ![](./sheet5_init.png) |
 
 Our first impression is that almost all measures, except for sheet #3, are displayed in pink!
 
