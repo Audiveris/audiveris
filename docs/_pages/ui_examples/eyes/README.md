@@ -40,11 +40,6 @@ Table of contents
 {: .note }
 If you are reading this handbook via a web browser,
 you can ask the browser to display each of these sheet images in a separate tab.
-<!--
-| Sheet#1 | Sheet#2 | Sheet#3 |
-| :---: | :---: | :---: |
-| ![](./sheet1.png) | ![](./sheet2.png) | ![](./sheet3.png) |
--->
 
 | Sheet ID | Input image |
 | :---: | :---: |
