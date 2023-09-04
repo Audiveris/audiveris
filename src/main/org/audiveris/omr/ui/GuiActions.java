@@ -423,7 +423,7 @@ public class GuiActions
                 "URL of Audiveris wiki");
 
         private final Constant.String manualUrl = new Constant.String(
-                "https://audiveris.github.io/audiveris/_pages/index-5.2/",
+                "https://audiveris.github.io/audiveris/",
                 "URL of Audiveris manual");
     }
 
