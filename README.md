@@ -1,7 +1,6 @@
 ![](https://github.com/Audiveris/docs/blob/master/images/SplashLogo.png)
 
-Audiveris logo by [Katka](https://www.facebook.com/katkastreetart/)
-{: style="text-align: right"}
+<div style="text-align: right"> Audiveris logo by [Katka](https://www.facebook.com/katkastreetart/) </div>
 
 # Audiveris - Open-source Optical Music Recognition
 
