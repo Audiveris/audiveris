@@ -8,10 +8,12 @@ nav_exclude: true
 
 - [HandBook](_pages/handbook)  
 General user documentation  
-Available in web and PDF versions
+Now available in web and PDF versions
 {: .d-inline-block }
 new
-{: .label .label-yellow }
+{: .label .label-yellow }  
+[Download PDF file](https://github.com/Audiveris/audiveris/releases/download/5.3.1/Audiveris_Handbook.pdf)
+{: .btn .text-center }
 
 ## For the developer
 - [Format of ".omr" files](_pages/outputs/omr)  
