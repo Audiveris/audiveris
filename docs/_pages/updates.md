@@ -7,10 +7,10 @@ has_children: false
 # Software updates
 {: .no_toc }
 
-As detailed in [Git Workflow](https://github.com/Audiveris/audiveris/wiki/Git-Workflow) article
+As detailed in the [Git Workflow](https://github.com/Audiveris/audiveris/wiki/Git-Workflow) article
 on Audiveris Wiki:
 
-- Audiveris development is performed on specific GitHub "**development**" branch.   
+- Audiveris development is performed on the specific GitHub "**development**" branch.   
   It is thus continuously available for anyone that pulls and builds the software from source.
 
 - The default "**master**" branch is updated only for software releases.   
@@ -23,6 +23,14 @@ Table of contents
 1. TOC
 {:toc}
 ---
+
+### 5.4 (on-going)
+
+- User Interface
+  - Ability to stop current book processing at next step end
+  - Ability to clear the log window  
+- Documentation
+  - Support for a PDF version of Audiveris Handbook
 
 ### 5.3
 
