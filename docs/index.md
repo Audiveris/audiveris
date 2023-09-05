@@ -4,16 +4,17 @@ nav_exclude: true
 # Audiveris Pages
 {: .d-block }
 
-## General documentation
+## For the end user
 
-- [HandBook](_pages/handbook)
-{: .d-inline-block }
-updated for 5.3
-{: .label .label-yellow }
-
-## For the developer
-- [Documentation of .omr file format](_pages/outputs/omr)
+- [HandBook](_pages/handbook)  
+General user documentation  
+Available in web and PDF versions
 {: .d-inline-block }
 new
 {: .label .label-yellow }
-- [Audiveris Wiki](https://github.com/Audiveris/audiveris/wiki)
+
+## For the developer
+- [Format of ".omr" files](_pages/outputs/omr)  
+Description of the internals of any ".omr" Audiveris book file
+- [Audiveris Wiki](https://github.com/Audiveris/audiveris/wiki)  
+Articles about the development and potential evolutions of Audiveris project.
