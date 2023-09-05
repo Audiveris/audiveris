@@ -1,5 +1,7 @@
 ![](https://github.com/Audiveris/docs/blob/master/images/SplashLogo.png)
 
+Audiveris logo by [Katka](www.facebook.com/katkastreetart/) {: style="text-align: right"}
+
 # Audiveris - Open-source Optical Music Recognition
 
 The goal of an OMR application is to allow the end-user to transcribe a score image into
