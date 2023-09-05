@@ -12,7 +12,7 @@ Now available in web and PDF versions
 {: .d-inline-block }
 new
 {: .label .label-yellow }  
-[Download PDF file](https://github.com/Audiveris/audiveris/releases/download/5.3.1/Audiveris_Handbook.pdf)
+[Download PDF file](https://github.com/Audiveris/audiveris/releases/download/{{ site.audiveris_release }}/Audiveris_Handbook.pdf)
 {: .btn .text-center }
 
 ## For the developer
