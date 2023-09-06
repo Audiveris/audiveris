@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import org.audiveris.omr.image.AdaptiveDescriptor;
-import org.audiveris.omr.image.FilterDescriptor;
-import org.audiveris.omr.image.FilterKind;
-import org.audiveris.omr.image.GlobalDescriptor;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
@@ -38,7 +34,6 @@ import org.audiveris.omr.sheet.ui.SheetView;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OcrUtil;
-import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.field.SpinnerUtil;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -83,7 +78,6 @@ import javax.swing.event.ListSelectionListener;
  * <p>
  * It addresses:
  * <ul>
- * <li>Binarization parameters</li>
  * <li>Music font specification</li>
  * <li>Text font specification</li>
  * <li>Input quality specification</li>
@@ -169,9 +163,10 @@ public class BookParameters
 
         final List<XactDataPane> defaultPanes = new ArrayList<>();
 
-        if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
-            defaultPanes.add(new FilterPane(null, FilterDescriptor.defaultFilter));
-        }
+        // Binarization filter is no longer presented to user
+        //        if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
+        //            defaultPanes.add(new FilterPane(null, FilterDescriptor.defaultFilter));
+        //        }
 
         defaultPanes.add(
                 new EnumPane<>(
@@ -221,12 +216,13 @@ public class BookParameters
 
         if (book != null) {
             final List<XactDataPane> bookPanes = new ArrayList<>();
-            if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
-                bookPanes.add(
-                        new FilterPane(
-                                (FilterPane) defaultPanel.getPane(Tag.Filter),
-                                book.getBinarizationFilterParam()));
-            }
+
+            // Binarization filter is no longer presented to user
+            //                bookPanes.add(
+            //                        new FilterPane(
+            //                                (FilterPane) defaultPanel.getPane(Tag.Filter),
+            //                                book.getBinarizationFilterParam()));
+            //            }
 
             bookPanes.add(
                     new EnumPane<>(
@@ -274,13 +270,15 @@ public class BookParameters
             if (book.isMultiSheet()) {
                 for (SheetStub s : book.getStubs()) {
                     final List<XactDataPane> sheetPanes = new ArrayList<>();
-                    if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
-                        sheetPanes.add(
-                                new FilterPane(
-                                        (FilterPane) bookPanel.getPane(Tag.Filter),
-                                        s.getBinarizationFilterParam()));
-                    }
 
+                    // Binarization filter is no longer presented to user
+                    //                    if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
+                    //                        sheetPanes.add(
+                    //                                new FilterPane(
+                    //                                        (FilterPane) bookPanel.getPane(Tag.Filter),
+                    //                                        s.getBinarizationFilterParam()));
+                    //                    }
+                    //
                     sheetPanes.add(
                             new EnumPane<>(
                                     Tag.MusicFamily,
@@ -671,172 +669,172 @@ public class BookParameters
         }
     }
 
-    //------------//
-    // FilterPane //
-    //------------//
-    /**
-     * Pane to define the pixel binarization parameters.
-     */
-    private static class FilterPane
-            extends TaggedXactDataPane<FilterDescriptor>
-    {
-
-        /** ComboBox for filter kind */
-        private final JComboBox<FilterKind> kindCombo = new JComboBox<>(FilterKind.values());
-
-        private final JLabel kindLabel = new JLabel(
-                resources.getString("FilterPane.kindLabel.text"),
-                SwingConstants.RIGHT);
-
-        // Data for global
-        private final SpinData globalData = new SpinData(
-                resources.getString("FilterPane.globalData.text"),
-                resources.getString("FilterPane.globalData.toolTipText"),
-                new SpinnerNumberModel(0, 0, 255, 1));
-
-        // Data for local
-        private final SpinData localDataMean = new SpinData(
-                resources.getString("FilterPane.localDataMean.text"),
-                resources.getString("FilterPane.localDataMean.toolTipText"),
-                new SpinnerNumberModel(0.5, 0.5, 1.5, 0.1));
-
-        private final SpinData localDataDev = new SpinData(
-                resources.getString("FilterPane.localDataDev.text"),
-                resources.getString("FilterPane.localDataDev.toolTipText"),
-                new SpinnerNumberModel(0.2, 0.2, 1.5, 0.1));
-
-        FilterPane (FilterPane parent,
-                    Param<FilterDescriptor> model)
-        {
-            super(Tag.Filter, resources.getString("FilterPane.title"), parent, model);
-
-            // ComboBox for filter kind
-            kindCombo.setToolTipText(resources.getString("FilterPane.kindCombo.toolTipText"));
-            kindCombo.addActionListener(this);
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            if ((e != null) && (e.getSource() == kindCombo)) {
-                FilterDescriptor desc = (readKind() == FilterKind.GLOBAL) ? GlobalDescriptor
-                        .getDefault() : AdaptiveDescriptor.getDefault();
-                display(desc);
-            } else {
-                super.actionPerformed(e);
-            }
-
-            // Adjust visibility of parameter fields
-            switch (readKind()) {
-            case GLOBAL ->
-            {
-                localDataMean.setVisible(false);
-                localDataDev.setVisible(false);
-                globalData.setVisible(true);
-            }
-
-            case ADAPTIVE ->
-            {
-                globalData.setVisible(false);
-                localDataMean.setVisible(true);
-                localDataDev.setVisible(true);
-            }
-            }
-        }
-
-        /** This is needed to read data manually typed in spinners fields. */
-        private void commitSpinners ()
-        {
-            try {
-                switch (readKind()) {
-                case GLOBAL -> globalData.spinner.commitEdit();
-
-                case ADAPTIVE ->
-                {
-                    localDataMean.spinner.commitEdit();
-                    localDataDev.spinner.commitEdit();
-                }
-                }
-            } catch (ParseException ignored) {
-            }
-        }
-
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int titleWidth,
-                                 int r)
-        {
-            super.defineLayout(builder, cst, 1, r); // sel + title, no advance
-
-            builder.add(kindLabel, cst.xyw(3, r, 1));
-            builder.add(kindCombo, cst.xyw(5, r, 3));
-            r += 2;
-
-            // Layout global and local data as mutual overlays
-            globalData.defineLayout(builder, cst, r);
-            r = localDataMean.defineLayout(builder, cst, r);
-            r = localDataDev.defineLayout(builder, cst, r);
-
-            return r;
-        }
-
-        @Override
-        protected void display (FilterDescriptor desc)
-        {
-            FilterKind kind = desc.getKind();
-            kindCombo.setSelectedItem(kind);
-
-            switch (kind) {
-            case GLOBAL ->
-            {
-                GlobalDescriptor globalDesc = (GlobalDescriptor) desc;
-                globalData.spinner.setValue(globalDesc.threshold);
-            }
-
-            case ADAPTIVE ->
-            {
-                AdaptiveDescriptor localDesc = (AdaptiveDescriptor) desc;
-                localDataMean.spinner.setValue(localDesc.meanCoeff);
-                localDataDev.spinner.setValue(localDesc.stdDevCoeff);
-            }
-            }
-        }
-
-        @Override
-        public int getLogicalRowCount ()
-        {
-            return 4;
-        }
-
-        @Override
-        protected FilterDescriptor read ()
-        {
-            commitSpinners();
-
-            return (readKind() == FilterKind.GLOBAL) ? new GlobalDescriptor(
-                    (int) globalData.spinner.getValue())
-                    : new AdaptiveDescriptor(
-                            (double) localDataMean.spinner.getValue(),
-                            (double) localDataDev.spinner.getValue());
-        }
-
-        private FilterKind readKind ()
-        {
-            return kindCombo.getItemAt(kindCombo.getSelectedIndex());
-        }
-
-        @Override
-        protected void setEnabled (boolean bool)
-        {
-            kindCombo.setEnabled(bool);
-            kindLabel.setEnabled(bool);
-            globalData.setEnabled(bool);
-            localDataMean.setEnabled(bool);
-            localDataDev.setEnabled(bool);
-        }
-    }
-
+    //    //------------//
+    //    // FilterPane //
+    //    //------------//
+    //    /**
+    //     * Pane to define the pixel binarization parameters.
+    //     */
+    //    private static class FilterPane
+    //            extends TaggedXactDataPane<FilterDescriptor>
+    //    {
+    //
+    //        /** ComboBox for filter kind */
+    //        private final JComboBox<FilterKind> kindCombo = new JComboBox<>(FilterKind.values());
+    //
+    //        private final JLabel kindLabel = new JLabel(
+    //                resources.getString("FilterPane.kindLabel.text"),
+    //                SwingConstants.RIGHT);
+    //
+    //        // Data for global
+    //        private final SpinData globalData = new SpinData(
+    //                resources.getString("FilterPane.globalData.text"),
+    //                resources.getString("FilterPane.globalData.toolTipText"),
+    //                new SpinnerNumberModel(0, 0, 255, 1));
+    //
+    //        // Data for local
+    //        private final SpinData localDataMean = new SpinData(
+    //                resources.getString("FilterPane.localDataMean.text"),
+    //                resources.getString("FilterPane.localDataMean.toolTipText"),
+    //                new SpinnerNumberModel(0.5, 0.5, 1.5, 0.1));
+    //
+    //        private final SpinData localDataDev = new SpinData(
+    //                resources.getString("FilterPane.localDataDev.text"),
+    //                resources.getString("FilterPane.localDataDev.toolTipText"),
+    //                new SpinnerNumberModel(0.2, 0.2, 1.5, 0.1));
+    //
+    //        FilterPane (FilterPane parent,
+    //                    Param<FilterDescriptor> model)
+    //        {
+    //            super(Tag.Filter, resources.getString("FilterPane.title"), parent, model);
+    //
+    //            // ComboBox for filter kind
+    //            kindCombo.setToolTipText(resources.getString("FilterPane.kindCombo.toolTipText"));
+    //            kindCombo.addActionListener(this);
+    //        }
+    //
+    //        @Override
+    //        public void actionPerformed (ActionEvent e)
+    //        {
+    //            if ((e != null) && (e.getSource() == kindCombo)) {
+    //                FilterDescriptor desc = (readKind() == FilterKind.GLOBAL) ? GlobalDescriptor
+    //                        .getDefault() : AdaptiveDescriptor.getDefault();
+    //                display(desc);
+    //            } else {
+    //                super.actionPerformed(e);
+    //            }
+    //
+    //            // Adjust visibility of parameter fields
+    //            switch (readKind()) {
+    //            case GLOBAL ->
+    //            {
+    //                localDataMean.setVisible(false);
+    //                localDataDev.setVisible(false);
+    //                globalData.setVisible(true);
+    //            }
+    //
+    //            case ADAPTIVE ->
+    //            {
+    //                globalData.setVisible(false);
+    //                localDataMean.setVisible(true);
+    //                localDataDev.setVisible(true);
+    //            }
+    //            }
+    //        }
+    //
+    //        /** This is needed to read data manually typed in spinners fields. */
+    //        private void commitSpinners ()
+    //        {
+    //            try {
+    //                switch (readKind()) {
+    //                case GLOBAL -> globalData.spinner.commitEdit();
+    //
+    //                case ADAPTIVE ->
+    //                {
+    //                    localDataMean.spinner.commitEdit();
+    //                    localDataDev.spinner.commitEdit();
+    //                }
+    //                }
+    //            } catch (ParseException ignored) {
+    //            }
+    //        }
+    //
+    //        @Override
+    //        public int defineLayout (PanelBuilder builder,
+    //                                 CellConstraints cst,
+    //                                 int titleWidth,
+    //                                 int r)
+    //        {
+    //            super.defineLayout(builder, cst, 1, r); // sel + title, no advance
+    //
+    //            builder.add(kindLabel, cst.xyw(3, r, 1));
+    //            builder.add(kindCombo, cst.xyw(5, r, 3));
+    //            r += 2;
+    //
+    //            // Layout global and local data as mutual overlays
+    //            globalData.defineLayout(builder, cst, r);
+    //            r = localDataMean.defineLayout(builder, cst, r);
+    //            r = localDataDev.defineLayout(builder, cst, r);
+    //
+    //            return r;
+    //        }
+    //
+    //        @Override
+    //        protected void display (FilterDescriptor desc)
+    //        {
+    //            FilterKind kind = desc.getKind();
+    //            kindCombo.setSelectedItem(kind);
+    //
+    //            switch (kind) {
+    //            case GLOBAL ->
+    //            {
+    //                GlobalDescriptor globalDesc = (GlobalDescriptor) desc;
+    //                globalData.spinner.setValue(globalDesc.threshold);
+    //            }
+    //
+    //            case ADAPTIVE ->
+    //            {
+    //                AdaptiveDescriptor localDesc = (AdaptiveDescriptor) desc;
+    //                localDataMean.spinner.setValue(localDesc.meanCoeff);
+    //                localDataDev.spinner.setValue(localDesc.stdDevCoeff);
+    //            }
+    //            }
+    //        }
+    //
+    //        @Override
+    //        public int getLogicalRowCount ()
+    //        {
+    //            return 4;
+    //        }
+    //
+    //        @Override
+    //        protected FilterDescriptor read ()
+    //        {
+    //            commitSpinners();
+    //
+    //            return (readKind() == FilterKind.GLOBAL) ? new GlobalDescriptor(
+    //                    (int) globalData.spinner.getValue())
+    //                    : new AdaptiveDescriptor(
+    //                            (double) localDataMean.spinner.getValue(),
+    //                            (double) localDataDev.spinner.getValue());
+    //        }
+    //
+    //        private FilterKind readKind ()
+    //        {
+    //            return kindCombo.getItemAt(kindCombo.getSelectedIndex());
+    //        }
+    //
+    //        @Override
+    //        protected void setEnabled (boolean bool)
+    //        {
+    //            kindCombo.setEnabled(bool);
+    //            kindLabel.setEnabled(bool);
+    //            globalData.setEnabled(bool);
+    //            localDataMean.setEnabled(bool);
+    //            localDataDev.setEnabled(bool);
+    //        }
+    //    }
+    //
     //----------//
     // LangPane //
     //----------//
