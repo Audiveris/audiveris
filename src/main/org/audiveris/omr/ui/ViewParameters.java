@@ -79,6 +79,9 @@ public class ViewParameters
     /** A global property name for selection mode. */
     public static final String SELECTION_MODE = "selectionMode";
 
+    /** Should some inters be painted in jumbo mpde. */
+    public static final String JUMBO_PAINTING = "jumboPainting";
+
     /** Should the voices be painted. */
     public static final String VOICE_PAINTING = "voicePainting";
 
@@ -128,6 +131,9 @@ public class ViewParameters
 
     /** Part names painting is chosen to be not persistent. */
     private boolean partNamePainting = false;
+
+    /** Jumbo painting is chosen to be not persistent. */
+    private boolean jumboPainting = false;
 
     /** Voice painting is chosen to be not persistent. */
     private boolean voicePainting = false;
@@ -225,6 +231,14 @@ public class ViewParameters
     public boolean isInvalidSheetDisplay ()
     {
         return constants.invalidSheetDisplay.getValue();
+    }
+
+    //-----------------//
+    // isJumboPainting //
+    //-----------------//
+    public boolean isJumboPainting ()
+    {
+        return jumboPainting;
     }
 
     //---------------------//
@@ -379,6 +393,16 @@ public class ViewParameters
         boolean oldValue = constants.invalidSheetDisplay.getValue();
         constants.invalidSheetDisplay.setValue(value);
         firePropertyChange(INVALID_SHEET_DISPLAY, oldValue, value);
+    }
+
+    //------------------//
+    // setJumboPainting //
+    //------------------//
+    public void setJumboPainting (boolean value)
+    {
+        boolean oldValue = jumboPainting;
+        jumboPainting = value;
+        firePropertyChange(JUMBO_PAINTING, oldValue, value);
     }
 
     //----------------------//
@@ -643,6 +667,19 @@ public class ViewParameters
      */
     @Action(selectedProperty = INVALID_SHEET_DISPLAY)
     public void toggleInvalidSheets (ActionEvent e)
+    {
+    }
+
+    //--------------//
+    // toggleJumbos //
+    //--------------//
+    /**
+     * Action that toggles the jumbo display of some inters.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = JUMBO_PAINTING)
+    public void toggleJumbos (ActionEvent e)
     {
     }
 

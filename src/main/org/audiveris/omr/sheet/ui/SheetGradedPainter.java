@@ -25,6 +25,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.ui.Colors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,8 +48,6 @@ public class SheetGradedPainter
 
     //~ Instance fields ----------------------------------------------------------------------------
 
-    private final boolean withVoices;
-
     private final boolean withTranslucency;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -58,17 +57,18 @@ public class SheetGradedPainter
      *
      * @param sheet            the sheet to paint
      * @param g                Graphic context
-     * @param withVoices       true for colored voices
+     * @param withVoices       true to paint voices with different colors
+     * @param withJumbos       true to paint dots in jumbo mode
      * @param withTranslucency true for translucency
      */
     public SheetGradedPainter (Sheet sheet,
                                Graphics g,
                                boolean withVoices,
+                               boolean withJumbos,
                                boolean withTranslucency)
     {
-        super(sheet, g);
+        super(sheet, g, withVoices, withJumbos);
 
-        this.withVoices = withVoices;
         this.withTranslucency = withTranslucency;
     }
 
@@ -104,6 +104,11 @@ public class SheetGradedPainter
         @Override
         protected void setColor (Inter inter)
         {
+            if (isJumbo(inter)) {
+                g.setColor(Colors.INTER_JUMBO);
+                return;
+            }
+
             // Shape-based color (or red if abnormal)
             Color base = inter.getColor();
 

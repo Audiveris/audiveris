@@ -104,6 +104,9 @@ public abstract class Colors
     /** Inter in abnormal state. */
     public static final Color INTER_ABNORMAL = new Color(255, 50, 150);
 
+    /** Inter in jumbo display. */
+    public static final Color INTER_JUMBO = Color.RED;
+
     /** Inter with a weak contextual grade. */
     public static final Color INTER_WEAK = Color.ORANGE;
 

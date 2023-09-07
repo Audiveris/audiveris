@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
@@ -33,6 +31,7 @@ import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Relations;
 import org.audiveris.omr.sig.relation.Support;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -72,7 +71,7 @@ public class SelectionPainter
     public SelectionPainter (Sheet sheet,
                              Graphics g)
     {
-        super(sheet, g);
+        super(sheet, g, false, false);
 
         sigPainter = new SelectionSigPainter();
     }

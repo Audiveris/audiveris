@@ -103,6 +103,7 @@ import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.StringUtil;
 import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
@@ -171,6 +172,9 @@ public abstract class SheetPainter
             Font.PLAIN,
             constants.basicFontSize.getValue());
 
+    /** Inter classes that can be displayed in jumbo mode. */
+    protected static final List<Class> jumboClasses = getJumboClasses();
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Sheet. */
@@ -188,6 +192,12 @@ public abstract class SheetPainter
     /** Clip rectangle. */
     protected final Rectangle clip;
 
+    /** Painting voices with different colors. */
+    protected final boolean withVoices;
+
+    /** Painting some inters classes in jumbo mode. */
+    protected final boolean withJumbos;
+
     /** Painter for Inter instances. */
     protected SigPainter sigPainter;
 
@@ -196,15 +206,21 @@ public abstract class SheetPainter
     /**
      * Creates a new SheetPainter object.
      *
-     * @param sheet the sheet to paint
-     * @param g     Graphic context
+     * @param sheet      the sheet to paint
+     * @param g          Graphic context
+     * @param withVoices true to paint voices with different colors
+     * @param withJumbos true to paint some inter classes in jumbo mode
      */
     public SheetPainter (Sheet sheet,
-                         Graphics g)
+                         Graphics g,
+                         boolean withVoices,
+                         boolean withJumbos)
     {
         this.sheet = sheet;
         this.scale = sheet.getScale();
         this.g = (Graphics2D) g;
+        this.withVoices = withVoices;
+        this.withJumbos = withJumbos;
 
         clip = g.getClipBounds();
     }
@@ -279,6 +295,32 @@ public abstract class SheetPainter
      * @return the sig painter
      */
     protected abstract SigPainter getSigPainter ();
+
+    //---------//
+    // isJumbo //
+    //---------//
+    /**
+     * Tell whether the provided inter should be displayed in jumbo mode
+     * (larger size, bright color).
+     *
+     * @param inter the inter to check for jumbo mode
+     * @return true if so
+     */
+    protected boolean isJumbo (Inter inter)
+    {
+        if (!withJumbos) {
+            return false;
+        }
+
+        final Class<?> interClass = inter.getClass();
+        for (Class<?> classe : jumboClasses) {
+            if (classe.isAssignableFrom(interClass)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     //-------//
     // paint //
@@ -426,6 +468,33 @@ public abstract class SheetPainter
 
     //~ Static Methods -----------------------------------------------------------------------------
 
+    //-----------------//
+    // getJumboClasses //
+    //-----------------//
+    /**
+     * Build the list of jumbo classes.
+     *
+     * @return the populated list
+     */
+    private static List<Class> getJumboClasses ()
+    {
+        final List<Class> classes = new ArrayList<>();
+        final List<String> names = StringUtil.parseStrings(constants.jumboClasses.getValue());
+        final String interPackageName = Inter.class.getPackageName();
+
+        for (String name : names) {
+            final String qualifiedName = interPackageName + "." + name;
+
+            try {
+                classes.add(Class.forName(qualifiedName));
+            } catch (ClassNotFoundException ex) {
+                logger.warn("Unknown Inter class: {}", qualifiedName);
+            }
+        }
+
+        return classes;
+    }
+
     //---------------//
     // getVoicePanel //
     //---------------//
@@ -532,6 +601,14 @@ public abstract class SheetPainter
         private final Constant.Ratio zoomForPartName = new Constant.Ratio(
                 0.6,
                 "Zoom applied on part names");
+
+        private final Constant.Ratio zoomForJumbos = new Constant.Ratio(
+                2.0,
+                "Zoom applied on jumbo inters");
+
+        private final Constant.String jumboClasses = new Constant.String(
+                "AugmentationDotInter",
+                "Comma-separated list of jumbo Inter classes");
     }
 
     //------------//
@@ -555,6 +632,9 @@ public abstract class SheetPainter
     protected abstract class SigPainter
             extends AbstractInterVisitor
     {
+
+        /** Any shape, jumbo size. */
+        protected MusicFont musicFontJumbo;
 
         /** General shape, large size. */
         protected final MusicFont musicFont;
@@ -588,6 +668,13 @@ public abstract class SheetPainter
             // Determine proper music fonts
             final MusicFamily musicFamily = sheet.getStub().getMusicFamily();
             final TextFamily textFamily = sheet.getStub().getTextFamily();
+
+            // Jumbo music font?
+            if (withJumbos) {
+                musicFontJumbo = MusicFont.getBaseFont(
+                        musicFamily,
+                        (int) Math.rint(scale.getInterline() * constants.zoomForJumbos.getValue()));
+            }
 
             // Standard (large) size
             final int largeInterline = scale.getInterline();
@@ -710,7 +797,8 @@ public abstract class SheetPainter
                 final Staff staff = inter.getStaff();
                 setColor(colorRef);
 
-                final FontSymbol fs = shape.getFontSymbol(getMusicFont(shape.isHead(), staff));
+                final FontSymbol fs = shape.getFontSymbol(
+                        (isJumbo(inter)) ? musicFontJumbo : getMusicFont(shape.isHead(), staff));
 
                 if (fs != null) {
                     fs.paintSymbol(g, center, AREA_CENTER);

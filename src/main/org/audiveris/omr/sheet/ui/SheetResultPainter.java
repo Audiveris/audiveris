@@ -21,11 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
-import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_LEFT;
-import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.PointUtil;
@@ -57,8 +52,12 @@ import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.Colors;
+import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_LEFT;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,45 +104,95 @@ public class SheetResultPainter
     /** For staff lines. */
     protected Stroke lineStroke;
 
-    /** Painting voices with different colors?. */
-    protected final boolean coloredVoices;
-
-    /** Painting staff lines?. */
-    protected final boolean linePainting;
-
     /** Default color. */
     protected final Color defaultColor;
 
+    /** Painting staff lines?. */
+    protected final boolean withStaffLines;
+
     /** Should we draw annotations?. */
-    protected final boolean annotated;
+    protected final boolean withAnnotations;
 
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new <code>SheetResultPainter</code> object.
      *
-     * @param sheet         the sheet to process
-     * @param g             Graphic context
-     * @param coloredVoices true for voices with different colors
-     * @param linePainting  true for painting staff lines
-     * @param annotated     true if annotations are to be drawn
+     * @param sheet           the sheet to process
+     * @param g               Graphic context
+     * @param withStaffLines  true to paint staff lines
+     * @param withVoices      true to paint voices with different colors
+     * @param withJumbos      true to paint dots in jumbo mode
+     * @param withAnnotations true to paint annotations
      */
     public SheetResultPainter (Sheet sheet,
                                Graphics g,
-                               boolean coloredVoices,
-                               boolean linePainting,
-                               boolean annotated)
+                               boolean withStaffLines,
+                               boolean withVoices,
+                               boolean withJumbos,
+                               boolean withAnnotations)
     {
-        super(sheet, g);
+        super(sheet, g, withVoices, withJumbos);
 
-        this.coloredVoices = coloredVoices;
-        this.linePainting = linePainting;
-        this.annotated = annotated;
+        this.withStaffLines = withStaffLines;
+        this.withAnnotations = withAnnotations;
 
         defaultColor = g.getColor();
 
         // Default font for annotations
         g.setFont(basicFont);
+    }
+
+    /**
+     * Creates a new <code>SheetResultPainter</code> object.
+     * <p>
+     * Off: withJumbos
+     *
+     * @param sheet           the sheet to process
+     * @param g               Graphic context
+     * @param withStaffLines  true to paint staff lines
+     * @param withVoices      true to paint voices with different colors
+     * @param withAnnotations true to paint annotations
+     */
+    public SheetResultPainter (Sheet sheet,
+                               Graphics g,
+                               boolean withStaffLines,
+                               boolean withVoices,
+                               boolean withAnnotations)
+    {
+        this(sheet, g, withStaffLines, withVoices, false, withAnnotations);
+    }
+
+    /**
+     * Creates a new <code>SheetResultPainter</code> object.
+     * <p>
+     * Off: withVoices, withJumbos, withAnnotations
+     *
+     * @param sheet          the sheet to process
+     * @param g              Graphic context
+     * @param withStaffLines true to paint staff lines
+     */
+    public SheetResultPainter (Sheet sheet,
+                               Graphics g,
+                               boolean withStaffLines)
+    {
+        this(sheet, g, withStaffLines, false, false, false);
+    }
+
+    /**
+     * Creates a new <code>SheetResultPainter</code> object.
+     * <p>
+     * On: withStaffLines
+     * <p>
+     * Off: withVoices, withJumbos, withAnnotations
+     *
+     * @param sheet the sheet to process
+     * @param g     Graphic context
+     */
+    public SheetResultPainter (Sheet sheet,
+                               Graphics g)
+    {
+        this(sheet, g, true, false, false, false);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -344,7 +393,7 @@ public class SheetResultPainter
      */
     private void processStack (MeasureStack stack)
     {
-        if (annotated) {
+        if (withAnnotations) {
             final Color oldColor = g.getColor();
 
             // Write the score-based measure id, on first real part only
@@ -390,7 +439,7 @@ public class SheetResultPainter
         g.setColor(defaultColor);
 
         // Staff lines
-        if (linePainting) {
+        if (withStaffLines) {
             Scale scale = system.getSheet().getScale();
 
             if (scale != null) {
@@ -411,7 +460,7 @@ public class SheetResultPainter
         // All inters
         super.processSystem(system);
 
-        if (annotated) {
+        if (withAnnotations) {
             Color oldColor = g.getColor();
             g.setColor(Colors.ANNOTATION);
 
@@ -484,13 +533,7 @@ public class SheetResultPainter
         public void paint (Sheet sheet,
                            Graphics2D g)
         {
-            SheetResultPainter painter = new SheetResultPainter(
-                    sheet,
-                    g,
-                    false, // No voice painting
-                    true, // Paint staff lines
-                    false); // No annotations
-            painter.process();
+            new SheetResultPainter(sheet, g).process();
         }
     }
 
@@ -504,10 +547,15 @@ public class SheetResultPainter
         @Override
         protected void setColor (Inter inter)
         {
-            final Voice voice = inter.getVoice();
+            if (isJumbo(inter)) {
+                g.setColor(Colors.INTER_JUMBO);
+                return;
+            }
+
+            Voice voice = inter.getVoice();
             Color c;
 
-            if (coloredVoices && (voice != null)) {
+            if (withVoices && (voice != null)) {
                 c = Voices.colorOf(voice);
             } else {
                 c = defaultColor;
@@ -523,7 +571,7 @@ public class SheetResultPainter
         @Override
         protected boolean splitMirrors ()
         {
-            return coloredVoices;
+            return withVoices;
         }
     }
 }

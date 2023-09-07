@@ -173,7 +173,7 @@ public class PictureView
             if (output) {
                 final boolean coloredVoices = input ? false : voice;
                 g.setColor(input ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE);
-                new SheetResultPainter(sheet, g, coloredVoices, true, false).process();
+                new SheetResultPainter(sheet, g, true, coloredVoices, false).process();
             }
 
             g.setColor(oldColor);

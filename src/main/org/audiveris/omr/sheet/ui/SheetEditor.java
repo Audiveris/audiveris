@@ -936,6 +936,7 @@ public class SheetEditor
                         sheet,
                         g,
                         viewParams.isVoicePainting(),
+                        viewParams.isJumboPainting(),
                         viewParams.isTranslucentPainting()).process();
 
                 // Display staff line splines?
@@ -958,9 +959,10 @@ public class SheetEditor
                 boolean mixed = viewParams.isInputPainting();
                 g.setColor(mixed ? Colors.MUSIC_SYMBOLS : Colors.MUSIC_ALONE);
 
-                final boolean coloredVoices = mixed ? false : viewParams.isVoicePainting();
+                final boolean voices = mixed ? false : viewParams.isVoicePainting();
                 final boolean annots = viewParams.isAnnotationPainting();
-                new SheetResultPainter(sheet, g, coloredVoices, false, annots).process();
+                final boolean jumbos = viewParams.isJumboPainting();
+                new SheetResultPainter(sheet, g, false, voices, jumbos, annots).process();
             }
 
             g.setColor(oldColor);
@@ -1032,7 +1034,7 @@ public class SheetEditor
                     g.setColor(Color.BLACK);
                     final boolean coloredVoices = mixed ? false : viewParams.isVoicePainting();
                     final boolean annots = viewParams.isAnnotationPainting();
-                    new SheetResultPainter(sheet, g, coloredVoices, false, annots).highlightSlot(
+                    new SheetResultPainter(sheet, g, false, coloredVoices, annots).highlightSlot(
                             highlightedSlot);
                 }
             }

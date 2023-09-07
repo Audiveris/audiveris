@@ -42,6 +42,8 @@ import org.audiveris.omr.util.WeakPropertyChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -51,8 +53,6 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
-import ij.process.ByteProcessor;
 
 /**
  * Class <code>SheetDiff</code> measures the difference between input data
@@ -293,7 +293,7 @@ public class SheetDiff
         gbi.setComposite(AlphaComposite.SrcOver);
         gbi.setColor(Color.BLACK);
 
-        SheetResultPainter outputPainter = new SheetResultPainter(sheet, gbi, false, true, false);
+        SheetResultPainter outputPainter = new SheetResultPainter(sheet, gbi);
 
         switch (kind) {
         case NEGATIVES:
@@ -373,13 +373,7 @@ public class SheetDiff
             gbi.fillRect(0, 0, sheet.getWidth(), sheet.getHeight());
             gbi.setColor(Color.BLACK);
 
-            //
-            //            PagePhysicalPainter painter = new PagePhysicalPainter(gbi, false, true, false);
-            //
-            //            for (Page page : sheet.getPages()) {
-            //                page.accept(painter);
-            //            }
-            new SheetResultPainter(sheet, gbi, false, true, false).process();
+            new SheetResultPainter(sheet, gbi).process();
 
             gbi.dispose();
 

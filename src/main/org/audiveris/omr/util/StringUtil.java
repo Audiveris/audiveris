@@ -127,11 +127,11 @@ public abstract class StringUtil
         return s1.compareTo(s2);
     }
 
-    //-----------//
-    // parseInts //
-    //-----------//
+    //--------------//
+    // parseStrings //
+    //--------------//
     /**
-     * Parse a string of integer tokens, separated by comma.
+     * Parse a string of tokens, separated by comma.
      *
      * @param str the string to parse
      * @return the sequence of strings
@@ -142,7 +142,7 @@ public abstract class StringUtil
         final String[] tokens = str.split("\\s*,\\s*");
 
         for (String token : tokens) {
-            String trimmedToken = token.trim();
+            final String trimmedToken = token.trim();
 
             if (!trimmedToken.isEmpty()) {
                 strList.add(trimmedToken);

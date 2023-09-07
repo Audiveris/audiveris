@@ -43,8 +43,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * any given Constant is determined at run-time.
  * <p>
  * The class <code>Constant</code> is not meant to be used directly (it is abstract), but rather
- * through
- * any of its subclasses:
+ * through any of its subclasses:
  * <ul>
  * <li>{@link Constant.Angle}</li>
  * <li>{@link Constant.Boolean}</li>
