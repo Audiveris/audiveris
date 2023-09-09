@@ -547,7 +547,7 @@ public class SheetResultPainter
         @Override
         protected void setColor (Inter inter)
         {
-            if (isJumbo(inter)) {
+            if (isJumboColored(inter)) {
                 g.setColor(Colors.INTER_JUMBO);
                 return;
             }

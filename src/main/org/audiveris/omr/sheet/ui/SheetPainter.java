@@ -322,6 +322,20 @@ public abstract class SheetPainter
         return false;
     }
 
+    //----------------//
+    // isJumboColored //
+    //----------------//
+    /**
+     * Tell whether the provided inter should be displayed in jumbo mode with a specific color.
+     *
+     * @param inter the inter to check
+     * @return true if so
+     */
+    protected boolean isJumboColored (Inter inter)
+    {
+        return constants.jumboColored.isSet() && isJumbo(inter);
+    }
+
     //-------//
     // paint //
     //-------//
@@ -609,6 +623,10 @@ public abstract class SheetPainter
         private final Constant.String jumboClasses = new Constant.String(
                 "AugmentationDotInter",
                 "Comma-separated list of jumbo Inter classes");
+
+        private final Constant.Boolean jumboColored = new Constant.Boolean(
+                true,
+                "Should the jumbo items be colored specifically?");
     }
 
     //------------//
