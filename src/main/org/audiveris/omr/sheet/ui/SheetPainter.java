@@ -172,8 +172,8 @@ public abstract class SheetPainter
             Font.PLAIN,
             constants.basicFontSize.getValue());
 
-    /** Inter classes that can be displayed in jumbo mode. */
-    protected static final List<Class> jumboClasses = getJumboClasses();
+    /** Specifications of Inter classes/shapes that can be displayed in jumbo mode. */
+    protected static final List<JumboSpec> jumboSpecs = getJumboSpecs();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -313,9 +313,11 @@ public abstract class SheetPainter
         }
 
         final Class<?> interClass = inter.getClass();
-        for (Class<?> classe : jumboClasses) {
-            if (classe.isAssignableFrom(interClass)) {
-                return true;
+        final Shape interShape = inter.getShape();
+
+        for (JumboSpec spec : jumboSpecs) {
+            if (spec.classe.isAssignableFrom(interClass)) {
+                return (spec.shape == null) || (spec.shape == interShape);
             }
         }
 
@@ -482,31 +484,47 @@ public abstract class SheetPainter
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    //-----------------//
-    // getJumboClasses //
-    //-----------------//
+    //---------------//
+    // getJumboSpecs //
+    //---------------//
     /**
-     * Build the list of jumbo classes.
+     * Build the list of jumbo specifications.
      *
-     * @return the populated list
+     * @return the populated list of specs
      */
-    private static List<Class> getJumboClasses ()
+    private static List<JumboSpec> getJumboSpecs ()
     {
-        final List<Class> classes = new ArrayList<>();
-        final List<String> names = StringUtil.parseStrings(constants.jumboClasses.getValue());
+        final List<JumboSpec> specs = new ArrayList<>();
         final String interPackageName = Inter.class.getPackageName();
+        final List<String> specStrings = StringUtil.parseStrings(constants.jumboSpecs.getValue());
 
-        for (String name : names) {
-            final String qualifiedName = interPackageName + "." + name;
+        for (String str : specStrings) {
+            final String className;
+            final String shapeName;
+            final int slash = str.indexOf('/');
+
+            if (slash != -1) {
+                className = str.substring(0, slash).trim();
+                shapeName = str.substring(slash + 1).trim();
+            } else {
+                className = str;
+                shapeName = "";
+            }
+
+            final String qualifiedName = interPackageName + "." + className;
 
             try {
-                classes.add(Class.forName(qualifiedName));
+                final Class<?> classe = Class.forName(qualifiedName);
+                final Shape shape = !shapeName.isBlank() ? Shape.valueOf(shapeName) : null;
+                specs.add(new JumboSpec(classe, shape));
             } catch (ClassNotFoundException ex) {
                 logger.warn("Unknown Inter class: {}", qualifiedName);
+            } catch (IllegalArgumentException ex) {
+                logger.warn("Unknown Shape: {}", shapeName);
             }
         }
 
-        return classes;
+        return specs;
     }
 
     //---------------//
@@ -620,13 +638,37 @@ public abstract class SheetPainter
                 2.0,
                 "Zoom applied on jumbo inters");
 
-        private final Constant.String jumboClasses = new Constant.String(
-                "AugmentationDotInter",
-                "Comma-separated list of jumbo Inter classes");
+        private final Constant.String jumboSpecs = new Constant.String(
+                "AugmentationDotInter, ArticulationInter/STACCATO",
+                "Comma-separated list of jumbo Inter specifications (class[/shape]");
 
         private final Constant.Boolean jumboColored = new Constant.Boolean(
                 true,
                 "Should the jumbo items be colored specifically?");
+    }
+
+    //-----------//
+    // JumboSpec //
+    //-----------//
+    /**
+     * Class <code>JumboSpec</code> defines a specification for jumbo display.
+     * <p>
+     * It is a Inter class, potentially augmented by a Shape.
+     */
+    private static class JumboSpec
+    {
+        /** Mandatory. */
+        public final Class<?> classe;
+
+        /** Optional shape within the class. */
+        public final Shape shape;
+
+        JumboSpec (Class<?> classe,
+                   Shape shape)
+        {
+            this.classe = classe;
+            this.shape = shape;
+        }
     }
 
     //------------//
