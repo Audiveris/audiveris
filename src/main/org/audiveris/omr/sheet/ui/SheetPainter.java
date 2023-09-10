@@ -640,7 +640,7 @@ public abstract class SheetPainter
 
         private final Constant.String jumboSpecs = new Constant.String(
                 "AugmentationDotInter, ArticulationInter/STACCATO",
-                "Comma-separated list of jumbo Inter specifications (class[/shape]");
+                "Comma-separated list of jumbo Inter specifications (class[/shape])");
 
         private final Constant.Boolean jumboColored = new Constant.Boolean(
                 true,
