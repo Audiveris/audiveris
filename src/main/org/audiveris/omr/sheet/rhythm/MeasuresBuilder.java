@@ -88,7 +88,7 @@ public class MeasuresBuilder
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>MeasuresBuilder</code> object.
+     * * Creates a new <code>MeasuresBuilder</code> object.
      *
      * @param system the dedicated system
      */
@@ -244,9 +244,12 @@ public class MeasuresBuilder
             }
         }
 
-        // Ending measure with no barline on right?
-        final StaffBarlineInter lastSb = topBars.get(topBars.size() - 1);
-        if (!lastSb.isStaffEnd(RIGHT)) {
+        // Check for specific configurations at staff end:
+        // - Staff with no barline at all, we consider we have just one measure
+        // - Concrete ending measure with no barline on its right side
+        if (topBars.isEmpty() || // No barline at all
+                !topBars.get(topBars.size() - 1).isStaffEnd(RIGHT)) // Measure w/o right barline
+        {
             final Measure measure = new Measure(part);
             part.addMeasure(measure);
             measure.setLeftPartBarline(leftBarPending); // Perhaps null
