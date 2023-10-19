@@ -126,7 +126,8 @@ public class HeaderTimeBuilder
             range.browseStart = browseStart;
         }
 
-        roi = getRoi();
+        final Sheet sheet = staff.getSystem().getSheet();
+        roi = sheet.clamp(getRoi());
 
         projection = getProjection();
     }

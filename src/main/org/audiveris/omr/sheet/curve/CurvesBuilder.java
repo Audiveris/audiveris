@@ -967,7 +967,13 @@ public abstract class CurvesBuilder
 
             np.move(pivot.x + dxs[dir], pivot.y + dys[dir]);
 
-            int pix = skeleton.buf.get(np.x, np.y);
+            // Check image boundaries
+            if (np.x < 0 || np.x > skeleton.buf.getWidth() - 1 //
+                    || np.y < 0 || np.y > skeleton.buf.getHeight() - 1) {
+                continue;
+            }
+
+            final int pix = skeleton.buf.get(np.x, np.y);
 
             if (pix == BACKGROUND) {
                 continue;

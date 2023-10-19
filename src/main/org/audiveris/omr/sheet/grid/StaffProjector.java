@@ -246,7 +246,7 @@ public class StaffProjector
             } else if (der <= -minDerivativeDown) {
                 // Peak ending: adjust x if next derivatives are better
                 int minDer = der;
-                for (int xx = x + 1; xx <= xClamp(rangeStop + 1); xx++) {
+                for (int xx = x + 1; xx <= sheet.xClamp(rangeStop + 1); xx++) {
                     int xxDer = projection.getDerivative(xx);
 
                     if (xxDer <= minDer) {
@@ -426,16 +426,16 @@ public class StaffProjector
         final LineInfo firstLine = staff.getFirstLine();
         final LineInfo lastLine = staff.getLastLine();
         final int dx = params.staffAbscissaMargin;
-        final int xMin = xClamp(staff.getAbscissa(LEFT) - dx);
-        final int xMax = xClamp(staff.getAbscissa(RIGHT) + dx);
+        final int xMin = sheet.xClamp(staff.getAbscissa(LEFT) - dx);
+        final int xMax = sheet.xClamp(staff.getAbscissa(RIGHT) + dx);
 
         // Correction for ordinates of a 1-line staff
         final int dy = staff.isOneLineStaff() ? (2 * scale.getInterline()) : 0;
 
         // Populating projection data
         for (int x = xMin; x <= xMax; x++) {
-            int yMin = firstLine.yAt(x) - dy;
-            int yMax = lastLine.yAt(x) - 1 + dy;
+            final int yMin = sheet.yClamp(firstLine.yAt(x) - dy);
+            final int yMax = sheet.yClamp(lastLine.yAt(x) - 1 + dy);
             short count = 0;
 
             for (int y = yMin; y <= yMax; y++) {
@@ -1313,7 +1313,7 @@ public class StaffProjector
         // Beginning and ending x values
         final double mid = (xStop + xStart) / 2.0;
         final int x1 = (dir > 0) ? (int) Math.ceil(mid) : (int) Math.floor(mid);
-        final int x2 = (dir > 0) ? xClamp(xStop + dx) : xClamp(xStart - dx);
+        final int x2 = (dir > 0) ? sheet.xClamp(xStop + dx) : sheet.xClamp(xStart - dx);
 
         int bestDer = 0; // Best derivative so far
         Integer bestX = null; // Abscissa at best derivative
@@ -1547,30 +1547,6 @@ public class StaffProjector
     public String toString ()
     {
         return "StaffProjector#" + staff.getId();
-    }
-
-    //--------//
-    // xClamp //
-    //--------//
-    /**
-     * Clamp the provided abscissa value within legal values that
-     * are precisely [0..sheet.getWidth() -1].
-     *
-     * @param x the abscissa to clamp
-     * @return the clamped abscissa
-     */
-    private int xClamp (int x)
-    {
-        if (x < 0) {
-            return 0;
-        }
-
-        if (x > (sheet.getWidth() - 1)) {
-            return sheet.getWidth() - 1;
-        }
-
-        return x;
-
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

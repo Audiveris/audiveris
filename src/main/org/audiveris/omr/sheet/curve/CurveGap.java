@@ -87,11 +87,14 @@ public abstract class CurveGap
     public int[] computeVector (ByteProcessor buf)
     {
         final Rectangle box = area.getBounds();
+        final int bufWidth = buf.getWidth();
+        final int bufHeight = buf.getHeight();
 
         for (int x = box.x, xBreak = box.x + box.width; x < xBreak; x++) {
             for (int y = box.y, yBreak = box.y + box.height; y < yBreak; y++) {
                 if (area.contains(x, y)) {
-                    if (0 == buf.get(x, y)) {
+                    if (x > 0 && x < bufWidth && y > 0 && y < bufHeight //
+                            && 0 == buf.get(x, y)) {
                         populateVector(x - box.x, y - box.y);
                     }
                 }

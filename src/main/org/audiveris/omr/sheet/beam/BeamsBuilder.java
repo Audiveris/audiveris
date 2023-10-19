@@ -1919,7 +1919,7 @@ public class BeamsBuilder
         private List<Glyph> getCueGlyphs ()
         {
             // Expand aggregate bounds using global direction
-            final Rectangle box = new Rectangle(bounds);
+            Rectangle box = new Rectangle(bounds);
             box.grow(params.cueBoxDx, 0);
 
             if (globalDir != 0) {
@@ -1927,6 +1927,9 @@ public class BeamsBuilder
             } else {
                 box.grow(0, params.cueBoxDy);
             }
+
+            // Beware of sheet boundaries
+            box = box.intersection(sheetBox);
 
             // Take a small *COPY* of NO_STAFF image and apply morphology
             final ByteProcessor buf = new ByteProcessor(box.width, box.height);

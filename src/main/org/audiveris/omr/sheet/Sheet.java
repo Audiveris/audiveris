@@ -81,6 +81,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -543,6 +544,20 @@ public class Sheet
         }
 
         return modified;
+    }
+
+    //-------//
+    // clamp //
+    //-------//
+    /**
+     * Return the intersection of the provided rectangle with the sheet rectangle.
+     *
+     * @param rect the provided rectangle
+     * @return the clamped rectangle
+     */
+    public Rectangle clamp (Rectangle rect)
+    {
+        return picture.clamp(rect);
     }
 
     //------------------//
@@ -1603,6 +1618,34 @@ public class Sheet
         logger.debug("Sheet unmarshalled");
 
         return sheet;
+    }
+
+    //--------//
+    // xClamp //
+    //--------//
+    /**
+     * Clamp the provided abscissa value within sheet legal abscissas (0..sheet width -1).
+     *
+     * @param x the abscissa to clamp
+     * @return the clamped abscissa
+     */
+    public int xClamp (int x)
+    {
+        return picture.xClamp(x);
+    }
+
+    //--------//
+    // yClamp //
+    //--------//
+    /**
+     * Clamp the provided ordinate value within sheet legal ordinates (0..height -1).
+     *
+     * @param y the ordinate to clamp
+     * @return the clamped abscissa
+     */
+    public int yClamp (int y)
+    {
+        return picture.yClamp(y);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

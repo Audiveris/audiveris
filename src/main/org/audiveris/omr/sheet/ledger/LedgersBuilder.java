@@ -925,8 +925,10 @@ public class LedgersBuilder
                 //
                 for (HorizontalSide hSide : HorizontalSide.values()) {
                     int x = (hSide == LEFT) ? box.x : ((box.x + box.width) - 1);
-                    boolean topFore = pixelFilter.get(x, box.y - 1) == 0;
-                    boolean bottomFore = pixelFilter.get(x, box.y + box.height) == 0;
+                    boolean topFore = box.y > 0 //
+                            && (pixelFilter.get(x, box.y - 1) == 0);
+                    boolean bottomFore = box.y + box.height < sheet.getHeight() //
+                            && (pixelFilter.get(x, box.y + box.height) == 0);
                     boolean isConvex = !(topFore || bottomFore);
 
                     if (isConvex) {

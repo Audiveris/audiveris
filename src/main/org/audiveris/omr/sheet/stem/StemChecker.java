@@ -349,8 +349,8 @@ public class StemChecker
                 // Sanity check
                 double invSlope = LineUtil.getInvertedSlope(start, stop);
 
-                if (Double.isNaN(invSlope) || Double.isInfinite(invSlope) || (Math.abs(
-                        invSlope) > 0.5)) {
+                if (Double.isNaN(invSlope) || Double.isInfinite(invSlope) //
+                        || (Math.abs(invSlope) > 0.5)) {
                     if (stick.isVip()) {
                         logger.info("VIP too far from vertical {}", stick);
                     }
@@ -386,8 +386,8 @@ public class StemChecker
             }
 
             for (int y = yMin; y <= yMax; y++) {
-                final int leftLimit = (int) Math.ceil(LineUtil.xAtY(leftLine, y));
-                final int rightLimit = (int) Math.floor(LineUtil.xAtY(rightLine, y));
+                final int leftLimit = sheet.xClamp((int) Math.ceil(LineUtil.xAtY(leftLine, y)));
+                final int rightLimit = sheet.xClamp((int) Math.floor(LineUtil.xAtY(rightLine, y)));
 
                 // Make sure the stem row is not empty
                 // (top & bottom rows cannot be considered as empty)

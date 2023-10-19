@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.key;
 
-import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.ShapeClassifier;
@@ -37,6 +35,7 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.IntegerFunction;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
@@ -55,6 +54,8 @@ import org.jgrapht.graph.SimpleGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -64,8 +65,6 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-
-import ij.process.ByteProcessor;
 
 /**
  * Class <code>KeyExtractor</code> is a companion of KeyBuilder, focused on extracting key
@@ -192,10 +191,11 @@ public class KeyExtractor
      */
     private int getInk (Rectangle rect)
     {
-        final int xMin = rect.x;
-        final int xMax = (rect.x + rect.width) - 1;
-        final int yMin = rect.y;
-        final int yMax = (rect.y + rect.height) - 1;
+        final Rectangle safeRect = sheet.clamp(rect);
+        final int xMin = safeRect.x;
+        final int xMax = (safeRect.x + safeRect.width) - 1;
+        final int yMin = safeRect.y;
+        final int yMax = (safeRect.y + safeRect.height) - 1;
         int weight = 0;
 
         for (int x = xMin; x <= xMax; x++) {
@@ -222,10 +222,13 @@ public class KeyExtractor
     public IntegerFunction getProjection (int measureStart,
                                           Rectangle rect)
     {
-        final int xMin = Math.min(measureStart, rect.x);
-        final int xMax = (rect.x + rect.width) - 1;
-        final int yMin = rect.y;
-        final int yMax = (rect.y + rect.height) - 1;
+        final Rectangle safeRect = sheet.clamp(rect);
+
+        final int xMin = Math.min(measureStart, safeRect.x);
+        final int xMax = safeRect.x + safeRect.width - 1;
+        final int yMin = safeRect.y;
+        final int yMax = safeRect.y + safeRect.height - 1;
+
         final IntegerFunction table = new IntegerFunction(xMin, xMax);
 
         for (int x = xMin; x <= xMax; x++) {
@@ -267,7 +270,7 @@ public class KeyExtractor
 
         for (int y = 0; y < area.height; y++) {
             for (int x = 0; x < area.width; x++) {
-                if (staffFreeSource.get(area.x + x, area.y + y) == 0) {
+                if (staffFreeSource.get(area.x + x, area.y + y) == 0) { // TODO: Check buf limits?
                     blacks[y] = true;
 
                     break;
@@ -322,10 +325,11 @@ public class KeyExtractor
                                   int maxCumul,
                                   int minWidth)
     {
-        final int xMin = rect.x;
-        final int xMax = (rect.x + rect.width) - 1;
-        final int yMin = rect.y;
-        final int yMax = (rect.y + rect.height) - 1;
+        final Rectangle safeRect = sheet.clamp(rect);
+        final int xMin = safeRect.x;
+        final int xMax = (safeRect.x + safeRect.width) - 1;
+        final int yMin = safeRect.y;
+        final int yMax = (safeRect.y + safeRect.height) - 1;
 
         int spaceStart = -1;
 

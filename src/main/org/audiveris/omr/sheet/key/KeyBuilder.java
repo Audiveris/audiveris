@@ -1766,8 +1766,7 @@ public class KeyBuilder
          * (Try to) create a peak for a candidate alteration item.
          * <p>
          * Peak is checked for its height and width, its "stem-like" shape, delta abscissa with
-         * previous
-         * peak, abscissa offset for first peak.
+         * previous peak, abscissa offset for first peak.
          *
          * @param start  start abscissa
          * @param main   main abscissa

@@ -360,6 +360,20 @@ public class Picture
         }
     }
 
+    //-------//
+    // clamp //
+    //-------//
+    /**
+     * Return the intersection of the provided rectangle with the picture rectangle.
+     *
+     * @param rect the provided rectangle
+     * @return the clamped rectangle
+     */
+    public Rectangle clamp (Rectangle rect)
+    {
+        return new Rectangle(0, 0, width, height).intersection(rect);
+    }
+
     //------------------//
     // convertOldTables //
     //------------------//
@@ -1064,6 +1078,50 @@ public class Picture
     public String toString ()
     {
         return getName();
+    }
+
+    //--------//
+    // xClamp //
+    //--------//
+    /**
+     * Clamp the provided abscissa value within legal values that are precisely [0..width -1].
+     *
+     * @param x the abscissa to clamp
+     * @return the clamped abscissa
+     */
+    public int xClamp (int x)
+    {
+        if (x < 0) {
+            return 0;
+        }
+
+        if (x > (width - 1)) {
+            return width - 1;
+        }
+
+        return x;
+    }
+
+    //--------//
+    // yClamp //
+    //--------//
+    /**
+     * Clamp the provided ordinate value within legal values that are precisely [0..height -1].
+     *
+     * @param y the ordinate to clamp
+     * @return the clamped abscissa
+     */
+    public int yClamp (int y)
+    {
+        if (y < 0) {
+            return 0;
+        }
+
+        if (y > (height - 1)) {
+            return height - 1;
+        }
+
+        return y;
     }
 
     //~ Static Methods -----------------------------------------------------------------------------

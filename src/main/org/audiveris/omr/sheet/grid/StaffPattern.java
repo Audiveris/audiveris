@@ -21,9 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.grid;
 
-import java.awt.geom.Point2D;
-
 import ij.process.ByteProcessor;
+
+import java.awt.geom.Point2D;
 
 /**
  * Class <code>StaffPattern</code> is used to retrieve the vertical position that best fits
@@ -84,6 +84,8 @@ public class StaffPattern
                             ByteProcessor buffer)
     {
         final int xMin = (int) Math.rint(location.getX());
+        final int bufferWidth = buffer.getWidth();
+        final int bufferHeight = buffer.getHeight();
         int trials = 0;
         int matches = 0;
 
@@ -96,7 +98,8 @@ public class StaffPattern
                 for (int x = xMin; x < (xMin + width); x++) {
                     trials++;
 
-                    if (0 == buffer.get(x, y)) {
+                    if ((x >= 0) && (x < bufferWidth) && (y >= 0) && (y < bufferHeight)
+                            && (0 == buffer.get(x, y))) {
                         matches++;
                     }
                 }
