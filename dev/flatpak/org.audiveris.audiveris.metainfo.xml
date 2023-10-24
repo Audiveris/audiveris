@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.audiveris.audiveris</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0</project_license>
+  <name>Audiveris</name>
+  <summary>Optical Music Recognition (OMR) Application</summary>
+  <description>
+    <p>
+      An Optical Music Recognition (OMR) application, featuring
+      an OMR engine coupled with a dedicated editor.
+    </p>
+    <p>
+      It recognizes music from digitized images and converts it into
+      computer-readable symbolic format. This enables further music processing
+      by any external notation editor, most notably: digital playback,
+      transposition and arrangement.
+    </p>
+    <p>
+      Audiveris provides outputs in two main digital formats: its OMR format
+      and standard MusicXML format. It has a graphical user
+      interface focused on quick verification and manual
+      correction of the OMR outputs. Other music editors, such as MuseScore,
+      Finale, or Lilypond, can be used on Audiveris MusicXML output.
+    </p>
+  </description>
+  <categories>
+    <category>Music</category>
+    <category>Scanning</category>
+    <category>AudioVideo</category>
+  </categories>
+  <url type="homepage">https://audiveris.github.io/audiveris/</url>
+  <url type="bugtracker">https://github.com/Audiveris/audiveris/issues</url>
+  <url type="help">https://audiveris.github.io/audiveris/_pages/handbook/</url>
+  <url type="contact">https://github.com/Audiveris/audiveris/discussions</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://upload.wikimedia.org/wikipedia/commons/d/d8/Audiveris_5.2.png</image>
+      <caption>Audiveris 5.2 editor with scanned sheet music</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://upload.wikimedia.org/wikipedia/commons/e/e9/Audiveris_5.2_screenshot.png</image>
+      <caption>Audiveris 5.2 editor with scanned sheet music, larger view</caption>
+    </screenshot>
+  </screenshots>
+  <launchable type="desktop-id">org.audiveris.audiveris.desktop</launchable>
+  <developer_name>Hervé Bitteur et al.</developer_name>
+  <releases>
+    <release version="5.4" date="2023-09-30" urgency="low"
+	     type="development">
+      <description>
+	<p>
+	  This is the development version of Audiveris.
+	</p>
+	<ul>
+	  <li>
+	    Support for jumbo display
+	  </li>
+	</ul>
+      </description>
+    </release>
+    <release version="5.3.1" date="2023-07-04" urgency="low"
+	     type="stable">
+      <description>
+	<p>
+	  Drums, Fonts and Parts (bis).
+	  This release had to be quickly published to fix a bug on small void
+	  head templates in 5.3.0 release.
+	  Setting the "Small Heads" processing switch led to lots of false
+	  positives
+	  during HEADS step, due to corrupted templates built for small void heads.
+	</p>
+      </description>
+    </release>
+    <release version="5.3.0" date="2023-06-28" urgency="low"
+	     type="stable">
+      <description>
+	<p>
+	  Drums, Fonts and Parts. Major features:
+	</p>
+	<ul>
+	  <li>
+	    Long-awaited support of drums unpitched notation
+	  </li>
+	  <li>
+	    Support for various music and text font families
+	  </li>
+	  <li>
+	    User management of logical parts
+	  </li>
+	  <li>
+	    User edition of staff geometry
+	  </li>
+	  <li>
+	    Support for multi-measure rests, measure repeats, octave shifts, fingering, plucking, etc.
+	  </li>
+	  <li>
+	    Use of Java 17, Tesseract 5.x, MusicXML 4.0
+	  </li>
+	</ul>
+      </description>
+    </release>
+    <release version="5.2.5" date="2022-01-18" urgency="medium" type="stable">
+      <description>
+	<p>
+	  Dummy rests vs interleaved rests
+	</p>
+	<p>
+	  This is a bug fix release:
+	  <ol>
+	    <li>
+	      Fixed incompatibility between dummy-rests created on-the-fly at
+	      export time and potential related beams
+	    </li>
+	    <li>
+	      Fixed user prompt on staff selection, not applicable to brace drop
+	      or assignment
+	    </li>
+	  </ol>
+	</p>
+      </description>
+    </release>
+    <release version="5.2.4" date="2021-09-15" urgency="medium" type="stable">
+      <description>
+	<p>
+	  Time slot alignment
+	  <ul>
+	    <li>
+	      Better handling of vertical alignment within a time slot
+	    </li>
+	    <li>
+	      Several minor bug fixes
+	    </li>
+	  </ul>
+	</p>
+      </description>
+    </release>
+    <release version="5.2.3" date="2021-08-05" urgency="medium" type="stable"/>
+    <release version="5.2.2" date="2021-07-09" urgency="medium" type="stable"/>
+    <release version="5.2.1" date="2021-06-04" urgency="medium" type="stable"/>
+    <release version="5.1.0" date="2018-12-13" urgency="medium" type="stable"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>
