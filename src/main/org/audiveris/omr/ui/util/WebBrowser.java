@@ -99,6 +99,17 @@ public class WebBrowser
                 desktop.browse(uri);
             } catch (IOException ex) {
                 logger.warn("Could not launch browser " + uri, ex);
+            } catch (UnsupportedOperationException ex) {
+                logger.info("desktop.BROWSE unsupported, trying xdg-open " + uri);
+                try {
+                    Process p = Runtime.getRuntime().exec(new String[]
+                    { "xdg-open", uri.toString() });
+                    p.waitFor();
+                } catch (IOException exc) {
+                    logger.warn("Could not launch browser using xdg-open " + uri, exc);
+                } catch (InterruptedException exc) {
+                    logger.warn("Interrupted while waiting for xdg-open " + uri, exc);
+                }
             }
         } else {
             // Delegate to BareBonesBrowserLaunch-like code
