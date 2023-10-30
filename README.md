@@ -35,7 +35,8 @@ In the future, other exporters are expected to build upon OMR data to support ot
 
 ## Installation
 
-- For **Windows** only, an installer is provided.
+- For **Windows**, an installer is provided.
+- For **Linux**, a flatpak package is provided on [Flathub](https://flathub.org/apps/org.audiveris.audiveris)
 - For **Windows**, **MacOS**, **Linux** and **ArchLinux**, you can download and build from sources:
     - Either from default "*master*" branch,
     - Or, preferably, from "*development*" branch.
