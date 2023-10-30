@@ -60,7 +60,9 @@ This is reportedly a new Windows behavior, which now recommends to open `Windows
 and there press the `Uninstall` button.
 
 ## Linux
-No installer yet.
+
+### Flatpak
+Audiveris can be easily installed on a large variety of Linux distributions with the flatpak package from Flathub: [https://flathub.org/apps/org.audiveris.audiveris](https://flathub.org/apps/org.audiveris.audiveris). This package only supports x86_64 architecture for now.
 
 ## MacOS
 No installer yet.
