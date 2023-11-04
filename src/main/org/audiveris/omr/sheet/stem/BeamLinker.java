@@ -269,6 +269,10 @@ public class BeamLinker
             if (sideBLinkers.get(hSide) == null) {
                 final Point2D endPt = (hSide == LEFT) ? median.getP1() : median.getP2();
                 final List<AbstractBeamInter> siblings = getSiblingBeamsAt(endPt);
+                if (siblings.isEmpty()) {
+                    continue;
+                }
+
                 final AbstractBeamInter b1 = siblings.get(0);
                 final AbstractBeamInter b2 = siblings.get(siblings.size() - 1);
 
@@ -467,6 +471,10 @@ public class BeamLinker
 
         final Point2D stumpCenter = stump.getCenter2D();
         final List<AbstractBeamInter> siblings = getSiblingBeamsAt(stumpCenter);
+        if (siblings.isEmpty()) {
+            return null;
+        }
+
         final AbstractBeamInter b1 = siblings.get(0);
         final AbstractBeamInter b2 = siblings.get(siblings.size() - 1);
 
@@ -1291,6 +1299,11 @@ public class BeamLinker
                     logger.info("VIP {} filterHeads", this);
                 }
 
+                final List<CLinker> cLinkers = new ArrayList<>();
+                if (siblings.isEmpty()) {
+                    return cLinkers; // Empty
+                }
+
                 // Last beam border before heads
                 final Line2D lastBorder = (yDir > 0) ? siblings.get(siblings.size() - 1).getBorder(
                         BOTTOM) : siblings.get(0).getBorder(TOP);
@@ -1304,8 +1317,6 @@ public class BeamLinker
                 for (AbstractBeamInter b : siblings) {
                     headCandidates.removeAll(beam.getSig().getCompetingInters(b));
                 }
-
-                final List<CLinker> cLinkers = new ArrayList<>();
 
                 // Void heads (duration 1/2) can be linked to a beam only on out horizontal side.
                 // To be shared as effective filled value (duration 1/4) on beam side
