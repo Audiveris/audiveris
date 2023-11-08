@@ -197,15 +197,6 @@ public class SheetStub
     private volatile InputQualityParam inputQuality;
 
     /**
-     * Specification of beam thickness to use in this sheet.
-     * <p>
-     * If present, this specification overrides any specification made at book level.
-     */
-    @XmlElement(name = "beam-specification")
-    @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
-    private IntegerParam beamSpecification;
-
-    /**
      * This string specifies the dominant language(s) to guide OCR on this sheet.
      * <p>
      * If present, this specification overrides any specification made at book or application
@@ -214,6 +205,33 @@ public class SheetStub
     @XmlElement(name = "ocr-languages")
     @XmlJavaTypeAdapter(StringParam.JaxbAdapter.class)
     private StringParam ocrLanguages;
+
+    /**
+     * Specification of interline in this sheet.
+     * <p>
+     * If present, this specification overrides any specification made at book level.
+     */
+    @XmlElement(name = "interline-specification")
+    @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
+    private IntegerParam interlineSpecification;
+
+    /**
+     * Specification of barline height for 1-line staves in this sheet.
+     * <p>
+     * If present, this specification overrides any specification made at book level.
+     */
+    @XmlElement(name = "barline-height-specification")
+    @XmlJavaTypeAdapter(BarlineHeight.JaxbAdapter.class)
+    private volatile BarlineHeight.BarlineHeightParam barlineSpecification;
+
+    /**
+     * Specification of beam thickness in this sheet.
+     * <p>
+     * If present, this specification overrides any specification made at book level.
+     */
+    @XmlElement(name = "beam-thickness-specification")
+    @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
+    private IntegerParam beamSpecification;
 
     /**
      * This is a set of specific processing switches for this sheet.
@@ -262,6 +280,9 @@ public class SheetStub
 
     /** Related assembly instance, if any. */
     private SheetAssembly assembly;
+
+    /** A trick to keep params intact, even when temporary nullified at marshal time. */
+    private Params params;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -339,6 +360,23 @@ public class SheetStub
         pageRefs.add(pageRef);
     }
 
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
+    {
+        binarizationFilter = params.binarizationFilter;
+        musicFamily = params.musicFamily;
+        textFamily = params.textFamily;
+        inputQuality = params.inputQuality;
+        interlineSpecification = params.interlineSpecification;
+        barlineSpecification = params.barlineSpecification;
+        beamSpecification = params.beamSpecification;
+        ocrLanguages = params.ocrLanguages;
+        switches = params.switches;
+    }
+
     //----------------//
     // afterUnmarshal //
     //----------------//
@@ -360,6 +398,7 @@ public class SheetStub
     @SuppressWarnings("unused")
     private void beforeMarshal (Marshaller m)
     {
+
         if ((binarizationFilter != null) && !binarizationFilter.isSpecific()) {
             binarizationFilter = null;
         }
@@ -376,12 +415,26 @@ public class SheetStub
             inputQuality = null;
         }
 
-        if ((beamSpecification != null) && !beamSpecification.isSpecific()) {
-            beamSpecification = null;
-        }
-
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
             ocrLanguages = null;
+        }
+
+        // A O value means no specific value
+        if ((interlineSpecification != null) //
+                && ((interlineSpecification.getSpecific() == null) //
+                        || (interlineSpecification.getSpecific() == 0))) {
+            interlineSpecification = null;
+        }
+
+        if ((barlineSpecification != null) && !barlineSpecification.isSpecific()) {
+            barlineSpecification = null;
+        }
+
+        // A O value means no specific value
+        if ((beamSpecification != null) //
+                && ((beamSpecification.getSpecific() == null) //
+                        || (beamSpecification.getSpecific() == 0))) {
+            beamSpecification = null;
         }
 
         if ((switches != null) && switches.isEmpty()) {
@@ -619,6 +672,36 @@ public class SheetStub
         return assembly;
     }
 
+    //------------------//
+    // getBarlineHeight //
+    //------------------//
+    /**
+     * Report the barline height defined at sheet level.
+     *
+     * @return the barline height
+     */
+    public BarlineHeight getBarlineHeight ()
+    {
+        return getBarlineHeightParam().getValue();
+    }
+
+    //-----------------------//
+    // getBarlineHeightParam //
+    //-----------------------//
+    /**
+     * Report the barline height parameter defined at sheet level.
+     *
+     * @return the barline height parameter
+     */
+    public BarlineHeight.BarlineHeightParam getBarlineHeightParam ()
+    {
+        if (barlineSpecification == null) {
+            barlineSpecification = params.barlineSpecification;
+        }
+
+        return barlineSpecification;
+    }
+
     //----------------------//
     // getBeamSpecification //
     //----------------------//
@@ -633,8 +716,7 @@ public class SheetStub
     public IntegerParam getBeamSpecificationParam ()
     {
         if (beamSpecification == null) {
-            beamSpecification = new IntegerParam(this);
-            beamSpecification.setParent(book.getBeamSpecificationParam());
+            beamSpecification = params.beamSpecification;
         }
 
         return beamSpecification;
@@ -664,8 +746,7 @@ public class SheetStub
     public FilterParam getBinarizationFilterParam ()
     {
         if (binarizationFilter == null) {
-            binarizationFilter = new FilterParam(this);
-            binarizationFilter.setParent(book.getBinarizationFilterParam());
+            binarizationFilter = params.binarizationFilter;
         }
 
         return binarizationFilter;
@@ -755,11 +836,30 @@ public class SheetStub
     public InputQualityParam getInputQualityParam ()
     {
         if (inputQuality == null) {
-            inputQuality = new InputQualityParam(this);
-            inputQuality.setParent(book.getInputQualityParam());
+            inputQuality = params.inputQuality;
         }
 
         return inputQuality;
+    }
+
+    //---------------------------//
+    // getInterlineSpecification //
+    //---------------------------//
+    public Integer getInterlineSpecification ()
+    {
+        return getInterlineSpecificationParam().getValue();
+    }
+
+    //--------------------------------//
+    // getInterlineSpecificationParam //
+    //--------------------------------//
+    public IntegerParam getInterlineSpecificationParam ()
+    {
+        if (interlineSpecification == null) {
+            interlineSpecification = params.interlineSpecification;
+        }
+
+        return interlineSpecification;
     }
 
     //----------------//
@@ -814,7 +914,7 @@ public class SheetStub
     }
 
     //----------------//
-    // getMusicFamilyParam //
+    // getMusicFamily //
     //----------------//
     /**
      * Report the music family defined at sheet level.
@@ -837,8 +937,7 @@ public class SheetStub
     public MusicFamily.MyParam getMusicFamilyParam ()
     {
         if (musicFamily == null) {
-            musicFamily = new MusicFamily.MyParam(this);
-            musicFamily.setParent(book.getMusicFamilyParam());
+            musicFamily = params.musicFamily;
         }
 
         return musicFamily;
@@ -915,8 +1014,7 @@ public class SheetStub
     public Param<String> getOcrLanguagesParam ()
     {
         if (ocrLanguages == null) {
-            ocrLanguages = new StringParam(this);
-            ocrLanguages.setParent(book.getOcrLanguages());
+            ocrLanguages = params.ocrLanguages;
         }
 
         return ocrLanguages;
@@ -946,7 +1044,7 @@ public class SheetStub
     public ProcessingSwitches getProcessingSwitches ()
     {
         if (switches == null) {
-            switches = new ProcessingSwitches(book.getProcessingSwitches(), this);
+            switches = params.switches;
         }
 
         return switches;
@@ -1097,8 +1195,7 @@ public class SheetStub
     public TextFamily.MyParam getTextFamilyParam ()
     {
         if (textFamily == null) {
-            textFamily = new TextFamily.MyParam(this);
-            textFamily.setParent(book.getTextFamilyParam());
+            textFamily = params.textFamily;
         }
 
         return textFamily;
@@ -1189,6 +1286,8 @@ public class SheetStub
             logger.trace("{} initTransients", this);
             this.book = book;
 
+            params = new Params(book);
+
             if (!isValid()) {
                 doneSteps.removeIf( (s) -> s.compareTo(OmrStep.BINARY) > 0); // Safer for old .omr
             }
@@ -1209,13 +1308,22 @@ public class SheetStub
                 inputQuality.setParent(book.getInputQualityParam());
             }
 
-            if (beamSpecification != null) {
-                beamSpecification.setParent(book.getBeamSpecificationParam());
-            }
-
             if (ocrLanguages != null) {
                 ocrLanguages.setParent(book.getOcrLanguages());
                 ocrLanguages.setScope(this);
+            }
+
+            if (interlineSpecification != null) {
+                interlineSpecification.setParent(book.getInterlineSpecificationParam());
+            }
+
+            if (barlineSpecification != null) {
+                barlineSpecification.setParent(book.getBarlineHeightParam());
+                barlineSpecification.setScope(this);
+            }
+
+            if (beamSpecification != null) {
+                beamSpecification.setParent(book.getBeamSpecificationParam());
             }
 
             if (switches != null) {
@@ -1686,6 +1794,65 @@ public class SheetStub
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch for sheet loading");
+    }
+
+    //--------//
+    // Params //
+    //--------//
+    /** A keeper for all params in sheet. */
+    private class Params
+    {
+        final FilterParam binarizationFilter;
+
+        final MusicFamily.MyParam musicFamily;
+
+        final TextFamily.MyParam textFamily;
+
+        final InputQualityParam inputQuality;
+
+        final IntegerParam interlineSpecification;
+
+        final BarlineHeight.BarlineHeightParam barlineSpecification;
+
+        final IntegerParam beamSpecification;
+
+        final StringParam ocrLanguages;
+
+        final ProcessingSwitches switches;
+
+        /**
+         * Creates the Params keeper for this sheet.
+         *
+         * @param book the containing book
+         */
+        Params (Book book)
+        {
+            binarizationFilter = new FilterParam(SheetStub.this);
+            binarizationFilter.setParent(book.getBinarizationFilterParam());
+
+            musicFamily = new MusicFamily.MyParam(SheetStub.this);
+            musicFamily.setParent(book.getMusicFamilyParam());
+
+            textFamily = new TextFamily.MyParam(SheetStub.this);
+            textFamily.setParent(book.getTextFamilyParam());
+
+            inputQuality = new InputQualityParam(SheetStub.this);
+            inputQuality.setParent(book.getInputQualityParam());
+
+            interlineSpecification = new IntegerParam(SheetStub.this);
+            interlineSpecification.setParent(book.getInterlineSpecificationParam());
+
+            barlineSpecification = new BarlineHeight.BarlineHeightParam(SheetStub.this);
+            barlineSpecification.setParent(book.getBarlineHeightParam());
+
+            beamSpecification = new IntegerParam(SheetStub.this);
+            beamSpecification.setParent(book.getBeamSpecificationParam());
+
+            ocrLanguages = new StringParam(SheetStub.this);
+            ocrLanguages.setParent(book.getOcrLanguages());
+
+            switches = new ProcessingSwitches(book.getProcessingSwitches(), SheetStub.this);
+        }
     }
 
     //------------//

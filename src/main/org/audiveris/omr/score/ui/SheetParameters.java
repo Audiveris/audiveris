@@ -37,9 +37,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.List;
 
 /**
  * Class <code>SheetParameters</code> is a dialog that allows the user to manage sheet
@@ -53,8 +52,8 @@ public class SheetParameters
 
     private static final Logger logger = LoggerFactory.getLogger(SheetParameters.class);
 
-    // JGoodies column specification:       SelBox     Item             Value
-    private static final String colSpec3 = "10dlu,1dlu,80dlu,1dlu,right:15dlu";
+    // JGoodies columns specification:     Topic      SelBox     Item             Value
+    private static final String colSpec = "10dlu,1dlu,10dlu,1dlu,80dlu,1dlu,right:15dlu";
 
     /** Resource injection. */
     private static final ResourceMap resources = Application.getInstance().getContext()
@@ -63,7 +62,7 @@ public class SheetParameters
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The swing component of this panel. */
-    private final ScopedPanel scopedPanel;
+    private final ScopedPanel<Item> scopedPanel;
 
     /** The related sheet. */
     private final Sheet sheet;
@@ -89,7 +88,7 @@ public class SheetParameters
         // Populate scalings with current scale values
         populateScalings();
 
-        final List<XactDataPane> sheetPanes = new ArrayList<>();
+        final XactTopic topic = new XactTopic(resources.getString("Scaling.text"));
 
         for (Item key : Item.values()) {
             ScalingParam ip = scalings.get(key);
@@ -98,10 +97,15 @@ public class SheetParameters
                 ip = new ScalingParam(key);
             }
 
-            sheetPanes.add(new ScaledPane(key, null, ip));
+            topic.add(new ScaledPane(key, null, ip));
         }
 
-        scopedPanel = new ScopedPanel("Sheet settings", sheetPanes, colSpec3, 1);
+        scopedPanel = new ScopedPanel<>(
+                "Sheet settings",
+                Arrays.asList(topic),
+                colSpec,
+                1,
+                resources);
 
         initialDisplay();
     }
@@ -122,7 +126,7 @@ public class SheetParameters
             // Commit all specific values, if any, to their model object
             boolean modified = false;
 
-            for (XactDataPane pane : scopedPanel.getPanes()) {
+            for (XactPane pane : scopedPanel.getPanes()) {
                 modified |= pane.commit();
             }
 
@@ -167,7 +171,7 @@ public class SheetParameters
     //----------------//
     private void initialDisplay ()
     {
-        for (XactDataPane pane : scopedPanel.getPanes()) {
+        for (XactPane pane : scopedPanel.getPanes()) {
             pane.actionPerformed(null);
         }
     }
@@ -188,20 +192,19 @@ public class SheetParameters
     // ScaledPane //
     //------------//
     /**
-     * Pane to define a scaled parameter (sheet scope only).
+     * Pane to define a scaled parameter.
      */
     private static class ScaledPane
-            extends IntegerPane
+            extends IntegerPane<Scale.Item>
     {
-
         /** The scale item handled by this ScaledPane. */
         final Scale.Item key;
 
         ScaledPane (Scale.Item key,
-                    XactDataPane<Integer> parent,
+                    ScaledPane parent,
                     ScalingParam model)
         {
-            super(description(key), parent, "", null, model);
+            super(key, description(key), parent, "", null, model);
             this.key = key;
         }
 
@@ -223,8 +226,8 @@ public class SheetParameters
         {
             super.defineLayout(builder, cst, 1, r);
 
-            builder.add(title, cst.xyw(3, r, 1));
-            builder.add(data.getField(), cst.xyw(5, r, 1));
+            builder.add(title, cst.xyw(5, r, 1));
+            builder.add(data.getField(), cst.xyw(7, r, 1));
 
             return r + 2;
         }

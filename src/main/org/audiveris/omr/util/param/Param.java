@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
- * Class <code>Param</code> defines data value at default level, book level, sheet level.
+ * Class <code>Param</code> defines data value at global scope, book scope, sheet scope.
  * <p>
  * The {@link #getValue()} reports the current data value:
  * <ol>
@@ -54,6 +54,7 @@ public class Param<E>
     // Persistent data
     //----------------
 
+    /** Specific value, if any. */
     protected E specific;
 
     // Transient data
@@ -153,7 +154,7 @@ public class Param<E>
      */
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
         sb.append("scope:").append(scope);
 

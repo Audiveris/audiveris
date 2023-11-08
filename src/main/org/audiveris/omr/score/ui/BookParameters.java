@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
+import org.audiveris.omr.sheet.BarlineHeight;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
@@ -34,12 +35,12 @@ import org.audiveris.omr.sheet.ui.SheetView;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OcrUtil;
-import org.audiveris.omr.ui.field.SpinnerUtil;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.param.Param;
+import static org.audiveris.omr.util.param.Param.GLOBAL_SCOPE;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -52,19 +53,17 @@ import com.jgoodies.forms.layout.CellConstraints;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
-import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
@@ -73,29 +72,30 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * Class <code>BookParameters</code> is a dialog that allows the user to easily manage the
- * most frequent parameters.
+ * Class <code>BookParameters</code> provides a user dialog to manage specifications at
+ * default, book and sheet scopes.
  * <p>
- * It addresses:
+ * The specifications contain:
  * <ul>
- * <li>Music font specification</li>
- * <li>Text font specification</li>
- * <li>Input quality specification</li>
- * <li>Beam thickness</li>
- * <li>Language specification</li>
- * <li>Support for specific features</li>
+ * <li>Music font</li>
+ * <li>Text font</li>
+ * <li>Input quality</li>
+ * <li>OCR languages</li>
+ * <li>Scaling</li>
+ * <li>Staves</li>
+ * <li>Processing switches</li>
  * </ul>
  * <div style="float: right;">
  * <img src="doc-files/ScoreParameters-img.png" alt="Score parameters dialog">
  * </div>
  * <p>
  * The dialog is organized as a scope-based tabbed pane with:
- * <ul>
+ * <ol>
  * <li>A panel for the <b>default</b> scope,</li>
  * <li>A panel for current <b>book</b> scope (provided that there is a selected book),</li>
  * <li>And one panel for every <b>sheet</b> scope (provided that the current book contains more than
  * a single sheet).</li>
- * </ul>
+ * </ol>
  * Panel interface:
  * <ul>
  * <li>A panel is a vertical collection of panes, each pane being introduced by a check box
@@ -128,16 +128,44 @@ public class BookParameters
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(BookParameters.class);
 
+    /** Just a way to gather parameters by topics. */
+    private static enum Topic
+    {
+        General,
+        Languages,
+        Scaling,
+        Staves,
+        Processing;
+    }
+
+    /** Category of pane in each scoped panel. */
+    private static enum Tag
+    {
+        MusicFamily,
+        TextFamily,
+        Quality,
+        Lang,
+        Interline,
+        Beam,
+        Barline;
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The swing component of this panel. */
+    /** The swing component of this entity. */
     private final JTabbedPane component = new JTabbedPane();
 
     /** The related book, if any. */
     private final Book book;
 
-    /** The panel dedicated to setting of defaults. */
-    private final TaggedScopedPanel defaultPanel;
+    /** The scoped panels. */
+    private final Map<Object, ScopedPanel<Tag>> panels = new HashMap<>();
+
+    /** The scoped panes for barline height on 1-line staves. */
+    private final Map<Object, EnumPane> barlinePanes = new HashMap<>();
+
+    /** The scoped panes for interline. */
+    private final Map<Object, InterlinePane> interlinePanes = new HashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -148,204 +176,352 @@ public class BookParameters
      */
     public BookParameters (SheetStub stub)
     {
-        book = (stub != null) ? stub.getBook() : null;
-
-        // component.setName("BookParametersPane"); <== NO!
-        // NOTA: no name is set to component to avoid SAF to store/restore tab selection
-        component.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
-
-        // Allocate all required panels (default / book? / sheets??)
-        final TaggedScopedPanel bookPanel;
-        TaggedScopedPanel sheetPanel = null; // Only for multi-sheet book
-
         // Default panel
-        //--------------
-
-        final List<XactDataPane> defaultPanes = new ArrayList<>();
-
-        // Binarization filter is no longer presented to user
-        //        if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
-        //            defaultPanes.add(new FilterPane(null, FilterDescriptor.defaultFilter));
-        //        }
-
-        defaultPanes.add(
-                new EnumPane<>(
-                        Tag.MusicFamily,
-                        MusicFamily.values(),
-                        null,
-                        MusicFont.defaultMusicParam));
-
-        defaultPanes.add(
-                new EnumPane<>(
-                        Tag.TextFamily,
-                        TextFamily.values(),
-                        null,
-                        TextFont.defaultTextParam));
-
-        defaultPanes.add(
-                new EnumPane<>(
-                        Tag.Quality,
-                        InputQuality.values(),
-                        null,
-                        Profiles.defaultQualityParam));
-
-        final LangPane defaultLangPane = createLangPane(null, Language.ocrDefaultLanguages);
-
-        if (defaultLangPane != null) {
-            defaultPanes.add(defaultLangPane);
-        }
-
-        final ProcessingSwitches defaultSwitches = ProcessingSwitches.getDefaultSwitches();
-
-        for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
-            SwitchPane switchPane = new SwitchPane(key, null, defaultSwitches.getParam(key));
-            defaultPanes.add(switchPane);
-        }
-
-        defaultPanel = new TaggedScopedPanel(
+        final ScopedPanel<Tag> defaultPanel = new ScopedPanel<>(
                 resources.getString("defaultTab.toolTipText"),
-                defaultPanes);
+                buildDefaultTopics(),
+                resources);
         component.addTab(
                 resources.getString("defaultTab.text"),
                 null,
                 defaultPanel,
                 defaultPanel.getName());
+        panels.put(GLOBAL_SCOPE, defaultPanel);
 
         // Book panel?
-        //------------
+        book = (stub != null) ? stub.getBook() : null;
 
         if (book != null) {
-            final List<XactDataPane> bookPanes = new ArrayList<>();
-
-            // Binarization filter is no longer presented to user
-            //                bookPanes.add(
-            //                        new FilterPane(
-            //                                (FilterPane) defaultPanel.getPane(Tag.Filter),
-            //                                book.getBinarizationFilterParam()));
-            //            }
-
-            bookPanes.add(
-                    new EnumPane<>(
-                            Tag.MusicFamily,
-                            MusicFamily.values(),
-                            defaultPanel,
-                            book.getMusicFamilyParam()));
-
-            bookPanes.add(
-                    new EnumPane<>(
-                            Tag.TextFamily,
-                            TextFamily.values(),
-                            defaultPanel,
-                            book.getTextFamilyParam()));
-
-            bookPanes.add(
-                    new EnumPane<>(
-                            Tag.Quality,
-                            InputQuality.values(),
-                            defaultPanel,
-                            Profiles.defaultQualityParam));
-
-            bookPanes.add(new BeamPane(null, book.getBeamSpecificationParam()));
-
-            final LangPane bookLangPane = createLangPane(
-                    (LangPane) defaultPanel.getPane(Tag.Lang),
-                    book.getOcrLanguages());
-            if (bookLangPane != null) {
-                bookPanes.add(bookLangPane);
-            }
-
-            for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
-                final Param<Boolean> bp = book.getProcessingSwitches().getParam(key);
-                bookPanes.add(new SwitchPane(key, getPane(defaultPanel, key), bp));
-            }
-
-            bookPanel = new TaggedScopedPanel(
+            final ScopedPanel<Tag> bookPanel = new ScopedPanel<>(
                     resources.getString("bookTab.toolTipText"),
-                    bookPanes);
+                    buildBookTopics(defaultPanel),
+                    resources);
             component.addTab(book.getRadix(), null, bookPanel, bookPanel.getName());
+            panels.put(book, bookPanel);
 
             // Sheets panels?
-            //---------------
-
             if (book.isMultiSheet()) {
                 for (SheetStub s : book.getStubs()) {
-                    final List<XactDataPane> sheetPanes = new ArrayList<>();
-
-                    // Binarization filter is no longer presented to user
-                    //                    if (AdvancedTopics.Topic.SPECIFIC_ITEMS.isSet()) {
-                    //                        sheetPanes.add(
-                    //                                new FilterPane(
-                    //                                        (FilterPane) bookPanel.getPane(Tag.Filter),
-                    //                                        s.getBinarizationFilterParam()));
-                    //                    }
-                    //
-                    sheetPanes.add(
-                            new EnumPane<>(
-                                    Tag.MusicFamily,
-                                    MusicFamily.values(),
-                                    bookPanel,
-                                    s.getMusicFamilyParam()));
-
-                    sheetPanes.add(
-                            new EnumPane<>(
-                                    Tag.TextFamily,
-                                    TextFamily.values(),
-                                    bookPanel,
-                                    s.getTextFamilyParam()));
-
-                    sheetPanes.add(
-                            new EnumPane<>(
-                                    Tag.Quality,
-                                    InputQuality.values(),
-                                    bookPanel,
-                                    Profiles.defaultQualityParam));
-
-                    sheetPanes.add(
-                            new BeamPane(
-                                    (BeamPane) bookPanel.getPane(Tag.Beam),
-                                    s.getBeamSpecificationParam()));
-
-                    final LangPane sheetLangPane = createLangPane(
-                            (LangPane) bookPanel.getPane(Tag.Lang),
-                            s.getOcrLanguagesParam());
-
-                    if (sheetLangPane != null) {
-                        sheetPanes.add(sheetLangPane);
-                    }
-
-                    for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
-                        Param<Boolean> bp = s.getProcessingSwitches().getParam(key);
-                        sheetPanes.add(new SwitchPane(key, getPane(bookPanel, key), bp));
-                    }
-
-                    final TaggedScopedPanel sPanel = new TaggedScopedPanel(
+                    final ScopedPanel<Tag> sheetPanel = new ScopedPanel<>(
                             MessageFormat.format(
                                     resources.getString("sheetTab.toolTipText"),
                                     s.getNum()),
-                            sheetPanes);
+                            buildSheetTopics(s, bookPanel),
+                            resources);
                     final String initial = resources.getString("sheetInitialChar");
                     String label = initial + "#" + s.getNumber();
 
                     if (s == stub) {
-                        sheetPanel = sPanel;
-                        label = "*" + label + "*";
+                        label = "*" + label + "*"; // Currently selected stub
                     }
 
-                    component.addTab(label, null, sPanel, sPanel.getName());
+                    component.addTab(label, null, sheetPanel, sheetPanel.getName());
+                    panels.put(s, sheetPanel);
                 }
             }
-        } else {
-            bookPanel = null;
         }
+
+        // component.setName("BookParametersPane"); <== NO!
+        // NOTA: no name is set to component to avoid SAF to store/restore tab selection
+        component.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
 
         // Initially selected tab
         component.addChangeListener(this);
         component.setSelectedComponent(
-                (sheetPanel != null) ? sheetPanel
-                        : ((bookPanel != null) ? bookPanel : defaultPanel));
+                (panels.get(stub) != null) ? panels.get(stub)
+                        : ((panels.get(book) != null) ? panels.get(book)
+                                : panels.get(GLOBAL_SCOPE)));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-----------------//
+    // buildBookTopics //
+    //-----------------//
+    private List<XactTopic> buildBookTopics (ScopedPanel<Tag> parentPanel)
+    {
+        final List<XactTopic> topics = new ArrayList<>();
+
+        { // General
+            XactTopic topic = new XactTopic(Topic.General.name());
+            topics.add(topic);
+
+            topic.add(
+                    new EnumPane<>(
+                            Tag.MusicFamily,
+                            MusicFamily.values(),
+                            parentPanel,
+                            book.getMusicFamilyParam(),
+                            resources));
+
+            topic.add(
+                    new EnumPane<>(
+                            Tag.TextFamily,
+                            TextFamily.values(),
+                            parentPanel,
+                            book.getTextFamilyParam(),
+                            resources));
+
+            topic.add(
+                    new EnumPane<>(
+                            Tag.Quality,
+                            InputQuality.values(),
+                            parentPanel,
+                            Profiles.defaultQualityParam,
+                            resources));
+        }
+
+        { // Languages
+            XactTopic topic = new XactTopic(Topic.Languages.name());
+            topics.add(topic);
+
+            final LangPane langPane = createLangPane(
+                    (LangPane) parentPanel.getPane(Tag.Lang),
+                    book.getOcrLanguages());
+
+            if (langPane != null) {
+                topic.add(langPane);
+            }
+        }
+
+        { //Scaling
+            final XactTopic topic = new XactTopic(Topic.Scaling.name());
+            topics.add(topic);
+
+            final InterlinePane iPane = new InterlinePane(
+                    null,
+                    book.getInterlineSpecificationParam());
+            iPane.setVisible(false);
+            interlinePanes.put(book, iPane);
+            topic.add(iPane);
+
+            final EnumPane bPane = new EnumPane<>(
+                    Tag.Barline,
+                    BarlineHeight.values(),
+                    parentPanel,
+                    book.getBarlineHeightParam(),
+                    resources);
+            bPane.setVisible(false);
+            barlinePanes.put(book, bPane);
+            topic.add(bPane);
+
+            topic.add(new BeamPane(null, book.getBeamSpecificationParam()));
+        }
+
+        final ProcessingSwitches switches = book.getProcessingSwitches();
+
+        { // Staves
+            final XactTopic topic = new XactTopic(Topic.Staves.name());
+            topics.add(topic);
+
+            for (ProcessingSwitch key : ProcessingSwitch.staffSwitches) {
+                final Param<Boolean> bp = switches.getParam(key);
+                topic.add(new SwitchPane(key, getPane(parentPanel, key), bp));
+            }
+        }
+
+        { // Processing
+            final XactTopic topic = new XactTopic(Topic.Processing.name());
+            topics.add(topic);
+
+            for (ProcessingSwitch key : ProcessingSwitch.standardSwitches) {
+                final Param<Boolean> bp = switches.getParam(key);
+                topic.add(new SwitchPane(key, getPane(parentPanel, key), bp));
+            }
+        }
+
+        return topics;
+    }
+
+    //--------------------//
+    // buildDefaultTopics //
+    //--------------------//
+    private List<XactTopic> buildDefaultTopics ()
+    {
+        final List<XactTopic> topics = new ArrayList<>();
+
+        { // General
+            final XactTopic topic = new XactTopic(Topic.General.name());
+            topics.add(topic);
+
+            topic.add(
+                    new EnumPane<>(
+                            Tag.MusicFamily,
+                            MusicFamily.values(),
+                            null,
+                            MusicFont.defaultMusicParam,
+                            resources));
+
+            topic.add(
+                    new EnumPane<>(
+                            Tag.TextFamily,
+                            TextFamily.values(),
+                            null,
+                            TextFont.defaultTextParam,
+                            resources));
+
+            topic.add(
+                    new EnumPane<>(
+                            Tag.Quality,
+                            InputQuality.values(),
+                            null,
+                            Profiles.defaultQualityParam,
+                            resources));
+        }
+
+        { // Languages
+            XactTopic topic = new XactTopic(Topic.Languages.name());
+            topics.add(topic);
+
+            final LangPane langPane = createLangPane(null, Language.ocrDefaultLanguages);
+            if (langPane != null) {
+                topic.add(langPane);
+            }
+        }
+
+        { // Scaling
+            final XactTopic topic = new XactTopic(Topic.Scaling.name());
+            topics.add(topic);
+
+            // NOTA: No interline specification for global scope
+
+            final EnumPane bPane = new EnumPane<>(
+                    Tag.Barline,
+                    BarlineHeight.values(),
+                    null,
+                    BarlineHeight.defaultParam,
+                    resources);
+            bPane.setVisible(false);
+            barlinePanes.put(GLOBAL_SCOPE, bPane);
+            topic.add(bPane);
+
+            // NOTA: No beam specification for global scope
+        }
+
+        final ProcessingSwitches switches = ProcessingSwitches.getDefaultSwitches();
+
+        { // Staves
+            final XactTopic topic = new XactTopic(Topic.Staves.name());
+            topics.add(topic);
+
+            for (ProcessingSwitch key : ProcessingSwitch.staffSwitches) {
+                topic.add(new SwitchPane(key, null, switches.getParam(key)));
+            }
+        }
+
+        { // Processing
+            final XactTopic topic = new XactTopic(Topic.Processing.name());
+            topics.add(topic);
+
+            for (ProcessingSwitch key : ProcessingSwitch.standardSwitches) {
+                topic.add(new SwitchPane(key, null, switches.getParam(key)));
+            }
+        }
+
+        return topics;
+    }
+
+    //------------------//
+    // buildSheetTopics //
+    //------------------//
+    private List<XactTopic> buildSheetTopics (SheetStub s,
+                                              ScopedPanel<Tag> parentPanel)
+    {
+        final List<XactTopic> topics = new ArrayList<>();
+
+        { // General
+            final XactTopic topic = new XactTopic(Topic.General.name());
+            topics.add(topic);
+
+            topic.add(
+                    new EnumPane<>(
+                            Tag.MusicFamily,
+                            MusicFamily.values(),
+                            parentPanel,
+                            s.getMusicFamilyParam(),
+                            resources));
+
+            topic.add(
+                    new EnumPane<>(
+                            Tag.TextFamily,
+                            TextFamily.values(),
+                            parentPanel,
+                            s.getTextFamilyParam(),
+                            resources));
+
+            topic.add(
+                    new EnumPane<>(
+                            Tag.Quality,
+                            InputQuality.values(),
+                            parentPanel,
+                            Profiles.defaultQualityParam,
+                            resources));
+        }
+
+        { // Languages
+            XactTopic topic = new XactTopic(Topic.Languages.name());
+            topics.add(topic);
+
+            final LangPane langPane = createLangPane(
+                    (LangPane) parentPanel.getPane(Tag.Lang),
+                    s.getOcrLanguagesParam());
+
+            if (langPane != null) {
+                topic.add(langPane);
+            }
+        }
+
+        { // Scaling
+            final XactTopic topic = new XactTopic(Topic.Scaling.name());
+            topics.add(topic);
+
+            final InterlinePane iPane = new InterlinePane(
+                    (InterlinePane) parentPanel.getPane(Tag.Interline),
+                    s.getInterlineSpecificationParam());
+            iPane.setVisible(false);
+            interlinePanes.put(book, iPane);
+            topic.add(iPane);
+
+            final EnumPane bPane = new EnumPane<>(
+                    Tag.Barline,
+                    BarlineHeight.values(),
+                    parentPanel,
+                    s.getBarlineHeightParam(),
+                    resources);
+            bPane.setVisible(false);
+            barlinePanes.put(s, bPane);
+            topic.add(bPane);
+
+            topic.add(
+                    new BeamPane(
+                            (BeamPane) parentPanel.getPane(Tag.Beam),
+                            s.getBeamSpecificationParam()));
+        }
+
+        final ProcessingSwitches switches = s.getProcessingSwitches();
+
+        { // Staves
+            final XactTopic topic = new XactTopic(Topic.Staves.name());
+            topics.add(topic);
+
+            for (ProcessingSwitch key : ProcessingSwitch.staffSwitches) {
+                final Param<Boolean> bp = switches.getParam(key);
+                topic.add(new SwitchPane(key, getPane(parentPanel, key), bp));
+            }
+        }
+
+        { // Processing
+            final XactTopic topic = new XactTopic(Topic.Processing.name());
+            topics.add(topic);
+
+            for (ProcessingSwitch key : ProcessingSwitch.standardSwitches) {
+                final Param<Boolean> bp = switches.getParam(key);
+                topic.add(new SwitchPane(key, getPane(parentPanel, key), bp));
+            }
+        }
+
+        return topics;
+    }
 
     //--------//
     // commit //
@@ -365,10 +541,11 @@ public class BookParameters
 
             // Commit all specific values, if any, to their model object
             for (int tab = 0, tBreak = component.getTabCount(); tab < tBreak; tab++) {
-                final TaggedScopedPanel panel = (TaggedScopedPanel) component.getComponentAt(tab);
+                @SuppressWarnings("unchecked")
+                final ScopedPanel<Tag> panel = (ScopedPanel) component.getComponentAt(tab);
                 boolean modified = false;
 
-                for (XactDataPane pane : panel.getPanes()) {
+                for (XactPane pane : panel.getPanes()) {
                     if (pane.commit()) {
                         logger.debug(
                                 "BookParameters modified tab:{} {} {}",
@@ -491,14 +668,14 @@ public class BookParameters
     public void stateChanged (ChangeEvent e)
     {
         // Refresh the new current panel
-        TaggedScopedPanel panel = (TaggedScopedPanel) component.getSelectedComponent();
+        ScopedPanel<Tag> panel = (ScopedPanel) component.getSelectedComponent();
 
         PaneLoop:
-        for (XactDataPane pane : panel.getPanes()) {
+        for (XactPane pane : panel.getPanes()) {
             if (!pane.isSelected()) {
                 // Use the first parent with any specific value
-                XactDataPane highestPane = pane;
-                XactDataPane p = pane.parent;
+                XactPane highestPane = pane;
+                XactPane p = pane.parent;
 
                 while (p != null) {
                     if (p.isSelected()) {
@@ -530,10 +707,10 @@ public class BookParameters
      * @param key   desired key
      * @return corresponding pane
      */
-    private static SwitchPane getPane (TaggedScopedPanel panel,
+    private static SwitchPane getPane (ScopedPanel<Tag> panel,
                                        ProcessingSwitch key)
     {
-        for (XactDataPane pane : panel.getPanes()) {
+        for (XactPane pane : panel.getPanes()) {
             if (pane instanceof SwitchPane switchPane) {
                 if (switchPane.getKey() == key) {
                     return switchPane;
@@ -553,288 +730,41 @@ public class BookParameters
      * Pane to define beam thickness.
      */
     private static class BeamPane
-            extends TaggedXactDataPane<Integer>
+            extends IntegerSpinPane<Tag>
     {
-        private final SpinData thickness = new SpinData(
-                new SpinnerNumberModel(10, 0, ScaleBuilder.getMaxInterline(), 1));
-
         BeamPane (BeamPane parent,
                   Param<Integer> model)
         {
-            super(Tag.Beam, resources.getString("BeamPane.title"), parent, model);
-            title.setToolTipText(resources.getString("BeamPane.toolTipText"));
-        }
-
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int titleWidth,
-                                 int r)
-        {
-            super.defineLayout(builder, cst, 1, r); // sel + title, no advance
-            thickness.defineLayout(builder, cst, r);
-
-            return r + 2;
-        }
-
-        @Override
-        protected void display (Integer content)
-        {
-            if (content != null) {
-                thickness.spinner.setValue(content);
-            } else {
-                thickness.spinner.setValue(0);
-            }
-        }
-
-        @Override
-        protected void setEnabled (boolean bool)
-        {
-            thickness.setEnabled(bool);
-        }
-
-        @Override
-        protected Integer read ()
-        {
-            try {
-                thickness.spinner.commitEdit();
-            } catch (ParseException ignored) {
-            }
-
-            return (int) thickness.spinner.getValue();
+            super(
+                    Tag.Beam,
+                    new SpinData(new SpinnerNumberModel(10, 0, ScaleBuilder.getMaxInterline(), 1)),
+                    parent,
+                    model,
+                    resources);
         }
     }
 
-    //----------//
-    // EnumPane //
-    //----------//
+    //---------------//
+    // InterlinePane //
+    //---------------//
     /**
-     * Pane to select an enum.
+     * Pane to define interline value.
      */
-    private static class EnumPane<E extends Enum>
-            extends TaggedXactDataPane<E>
+    private static class InterlinePane
+            extends IntegerSpinPane<Tag>
     {
-
-        /** ComboBox for enum. */
-        private final JComboBox<E> enumCombo;
-
-        @SuppressWarnings("unchecked")
-        public EnumPane (Tag tag,
-                         E[] values,
-                         TaggedScopedPanel parentPanel,
-                         Param<E> model)
+        InterlinePane (InterlinePane parent,
+                       Param<Integer> model)
         {
             super(
-                    tag,
-                    resources.getString(tag + "Pane.title"),
-                    (parentPanel != null) ? parentPanel.getPane(tag) : null,
-                    model);
-
-            title.setToolTipText(resources.getString(tag + "Pane.toolTipText"));
-
-            enumCombo = new JComboBox<>(values);
-            enumCombo.setToolTipText(resources.getString(tag + "Pane.combo.toolTipText"));
-            enumCombo.addActionListener(this);
-        }
-
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int titleWidth,
-                                 int r)
-        {
-            super.defineLayout(builder, cst, 1, r); // sel + title, no advance
-
-            builder.add(enumCombo, cst.xyw(5, r, 3));
-
-            return r + 2;
-        }
-
-        @Override
-        protected void display (E family)
-        {
-            enumCombo.setSelectedItem(family);
-        }
-
-        @Override
-        protected E read ()
-        {
-            return enumCombo.getItemAt(enumCombo.getSelectedIndex());
-        }
-
-        @Override
-        protected void setEnabled (boolean bool)
-        {
-            enumCombo.setEnabled(bool);
+                    Tag.Interline,
+                    new SpinData(new SpinnerNumberModel(10, 0, ScaleBuilder.getMaxInterline(), 1)),
+                    parent,
+                    model,
+                    resources);
         }
     }
 
-    //    //------------//
-    //    // FilterPane //
-    //    //------------//
-    //    /**
-    //     * Pane to define the pixel binarization parameters.
-    //     */
-    //    private static class FilterPane
-    //            extends TaggedXactDataPane<FilterDescriptor>
-    //    {
-    //
-    //        /** ComboBox for filter kind */
-    //        private final JComboBox<FilterKind> kindCombo = new JComboBox<>(FilterKind.values());
-    //
-    //        private final JLabel kindLabel = new JLabel(
-    //                resources.getString("FilterPane.kindLabel.text"),
-    //                SwingConstants.RIGHT);
-    //
-    //        // Data for global
-    //        private final SpinData globalData = new SpinData(
-    //                resources.getString("FilterPane.globalData.text"),
-    //                resources.getString("FilterPane.globalData.toolTipText"),
-    //                new SpinnerNumberModel(0, 0, 255, 1));
-    //
-    //        // Data for local
-    //        private final SpinData localDataMean = new SpinData(
-    //                resources.getString("FilterPane.localDataMean.text"),
-    //                resources.getString("FilterPane.localDataMean.toolTipText"),
-    //                new SpinnerNumberModel(0.5, 0.5, 1.5, 0.1));
-    //
-    //        private final SpinData localDataDev = new SpinData(
-    //                resources.getString("FilterPane.localDataDev.text"),
-    //                resources.getString("FilterPane.localDataDev.toolTipText"),
-    //                new SpinnerNumberModel(0.2, 0.2, 1.5, 0.1));
-    //
-    //        FilterPane (FilterPane parent,
-    //                    Param<FilterDescriptor> model)
-    //        {
-    //            super(Tag.Filter, resources.getString("FilterPane.title"), parent, model);
-    //
-    //            // ComboBox for filter kind
-    //            kindCombo.setToolTipText(resources.getString("FilterPane.kindCombo.toolTipText"));
-    //            kindCombo.addActionListener(this);
-    //        }
-    //
-    //        @Override
-    //        public void actionPerformed (ActionEvent e)
-    //        {
-    //            if ((e != null) && (e.getSource() == kindCombo)) {
-    //                FilterDescriptor desc = (readKind() == FilterKind.GLOBAL) ? GlobalDescriptor
-    //                        .getDefault() : AdaptiveDescriptor.getDefault();
-    //                display(desc);
-    //            } else {
-    //                super.actionPerformed(e);
-    //            }
-    //
-    //            // Adjust visibility of parameter fields
-    //            switch (readKind()) {
-    //            case GLOBAL ->
-    //            {
-    //                localDataMean.setVisible(false);
-    //                localDataDev.setVisible(false);
-    //                globalData.setVisible(true);
-    //            }
-    //
-    //            case ADAPTIVE ->
-    //            {
-    //                globalData.setVisible(false);
-    //                localDataMean.setVisible(true);
-    //                localDataDev.setVisible(true);
-    //            }
-    //            }
-    //        }
-    //
-    //        /** This is needed to read data manually typed in spinners fields. */
-    //        private void commitSpinners ()
-    //        {
-    //            try {
-    //                switch (readKind()) {
-    //                case GLOBAL -> globalData.spinner.commitEdit();
-    //
-    //                case ADAPTIVE ->
-    //                {
-    //                    localDataMean.spinner.commitEdit();
-    //                    localDataDev.spinner.commitEdit();
-    //                }
-    //                }
-    //            } catch (ParseException ignored) {
-    //            }
-    //        }
-    //
-    //        @Override
-    //        public int defineLayout (PanelBuilder builder,
-    //                                 CellConstraints cst,
-    //                                 int titleWidth,
-    //                                 int r)
-    //        {
-    //            super.defineLayout(builder, cst, 1, r); // sel + title, no advance
-    //
-    //            builder.add(kindLabel, cst.xyw(3, r, 1));
-    //            builder.add(kindCombo, cst.xyw(5, r, 3));
-    //            r += 2;
-    //
-    //            // Layout global and local data as mutual overlays
-    //            globalData.defineLayout(builder, cst, r);
-    //            r = localDataMean.defineLayout(builder, cst, r);
-    //            r = localDataDev.defineLayout(builder, cst, r);
-    //
-    //            return r;
-    //        }
-    //
-    //        @Override
-    //        protected void display (FilterDescriptor desc)
-    //        {
-    //            FilterKind kind = desc.getKind();
-    //            kindCombo.setSelectedItem(kind);
-    //
-    //            switch (kind) {
-    //            case GLOBAL ->
-    //            {
-    //                GlobalDescriptor globalDesc = (GlobalDescriptor) desc;
-    //                globalData.spinner.setValue(globalDesc.threshold);
-    //            }
-    //
-    //            case ADAPTIVE ->
-    //            {
-    //                AdaptiveDescriptor localDesc = (AdaptiveDescriptor) desc;
-    //                localDataMean.spinner.setValue(localDesc.meanCoeff);
-    //                localDataDev.spinner.setValue(localDesc.stdDevCoeff);
-    //            }
-    //            }
-    //        }
-    //
-    //        @Override
-    //        public int getLogicalRowCount ()
-    //        {
-    //            return 4;
-    //        }
-    //
-    //        @Override
-    //        protected FilterDescriptor read ()
-    //        {
-    //            commitSpinners();
-    //
-    //            return (readKind() == FilterKind.GLOBAL) ? new GlobalDescriptor(
-    //                    (int) globalData.spinner.getValue())
-    //                    : new AdaptiveDescriptor(
-    //                            (double) localDataMean.spinner.getValue(),
-    //                            (double) localDataDev.spinner.getValue());
-    //        }
-    //
-    //        private FilterKind readKind ()
-    //        {
-    //            return kindCombo.getItemAt(kindCombo.getSelectedIndex());
-    //        }
-    //
-    //        @Override
-    //        protected void setEnabled (boolean bool)
-    //        {
-    //            kindCombo.setEnabled(bool);
-    //            kindLabel.setEnabled(bool);
-    //            globalData.setEnabled(bool);
-    //            localDataMean.setEnabled(bool);
-    //            localDataDev.setEnabled(bool);
-    //        }
-    //    }
-    //
     //----------//
     // LangPane //
     //----------//
@@ -842,7 +772,7 @@ public class BookParameters
      * Pane to set the dominant text language specification.
      */
     private static class LangPane
-            extends TaggedXactDataPane<String>
+            extends XactPane<Tag, String>
             implements ListSelectionListener
     {
 
@@ -886,8 +816,8 @@ public class BookParameters
         {
             r = super.defineLayout(builder, cst, titleWidth, r); // sel + title, DO advance
 
-            builder.add(langSpec, cst.xyw(1, r, 3));
-            builder.add(langScroll, cst.xyw(5, r, 3));
+            builder.add(langSpec, cst.xyw(3, r, 3));
+            builder.add(langScroll, cst.xyw(7, r, 3));
 
             return r + 2;
         }
@@ -916,8 +846,9 @@ public class BookParameters
         }
 
         @Override
-        protected void setEnabled (boolean bool)
+        public void setEnabled (boolean bool)
         {
+            super.setEnabled(bool);
             langList.setEnabled(bool);
             langSpec.setEnabled(bool);
         }
@@ -929,88 +860,70 @@ public class BookParameters
         }
     }
 
-    //----------//
-    // SpinData //
-    //----------//
-    /**
-     * A line with a labeled spinner.
-     */
-    private static class SpinData
-    {
-
-        protected final JLabel label;
-
-        protected final JSpinner spinner;
-
-        SpinData (SpinnerModel model)
-        {
-            this("", "", model);
-        }
-
-        SpinData (String label,
-                  String tip,
-                  SpinnerModel model)
-        {
-            this.label = new JLabel(label, SwingConstants.RIGHT);
-
-            spinner = new JSpinner(model);
-            SpinnerUtil.setRightAlignment(spinner);
-            SpinnerUtil.setEditable(spinner, true);
-            spinner.setToolTipText(tip);
-        }
-
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            builder.add(label, cst.xyw(3, r, 1));
-            builder.add(spinner, cst.xyw(5, r, 3));
-
-            r += 2;
-
-            return r;
-        }
-
-        public void setEnabled (boolean bool)
-        {
-            label.setEnabled(bool);
-            spinner.setEnabled(bool);
-        }
-
-        public void setVisible (boolean bool)
-        {
-            label.setVisible(bool);
-            spinner.setVisible(bool);
-        }
-    }
-
     //------------//
     // SwitchPane //
     //------------//
     /**
-     * A pane for one boolean switch.
+     * A pane for one processing switch.
      */
-    private static class SwitchPane
-            extends BooleanPane
+    private class SwitchPane
+            extends BooleanPane<Tag>
     {
-
-        final ProcessingSwitch key;
+        final ProcessingSwitch key; // The related switch
 
         SwitchPane (ProcessingSwitch key,
-                    XactDataPane<Boolean> parent,
+                    BooleanPane<Tag> parent,
                     Param<Boolean> model)
         {
-            super(textOf(key), parent, tipOf(key), model);
+            super(null, textOf(key), parent, tipOf(key), model);
             this.key = key;
         }
 
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            if ((e != null) && (e.getSource() == bbox)) {
+            if ((e != null) && (e.getSource() == boolBox)) {
                 display(read());
             } else {
                 super.actionPerformed(e);
+            }
+        }
+
+        @Override
+        protected void display (Boolean content)
+        {
+            super.display(content);
+
+            switch (key) {
+            case oneLineStaves ->
+            {
+                // We display the barline height specification if and only if
+                // the switch for 1-line staves is ON
+                final Object scope = model.getScope();
+                final EnumPane ep = barlinePanes.get(scope);
+                ep.setVisible((content != null) && content);
+            }
+            case fiveLineStaves, drumNotation ->
+            {
+                // We display the interline pane if and only if
+                // both switches for 5-line standard staves and for 5-line percussion staves are OFF
+                // Otherwise, it is safer to set the interline spec to zero (i.e. disabled)
+                final Object scope = model.getScope();
+                final InterlinePane pane = interlinePanes.get(scope);
+
+                if (pane != null) {
+                    final ProcessingSwitch other = (key == ProcessingSwitch.fiveLineStaves)
+                            ? ProcessingSwitch.drumNotation
+                            : ProcessingSwitch.fiveLineStaves;
+                    boolean bothOff = (content == null) || !content;
+                    bothOff &= !isSet(scope, other);
+                    pane.setVisible(bothOff);
+
+                    if (!bothOff) {
+                        pane.display(0);
+                    }
+                }
+            }
             }
         }
 
@@ -1025,9 +938,37 @@ public class BookParameters
             return 1;
         }
 
+        /**
+         * Report whether, in the given scope, the provided switch is set.
+         *
+         * @param scope the given scope
+         * @param key   the switch to read
+         * @return true if switch is set
+         */
+        private boolean isSet (Object scope,
+                               ProcessingSwitch key)
+        {
+            final ScopedPanel<Tag> panel = panels.get(scope);
+
+            if (panel == null) {
+                return false;
+            }
+
+            for (XactPane pane : panel.getPanes()) {
+                if (pane instanceof SwitchPane switchPane) {
+                    if (switchPane.key == key) {
+                        final Boolean bool = switchPane.read();
+                        return (bool != null) && bool;
+                    }
+                }
+            }
+
+            return false; // This statement should never be reached!
+        }
+
         private static String textOf (ProcessingSwitch key)
         {
-            // Priority given to text in resources file if any
+            // Priority is given to text in resources file if any
             final String desc = resources.getString("Switch." + key + ".text");
 
             // Fallback using constant description text
@@ -1037,69 +978,6 @@ public class BookParameters
         private static String tipOf (ProcessingSwitch key)
         {
             return resources.getString("Switch." + key + ".toolTipText");
-        }
-    }
-
-    //-----//
-    // Tag //
-    //-----//
-    /** Category of pane in each scoped panel. */
-    private static enum Tag
-    {
-        Filter,
-        MusicFamily,
-        TextFamily,
-        Quality,
-        Lang,
-        Beam;
-    }
-
-    //-------------------//
-    // TaggedScopedPanel //
-    //-------------------//
-    private static class TaggedScopedPanel
-            extends ScopedPanel
-    {
-        public TaggedScopedPanel (String name,
-                                  List<XactDataPane> panes)
-        {
-            super(name, panes);
-        }
-
-        /**
-         * Report the contained pane of proper tag.
-         *
-         * @param tag desired tag
-         * @return the pane found or null
-         */
-        public TaggedXactDataPane getPane (Tag tag)
-        {
-            for (XactDataPane pane : panes) {
-                if (pane instanceof TaggedXactDataPane tagged) {
-                    if (tagged.tag == tag)
-                        return tagged;
-                }
-            }
-
-            return null;
-        }
-    }
-
-    //--------------------//
-    // TaggedXactDataPane //
-    //--------------------//
-    private static abstract class TaggedXactDataPane<E>
-            extends XactDataPane<E>
-    {
-        public final Tag tag;
-
-        public TaggedXactDataPane (Tag tag,
-                                   String title,
-                                   XactDataPane<E> parent,
-                                   Param<E> model)
-        {
-            super(title, parent, model);
-            this.tag = tag;
         }
     }
 }

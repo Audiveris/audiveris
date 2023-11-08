@@ -24,7 +24,6 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
-import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -128,7 +127,9 @@ public class PlayingInter
     // lookupLink //
     //------------//
     /**
-     * Try to detect a link between this playing instance and a HeadChord nearby.
+     * Try to detect a link between this playing instance and a head nearby.
+     * <p>
+     * We give preference to chords located below the playing sign, over the ones located above.
      *
      * @param systemHeadChords abscissa-ordered collection of head chords in system
      * @param profile          desired profile level
@@ -159,24 +160,39 @@ public class PlayingInter
             return null;
         }
 
+        Collections.sort(chords, Inters.byReverseCenterOrdinate);
         HeadPlayingRelation bestRel = null;
         HeadChordInter bestChord = null;
         double bestYGap = Double.MAX_VALUE;
+        boolean below = true; // We start with chords below the playing sign
 
         for (Inter chord : chords) {
-            Rectangle chordBox = chord.getBounds();
+            final Rectangle chordBox = chord.getBounds();
 
             // The playing sign cannot intersect the chord
             if (chordBox.intersects(playingBox)) {
                 continue;
             }
 
-            Point center = chord.getCenter();
+            final Point chordCenter = chord.getCenter();
 
             // Select proper chord reference point (top or bottom)
-            int yRef = (playingCenter.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
-            double xGap = Math.abs(center.x - playingCenter.x);
-            double yGap = Math.abs(yRef - playingCenter.y);
+            final int yRef = (playingCenter.y > chordCenter.y) //
+                    ? chordBox.y + chordBox.height
+                    : chordBox.y;
+            final double dy = yRef - playingCenter.y;
+
+            // Switching from chords below sign to chords above sign?
+            if (below && dy < 0) {
+                below = false;
+
+                if (bestRel != null) {
+                    break;
+                }
+            }
+
+            double xGap = Math.abs(chordCenter.x - playingCenter.x);
+            double yGap = Math.abs(dy);
             HeadPlayingRelation rel = new HeadPlayingRelation();
             rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
@@ -189,12 +205,11 @@ public class PlayingInter
             }
         }
 
-        if (bestRel != null) {
+        if (bestChord != null) {
             // Choose preferred head in chord, according to vertical relative positions
             final List<? extends Inter> notes = bestChord.getNotes(); // Always bottom up
-            final Inter bestHead = (playingCenter.y < GeoUtil.center(bestChord.getBounds()).y)
-                    ? notes.get(notes.size() - 1)
-                    : notes.get(0);
+            final Inter bestHead = (playingCenter.y < bestChord.getCenter().y) ? notes.get(
+                    notes.size() - 1) : notes.get(0);
 
             return new Link(bestHead, bestRel, false);
         }
@@ -249,7 +264,7 @@ public class PlayingInter
                                                  List<Inter> systemHeadChords)
     {
         if (glyph.isVip()) {
-            logger.info("VIP PlayingInter create {} as {}", glyph, shape);
+            logger.info("VIP PlayingInter createValidAdded {} as {}", glyph, shape);
         }
 
         PlayingInter playing = new PlayingInter(glyph, shape, grade);

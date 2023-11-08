@@ -28,6 +28,7 @@ import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.AreaUtil.CoreData;
 import org.audiveris.omr.math.GeoPath;
 import org.audiveris.omr.math.Projection;
+import org.audiveris.omr.sheet.BarlineHeight;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
@@ -189,7 +190,7 @@ public class StaffProjector
         pixelFilter = picture.getSource(Picture.SourceKey.BINARY);
 
         scale = sheet.getScale();
-        params = new Parameters(sheet, staff.getSpecificInterline());
+        params = new Parameters();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -414,7 +415,11 @@ public class StaffProjector
      * Compute, for each abscissa value, the foreground pixels cumulated between
      * first line and last line of staff.
      * <p>
-     * For a OneLineStaff, we extrapolate ordinates based on a standard 5-line staff.
+     * This projection is very specific, it is used to retrieve barlines and to retrieve serifs
+     * around a multi-measure rest.
+     * <p>
+     * For a OneLineStaff, we cannot use the (virtual) first and last lines.
+     * So, we extrapolate ordinates around the mid line according to BarlineHeight specification.
      * <p>
      * We also compute derivative threshold for this staff.
      */
@@ -423,19 +428,20 @@ public class StaffProjector
         projection = new Projection.Short(0, sheet.getWidth() - 1);
 
         final ArrayList<Integer> derivatives = new ArrayList<>();
-        final LineInfo firstLine = staff.getFirstLine();
-        final LineInfo lastLine = staff.getLastLine();
+        final LineInfo firstLine = !staff.isOneLineStaff() //
+                ? staff.getFirstLine()
+                : staff.getMidLine().yTranslated(-getBarlineHeight() / 2);
+        final LineInfo lastLine = !staff.isOneLineStaff() //
+                ? staff.getLastLine()
+                : staff.getMidLine().yTranslated(+getBarlineHeight() / 2);
         final int dx = params.staffAbscissaMargin;
         final int xMin = sheet.xClamp(staff.getAbscissa(LEFT) - dx);
         final int xMax = sheet.xClamp(staff.getAbscissa(RIGHT) + dx);
 
-        // Correction for ordinates of a 1-line staff
-        final int dy = staff.isOneLineStaff() ? (2 * scale.getInterline()) : 0;
-
         // Populating projection data
         for (int x = xMin; x <= xMax; x++) {
-            final int yMin = sheet.yClamp(firstLine.yAt(x) - dy);
-            final int yMax = sheet.yClamp(lastLine.yAt(x) - 1 + dy);
+            final int yMin = sheet.yClamp(firstLine.yAt(x));
+            final int yMax = sheet.yClamp(lastLine.yAt(x) - 1);
             short count = 0;
 
             for (int y = yMin; y <= yMax; y++) {
@@ -465,6 +471,21 @@ public class StaffProjector
         final double eliteDer = (double) derCumul / top;
         derivativeThreshold = (int) Math.rint(eliteDer * constants.minDerivativeRatio.getValue());
         logger.debug("eliteDerivative:{} derivativeThreshold:{} ", eliteDer, derivativeThreshold);
+    }
+
+    //------------------//
+    // getBarlineHeight //
+    //------------------//
+    /**
+     * Report the expected height (in pixels) of a barline on a 1-line staff.
+     *
+     * @return the expected number of pixels
+     */
+    private int getBarlineHeight ()
+    {
+        final BarlineHeight barlineHeight = sheet.getStub().getBarlineHeight();
+
+        return barlineHeight.count() * staff.getSpecificInterline();
     }
 
     //-----------------//
@@ -899,13 +920,13 @@ public class StaffProjector
                     // Make sure peaks do not overlap
                     x = Math.max(x, peak.getStop());
 
-                    if ((peakMode == PeakMode.INITIAL_HALF) && peaksFound.size() == 1) {
-                        // Reset to full mode
-                        halfMode = false;
-                        minCount *= 2;
-                        minDerivativeUp *= 2;
-                        minDerivativeDown *= 2;
-                    }
+                    //                    if ((peakMode == PeakMode.INITIAL_HALF) && peaksFound.size() == 1) {
+                    //                        // Reset to full mode
+                    //                        halfMode = false;
+                    //                        minCount *= 2;
+                    //                        minDerivativeUp *= 2;
+                    //                        minDerivativeDown *= 2;
+                    //                    }
                 }
 
                 start = -1;
@@ -1150,7 +1171,8 @@ public class StaffProjector
             // Theoretical staff height (adapted to staff line count)
             XYSeries heightSeries = new XYSeries("StaffHeight", false); // No autosort
             int n = staff.getLineCount();
-            int totalHeight = staff.getSpecificInterline() * ((n > 1) ? (n - 1) : 4);
+            int totalHeight = !staff.isOneLineStaff() ? staff.getSpecificInterline() * 4
+                    : getBarlineHeight();
             heightSeries.add(xMin, totalHeight);
             heightSeries.add(xMax, totalHeight);
             plotter.add(heightSeries, Color.BLACK, true);
@@ -1710,7 +1732,7 @@ public class StaffProjector
     //------------//
     // Parameters //
     //------------//
-    private static class Parameters
+    private class Parameters
     {
 
         final int chunkWidth;
@@ -1751,10 +1773,10 @@ public class StaffProjector
 
         int chunkThreshold;
 
-        Parameters (Sheet sheet,
-                    int staffSpecific)
+        Parameters ()
         {
             final Scale scale = sheet.getScale();
+            final int staffSpecific = staff.getSpecificInterline();
 
             {
                 // Use sheet large interline value
@@ -1776,7 +1798,9 @@ public class StaffProjector
                 // Use staff specific interline value
                 final InterlineScale specific = (staffSpecific == 0) ? scale.getInterlineScale()
                         : scale.getInterlineScale(staffSpecific);
-                barThreshold = specific.toPixels(constants.barThreshold);
+                barThreshold = !staff.isOneLineStaff() ? specific.toPixels(constants.barThreshold)
+                        : (int) Math.rint(
+                                getBarlineHeight() * constants.barThreshold.getValue() / 4);
                 braceThreshold = specific.toPixels(constants.braceThreshold);
                 gapThreshold = specific.toPixels(constants.gapThreshold);
             }

@@ -21,16 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.clef;
 
-import static org.audiveris.omr.glyph.Shape.C_CLEF;
-import static org.audiveris.omr.glyph.Shape.F_CLEF;
-import static org.audiveris.omr.glyph.Shape.G_CLEF;
-import static org.audiveris.omr.glyph.Shape.G_CLEF_8VA;
-import static org.audiveris.omr.glyph.Shape.G_CLEF_8VB;
-import static org.audiveris.omr.glyph.Shape.PERCUSSION_CLEF;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
-import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.ShapeClassifier;
@@ -43,6 +33,13 @@ import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
+import static org.audiveris.omr.glyph.Shape.C_CLEF;
+import static org.audiveris.omr.glyph.Shape.F_CLEF;
+import static org.audiveris.omr.glyph.Shape.G_CLEF;
+import static org.audiveris.omr.glyph.Shape.G_CLEF_8VA;
+import static org.audiveris.omr.glyph.Shape.G_CLEF_8VB;
+import static org.audiveris.omr.glyph.Shape.PERCUSSION_CLEF;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
@@ -63,6 +60,8 @@ import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -71,6 +70,9 @@ import org.jgrapht.graph.SimpleGraph;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.Blitter;
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -84,9 +86,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
-import ij.process.Blitter;
-import ij.process.ByteProcessor;
 
 /**
  * Class <code>ClefBuilder</code> extracts the clef symbol at the beginning of a staff.
@@ -116,6 +115,11 @@ public class ClefBuilder
             G_CLEF_8VB,
             C_CLEF,
             PERCUSSION_CLEF);
+
+    /**
+     * All possible clef symbols on a 1-line staff.
+     */
+    private static final EnumSet<Shape> ONE_LINE_CLEF_SHAPES = EnumSet.of(PERCUSSION_CLEF);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -366,7 +370,8 @@ public class ClefBuilder
         final List<ClefInter> inters = new ArrayList<>(bestMap.values());
         Collections.sort(inters, Inters.byReverseGrade);
 
-        interLoop: for (int i = 0; i < inters.size(); i++) {
+        interLoop:
+        for (int i = 0; i < inters.size(); i++) {
             final double grade = inters.get(i).getGrade();
 
             for (int j = i + 1; j < inters.size(); j++) {
@@ -569,10 +574,12 @@ public class ClefBuilder
                     Grades.clefMinGrade / Grades.intrinsicRatio,
                     null);
 
+            // Allowed clefs shapes
+            final EnumSet clefShapes = staff.isDrum() ? ONE_LINE_CLEF_SHAPES : HEADER_CLEF_SHAPES;
             for (Evaluation eval : evals) {
                 final Shape shape = eval.shape;
 
-                if (HEADER_CLEF_SHAPES.contains(shape)) {
+                if (clefShapes.contains(shape)) {
                     final double grade = Grades.intrinsicRatio * eval.grade;
                     ClefKind kind = ClefInter.kindOf(glyph.getCenter2D(), shape, staff);
                     ClefInter bestInter = bestMap.get(kind);
@@ -653,8 +660,8 @@ public class ClefBuilder
 
                 if (clefStop != null) {
                     maxClefOffset = Math.max(maxClefOffset, clefStop - measureStart);
-                } else {
-                    logger.warn("Staff#{} no header clef.", staff.getId());
+                } else if (!staff.isOneLineStaff()) {
+                    logger.warn("Staff#{} no recognized header clef.", staff.getId());
                 }
             }
 

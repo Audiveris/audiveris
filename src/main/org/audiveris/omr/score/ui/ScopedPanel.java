@@ -23,6 +23,8 @@ package org.audiveris.omr.score.ui;
 
 import org.audiveris.omr.ui.util.Panel;
 
+import org.jdesktop.application.ResourceMap;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -30,74 +32,91 @@ import com.jgoodies.forms.layout.FormLayout;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+
 /**
  * Class <code>ScopedPanel</code> is a panel corresponding to a given scope tab.
  *
+ * @param <T> tagging used within the panel
  * @author Hervé Bitteur
  */
-public class ScopedPanel
+public class ScopedPanel<T extends Enum<T>>
         extends Panel
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    // JGoodies column specification:       SelBox     Item1       Item2            Box
-    private static final String colSpec4 = "10dlu,1dlu,100dlu,1dlu,55dlu,1dlu,right:10dlu";
+    // JGoodies columns specification:
+    private static final String colSpec =
+            //Topic     SelBox     Item1       Item2            Box
+            "10dlu,1dlu,10dlu,1dlu,100dlu,1dlu,55dlu,1dlu,right:10dlu";
 
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Collection of individual data panes. */
-    protected final List<XactDataPane> panes = new ArrayList<>();
+    /** Collection of topics. */
+    protected final List<XactTopic> topics = new ArrayList<>();
 
-    /**
-     * Creates a new <code>ScopedPanel</code> object, using default colSpec4.
-     *
-     * @param name  panel name
-     * @param panes contained data panes
-     */
-    public ScopedPanel (String name,
-                        List<XactDataPane> panes)
-    {
-        this(name, panes, colSpec4, 3);
-    }
+    /** For I18N. */
+    protected final ResourceMap resources;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Creates a new <code>ScopedPanel</code> object, using default colSpec.
+     *
+     * @param name      panel name
+     * @param topics    contained data topics
+     * @param resources UI resources
+     */
+    public ScopedPanel (String name,
+                        List<XactTopic> topics,
+                        ResourceMap resources)
+    {
+        this(name, topics, colSpec, 3, resources);
+    }
 
     /**
      * Creates a new <code>ScopedPanel</code> object.
      *
      * @param name       panel name
-     * @param panes      contained data panes
-     * @param colSpec    specific column specification
-     * @param titleWidth number of cells for title, either 1 (just Item1) or 3 (Item1,|,Item2)
+     * @param topics     contained data topics
+     * @param colSpec    specific columns specification
+     * @param titleWidth number of cells for title, either 1 (just Item1) or 3 (Ite
+     * @param resources  UI resources
      */
     public ScopedPanel (String name,
-                        List<XactDataPane> panes,
+                        List<XactTopic> topics,
                         String colSpec,
-                        int titleWidth)
+                        int titleWidth,
+                        ResourceMap resources)
     {
         setName(name);
+        this.resources = resources;
 
-        for (XactDataPane pane : panes) {
-            if (pane != null) {
-                this.panes.add(pane);
+        for (XactTopic topic : topics) {
+            if (topic != null) {
+                this.topics.add(topic);
             }
         }
 
         defineLayout(colSpec, titleWidth);
 
-        for (XactDataPane pane : this.panes) {
-            // Pane is pre-selected if model has specific data
-            final boolean isSpecific = pane.model.isSpecific();
-            pane.selBox.setSelected(isSpecific);
-            // Fill pane data
-            pane.actionPerformed(null);
+        for (XactTopic topic : this.topics) {
+            for (XactPane pane : topic) {
+                // Pane is pre-selected if model has specific data
+                final boolean isSpecific = pane.model.isSpecific();
+                pane.selBox.setSelected(isSpecific);
+
+                // Fill pane data
+                pane.actionPerformed(null);
+            }
         }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Define layout of the pane.
+     * Define layout of the panel.
      *
      * @param colSpec    column specification offering either 3 or 4 logical fields
      * @param titleWidth number of cells for title
@@ -108,8 +127,12 @@ public class ScopedPanel
         // Compute the total number of logical rows
         int logicalRowCount = 0;
 
-        for (XactDataPane pane : panes) {
-            logicalRowCount += pane.getLogicalRowCount();
+        for (XactTopic topic : topics) {
+            logicalRowCount++; // One row for the topic title
+
+            for (XactPane pane : topic) {
+                logicalRowCount += pane.getLogicalRowCount();
+            }
         }
 
         FormLayout layout = new FormLayout(colSpec, Panel.makeRows(logicalRowCount));
@@ -117,9 +140,35 @@ public class ScopedPanel
         CellConstraints cst = new CellConstraints();
         int r = 1;
 
-        for (XactDataPane pane : panes) {
-            r = pane.defineLayout(builder, cst, titleWidth, r);
+        for (XactTopic topic : topics) {
+            // Topic title
+            final JLabel title = new JLabel(textOf(topic.name));
+            title.setHorizontalAlignment(SwingConstants.LEFT);
+            builder.add(title, cst.xyw(1, r, 7));
+            r += 2;
+
+            for (XactPane pane : topic) {
+                r = pane.defineLayout(builder, cst, titleWidth, r);
+            }
         }
+    }
+
+    /**
+     * Report the contained pane for the desired tag.
+     *
+     * @param tag desired tag
+     * @return the pane found or null
+     */
+    public XactPane getPane (T tag)
+    {
+        for (XactTopic topic : topics) {
+            for (XactPane pane : topic) {
+                if (pane.tag == tag)
+                    return pane;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -127,8 +176,22 @@ public class ScopedPanel
      *
      * @return the sequence of data panes
      */
-    public List<XactDataPane> getPanes ()
+    public List<XactPane> getPanes ()
     {
+        final List<XactPane> panes = new ArrayList<>();
+
+        for (XactTopic topic : topics) {
+            panes.addAll(topic);
+        }
+
         return panes;
+    }
+
+    private String textOf (String name)
+    {
+        // Priority given to text in resources file if any
+        final String desc = resources.getString(name + ".text");
+
+        return (desc != null) ? desc : name;
     }
 }

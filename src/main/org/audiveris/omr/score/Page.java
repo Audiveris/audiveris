@@ -35,7 +35,6 @@ import org.audiveris.omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -306,21 +305,6 @@ public class Page
         msg.append(": [").append(sb).append("]");
 
         logger.info("{}", msg.toString());
-    }
-
-    //--------------//
-    // getDimension //
-    //--------------//
-    /**
-     * Report the dimension of the sheet/page.
-     * TODO: check whether this is relevant (used only in PartwiseBuilder)
-     *
-     * @return the page/sheet dimension in pixels
-     */
-    @Deprecated
-    public Dimension getDimension ()
-    {
-        return new Dimension(sheet.getWidth(), sheet.getHeight());
     }
 
     //--------------------//

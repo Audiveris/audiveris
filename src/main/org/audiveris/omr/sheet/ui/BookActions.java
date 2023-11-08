@@ -2610,6 +2610,7 @@ public class BookActions
 
             book.resetTo(step);
             setBookTranscribable(true);
+            setBookModifiedOrUpgraded(true);
 
             return null;
         }

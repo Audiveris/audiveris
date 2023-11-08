@@ -43,27 +43,31 @@ import javax.swing.SwingConstants;
  * A transactional data pane is able to host data, check data validity and apply
  * the requested modifications on commit.
  *
+ * @param <T> specific category
  * @param <E> specific data type
  * @author Hervé Bitteur
  */
-public abstract class XactDataPane<E>
+public abstract class XactPane<T extends Enum<T>, E>
         implements ActionListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(XactDataPane.class);
+    private static final Logger logger = LoggerFactory.getLogger(XactPane.class);
 
     /** Resource injection. */
     private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(XactDataPane.class);
+            .getResourceMap(XactPane.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+
+    /** Unique in scope. */
+    protected final T tag;
 
     /** Model parameter (cannot be null). */
     protected final Param<E> model;
 
     /** Parent pane, if any. */
-    protected final XactDataPane<E> parent;
+    protected final XactPane<T, E> parent;
 
     /** Box for selecting specific vs inherited data. */
     protected final JCheckBox selBox;
@@ -76,18 +80,21 @@ public abstract class XactDataPane<E>
     /**
      * Creates a new <code>XactDataPane</code> object.
      *
+     * @param tag    unique in scope
      * @param title  pane title
      * @param parent parent pane if any
      * @param model  underlying model (cannot be null)
      */
-    public XactDataPane (String title,
-                         XactDataPane<E> parent,
-                         Param<E> model)
+    public XactPane (T tag,
+                     String title,
+                     XactPane<T, E> parent,
+                     Param<E> model)
     {
         if (model == null) {
-            throw new IllegalArgumentException("Null model for pane '" + title + "'");
+            throw new IllegalArgumentException("Null model for XactPane '" + title + "'");
         }
 
+        this.tag = tag;
         this.parent = parent;
         this.model = model;
         this.title = new JLabel(title);
@@ -151,8 +158,8 @@ public abstract class XactDataPane<E>
                              int r)
     {
         // Draw the specific/inherit box (+ line advance?)
-        builder.add(selBox, cst.xyw(1, r, 1));
-        builder.add(title, cst.xyw(3, r, titleWidth));
+        builder.add(selBox, cst.xyw(3, r, 1));
+        builder.add(title, cst.xyw(5, r, titleWidth));
 
         return r + 2;
     }
@@ -202,7 +209,10 @@ public abstract class XactDataPane<E>
      *
      * @param bool the flag value
      */
-    protected abstract void setEnabled (boolean bool);
+    public void setEnabled (boolean bool)
+    {
+        title.setEnabled(bool);
+    }
 
     /**
      * User selects (or deselects) this pane
@@ -214,10 +224,23 @@ public abstract class XactDataPane<E>
         selBox.setSelected(bool);
     }
 
+    /**
+     * Set the visible flag for all data fields
+     *
+     * @param bool the flag value
+     */
+    public void setVisible (boolean bool)
+    {
+        selBox.setVisible(bool);
+        title.setVisible(bool);
+    }
+
     @Override
     public String toString ()
     {
-        return new StringBuilder(getClass().getSimpleName()).append(' ').append(title.getText())
-                .append(' ').append(model).toString();
+        return new StringBuilder(getClass().getSimpleName()) //
+                .append(' ').append(tag) //
+                .append(' ').append(model) //
+                .toString();
     }
 }

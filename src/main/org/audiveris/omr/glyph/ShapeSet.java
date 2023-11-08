@@ -989,21 +989,17 @@ public class ShapeSet
                 list.removeAll(HeadsOvalSmall);
             }
 
-            /**
-             * Only remove cross heads from search if _both_ switches
-             * crossHeads and drumNotation are off.
-             */
-            if (!switches.getValue(ProcessingSwitch.crossHeads) && !switches.getValue(
-                    ProcessingSwitch.drumNotation)) {
-                list.removeAll(HeadsCross);
-            }
-
-            if (!switches.getValue(ProcessingSwitch.drumNotation)) {
+            if (!switches.getValue(ProcessingSwitch.drumNotation) //
+                    && !switches.getValue(ProcessingSwitch.oneLineStaves)) {
                 list.removeAll(HeadsDiamond);
                 list.removeAll(HeadsTriangle);
                 list.removeAll(HeadsCircle);
                 list.removeAll(Playings);
                 list.removeAll(HeadsCrossHollow);
+
+                if (!switches.getValue(ProcessingSwitch.crossHeads)) {
+                    list.removeAll(HeadsCross);
+                }
             }
         }
 

@@ -46,15 +46,14 @@ import java.util.EnumSet;
  */
 public enum ProcessingSwitch
 {
-    keepGrayImages(ProcessingSwitches.constants.keepGrayImages),
-    indentations(ProcessingSwitches.constants.indentations),
-    bothSharedHeadDots(ProcessingSwitches.constants.bothSharedHeadDots),
-
     oneLineStaves(ProcessingSwitches.constants.oneLineStaves),
     fourStringTablatures(ProcessingSwitches.constants.fourStringTablatures),
+    fiveLineStaves(ProcessingSwitches.constants.fiveLineStaves),
     drumNotation(ProcessingSwitches.constants.drumNotation),
     sixStringTablatures(ProcessingSwitches.constants.sixStringTablatures),
 
+    keepGrayImages(ProcessingSwitches.constants.keepGrayImages),
+    indentations(ProcessingSwitches.constants.indentations),
     smallHeads(ProcessingSwitches.constants.smallHeads),
     smallBeams(ProcessingSwitches.constants.smallBeams),
     crossHeads(ProcessingSwitches.constants.crossHeads),
@@ -70,6 +69,7 @@ public enum ProcessingSwitch
     lyricsAboveStaff(ProcessingSwitches.constants.lyricsAboveStaff),
 
     articulations(ProcessingSwitches.constants.articulations),
+    bothSharedHeadDots(ProcessingSwitches.constants.bothSharedHeadDots),
     implicitTuplets(ProcessingSwitches.constants.implicitTuplets),
 
     // Obsolete switches:
@@ -82,6 +82,20 @@ public enum ProcessingSwitch
      * The switches currently supported.
      */
     public static EnumSet<ProcessingSwitch> supportedSwitches = EnumSet.range(
+            oneLineStaves,
+            implicitTuplets);
+
+    /**
+     * The staff switches.
+     */
+    public static EnumSet<ProcessingSwitch> staffSwitches = EnumSet.range(
+            oneLineStaves,
+            sixStringTablatures);
+
+    /**
+     * The standard (non-staff) switches.
+     */
+    public static EnumSet<ProcessingSwitch> standardSwitches = EnumSet.range(
             keepGrayImages,
             implicitTuplets);
 

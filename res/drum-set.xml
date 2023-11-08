@@ -45,7 +45,18 @@
 <drum-set>
     
   <staff line-count="1">
-    <entry pitch-position="0"  motif="oval"    sound="null"/> <!-- Just a place-holder -->
+      
+    <!-- -1 -->
+    <entry pitch-position="-1" motif="oval"  sound="Hi_Bongo"/>
+    <entry pitch-position="-1" motif="cross" sound="Maracas"/> <!-- Surely wrong... -->
+    
+    <!-- 0 -->
+    <entry pitch-position="0"  motif="oval"  sound="Hand_Clap"/>
+    
+    <!-- 1 -->
+    <entry pitch-position="1"  motif="oval"  sound="Low_Bongo"/>
+    <entry pitch-position="1"  motif="cross" sound="Cowbell"/>
+    
   </staff>
   
   <staff line-count="5">
@@ -120,8 +131,9 @@
     
 <!--
     Here below is the list of not yet assigned sounds
-    To actually assign one sound, replace the "null" values by actual pitch-position and motif
-    -->
+    To actually assign one sound, uncomment the line and replace the "null" values
+    by actual pitch-position and motif.
+    
     <entry pitch-position="null" motif="null" sound="Hand_Clap"/>
     <entry pitch-position="null" motif="null" sound="Vibraslap"/>
     <entry pitch-position="null" motif="null" sound="Electric_Snare"/>
@@ -145,6 +157,7 @@
     <entry pitch-position="null" motif="null" sound="Open_Cuica"/>
     <entry pitch-position="null" motif="null" sound="Mute_Triangle"/>
     <entry pitch-position="null" motif="null" sound="Open_Triangle"/>
+    -->
   
   </staff>
   

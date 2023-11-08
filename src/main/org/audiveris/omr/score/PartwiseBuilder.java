@@ -294,7 +294,7 @@ public class PartwiseBuilder
     private final Score score;
 
     /** Score source. */
-    private Source source;
+    private final Source source = new Source();
 
     /** Current context. */
     private final Current current = new Current();
@@ -1360,7 +1360,13 @@ public class PartwiseBuilder
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", partBarline, current.page, ex);
+            logger.warn(
+                    "Error visiting {} in {} {} location:{}",
+                    partBarline,
+                    current.page,
+                    current.measure,
+                    location,
+                    ex);
         }
     }
 
@@ -2411,7 +2417,7 @@ public class PartwiseBuilder
                     }
 
                     if (instrument == null) {
-                        logger.warn("No instrument for note {}", note);
+                        logger.warn("No instrument for note {} {}", note, ms);
                     }
                 }
             }
@@ -2717,12 +2723,14 @@ public class PartwiseBuilder
         try {
             logger.debug("Processing {}", score);
 
-            Page firstPage = score.getFirstPage();
+            final Book book = score.getBook();
+            final Page firstPage = score.getFirstPage();
+
             // No version inserted: Let the marshalling class handle it
-            //
+
             {
                 // Work? (reference to larger work)
-                //
+
                 // Movement? (number/title of this score as a movement)
                 // Using score ID within containing book
                 if (firstPage.isMovementStart()) {
@@ -2734,7 +2742,6 @@ public class PartwiseBuilder
                 Identification identification = factory.createIdentification();
 
                 // Source
-                final Book book = score.getFirstPage().getSheet().getStub().getBook();
                 try {
                     identification.setSource(book.getSomeInputPath().toAbsolutePath().toString());
                 } catch (Exception ex) {
@@ -2752,7 +2759,7 @@ public class PartwiseBuilder
 
                 // [Encoding]/EncodingDate
                 // Let the Marshalling class handle it
-                //
+
                 // [Encoding]/Supports
                 for (String feature : new String[]
                 { "new-system", "new-page" }) {
@@ -2770,7 +2777,7 @@ public class PartwiseBuilder
 
             {
                 // Defaults
-                Defaults defaults = new Defaults();
+                final Defaults defaults = new Defaults();
 
                 // [Defaults]/Scaling (using first page)
                 if (current.scale == null) {
@@ -2792,8 +2799,12 @@ public class PartwiseBuilder
                     // [Defaults]/PageLayout (using first page)
                     PageLayout pageLayout = factory.createPageLayout();
                     defaults.setPageLayout(pageLayout);
-                    pageLayout.setPageHeight(toTenths(firstPage.getDimension().height));
-                    pageLayout.setPageWidth(toTenths(firstPage.getDimension().width));
+                    pageLayout.setPageHeight(
+                            toTenths(firstPage.getSheet().getHeight()) //
+                                    .add(pageVerticalMargin).add(pageVerticalMargin));
+                    pageLayout.setPageWidth(
+                            toTenths(firstPage.getSheet().getWidth()) //
+                                    .add(pageHorizontalMargin).add(pageVerticalMargin));
 
                     PageMargins pageMargins = factory.createPageMargins();
                     pageMargins.setType(MarginType.BOTH);
@@ -2818,14 +2829,9 @@ public class PartwiseBuilder
                 scorePartwise.setDefaults(defaults);
             }
 
-            {
-                // Score source
-                source = new Source();
-
-                final Book book = score.getBook();
-                source.setFile(book.getSomeInputPath().toAbsolutePath().toString());
-                source.encodeScore(scorePartwise);
-            }
+            // Score source
+            source.setFile(book.getSomeInputPath().toAbsolutePath().toString());
+            source.encodeScore(scorePartwise);
 
             // PartList & sequence of parts
             if (score.getLogicalParts() != null) {
@@ -2930,11 +2936,12 @@ public class PartwiseBuilder
             // Font information
             setFontInfo(creditWords, sentence);
 
-            // Position is wrt page
+            // Position is relative to sheet (with margins!)
             Point2D pt = sentence.getLocation();
-            creditWords.setDefaultX(toTenths(pt.getX()));
-            creditWords.setDefaultY(toTenths(current.page.getDimension().height - pt.getY()));
-
+            creditWords.setDefaultX(toTenths(pt.getX()).add(pageHorizontalMargin));
+            creditWords.setDefaultY(
+                    toTenths(current.page.getSheet().getHeight() - pt.getY())//
+                            .add(pageVerticalMargin));
             final JAXBElement jeCreditWords = factory.createCreditCreditWords(creditWords);
             pmCredit.getCreditTypeOrLinkOrBookmark().add(jeCreditWords);
             scorePartwise.getCredit().add(pmCredit);
@@ -3732,18 +3739,15 @@ public class PartwiseBuilder
                 // SystemMargins
                 SystemMargins systemMargins = factory.createSystemMargins();
                 systemLayout.setSystemMargins(systemMargins);
-                systemMargins.setLeftMargin(
-                        toTenths(current.system.getLeft()).subtract(pageHorizontalMargin));
+                systemMargins.setLeftMargin(toTenths(current.system.getLeft()));
                 systemMargins.setRightMargin(
                         toTenths(
-                                current.page.getDimension().width - current.system.getLeft()
-                                        - current.system.getWidth()).subtract(
-                                                pageHorizontalMargin));
+                                current.page.getSheet().getWidth() - current.system.getLeft()
+                                        - current.system.getWidth()));
 
                 if (isFirst.system) {
                     // TopSystemDistance
-                    systemLayout.setTopSystemDistance(
-                            toTenths(current.system.getTop()).subtract(pageVerticalMargin));
+                    systemLayout.setTopSystemDistance(toTenths(current.system.getTop()));
                 } else {
                     // SystemDistance
                     SystemInfo prevSystem = current.system.getPrecedingInPage();

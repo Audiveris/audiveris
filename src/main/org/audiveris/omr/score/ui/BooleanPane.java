@@ -34,10 +34,11 @@ import javax.swing.JCheckBox;
 /**
  * A data pane for just one boolean.
  *
+ * @param <T> specific category
  * @author Hervé Bitteur
  */
-public class BooleanPane
-        extends XactDataPane<Boolean>
+public class BooleanPane<T extends Enum<T>>
+        extends XactPane<T, Boolean>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -46,29 +47,33 @@ public class BooleanPane
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Boolean box. */
-    protected final JCheckBox bbox = new JCheckBox();
+    protected final JCheckBox boolBox = new JCheckBox();
 
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new <code>BooleanPane</code> object.
      *
+     * @param tag    unique in scope
      * @param title  pane title string
      * @param parent parent pane if any
      * @param tip    data description
      * @param model  underlying data model (cannot be null)
      */
-    public BooleanPane (String title,
-                        XactDataPane<Boolean> parent,
+    public BooleanPane (T tag,
+                        String title,
+                        BooleanPane<T> parent,
                         String tip,
                         Param<Boolean> model)
     {
-        super(title, parent, model);
+        super(tag, title, parent, model);
 
         if ((tip != null) && !tip.isBlank()) {
-            bbox.setToolTipText(tip);
+            boolBox.setToolTipText(tip);
             this.title.setToolTipText(tip);
         }
+
+        boolBox.addActionListener(this);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -80,7 +85,7 @@ public class BooleanPane
                              int r)
     {
         super.defineLayout(builder, cst, titleWidth, r); // No advance
-        builder.add(bbox, cst.xyw(7, r, 1));
+        builder.add(boolBox, cst.xyw(9, r, 1));
 
         return r + 2;
     }
@@ -89,20 +94,27 @@ public class BooleanPane
     protected void display (Boolean content)
     {
         if (content != null) {
-            bbox.setSelected(content);
+            boolBox.setSelected(content);
         }
     }
 
     @Override
     protected Boolean read ()
     {
-        return bbox.isSelected();
+        return boolBox.isSelected();
     }
 
     @Override
     public void setEnabled (boolean bool)
     {
-        bbox.setEnabled(bool);
-        title.setEnabled(bool);
+        super.setEnabled(bool);
+        boolBox.setEnabled(bool);
+    }
+
+    @Override
+    public void setVisible (boolean bool)
+    {
+        super.setVisible(bool);
+        boolBox.setVisible(bool);
     }
 }

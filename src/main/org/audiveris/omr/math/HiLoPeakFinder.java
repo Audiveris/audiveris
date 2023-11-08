@@ -253,7 +253,7 @@ public class HiLoPeakFinder
                 for (int i = 0; i < peaks.size(); i++) {
                     Range peak = peaks.get(i);
 
-                    if (function.getValue(peak.main) < quorum.minTop) {
+                    if (function.getValue(peak.main) < quorum.yMin) {
                         peaks.retainAll(peaks.subList(0, i));
                     }
                 }
@@ -463,13 +463,13 @@ public class HiLoPeakFinder
                 x1 = quorum.xMin;
             }
 
-            valueSeries.add(x1, quorum.minTop);
+            valueSeries.add(x1, quorum.yMin);
 
             if (quorum.xMax != null) {
                 x2 = quorum.xMax;
             }
 
-            valueSeries.add(x2, quorum.minTop);
+            valueSeries.add(x2, quorum.yMin);
         }
 
         return valueSeries;
@@ -533,6 +533,9 @@ public class HiLoPeakFinder
         return plotter;
     }
 
+    //--------//
+    // replay //
+    //--------//
     private TreeMap<Integer, Double> replay (Range peak)
     {
         TreeMap<Integer, Double> thresholds = new TreeMap<>();
@@ -693,7 +696,7 @@ public class HiLoPeakFinder
         /**
          * Quorum minimum value.
          */
-        public final int minTop;
+        public final int yMin;
 
         /**
          * Range start if any.
@@ -708,25 +711,25 @@ public class HiLoPeakFinder
         /**
          * Create a Quorum object.
          *
-         * @param minTop the minimum count
+         * @param yMin the minimum Y value
          */
-        public Quorum (int minTop)
+        public Quorum (int yMin)
         {
-            this(minTop, null, null);
+            this(yMin, null, null);
         }
 
         /**
          * Create a Quorum object, with specified range.
          *
-         * @param minTop the minimum count
-         * @param xMin   range starting x value
-         * @param xMax   range stopping x value
+         * @param yMin the minimum Y value
+         * @param xMin range starting x value
+         * @param xMax range stopping x value
          */
-        public Quorum (int minTop,
+        public Quorum (int yMin,
                        Integer xMin,
                        Integer xMax)
         {
-            this.minTop = minTop;
+            this.yMin = yMin;
             this.xMin = xMin;
             this.xMax = xMax;
         }

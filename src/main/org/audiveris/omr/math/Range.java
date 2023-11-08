@@ -64,6 +64,8 @@ public class Range
     @XmlAttribute(name = "max")
     public final int max;
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     /** No-arg constructor meant for JAXB. */
     private Range ()
     {
@@ -71,8 +73,6 @@ public class Range
         this.main = 0;
         this.max = 0;
     }
-
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new <code>Range</code> object.

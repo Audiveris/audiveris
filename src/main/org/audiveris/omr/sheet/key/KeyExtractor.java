@@ -264,13 +264,15 @@ public class KeyExtractor
                             int coreLength,
                             double minBlackRatio)
     {
+        final Rectangle safeArea = sheet.clamp(area);
+
         // Process all rows
-        final boolean[] blacks = new boolean[area.height];
+        final boolean[] blacks = new boolean[safeArea.height];
         Arrays.fill(blacks, false);
 
-        for (int y = 0; y < area.height; y++) {
-            for (int x = 0; x < area.width; x++) {
-                if (staffFreeSource.get(area.x + x, area.y + y) == 0) { // TODO: Check buf limits?
+        for (int y = 0; y < safeArea.height; y++) {
+            for (int x = 0; x < safeArea.width; x++) {
+                if (staffFreeSource.get(safeArea.x + x, safeArea.y + y) == 0) {
                     blacks[y] = true;
 
                     break;
@@ -293,7 +295,7 @@ public class KeyExtractor
         }
 
         // Move the window downward
-        for (int y = 1, yMax = area.height - coreLength; y <= yMax; y++) {
+        for (int y = 1, yMax = safeArea.height - coreLength; y <= yMax; y++) {
             if (blacks[y - 1]) {
                 count--;
             }

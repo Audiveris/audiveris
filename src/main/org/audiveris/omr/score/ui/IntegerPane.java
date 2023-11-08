@@ -30,10 +30,11 @@ import com.jgoodies.forms.layout.CellConstraints;
 /**
  * A data pane with just one integer.
  *
+ * @param <T> specific category
  * @author Hervé Bitteur
  */
-public class IntegerPane
-        extends XactDataPane<Integer>
+public class IntegerPane<T extends Enum<T>>
+        extends XactPane<T, Integer>
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -45,19 +46,21 @@ public class IntegerPane
     /**
      * Creates a new <code>IntegerPane</code> object.
      *
+     * @param tag    unique in scope
      * @param title  pane title string
      * @param parent parent pane if any
      * @param text   data text
      * @param tip    data description
      * @param model  underlying data model (cannot be null)
      */
-    public IntegerPane (String title,
-                        XactDataPane<Integer> parent,
+    public IntegerPane (T tag,
+                        String title,
+                        IntegerPane<T> parent,
                         String text,
                         String tip,
                         Param<Integer> model)
     {
-        super(title, parent, model);
+        super(tag, title, parent, model);
         data = new LIntegerField(true, text, tip);
     }
 
@@ -70,8 +73,8 @@ public class IntegerPane
                              int r)
     {
         super.defineLayout(builder, cst, titleWidth, r);
-        builder.add(data.getLabel(), cst.xyw(3, r, 1));
-        builder.add(data.getField(), cst.xyw(titleWidth + 4, r, 1));
+        builder.add(data.getLabel(), cst.xyw(5, r, 1));
+        builder.add(data.getField(), cst.xyw(titleWidth + 6, r, 1));
 
         return r + 2;
     }
@@ -95,6 +98,7 @@ public class IntegerPane
     @Override
     public void setEnabled (boolean bool)
     {
+        super.setEnabled(bool);
         data.setEnabled(bool);
     }
 }

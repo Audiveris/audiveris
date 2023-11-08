@@ -599,6 +599,7 @@ public class MusicFont
                 return (int) Math.rint(smallRatio * musicFontScale.getPointSize());
             } else {
                 // Precise large information
+                logger.debug("MusicFont. Using {}", musicFontScale);
                 return musicFontScale.getPointSize();
             }
         } else {

@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      S t r i n g P a r a m                                     //
+//                                        X a c t T o p i c                                       //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -19,53 +19,31 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.util.param;
+package org.audiveris.omr.score.ui;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import java.util.ArrayList;
 
 /**
- * Class <code>StringParam</code> is a param for string.
+ * Class <code>XactTopic</code> gathers several XactPane instances under a main topic.
  *
  * @author Hervé Bitteur
  */
-public class StringParam
-        extends Param<String>
+public class XactTopic
+        extends ArrayList<XactPane>
 {
+    //~ Instance fields ----------------------------------------------------------------------------
+
+    public final String name;
+
     //~ Constructors -------------------------------------------------------------------------------
 
-    public StringParam (Object scope)
-    {
-        super(scope);
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-
     /**
-     * JAXB adapter for StringParam type.
+     * Creates a new <code>XactTopic</code> object.
+     *
+     * @param name the topic name
      */
-    public static class JaxbAdapter
-            extends XmlAdapter<String, StringParam>
+    public XactTopic (String name)
     {
-
-        @Override
-        public String marshal (StringParam param)
-            throws Exception
-        {
-            if (param == null) {
-                return null;
-            }
-
-            return param.getSpecific();
-        }
-
-        @Override
-        public StringParam unmarshal (String str)
-            throws Exception
-        {
-            StringParam sp = new StringParam(null);
-            sp.setSpecific(str);
-
-            return sp;
-        }
+        this.name = name;
     }
 }

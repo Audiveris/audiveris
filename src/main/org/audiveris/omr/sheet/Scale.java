@@ -150,6 +150,10 @@ public class Scale
 
     private static final Logger logger = LoggerFactory.getLogger(Scale.class);
 
+    public static final Param<Integer> defaultInterlineSpecification = new ConstantBasedParam<>(
+            constants.defaultInterlineSpecification,
+            Param.GLOBAL_SCOPE);
+
     public static final Param<Integer> defaultBeamSpecification = new ConstantBasedParam<>(
             constants.defaultBeamSpecification,
             Param.GLOBAL_SCOPE);
@@ -845,7 +849,7 @@ public class Scale
 
         if (info == Info.COMBO || info == Info.ALL) {
             if (smallInterlineScale != null) {
-                sb.append(" small").append(smallInterlineScale);
+                sb.append(" small_").append(smallInterlineScale);
             }
 
             if (interlineScale != null) {
@@ -859,7 +863,7 @@ public class Scale
             }
 
             if (smallBeamScale != null) {
-                sb.append(" small").append(smallBeamScale);
+                sb.append(" small_").append(smallBeamScale);
             }
 
             if (beamScale != null) {
@@ -1121,6 +1125,11 @@ public class Scale
     private static class Constants
             extends ConstantSet
     {
+        private final Constant.Integer defaultInterlineSpecification = new Constant.Integer(
+                "pixels",
+                0,
+                "Default specification of interline (0 means no specification)");
+
         private final Constant.Integer defaultBeamSpecification = new Constant.Integer(
                 "pixels",
                 0,
@@ -1314,8 +1323,9 @@ public class Scale
         }
     }
 
-    //~ Enumerations -------------------------------------------------------------------------------
-
+    //------//
+    // Item //
+    //------//
     /**
      * Scale information kind.
      */

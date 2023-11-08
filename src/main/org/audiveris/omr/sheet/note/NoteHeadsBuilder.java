@@ -146,6 +146,13 @@ public class NoteHeadsBuilder
             Shape.TREMOLO_3,
             Shape.VERTICAL_SERIF);
 
+    /** Shapes handled by template matching. */
+    private static final Set<Shape> MATCHED_SHAPES = EnumSet.noneOf(Shape.class);
+    static {
+        MATCHED_SHAPES.addAll(ShapeSet.HeadsOval);
+        MATCHED_SHAPES.addAll(ShapeSet.QuarterHeads);
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The dedicated system. */
@@ -324,7 +331,7 @@ public class NoteHeadsBuilder
     public void buildHeads ()
     {
         final MusicFamily family = sheet.getStub().getMusicFamily();
-        StopWatch watch = new StopWatch("buildHeads S#" + system.getId());
+        final StopWatch watch = new StopWatch("buildHeads S#" + system.getId());
         systemBarAreas = getSystemBarAreas();
         systemCompetitors = getSystemCompetitors(); // Competitors
         systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED); // Vertical seeds
@@ -339,7 +346,7 @@ public class NoteHeadsBuilder
 
             logger.debug("Staff #{}", staff.getId());
 
-            // Determine the proper catalog, based on staff size
+            // Determine the proper catalog, based on staff scale
             watch.start("Staff #" + staff.getId() + " catalog");
             final int pointSize = staff.getHeadPointSize();
             catalog = TemplateFactory.getInstance().getCatalog(family, pointSize);
@@ -350,11 +357,11 @@ public class NoteHeadsBuilder
             watch.start("Staff #" + staff.getId() + " seed");
             ch.addAll(processStaff(staff, true));
 
-            // Consider seed-based heads as special competitors for x-based notes
+            // Consider seed-based heads as special competitors for abscissa-based notes
             systemCompetitors.addAll(ch);
             Collections.sort(systemCompetitors, Inters.byOrdinate);
 
-            // Second, process x-based notes for the staff
+            // Second, process abscissa-based notes for the staff
             watch.start("Staff #" + staff.getId() + " range");
             ch.addAll(processStaff(staff, false));
 
@@ -622,6 +629,8 @@ public class NoteHeadsBuilder
     /**
      * Report the sequence of adapters for all ledgers found
      * immediately further from staff from the provided pitch.
+     * <p>
+     * NOTA: This method is used for 5-line staves, not for 1-line staves.
      *
      * @param staff staff at hand
      * @param pitch pitch of current location (assumed to be odd)
@@ -819,9 +828,10 @@ public class NoteHeadsBuilder
         final List<HeadInter> ch = new ArrayList<>(); // Created heads
 
         // Use all staff lines
-        final int lineNb = staff.getLineCount();
-        final int minPitch = (lineNb == 1) ? 0 : -5;
-        final int maxPitch = (lineNb == 1) ? 0 : 5;
+        final int lineCount = staff.getLineCount();
+        final int minPitch = -lineCount;
+        final int maxPitch = +lineCount;
+
         int pitch = minPitch; // Current pitch
         LineAdapter prevAdapter = null;
 
@@ -829,22 +839,20 @@ public class NoteHeadsBuilder
             LineAdapter adapter = new StaffLineAdapter(staff, line);
 
             // Look above line?
-            if (lineNb > 1) {
-                ch.addAll(new Scanner(adapter, prevAdapter, -1, pitch++, useSeeds).lookup());
-            }
+            ch.addAll(new Scanner(adapter, prevAdapter, -1, pitch++, useSeeds).lookup());
 
             // Look exactly on line
             ch.addAll(new Scanner(adapter, null, 0, pitch++, useSeeds).lookup());
 
             // For the last line only, look just below line
-            if ((lineNb > 1) && pitch == maxPitch) {
+            if (pitch == maxPitch) {
                 ch.addAll(new Scanner(adapter, null, 1, pitch++, useSeeds).lookup());
             }
 
             prevAdapter = adapter;
         }
 
-        if (lineNb == 1) {
+        if (lineCount == 1) {
             // No ledger on a 1-line staff!
             return ch;
         }
@@ -1435,8 +1443,11 @@ public class NoteHeadsBuilder
         }
     }
 
+    //------//
+    // Perf //
+    //------//
     /**
-     * DEBUG: meant to precisely measure behavior of heads retrieval.
+     * DEBUG: this class is meant to precisely measure behavior of heads retrieval.
      */
     private static class Perf
     {
@@ -1527,11 +1538,13 @@ public class NoteHeadsBuilder
             this.pitch = pitch;
             this.useSeeds = useSeeds;
 
+            final Staff staff = line.getStaff();
+
             // Open line (in staff space) or closed line (on staff line/ledger)?
-            isOpen = ((pitch % 2) != 0) && ((line2 == null) || (Math.abs(pitch) == 5));
+            isOpen = ((pitch % 2) != 0) //
+                    && ((line2 == null) || (Math.abs(pitch) == staff.getLineCount()));
             yOffsets = computeYOffsets();
 
-            final Staff staff = line.getStaff();
             interline = staff.getSpecificInterline();
             ledgers = getLedgerAdapters(staff, pitch);
 
@@ -1615,13 +1628,20 @@ public class NoteHeadsBuilder
         //----------------//
         // buildShapeList //
         //----------------//
+        /**
+         * Build the set of possible shapes for the staff and pitch at hand.
+         *
+         * @return the set of shapes to try
+         */
         private EnumSet<Shape> buildShapeList ()
         {
             final Staff staff = line.getStaff();
+
             if (!staff.isDrum()) {
                 return sheetTemplateNotesAll;
             }
 
+            // Here below, we are dealing with a drum staff
             final EnumSet<Shape> allShapes = EnumSet.noneOf(Shape.class);
             final DrumSet drumSet = DrumSet.getInstance();
             final int lineCount = staff.getLineCount();
@@ -1645,6 +1665,9 @@ public class NoteHeadsBuilder
                         allShapes.addAll(shapes);
                     }
                 }
+
+                // Here we limit template matching to realistic shapes
+                allShapes.retainAll(MATCHED_SHAPES);
             }
 
             return allShapes;
@@ -1848,14 +1871,18 @@ public class NoteHeadsBuilder
         //------------------------//
         /**
          * Determine the theoretical ordinate.
+         * <p>
+         * Method used for both 1-line staves and 5-line staves.
          *
          * @param x current abscissa value
          * @return the most probable ordinate value
          */
         private int getTheoreticalOrdinate (int x)
         {
+            final int lineCount = line.getStaff().getLineCount();
+
             // Determine lines config according to ledgers if outside staff
-            final boolean isOutside = Math.abs(pitch) > 4;
+            final boolean isOutside = Math.abs(pitch) >= lineCount;
 
             if (isOutside) {
                 if ((pitch % 2) == 0) {
@@ -1863,7 +1890,7 @@ public class NoteHeadsBuilder
                 } else {
                     // Both are present only if a further ledger exists in abscissa
                     //TODO: refine using width of template?
-                    if (Math.abs(pitch) > 5) {
+                    if (Math.abs(pitch) > lineCount) {
                         for (LedgerAdapter ledger : ledgers) {
                             if ((x >= ledger.getLeftAbscissa()) && (x <= ledger
                                     .getRightAbscissa())) {
@@ -1954,7 +1981,7 @@ public class NoteHeadsBuilder
             }
 
             // Use the head spots to limit the abscissae to be checked for all heads
-            boolean[] blackRelevants = getRelevantBlackAbscissae(scanLeft, scanRight);
+            final boolean[] blackRelevants = getRelevantBlackAbscissae(scanLeft, scanRight);
 
             // Scan from left to right
             for (int x0 = scanLeft; x0 <= scanRight; x0++) {
@@ -2095,7 +2122,7 @@ public class NoteHeadsBuilder
 
                             for (int xOffset : xOffsets) {
                                 final int x = x0 + xOffset;
-                                PixelDistance loc = eval(shape, x, y, anchor);
+                                final PixelDistance loc = eval(shape, x, y, anchor);
 
                                 if ((loc != null) && (loc.d <= params.maxDistanceLow)) {
                                     if ((bestLoc == null) || (bestLoc.d > loc.d)) {

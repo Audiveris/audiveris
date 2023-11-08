@@ -36,7 +36,9 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import static org.audiveris.omr.sheet.ProcessingSwitch.smallBeams;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -232,9 +234,13 @@ public class SpotsBuilder
 
         List<Glyph> glyphs = GlyphFactory.buildGlyphs(spotTable, offset);
 
-        // Head sizing
-        watch.start("computeHeadSizing");
-        new BlackHeadSizer(sheet).process(glyphs);
+        // Head sizing (cannot be used if the sheet contains any drum notation)
+        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+        if (!switches.getValue(ProcessingSwitch.oneLineStaves) //
+                && !switches.getValue(ProcessingSwitch.drumNotation)) {
+            watch.start("computeHeadSizing");
+            new BlackHeadSizer(sheet).process(glyphs);
+        }
 
         if (constants.printWatch.isSet()) {
             watch.print();

@@ -177,8 +177,8 @@ public class MeasuresStep
             final int margin = scale.toPixels(StaffBarlineInter.getMaxStaffBarlineShift());
             final MeasureStack stack = system.getStackAt(centerRight, margin);
 
-            if ((!isAddition && (opKind != UITask.OpKind.UNDO)) || (isAddition
-                    && (opKind == UITask.OpKind.UNDO))) {
+            if ((!isAddition && (opKind != UITask.OpKind.UNDO)) //
+                    || (isAddition && (opKind == UITask.OpKind.UNDO))) {
                 if (stack == null) {
                     // Safeguard on removal
                     if (opKind != UITask.OpKind.UNDO) {

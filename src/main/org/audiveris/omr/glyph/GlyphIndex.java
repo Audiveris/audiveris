@@ -447,6 +447,10 @@ public class GlyphIndex
     @Override
     public void setEntities (Collection<Glyph> glyphs)
     {
+        if (glyphs == null) {
+            return;
+        }
+
         for (Glyph glyph : glyphs) {
             WeakGlyph weak = new WeakGlyph(glyph);
             weakIndex.insert(weak);

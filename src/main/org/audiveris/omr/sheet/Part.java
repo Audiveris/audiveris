@@ -1096,13 +1096,16 @@ public class Part
      */
     public boolean isDrumPart ()
     {
-        Measure firstMeasure = getFirstMeasure();
+        final Measure firstMeasure = getFirstMeasure();
+
         if (firstMeasure != null) {
-            ClefInter staffClef = firstMeasure.getFirstMeasureClef(0);
+            final ClefInter staffClef = firstMeasure.getFirstMeasureClef(0);
+
             if (staffClef != null) {
                 return staffClef.getShape() == Shape.PERCUSSION_CLEF;
             }
         }
+
         return false;
     }
 

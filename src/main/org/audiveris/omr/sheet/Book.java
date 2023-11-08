@@ -40,6 +40,7 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
+import org.audiveris.omr.sheet.BarlineHeight.BarlineHeightParam;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.SheetStub.SheetInput;
 import org.audiveris.omr.sheet.Versions.CheckResult;
@@ -221,11 +222,29 @@ public class Book
     private volatile InputQualityParam inputQuality;
 
     /**
-     * Specification of beam thickness for this whole book.
+     * Specification of interline in this whole book.
      * <p>
      * It can still be overridden at sheet level.
      */
-    @XmlElement(name = "beam-specification")
+    @XmlElement(name = "interline-specification")
+    @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
+    private volatile IntegerParam interlineSpecification;
+
+    /**
+     * Specification of barline height for 1-line staves in this whole book.
+     * <p>
+     * It can still be overridden at sheet level.
+     */
+    @XmlElement(name = "barline-height-specification")
+    @XmlJavaTypeAdapter(BarlineHeight.JaxbAdapter.class)
+    private volatile BarlineHeight.BarlineHeightParam barlineSpecification;
+
+    /**
+     * Specification of beam thickness in this whole book.
+     * <p>
+     * It can still be overridden at sheet level.
+     */
+    @XmlElement(name = "beam-thickness-specification")
     @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
     private volatile IntegerParam beamSpecification;
 
@@ -330,6 +349,9 @@ public class Book
     /** Active parameter dialog, if any. */
     private JDialog parameterDialog;
 
+    /** A trick to keep params intact, even when temporary nullified at marshal time. */
+    private Params params = new Params();
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
@@ -412,6 +434,23 @@ public class Book
         }
     }
 
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
+    {
+        binarizationFilter = params.binarizationFilter;
+        musicFamily = params.musicFamily;
+        textFamily = params.textFamily;
+        inputQuality = params.inputQuality;
+        interlineSpecification = params.interlineSpecification;
+        barlineSpecification = params.barlineSpecification;
+        beamSpecification = params.beamSpecification;
+        ocrLanguages = params.ocrLanguages;
+        switches = params.switches;
+    }
+
     //---------------//
     // beforeMarshal //
     //---------------//
@@ -434,12 +473,26 @@ public class Book
             inputQuality = null;
         }
 
-        if ((beamSpecification != null) && !beamSpecification.isSpecific()) {
-            beamSpecification = null;
-        }
-
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
             ocrLanguages = null;
+        }
+
+        // A O value means no specific value
+        if ((interlineSpecification != null) //
+                && ((interlineSpecification.getSpecific() == null) //
+                        || (interlineSpecification.getSpecific() == 0))) {
+            interlineSpecification = null;
+        }
+
+        if ((barlineSpecification != null) && !barlineSpecification.isSpecific()) {
+            barlineSpecification = null;
+        }
+
+        // A O value means no specific value
+        if ((beamSpecification != null) //
+                && ((beamSpecification.getSpecific() == null) //
+                        || (beamSpecification.getSpecific() == 0))) {
+            beamSpecification = null;
         }
 
         if ((switches != null) && switches.isEmpty()) {
@@ -696,6 +749,23 @@ public class Book
         return alias;
     }
 
+    //-----------------------//
+    // getBarlineHeightParam //
+    //-----------------------//
+    /**
+     * Report the barline height defined at book level.
+     *
+     * @return the barline height parameter
+     */
+    public BarlineHeightParam getBarlineHeightParam ()
+    {
+        if (barlineSpecification == null) {
+            barlineSpecification = params.barlineSpecification;
+        }
+
+        return barlineSpecification;
+    }
+
     //----------------------//
     // getBeamSpecification //
     //----------------------//
@@ -710,8 +780,9 @@ public class Book
     public IntegerParam getBeamSpecificationParam ()
     {
         if (beamSpecification == null) {
-            beamSpecification = new IntegerParam(this);
-            beamSpecification.setParent(Scale.defaultBeamSpecification);
+            //            beamSpecification = new IntegerParam(this);
+            //            beamSpecification.setParent(Scale.defaultBeamSpecification);
+            beamSpecification = params.beamSpecification;
         }
 
         return beamSpecification;
@@ -728,8 +799,7 @@ public class Book
     public FilterParam getBinarizationFilterParam ()
     {
         if (binarizationFilter == null) {
-            binarizationFilter = new FilterParam(this);
-            binarizationFilter.setParent(FilterDescriptor.defaultFilter);
+            binarizationFilter = params.binarizationFilter;
         }
 
         return binarizationFilter;
@@ -838,11 +908,32 @@ public class Book
     public InputQualityParam getInputQualityParam ()
     {
         if (inputQuality == null) {
-            inputQuality = new InputQualityParam(this);
-            inputQuality.setParent(Profiles.defaultQualityParam);
+            inputQuality = params.inputQuality;
         }
 
         return inputQuality;
+    }
+
+    //---------------------------//
+    // getInterlineSpecification //
+    //---------------------------//
+    public Integer getInterlineSpecification ()
+    {
+        return getInterlineSpecificationParam().getValue();
+    }
+
+    //--------------------------------//
+    // getInterlineSpecificationParam //
+    //--------------------------------//
+    public IntegerParam getInterlineSpecificationParam ()
+    {
+        if (interlineSpecification == null) {
+            //            interlineSpecification = new IntegerParam(this);
+            //            interlineSpecification.setParent(Scale.defaultInterlineSpecification);
+            interlineSpecification = params.interlineSpecification;
+        }
+
+        return interlineSpecification;
     }
 
     //--------------//
@@ -897,16 +988,15 @@ public class Book
     public MusicFamily.MyParam getMusicFamilyParam ()
     {
         if (musicFamily == null) {
-            musicFamily = new MusicFamily.MyParam(this);
-            musicFamily.setParent(MusicFont.defaultMusicParam);
+            musicFamily = params.musicFamily;
         }
 
         return musicFamily;
     }
 
-    //-----------------//
+    //----------------------//
     // getOcrLanguagesParam //
-    //-----------------//
+    //----------------------//
     /**
      * Report the OCR language(s) specification defined at book level, if any.
      *
@@ -915,8 +1005,7 @@ public class Book
     public Param<String> getOcrLanguages ()
     {
         if (ocrLanguages == null) {
-            ocrLanguages = new StringParam(this);
-            ocrLanguages.setParent(Language.ocrDefaultLanguages);
+            ocrLanguages = params.ocrLanguages;
         }
 
         return ocrLanguages;
@@ -1035,7 +1124,7 @@ public class Book
     public ProcessingSwitches getProcessingSwitches ()
     {
         if (switches == null) {
-            switches = new ProcessingSwitches(ProcessingSwitches.getDefaultSwitches(), this);
+            switches = params.switches;
         }
 
         return switches;
@@ -1431,8 +1520,7 @@ public class Book
     public TextFamily.MyParam getTextFamilyParam ()
     {
         if (textFamily == null) {
-            textFamily = new TextFamily.MyParam(this);
-            textFamily.setParent(TextFont.defaultTextParam);
+            textFamily = params.textFamily;
         }
 
         return textFamily;
@@ -1574,14 +1662,24 @@ public class Book
             inputQuality.setScope(this);
         }
 
-        if (beamSpecification != null) {
-            // [No parent for book beamThickness]
-            beamSpecification.setScope(this);
-        }
-
         if (ocrLanguages != null) {
             ocrLanguages.setParent(Language.ocrDefaultLanguages);
             ocrLanguages.setScope(this);
+        }
+
+        if (interlineSpecification != null) {
+            // [No default value for interline]
+            interlineSpecification.setScope(this);
+        }
+
+        if (barlineSpecification != null) {
+            barlineSpecification.setParent(BarlineHeight.defaultParam);
+            barlineSpecification.setScope(this);
+        }
+
+        if (beamSpecification != null) {
+            // [No default value for beamThickness]
+            beamSpecification.setScope(this);
         }
 
         if (switches != null) {
@@ -3046,5 +3144,59 @@ public class Book
         private final Constant.Boolean batchUpgradeBooks = new Constant.Boolean(
                 false,
                 "In batch, should we automatically upgrade all book sheets?");
+    }
+
+    //--------//
+    // Params //
+    //--------//
+    /** A keeper structure for all params. */
+    private class Params
+    {
+        FilterParam binarizationFilter;
+
+        MusicFamily.MyParam musicFamily;
+
+        TextFamily.MyParam textFamily;
+
+        InputQualityParam inputQuality;
+
+        IntegerParam interlineSpecification;
+
+        BarlineHeight.BarlineHeightParam barlineSpecification;
+
+        IntegerParam beamSpecification;
+
+        StringParam ocrLanguages;
+
+        ProcessingSwitches switches;
+
+        Params ()
+        {
+            binarizationFilter = new FilterParam(Book.this);
+            binarizationFilter.setParent(FilterDescriptor.defaultFilter);
+
+            musicFamily = new MusicFamily.MyParam(Book.this);
+            musicFamily.setParent(MusicFont.defaultMusicParam);
+
+            textFamily = new TextFamily.MyParam(Book.this);
+            textFamily.setParent(TextFont.defaultTextParam);
+
+            inputQuality = new InputQualityParam(Book.this);
+            inputQuality.setParent(Profiles.defaultQualityParam);
+
+            interlineSpecification = new IntegerParam(Book.this);
+            interlineSpecification.setParent(Scale.defaultInterlineSpecification);
+
+            barlineSpecification = new BarlineHeightParam(Book.this);
+            barlineSpecification.setParent(BarlineHeight.defaultParam);
+
+            beamSpecification = new IntegerParam(Book.this);
+            beamSpecification.setParent(Scale.defaultBeamSpecification);
+
+            ocrLanguages = new StringParam(Book.this);
+            ocrLanguages.setParent(Language.ocrDefaultLanguages);
+
+            switches = new ProcessingSwitches(ProcessingSwitches.getDefaultSwitches(), Book.this);
+        }
     }
 }

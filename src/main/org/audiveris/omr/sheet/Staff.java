@@ -1525,12 +1525,16 @@ public class Staff
     // isDrum //
     //--------//
     /**
-     * Report whether this staff is a 5-line unpitched staff.
+     * Report whether this staff is a 5-line or 1-line unpitched staff.
      *
      * @return true if so
      */
     public boolean isDrum ()
     {
+        if (getLineCount() == 1) {
+            return true;
+        }
+
         if (header != null && header.clef != null) {
             return header.clef.getShape() == PERCUSSION_CLEF;
         }

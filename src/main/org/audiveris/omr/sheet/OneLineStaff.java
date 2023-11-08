@@ -77,7 +77,7 @@ public class OneLineStaff
     // getFirstLine //
     //--------------//
     /**
-     * Report the virtual line at top of OneLineStaff.
+     * Report the <b>virtual</b> line at top of OneLineStaff.
      *
      * @return the (virtual) first line
      */
@@ -91,7 +91,7 @@ public class OneLineStaff
     // getLastLine //
     //-------------//
     /**
-     * Report the virtual line at bottom of OneLineStaff.
+     * Report the <b>virtual</b> line at bottom of OneLineStaff.
      *
      * @return the (virtual) last line
      */
@@ -101,6 +101,9 @@ public class OneLineStaff
         return lines.get(0).yTranslated(2 * getSpecificInterline());
     }
 
+    //----------------//
+    // isOneLineStaff //
+    //----------------//
     @Override
     public boolean isOneLineStaff ()
     {

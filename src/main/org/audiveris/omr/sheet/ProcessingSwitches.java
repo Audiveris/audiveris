@@ -197,6 +197,10 @@ public class ProcessingSwitches
                 false,
                 "4-line bass tablatures");
 
+        final Constant.Boolean fiveLineStaves = new Constant.Boolean(
+                true,
+                "5-line standard staves");
+
         final Constant.Boolean drumNotation = new Constant.Boolean(
                 false,
                 "5-line unpitched percussion staves");

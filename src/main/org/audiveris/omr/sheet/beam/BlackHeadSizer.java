@@ -52,7 +52,14 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class <code>BlackHeadSizer</code>
+ * Class <code>BlackHeadSizer</code> go through all spots detected during the BEAMS step,
+ * to infer proper sizing for oval black heads.
+ * <p>
+ * It retrieves the population of all spots compatible with a single black head, then measure the
+ * typical width of these spots and infer the typical point size for musical font.
+ * <p>
+ * NOTA: This approach works only for sheets composed of oval heads.
+ * It cannot be used on sheets containing some drum notation.
  *
  * @author Hervé Bitteur
  */
@@ -213,7 +220,8 @@ public class BlackHeadSizer
                 "Spots black-head retrieval diameter: {}",
                 String.format("%.1f", params.diameter));
 
-        final int[] seOffset = {0, 0};
+        final int[] seOffset =
+        { 0, 0 };
         final StructureElement se = new StructureElement(0, 1, radius, seOffset);
         final MorphoProcessor mp = new MorphoProcessor(se);
 

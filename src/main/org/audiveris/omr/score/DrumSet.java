@@ -588,6 +588,15 @@ public class DrumSet
             hash = 13 * hash + Objects.hashCode(this.sign);
             return hash;
         }
+
+        @Override
+        public String toString ()
+        {
+            return new StringBuilder() //
+                    .append("motif:").append(motif)//
+                    .append(" sign:").append(sign)//
+                    .toString();
+        }
     }
 
     //--------------//
