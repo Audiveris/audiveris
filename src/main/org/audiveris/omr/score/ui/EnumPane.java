@@ -64,13 +64,13 @@ public class EnumPane<T extends Enum<T>, E extends Enum<E>>
      * @param model       underlying data model (cannot be null)
      * @param resources   UI resources
      */
+    @SuppressWarnings("unchecked")
     public EnumPane (T tag,
                      E[] values,
                      ScopedPanel<T> parentPanel,
                      Param<E> model,
                      ResourceMap resources)
     {
-        ///@SuppressWarnings("unchecked")
         super(
                 tag,
                 resources.getString(tag + "Pane.title"),

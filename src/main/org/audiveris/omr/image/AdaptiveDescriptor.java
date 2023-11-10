@@ -85,14 +85,14 @@ public class AdaptiveDescriptor
     @XmlAttribute(name = "std-dev-coeff")
     public final double stdDevCoeff;
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     /** No-arg constructor meant for JAXB. */
     private AdaptiveDescriptor ()
     {
         meanCoeff = 0;
         stdDevCoeff = 0;
     }
-
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new AdaptiveDescriptor object.

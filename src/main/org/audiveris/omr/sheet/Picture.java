@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.image.AdaptiveDescriptor;
 import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.GaussianGrayFilter;
 import org.audiveris.omr.image.ImageFormatException;
@@ -215,7 +216,7 @@ public class Picture
     //-----------//
     private ByteProcessor binarized (ByteProcessor src)
     {
-        FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
+        FilterDescriptor desc = AdaptiveDescriptor.getDefault();
         logger.info("{} {}", "Binarization", desc);
 
         PixelFilter filter = desc.getFilter(src);

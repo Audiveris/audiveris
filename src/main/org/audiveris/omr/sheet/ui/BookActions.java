@@ -31,7 +31,7 @@ import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.plugin.Plugin;
 import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.score.ui.BookParameters;
-import org.audiveris.omr.score.ui.SheetParameters;
+import org.audiveris.omr.score.ui.SheetScaling;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.ExportPattern;
@@ -370,30 +370,30 @@ public class BookActions
         applyUserSettings(StubsController.getCurrentStub());
     }
 
-    //-----------------------//
-    // defineSheetParameters //
-    //-----------------------//
+    //--------------------//
+    // defineSheetScaling //
+    //--------------------//
     /**
-     * Launch the dialog to set up sheet parameters.
+     * Launch the dialog to check and modify sheet scaling data.
      *
      * @param e the event that triggered this action
      */
     @Action(enabledProperty = STUB_AVAILABLE)
-    public void defineSheetParameters (ActionEvent e)
+    public void defineSheetScaling (ActionEvent e)
     {
         final SheetStub stub = StubsController.getCurrentStub();
 
         try {
             final WrappedBoolean apply = new WrappedBoolean(false);
-            final SheetParameters sheetParams = new SheetParameters(stub.getSheet());
+            final SheetScaling sheetScaling = new SheetScaling(stub.getSheet());
             final JOptionPane optionPane = new JOptionPane(
-                    sheetParams.getComponent(),
+                    sheetScaling.getComponent(),
                     JOptionPane.QUESTION_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
-            final String frameTitle = sheetParams.getTitle();
+            final String frameTitle = sheetScaling.getTitle();
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
             dialog.setContentPane(optionPane);
-            dialog.setName("SheetParamsDialog"); // For SAF life cycle
+            dialog.setName("SheetScalingDialog"); // For SAF life cycle
 
             optionPane.addPropertyChangeListener( (PropertyChangeEvent e1) ->
             {
@@ -405,7 +405,7 @@ public class BookActions
                     apply.set(value == JOptionPane.OK_OPTION);
 
                     // Exit only if user gives up or enters correct data
-                    if (!apply.isSet() || sheetParams.commit()) {
+                    if (!apply.isSet() || sheetScaling.commit()) {
                         dialog.setVisible(false);
                         dialog.dispose();
                     } else {
@@ -422,7 +422,7 @@ public class BookActions
             dialog.pack();
             OmrGui.getApplication().show(dialog);
         } catch (Throwable ex) {
-            logger.warn("Error in defineSheetParameters {}", ex.toString(), ex);
+            logger.warn("Error in defineSheetScaling {}", ex.toString(), ex);
         }
     }
 
@@ -1678,8 +1678,8 @@ public class BookActions
 
         // Create a brand new dialog
         try {
-            final BookParameters bookParams = new BookParameters(stub);
-            final String frameTitle = bookParams.getTitle();
+            final BookParameters bookParameters = new BookParameters(stub);
+            final String frameTitle = bookParameters.getTitle();
             final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, false); // Non modal
 
             // For SAF life cycle (to save dialog size and location across application runs)
@@ -1704,7 +1704,7 @@ public class BookActions
 
             // User actions on buttons OK, Apply, Cancel
             final JOptionPane optionPane = new JOptionPane(
-                    bookParams.getComponent(),
+                    bookParameters.getComponent(),
                     JOptionPane.QUESTION_MESSAGE,
                     JOptionPane.DEFAULT_OPTION,
                     null,
@@ -1720,10 +1720,10 @@ public class BookActions
                     if (choice == UserOpt.Cancel) {
                         exit = true;
                     } else if (choice == UserOpt.Apply) {
-                        bookParams.commit(book);
+                        bookParameters.commit(book);
                         exit = false;
                     } else if (choice == UserOpt.OK) {
-                        exit = bookParams.commit(book);
+                        exit = bookParameters.commit(book);
                     } else {
                         exit = false;
                     }

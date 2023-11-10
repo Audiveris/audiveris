@@ -41,27 +41,27 @@ import java.util.Arrays;
 import java.util.EnumMap;
 
 /**
- * Class <code>SheetParameters</code> is a dialog that allows the user to manage sheet
- * parameters (such as scaling data).
+ * Class <code>SheetScaling</code> is a dialog that allows the user to display and modify sheet
+ * scaling data.
  *
  * @author Hervé Bitteur
  */
-public class SheetParameters
+public class SheetScaling
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(SheetParameters.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetScaling.class);
 
     // JGoodies columns specification:     Topic      SelBox     Item             Value
     private static final String colSpec = "10dlu,1dlu,10dlu,1dlu,80dlu,1dlu,right:15dlu";
 
     /** Resource injection. */
     private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(SheetParameters.class);
+            .getResourceMap(SheetScaling.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The swing component of this panel. */
+    /** The swing component of this entity. */
     private final ScopedPanel<Item> scopedPanel;
 
     /** The related sheet. */
@@ -80,7 +80,7 @@ public class SheetParameters
      *
      * @param sheet the underlying sheet
      */
-    public SheetParameters (Sheet sheet)
+    public SheetScaling (Sheet sheet)
     {
         this.sheet = sheet;
         scale = sheet.getScale();

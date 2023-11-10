@@ -244,7 +244,7 @@ public class Main
             // Perhaps time to check for a new release?
             // Fix for issue #562: Disable this check when running in batch mode.
             ///Versions.considerPolling();
-            //
+
             // Check MusicFont is loaded
             MusicFont.checkMusicFont();
 
@@ -400,9 +400,13 @@ public class Main
     {
         if (constants.showEnvironment.isSet()) {
             logger.info(
-                    "Environment:\n" + "- Audiveris:    {}\n" + "- OS:           {}\n"
-                            + "- Architecture: {}\n" + "- Java VM:      {}\n"
-                            + "- OCR Engine:   {}",
+                    """
+                            Environment:
+                            - Audiveris:    {}
+                            - OS:           {}
+                            - Architecture: {}
+                            - Java VM:      {}
+                            - OCR Engine:   {}""",
                     WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD,
                     System.getProperty("os.name") + " " + System.getProperty("os.version"),
                     System.getProperty("os.arch"),

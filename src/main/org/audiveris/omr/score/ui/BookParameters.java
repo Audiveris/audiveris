@@ -146,8 +146,8 @@ public class BookParameters
         Quality,
         Lang,
         Interline,
-        Beam,
-        Barline;
+        Barline,
+        Beam;
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -277,7 +277,7 @@ public class BookParameters
 
             final LangPane langPane = createLangPane(
                     (LangPane) parentPanel.getPane(Tag.Lang),
-                    book.getOcrLanguages());
+                    book.getOcrLanguagesParam());
 
             if (langPane != null) {
                 topic.add(langPane);

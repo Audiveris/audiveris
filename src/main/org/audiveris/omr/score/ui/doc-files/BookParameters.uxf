@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="14.2">
+<diagram program="umlet" version="15.0.0">
   <help_text>//Uncomment the following line to change the fontsize:
         //fontsize=14
 
@@ -33,7 +33,7 @@ layer=0
     <id>UMLNote</id>
     <coordinates>
       <x>20</x>
-      <y>610</y>
+      <y>650</y>
       <w>250</w>
       <h>140</h>
     </coordinates>
@@ -49,7 +49,7 @@ Factory
     <type>com.baselet.element.old.element.Database</type>
     <coordinates>
       <x>330</x>
-      <y>510</y>
+      <y>530</y>
       <w>300</w>
       <h>60</h>
     </coordinates>
@@ -70,7 +70,7 @@ fg=red</panel_attributes>
     </coordinates>
     <panel_attributes>layer=50
 bg=pink
-DefaultPane
+*Default Pane*
 --
 display()
 read()
@@ -89,7 +89,7 @@ commit()</panel_attributes>
     </coordinates>
     <panel_attributes>layer=50
 bg=pink
-BookPane
+*Book Pane*
 --
 display()
 read()
@@ -108,7 +108,7 @@ commit()</panel_attributes>
     </coordinates>
     <panel_attributes>layer=50
 bg=pink
-SheetPane
+*Sheet Pane*
 --
 display()
 read()
@@ -127,7 +127,7 @@ commit()</panel_attributes>
     </coordinates>
     <panel_attributes>layer=50
 bg=orange
-*SheetParam*
+*Sheet Param*
 --
 getValue()
 getSpecific()
@@ -140,7 +140,7 @@ isSpecific()</panel_attributes>
     <coordinates>
       <x>570</x>
       <y>160</y>
-      <w>60</w>
+      <w>70</w>
       <h>100</h>
     </coordinates>
     <panel_attributes>lt=&lt;-
@@ -152,7 +152,7 @@ m2=model</panel_attributes>
     <coordinates>
       <x>360</x>
       <y>160</y>
-      <w>60</w>
+      <w>70</w>
       <h>100</h>
     </coordinates>
     <panel_attributes>lt=&lt;-
@@ -164,7 +164,7 @@ m2=model</panel_attributes>
     <coordinates>
       <x>160</x>
       <y>160</y>
-      <w>60</w>
+      <w>70</w>
       <h>100</h>
     </coordinates>
     <panel_attributes>lt=&lt;-
@@ -175,15 +175,16 @@ m2=model</panel_attributes>
     <id>UMLNote</id>
     <coordinates>
       <x>20</x>
-      <y>210</y>
+      <y>220</y>
       <w>650</w>
-      <h>370</h>
+      <h>390</h>
     </coordinates>
     <panel_attributes>Model
 bg=#ffff88
 layer=0
 
     Memory
+
 
 
 
@@ -214,7 +215,7 @@ layer=0
     </coordinates>
     <panel_attributes>layer=50
 bg=orange
-*BookParam*
+*Book Param*
 --
 getValue()
 getSpecific()
@@ -232,7 +233,7 @@ isSpecific()</panel_attributes>
     </coordinates>
     <panel_attributes>layer=50
 bg=orange
-*DefaultParam*
+*Default Param*
 --
 getValue()
 getSpecific()
@@ -295,30 +296,32 @@ parent</panel_attributes>
     <coordinates>
       <x>370</x>
       <y>330</y>
-      <w>30</w>
-      <h>200</h>
+      <w>100</w>
+      <h>220</h>
     </coordinates>
     <panel_attributes>lt=[^]-[v]
-layer=100</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;180.0</additional_attributes>
+layer=100
+m2=(if specific)</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;200.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>570</x>
       <y>330</y>
-      <w>30</w>
-      <h>200</h>
+      <w>100</w>
+      <h>220</h>
     </coordinates>
     <panel_attributes>lt=[^]-[v]
-layer=100</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;180.0</additional_attributes>
+layer=100
+m2=(if specific)</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;200.0</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Database</type>
     <coordinates>
       <x>170</x>
-      <y>510</y>
+      <y>530</y>
       <w>100</w>
       <h>60</h>
     </coordinates>
@@ -332,7 +335,7 @@ fg=red</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>110</x>
-      <y>630</y>
+      <y>670</y>
       <w>140</w>
       <h>100</h>
     </coordinates>
@@ -356,7 +359,7 @@ bg=#888888
     </coordinates>
     <panel_attributes>layer=75
 bg=orange
-Constant
+*Constant*
 --
 getValue()
 setValue()
@@ -371,22 +374,23 @@ resetToSource()</panel_attributes>
       <x>130</x>
       <y>470</y>
       <w>30</w>
-      <h>180</h>
+      <h>220</h>
     </coordinates>
-    <panel_attributes>lt=[^]-[v]
+    <panel_attributes>lt=-&gt;
 layer=100</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;160.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;200.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>210</x>
       <y>470</y>
-      <w>30</w>
-      <h>60</h>
+      <w>100</w>
+      <h>80</h>
     </coordinates>
     <panel_attributes>lt=[^]-[v]
-layer=100</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+layer=100
+m2=(if specific)</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
   </element>
 </diagram>

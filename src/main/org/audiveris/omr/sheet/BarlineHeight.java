@@ -101,21 +101,7 @@ public enum BarlineHeight
         };
     }
 
-    //~ Static Methods -----------------------------------------------------------------------------
-
     //~ Inner Classes ------------------------------------------------------------------------------
-
-    //--------------------//
-    // BarlineHeightParam //
-    //--------------------//
-    public static class BarlineHeightParam
-            extends Param<BarlineHeight>
-    {
-        public BarlineHeightParam (Object scope)
-        {
-            super(scope);
-        }
-    }
 
     //-----------//
     // Constants //
@@ -133,10 +119,10 @@ public enum BarlineHeight
     // JaxbAdapter //
     //-------------//
     public static class JaxbAdapter
-            extends XmlAdapter<BarlineHeight, BarlineHeightParam>
+            extends XmlAdapter<BarlineHeight, MyParam>
     {
         @Override
-        public BarlineHeight marshal (BarlineHeightParam bhp)
+        public BarlineHeight marshal (MyParam bhp)
             throws Exception
         {
             if (bhp == null) {
@@ -147,17 +133,29 @@ public enum BarlineHeight
         }
 
         @Override
-        public BarlineHeightParam unmarshal (BarlineHeight value)
+        public MyParam unmarshal (BarlineHeight value)
             throws Exception
         {
             if (value == null) {
                 return null;
             }
 
-            final BarlineHeightParam bhp = new BarlineHeightParam(null);
+            final MyParam bhp = new MyParam(null);
             bhp.setSpecific(value);
 
             return bhp;
+        }
+    }
+
+    //---------//
+    // MyParam //
+    //---------//
+    public static class MyParam
+            extends Param<BarlineHeight>
+    {
+        public MyParam (Object scope)
+        {
+            super(scope);
         }
     }
 }

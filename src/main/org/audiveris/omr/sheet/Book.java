@@ -28,8 +28,6 @@ import org.audiveris.omr.classifier.Annotations;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.image.FilterDescriptor;
-import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.image.ImageLoading;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.score.OpusExporter;
@@ -40,7 +38,7 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
-import org.audiveris.omr.sheet.BarlineHeight.BarlineHeightParam;
+import org.audiveris.omr.sheet.Params.BookParams;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.SheetStub.SheetInput;
 import org.audiveris.omr.sheet.Versions.CheckResult;
@@ -53,12 +51,9 @@ import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.StepPause;
 import org.audiveris.omr.step.ui.StepMonitoring;
-import org.audiveris.omr.text.Language;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.MusicFamily;
-import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.TextFamily;
-import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Jaxb.OmrSchemaOutputResolver;
@@ -181,94 +176,11 @@ public class Book
     private boolean dirty = false;
 
     /**
-     * This element defines for the whole book a specific binarization filter to
-     * transform gray images into binary (black and white) images.
-     * <p>
-     * If present, this specification overrides any global specification made at application level,
-     * but can still be overridden at sheet level.
+     * All Book parameters, editable via the BookParameters dialog.
+     * This structure replaces the deprecated individual Param instances.
      */
-    @XmlElement(name = "binarization")
-    @XmlJavaTypeAdapter(FilterParam.JaxbAdapter.class)
-    private volatile FilterParam binarizationFilter;
-
-    /**
-     * Specification of the MusicFont family to use in this book.
-     * <p>
-     * If present, this specification overrides any global specification made at application level,
-     * but can still be overridden at sheet level.
-     */
-    @XmlElement(name = "music-font")
-    @XmlJavaTypeAdapter(MusicFamily.MyParam.JaxbAdapter.class)
-    private volatile MusicFamily.MyParam musicFamily;
-
-    /**
-     * Specification of the TextFont family to use in this book.
-     * <p>
-     * If present, this specification overrides any global specification made at application level,
-     * but can still be overridden at sheet level.
-     */
-    @XmlElement(name = "text-font")
-    @XmlJavaTypeAdapter(TextFamily.MyParam.JaxbAdapter.class)
-    private volatile TextFamily.MyParam textFamily;
-
-    /**
-     * Specification of the input quality to use in this book.
-     * <p>
-     * If present, this specification overrides any global specification made at application level,
-     * but can still be overridden at sheet level.
-     */
-    @XmlElement(name = "input-quality")
-    @XmlJavaTypeAdapter(InputQualityParam.JaxbAdapter.class)
-    private volatile InputQualityParam inputQuality;
-
-    /**
-     * Specification of interline in this whole book.
-     * <p>
-     * It can still be overridden at sheet level.
-     */
-    @XmlElement(name = "interline-specification")
-    @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
-    private volatile IntegerParam interlineSpecification;
-
-    /**
-     * Specification of barline height for 1-line staves in this whole book.
-     * <p>
-     * It can still be overridden at sheet level.
-     */
-    @XmlElement(name = "barline-height-specification")
-    @XmlJavaTypeAdapter(BarlineHeight.JaxbAdapter.class)
-    private volatile BarlineHeight.BarlineHeightParam barlineSpecification;
-
-    /**
-     * Specification of beam thickness in this whole book.
-     * <p>
-     * It can still be overridden at sheet level.
-     */
-    @XmlElement(name = "beam-thickness-specification")
-    @XmlJavaTypeAdapter(IntegerParam.JaxbAdapter.class)
-    private volatile IntegerParam beamSpecification;
-
-    /**
-     * This string specifies the dominant language(s) for this whole book.
-     * <p>
-     * For example, <code>eng+ita</code> specification will ask OCR to use English and Italian
-     * dictionaries and only those.
-     * <p>
-     * If present, this specification overrides any global specification made at application level,
-     * but can still be overridden at sheet level, for example by <code>eng+ita+deu</code>.
-     */
-    @XmlElement(name = "ocr-languages")
-    @XmlJavaTypeAdapter(StringParam.JaxbAdapter.class)
-    private volatile StringParam ocrLanguages;
-
-    /**
-     * This is a set of specific processing switches for this book.
-     * <p>
-     * Each switch applies to the whole book, but can still be overridden at sheet level.
-     */
-    @XmlElement(name = "processing")
-    @XmlJavaTypeAdapter(ProcessingSwitches.JaxbAdapter.class)
-    private volatile ProcessingSwitches switches;
+    @XmlElement(name = "parameters")
+    private BookParams parameters;
 
     /**
      * This string, if any, is a specification of sheets selection.
@@ -349,14 +261,45 @@ public class Book
     /** Active parameter dialog, if any. */
     private JDialog parameterDialog;
 
-    /** A trick to keep params intact, even when temporary nullified at marshal time. */
-    private Params params = new Params();
+    /** A trick to keep parameters intact, even when nullified at marshal time. */
+    private BookParams parametersMirror;
+
+    // Deprecated persistent data
+    //---------------------------
+
+    @Deprecated
+    @XmlElement(name = "music-font")
+    private volatile MusicFamily.MyParam old_musicFamily;
+
+    @Deprecated
+    @XmlElement(name = "text-font")
+    private volatile TextFamily.MyParam old_textFamily;
+
+    @Deprecated
+    @XmlElement(name = "input-quality")
+    private volatile InputQualityParam old_inputQuality;
+
+    @Deprecated
+    @XmlElement(name = "beam-specification")
+    private volatile IntegerParam old_beamSpecification;
+
+    @Deprecated
+    @XmlElement(name = "ocr-languages")
+    private volatile StringParam old_ocrLanguages;
+
+    @Deprecated
+    @XmlElement(name = "processing")
+    private volatile ProcessingSwitches old_switches;
+
+    /** Has the book itself been upgraded?. */
+    private boolean bookUpgraded = false;
 
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * No-arg constructor needed by JAXB.
      */
+    @SuppressWarnings("unused")
     private Book ()
     {
         path = null;
@@ -386,6 +329,19 @@ public class Book
         stubs.add(stub);
     }
 
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
+    {
+        parameters = parametersMirror.duplicate();
+
+        for (SheetStub stub : stubs) {
+            stub.setParamParents(this);
+        }
+    }
+
     //----------//
     // annotate //
     //----------//
@@ -403,9 +359,9 @@ public class Book
 
         try {
             final Path bookFolder = BookManager.getDefaultBookFolder(this);
-            final Path path = bookFolder.resolve(
+            final Path annotationsPath = bookFolder.resolve(
                     getRadix() + Annotations.BOOK_ANNOTATIONS_EXTENSION);
-            root = ZipFileSystem.create(path);
+            root = ZipFileSystem.create(annotationsPath);
 
             for (SheetStub stub : theStubs) {
                 try {
@@ -421,7 +377,7 @@ public class Book
                 }
             }
 
-            logger.info("Book annotated as {}", path);
+            logger.info("Book annotated as {}", annotationsPath);
         } catch (IOException ex) {
             logger.warn("Error annotating book {} {}", this, ex.toString(), ex);
         } finally {
@@ -434,69 +390,11 @@ public class Book
         }
     }
 
-    //--------------//
-    // afterMarshal //
-    //--------------//
-    @SuppressWarnings("unused")
-    private void afterMarshal (Marshaller m)
-    {
-        binarizationFilter = params.binarizationFilter;
-        musicFamily = params.musicFamily;
-        textFamily = params.textFamily;
-        inputQuality = params.inputQuality;
-        interlineSpecification = params.interlineSpecification;
-        barlineSpecification = params.barlineSpecification;
-        beamSpecification = params.beamSpecification;
-        ocrLanguages = params.ocrLanguages;
-        switches = params.switches;
-    }
-
-    //---------------//
-    // beforeMarshal //
-    //---------------//
     @SuppressWarnings("unused")
     private void beforeMarshal (Marshaller m)
     {
-        if ((binarizationFilter != null) && !binarizationFilter.isSpecific()) {
-            binarizationFilter = null;
-        }
-
-        if ((musicFamily != null) && !musicFamily.isSpecific()) {
-            musicFamily = null;
-        }
-
-        if ((textFamily != null) && !textFamily.isSpecific()) {
-            textFamily = null;
-        }
-
-        if ((inputQuality != null) && !inputQuality.isSpecific()) {
-            inputQuality = null;
-        }
-
-        if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
-            ocrLanguages = null;
-        }
-
-        // A O value means no specific value
-        if ((interlineSpecification != null) //
-                && ((interlineSpecification.getSpecific() == null) //
-                        || (interlineSpecification.getSpecific() == 0))) {
-            interlineSpecification = null;
-        }
-
-        if ((barlineSpecification != null) && !barlineSpecification.isSpecific()) {
-            barlineSpecification = null;
-        }
-
-        // A O value means no specific value
-        if ((beamSpecification != null) //
-                && ((beamSpecification.getSpecific() == null) //
-                        || (beamSpecification.getSpecific() == 0))) {
-            beamSpecification = null;
-        }
-
-        if ((switches != null) && switches.isEmpty()) {
-            switches = null;
+        if ((parameters != null) && parameters.prune()) {
+            parameters = null;
         }
     }
 
@@ -757,13 +655,9 @@ public class Book
      *
      * @return the barline height parameter
      */
-    public BarlineHeightParam getBarlineHeightParam ()
+    public BarlineHeight.MyParam getBarlineHeightParam ()
     {
-        if (barlineSpecification == null) {
-            barlineSpecification = params.barlineSpecification;
-        }
-
-        return barlineSpecification;
+        return parameters.barlineSpecification;
     }
 
     //----------------------//
@@ -779,30 +673,7 @@ public class Book
     //---------------------------//
     public IntegerParam getBeamSpecificationParam ()
     {
-        if (beamSpecification == null) {
-            //            beamSpecification = new IntegerParam(this);
-            //            beamSpecification.setParent(Scale.defaultBeamSpecification);
-            beamSpecification = params.beamSpecification;
-        }
-
-        return beamSpecification;
-    }
-
-    //----------------------------//
-    // getBinarizationFilterParam //
-    //----------------------------//
-    /**
-     * Report the binarization filter defined at book level.
-     *
-     * @return the filter parameter
-     */
-    public FilterParam getBinarizationFilterParam ()
-    {
-        if (binarizationFilter == null) {
-            binarizationFilter = params.binarizationFilter;
-        }
-
-        return binarizationFilter;
+        return parameters.beamSpecification;
     }
 
     //-------------//
@@ -907,11 +778,7 @@ public class Book
      */
     public InputQualityParam getInputQualityParam ()
     {
-        if (inputQuality == null) {
-            inputQuality = params.inputQuality;
-        }
-
-        return inputQuality;
+        return parameters.inputQuality;
     }
 
     //---------------------------//
@@ -927,13 +794,7 @@ public class Book
     //--------------------------------//
     public IntegerParam getInterlineSpecificationParam ()
     {
-        if (interlineSpecification == null) {
-            //            interlineSpecification = new IntegerParam(this);
-            //            interlineSpecification.setParent(Scale.defaultInterlineSpecification);
-            interlineSpecification = params.interlineSpecification;
-        }
-
-        return interlineSpecification;
+        return parameters.interlineSpecification;
     }
 
     //--------------//
@@ -987,28 +848,20 @@ public class Book
      */
     public MusicFamily.MyParam getMusicFamilyParam ()
     {
-        if (musicFamily == null) {
-            musicFamily = params.musicFamily;
-        }
-
-        return musicFamily;
+        return parameters.musicFamily;
     }
 
     //----------------------//
     // getOcrLanguagesParam //
     //----------------------//
     /**
-     * Report the OCR language(s) specification defined at book level, if any.
+     * Report the OCR language(s) specification Param at book level.
      *
-     * @return the OCR language(s) spec
+     * @return the OCR language(s) param
      */
-    public Param<String> getOcrLanguages ()
+    public Param<String> getOcrLanguagesParam ()
     {
-        if (ocrLanguages == null) {
-            ocrLanguages = params.ocrLanguages;
-        }
-
-        return ocrLanguages;
+        return parameters.ocrLanguages;
     }
 
     //-----------------------//
@@ -1123,11 +976,7 @@ public class Book
      */
     public ProcessingSwitches getProcessingSwitches ()
     {
-        if (switches == null) {
-            switches = params.switches;
-        }
-
-        return switches;
+        return parameters.switches;
     }
 
     //----------//
@@ -1519,11 +1368,7 @@ public class Book
      */
     public TextFamily.MyParam getTextFamilyParam ()
     {
-        if (textFamily == null) {
-            textFamily = params.textFamily;
-        }
-
-        return textFamily;
+        return parameters.textFamily;
     }
 
     //-----------------------//
@@ -1642,48 +1487,21 @@ public class Book
     private boolean initTransients (String nameSansExt,
                                     Path bookPath)
     {
-        if (binarizationFilter != null) {
-            binarizationFilter.setParent(FilterDescriptor.defaultFilter);
-            binarizationFilter.setScope(this);
+        // Migrate old Params, if any
+        migrateOldParams();
+
+        // At this point in time, parameters contains only the params with specific value
+        if (parameters == null) {
+            parameters = new BookParams(this);
         }
 
-        if (musicFamily != null) {
-            musicFamily.setParent(MusicFont.defaultMusicParam);
-            musicFamily.setScope(this);
-        }
+        parameters.completeParams();
+        parameters.setParents(null);
+        parameters.setScope(this);
+        parametersMirror = parameters.duplicate();
 
-        if (textFamily != null) {
-            textFamily.setParent(TextFont.defaultTextParam);
-            textFamily.setScope(this);
-        }
-
-        if (inputQuality != null) {
-            inputQuality.setParent(Profiles.defaultQualityParam);
-            inputQuality.setScope(this);
-        }
-
-        if (ocrLanguages != null) {
-            ocrLanguages.setParent(Language.ocrDefaultLanguages);
-            ocrLanguages.setScope(this);
-        }
-
-        if (interlineSpecification != null) {
-            // [No default value for interline]
-            interlineSpecification.setScope(this);
-        }
-
-        if (barlineSpecification != null) {
-            barlineSpecification.setParent(BarlineHeight.defaultParam);
-            barlineSpecification.setScope(this);
-        }
-
-        if (beamSpecification != null) {
-            // [No default value for beamThickness]
-            beamSpecification.setScope(this);
-        }
-
-        if (switches != null) {
-            switches.setParent(ProcessingSwitches.getDefaultSwitches(), this);
+        for (SheetStub stub : stubs) {
+            stub.setParamParents(this);
         }
 
         if (alias == null) {
@@ -1723,7 +1541,7 @@ public class Book
                 final CheckResult status = Versions.check(new Version(version));
 
                 switch (status) {
-                case BOOK_TOO_OLD:
+                case BOOK_TOO_OLD ->
                 {
                     final String msg = bookPath + " version " + version;
                     logger.warn(msg);
@@ -1746,7 +1564,7 @@ public class Book
                     return false;
                 }
 
-                case PROGRAM_TOO_OLD:
+                case PROGRAM_TOO_OLD ->
                 {
                     final String msg = bookPath + " version " + version
                             + "\nPlease use a more recent Audiveris version";
@@ -1759,8 +1577,10 @@ public class Book
                     return false;
                 }
 
-                case COMPATIBLE:
+                case COMPATIBLE ->
+                {
                     return true;
+                }
                 }
             }
         }
@@ -1937,7 +1757,7 @@ public class Book
             }
         }
 
-        return false;
+        return bookUpgraded;
     }
 
     //----------------//
@@ -1974,6 +1794,45 @@ public class Book
             logger.warn("Error in book.loadSheetImage", ex);
 
             return null;
+        }
+    }
+
+    //------------------//
+    // migrateOldParams //
+    //------------------//
+    /**
+     * If an old param exists, it is put into the parameters structure.
+     */
+    private void migrateOldParams ()
+    {
+        if (old_musicFamily != null) {
+            upgradeParameters().musicFamily = old_musicFamily;
+            old_musicFamily = null;
+        }
+
+        if (old_textFamily != null) {
+            upgradeParameters().textFamily = old_textFamily;
+            old_textFamily = null;
+        }
+
+        if (old_inputQuality != null) {
+            upgradeParameters().inputQuality = old_inputQuality;
+            old_inputQuality = null;
+        }
+
+        if (old_beamSpecification != null) {
+            upgradeParameters().beamSpecification = old_beamSpecification;
+            old_beamSpecification = null;
+        }
+
+        if (old_ocrLanguages != null) {
+            upgradeParameters().ocrLanguages = old_ocrLanguages;
+            old_ocrLanguages = null;
+        }
+
+        if (old_switches != null) {
+            upgradeParameters().switches = old_switches;
+            old_switches = null;
         }
     }
 
@@ -2662,7 +2521,9 @@ public class Book
         Path bookInternals = root.resolve(BOOK_INTERNALS);
         Files.deleteIfExists(bookInternals);
         Jaxb.marshal(this, bookInternals, getJaxbContext());
+
         setModified(false);
+        bookUpgraded = false;
         logger.info("Stored {}", bookInternals);
     }
 
@@ -2823,6 +2684,25 @@ public class Book
                 it.remove();
             }
         }
+    }
+
+    //-------------------//
+    // upgradeParameters //
+    //-------------------//
+    /**
+     * Get/create the parameters structure for upgrading.
+     *
+     * @return the existing or created structure
+     */
+    private BookParams upgradeParameters ()
+    {
+        bookUpgraded = true;
+
+        if (parameters == null) {
+            parameters = new BookParams();
+        }
+
+        return parameters;
     }
 
     //--------------//
@@ -3144,59 +3024,5 @@ public class Book
         private final Constant.Boolean batchUpgradeBooks = new Constant.Boolean(
                 false,
                 "In batch, should we automatically upgrade all book sheets?");
-    }
-
-    //--------//
-    // Params //
-    //--------//
-    /** A keeper structure for all params. */
-    private class Params
-    {
-        FilterParam binarizationFilter;
-
-        MusicFamily.MyParam musicFamily;
-
-        TextFamily.MyParam textFamily;
-
-        InputQualityParam inputQuality;
-
-        IntegerParam interlineSpecification;
-
-        BarlineHeight.BarlineHeightParam barlineSpecification;
-
-        IntegerParam beamSpecification;
-
-        StringParam ocrLanguages;
-
-        ProcessingSwitches switches;
-
-        Params ()
-        {
-            binarizationFilter = new FilterParam(Book.this);
-            binarizationFilter.setParent(FilterDescriptor.defaultFilter);
-
-            musicFamily = new MusicFamily.MyParam(Book.this);
-            musicFamily.setParent(MusicFont.defaultMusicParam);
-
-            textFamily = new TextFamily.MyParam(Book.this);
-            textFamily.setParent(TextFont.defaultTextParam);
-
-            inputQuality = new InputQualityParam(Book.this);
-            inputQuality.setParent(Profiles.defaultQualityParam);
-
-            interlineSpecification = new IntegerParam(Book.this);
-            interlineSpecification.setParent(Scale.defaultInterlineSpecification);
-
-            barlineSpecification = new BarlineHeightParam(Book.this);
-            barlineSpecification.setParent(BarlineHeight.defaultParam);
-
-            beamSpecification = new IntegerParam(Book.this);
-            beamSpecification.setParent(Scale.defaultBeamSpecification);
-
-            ocrLanguages = new StringParam(Book.this);
-            ocrLanguages.setParent(Language.ocrDefaultLanguages);
-
-            switches = new ProcessingSwitches(ProcessingSwitches.getDefaultSwitches(), Book.this);
-        }
     }
 }

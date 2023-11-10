@@ -82,7 +82,7 @@ public class ProcessingSwitches
                                Object scope)
     {
         if (parent != null) {
-            setParent(parent, scope);
+            setParentAndScope(parent, scope);
         }
     }
 
@@ -132,8 +132,8 @@ public class ProcessingSwitches
      * @param parent the parent set of switches
      * @param scope  the scope of these switches
      */
-    public final void setParent (ProcessingSwitches parent,
-                                 Object scope)
+    public final void setParentAndScope (ProcessingSwitches parent,
+                                         Object scope)
     {
         // Complete the map, link each switch to parent switch, set provided scope
         for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
@@ -147,6 +147,25 @@ public class ProcessingSwitches
             }
 
             param.setParent(parent.getParam(key));
+        }
+    }
+
+    /**
+     * Setter for scope field, needed after unmarshalling.
+     *
+     * @param scope the scope to set
+     */
+    public void setScope (Object scope)
+    {
+        for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
+            Param<Boolean> param = getParam(key);
+
+            if (param == null) {
+                param = new Param<>(scope);
+                map.put(key, param);
+            } else {
+                param.setScope(scope);
+            }
         }
     }
 
@@ -368,8 +387,10 @@ public class ProcessingSwitches
             @Override
             public String toString ()
             {
-                return new StringBuilder("MyEntry{").append("key:").append(key).append(",value:")
-                        .append(value).append('}').toString();
+                return new StringBuilder("ProcessingEntry{") //
+                        .append("key:").append(key) //
+                        .append(",value:").append(value) //
+                        .append('}').toString();
             }
         }
     }

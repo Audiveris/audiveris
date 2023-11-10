@@ -145,7 +145,7 @@ public class BinarizationBoard
         Rectangle rect = sheetLocation.getData();
 
         if (rect != null) {
-            FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
+            FilterDescriptor desc = AdaptiveDescriptor.getDefault();
             ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.GRAY);
 
             if (source != null) {

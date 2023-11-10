@@ -333,18 +333,18 @@ public class StemsRetriever
                         for (HorizontalSide hSide : hSides) {
                             final SLinker sl = head.getLinker().getSLinkers().get(hSide);
                             logger.debug("{} undef  {}", head, sl);
-                            // BINGO fix this
+                            // TODO: fix this?
                             //
-                            //                            // If we have a VERTICAL_SEED on side, try a stem link
-                            //                            final Glyph stump = sl.getStump();
+                            // // If we have a VERTICAL_SEED on side, try a stem link
+                            // final Glyph stump = sl.getStump();
                             //
-                            //                            if (stump != null && stump.isVerticalSeed()) {
-                            //                                final Point stumpCenter = stump.getCenter();
-                            //                                final VerticalSide vSide = stumpCenter.y < headCenter.y
-                            //                                        ? TOP : BOTTOM;
-                            //                                final CLinker cl = sl.getCornerLinker(vSide);
-                            //                                linked |= cl.link(0, 0, true);
-                            //                            }
+                            // if (stump != null && stump.isVerticalSeed()) {
+                            //     final Point stumpCenter = stump.getCenter();
+                            //     final VerticalSide vSide = stumpCenter.y < headCenter.y
+                            //             ? TOP : BOTTOM;
+                            //     final CLinker cl = sl.getCornerLinker(vSide);
+                            //     linked |= cl.link(0, 0, true);
+                            // }
                         }
                     }
 
