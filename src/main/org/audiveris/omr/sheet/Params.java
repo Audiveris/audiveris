@@ -38,11 +38,10 @@ import javax.xml.bind.annotation.XmlElement;
  * Class <code>Params</code> is the base structure of editable parameters for the Book and
  * SheetStub classes.
  *
- * @param <P> parent type: Either Object or Book or SheetStub
- * @param <S> scope type: Either Book or SheetStub
+ * @param <P> parent type: either Object (for a Book) or Book (for a SheetStub)
  * @author Hervé Bitteur
  */
-public abstract class Params<P, S>
+public abstract class Params<P>
         implements Cloneable
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -90,8 +89,6 @@ public abstract class Params<P, S>
 
     //~ Constructors -------------------------------------------------------------------------------
 
-    // Needed for JAXB
-    @SuppressWarnings("unused")
     protected Params ()
     {
 
@@ -100,7 +97,7 @@ public abstract class Params<P, S>
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * For any missing Param in this structure, allocate the proper Param.
+     * For any missing param in this structure, allocate the proper param.
      */
     public final void completeParams ()
     {
@@ -132,6 +129,7 @@ public abstract class Params<P, S>
     /** Clone the structure. */
     public abstract Params duplicate ();
 
+    /** Report whether all structure params are null. */
     private boolean isEmpty ()
     {
         return musicFamily == null //
@@ -144,6 +142,10 @@ public abstract class Params<P, S>
                 && switches == null;
     }
 
+    /**
+     * Nullify all params without specific value.
+     * NOTA: An integer zero value is considered as non-specific.
+     */
     public boolean prune ()
     {
         if ((musicFamily != null) && !musicFamily.isSpecific()) {
@@ -187,9 +189,19 @@ public abstract class Params<P, S>
         return isEmpty();
     }
 
+    /**
+     * Connect each structure param to the corresponding param in the parent scope.
+     *
+     * @param parent the parent scope (null for a Book, book for a SheetStub)
+     */
     public abstract void setParents (P parent);
 
-    public final void setScope (S scope)
+    /**
+     * Set the scope of each structure param.
+     *
+     * @param scope the provided scope (Book or SheetStub)
+     */
+    public final void setScope (Object scope)
     {
         musicFamily.setScope(scope);
         textFamily.setScope(scope);
@@ -210,19 +222,10 @@ public abstract class Params<P, S>
      * Parameters structure for a Book.
      */
     public static class BookParams
-            extends Params<Object, Book>
+            extends Params<Object>
     {
-        // Needed for JAXB
-        @SuppressWarnings("unused")
         public BookParams ()
         {
-
-        }
-
-        public BookParams (Book unused)
-        {
-            completeParams();
-            setParents(null);
         }
 
         @Override
@@ -238,6 +241,7 @@ public abstract class Params<P, S>
         @Override
         public final void setParents (Object ignored)
         {
+            // These (default) parents are taken from diverse sources
             musicFamily.setParent(MusicFont.defaultMusicParam);
             textFamily.setParent(TextFont.defaultTextParam);
             inputQuality.setParent(Profiles.defaultQualityParam);
@@ -255,16 +259,10 @@ public abstract class Params<P, S>
      * Parameters structure for a SheetStub.
      */
     public static class SheetParams
-            extends Params<Book, SheetStub>
+            extends Params<Book>
     {
         public SheetParams ()
         {
-
-        }
-
-        public SheetParams (Book ignored)
-        {
-            completeParams();
         }
 
         @Override

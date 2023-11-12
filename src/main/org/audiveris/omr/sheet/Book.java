@@ -1492,7 +1492,7 @@ public class Book
 
         // At this point in time, parameters contains only the params with specific value
         if (parameters == null) {
-            parameters = new BookParams(this);
+            parameters = new BookParams();
         }
 
         parameters.completeParams();

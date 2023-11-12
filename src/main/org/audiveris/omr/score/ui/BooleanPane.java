@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import org.audiveris.omr.util.param.Param;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +35,8 @@ import javax.swing.JCheckBox;
  * @param <T> specific category
  * @author Hervé Bitteur
  */
-public class BooleanPane<T extends Enum<T>>
-        extends XactPane<T, Boolean>
+public class BooleanPane
+        extends XactPane<Boolean>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -54,19 +52,13 @@ public class BooleanPane<T extends Enum<T>>
     /**
      * Creates a new <code>BooleanPane</code> object.
      *
-     * @param tag    unique in scope
-     * @param title  pane title string
-     * @param parent parent pane if any
-     * @param tip    data description
-     * @param model  underlying data model (cannot be null)
+     * @param title pane title string
+     * @param tip   data description
      */
-    public BooleanPane (T tag,
-                        String title,
-                        BooleanPane<T> parent,
-                        String tip,
-                        Param<Boolean> model)
+    public BooleanPane (String title,
+                        String tip)
     {
-        super(tag, title, parent, model);
+        super(title);
 
         if ((tip != null) && !tip.isBlank()) {
             boolBox.setToolTipText(tip);

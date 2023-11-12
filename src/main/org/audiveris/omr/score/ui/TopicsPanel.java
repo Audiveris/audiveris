@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      S c o p e d P a n e l                                     //
+//                                      T o p i c s P a n e l                                     //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -36,12 +36,12 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 /**
- * Class <code>ScopedPanel</code> is a panel corresponding to a given scope tab.
+ * Class <code>TopicsPanel</code> is a panel where the individual components (panes) are
+ * gathered by topics.
  *
- * @param <T> tagging used within the panel
  * @author Hervé Bitteur
  */
-public class ScopedPanel<T extends Enum<T>>
+public class TopicsPanel
         extends Panel
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -62,33 +62,33 @@ public class ScopedPanel<T extends Enum<T>>
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>ScopedPanel</code> object, using default colSpec.
+     * Creates a new <code>TopicsPanel</code> object, using default colSpec.
      *
      * @param name      panel name
      * @param topics    contained data topics
      * @param resources UI resources
      */
-    public ScopedPanel (String name,
+    public TopicsPanel (String name,
                         List<XactTopic> topics,
                         ResourceMap resources)
     {
-        this(name, topics, colSpec, 3, resources);
+        this(name, topics, resources, colSpec, 3);
     }
 
     /**
-     * Creates a new <code>ScopedPanel</code> object.
+     * Creates a new <code>TopicsPanel</code> object, with a provided columns specification.
      *
      * @param name       panel name
      * @param topics     contained data topics
+     * @param resources  UI resources
      * @param colSpec    specific columns specification
      * @param titleWidth number of cells for title, either 1 (just Item1) or 3 (Ite
-     * @param resources  UI resources
      */
-    public ScopedPanel (String name,
+    public TopicsPanel (String name,
                         List<XactTopic> topics,
+                        ResourceMap resources,
                         String colSpec,
-                        int titleWidth,
-                        ResourceMap resources)
+                        int titleWidth)
     {
         setName(name);
         this.resources = resources;
@@ -154,24 +154,6 @@ public class ScopedPanel<T extends Enum<T>>
     }
 
     /**
-     * Report the contained pane for the desired tag.
-     *
-     * @param tag desired tag
-     * @return the pane found or null
-     */
-    public XactPane getPane (T tag)
-    {
-        for (XactTopic topic : topics) {
-            for (XactPane pane : topic) {
-                if (pane.tag == tag)
-                    return pane;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Report the contained data panes.
      *
      * @return the sequence of data panes
@@ -189,7 +171,7 @@ public class ScopedPanel<T extends Enum<T>>
 
     private String textOf (String name)
     {
-        // Priority given to text in resources file if any
+        // Priority is given to text in resources file if any
         final String desc = resources.getString(name + ".text");
 
         return (desc != null) ? desc : name;

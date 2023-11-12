@@ -22,7 +22,6 @@
 package org.audiveris.omr.score.ui;
 
 import org.audiveris.omr.ui.field.SpinnerUtil;
-import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.ResourceMap;
 
@@ -42,8 +41,8 @@ import javax.swing.SwingConstants;
  * @param <T> specific category
  * @author Hervé Bitteur
  */
-public class IntegerSpinPane<T extends Enum<T>>
-        extends XactPane<T, Integer>
+public class IntegerSpinPane<T>
+        extends XactPane<Integer>
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -53,11 +52,9 @@ public class IntegerSpinPane<T extends Enum<T>>
 
     public IntegerSpinPane (T tag,
                             SpinData spinData,
-                            IntegerSpinPane<T> parent,
-                            Param<Integer> model,
                             ResourceMap resources)
     {
-        super(tag, resources.getString(tag + "Pane.title"), parent, model);
+        super(resources.getString(tag + "Pane.title"));
         title.setToolTipText(resources.getString(tag + "Pane.toolTipText"));
         this.spinData = spinData;
     }

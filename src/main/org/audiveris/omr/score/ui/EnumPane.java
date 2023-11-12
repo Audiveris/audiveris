@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import org.audiveris.omr.util.param.Param;
-
 import org.jdesktop.application.ResourceMap;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -42,8 +40,8 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
  * @param <E> the enum to handle
  * @author Hervé Bitteur
  */
-public class EnumPane<T extends Enum<T>, E extends Enum<E>>
-        extends XactPane<T, E>
+public class EnumPane<T, E extends Enum<E>>
+        extends XactPane<E>
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -57,25 +55,18 @@ public class EnumPane<T extends Enum<T>, E extends Enum<E>>
 
     /**
      * Creates an <code>EnumPane</code> object.
+     * <p>
+     * Model and Parent to be assigned later.
      *
-     * @param tag         unique in scope
-     * @param values      value array of the enum
-     * @param parentPanel parent panel if any
-     * @param model       underlying data model (cannot be null)
-     * @param resources   UI resources
+     * @param tag       unique in scope
+     * @param values    value array of the enum
+     * @param resources UI resources
      */
-    @SuppressWarnings("unchecked")
     public EnumPane (T tag,
                      E[] values,
-                     ScopedPanel<T> parentPanel,
-                     Param<E> model,
                      ResourceMap resources)
     {
-        super(
-                tag,
-                resources.getString(tag + "Pane.title"),
-                (parentPanel != null) ? parentPanel.getPane(tag) : null,
-                model);
+        super(resources.getString(tag + "Pane.title"));
 
         title.setToolTipText(resources.getString(tag + "Pane.toolTipText"));
 

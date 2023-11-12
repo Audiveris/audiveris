@@ -1124,7 +1124,7 @@ public class SheetStub
 
             // At this point in time, parameters contains only the params with specific value
             if (parameters == null) {
-                parameters = new SheetParams(null);
+                parameters = new SheetParams();
             }
 
             parameters.completeParams();

@@ -22,7 +22,6 @@
 package org.audiveris.omr.score.ui;
 
 import org.audiveris.omr.ui.field.LIntegerField;
-import org.audiveris.omr.util.param.Param;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -33,8 +32,8 @@ import com.jgoodies.forms.layout.CellConstraints;
  * @param <T> specific category
  * @author Hervé Bitteur
  */
-public class IntegerPane<T extends Enum<T>>
-        extends XactPane<T, Integer>
+public class IntegerPane
+        extends XactPane<Integer>
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -46,21 +45,15 @@ public class IntegerPane<T extends Enum<T>>
     /**
      * Creates a new <code>IntegerPane</code> object.
      *
-     * @param tag    unique in scope
-     * @param title  pane title string
-     * @param parent parent pane if any
-     * @param text   data text
-     * @param tip    data description
-     * @param model  underlying data model (cannot be null)
+     * @param title pane title string
+     * @param text  data text
+     * @param tip   data description
      */
-    public IntegerPane (T tag,
-                        String title,
-                        IntegerPane<T> parent,
+    public IntegerPane (String title,
                         String text,
-                        String tip,
-                        Param<Integer> model)
+                        String tip)
     {
-        super(tag, title, parent, model);
+        super(title);
         data = new LIntegerField(true, text, tip);
     }
 

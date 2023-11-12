@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                  S h e e t P a r a m e t e r s                                 //
+//                                     S h e e t S c a l i n g                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -62,7 +62,7 @@ public class SheetScaling
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The swing component of this entity. */
-    private final ScopedPanel<Item> scopedPanel;
+    private final TopicsPanel topicsPanel;
 
     /** The related sheet. */
     private final Sheet sheet;
@@ -97,15 +97,17 @@ public class SheetScaling
                 ip = new ScalingParam(key);
             }
 
-            topic.add(new ScaledPane(key, null, ip));
+            final ScaledPane scaledPane = new ScaledPane(key);
+            scaledPane.setModel(ip);
+            topic.add(scaledPane);
         }
 
-        scopedPanel = new ScopedPanel<>(
+        topicsPanel = new TopicsPanel(
                 "Sheet settings",
                 Arrays.asList(topic),
+                resources,
                 colSpec,
-                1,
-                resources);
+                1);
 
         initialDisplay();
     }
@@ -126,7 +128,7 @@ public class SheetScaling
             // Commit all specific values, if any, to their model object
             boolean modified = false;
 
-            for (XactPane pane : scopedPanel.getPanes()) {
+            for (XactPane pane : topicsPanel.getPanes()) {
                 modified |= pane.commit();
             }
 
@@ -151,9 +153,9 @@ public class SheetScaling
      *
      * @return the concrete component
      */
-    public ScopedPanel getComponent ()
+    public TopicsPanel getComponent ()
     {
-        return scopedPanel;
+        return topicsPanel;
     }
 
     //----------//
@@ -161,7 +163,7 @@ public class SheetScaling
     //----------//
     public String getTitle ()
     {
-        final String pattern = resources.getString("SheetParameters.titlePattern");
+        final String pattern = resources.getString("SheetScaling.titlePattern");
 
         return MessageFormat.format(pattern, sheet.getId());
     }
@@ -171,7 +173,7 @@ public class SheetScaling
     //----------------//
     private void initialDisplay ()
     {
-        for (XactPane pane : scopedPanel.getPanes()) {
+        for (XactPane pane : topicsPanel.getPanes()) {
             pane.actionPerformed(null);
         }
     }
@@ -195,16 +197,14 @@ public class SheetScaling
      * Pane to define a scaled parameter.
      */
     private static class ScaledPane
-            extends IntegerPane<Scale.Item>
+            extends IntegerPane
     {
         /** The scale item handled by this ScaledPane. */
         final Scale.Item key;
 
-        ScaledPane (Scale.Item key,
-                    ScaledPane parent,
-                    ScalingParam model)
+        ScaledPane (Scale.Item key)
         {
-            super(key, description(key), parent, "", null, model);
+            super(description(key), "", null);
             this.key = key;
         }
 

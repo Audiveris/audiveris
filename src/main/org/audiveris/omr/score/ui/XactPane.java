@@ -43,11 +43,10 @@ import javax.swing.SwingConstants;
  * A transactional data pane is able to host data, check data validity and apply
  * the requested modifications on commit.
  *
- * @param <T> specific category
- * @param <E> specific data type
+ * @param <E> specific data type to handle
  * @author Hervé Bitteur
  */
-public abstract class XactPane<T extends Enum<T>, E>
+public abstract class XactPane<E>
         implements ActionListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -60,43 +59,27 @@ public abstract class XactPane<T extends Enum<T>, E>
 
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Unique in scope. */
-    protected final T tag;
-
-    /** Model parameter (cannot be null). */
-    protected final Param<E> model;
-
-    /** Parent pane, if any. */
-    protected final XactPane<T, E> parent;
-
     /** Box for selecting specific vs inherited data. */
     protected final JCheckBox selBox;
 
     /** Pane title. */
     protected final JLabel title;
 
+    /** Model parameter. */
+    protected Param<E> model;
+
+    /** Parent pane, if any. */
+    protected XactPane<E> parent;
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new <code>XactDataPane</code> object.
      *
-     * @param tag    unique in scope
-     * @param title  pane title
-     * @param parent parent pane if any
-     * @param model  underlying model (cannot be null)
+     * @param title pane title
      */
-    public XactPane (T tag,
-                     String title,
-                     XactPane<T, E> parent,
-                     Param<E> model)
+    public XactPane (String title)
     {
-        if (model == null) {
-            throw new IllegalArgumentException("Null model for XactPane '" + title + "'");
-        }
-
-        this.tag = tag;
-        this.parent = parent;
-        this.model = model;
         this.title = new JLabel(title);
         this.title.setHorizontalAlignment(SwingConstants.LEFT);
         this.title.setEnabled(false);
@@ -182,7 +165,7 @@ public abstract class XactPane<T extends Enum<T>, E>
         return 2;
     }
 
-    public Param<E> getModel ()
+    public Param<? extends E> getModel ()
     {
         return model;
     }
@@ -215,7 +198,27 @@ public abstract class XactPane<T extends Enum<T>, E>
     }
 
     /**
-     * User selects (or deselects) this pane
+     * Set the underlying param model.
+     *
+     * @param model the underlying model
+     */
+    public void setModel (Param<E> model)
+    {
+        this.model = model;
+    }
+
+    /**
+     * Set the parent pane.
+     *
+     * @param parent the parent pane
+     */
+    public void setParent (XactPane<E> parent)
+    {
+        this.parent = parent;
+    }
+
+    /**
+     * User selects (or deselects) this pane.
      *
      * @param bool true for selection
      */
@@ -225,7 +228,7 @@ public abstract class XactPane<T extends Enum<T>, E>
     }
 
     /**
-     * Set the visible flag for all data fields
+     * Set the visible flag for all data fields.
      *
      * @param bool the flag value
      */
@@ -239,8 +242,8 @@ public abstract class XactPane<T extends Enum<T>, E>
     public String toString ()
     {
         return new StringBuilder(getClass().getSimpleName()) //
-                .append(' ').append(tag) //
-                .append(' ').append(model) //
+                .append(" model:").append(model) //
+                .append(" parent:").append(parent) //
                 .toString();
     }
 }
