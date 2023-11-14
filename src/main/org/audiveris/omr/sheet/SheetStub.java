@@ -84,7 +84,6 @@ import java.util.function.Predicate;
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -265,14 +264,15 @@ public class SheetStub
                       SheetStub oldStub)
     {
         this.number = number;
-        this.book = book;
+
+        initTransients(book);
 
         // Copy data from oldStub
         versionValue = oldStub.versionValue;
         sheetInput = new SheetInput(oldStub.getSheetInput());
         invalid = oldStub.invalid;
         doneSteps.addAll(oldStub.doneSteps);
-        pageRefs.addAll(oldStub.pageRefs); /// ???
+        pageRefs.addAll(oldStub.pageRefs); /// ??? TODO: To be checked
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -314,21 +314,9 @@ public class SheetStub
         parameters = parametersMirror.duplicate();
     }
 
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled
-     * for this object, but before this object is set to the parent object.
-     * All non-persistent members are null.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        initTransients((Book) parent);
-    }
-
+    //---------------//
+    // beforeMarshal //
+    //---------------//
     @SuppressWarnings("unused")
     private void beforeMarshal (Marshaller m)
     {
@@ -1103,6 +1091,26 @@ public class SheetStub
     }
 
     //----------------//
+    // initParameters //
+    //----------------//
+    /**
+     * Make sure the parameters are properly allocated, but their parents not yet set.
+     */
+    public void initParameters ()
+    {
+        // Migrate old Params, if any
+        migrateOldParams();
+
+        // At this point in time, parameters contains only the params with specific value
+        if (parameters == null) {
+            parameters = new SheetParams();
+        }
+
+        parameters.completeParams();
+        parameters.setScope(this);
+    }
+
+    //----------------//
     // initTransients //
     //----------------//
     /**
@@ -1111,25 +1119,14 @@ public class SheetStub
      *
      * @param book the containing book
      */
-    private void initTransients (Book book)
+    final void initTransients (Book book)
     {
         try {
             LogUtil.start(book);
 
-            logger.trace("{} initTransients", this);
             this.book = book;
 
-            // Migrate old Params, if any
-            migrateOldParams();
-
-            // At this point in time, parameters contains only the params with specific value
-            if (parameters == null) {
-                parameters = new SheetParams();
-            }
-
-            parameters.completeParams();
-            parameters.setScope(this);
-            parametersMirror = parameters.duplicate();
+            setParamParents(book);
 
             if (!isValid()) {
                 doneSteps.removeIf( (s) -> s.compareTo(OmrStep.BINARY) > 0); // Safer for old .omr
@@ -1466,9 +1463,19 @@ public class SheetStub
     //-----------------//
     // setParamParents //
     //-----------------//
-    public void setParamParents (Book book)
+    /**
+     * Connect every stub parameter to proper book parameter.
+     */
+    private void setParamParents (Book book)
     {
+        // 1/ Make sure parameters are available
+        initParameters();
+
+        // 2/ set parents
         parameters.setParents(book);
+
+        // 3/ set parametersMirror
+        parametersMirror = parameters.duplicate();
     }
 
     //---------------//

@@ -336,10 +336,6 @@ public class Book
     private void afterMarshal (Marshaller m)
     {
         parameters = parametersMirror.duplicate();
-
-        for (SheetStub stub : stubs) {
-            stub.setParamParents(this);
-        }
     }
 
     //----------//
@@ -1475,6 +1471,26 @@ public class Book
     }
 
     //----------------//
+    // initParameters //
+    //----------------//
+    /**
+     * Make sure the parameters are properly allocated, but their parents not yet set.
+     */
+    public void initParameters ()
+    {
+        // Migrate old Params, if any
+        migrateOldParams();
+
+        // At this point in time, parameters contains only the params with specific value
+        if (parameters == null) {
+            parameters = new BookParams();
+        }
+
+        parameters.completeParams();
+        parameters.setScope(this);
+    }
+
+    //----------------//
     // initTransients //
     //----------------//
     /**
@@ -1487,21 +1503,11 @@ public class Book
     private boolean initTransients (String nameSansExt,
                                     Path bookPath)
     {
-        // Migrate old Params, if any
-        migrateOldParams();
-
-        // At this point in time, parameters contains only the params with specific value
-        if (parameters == null) {
-            parameters = new BookParams();
-        }
-
-        parameters.completeParams();
-        parameters.setParents(null);
-        parameters.setScope(this);
-        parametersMirror = parameters.duplicate();
+        initParameters();
+        setParamParents();
 
         for (SheetStub stub : stubs) {
-            stub.setParamParents(this);
+            stub.initTransients(this);
         }
 
         if (alias == null) {
@@ -2286,6 +2292,24 @@ public class Book
         parameterDialog = dialog;
     }
 
+    //-----------------//
+    // setParamParents //
+    //-----------------//
+    /**
+     * Connect every book parameter to proper global parameter.
+     */
+    public void setParamParents ()
+    {
+        // 1/ Make sure parameters are available
+        initParameters();
+
+        // 2/ set parents
+        parameters.setParents(null);
+
+        // 3/ set parametersMirror
+        parametersMirror = parameters.duplicate();
+    }
+
     //------------------//
     // setPauseRequired //
     //------------------//
@@ -2817,6 +2841,8 @@ public class Book
     {
         final Book book = new Book();
         book.setBookPath(bookPath);
+
+        book.initTransients(null, null);
 
         return book;
     }
