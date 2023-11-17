@@ -46,6 +46,9 @@ schemas/bin/
 schemas/build
 schemas/build/*
 target/*
+windows-installer/build
+windows-installer/build/*
+windows-installer/.gradle/*
 \.orig\..*$
 \.orig$
 \.chg\..*$

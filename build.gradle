@@ -1,8 +1,30 @@
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    : b u i l d . g r a d l e                                   //
+//                                                                                                //
+//--------------------------------------------------------------------------------------------------
+//
+// Audiveris root project.
+//
+// Sub-projects:
+//      - schemas
+//      - windows-installer
+//      - linux-installer (not yet implemented)
+//
+//--------------------------------------------------------------------------------------------------
+
 apply plugin: 'application'
 
 project.version  = '5.4-alpha'
-sourceCompatibility = '1.17'
-[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+///sourceCompatibility = '1.17'
+def minJavaVersion = '17'
+sourceCompatibility = JavaLanguageVersion.of(minJavaVersion)
+
+// Central location for the specific versions of tesseract dependencies
+ext.jcppVersion     = '1.5.9'
+ext.leptVersion     = '1.83.0'
+ext.tessVersion     = '5.3.1'
 
 ext.programName     = 'Audiveris'
 ext.programId       = 'audiveris'
@@ -10,28 +32,38 @@ ext.programVersion  = "$project.version"
 ext.companyName     = "$programName Ltd."
 ext.companyId       = "${programName}Ltd"
 
-ext.jcppVersion     = '1.5.9'
-ext.leptVersion     = '1.83.0'
-ext.tessVersion     = '5.3.1'
-
-// this code is required in order to adapt values of os.name and os.arch to the
-// conventions used by Javacpp's dependencies
-ext.targetOSName   = System.getProperty('os.name').toLowerCase()\
+/* Name of host OS */
+ext.hostOSName   = System.getProperty('os.name').toLowerCase()\
                      .startsWith('mac os x') ? 'macosx' :\
                      System.getProperty('os.name').split(' ')[0].toLowerCase()
-ext.targetOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86", "x86":"x86",
+
+/* Architecture of host OS
+*  Mapping required to adapt values of os.name and os.arch to the conventions used by Javacpp's dependencies
+*/
+ext.hostOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86", "x86":"x86",
                       "amd64":"x86_64", "x86-64":"x86_64", "x86_64":"x86_64", "arm":"armhf", "aarch64":"arm64"]\
                      [System.getProperty('os.arch').toLowerCase()]
-ext.targetOS       = "${project.ext.targetOSName}-${project.ext.targetOSArch}"
-println "targetOS=${project.ext.targetOS}"
 
-ext.makensisPath = null
+/* Full host OS identification as "name-arch" */
+ext.hostOS       = "${project.ext.hostOSName}-${project.ext.hostOSArch}"
+println "hostOS=${project.ext.hostOS}"
 
-if (!hasProperty('mainClass')) {
+/* Name of Java main class. 
+*  The caller may have set the property on the gradle command line via a -PmainClass=foobar
+*/
+if (project.hasProperty('mainClass')) {
+    println "property mainClass:" + project.property('mainClass')
+    ext.mainClass = project.property('mainClass')
+} else {
     ext.mainClass = ext.programName
 }
 
-mainClassName = ext.mainClass
+application {
+    mainClass.set("$project.ext.mainClass")
+}
+
+// Perhaps no longer needed?
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 // Useful for turning on deprecation warnings
 // Just uncomment the appropriate option
@@ -42,24 +74,26 @@ allprojects {
     }
 }
 
-// To circumvent limitations brought by Jigsaw
+// This is needed to circumvent the limitations brought by Java 9 and above (the Jigsaw cuts)
 applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED"]
 
+// Run default configuration.
+// Heap size (and other stuff) can be modified via a 'jvmLineArgs' on gradle command line
 run {
     minHeapSize = '512m'
     maxHeapSize = '1g'
-
-    // Retrieve CLI arguments from cmdLineArgs property if any
-    if (project.hasProperty("cmdLineArgs")) {
-        if (cmdLineArgs) {
-            args(cmdLineArgs.split(','))
-        }
-    }
 
     // Retrieve JVM arguments from jvmLineArgs property if any
     if (project.hasProperty("jvmLineArgs")) {
         if (jvmLineArgs) {
             jvmArgs(jvmLineArgs.split(','))
+        }
+    }
+
+    // Retrieve CLI arguments from cmdLineArgs property if any
+    if (project.hasProperty("cmdLineArgs")) {
+        if (cmdLineArgs) {
+            args(cmdLineArgs.split(','))
         }
     }
 }
@@ -127,8 +161,8 @@ dependencies {
     )
 
     runtimeOnly(
-        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.hostOS}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.hostOS}"]
     )
 
     testImplementation(
@@ -143,13 +177,7 @@ configurations {
     implementationConfig.extendsFrom implementation
 }
 
-// Specific configurations for specific OS dependencies
-['windows-x86', 'windows-x86_64'].each { os ->
-    configurations.create("runtime-$os")
-    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "$os"])
-    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "$os"])
-}
-
+// Generate audiveris.jar
 jar {
     // override default output archive name
     archiveFileName = "audiveris.jar"
@@ -172,14 +200,7 @@ jar {
     }
 }
 
-// Defining 'debug' task allows to set its arguments later
-task(debug, dependsOn: 'classes', type: JavaExec) {
-    mainClass = mainClassName
-    classpath = sourceSets.main.runtimeClasspath
-    debug true
-}
-
-// retrieve the abbreviated hash for the latest commit from Git
+// Retrieve the abbreviated hash for the latest commit from Git
 task "git_build"(type:Exec) {
     commandLine "git rev-parse --short HEAD".split(' ')
     standardOutput = new ByteArrayOutputStream()
@@ -189,6 +210,7 @@ task "git_build"(type:Exec) {
     }
 }
 
+// Generate a 'ProgramId.java' source file, based on Git data
 task generateProgramId(dependsOn: git_build) {
     group "build"
     description "Generates ProgramId source"
@@ -203,8 +225,7 @@ task generateProgramId(dependsOn: git_build) {
         gSrc.append(" * This code has been automatically generated by Gradle.\n */\n")
         gSrc.append("public abstract class $className {")
 
-        ["company_name", "company_id", "program_name", "program_id", "program_version",\
-                "program_build"].each { str ->
+        ["company_name", "company_id", "program_name", "program_id", "program_version", "program_build"].each { str ->
             def strParts = str.split("_")
             def propName = strParts[0] + strParts[1].capitalize()
             gSrc.append("\n    /** Precise ${strParts[0]} ${strParts[1]}: {@value} */")
@@ -217,86 +238,21 @@ task generateProgramId(dependsOn: git_build) {
 
 compileJava.dependsOn("generateProgramId")
 
-// Make sure we have an NSIS compiler available and store it into project.ext.makensisPath
-task findNsisCompiler {
-    description "Find path to NSIS compiler"
-    onlyIf {"windows" == "${project.ext.targetOSName}"}
-
-    doLast {
-        // First test on PATH, then on standard program files locations
-        ["", "C:/Program Files (x86)/NSIS/", "C:/Program Files/NSIS/"].each { prefix ->
-            if (project.ext.makensisPath == null) {
-                try {
-                    def path = "${prefix}makensis.exe"
-                    def proc = [path, "/VERSION"].execute()
-                    proc.waitFor()
-                    println "NSIS compiler $path found, version " + proc.in.text.trim()
-                    project.ext.makensisPath = path
-                } catch (ignored) {
-                }
-            }
-        }
-
-        if (project.ext.makensisPath == null) {
-            throw new RuntimeException("Cannot find NSIS compiler (makensis.exe)!")
-        }
-    }
-}
-
-// All installers
-task installers {
-    group "Installers"
-    description "Builds all installers"
-}
-
-// Windows installers for 32-bit and 64-bit
-['windows-x86', 'windows-x86_64'].each { os ->
-    task "installer_$os"(type: Exec, dependsOn: [findNsisCompiler, jar, startScripts]) {
-        group "Installers"
-        description "Builds installer for $os"
-        onlyIf {"windows" == "${project.ext.targetOSName}"}
-
-        // Filter line that starts with "CLASSPATH="  or "set CLASSPATH=" findClasspath,
-        // and update os-based classifier information.
-        def updateClassPath = { findClasspath, line ->
-            line.startsWith("${findClasspath}=") ? line.replaceAll("-${project.ext.targetOS}.jar", "-${os}.jar") : line
-        }
-
-        doFirst  {
-            mkdir "$buildDir/installers"
-
-            // Fresh population of os-dependent folder with bin+lib items
-            delete "$buildDir/installers/$os"
-
-            // bin: Scripts and icon
-            copy {
-                into "$buildDir/installers/$os/bin"
-                from("$buildDir/scripts/Audiveris") {filter updateClassPath.curry('CLASSPATH') }
-                from("$buildDir/scripts/Audiveris.bat") {filter updateClassPath.curry('set CLASSPATH')}
-                from "$projectDir/res/icon-256.ico"
-            }
-
-            // lib: Libraries
-            copy {
-                into "$buildDir/installers/$os/lib"
-                from "$buildDir/jar" // audiveris.jar
-                from configurations.implementationConfig // Compile jars
-                from configurations."runtime-$os" // OS-specific jars
-            }
-
-            // Set NSIS compiler command line
-            def suffix = (os == "windows-x86_64")? "" : "32"
-            commandLine "cmd", "/c",\
-                "${project.ext.makensisPath}",\
-                "/DPRODUCT_VERSION=$project.version",\
-                "/DPROJECT_DIR=$projectDir",\
-                "/DTARGET_OS=$os",\
-                "/DSUFFIX=$suffix",\
-                "$projectDir/dev/installer-windows/Installer.nsi"
+// Customization of start scripts to check Java version at run time
+tasks.withType(CreateStartScripts) {
+    doFirst{
+        // Copy our own templates while updating THE_MIN_JAVA_VERSION token
+        copy {
+            into "$buildDir"
+            filter { line -> line.replaceAll('THE_MIN_JAVA_VERSION', minJavaVersion) }
+            from 'dev/scripts/custom-unixStartScript.txt'
+            from 'dev/scripts/custom-windowsStartScript.txt'
         }
     }
 
-    installers.dependsOn("installer_$os")
+    // Make the script generators use our templates
+    unixStartScriptGenerator.template = resources.text.fromFile("$buildDir/custom-unixStartScript.txt")
+    windowsStartScriptGenerator.template = resources.text.fromFile("$buildDir/custom-windowsStartScript.txt")
 }
 
 javadoc {
@@ -322,14 +278,21 @@ if (JavaVersion.current().isJava8Compatible()) {
     }
 }
 
+// Tell gradle to log standard output and error streams when running tests
+test {
+    testLogging.showStandardStreams = true
+}
+
 // Ability to include private tasks (such as save)
 fileTree("$projectDir/private").include('*.gradle').each { file ->
      apply from: file
 }
 
-// Tell gradle to log standard output and error streams when running tests
-test {
-    testLogging.showStandardStreams = true
+// Defining 'debug' task allows to set its arguments later
+task(debug, dependsOn: 'classes', type: JavaExec) {
+    mainClass = "$project.ext.mainClass"
+    classpath = sourceSets.main.runtimeClasspath
+    debug true
 }
 
 // Utility task to print out head templates
