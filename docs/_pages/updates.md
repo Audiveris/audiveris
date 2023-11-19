@@ -27,11 +27,17 @@ Table of contents
 ### 5.4 (on-going)
 
 - User Interface
+  - Improvement and extension of default/book/sheet parameters (interline, barline)
   - Ability to display some inters (augmentation dots by default) in jumbo mode
   - Ability to stop current book processing at next step end
   - Ability to clear the log window  
+- Project
+  - The Windows installer pre-populates the user `config`/`tessdata` folder with the main Tesseract
+    languages
 - Documentation
-  - Support for a PDF version of Audiveris Handbook
+  - Support for a PDF version of the Audiveris Handbook
+- Java
+  - In `Audiveris.bat` and `Audiveris` start scripts, Java version is checked before being launched
 
 ### 5.3
 

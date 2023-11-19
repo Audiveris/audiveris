@@ -1090,6 +1090,8 @@ public class PeakGraph
         final StaffPeak first = peaks.get(0);
         final List<StaffPeak> all = projectorOf(first.getStaff()).getPeaks(); // All peaks in staff
         final int i1 = all.indexOf(first);
+        if (i1 == -1)
+            return Collections.emptyList(); // To be investigated
         int iMin = i1;
         StaffPeak prevPeak = first;
 
@@ -1107,6 +1109,8 @@ public class PeakGraph
 
         final StaffPeak last = peaks.get(peaks.size() - 1);
         final int i2 = all.indexOf(last);
+        if (i2 == -1)
+            return Collections.emptyList(); // To be investigated
         int iMax = i2;
 
         for (int i = i2 + 1; i < all.size(); i++) {

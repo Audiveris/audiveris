@@ -332,7 +332,7 @@ public class ClustersRetriever
         retrieveClusters(checkConsistency);
 
         logger.info(
-                "Retrieved line clusters: {} of sizes {} with {}",
+                "Retrieved raw line clusters: {} of sizes {} with {}",
                 allClusters.size(),
                 combSizes,
                 interlineScale);
@@ -1241,7 +1241,7 @@ public class ClustersRetriever
             discardedFilaments.removeAll(single.getLines());
         }
 
-        logger.info("OneLine clusters: {}", singles);
+        logger.debug("OneLine clusters: {}", singles);
 
         return singles;
     }

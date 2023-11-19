@@ -250,10 +250,10 @@ public class LinesRetriever
                     smallClustersRetriever.getInterline());
         }
 
-        Collections.sort(allClusters, clustersRetriever.byLayout);
-
         // Discard false clusters
         purgeClusters(allClusters);
+
+        Collections.sort(allClusters, clustersRetriever.byLayout);
 
         // Populate the staff manager
         int staffId = 0;
@@ -1051,7 +1051,7 @@ public class LinesRetriever
                 final Rectangle box = cluster.getBounds();
 
                 if (box.width < params.minStaffLength) {
-                    logger.info("Too short {} at {}", cluster, box);
+                    logger.debug("Too short {} at {}", cluster, box);
                     it.remove();
                     continue;
                 }
