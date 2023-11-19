@@ -123,10 +123,14 @@ public abstract class Params<P>
             ocrLanguages = new StringParam(null);
 
         if (switches == null)
-            switches = new ProcessingSwitches(ProcessingSwitches.getDefaultSwitches(), null);
+            switches = new ProcessingSwitches(null, null);
     }
 
-    /** Clone the structure. */
+    /**
+     * Clone the structure.
+     *
+     * @return a cloned structure
+     */
     public abstract Params duplicate ();
 
     /** Report whether all structure params are null. */
@@ -145,6 +149,8 @@ public abstract class Params<P>
     /**
      * Nullify all params without specific value.
      * NOTA: An integer zero value is considered as non-specific.
+     *
+     * @return true if the pruned structure is now empty
      */
     public boolean prune ()
     {
@@ -249,6 +255,7 @@ public abstract class Params<P>
             barlineSpecification.setParent(BarlineHeight.defaultParam);
             beamSpecification.setParent(Scale.defaultBeamSpecification);
             ocrLanguages.setParent(Language.ocrDefaultLanguages);
+            switches.setParent(ProcessingSwitches.getDefaultSwitches());
         }
     }
 
@@ -281,10 +288,11 @@ public abstract class Params<P>
             musicFamily.setParent(book.getMusicFamilyParam());
             textFamily.setParent(book.getTextFamilyParam());
             inputQuality.setParent(book.getInputQualityParam());
-            ocrLanguages.setParent(book.getOcrLanguagesParam());
             interlineSpecification.setParent(book.getInterlineSpecificationParam());
             barlineSpecification.setParent(book.getBarlineHeightParam());
             beamSpecification.setParent(book.getBeamSpecificationParam());
+            ocrLanguages.setParent(book.getOcrLanguagesParam());
+            switches.setParent(book.getProcessingSwitches());
         }
     }
 }

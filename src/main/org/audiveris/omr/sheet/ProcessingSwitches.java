@@ -54,23 +54,21 @@ public class ProcessingSwitches
 
     static final Constants constants = new Constants();
 
-    /** Default switches values. */
+    /** Default switches values (the ones for the global scope). */
     private static volatile ProcessingSwitches defaultSwitches;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /**
-     * Map of switches parameters.
-     */
+    /** Map of switches parameters. */
     protected final EnumMap<ProcessingSwitch, Param<Boolean>> map = new EnumMap<>(
             ProcessingSwitch.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
 
     // Meant for JAXB
     protected ProcessingSwitches ()
     {
     }
-
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a <code>ProcessingSwitches</code> object with its parent.
@@ -81,8 +79,16 @@ public class ProcessingSwitches
     public ProcessingSwitches (ProcessingSwitches parent,
                                Object scope)
     {
+        for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
+            map.put(key, new Param<Boolean>(null));
+        }
+
+        if (scope != null) {
+            setScope(scope);
+        }
+
         if (parent != null) {
-            setParentAndScope(parent, scope);
+            setParent(parent);
         }
     }
 
@@ -111,7 +117,7 @@ public class ProcessingSwitches
     }
 
     /**
-     * Report whether this object provided no specific information.
+     * Report whether this object provides no specific information.
      *
      * @return true if empty
      */
@@ -127,43 +133,32 @@ public class ProcessingSwitches
     }
 
     /**
-     * Assign parent and scope for each switch.
+     * Assign parent for each existing switch.
      *
      * @param parent the parent set of switches
-     * @param scope  the scope of these switches
      */
-    public final void setParentAndScope (ProcessingSwitches parent,
-                                         Object scope)
+    public final void setParent (ProcessingSwitches parent)
     {
-        // Complete the map, link each switch to parent switch, set provided scope
         for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
-            Param<Boolean> param = getParam(key);
+            final Param<Boolean> param = getParam(key);
 
-            if (param == null) {
-                param = new Param<>(scope);
-                map.put(key, param);
-            } else {
-                param.setScope(scope);
+            if (param != null) {
+                param.setParent(parent.getParam(key));
             }
-
-            param.setParent(parent.getParam(key));
         }
     }
 
     /**
-     * Setter for scope field, needed after unmarshalling.
+     * Assign scope for each existing switch.
      *
      * @param scope the scope to set
      */
-    public void setScope (Object scope)
+    public final void setScope (Object scope)
     {
         for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
-            Param<Boolean> param = getParam(key);
+            final Param<Boolean> param = getParam(key);
 
-            if (param == null) {
-                param = new Param<>(scope);
-                map.put(key, param);
-            } else {
+            if (param != null) {
                 param.setScope(scope);
             }
         }
@@ -195,7 +190,6 @@ public class ProcessingSwitches
     static class Constants
             extends ConstantSet
     {
-
         final Constant.Boolean keepGrayImages = new Constant.Boolean(
                 false,
                 "Keep loaded gray images");
@@ -271,7 +265,6 @@ public class ProcessingSwitches
     private static class DefaultSwitches
             extends ProcessingSwitches
     {
-
         DefaultSwitches ()
         {
             for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
@@ -289,7 +282,6 @@ public class ProcessingSwitches
     public static class JaxbAdapter
             extends XmlAdapter<JaxbAdapter.ProcessingEntries, ProcessingSwitches>
     {
-
         @Override
         public ProcessingEntries marshal (ProcessingSwitches switches)
             throws Exception
