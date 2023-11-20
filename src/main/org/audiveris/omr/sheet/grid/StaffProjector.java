@@ -391,7 +391,7 @@ public class StaffProjector
 
         // blankThreshold is used for plots and for detecting regions without staff lines.
         // It is meant to detect absence of lines
-        params.blankThreshold = (int) Math.rint(constants.blankThreshold.getValue() * linesCumul);
+        params.blankThreshold = (int) Math.floor(constants.blankThreshold.getValue() * linesCumul);
 
         // linesThreshold is used for plots and for detecting chunks
         params.linesThreshold = (int) Math.rint(linesCumul);

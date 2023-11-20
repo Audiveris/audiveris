@@ -84,11 +84,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Class <code>LinesRetriever</code> retrieves the staff lines of a sheet.
@@ -250,10 +250,14 @@ public class LinesRetriever
                     smallClustersRetriever.getInterline());
         }
 
-        // Discard false clusters
+        // Discard false 1-line clusters
         purgeClusters(allClusters);
 
+        // Organize by layout
         Collections.sort(allClusters, clustersRetriever.byLayout);
+
+        // Discard (full) 1-line clusters that are indented on their right side
+        purgeOneLineClustersRightIndented(allClusters);
 
         // Populate the staff manager
         int staffId = 0;
@@ -1017,84 +1021,105 @@ public class LinesRetriever
     // purgeClusters //
     //---------------//
     /**
-     * Detect and remove the false clusters from the provided collection.
+     * Detect and remove the false 1-line clusters from the provided collection.
      * <p>
-     * We focus on 1-line clusters only and try to detect those which derive from long filaments
+     * We focus on 1-line clusters mainly and try to detect those which derive from long filaments
      * such as ending signs.
      * <p>
-     * All following conditions must apply to candidates:
-     * <ul>
-     * <li>Being a single-line cluster
-     * <li>Being a full-width cluster (no other cluster on its side as for a half-width cluster)
-     * </ul>
      * Test for discarding candidates (any condition may apply)
      * <ul>
      * <li>Being way too short (shorter than minStaffLength, applies to ANY cluster)
-     * <li>Being right-indented
-     * <li>Being significantly shorter than other full-width clusters (not just left-indented)
-     * <li>Being vertically too close to the cluster below (?)
+     * <li>Being sloped (test performed only on non-sloped sheets)
+     * <li>Being almost void (many holes in it)
      * <li>No significant barline peak found.
-     * NOTA: this condition is not tested here, but later in {@link PeakGraph.findBarPeaks()}.
+     * NOTA: this last condition is not tested here, but later in {@link PeakGraph.findBarPeaks()}.
      * </ul>
      *
-     * @param allClusters (input/output) the collection to be purged, already ordered by layout
+     * @param allClusters (input/output) the collection to be purged, not yet sorted
      */
     private void purgeClusters (List<LineCluster> allClusters)
     {
-        final Skew skew = sheet.getSkew();
-        final List<LineCluster> oneLines = new ArrayList<>();
-        for (Iterator<LineCluster> it = allClusters.listIterator(); it.hasNext();) {
-            final LineCluster cluster = it.next();
+        // Purge all too short clusters
+        final List<LineCluster> shortClusters = allClusters.stream() //
+                .filter(cl -> cl.getBounds().width < params.minStaffLength) //
+                .peek(cl -> logger.info("Too short {} at {}", cl, cl.getBounds())) //
+                .collect(Collectors.toList());
+        allClusters.removeAll(shortClusters);
 
-            if (cluster.getSize() == 1) {
-                // Check for a minimum horizontal length
-                final Rectangle box = cluster.getBounds();
+        // Retrieve the 1-line clusters
+        final List<LineCluster> oneLines = allClusters.stream() //
+                .filter(cl -> cl.isOneLine()) //
+                .collect(Collectors.toList());
 
-                if (box.width < params.minStaffLength) {
-                    logger.debug("Too short {} at {}", cluster, box);
-                    it.remove();
-                    continue;
-                }
+        if (globalSlope == 0) {
+            // For nearly-horizontal scores, be very strict on cluster slope
+            final List<LineCluster> slopedOneLines = oneLines.stream() //
+                    .filter(cl ->
+                    {
+                        final Rectangle bounds = cl.getBounds();
+                        final double slope = (double) (bounds.height - 1) / bounds.width;
+                        return Math.abs(slope) > params.maxOneLineSlope;
+                    }) //
+                    .peek(cl -> logger.info("Too sloped {} at {}", cl, cl.getBounds())) //
+                    .collect(Collectors.toList());
+            allClusters.removeAll(slopedOneLines);
+            oneLines.removeAll(slopedOneLines);
+        }
 
-                oneLines.add(cluster);
+        {
+            // Avoid near empty lines
+            int maxTrueLength = 0;
+            for (LineCluster cl : allClusters) {
+                maxTrueLength = Math.max(cl.getTrueLength(), maxTrueLength);
             }
+            final int minTrueLength = (int) Math.rint(maxTrueLength * params.minTrueLengthRatio);
+            final List<LineCluster> emptyOneLines = oneLines.stream() //
+                    .filter(cl -> cl.getTrueLength() < minTrueLength) //
+                    .peek(cl -> logger.info("Almost empty {} at {}", cl, cl.getBounds())) //
+                    .collect(Collectors.toList());
+            allClusters.removeAll(emptyOneLines);
+            oneLines.removeAll(emptyOneLines);
         }
+    }
 
-        if (oneLines.isEmpty()) {
-            return;
-        }
-
+    //-----------------------------------//
+    // purgeOneLineClustersRightIndented //
+    //-----------------------------------//
+    /**
+     * Remove the 1-line clusters which are full-width clusters indented on their right side.
+     *
+     * @param allClusters (input/output) the list to be purged, must be SORTED BY LAYOUT
+     */
+    private void purgeOneLineClustersRightIndented (List<LineCluster> allClusters)
+    {
         // Separate full-width clusters from  half-width clusters if any
         final List<LineCluster> halfClusters = ClustersRetriever.getHalfClusters(allClusters);
         final List<LineCluster> fullClusters = new ArrayList<>(allClusters);
         fullClusters.removeAll(halfClusters);
-        //        Integer fullMedian = ClustersRetriever.getWidthMedianValue(fullClusters);
-        //        Integer halfMedian = ClustersRetriever.getWidthMedianValue(halfClusters);
-        //        logger.info("Median clusters widths full:{}, half:{}", fullMedian, halfMedian);
-        //
-        // A full cluster cannot be indented on right side
-        for (Iterator<LineCluster> it = fullClusters.listIterator(); it.hasNext();) {
-            final LineCluster fc = it.next();
-            if (!fc.isOneLine()) {
-                continue;
-            }
 
-            final LineCluster below = ClustersRetriever.getClusterBelow(fc, allClusters);
-            if (below == null) {
-                continue;
-            }
+        // Retrieve all the 1-line full clusters
+        final List<LineCluster> fullOneLines = fullClusters.stream() //
+                .filter(cl -> cl.isOneLine()) //
+                .collect(Collectors.toList());
 
-            final Point2D endPt = fc.getLastLine().getEndPoint(RIGHT);
-            final Point2D endDsk = skew.deskewed(endPt);
-            final Point2D belowEnd = below.getFirstLine().getEndPoint(RIGHT);
-            final Point2D belowDsk = skew.deskewed(belowEnd);
+        // A 1-line full cluster cannot be indented on its right side
+        final Skew skew = sheet.getSkew();
+        final List<LineCluster> indentedOneLines = fullOneLines.stream() //
+                .filter(cl ->
+                {
+                    final LineCluster below = ClustersRetriever.getClusterBelow(cl, allClusters);
+                    if (below == null) {
+                        return false;
+                    }
 
-            if (belowDsk.getX() - endDsk.getX() > params.maxRightIndentation) {
-                logger.info("Discarding right-indented {} at {}", fc, fc.getBounds());
-                it.remove();
-                allClusters.remove(fc);
-            }
-        }
+                    final Point2D endDsk = skew.deskewed(cl.getLastLine().getEndPoint(RIGHT));
+                    final Point2D belowDsk = skew.deskewed(below.getFirstLine().getEndPoint(RIGHT));
+                    return belowDsk.getX() - endDsk.getX() > params.maxRightIndentation;
+                }) //
+                .peek(cl -> logger.info("Right-indented {} at {}", cl, cl.getBounds())) //
+                .collect(Collectors.toList());
+        allClusters.removeAll(indentedOneLines);
+        fullOneLines.removeAll(indentedOneLines);
 
         //        // Let's consider the available vertical gap below every cluster
         //        int id = 0;
@@ -1543,6 +1568,15 @@ public class LinesRetriever
                 0.025,
                 "Maximum delta slope between filament and sheet");
 
+        private final Constant.Double maxOneLineSlope = new Constant.Double(
+                "tangent",
+                0.001,
+                "Maximum absolute slope value for a 1-line staff on perfect sheet");
+
+        private final Constant.Ratio minTrueLengthRatio = new Constant.Ratio(
+                0.3,
+                "Minimum percentage of mean true length");
+
         private final Constant.Double minSlope = new Constant.Double(
                 "tangent",
                 0.0002,
@@ -1683,6 +1717,9 @@ public class LinesRetriever
         /** Minimum absolute slope to be worth noting */
         final double minSlope;
 
+        /** Maximum absolute slope for a 1-line staff on a perfect sheet. */
+        final double maxOneLineSlope;
+
         /** Minimum polished radius. */
         final int minRadius;
 
@@ -1695,6 +1732,8 @@ public class LinesRetriever
 
         /** Maximum right indentation. */
         final int maxRightIndentation;
+
+        final double minTrueLengthRatio;
 
         /**
          * Creates a new Parameters object.
@@ -1725,6 +1764,8 @@ public class LinesRetriever
             maxStickerExtension = (int) Math.ceil(
                     scale.toPixelsDouble(constants.maxStickerExtension));
             minSlope = constants.minSlope.getValue();
+            maxOneLineSlope = constants.maxOneLineSlope.getValue();
+            minTrueLengthRatio = constants.minTrueLengthRatio.getValue();
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);

@@ -105,22 +105,16 @@ public class ClustersRetriever
     /**
      * For comparing Filament instances on their starting point.
      */
-    private static final Comparator<StaffFilament> byStartAbscissa = (f1,
-                                                                      f2) -> Double.compare(
-                                                                              f1.getStartPoint()
-                                                                                      .getX(),
-                                                                              f2.getStartPoint()
-                                                                                      .getX());
+    private static final Comparator<StaffFilament> byStartAbscissa = //
+            (f1,
+             f2) -> Double.compare(f1.getStartPoint().getX(), f2.getStartPoint().getX());
 
     /**
      * For comparing Filament instances on their stopping point.
      */
-    private static final Comparator<StaffFilament> byStopAbscissa = (f1,
-                                                                     f2) -> Double.compare(
-                                                                             f1.getStopPoint()
-                                                                                     .getX(),
-                                                                             f2.getStopPoint()
-                                                                                     .getX());
+    private static final Comparator<StaffFilament> byStopAbscissa = //
+            (f1,
+             f2) -> Double.compare(f1.getStopPoint().getX(), f2.getStopPoint().getX());
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -1324,7 +1318,7 @@ public class ClustersRetriever
     //-----------------//
     /**
      * Report the list of half-width clusters within the provided list,
-     * ordered by layout.
+     * which must be ordered by layout.
      *
      * @param list clusters ordered by layout
      * @return the first cluster physically below, or null if none
