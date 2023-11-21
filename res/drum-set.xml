@@ -6,11 +6,11 @@
 <!-- =========================================================================================== -->
 
 <!--
-    This file, located in Audiveris 'res' folder, defines drum default mapping.
-    The end-user can override part or whole of this mapping by writing a specific drum-set.xml file
-    located in Audiveris user 'config' folder.
+    This file, located in the Audiveris 'res' folder, defines the default drum mapping.
+    The end-user can override part or all of this mapping by writing a specific drum-set.xml file
+    located in the Audiveris user 'config' folder.
 
-    Such file defines Audiveris entries for general midi percussion keys.
+    Such a file defines Audiveris entries for general midi percussion keys.
     Definitions are grouped by staff line count with one attribute:
     
     - line-count        (Mandatory)
@@ -36,7 +36,7 @@
     - sound:            (Mandatory)
                         name of drum sound
                         The name must contain no space, no dash, just underscores.
-                        A null sound value removes the entry at (pitch-position,motif,sign) tuple
+                        A null sound value removes the entry at the (pitch-position,motif,sign) tuple
                         For a comprehensive list of sound names, please refer to
                         https://computermusicresource.com/GM.Percussion.KeyMap.html 
                   
