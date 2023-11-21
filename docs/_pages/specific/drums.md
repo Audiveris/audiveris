@@ -8,12 +8,12 @@ has_children: false
 ## Drums
 {: .no_toc }
 {: .d-inline-block }
-new in 5.3
-{: .label .label-yellow }
+updated for 5.4
+{: .label .label-green}
 
 We owe many thanks to Brian Boe for his decisive contribution to this long-awaited functionality.
 
-First requests for drums notation go back to 2017,
+The first requests for drum notation go back to 2017,
 see Audiveris [issue #33](https://github.com/Audiveris/audiveris/issues/33). 
 This delay certainly originated in my personal ignorance (Hervé speaking) about this kind of notation.
 
@@ -26,39 +26,60 @@ Table of contents
 ### Example
 
 This [Wikipedia article](https://en.wikipedia.org/wiki/Percussion_notation) provides a good
-introduction to drums notation.  
+introduction to drum notation.
 
-Since 5.3 release, Audiveris supports drums unpitched notation on both 5-line and 1-line staves,
-as shown in the following excerpt:
+Since the 5.3 release, Audiveris supports unpitched precussion notation on both 5-line and 1-line staves,
+as shown in the excerpt below.
+
+{: .highlight }
+Note this handbook contains a [User editing session](../ui_examples/eyes/README.md) dedicated to this precise score example.
 
 ![](../assets/images/drums_stave_sizes.png)
 
 1. Each staff starts with a percussion clef,
 2. Each individual instrument is defined by a given head motif at a given line position  
    (drum set mapping).
-3. Though not specific to drums notation, we can frequently observe
+3. Though not specific to drum notation, we can frequently observe
 [multi-measure rests](./multi_rest.md) and [measure-repeat signs](./bar_repeat.md).
 
-### Processing switches
+### Mandatory processing switches
 
 To be able to transcribe the example above, we have to set two specific processing book parameters,
-available in dialog ``Book | Set Book Parameters``, one for 1-line
-and one for 5-line percussion stave sizes:
+available in the dialog ``Book | Set Book Parameters``, in the section named "Staves",
+one for 1-line and one for 5-line percussion stave sizes:
 
 ![](../assets/images/drums_params_2sizes.png)
 
-In batch mode, we can also set these switches at command line interface level:
+In batch mode, we can also set these switches at the command line interface level:
 > -option org.audiveris.omr.sheet.ProcessingSwitches.oneLineStaves=true
 
 > -option org.audiveris.omr.sheet.ProcessingSwitches.drumNotation=true
 
+### Additional switches
+
+Beside the two mandatory switches, it is worth paying attention to two other lines:
+- One is the "**Barline height**", located just above, in the "Scaling specifications".
+In fact, this line is usually hidden.
+It gets visible only when we set the "1-line percussion staves" switch to on.  
+On a multi-line staff, a barline is expected to go from the top line to the bottom line.
+But on a 1-line staff, what should be the height of barlines?
+In the example at hand, as in many other examples, the barlines exhibit the same height,
+whether they belong to a 5-line staff or to a 1-line staff, that is four interlines
+which is the default value.
+
+- Another one is the processing switch named "**5-line standard staves**".
+Since there are no such staves in the example, we can explicitly tell the engine that there are none.  
+It has no concrete impact on the example at hand, because there are other multi-line staves
+available for the OMR engine to measure the score interline value.  
+This switch will get more important when we address the case of [Snippets](./snippets.md).
+
 ### Drum set mapping
 
-There seems to be no universal specification for drum set mapping, only some recommandations.  
-This means that, depending on a score author, the mapping can be different.
+There seems to be no universal specification for drum set mapping, only some recommendations.  
+This means that, depending on score author, the mapping can be different.
 
 Audiveris provides a default mapping via the ``drum-set.xml`` file in its ``res`` resource folder.  
-Content of this XML file is listed in [appendix](#appendix).
+The content of this XML file is listed in the [appendix](#appendix).
 
 Within the ``drum-set`` XML root element, there is one ``staff`` XML element per staff size 
 (one for 1-line staves, one for 5-line staves).
@@ -68,20 +89,20 @@ The mapping definition is a list of entries within the containing ``staff`` XML 
 - Each ``entry`` XML element contains the following XML attributes:
     - "``pitch-position``": line/space number (0 being the mid-line, values increasing top down)
     - "``motif``": general head shape (oval, small, cross, diamond, triangle, circle)
-    - "``sound``": intrument name (Acoustic_Bass_Drum, etc. see appendix)
+    - "``sound``": intrument name (Acoustic_Bass_Drum, etc. see the appendix)
     - "``sign``": this attribute is optional, it indicates a playing technique
     (PLAYING_OPEN, PLAYING_HALF_OPEN, PLAYING_CLOSED)
 
 This protected resource is just the *default* mapping:
 - As an end-user, we can always incrementally override some or all of the default mapping entries,
 by writing our own entries in a similar but certainly smaller ``drum-set.xml`` file to be located
-in user ``config`` folder.
+in theh user ``config`` folder.
 - To "nullify" an existing default entry, we simply specify a "``null``" value
 for its "``sound``" attribute.
 
 ### Transcription
 
-Among the examples used when working on drums with Brian, we can recommand the
+Among the examples used when working on drums with Brian, we can recommend the
 [Redeye Percussion](https://www.redeyepercussion.com/) site.  
 Its "Sheet Music" top link gives access to hundreds of percussion scores.
 
@@ -89,7 +110,7 @@ Here below is the example of
 [Ophelia](https://www.redeyepercussion.com/music/Ophelia_TheBand_redeyepercussion.com.pdf),
 a simple one-page score.
 
-Beginning of the PDF file, downloaded from Redeye Percussion site, is as follows:
+The beginning of the PDF file, downloaded from Redeye Percussion site, is as follows:
 
 ![](../assets/images/drums_ophelia.png)
 
@@ -129,11 +150,11 @@ appear away from heads.
 
 ## Appendix
 
-Here below is the content of ``drum-set.xml`` file provided in Audiveris ``res``
+Here below is the content of the ``drum-set.xml`` file provided in the Audiveris ``res``
 application folder.
 
 Remember the end user can still override some default definitions
-via a similar ``drum-set.xml`` file to be located in user ``config`` folder.
+via a similar ``drum-set.xml`` file to be located in the user ``config`` folder.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -144,11 +165,11 @@ via a similar ``drum-set.xml`` file to be located in user ``config`` folder.
 <!-- =========================================================================================== -->
 
 <!--
-    This file, located in Audiveris 'res' folder, defines drum default mapping.
-    The end-user can override part or whole of this mapping by writing a specific drum-set.xml file
-    located in Audiveris user 'config' folder.
+    This file, located in the Audiveris 'res' folder, defines the default drum mapping.
+    The end-user can override part or all of this mapping by writing a specific drum-set.xml file
+    located in the Audiveris user 'config' folder.
 
-    Such file defines Audiveris entries for general midi percussion keys.
+    Such a file defines Audiveris entries for general midi percussion keys.
     Definitions are grouped by staff line count with one attribute:
     
     - line-count        (Mandatory)
@@ -174,7 +195,7 @@ via a similar ``drum-set.xml`` file to be located in user ``config`` folder.
     - sound:            (Mandatory)
                         name of drum sound
                         The name must contain no space, no dash, just underscores.
-                        A null sound value removes the entry at (pitch-position,motif,sign) tuple
+                        A null sound value removes the entry at the (pitch-position,motif,sign) tuple
                         For a comprehensive list of sound names, please refer to
                         https://computermusicresource.com/GM.Percussion.KeyMap.html 
                   
@@ -183,7 +204,18 @@ via a similar ``drum-set.xml`` file to be located in user ``config`` folder.
 <drum-set>
     
   <staff line-count="1">
-    <entry pitch-position="0"  motif="oval"    sound="null"/> <!-- Just a place-holder -->
+      
+    <!-- -1 -->
+    <entry pitch-position="-1" motif="oval"  sound="Hi_Bongo"/>
+    <entry pitch-position="-1" motif="cross" sound="Maracas"/> <!-- Surely wrong... -->
+    
+    <!-- 0 -->
+    <entry pitch-position="0"  motif="oval"  sound="Hand_Clap"/>
+    
+    <!-- 1 -->
+    <entry pitch-position="1"  motif="oval"  sound="Low_Bongo"/>
+    <entry pitch-position="1"  motif="cross" sound="Cowbell"/>
+    
   </staff>
   
   <staff line-count="5">
@@ -239,7 +271,7 @@ via a similar ``drum-set.xml`` file to be located in user ``config`` folder.
     <entry pitch-position="1" motif="oval"      sound="High_Floor_Tom"/>
     
     <!-- 2 -->
-    <entry pitch-position="1" motif="oval"      sound="Low_Floor_Tom"/>
+    <entry pitch-position="2" motif="oval"      sound="Low_Floor_Tom"/>
     <entry pitch-position="2" motif="cross"     sound="Low_Conga"/>
     <entry pitch-position="2" motif="circle"    sound="Low_Conga"/>
     
@@ -258,8 +290,9 @@ via a similar ``drum-set.xml`` file to be located in user ``config`` folder.
     
 <!--
     Here below is the list of not yet assigned sounds
-    To actually assign one sound, replace the "null" values by actual pitch-position and motif
-    -->
+    To actually assign one sound, uncomment the line and replace the "null" values
+    by actual pitch-position and motif.
+    
     <entry pitch-position="null" motif="null" sound="Hand_Clap"/>
     <entry pitch-position="null" motif="null" sound="Vibraslap"/>
     <entry pitch-position="null" motif="null" sound="Electric_Snare"/>
@@ -283,9 +316,10 @@ via a similar ``drum-set.xml`` file to be located in user ``config`` folder.
     <entry pitch-position="null" motif="null" sound="Open_Cuica"/>
     <entry pitch-position="null" motif="null" sound="Mute_Triangle"/>
     <entry pitch-position="null" motif="null" sound="Open_Triangle"/>
-    
+    -->
+  
   </staff>
-
+  
 </drum-set>
 ```
 
