@@ -1053,17 +1053,20 @@ public class LinesRetriever
 
         if (globalSlope == 0) {
             // For nearly-horizontal scores, be very strict on cluster slope
-            final List<LineCluster> slopedOneLines = oneLines.stream() //
-                    .filter(cl ->
-                    {
-                        final Rectangle bounds = cl.getBounds();
-                        final double slope = (double) (bounds.height - 1) / bounds.width;
-                        return Math.abs(slope) > params.maxOneLineSlope;
-                    }) //
-                    .peek(cl -> logger.info("Too sloped {} at {}", cl, cl.getBounds())) //
-                    .collect(Collectors.toList());
-            allClusters.removeAll(slopedOneLines);
-            oneLines.removeAll(slopedOneLines);
+            final Integer line = scale.getFore();
+            if (line != null) {
+                final List<LineCluster> slopedOneLines = oneLines.stream() //
+                        .filter(cl ->
+                        {
+                            final Rectangle bounds = cl.getBounds();
+                            final double slope = (double) (bounds.height - line) / bounds.width;
+                            return Math.abs(slope) > params.maxOneLineSlope;
+                        }) //
+                        .peek(cl -> logger.info("Too sloped {} at {}", cl, cl.getBounds())) //
+                        .collect(Collectors.toList());
+                allClusters.removeAll(slopedOneLines);
+                oneLines.removeAll(slopedOneLines);
+            }
         }
 
         {
