@@ -9,10 +9,8 @@ has_children: false
 
 As detailed in the [Git Workflow](https://github.com/Audiveris/audiveris/wiki/Git-Workflow) article
 on Audiveris Wiki:
-
 - Audiveris development is performed on the specific GitHub "**development**" branch.   
   It is thus continuously available for anyone that pulls and builds the software from source.
-
 - The default "**master**" branch is updated only for software releases.   
   At this time only, a new release is created and uploaded to the [Releases section](https://github.com/Audiveris/audiveris/releases) on GitHub site.
 

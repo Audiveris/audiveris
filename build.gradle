@@ -17,7 +17,6 @@ apply plugin: 'application'
 
 project.version  = '5.4-alpha'
 
-///sourceCompatibility = '1.17'
 def minJavaVersion = '17'
 sourceCompatibility = JavaLanguageVersion.of(minJavaVersion)
 
@@ -253,6 +252,23 @@ tasks.withType(CreateStartScripts) {
     // Make the script generators use our templates
     unixStartScriptGenerator.template = resources.text.fromFile("$buildDir/custom-unixStartScript.txt")
     windowsStartScriptGenerator.template = resources.text.fromFile("$buildDir/custom-windowsStartScript.txt")
+}
+
+// Generate a PDF version of handbook
+task deletePdf(type: Delete) {
+    delete "build/pdf"
+}
+task handbookPdf (dependsOn: deletePdf, type: Exec) {
+    group "doc"
+    description "Generates PDF version of handbook from GitHub"
+    workingDir = projectDir
+    commandLine 'sh', 'docs/pdf/pdf-build.sh'
+}
+task handbookPdfLocalhost (dependsOn: deletePdf, type: Exec) {
+    group "doc"
+    description "Generates PDF version of handbook from local host"
+    workingDir = projectDir
+    commandLine 'sh', 'docs/pdf/pdf-build.sh', 'localhost'
 }
 
 javadoc {
