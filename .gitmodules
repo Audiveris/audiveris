@@ -1,0 +1,3 @@
+[submodule "flathub"]
+	path = dev/flathub
+	url = https://github.com/flathub/org.audiveris.Audiveris
