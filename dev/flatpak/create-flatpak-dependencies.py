@@ -67,19 +67,19 @@ ln -f {self.item_name} {"/".join([dir, self.item_name])}
 
 def main(build_dir):
     artifacts = []
-    flat_dir = os.path.join(project_dir, "deps")
-    if not os.path.isdir(flat_dir):
-        os.makedirs(flat_dir)
     repo_dir = os.path.join(project_dir, "dependencies")
-    if not os.path.isdir(repo_dir):
-        os.makedirs(repo_dir)
-    temp_home = os.path.join(build_dir, ".gradle_temp")
+    temp_home = os.path.join(build_dir, "dev/flatpak/gradle")
     if not os.path.isdir(build_dir):
         raise RuntimeError(f"{build_dir} does not exist")
 
     os.chdir(build_dir)
+
+    # By default, gradle stores the cached artifacts under $HOME/.gradle
+    # We can't uset that because it might contain lots of artifacts that
+    # we don't need. Therefore use a different user home (-g)
+    # Fixme: how to clean up this temp dir?
     # Fixme: do we need to call the "build" task, really?
-    subprocess.call(["./gradlew", "--info", "-g", temp_home, "build"])
+    subprocess.call(["./gradlew", "-q", "-g", temp_home, "build"])
     os.chdir(project_dir)
 
     # Dir layout of file created by gradle: e.g.
@@ -105,9 +105,6 @@ def main(build_dir):
                 for cache_version_id in os.listdir(cache_artifact_dir):
                     # cache_version_id = "4.0.2"
                     cache_version_dir = os.path.join(cache_artifact_dir, cache_version_id)
-                    repo_version_dir = os.path.join(repo_artifact_dir, cache_version_id)
-                    if not os.path.isdir(repo_version_dir):
-                        os.makedirs(repo_version_dir)
                     # the first glob is for the SHA1, the 2nd for the file name
                     cache_items = os.path.join(cache_version_dir, "*/*")
                     for cache_item in glob.glob(cache_items):
@@ -138,28 +135,16 @@ def main(build_dir):
 
     artifacts.sort()
 
-    with open("dependencies.yml", "w") as output:
+    with open("../flathub/dependencies.yml", "w") as output:
         output.write(f"""
 {"".join([a.yml() for a in artifacts])}
 """)
-    with open("mkgradlerepo.sh", "w") as out:
+    with open("../flathub/mkgradlerepo.sh", "w") as out:
         out.write(f"""\
 #! /bin/bash
 {"".join([a.script() for a in artifacts])}
 """)
 
-    if os.path.islink(build_dir):
-        shutil.rmtree(os.path.realpath(build_dir))
-        os.unlink(build_dir)
-    else:
-        shutil.rmtree(build_dir)
-
 if __name__ == "__main__":
-    if len(sys.argv) > 2:
-        raise RuntimeError("This script takes max 1 argument")
-    elif len(sys.argv) == 2:
-        dir=sys.argv[1]
-    else:
-        dir=".flatpak-builder/build/dummy"
-        dir = os.path.join(project_dir, dir)
-    main(dir)
+    main_dir = os.path.dirname(os.path.dirname(project_dir))
+    main(main_dir)
