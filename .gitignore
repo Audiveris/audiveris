@@ -78,3 +78,7 @@ docs/.jekyll-metadata
 docs/Gemfile.lock
 docs/_site/
 docs/pdf/build
+
+# flatpak
+dev/flatpak/.flatpak-builder/
+dev/flatpak/gradle/
