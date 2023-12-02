@@ -177,6 +177,6 @@ for lang in "${LANGUAGES[@]}"; do
 done
 
 if [[ $lang_files ]]; then
-    echo "$lang_files" >>lang_sources.yml
-    echo "lang_sources.yml generated" >&2
+    echo "$lang_files" >>../flathub/lang_sources.yml
+    echo "../flathub/lang_sources.yml generated" >&2
 fi
