@@ -137,13 +137,19 @@ public class SlurInter
     public static final Predicate<SlurInter> isEndingOrphan = (slur) ->
     {
         if ((slur.getHead(RIGHT) == null) && (slur.getExtension(RIGHT) == null)) {
-            // Check we are in last measure
+            // Check we end in last measure or beyond
             Point2D end = slur.getCurve().getP2();
             SystemInfo system = slur.getSig().getSystem();
+            Staff staff1 = system.getClosestStaff(end);
             MeasureStack stack = system.getStackAt(end);
+
+            // Case where the end point is beyond staff right limit
+            if (stack == null && end.getX() >= staff1.getAbscissa(RIGHT)) {
+                return true;
+            }
+
             if (stack == system.getLastStack()) {
                 // Check slur ends in last measure half
-                Staff staff1 = system.getClosestStaff(end);
                 Measure measure = stack.getMeasureAt(staff1);
                 int middle = measure.getAbscissa(LEFT, staff1) + (measure.getWidth() / 2);
                 if (end.getX() > middle) {
