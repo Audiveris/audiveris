@@ -71,6 +71,7 @@ import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
+import org.audiveris.omr.sig.inter.AbstractPauseInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
@@ -87,6 +88,7 @@ import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
+import org.audiveris.omr.sig.relation.ChordPauseRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
@@ -2205,7 +2207,7 @@ public class PartwiseBuilder
             // For first note in chord
             if (isFirstInChord) {
                 if (!current.measure.isDummy() && !current.repeatCopying) {
-                    // Chord events (direction, pedal, dynamics, articulation, ornament)
+                    // Chord events (direction, pedal, dynamics, articulation, pause, ornament, etc)
                     for (Relation rel : sig.edgesOf(chord)) {
                         final Inter other = sig.getOppositeInter(chord, rel);
 
@@ -2220,6 +2222,8 @@ public class PartwiseBuilder
                             processDynamics((DynamicsInter) other);
                         } else if (rel instanceof ChordArticulationRelation) {
                             processArticulation((ArticulationInter) other);
+                        } else if (rel instanceof ChordPauseRelation) {
+                            processPause((AbstractPauseInter) other);
                         } else if (rel instanceof ChordOrnamentRelation) {
                             processOrnament((OrnamentInter) other);
                         } else if (rel instanceof ChordArpeggiatoRelation) {
@@ -2652,6 +2656,45 @@ public class PartwiseBuilder
 
         for (SheetStub stub : scoreStubs) {
             processStub(stub, partMap);
+        }
+    }
+
+    //--------------//
+    // processPause //
+    //--------------//
+    private void processPause (AbstractPauseInter pause)
+    {
+        try {
+            logger.debug("Visiting {}", pause);
+
+            final Point center = pause.getCenter();
+            final Staff staff = current.note.getStaff();
+
+            final JAXBElement<?> element = getPauseObject(pause.getShape());
+
+            // Placement
+            final Class<?> classe = element.getDeclaredType();
+
+            Method method = classe.getMethod("setPlacement", AboveBelow.class);
+            method.invoke(
+                    element.getValue(),
+                    (center.y < current.note.getCenter().y) ? AboveBelow.ABOVE : AboveBelow.BELOW);
+
+            // Default-X
+            method = classe.getMethod("setDefaultX", BigDecimal.class);
+            method.invoke(
+                    element.getValue(),
+                    toTenths(center.x - current.measure.getAbscissa(LEFT, staff)));
+
+            // Default-Y
+            method = classe.getMethod("setDefaultY", BigDecimal.class);
+            method.invoke(element.getValue(), yOf(center, staff));
+
+            // Include in Articulations
+            getArticulations().getAccentOrStrongAccentOrStaccato().add(element);
+        } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
+                | SecurityException | InvocationTargetException ex) {
+            logger.warn("Error visiting " + pause, ex);
         }
     }
 

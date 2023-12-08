@@ -23,13 +23,9 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -40,7 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "caesura")
 public class CaesuraInter
-        extends AbstractInter
+        extends AbstractPauseInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -64,37 +60,6 @@ public class CaesuraInter
     public CaesuraInter (Glyph glyph,
                          Double grade)
     {
-        super(glyph, (glyph != null) ? glyph.getBounds() : null, Shape.CAESURA, grade);
-    }
-
-    //~ Static Methods -----------------------------------------------------------------------------
-
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create a caesura inter.
-     *
-     * @param glyph  the caesura glyph
-     * @param grade  the interpretation quality
-     * @param system the related system
-     * @return the created caesura or null
-     */
-    public static CaesuraInter create (Glyph glyph,
-                                       double grade,
-                                       SystemInfo system)
-    {
-        // Look for staff below
-        final Point2D center = glyph.getCenter2D();
-        final Staff staff = system.getStaffAtOrBelow(center);
-
-        if (staff == null) {
-            return null;
-        }
-
-        final CaesuraInter caesura = new CaesuraInter(glyph, grade);
-        caesura.setStaff(staff);
-
-        return caesura;
+        super(glyph, Shape.CAESURA, grade);
     }
 }

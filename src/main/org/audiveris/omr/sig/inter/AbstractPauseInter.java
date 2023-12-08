@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                A r t i c u l a t i o n I n t e r                               //
+//                               A b s t r a c t P a u s e I n t e r                              //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -23,60 +23,59 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.relation.ChordArticulationRelation;
+import org.audiveris.omr.sig.relation.ChordPauseRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
 /**
- * Class <code>ArticulationInter</code> represents an articulation sign.
- * <p>
- * Supported shapes are ACCENT, STRONG_ACCENT, STACCATO, TENUTO, STACCATISSIMO
+ * Class <code>AbstractPauseInter</code> represents a breath-mark or a caesura.
+ * It is located right after its prior reference head chord.
  *
  * @author Hervé Bitteur
  */
-@XmlRootElement(name = "articulation")
-public class ArticulationInter
+public abstract class AbstractPauseInter
         extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(ArticulationInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractPauseInter.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
 
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * No-arg constructor meant for JAXB.
      */
-    private ArticulationInter ()
+    protected AbstractPauseInter ()
     {
     }
 
     /**
-     * Creates a new <code>ArticulationInter</code> object.
+     * Creates a new <code>AbstractPauseInter</code> object.
      *
      * @param glyph underlying glyph
-     * @param shape precise shape (ACCENT, STRONG_ACCENT, STACCATO, TENUTO, STACCATISSIMO)
+     * @param shape precise shape (BREATH_MARK, CAESURA)
      * @param grade the interpretation quality
      */
-    public ArticulationInter (Glyph glyph,
-                              Shape shape,
-                              Double grade)
+    public AbstractPauseInter (Glyph glyph,
+                               Shape shape,
+                               Double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
@@ -101,7 +100,7 @@ public class ArticulationInter
     public boolean checkAbnormal ()
     {
         // Check if a chord is connected
-        setAbnormal(!sig.hasRelation(this, ChordArticulationRelation.class));
+        setAbnormal(!sig.hasRelation(this, ChordPauseRelation.class));
 
         return isAbnormal();
     }
@@ -113,7 +112,7 @@ public class ArticulationInter
     public Staff getStaff ()
     {
         if (staff == null) {
-            for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
+            for (Relation rel : sig.getRelations(this, ChordPauseRelation.class)) {
                 return staff = sig.getOppositeInter(this, rel).getStaff();
             }
         }
@@ -127,7 +126,7 @@ public class ArticulationInter
     @Override
     public Voice getVoice ()
     {
-        for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
+        for (Relation rel : sig.getRelations(this, ChordPauseRelation.class)) {
             return sig.getOppositeInter(this, rel).getVoice();
         }
 
@@ -138,7 +137,13 @@ public class ArticulationInter
     // lookupLink //
     //------------//
     /**
-     * Try to detect a link between this articulation instance and a HeadChord nearby.
+     * Try to detect a link between this Pause instance and a prior HeadChord.
+     * <p>
+     * We can reasonably restrict the abscissa of the prior head chord to be located
+     * between the measure start abscissa and the pause right side.
+     * And we choose the head chord which is abscissa-wise closest to the pause sign.
+     * <p>
+     * NOTA: The staff element of the Pause instance is assumed to be set.
      *
      * @param systemHeadChords collection of head chords in system, ordered by abscissa
      * @param profile          desired profile level
@@ -147,71 +152,56 @@ public class ArticulationInter
     private Link lookupLink (List<Inter> systemHeadChords,
                              int profile)
     {
+        if (staff == null) {
+            logger.error("Method lookupLink() called on a AbstractPauseInter with a null staff");
+            return null;
+        }
+
         if (systemHeadChords.isEmpty()) {
             return null;
         }
 
-        final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
-        final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum(profile));
-        final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum(profile));
-        final int minDy = scale.toPixels(ChordArticulationRelation.getYGapMinimum(profile));
-        final Rectangle articBox = getBounds();
-        final Point articCenter = getCenter();
-        final Rectangle luBox = new Rectangle(articCenter);
-        luBox.grow(maxDx, maxDy);
+        final SystemInfo system = staff.getSystem();
+        final MeasureStack stack = system.getStackAt(getCenter());
+        if (stack == null) {
+            return null;
+        }
 
-        final List<Inter> chords = Inters.intersectedInters(
-                systemHeadChords,
-                GeoOrder.BY_ABSCISSA,
-                luBox);
+        final Measure measure = stack.getMeasureAt(staff);
+        final int xMin = measure.getAbscissa(HorizontalSide.LEFT, staff);
+        final int xMax = getCenterRight().x;
+
+        final List<Inter> chords = Inters.inters(systemHeadChords, (Inter inter) ->
+        {
+            if (inter instanceof HeadChordInter headChord) {
+                if (!headChord.getStaves().contains(staff)) {
+                    return false;
+                }
+            } else if ((inter == null) || (inter.getStaff() != staff)) {
+                return false;
+            }
+
+            final Point center = inter.getCenter();
+
+            return (center.x >= xMin) && (center.x <= xMax);
+        });
 
         if (chords.isEmpty()) {
             return null;
         }
 
-        ChordArticulationRelation bestRel = null;
-        Inter bestChord = null;
-        double bestYGap = Double.MAX_VALUE;
+        // The best chord is simply the last (right-most) one
+        final Inter bestChord = chords.get(chords.size() - 1);
+        final Scale scale = system.getSheet().getScale();
+        final double dx = xMax - bestChord.getCenter().x;
+        final ChordPauseRelation bestRel = new ChordPauseRelation();
+        bestRel.setOutGaps(scale.pixelsToFrac(dx), 0 /* dy is irrelevant */, profile);
 
-        for (Inter chord : chords) {
-            Rectangle chordBox = chord.getBounds();
-
-            // The articulation cannot intersect the chord
-            if (chordBox.intersects(articBox)) {
-                continue;
-            }
-
-            Point center = chord.getCenter();
-
-            // Select proper chord reference point (top or bottom)
-            int yRef = (articCenter.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
-            double absXGap = Math.abs(center.x - articCenter.x);
-            double yGap = (articCenter.y > center.y) ? (articCenter.y - yRef)
-                    : (yRef - articCenter.y);
-
-            if (yGap < minDy) {
-                continue;
-            }
-
-            double absYGap = Math.abs(yGap);
-            ChordArticulationRelation rel = new ChordArticulationRelation();
-            rel.setOutGaps(scale.pixelsToFrac(absXGap), scale.pixelsToFrac(absYGap), profile);
-
-            if (rel.getGrade() >= rel.getMinGrade()) {
-                if ((bestRel == null) || (bestYGap > absYGap)) {
-                    bestRel = rel;
-                    bestChord = chord;
-                    bestYGap = absYGap;
-                }
-            }
+        if (bestRel.getGrade() < bestRel.getMinGrade()) {
+            return null;
         }
 
-        if (bestRel != null) {
-            return new Link(bestChord, bestRel, false);
-        }
-
-        return null;
+        return new Link(bestChord, bestRel, false);
     }
 
     //-------------//
@@ -236,7 +226,7 @@ public class ArticulationInter
     public Collection<Link> searchUnlinks (SystemInfo system,
                                            Collection<Link> links)
     {
-        return searchObsoletelinks(links, ChordArticulationRelation.class);
+        return searchObsoletelinks(links, ChordPauseRelation.class);
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
@@ -245,35 +235,46 @@ public class ArticulationInter
     // createValidAdded //
     //------------------//
     /**
-     * (Try to) create an ArticulationInter.
+     * (Try to) create a AbstractPauseInter.
      *
      * @param glyph            underlying glyph
      * @param shape            detected shape
      * @param grade            assigned grade
-     * @param system           containing system
+     * @param staff            the closest staff
      * @param systemHeadChords system head chords, ordered by abscissa
      * @return the created articulation or null
      */
-    public static ArticulationInter createValidAdded (Glyph glyph,
-                                                      Shape shape,
-                                                      Double grade,
-                                                      SystemInfo system,
-                                                      List<Inter> systemHeadChords)
+    public static AbstractPauseInter createValidAdded (Glyph glyph,
+                                                       Shape shape,
+                                                       Double grade,
+                                                       Staff staff,
+                                                       List<Inter> systemHeadChords)
     {
         if (glyph.isVip()) {
-            logger.info("VIP ArticulationInter create {} as {}", glyph, shape);
+            logger.info("VIP PauseInter create {} as {}", glyph, shape);
         }
 
-        final ArticulationInter articulation = new ArticulationInter(glyph, shape, grade);
-        final Link link = articulation.lookupLink(systemHeadChords, system.getProfile());
+        final AbstractPauseInter pause = switch (shape) {
+        case BREATH_MARK -> new BreathMarkInter(glyph, grade);
+        case CAESURA -> new CaesuraInter(glyph, grade);
+        default -> throw new IllegalArgumentException("No PauseInter for shape " + shape);
+        };
+
+        pause.setStaff(staff);
+
+        final SystemInfo system = staff.getSystem();
+        final Link link = pause.lookupLink(systemHeadChords, system.getProfile());
 
         if (link != null) {
-            system.getSig().addVertex(articulation);
-            link.applyTo(articulation);
+            system.getSig().addVertex(pause);
+            link.applyTo(pause);
 
-            return articulation;
+            return pause;
         }
 
         return null;
     }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
 }

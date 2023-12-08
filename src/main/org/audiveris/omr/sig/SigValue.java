@@ -68,6 +68,7 @@ import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
+import org.audiveris.omr.sig.inter.AbstractPauseInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
@@ -106,6 +107,7 @@ import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
 import org.audiveris.omr.sig.relation.ChordGraceRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
+import org.audiveris.omr.sig.relation.ChordPauseRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
@@ -233,6 +235,7 @@ public class SigValue
             @XmlElementRef(type = NumberInter.class),
             @XmlElementRef(type = OctaveShiftInter.class),
             @XmlElementRef(type = OrnamentInter.class),
+            @XmlElementRef(type = AbstractPauseInter.class),
             @XmlElementRef(type = PedalInter.class),
             @XmlElementRef(type = PlayingInter.class),
             @XmlElementRef(type = PluckingInter.class),
@@ -411,6 +414,7 @@ public class SigValue
                 @XmlElementRef(type = ChordGraceRelation.class),
                 @XmlElementRef(type = ChordNameRelation.class),
                 @XmlElementRef(type = ChordOrnamentRelation.class),
+                @XmlElementRef(type = ChordPauseRelation.class),
                 @XmlElementRef(type = ChordPedalRelation.class),
                 @XmlElementRef(type = ChordSentenceRelation.class),
                 @XmlElementRef(type = ChordStemRelation.class),

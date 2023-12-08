@@ -23,13 +23,9 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -40,7 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "breath-mark")
 public class BreathMarkInter
-        extends AbstractInter
+        extends AbstractPauseInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -64,37 +60,6 @@ public class BreathMarkInter
     public BreathMarkInter (Glyph glyph,
                             Double grade)
     {
-        super(glyph, (glyph != null) ? glyph.getBounds() : null, Shape.BREATH_MARK, grade);
-    }
-
-    //~ Static Methods -----------------------------------------------------------------------------
-
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create a BreathMark inter.
-     *
-     * @param glyph  the breathMark glyph
-     * @param grade  the interpretation quality
-     * @param system the related system
-     * @return the created breathMark or null
-     */
-    public static BreathMarkInter create (Glyph glyph,
-                                          Double grade,
-                                          SystemInfo system)
-    {
-        // Look for staff below
-        final Point2D center = glyph.getCenter2D();
-        final Staff staff = system.getStaffAtOrBelow(center);
-
-        if (staff == null) {
-            return null;
-        }
-
-        final BreathMarkInter breathMark = new BreathMarkInter(glyph, grade);
-        breathMark.setStaff(staff);
-
-        return breathMark;
+        super(glyph, Shape.BREATH_MARK, grade);
     }
 }

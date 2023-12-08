@@ -26,7 +26,6 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.glyph.Shape.BRACE;
 import static org.audiveris.omr.glyph.Shape.BRACKET;
-import static org.audiveris.omr.glyph.Shape.BREATH_MARK;
 import static org.audiveris.omr.glyph.Shape.CHARACTER;
 import static org.audiveris.omr.glyph.Shape.CODA;
 import static org.audiveris.omr.glyph.Shape.DAL_SEGNO;
@@ -52,6 +51,7 @@ import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 
@@ -763,7 +763,7 @@ public class ShapeChecker
         //            }
         //        };
         //
-        new Checker("SystemTop", Arrays.asList(DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK))
+        new Checker("SystemTop", Arrays.asList(DAL_SEGNO, DA_CAPO, SEGNO, CODA))
         {
             @Override
             public boolean check (SystemInfo system,
@@ -779,9 +779,13 @@ public class ShapeChecker
                     return false;
                 }
 
-                double pitch = staff.pitchPositionOf(bottom);
+                final Point center = glyph.getCenter();
+                double pitch = staff.pitchPositionOf(center);
 
-                return (constants.minDirectionPitchPosition.getValue() <= pitch) && (pitch <= -5);
+                final LineInfo firstConcreteLine = staff.getLines().get(0);
+                final int yMax = firstConcreteLine.yAt(center.x);
+
+                return (constants.minMarkerPitchPosition.getValue() <= pitch) && (center.y <= yMax);
             }
         };
 
@@ -946,10 +950,10 @@ public class ShapeChecker
                 2.5,
                 "Maximum normalized height for a lyrics text");
 
-        private final Constant.Double minDirectionPitchPosition = new Constant.Double(
+        private final Constant.Double minMarkerPitchPosition = new Constant.Double(
                 "PitchPosition",
                 -13.0,
-                "Minimum pitch value for a  segno / coda direction");
+                "Minimum pitch value for a  segno / coda marker");
 
         private final Constant.Double maxMeasureRepeatPitchPosition = new Constant.Double(
                 "PitchPosition",

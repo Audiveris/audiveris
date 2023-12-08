@@ -208,7 +208,7 @@ public abstract class MusicXML
             return factory.createArticulationsCaesura(caesura);
         }
 
-        logger.error("Unsupported ornament shape:{}", shape);
+        logger.error("Unsupported articulation shape:{}", shape);
 
         return null;
     }
@@ -402,6 +402,35 @@ public abstract class MusicXML
         }
 
         logger.error("Unsupported ornament shape: {}", shape);
+
+        return null;
+    }
+
+    //----------------//
+    // getPauseObject //
+    //----------------//
+    public static JAXBElement<?> getPauseObject (Shape shape)
+    {
+        //<!ELEMENT articulations
+        //      ((accent | strong-accent | staccato | tenuto |
+        //        detached-legato | staccatissimo | spiccato |
+        //        scoop | plop | doit | falloff | breath-mark |
+        //        caesura | stress | unstress | other-articulation)*)>
+        ObjectFactory factory = new ObjectFactory();
+
+        switch (shape) {
+        case BREATH_MARK:
+            BreathMark breathMark = factory.createBreathMark();
+            breathMark.setValue("comma");
+
+            return factory.createArticulationsBreathMark(breathMark);
+
+        case CAESURA:
+            final Caesura caesura = factory.createCaesura();
+            return factory.createArticulationsCaesura(caesura);
+        }
+
+        logger.error("Unsupported pause shape:{}", shape);
 
         return null;
     }

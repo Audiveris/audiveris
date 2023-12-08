@@ -49,6 +49,7 @@ import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
+import org.audiveris.omr.sig.inter.AbstractPauseInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
@@ -161,6 +162,7 @@ public abstract class Relations
         map(HeadChordInter.class, ChordGraceRelation.class, GraceChordInter.class);
         map(HeadChordInter.class, ChordNameRelation.class, ChordNameInter.class);
         map(HeadChordInter.class, ChordOrnamentRelation.class, OrnamentInter.class);
+        map(HeadChordInter.class, ChordPauseRelation.class, AbstractPauseInter.class);
         map(HeadChordInter.class, ChordSentenceRelation.class, SentenceInter.class);
         map(HeadChordInter.class, ChordStemRelation.class, StemInter.class);
         map(HeadChordInter.class, ChordSyllableRelation.class, LyricItemInter.class);

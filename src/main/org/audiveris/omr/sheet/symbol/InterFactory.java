@@ -74,6 +74,7 @@ import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
+import org.audiveris.omr.sig.inter.AbstractPauseInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
@@ -387,6 +388,7 @@ public class InterFactory
             if (closestStaff.isTablature()) {
                 return null;
             }
+
             AlterInter alter = AlterInter.create(glyph, shape, grade, closestStaff);
 
             sig.addVertex(alter);
@@ -423,11 +425,10 @@ public class InterFactory
         case FERMATA_ARC_BELOW:
             return FermataArcInter.create(glyph, shape, grade, system);
 
+        // Pauses
         case CAESURA:
-            return CaesuraInter.create(glyph, grade, system);
-
         case BREATH_MARK:
-            return BreathMarkInter.create(glyph, grade, system);
+            return AbstractPauseInter.createValidAdded(glyph, shape, grade, closestStaff, systemHeadChords);
 
         // Dynamics
         case DYNAMICS_P:
@@ -1063,11 +1064,12 @@ public class InterFactory
         case FERMATA_DOT:
             return new FermataDotInter(null, GRADE); // No visit
 
-        case CAESURA:
-            return new CaesuraInter(null, GRADE); // No visit
-
+        // Pauses
         case BREATH_MARK:
             return new BreathMarkInter(null, GRADE); // No visit
+
+        case CAESURA:
+            return new CaesuraInter(null, GRADE); // No visit
 
         // Dynamics
         case DYNAMICS_P:
