@@ -288,27 +288,32 @@ public class WedgeInter
     public Collection<Link> searchLinks (SystemInfo system)
     {
         final Scale scale = system.getSheet().getScale();
-        final double xMargin = scale.toPixels(constants.stackAbscissaMargin);
         final Line2D topLine = getLine1();
         final List<Link> links = new ArrayList<>();
 
         for (HorizontalSide side : HorizontalSide.values()) {
-            final Point2D location = (side == HorizontalSide.LEFT) ? new Point2D.Double(
-                    topLine.getX1() + xMargin,
-                    topLine.getY1())
-                    : new Point2D.Double(topLine.getX2() - xMargin, topLine.getY2());
-            final MeasureStack stack = system.getStackAt(location);
+            final Point2D end = (side == HorizontalSide.LEFT) ? topLine.getP1() : topLine.getP2();
+            MeasureStack stack = system.getStackAt(end);
+
+            if (stack == null) {
+                // Perhaps a bit beyond staff limit abscissa?
+                final double xMargin = scale.toPixels(constants.stackAbscissaMargin);
+                final Point2D end2 = new Point2D.Double(
+                        end.getX() + ((side == HorizontalSide.LEFT) ? xMargin : -xMargin),
+                        end.getY());
+                stack = system.getStackAt(end2);
+            }
 
             if (stack == null) {
                 continue;
             }
 
-            final AbstractChordInter chordAbove = stack.getStandardChordAbove(location, null);
+            final AbstractChordInter chordAbove = stack.getStandardChordAbove(end, null);
 
             if (chordAbove != null) {
                 links.add(new Link(chordAbove, new ChordWedgeRelation(side), false));
             } else {
-                final AbstractChordInter chordBelow = stack.getStandardChordBelow(location, null);
+                final AbstractChordInter chordBelow = stack.getStandardChordBelow(end, null);
 
                 if (chordBelow != null) {
                     links.add(new Link(chordBelow, new ChordWedgeRelation(side), false));
