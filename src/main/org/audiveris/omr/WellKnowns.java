@@ -398,7 +398,14 @@ public abstract class WellKnowns
         final Path audiverisPath = Paths.get(appdata + TOOL_PREFIX);
 
         // User Documents
-        final String userDocs = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
+        String userDocs;
+        try {
+            userDocs = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
+        }
+        catch (Exception e) {
+            printError("Cannot open the FileSystemView, is this system running in headless mode?");
+            userDocs = "C:";
+        }
 
         switch (kind) {
         case DATA:
