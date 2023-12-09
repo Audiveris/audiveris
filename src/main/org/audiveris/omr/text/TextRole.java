@@ -329,7 +329,7 @@ public enum TextRole
                 "Minimum distance below staff for a copyright");
 
         private final Scale.Fraction minTitleHeight = new Scale.Fraction(
-                3,
+                2,
                 "Minimum height for a title text");
     }
 }

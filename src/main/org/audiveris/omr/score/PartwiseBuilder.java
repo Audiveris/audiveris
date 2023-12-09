@@ -50,6 +50,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
+import org.audiveris.omr.sig.inter.AbstractPauseInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
@@ -71,7 +72,6 @@ import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
-import org.audiveris.omr.sig.inter.AbstractPauseInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
@@ -915,7 +915,7 @@ public class PartwiseBuilder
     }
 
     //---------//
-    // getWork //
+    // getWork // No longer used
     //---------//
     private Work getWork ()
     {
@@ -2774,12 +2774,12 @@ public class PartwiseBuilder
             {
                 // Work? (reference to larger work)
 
-                // Movement? (number/title of this score as a movement)
-                // Using score ID within containing book
-                if (firstPage.isMovementStart()) {
-                    scorePartwise.setMovementNumber("" + score.getId());
-                    scorePartwise.setMovementTitle("[Audiveris detected movement]");
-                }
+                //                // Movement? (number/title of this score as a movement)
+                //                // Using score ID within containing book
+                //                if (firstPage.isMovementStart()) {
+                //                    scorePartwise.setMovementNumber("" + score.getId());
+                //                    scorePartwise.setMovementTitle("[Audiveris detected movement]");
+                //                }
 
                 // Identification
                 Identification identification = factory.createIdentification();
@@ -2898,12 +2898,14 @@ public class PartwiseBuilder
 
             switch (role) {
             case Title:
-                getWork().setWorkTitle(sentence.getValue());
+                ///getWork().setWorkTitle(sentence.getValue());
+                scorePartwise.setMovementTitle(sentence.getValue());
 
                 break;
 
             case Number:
-                getWork().setWorkNumber(sentence.getValue());
+                ///getWork().setWorkNumber(sentence.getValue());
+                scorePartwise.setMovementNumber(sentence.getValue());
 
                 break;
 
