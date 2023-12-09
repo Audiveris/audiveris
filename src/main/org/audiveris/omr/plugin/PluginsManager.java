@@ -196,8 +196,10 @@ public class PluginsManager
                 Unmarshaller um = getJaxbContext().createUnmarshaller();
                 PluginsHolder pluginsHolder = (PluginsHolder) um.unmarshal(pluginsPath.toFile());
 
-                for (Plugin plugin : pluginsHolder.list) {
-                    plugin.check();
+                if (logger.isDebugEnabled()) {
+                    for (Plugin plugin : pluginsHolder.list) {
+                        plugin.check();
+                    }
                 }
 
                 logger.info("Loaded plugins from {}", pluginsPath);
