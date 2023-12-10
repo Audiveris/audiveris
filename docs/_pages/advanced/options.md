@@ -13,7 +13,7 @@ This mechanism is a low level yet powerful way to handle nearly all application 
 
 This data is presented as options to the end user, and is modifiable at run time:
 * Through the CLI `-option KEY=VALUE` argument
-* Through the pulldown menu `Tools | Options`
+* Through the pulldown menu {{ site.tools_options }}
 
 ---
 Table of contents
@@ -70,7 +70,7 @@ The overriding mechanism is defined as follows, from lower to higher priority:
 3.  CLI: The value, if any, specified in the command line by a `-option key=value`.
 The CLI value is persisted in the USER file when running in interactive mode,
 and not persisted when running in batch.
-4.  UI: The value, if any, specified through the `Tools | Options` user interface.
+4.  UI: The value, if any, specified through the {{ site.tools_options }} user interface.
 These UI values are persisted in the USER file.
 
 If ever we want to discard the modification we have made and get back to the FACTORY value of an

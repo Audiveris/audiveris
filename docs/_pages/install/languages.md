@@ -75,7 +75,7 @@ total 66M
 -rw-r--r-- 1 herve 16M Jun 22 14:16 ita.traineddata
 ```
 
-The About dialog, launched from the ``Help | About`` pulldown menu, displays key information
+The About dialog, launched from the {{ site.help_about }} pulldown menu, displays key information
 about the OCR engine version and OCR tessdata folder:
 
 ![](../assets/images/about_ocr.png)
@@ -84,17 +84,15 @@ about the OCR engine version and OCR tessdata folder:
 
 At runtime, you can specify which languages should be tried by the OCR software.  
 This is done via a language specification string, a plus-separated list of language names:
-
 - The easiest way is to define this language specification interactively.  
-Using the `Book | Set Book Parameters` menu, you can make specifications
+Using the {{ site.book_parameters }} menu, you can make specifications
 at the global level, book level and even individual sheet level.  
 Depending upon the language files present in your local ``tessdata`` folder,
 you will be presented with the list of  languages available for selection.
-
 - The default (global) specification is determined by the application constant
 `org.audiveris.omr.text.Language.defaultSpecification`, whose initial value is `deu+eng+fra`.  
 Thus, you can also modify this default directly by changing the constant value:
-  - either interactively (using `Tools | Options` menu)
+  - either interactively (using {{ site.tools_options }} menu)
   - or in batch (using something like
     `-option org.audiveris.omr.text.Language.defaultSpecification=ita+eng`).  
 

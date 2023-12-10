@@ -22,7 +22,7 @@ to ease the visual detection of any discrepancies.
   It represents the current transcription of the original image, annotated by informations such as
   system number, measure number, time slot offset, etc.
 
-Using menu `Views | Switch layers` or **F12** function key or the dedicated toolbar icon
+Using the menu {{ site.view_layers }} or the **F12** function key or the dedicated toolbar icon
 (![](../assets/images/ModePhysical.png)/![](../assets/images/ModeCombined.png)/![](../assets/images/ModeLogical.png)),
 we can cycle through these 3 different modes: Physical / Combined / Logical.
 

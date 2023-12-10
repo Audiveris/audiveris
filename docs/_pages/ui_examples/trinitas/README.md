@@ -86,14 +86,14 @@ Spme quick explanations about these early messages :
 
 1. Let's load the input file O.lux.beata.Trinitas.Alberti.Johann.Friedrich.pdf into Audiveris 5.2.    
    A quick look at the images shows it is of rather good quality.   
-   So, via `Book | Transcribe Book` menu item, let's launch the whole book transcription...   
+   So, via {{ site.book_transcribe }} menu item, let's launch the whole book transcription...   
    Done in 2 min 30 sec, about 30 sec per sheet.
 
 2. The last message says `[O.lux.beata.Trinitas.Alberti.Johann.Friedrich] Scores built: 3` which
    means that 3 movements have been transcribed in this book.
 
 3. Before getting into user actions, let's save the current project status,
-   via command `Book | Save Book` or command `Book | Save Book as...`.   
+   via the command `Book → Save Book` or the command `Book → Save Book as...`.   
    We choose the latter to shrink the project name from "O.lux.beata.Trinitas.Alberti.Johann.Friedrich"
    to simply "Trinitas".
    ```
@@ -119,7 +119,7 @@ Spme quick explanations about these early messages :
    because they are currently loaded.   
    Five sheets is not a really high number, but let's do something to save on memory, an action
    specifically useful for books with dozens of sheets or more:   
-   The command `Book | Swap Book Sheets` gets rid of all sheets from memory
+   The command {{ site.book_swap }} gets rid of all sheets from memory
    -- except the current sheet -- after storing them to disk if needed.   
    ```
    Disposed sheet#2
@@ -143,16 +143,16 @@ Spme quick explanations about these early messages :
    and has been disposed of, via the store/reload process.
 
    Even more efficiently, we could also:
-   1. Close the book using the `Book | Close Book` command (or `Ctrl+W` shortcut).
+   1. Close the book using the {{ site.book_close }} command (or `Ctrl+W` shortcut).
       We would be prompted to save the book if needed.
    2. Reopen the latest closed book (at its latest opened sheet), via the
-      `Book | Most recent book` command (or `Ctrl+Shift+T` shortcut).
+      `Book → Most recent book` command (or `Ctrl+Shift+T` shortcut).
    3. Going through all book sheets, the total memory would stay at about 105 MB.
 
 ## Raw results
 
 Here are the sheet results, right out of the OMR engine:   
-We have selected `View | Show score voice` or `F8` command so that voices in the same part
+We have selected {{ site.view_voices }} or `F8` command so that voices in the same part
 are displayed in different colors.
 
 {: .note }
@@ -181,8 +181,8 @@ We can double-check the time signatures. All have been correctly recognized:
 * **3/4** at the beginning of sheet #3 (the one with no signaled errors)
 * **Common-cut** at the beginning of sheet #4
 
-Let's have a closer look, with colorized voices (`View | Show score Voices`) and
-with chord IDs displayed (`View | Show chord IDs`).
+Let's have a closer look, with colorized voices ({{ site.view_voices }}) and
+with chord IDs displayed ({{ site.view_chords }}).
 
 {: .note }
 Chord IDs are dynamically assigned within each sheet by the Audiveris program.
@@ -220,7 +220,7 @@ So let's replace all the common-cuts by explicit "4/2" time signatures.
 To delete:
 - We select the common-cut Inter and press `DEL` key.
   Or we click on the `Deassign` button in the Inter board.
-  Or we use the `<popup> | Inters...` contextual menu.
+  Or we use the `<popup> → Inters...` contextual menu.
 
 Inserting a 4/2 signature is more complex, since this is not one of the predefined time signatures:
 1. From the Shape palette, we select the "Times" family (the family figured by a 4/4 sign) and
@@ -266,14 +266,14 @@ Chord #3381 is *not* part of this slot:
 ![](sheet1_m4_slot1.png)
 
 
-This is the purpose of a new option accessible via `Book | Set Book Parameters`,
+This is the purpose of a new option accessible via {{ site.book_parameters}},
 and named "Support for partial whole rests".
 When this option is on for the sheet at hand, whole rests are no longer considered as
 measure-long rests, they are just plain rests with a duration of 1/1:
 - They belong to a time slot,
 - Their voice can contain other notes or rests.
 
-So, we open the `Book | Set Book Parameters...` dialog, and:
+So, we open the {{ site.book_parameters}} dialog, and:
 1. We *set* this option for the whole book (so that it applies to all sheets in book)
 2. We explicitly *unset* this option for sheet #3.
 
@@ -283,13 +283,13 @@ So, we open the `Book | Set Book Parameters...` dialog, and:
 
 We don't forget to press the `OK` or `Apply` button to commit the parameters.
 
-Then, we use the contextual `<popup> | Page #1 | Reprocess rhythm` to update the page.
+Then, we use the contextual `<popup> → Page #1 → Reprocess rhythm` to update the page.
 
 Measure #4 now looks like this (notice chords #3381 and #2836 are now in the same green voice):
 
 ![](sheet1_m4_ok.png)
 
-And `<popup> | Measure #4 | Dump stack voices` dumps its strip as:
+And `<popup> → Measure #4 → Dump stack voices` dumps its strip as:
 
 ```
 MeasureStack#4
@@ -464,7 +464,7 @@ This concludes our manual work on Sheet #1, with no rhythm errors left.
 
 ## Sheet #2
 
-We update the rhythm on the whole sheet #2, via `<popup> | Page #1 | Reprocess rhythm`,
+We update the rhythm on the whole sheet #2, via `<popup> → Page #1 → Reprocess rhythm`,
 to benefit from the time signature fix (4/2) made on sheet #1.
 
 Only 3 measures are left in pink, but let's review all measures.
@@ -590,7 +590,7 @@ with custom 4/2 signatures.
 The first two measures are OK, but we would like to align their voices in the lower staff.
 
 So, we select the last chord in measure #1 and the first chord in measure #2, and use
-`<popup> | Chords | Next In Voice` to get:
+`<popup> → Chords → Next in voice` to get:
 
 ![](sheet4_m1_2_ok.png)
 
@@ -928,7 +928,7 @@ We can then choose the proper sentence role ("Rights"):
 
 ### MusicXML export
 
-We can export to MusicXML via the `Book | Export Book` menu item.
+We can export to MusicXML via the {{ site.book_export }} menu item.
 This gives:
 ```
 [Trinitas] Exporting sheet(s): [#1#2]

@@ -31,7 +31,7 @@ Table of contents
 A pink measure background is the most obvious sign, meant to call user attention to a measure,
 as in the following page view which displays two measures (#5P1 and #10P2) with a pink
 background and the others with standard white background:  
-[Unless we have disabled this feature via the menu item `View | Show score Errors`
+[Unless we have disabled this feature via the menu item {{ site.view_errors }}
 or the `F9` function  key or the related toolbar icon]
 
 ![](../assets/images/pink_measures.png)
@@ -70,7 +70,7 @@ measure is really suspicious (although the measure is not flagged as _abnormal_)
 ### Chords IDs
 
 By default, chord IDs are not displayed in sheet view because they look too invasive.
-To set them on, we use the pull-down menu `View | Show chord IDs`.
+To set them on, we use the pull-down menu {{ site.view_chords }}.
 
 This gives the new picture below, where it is clear that we could merge chord 3963 and chord 3964
 into a single chord:
@@ -120,7 +120,7 @@ Here again there is nothing, from the OMR engine point of view, to flag this mea
 Time slots are not visible in ![](../assets/images/ModePhysical.png) physical mode.   
 They are displayed in ![](../assets/images/ModeCombined.png) combined and
 ![](../assets/images/ModeLogical.png) logical modes
--- provided that `View | Show Annotations` flag is on.
+-- provided that the {{ site.view_annotations }} flag is on.
 
 A time slot is displayed as a thin vertical gray line, with its time offset value at the top.   
 Here below, we can see 4 slots with respective offsets:

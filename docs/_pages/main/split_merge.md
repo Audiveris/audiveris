@@ -107,7 +107,7 @@ partly transcribed.
 
 ### Dialog
 
-It is accessed via the `Book | Split and Merge...` menu item.
+It is accessed via the {{ site.book_split }} menu item.
 
 The dialog large table, meant for the underlying PlayLists, is initially empty.
 

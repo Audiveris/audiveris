@@ -101,7 +101,7 @@ and its displayed transcription.
 
 ### Selection of fonts families
 
-In interactive mode, we can use the ``Book | Set Book Parameters`` dialog in its ``Music font``
+In interactive mode, we can use the {{ site.book_parameters }} dialog in its ``Music font``
 and ``Text font`` fields:
 
 ![](../assets/images/fonts_selection.png)

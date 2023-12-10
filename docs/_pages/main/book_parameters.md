@@ -17,7 +17,7 @@ Table of contents
 
 ### Dialog
 
-The pulldown menu  `Book | Set Book Parameters...` opens a dialog to review and modify
+The pulldown menu  {{ site.book_parameters }} opens a dialog to review and modify
 high-level processing parameters.
 
 The following example displays the parameters dialog for a book (`Dichterliebe01`) which contains

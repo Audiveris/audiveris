@@ -59,7 +59,7 @@ and processed in the sheet.
 After the SCALE step, but before the BEAMS step, we can manually modify the beam thickness value
 as computed by the OMR engine.
 
-We can do this using the ``Sheet | Set Scaling Data`` pull-down menu.
+We can do this using the {{ site.sheet_scaling }} pull-down menu.
 
 Initially, all rows appear in gray, and the data values, if any, are displayed on the right.
 
@@ -84,7 +84,7 @@ Initially, all rows appear in gray, and the data values, if any, are displayed o
 A different approach is to provide upfront the OMR engine with a beam thickness specification.
 
 ##### Interactive mode
-We can do this using the ``Book | SetBook Parameters`` pull-down menu:
+We can do this using the {{ site.book_parameters }} pull-down menu:
 
 ![](../assets/images/beam_book_spec.png)
 

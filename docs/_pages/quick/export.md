@@ -16,7 +16,7 @@ Right now, we are focused only on how to feed a music sequencer with music data 
 And as of this writing, this is achieved by going through MusicXML-formatted data.
 
 We thus have to export OMR data as MusicXML data.
-This can be done via pulldown menu `Book | Export Book...`:
+This can be done via the pulldown menu {{ site.book_export }}:
 
 ![](../assets/images/book_export.png)
 

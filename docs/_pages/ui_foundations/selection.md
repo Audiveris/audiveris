@@ -50,7 +50,7 @@ There are 3 selections modes available:
 2. ![](../assets/images/font_type.png) _inter_-only based
 3. ![](../assets/images/kjumpingcube.png) _section_-only based.
 
-To switch from one mode to another, we use the toggle menu item `View | Switch selections`,
+To switch from one mode to another, we use the toggle menu item {{ site.view_selections }},
 click on the related toolbar icon or press the `F11` function key.
 
 #### Selection means

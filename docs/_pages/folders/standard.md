@@ -55,7 +55,7 @@ The *default* path to the base folder depends on Operating System:
 | **Linux** (choice #2)| $HOME/AudiverisLtd/audiveris |
 | **MacOS** | $HOME/Library/AudiverisLtd/audiveris/data |
 
-We can change this _default_ **base folder** via the pulldown menu `Tools | Options` dialog,
+We can change this _default_ **base folder** via the pulldown menu {{ site.tools_options }} dialog,
 by modifying the value of  `org.audiveris.omr.sheet.BookManager.baseFolder` constant.  
 (the modification persists between runs, until it is reset).
 
@@ -79,7 +79,7 @@ The historical target policy is still the default policy, but additional possibi
 are now provided by Audiveris 5.3.
 
 Beside the CLI option ``-output <output-folder>``, we now have two options selectable in
-``Tools | Advanced topics`` pulldown menu.
+{{ site.tools_advanced}} pulldown menu.
 See its [Target output folders](../advanced/topics.md#target-output-folders) section.
 - **Input sibling** option, off by default, to locate outputs next to the input file
 - **Separate folders** option, on by default, to gather outputs in a specific sub-folder

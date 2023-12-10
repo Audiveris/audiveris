@@ -184,7 +184,7 @@ And if we want to add many Inters of the same shape, we can consider using the
 If we have numerous Inters of the **same shape** to add in a row, a convenient way is to switch
 temporarily to the "_Repetitive Input_" mode.
 
-We click on the toolbar icon or select the menu item `Sheet | Toggle Repetitive Input`
+We click on the toolbar icon or select the menu item {{ site.sheet_repetitive }}
 or use the shortcut `Ctrl+Shift+N` and this mode is now set on.
 
 ![](../assets/images/repetitive_input.png)

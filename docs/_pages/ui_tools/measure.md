@@ -9,7 +9,7 @@ nav_order: 9
 {: .no_toc }
 
 A right-click in any measure stack allows us to merge this measure with the following one
-on the right, via the menu `<popup> | Measure #N | Merge on right`
+on the right, via the menu `<popup> → Measure #N → Merge on right`
  (which is disabled for the last measure of a system).
 
 It is a convenient way to remove all the intermediate barlines, if any, and merge the two

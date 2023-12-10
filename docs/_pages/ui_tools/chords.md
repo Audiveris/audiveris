@@ -47,7 +47,7 @@ This is meant to allow a visual check of the selected chords:
 | ![](../assets/images/chords_both.png) | ![](../assets/images/chords_one.png) | ![](../assets/images/chords_two.png) |
 
 To ease manual dealing with chords, we can make each chord ID visible as in the picture below
-(via the pull-down menu `View | Show chord IDs`):
+(via the pull-down menu {{ site.view_chords }}):
 
 ![](../assets/images/chord_ids.png)
 
@@ -115,7 +115,7 @@ Here is the result:
 ![](../assets/images/next_in_voice_after.png)
 
 We can always **undo** such an action, as any other UI action described here,
-via the `Sheet | Undo` or `Ctrl+Z` standard commands.
+via the `Sheet → Undo` or `Ctrl+Z` standard commands.
 
 Also if we want, much later in the process, to cancel this task, we can always get back
 to selecting the same chords and we'll be offered to **cancel** the task.   

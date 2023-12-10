@@ -36,7 +36,7 @@ and the OMR pipeline is applied on the sheet.
 **TIP**: Audiveris V5 can accommodate a book of hundreds of sheets.
 To save on memory, especially during long interactive sessions, we can ask Audiveris to
 transparently swap all book sheets to disk (except the current sheet).
-This is done via the pulldown menu `Book | Swap Book Sheets`.
+This is done via the pulldown menu {{ site.book_swap }}.
 
 ### Sheet Pipeline
 
@@ -58,8 +58,8 @@ To do so, we select the target step in the pulldown `Step` menu:
 
 ![Steps](../assets/images/step_menu.png)
 
-Note that selecting the pulldown menu `Sheet | Transcribe Sheet` is just another way of selecting
-the pulldown menu `Step | PAGE`.
+Note that selecting the pulldown menu {{ site.sheet_transcribe }} is just another way of selecting
+the pulldown menu `Step → PAGE`.
 
 Beware that we cannot directly move the pipeline backward.
 There are two workarounds:

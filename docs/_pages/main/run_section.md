@@ -48,7 +48,7 @@ Sections are gathered into LAGs (**L**inear **A**djacency **G**raphs).
 
 The picture above is displayed, once the `GRID` step has been performed.
 We select the "section" view ![](../assets/images/kjumpingcube.png)
-via the `View | Switch selections` pull-down menu or  the `F11` function key.
+via the {{ site.view_selections }} pull-down menu or  the `F11` function key.
 
 Based on the maximum staff line thickness (previously determined by the `SCALE` step),
 this picture combines sections from two different LAG's:

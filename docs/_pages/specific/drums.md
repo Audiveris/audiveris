@@ -45,7 +45,7 @@ Note this handbook contains a [User editing session](../ui_examples/eyes/README.
 ### Mandatory processing switches
 
 To be able to transcribe the example above, we have to set two specific processing book parameters,
-available in the dialog ``Book | Set Book Parameters``, in the section named "Staves",
+available in the dialog {{ site.book_parameters }}, in the section named "Staves",
 one for 1-line and one for 5-line percussion stave sizes:
 
 ![](../assets/images/drums_params_2sizes.png)
@@ -115,7 +115,7 @@ The beginning of the PDF file, downloaded from Redeye Percussion site, is as fol
 ![](../assets/images/drums_ophelia.png)
 
 Before launching the OMR engine, we specify book parameters
-using the ``Book | Set Book Parameters`` dialog:
+using the {{ site.book_parameters }} dialog:
 
 ![](../assets/images/drums_ophelia_params.png)
 

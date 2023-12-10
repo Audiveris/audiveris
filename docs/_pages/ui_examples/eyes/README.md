@@ -50,7 +50,7 @@ you can ask the browser to display each of these sheet images in a separate tab.
 ## Book parameters
 
 Based on a first look at the input score, we can select the proper book parameters,
-via the ``Book | Set Book Parameters`` dialog:
+via the {{ site.book_parameters }} dialog:
 
 ![](./book_parameters.png)
 
@@ -107,7 +107,7 @@ And that's it.
 
 ## Raw results
 
-We launch the whole book transcription, for example via (``Book | Transcribe Book``).
+We launch the whole book transcription, for example via {{ site.book_transcribe }}.
 
 Two minutes later, we get:
 
@@ -147,7 +147,7 @@ At the very beginning of sheet #1, we can see some header text partly recognized
 Regarding rhythm, we have 3 measures displayed with a pink background.
 Their (local) ids are measures 4 and 8 in the first system and measure 27 in the last system.
 
-We use ``View | Show score Voices`` so that each voice is displayed in a specific color.
+We use {{ site.view_voices }} so that each voice is displayed in a specific color.
 
 || Measures 3 & 4 |
 | :---: | :---: |

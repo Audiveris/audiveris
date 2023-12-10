@@ -36,7 +36,7 @@ and plucking indications (in green circles):
 ### Detection
 
 The OMR engine must be explicitly told to detect these indications.
-This can be done via the processing switches in ``Book | Set Book Parameters`` pulldown menu:
+This can be done via the processing switches in the {{ site.book_parameters }} pulldown menu:
 
 ![](../assets/images/fingering_plucking_switches.png)
 

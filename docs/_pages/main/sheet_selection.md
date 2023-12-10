@@ -13,7 +13,7 @@ An action launched at the book level, processes by default all the (valid) sheet
 And this may be too much when what we want is to work only on a portion of the book
 (for example to print or listen to just a movement or a few selected sheets).
 
-We can specify a sheet selection, via the pull-down menu `Book | Select sheets` which opens a
+We can specify a sheet selection, via the pull-down menu {{ site.book_select }} which opens a
 selection dialog based on sheet IDs as shown below:
 (The highest sheet ID in the current book is recalled)
 

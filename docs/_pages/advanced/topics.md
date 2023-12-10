@@ -19,7 +19,7 @@ Only standard features are visible by default in Audiveris user interface.
 
 Some advanced features are gathered by `Topics`, that we can explicitly activate.
 
-This is done via the `Tools | Advanced Topics...` pulldown menu.
+This is done via the {{ site.tools_advanced }} pulldown menu.
 
 ![](../assets/images/advanced_topics.png)
 

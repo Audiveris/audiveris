@@ -16,7 +16,7 @@ But we can decide to focus on **voices**, rather than entity **kinds**, and thus
 each entity according to its voice, if any.
 This feature is reported to ease the detection of wrong voice assignment.
 
-To do this, we can use the pulldown menu `View | Show score Voices`
+To do this, we can use the pulldown menu {{ site.view_voices }}
 (or directly the related toolbar button):
 
 ![](../assets/images/view_voices.png)

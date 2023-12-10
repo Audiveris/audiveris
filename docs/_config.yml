@@ -136,3 +136,47 @@ java_version: 17
 
 # Tesseract version
 tesseract_version: 5.3.1
+
+# File menu paths
+file_input:         <code>File → Input</code>
+
+# Book menu paths
+book_split:         <code>Book → Split and merge</code>
+book_parameters:    <code>Book → Set book parameters</code>
+book_transcribe:    <code>Book → Transcribe book</code>
+book_swap:          <code>Book → Swap book sheets</code>
+book_select:        <code>Book → Select sheets</code>
+book_export:        <code>Book → Export book</code>
+book_stop:          <code>Book → Stop book transcription</code>
+book_save:          <code>Book → Save book</code>
+book_close:         <code>Book → Close book</code>
+
+# Sheet menu paths
+sheet_repetitive:   <code>Sheet → Toggle repetitive input</code>
+sheet_transcribe:   <code>Sheet → Transcribe sheet</code>
+sheet_status:       <code>Sheet → Current status</code>
+sheet_scaling:      <code>Sheet → Set scaling data</code>
+sheet_scale_plots:  <code>Sheet → Display scale plots</code>
+sheet_binary:       <code>Sheet → Display binary</code>
+
+# View menu paths
+view_jumbos:        <code>View → Show jumbo inters</code>
+view_voices:        <code>View → Show score voices</code>
+view_errors:        <code>View → Show score errors</code>
+view_selections:    <code>View → Switch selections</code>
+view_layers:        <code>View → Switch layers</code>
+view_slots:         <code>View → Show score slots</code>
+view_annotations:   <code>View → Show annotations</code>
+view_chords:        <code>View → Show chord IDs</code>
+view_parts:         <code>View → Show part names</code>
+
+# Tools menu paths
+tools_train:        <code>Tools → Train classifier</code>
+tools_memory:       <code>Tools → Memory</code>
+tools_options:      <code>Tools → Options</code>
+tools_advanced:     <code>Tools → Advanced topics</code>
+
+# Help menu paths
+help_handbook:      <code>Help → Handbook</code>
+help_updates:       <code>Help → Check for updates</code>
+help_about:         <code>Help → About</code>

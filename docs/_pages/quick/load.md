@@ -6,7 +6,7 @@ parent: Quick Tour
 ---
 ## Load
 
-To load an image from disk, we can use the pulldown menu `File | Input`:
+To load an image from disk, we can use the pulldown menu {{ site.file_input }}:
 
 ![](../assets/images/file_input.png)
 
