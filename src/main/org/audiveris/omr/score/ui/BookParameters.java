@@ -132,14 +132,17 @@ public class BookParameters
 
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The swing component of this entity. */
+    /** The swing container of this entity. */
+    private final JScrollPane scrollPane = new JScrollPane();
+
+    /** One tab per scope. */
     private final JTabbedPane component = new JTabbedPane();
 
     /** The related book, if any. */
     private final Book book;
 
     /** The topics panels. */
-    private final Map<Object, TopicsPanel> panels = new HashMap<>(); // TODO useful???
+    private final Map<Object, TopicsPanel> panels = new HashMap<>();
 
     /** The XactPanes, per scope. */
     private final Map<Object, XactPanes> xactPanes = new HashMap<>();
@@ -159,6 +162,8 @@ public class BookParameters
      */
     public BookParameters (SheetStub stub)
     {
+        scrollPane.setViewportView(component);
+
         // Default panel
         final XactPanes defaultPanes = new DefaultPanes();
         xactPanes.put(GLOBAL_SCOPE, defaultPanes);
@@ -398,9 +403,9 @@ public class BookParameters
      *
      * @return the concrete component
      */
-    public JTabbedPane getComponent ()
+    public JScrollPane getComponent ()
     {
-        return component;
+        return scrollPane;
     }
 
     //----------//
