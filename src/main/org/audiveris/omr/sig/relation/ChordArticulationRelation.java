@@ -171,7 +171,7 @@ public class ChordArticulationRelation
     {
 
         private final Constant.Ratio articulationSupportCoeff = new Constant.Ratio(
-                3,
+                2.5,
                 "Supporting coeff for (target) articulation");
 
         private final Scale.Fraction xGapMax = new Scale.Fraction(
