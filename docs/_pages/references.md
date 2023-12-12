@@ -9,7 +9,7 @@ has_children: true
 These sections are meant for direct reference only.
 
 * Inter editors
-* Pulldown and popup menus.
+* Pull-down and pop-up menus.
 * UI boards.
 * Folders used according to Operating System.
 * All kinds of output files.

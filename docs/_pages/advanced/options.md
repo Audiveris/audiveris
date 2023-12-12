@@ -13,7 +13,7 @@ This mechanism is a low level yet powerful way to handle nearly all application 
 
 This data is presented as options to the end user, and is modifiable at run time:
 * Through the CLI `-option KEY=VALUE` argument
-* Through the pulldown menu {{ site.tools_options }}
+* Through the pull-down menu {{ site.tools_options }}
 
 ---
 Table of contents

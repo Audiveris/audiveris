@@ -220,7 +220,7 @@ So let's replace all the common-cuts by explicit "4/2" time signatures.
 To delete:
 - We select the common-cut Inter and press `DEL` key.
   Or we click on the `Deassign` button in the Inter board.
-  Or we use the `<popup> → Inters...` contextual menu.
+  Or we use the `<pop-up> → Inters...` contextual menu.
 
 Inserting a 4/2 signature is more complex, since this is not one of the predefined time signatures:
 1. From the Shape palette, we select the "Times" family (the family figured by a 4/4 sign) and
@@ -283,13 +283,13 @@ So, we open the {{ site.book_parameters}} dialog, and:
 
 We don't forget to press the `OK` or `Apply` button to commit the parameters.
 
-Then, we use the contextual `<popup> → Page #1 → Reprocess rhythm` to update the page.
+Then, we use the contextual `<pop-up> → Page #1 → Reprocess rhythm` to update the page.
 
 Measure #4 now looks like this (notice chords #3381 and #2836 are now in the same green voice):
 
 ![](sheet1_m4_ok.png)
 
-And `<popup> → Measure #4 → Dump stack voices` dumps its strip as:
+And `<pop-up> → Measure #4 → Dump stack voices` dumps its strip as:
 
 ```
 MeasureStack#4
@@ -464,7 +464,7 @@ This concludes our manual work on Sheet #1, with no rhythm errors left.
 
 ## Sheet #2
 
-We update the rhythm on the whole sheet #2, via `<popup> → Page #1 → Reprocess rhythm`,
+We update the rhythm on the whole sheet #2, via `<pop-up> → Page #1 → Reprocess rhythm`,
 to benefit from the time signature fix (4/2) made on sheet #1.
 
 Only 3 measures are left in pink, but let's review all measures.
@@ -590,7 +590,7 @@ with custom 4/2 signatures.
 The first two measures are OK, but we would like to align their voices in the lower staff.
 
 So, we select the last chord in measure #1 and the first chord in measure #2, and use
-`<popup> → Chords → Next in voice` to get:
+`<pop-up> → Chords → Next in voice` to get:
 
 ![](sheet4_m1_2_ok.png)
 
@@ -607,7 +607,7 @@ We select (a head in) the first voice chord in the staff, for example chord #429
 ![](sheet4_m1_voice_assign.png)
 
 
-Then in the `Chords` popup menu, we select the "Preferred voice" directly for this chord.   
+Then in the `Chords` pop-up menu, we select the "Preferred voice" directly for this chord.   
 We can see here that there was no voice assigned ("None").
 We select the desired voice number in the menu, that is voice #5 (cyan color).
 

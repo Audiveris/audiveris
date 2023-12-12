@@ -1,13 +1,13 @@
 ---
 layout: default
-title: Pulldown Menus
+title: Pull-down menus
 parent: References
 nav_order: 1
 has_children: true
 ---
-# Pulldown Menus
+# Pull-down menus
 
-This chapter simply describes all Audiveris pulldown menus.
+This chapter simply describes all Audiveris pull-down menus.
 
 Since this chapter if meant for reference, each menu is described in its full extent,
 thus including advanced topics if any.  

@@ -23,7 +23,7 @@ detection of systems by the OMR engine.
 
 Since the 5.2 release, we can manually fix this problem.
 
-We point at the upper system portion, and via the right-click popup menu, navigate to `System#n ...`
+We point at the upper system portion, and via the right-click pop-up menu, navigate to `System#n ...`
 and click on "_Merge with system below_".
 
 ![](../assets/images/system_merge.png)

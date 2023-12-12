@@ -3,6 +3,7 @@ layout: default
 title: Pipeline
 parent: Main Features
 nav_order: 3
+has_children: true
 ---
 ## Pipeline
 {: .no_toc }
@@ -36,7 +37,7 @@ and the OMR pipeline is applied on the sheet.
 **TIP**: Audiveris V5 can accommodate a book of hundreds of sheets.
 To save on memory, especially during long interactive sessions, we can ask Audiveris to
 transparently swap all book sheets to disk (except the current sheet).
-This is done via the pulldown menu {{ site.book_swap }}.
+This is done via the pull-down menu {{ site.book_swap }}.
 
 ### Sheet Pipeline
 
@@ -54,12 +55,12 @@ that the OMR engine can perform.
 
 In the selected sheet,  we can decide to move the pipeline forward until a target
 step.
-To do so, we select the target step in the pulldown `Step` menu:
+To do so, we select the target step in the pull-down `Step` menu:
 
 ![Steps](../assets/images/step_menu.png)
 
-Note that selecting the pulldown menu {{ site.sheet_transcribe }} is just another way of selecting
-the pulldown menu `Step → PAGE`.
+Note that selecting the pull-down menu {{ site.sheet_transcribe }} is just another way of selecting
+the pull-down menu `Step → PAGE`.
 
 Beware that we cannot directly move the pipeline backward.
 There are two workarounds:

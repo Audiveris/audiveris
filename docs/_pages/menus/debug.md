@@ -2,7 +2,7 @@
 layout: default
 title: Debug menu
 grand_parent: References
-parent: Pulldown Menus
+parent: Pull-down menus
 nav_order: 8
 ---
 ## Debug menu

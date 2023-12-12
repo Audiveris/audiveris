@@ -19,7 +19,7 @@ Let's make sure we have enabled the `SAMPLES` topic in the {{ site.tools_advance
 and restarted the application to take this advanced topic into account in all UI corners.
 
 Then, we will need a bunch of training samples (a sample is basically a glyph and a shape).
-This is addressed in the [Samples](samples.md) section before.
+This is addressed in the [Samples](./samples.md) section before.
 
 Finally, we can launch one or several trainings of the glyph classifier, via the dedicated Trainer
 dialog.
@@ -35,7 +35,7 @@ Table of contents
 ### Trainer Dialog {#trainer}
 
 This dialog is dedicated to the training of Audiveris basic classifier (a glyph classifier).
-It is launched via the pulldown menu {{ site.tools_train }} or, from the global repository,
+It is launched via the pull-down menu {{ site.tools_train }} or, from the global repository,
 by its `Repository → Train classifier` menu.
 
 ![](../assets/images/classifier_training.png)

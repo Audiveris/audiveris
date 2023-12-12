@@ -77,12 +77,12 @@ This means that:
     - a dot (augmentation, staccato, ...) will be at best recognized as `DOT_set`,  
     - and a half or whole rest as `HW_REST_set`.  
 For these two cases -- and only for them -- the glyph classifier is not precise enough.  
-We'll have to explicitly select a more specific target shape, via the glyph popup menu
+We'll have to explicitly select a more specific target shape, via the glyph pop-up menu
 or via the shape palette.
 
-#### Via the glyphs popup-menu
+#### Via the glyphs pop-up-menu
 
-Once a glyph has been selected, we use a mouse right click to access the sheet popup menu,
+Once a glyph has been selected, we use a mouse right click to access the sheet pop-up menu,
 and its `Glyphs` sub-menu.
 
 ![](../assets/images/context_glyph.png)

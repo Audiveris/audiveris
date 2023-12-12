@@ -135,7 +135,7 @@ The dialog large table, meant for the underlying PlayLists, is initially empty.
 - The sheets specification is an editable field.
   By default, all sheets are selected but, if the originating book already had a sheets selection
   defined, this definition would be copied over to the excerpt field.
-  -- see the previous section on [Sheets Selection](sheets_selection.md) in a book.
+  -- see the previous section on [Sheets Selection](./sheet_selection.md) in a book.
 - Note that the same container can appear on several rows of the PlayList,
   with different sheets specifications
   -- see the example of [Sheet replacement](#sheet-replacement) above.

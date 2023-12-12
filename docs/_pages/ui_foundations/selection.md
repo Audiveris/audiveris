@@ -64,7 +64,7 @@ section entities, according to the current selection mode.
     If several entities are grabbed, only one is chosen to start the new selection.  
     For glyphs, it's the smallest one.  
     For inters, it's the member before the ensemble.  
-  A _right_-button mouse click opens the popup menu:
+  A _right_-button mouse click opens the pop-up menu:
     - with just the pointed entity if the previous selection was empty,  
     - with the previous selection if the previous selection was not empty.
 
@@ -80,13 +80,13 @@ section entities, according to the current selection mode.
 
   - **Pointing outside of any entity**:   
 A left click clears both glyphs and inters selections.  
-A right click opens the popup menu (with the entities selected so far).
+A right click opens the pop-up menu (with the entities selected so far).
 
-*   **Choosing an entity in the selection list**: The contextual popup menu, when entities have
+*   **Choosing an entity in the selection list**: The contextual pop-up menu, when entities have
     been selected, offers in the `Glyphs` and `Inters` sub-menus the list of selected entities.
     Simply moving the mouse onto the entity of choice will select this entity.
 
-*   **Choosing a relation in the relations list**: Via the contextual popup menu, moving to a
+*   **Choosing a relation in the relations list**: Via the contextual pop-up menu, moving to a
     selected inter displays a sub-menu with all the relations the inter is part of.
     Selecting a relation offers to dump or delete this relation.
 
@@ -141,7 +141,7 @@ This is by definition always the case when pointing at an **Inter** which is a m
 **Inter ensemble**, for example a note and its containing chord.
 In this case, the software will choose the member over the ensemble, knowing that you can later
 switch from selected member to selected ensemble in the Inter-board
-(and in the Inters popup menu).  
+(and in the Inters pop-up menu).  
 For example:
 
 ![](../assets/images/member_selected.png)
@@ -159,15 +159,15 @@ with the "_ChordSyllable_" relation to the lyric item "Ver" below.
 ### Container selection
 
 When clicking with the right mouse button on any location of the sheet image, the sheet
-popup menu appears.
+pop-up menu appears.
 
-This popup displays contextual information
+This pop-up displays contextual information
 -- such as the selected glyphs, inters, etc, if any --
 together with the containers being pointed at.
 
 ![](../assets/images/containers_popup.png)
 
-For example, the popup above allows to access -- beside chords, inters and glyphs --
+For example, the pop-up above allows to access -- beside chords, inters and glyphs --
 the containers related to current mouse location:
 * Time slot,
 * Measure,

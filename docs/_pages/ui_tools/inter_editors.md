@@ -62,11 +62,12 @@ The same editor applies to Bracket as well.
 * Center handle shifts the brace in any direction,
 * Top and bottom handles resize the brace vertically.
 
-IMPORTANT NOTICE: Shifting or resizing a brace is meant for small adjustments only.  
+{: .warning }
+Shifting or resizing a brace is meant for small adjustments only.  
 If you want to extend or reduce the number of staves embraced by a Brace instance
 (which is a rather heavy operation that impacts the definition of parts within a system),
 this must be done **explicitly** by adding or removing a manual Brace.
-Please refer to [Part merge](part.md) section for such Brace usage.
+Please refer to [Part merge](./part.md) section for such Brace usage.
 
 ### Beam editor
 

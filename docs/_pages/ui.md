@@ -38,12 +38,12 @@ significantly different when using the current **{{ site.audiveris_version }}** 
 
 ## Documentation content
 
-1. [UI Foundations](ui_foundations/README.md): Editable OMR data,
+1. [UI Foundations](./ui_foundations/README.md): Editable OMR data,
    how to select and inspect it.
-2. [UI Tools](ui_tools/README.md): How to modify OMR data,
+2. [UI Tools](./ui_tools/README.md): How to modify OMR data,
   beginning with the general tools to add/edit/remove both Inters and Relations.  
   Then more ad-hoc tools are presented to address specific cases.
-3. [UI Examples](ui_examples/README.md): Complete editing sessions
+3. [UI Examples](./ui_examples/README.md): Complete editing sessions
    on representative input scores.
 
 The best way to learn an editor is certainly by practicing rather than studying a long

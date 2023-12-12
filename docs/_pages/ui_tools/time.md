@@ -40,7 +40,7 @@ In fact, the precise chosen interpretation has no impact on OMR processing.
 
 If a time signature has not been detected or has been assigned a wrong value, we can select the
 underlying glyph and assign the desired value, either via a double-click in the shape palette or
-via the `Glyphs...` popup menu.
+via the `Glyphs...` pop-up menu.
 This works for the whole signature (or for each signature part, in the case of a pair signature).
 
 We can also drag a chosen time signature from the shape palette and drop it at the proper location,

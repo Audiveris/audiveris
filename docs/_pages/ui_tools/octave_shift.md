@@ -106,7 +106,7 @@ Another way is to select a suitable glyph, which must be limited to the number p
 without any suffix:   
 1. This will trigger the glyph classifier which may recognize the shape, in which case press
 the proper button in the classifier board.   
-2. If not, manually assign the target shape via the popup menu or via a double-click in the
+2. If not, manually assign the target shape via the pop-up menu or via a double-click in the
 `ClefsAndShifts` family of the Shape board.   
 3. Note you will be prompted for the precise target staff of the created shift.
 

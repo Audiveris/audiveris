@@ -75,7 +75,7 @@ total 66M
 -rw-r--r-- 1 herve 16M Jun 22 14:16 ita.traineddata
 ```
 
-The About dialog, launched from the {{ site.help_about }} pulldown menu, displays key information
+The About dialog, launched from the {{ site.help_about }} pull-down menu, displays key information
 about the OCR engine version and OCR tessdata folder:
 
 ![](../assets/images/about_ocr.png)

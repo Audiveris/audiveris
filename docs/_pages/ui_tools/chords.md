@@ -17,7 +17,7 @@ rather than its containing chord (this is the rule known as "_member over ensemb
 
 However, by selecting one or several notes, we can indirectly select and act on these chords.
 
-This is made possible via the usual popup menu which can provides a specific `Chords...`
+This is made possible via the usual pop-up menu which can provides a specific `Chords...`
 sub-menu, whose content tightly depends on the chords configuration.
 
 ---
@@ -31,7 +31,7 @@ Table of contents
 ### Chords menu
 
 Below, we have selected two notes as indicated by the arrows: one note head and one rest,
-before opening the popup/Chords menu:
+before opening the pop-up/Chords menu:
 
 ![](../assets/images/chords_selection.png)
 

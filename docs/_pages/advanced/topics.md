@@ -19,7 +19,7 @@ Only standard features are visible by default in Audiveris user interface.
 
 Some advanced features are gathered by `Topics`, that we can explicitly activate.
 
-This is done via the {{ site.tools_advanced }} pulldown menu.
+This is done via the {{ site.tools_advanced }} pull-down menu.
 
 ![](../assets/images/advanced_topics.png)
 
@@ -31,7 +31,7 @@ This box allows to define which step is automatically trigerred on an input file
 
 This allows to interactively choose a new default plugin among the declared ones,
 since by default the first declared plugin is set as the default one
-(See [Plugins](plugins.md) section).
+(See [Plugins](./plugins.md) section).
 
 ### Target output folders
 {: .d-inline-block }

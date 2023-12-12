@@ -22,7 +22,7 @@ This is the large panel on the left side.
 In this Data tab, the staff lines are drawn as thin lines.
 
 All tabs, except the Data tab, can be manually closed.
-Most can be re-opened via the `Sheet` pulldown menu.
+Most can be re-opened via the `Sheet` pull-down menu.
 
 ### Boards
 

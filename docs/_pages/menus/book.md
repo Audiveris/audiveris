@@ -2,7 +2,7 @@
 layout: default
 title: Book menu
 grand_parent: References
-parent: Pulldown Menus
+parent: Pull-down menus
 nav_order: 2
 ---
 ## Book menu
@@ -81,7 +81,7 @@ When needed, a swapped sheet is transparently reloaded.
 
 Select some sheets out of the current book, and limit processing to these sheets.
 
-See [Sheets Selection](../main/sheets_selection.md) section.
+See [Sheets Selection](../main/sheet_selection.md) section.
 
 ### Print Book
 

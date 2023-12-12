@@ -13,13 +13,13 @@ This process can be launched directly from the toolbar icon:
 
 ![](../assets/images/transcribe_button.png)
 
-It can also be launched via the pulldown menu {{ site.book_transcribe }}:
+It can also be launched via the pull-down menu {{ site.book_transcribe }}:
 
 ![](../assets/images/transcribe.png)
 
 Note this command applies to all images (sheets) in the input file (book).
 
-There is also the pulldown menu {{ site.sheet_transcribe }} which applies only to the current sheet.
+There is also the pull-down menu {{ site.sheet_transcribe }} which applies only to the current sheet.
 In the simple case at hand, since we have just one image in the input file, the book-level and
 sheet-level commands are equivalent.
 

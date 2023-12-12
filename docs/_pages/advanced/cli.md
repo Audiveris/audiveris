@@ -111,7 +111,7 @@ Specifies the value of one application option,
 KEY being the qualified name of the option,
 VALUE being the value to assign.
 
-This is the CLI equivalent of the GUI pulldown menu {{ site.tools_options }}.
+This is the CLI equivalent of the GUI pull-down menu {{ site.tools_options }}.
 
 #### -output DIRNAME
 

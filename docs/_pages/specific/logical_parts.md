@@ -57,7 +57,7 @@ We call this action: "***Part collation***" (into logical parts).
 Part collation is automatically triggered at the end of score transcription,
 and before any export to MusicXML.  
 We can also manually trigger parts collation.
-This is done via a right-click in a score area, which opens a popup menu as follows:  
+This is done via a right-click in a score area, which opens a pop-up menu as follows:  
 ![](../assets/images/collate_parts.png)
 
 To visualize the current mapping, one easy way is to tick the item ``Show part names``

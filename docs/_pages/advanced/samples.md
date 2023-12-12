@@ -55,9 +55,9 @@ help us see most samples within their sheet context.
 
 After perhaps some manual corrections, when we are really satisfied with all the glyphs recognized
 in a given sheet, we can save the sheet data as training samples.
-This is done via the pulldown menu `Sheet → Sample sheet Symbols`.
+This is done via the pull-down menu `Sheet → Sample sheet Symbols`.
 
-We can also use the pulldown menu `Book → Sample book Symbols` if we are comfortable with all the
+We can also use the pull-down menu `Book → Sample book Symbols` if we are comfortable with all the
 book sheets.
 
 Data is saved under two zip archives located in the book folder.
@@ -78,11 +78,11 @@ Using them as part of the training base could severely impact Audiveris recognit
 So the strategy, when such a wrong sample has been identified, is to remove it from the
 repository or to assign it a correct shape.
 
-To work on the **GLOBAL** repository, we use the `Tools → Browse Global Repository...` pulldown menu.
+To work on the **GLOBAL** repository, we use the `Tools → Browse Global Repository...` pull-down menu.
 It will work on the `samples.zip` and `images.zip` files if any are found in our own `config/train`
 folder (see [Train folder](../folders/essential.md#train-folder) section).
 
-To work on a **book** repository, we use the `Book → View Book Repository...` pulldown menu.
+To work on a **book** repository, we use the `Book → View Book Repository...` pull-down menu.
 We will be able to pick and merge book repositories into the GLOBAL repository later on,
 because the training process uses only the GLOBAL repository.
 
@@ -139,5 +139,5 @@ The selected sample can be:
 
 When we are satisfied with a book repository we can push its content to the global repository.
 
-We do so from the book repository interface, by selecting the pulldown menu
+We do so from the book repository interface, by selecting the pull-down menu
 `Repository → Push to Global`.

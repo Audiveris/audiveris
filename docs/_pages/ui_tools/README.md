@@ -75,7 +75,7 @@ if needed (see the [Sheet scale](../main/sheet_scale.md) section).
 
 * **GRID** step is where staff lines, then staves and systems are detected.  
 Hence, this is the most convenient point to interact if you need to manually modify lines
-and staves (see the [Staff editing](staff_editor.md) section).
+and staves (see the [Staff editing](./staff_editor.md) section).
 
 * **REDUCTION** step is where all candidate note heads are combined with candidate stems and
 beams and then reduced to come up with reliable notes (this does not include any flag or rest,

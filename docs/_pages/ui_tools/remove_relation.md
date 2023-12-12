@@ -28,7 +28,7 @@ In the following example, a sharp sign has been linked to the wrong note head:
 To select this relation, we first select the involved sharp sign.
 This will result in the picture above.
 
-Then we use a right-click to display the context popup menu, hover on the `Inters...` submenu,
+Then we use a right-click to display the context pop-up menu, hover on the `Inters...` submenu,
 then on the sharp item to see the `Relations:` list of relations this Inter is involved in.
 
 By clicking on the _AlterHead_ relation, we will be prompted to confirm the removal of this

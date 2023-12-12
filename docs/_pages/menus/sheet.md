@@ -2,7 +2,7 @@
 layout: default
 title: Sheet menu
 grand_parent: References
-parent: Pulldown Menus
+parent: Pull-down menus
 nav_order: 3
 ---
 ## Sheet menu

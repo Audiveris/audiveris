@@ -1,15 +1,15 @@
 ---
 layout: default
-title: Popup menu
+title: Pop-up menu
 parent: References
 nav_order: 2
 ---
-## Popup menu
+## Pop-up menu
 {: .no_toc }
 
 ![](../assets/images/popup_menu.png)
 
-This popup menu appears via a right-click in sheet view.
+This pop-up menu appears via a right-click in sheet view.
 
 It displays _contextual_ information and actions that depend on the sheet latest processing step,
 the current location in sheet view and the selected items if any.

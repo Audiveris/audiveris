@@ -22,7 +22,7 @@ If the engine result is not satisfactory, we can manually correct these staves v
 editing, which is provided in two different modes: `Global` mode and `Lines` mode.
 The former operates on the staff as a whole, the latter on any line separately.
 
-To enter staff editing, we right-click within a staff area, in the popup menu select the
+To enter staff editing, we right-click within a staff area, in the pop-up menu select the
 `Staff#n...` sub-menu and then select:
 - either the `Edit staff` item to edit the staff globally,
 - or the `Edit lines` item to edit each staff line individually.

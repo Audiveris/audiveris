@@ -69,7 +69,7 @@ the related stems can come and go according to the possible geometric connection
 being moved or resized and the (static) stems.
 
 These are just two typical examples.
-See the [Inter Editors](../ui_tools/inter_editor.md) reference section for a description
+See the [Inter Editors](../ui_tools/inter_editors.md) reference section for a description
 of all available Inter editors.
 
 ### Exiting editing mode

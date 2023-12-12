@@ -45,11 +45,12 @@
 │   ├── output_formats.md
 │   ├── pan_zoom.md
 │   ├── pipeline.md
+│   ├── run_section.md
 │   ├── scanning.md
 │   ├── score_page.md
 │   ├── sheet_scale.md
+│   ├── sheet_selection.md
 │   ├── sheet_validity.md
-│   ├── sheets_selection.md
 │   ├── sig.md
 │   ├── split_merge.md
 │   └── voice_colors.md
@@ -72,6 +73,7 @@
 │   ├── omr.md
 │   ├── pdf.md
 │   └── zip.md
+├── pages-tree.txt
 ├── quick
 │   ├── README.md
 │   ├── export.md
@@ -83,18 +85,43 @@
 ├── specific
 │   ├── README.md
 │   ├── bar_repeat.md
-│   ├── beam.md
 │   ├── drums.md
+│   ├── fingering_plucking.md
 │   ├── fonts.md
+│   ├── logical_parts.md
 │   ├── multi_rest.md
 │   ├── octave_shift.md
+│   ├── snippets.md
 │   ├── tablature.md
 │   └── tremolo.md
+├── steps
+│   ├── beams.md
+│   ├── binary.md
+│   ├── chords.md
+│   ├── cue_beams.md
+│   ├── curves.md
+│   ├── grid.md
+│   ├── headers.md
+│   ├── heads.md
+│   ├── ledgers.md
+│   ├── links.md
+│   ├── load.md
+│   ├── measures.md
+│   ├── page.md
+│   ├── reduction.md
+│   ├── rhythms.md
+│   ├── scale.md
+│   ├── stem_seeds.md
+│   ├── stems.md
+│   ├── symbols.md
+│   └── texts.md
 ├── ui.md
 ├── ui_examples
 │   ├── README.md
+│   ├── eyes
+│   │   ├── README.md
 │   └── trinitas
-│       └── README.md
+│       ├── README.md
 ├── ui_foundations
 │   ├── README.md
 │   ├── inspection.md
@@ -109,6 +136,7 @@
 │   ├── inter_editor.md
 │   ├── key.md
 │   ├── measure.md
+│   ├── octave_shift.md
 │   ├── part.md
 │   ├── remove_inter.md
 │   ├── remove_relation.md
@@ -120,4 +148,4 @@
 │   └── tips.md
 └── updates.md
 
-15 directories, 105 files
+17 directories, 553 files

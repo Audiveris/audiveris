@@ -86,8 +86,8 @@ For example, let's focus on the measure below:
 
 ![](../assets/images/chord_id_check.png)
 
-`<popup> | Measure #N | Dump stack voices` prints a strip for the whole system-high measure stack.  
-`<popup> | Measure #N | Dump measure voices` prints a strip for just the part-high measure.
+`<pop-up> | Measure #N | Dump stack voices` prints a strip for the whole system-high measure stack.  
+`<pop-up> | Measure #N | Dump measure voices` prints a strip for just the part-high measure.
 
 The latter (limited to one part) is meant for orchestra scores, with lots of parts within each
 system, to allow to focus on one part at a time.
@@ -136,11 +136,11 @@ with no chord aligned with it.
 Moreover, chord 4010 at bottom center is not aligned with any slot.
 
 To be more precise, we can investigate the content of each time slot, via a right-click on the slot:
-- `<popup> | Slot #3 | Dump chords` gives   
+- `<pop-up> | Slot #3 | Dump chords` gives   
 ```
 slot#3 start=  1/2 [HeadChordInter{#3979(0.794/0.794) stf:7 slot#3 off:1/2 dur:1/4},HeadChordInter{#4010(0.815/0.815) stf:9 slot#3 off:1/2 dur:1/2}]
 ```
-- `<popup> | Slot #3 | Dump voices` gives   
+- `<pop-up> | Slot #3 | Dump voices` gives   
 ```
 slot#3 start=  1/2 [V1 Ch#3979 s:7 Dur=  1/4, V5 Ch#4010 s:9 Dur=  1/2]
 ```

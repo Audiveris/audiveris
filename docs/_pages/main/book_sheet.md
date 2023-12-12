@@ -22,4 +22,4 @@ and flagged as such.
 
 With Audiveris 5.3, we can now split a book into smaller ones or, conversely,
 merge small books into a larger one.  
-This feature is documented in the [Split and Merge](split_merge.md) section.
+This feature is documented in the [Split and Merge](./split_merge.md) section.
