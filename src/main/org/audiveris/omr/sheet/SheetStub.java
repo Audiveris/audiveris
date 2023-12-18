@@ -26,6 +26,8 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.image.FilterDescriptor;
+import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.Page;
@@ -595,6 +597,22 @@ public class SheetStub
     public IntegerParam getBeamSpecificationParam ()
     {
         return parameters.beamSpecification;
+    }
+
+    //-----------------------//
+    // getBinarizationFilter //
+    //-----------------------//
+    public FilterDescriptor getBinarizationFilter ()
+    {
+        return getBinarizationFilterParam().getValue();
+    }
+
+    //----------------------------//
+    // getBinarizationFilterParam //
+    //----------------------------//
+    public FilterParam getBinarizationFilterParam ()
+    {
+        return parameters.binarizationFilter;
     }
 
     //---------//

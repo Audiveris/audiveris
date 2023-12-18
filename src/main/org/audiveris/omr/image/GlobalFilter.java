@@ -38,7 +38,7 @@ public class GlobalFilter
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Global threshold. */
-    private final int threshold;
+    public final int threshold;
 
     //~ Constructors -------------------------------------------------------------------------------
 

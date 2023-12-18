@@ -1705,7 +1705,7 @@ public class BookActions
             // User actions on buttons OK, Apply, Cancel
             final JOptionPane optionPane = new JOptionPane(
                     bookParameters.getComponent(),
-                    JOptionPane.QUESTION_MESSAGE,
+                    JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.DEFAULT_OPTION,
                     null,
                     new Object[]

@@ -21,17 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
+import org.audiveris.omr.ui.util.ComboBoxTipRenderer;
+
 import org.jdesktop.application.ResourceMap;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 
-import java.awt.Component;
-
-import javax.swing.Icon;
 import javax.swing.JComboBox;
-import javax.swing.JList;
-import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 /**
  * Class <code>EnumPane</code> is a data pane to select an enum value.
@@ -78,7 +75,7 @@ public class EnumPane<T, E extends Enum<E>>
 
         enumCombo = new JComboBox<>(values);
         enumCombo.setToolTipText(resources.getString(tag + "Pane.combo.toolTipText"));
-        enumCombo.setRenderer(new MyComboBoxRenderer()); // For support of value tooltips
+        enumCombo.setRenderer(new ComboBoxTipRenderer(tooltips)); // For support of value tooltips
         enumCombo.addActionListener(this);
     }
 
@@ -121,39 +118,5 @@ public class EnumPane<T, E extends Enum<E>>
     {
         super.setVisible(bool);
         enumCombo.setVisible(bool);
-    }
-
-    class MyComboBoxRenderer
-            extends BasicComboBoxRenderer
-    {
-        @Override
-        public Component getListCellRendererComponent (JList list,
-                                                       Object value,
-                                                       int index,
-                                                       boolean isSelected,
-                                                       boolean cellHasFocus)
-        {
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-
-                if (-1 < index) {
-                    list.setToolTipText(tooltips[index]); // Specific value tooltip
-                }
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-
-            setFont(list.getFont());
-
-            if (value instanceof Icon icon) {
-                setIcon(icon);
-            } else {
-                setText((value == null) ? "" : value.toString());
-            }
-
-            return this;
-        }
     }
 }

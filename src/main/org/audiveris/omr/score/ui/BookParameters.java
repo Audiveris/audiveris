@@ -21,6 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
+import org.audiveris.omr.image.AdaptiveDescriptor;
+import org.audiveris.omr.image.FilterDescriptor;
+import org.audiveris.omr.image.FilterKind;
+import static org.audiveris.omr.image.FilterKind.ADAPTIVE;
+import static org.audiveris.omr.image.FilterKind.GLOBAL;
+import org.audiveris.omr.image.GlobalDescriptor;
 import org.audiveris.omr.score.ui.IntegerSpinPane.SpinData;
 import org.audiveris.omr.sheet.BarlineHeight;
 import org.audiveris.omr.sheet.Book;
@@ -40,6 +46,7 @@ import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.symbol.TextFont;
+import org.audiveris.omr.ui.util.ComboBoxTipRenderer;
 import static org.audiveris.omr.util.param.Param.GLOBAL_SCOPE;
 
 import org.jdesktop.application.Application;
@@ -53,6 +60,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -62,6 +70,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
@@ -83,6 +92,7 @@ import javax.swing.event.ListSelectionListener;
  * <li>Text font</li>
  * <li>Input quality</li>
  * <li>OCR languages</li>
+ * <li>Binarization</li>
  * <li>Scaling</li>
  * <li>Staves</li>
  * <li>Processing switches</li>
@@ -267,6 +277,13 @@ public class BookParameters
             if (langPane != null) {
                 topic.add(langPane);
             }
+        }
+
+        { // Binarization
+            final XactTopic topic = new XactTopic(Topic.Binarization.name());
+            topics.add(topic);
+
+            topic.add(tagMap.get(Tag.Filter));
         }
 
         { //Scaling
@@ -488,6 +505,181 @@ public class BookParameters
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
+    //------------//
+    // FilterPane //
+    //------------//
+    /**
+     * Pane to define the pixel binarization parameters.
+     */
+    private static class FilterPane
+            extends XactPane<FilterDescriptor>
+    {
+
+        /** ComboBox for filter kind */
+        private final JComboBox<FilterKind> kindCombo = new JComboBox<>(FilterKind.values());
+
+        private final JLabel kindLabel = new JLabel(
+                resources.getString("FilterPane.kindLabel.text"),
+                SwingConstants.RIGHT);
+
+        // Data for global
+        private final SpinData globalData = new SpinData(
+                resources.getString("FilterPane.globalData.text"),
+                resources.getString("FilterPane.globalData.toolTipText"),
+                new SpinnerNumberModel(0, 0, 255, 1));
+
+        // Data for local
+        private final SpinData localDataMean = new SpinData(
+                resources.getString("FilterPane.localDataMean.text"),
+                resources.getString("FilterPane.localDataMean.toolTipText"),
+                new SpinnerNumberModel(0.5, 0.0, 1.5, 0.1));
+
+        private final SpinData localDataDev = new SpinData(
+                resources.getString("FilterPane.localDataDev.text"),
+                resources.getString("FilterPane.localDataDev.toolTipText"),
+                new SpinnerNumberModel(0.2, 0.0, 1.5, 0.1));
+
+        FilterPane ()
+        {
+            super(resources.getString("FilterPane.title"));
+
+            // ComboBox for filter kind
+            kindCombo.setToolTipText(resources.getString("FilterPane.kindCombo.toolTipText"));
+
+            // Retrieve the tooltip for each combo value
+            final FilterKind[] values = FilterKind.values();
+            final String[] tooltips = new String[values.length];
+            for (int i = 0; i < values.length; i++) {
+                tooltips[i] = resources.getString(
+                        "FilterPane.kindCombo." + values[i] + ".toolTipText");
+            }
+
+            kindCombo.setRenderer(new ComboBoxTipRenderer(tooltips));
+            kindCombo.addActionListener(this);
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            if ((e != null) && (e.getSource() == kindCombo)) {
+                FilterDescriptor desc = (readKind() == FilterKind.GLOBAL) ? GlobalDescriptor
+                        .getDefault() : AdaptiveDescriptor.getDefault();
+                display(desc);
+            } else {
+                super.actionPerformed(e);
+            }
+
+            // Adjust visibility of parameter fields
+            switch (readKind()) {
+            case GLOBAL ->
+            {
+                localDataMean.setVisible(false);
+                localDataDev.setVisible(false);
+                globalData.setVisible(true);
+            }
+
+            case ADAPTIVE ->
+            {
+                globalData.setVisible(false);
+                localDataMean.setVisible(true);
+                localDataDev.setVisible(true);
+            }
+            }
+        }
+
+        /** This is needed to read data manually typed in spinners fields. */
+        private void commitSpinners ()
+        {
+            try {
+                switch (readKind()) {
+                case GLOBAL -> globalData.spinner.commitEdit();
+
+                case ADAPTIVE ->
+                {
+                    localDataMean.spinner.commitEdit();
+                    localDataDev.spinner.commitEdit();
+                }
+                }
+            } catch (ParseException ignored) {
+            }
+        }
+
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int titleWidth,
+                                 int r)
+        {
+            super.defineLayout(builder, cst, 1, r); // sel + title, no advance
+
+            builder.add(kindLabel, cst.xyw(3, r, 3));
+            builder.add(kindCombo, cst.xyw(7, r, 3));
+            r += 2;
+
+            // Layout global and local data as mutual overlays
+            globalData.defineLayout(builder, cst, r);
+            r = localDataMean.defineLayout(builder, cst, r);
+            r = localDataDev.defineLayout(builder, cst, r);
+
+            return r;
+        }
+
+        @Override
+        protected void display (FilterDescriptor desc)
+        {
+            FilterKind kind = desc.getKind();
+            kindCombo.setSelectedItem(kind);
+
+            switch (kind) {
+            case GLOBAL ->
+            {
+                GlobalDescriptor globalDesc = (GlobalDescriptor) desc;
+                globalData.spinner.setValue(globalDesc.threshold);
+            }
+
+            case ADAPTIVE ->
+            {
+                AdaptiveDescriptor localDesc = (AdaptiveDescriptor) desc;
+                localDataMean.spinner.setValue(localDesc.meanCoeff);
+                localDataDev.spinner.setValue(localDesc.stdDevCoeff);
+            }
+            }
+        }
+
+        @Override
+        public int getLogicalRowCount ()
+        {
+            return 4;
+        }
+
+        @Override
+        protected FilterDescriptor read ()
+        {
+            commitSpinners();
+
+            return (readKind() == FilterKind.GLOBAL) ? new GlobalDescriptor(
+                    (int) globalData.spinner.getValue())
+                    : new AdaptiveDescriptor(
+                            (double) localDataMean.spinner.getValue(),
+                            (double) localDataDev.spinner.getValue());
+        }
+
+        private FilterKind readKind ()
+        {
+            return kindCombo.getItemAt(kindCombo.getSelectedIndex());
+        }
+
+        @Override
+        public void setEnabled (boolean bool)
+        {
+            kindCombo.setEnabled(bool);
+            kindLabel.setEnabled(bool);
+            globalData.setEnabled(bool);
+            localDataMean.setEnabled(bool);
+            localDataDev.setEnabled(bool);
+        }
+    }
+
     //----------//
     // LangPane //
     //----------//
@@ -513,7 +705,7 @@ public class BookParameters
 
         public LangPane ()
         {
-            super(resources.getString("LangPane.title"));
+            super("");
 
             listModel = new Language.ListModel();
 
@@ -536,7 +728,7 @@ public class BookParameters
                                  int titleWidth,
                                  int r)
         {
-            r = super.defineLayout(builder, cst, titleWidth, r); // sel + title, DO advance
+            super.defineLayout(builder, cst, titleWidth, r); // sel + title, no advance
 
             builder.add(langSpec, cst.xyw(3, r, 3));
             builder.add(langScroll, cst.xyw(7, r, 3));
@@ -712,6 +904,7 @@ public class BookParameters
         Text,
         Quality,
         Lang,
+        Filter,
         Interline,
         Barline,
         Beam;
@@ -725,6 +918,7 @@ public class BookParameters
     {
         General,
         Languages,
+        Binarization,
         Scaling,
         Staves,
         Processing;
@@ -753,6 +947,8 @@ public class BookParameters
             tagMap.put(Tag.Music, new EnumPane<>(Tag.Music, MusicFamily.values(), resources));
             tagMap.put(Tag.Text, new EnumPane<>(Tag.Text, TextFamily.values(), resources));
             tagMap.put(Tag.Quality, new EnumPane<>(Tag.Quality, InputQuality.values(), resources));
+
+            tagMap.put(Tag.Filter, new FilterPane());
 
             final LangPane langPane = createLangPane();
             if (langPane != null) {
@@ -827,6 +1023,7 @@ public class BookParameters
                 case Text -> entry.getValue().setModel(TextFont.defaultTextParam);
                 case Quality -> entry.getValue().setModel(Profiles.defaultQualityParam);
                 case Lang -> entry.getValue().setModel(Language.ocrDefaultLanguages);
+                case Filter -> entry.getValue().setModel(FilterDescriptor.defaultFilter);
                 // No Interline
                 case Barline -> entry.getValue().setModel(BarlineHeight.defaultParam);
                 // No Beam
@@ -860,6 +1057,7 @@ public class BookParameters
                 case Text -> book.getTextFamilyParam();
                 case Quality -> book.getInputQualityParam();
                 case Lang -> book.getOcrLanguagesParam();
+                case Filter -> book.getBinarizationParam();
                 case Interline -> book.getInterlineSpecificationParam();
                 case Barline -> book.getBarlineHeightParam();
                 case Beam -> book.getBeamSpecificationParam();
@@ -893,6 +1091,7 @@ public class BookParameters
                 case Text -> stub.getTextFamilyParam();
                 case Quality -> stub.getInputQualityParam();
                 case Lang -> stub.getOcrLanguagesParam();
+                case Filter -> stub.getBinarizationFilterParam();
                 case Interline -> stub.getInterlineSpecificationParam();
                 case Barline -> stub.getBarlineHeightParam();
                 case Beam -> stub.getBeamSpecificationParam();

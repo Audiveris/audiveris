@@ -24,11 +24,11 @@ package org.audiveris.omr.ui.selection;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 
-import org.bushe.swing.event.EventSubscriber;
-import org.bushe.swing.event.ThreadSafeEventService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.ThreadSafeEventService;
 
 import java.util.List;
 
@@ -103,8 +103,7 @@ public class SelectionService
                 for (Object obj : subscribers) {
                     String size = "";
 
-                    if (obj instanceof EntityService) {
-                        EntityService service = (EntityService) obj;
+                    if (obj instanceof EntityService service) {
                         size = "size:" + service.getIndex().getEntities().size();
                     }
 

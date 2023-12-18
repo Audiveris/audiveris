@@ -613,11 +613,13 @@ public class Sheet
         locationService.subscribeStrongly(LocationEvent.class, picture);
 
         // Display sheet picture
-        PictureView pictureView = new PictureView(this, SheetTab.GRAY_TAB);
+        final PictureView pictureView = new PictureView(this, SheetTab.GRAY_TAB);
+        final BinarizationBoard bb = new BinarizationBoard(this);
+        bb.setSelected(true);
         stub.getAssembly().addViewTab(
                 SheetTab.GRAY_TAB,
                 pictureView,
-                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+                new BoardsPane(new PixelBoard(this), bb));
     }
 
     //----------------//

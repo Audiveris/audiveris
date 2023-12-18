@@ -22,18 +22,21 @@
 package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.image.AdaptiveDescriptor;
+import org.audiveris.omr.image.AdaptiveFilter;
 import org.audiveris.omr.image.AdaptiveFilter.AdaptiveContext;
 import org.audiveris.omr.image.FilterDescriptor;
+import org.audiveris.omr.image.GlobalFilter;
 import org.audiveris.omr.image.PixelFilter;
-import org.audiveris.omr.image.RandomFilter;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.field.LDoubleField;
+import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +49,13 @@ import ij.process.ByteProcessor;
 
 import java.awt.Rectangle;
 
+import javax.swing.SwingConstants;
+
 /**
  * Class <code>BinarizationBoard</code> is a board meant to display the
  * context of binarization for a given pixel location.
+ * <p>
+ * Its configuration depends on the selected binarization mode (global or adaptive).
  *
  * @author Hervé Bitteur
  */
@@ -59,7 +66,7 @@ public class BinarizationBoard
 
     private static final Logger logger = LoggerFactory.getLogger(BinarizationBoard.class);
 
-    /** Events this entity is interested in */
+    /** Events this entity is interested in. */
     private static final Class<?>[] eventClasses = new Class<?>[]
     { LocationEvent.class };
 
@@ -81,8 +88,11 @@ public class BinarizationBoard
             "Standard deviation value",
             format);
 
-    /** Computed threshold. */
+    /** Current threshold. */
     private final LDoubleField threshold = new LDoubleField(false, "Thres.", "Threshold", format);
+
+    /** Resulting color. */
+    private final LLabel color = new LLabel("Color", "Resulting binary color");
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -104,7 +114,18 @@ public class BinarizationBoard
 
         this.sheet = sheet;
 
+        mean.getField().setHorizontalAlignment(SwingConstants.RIGHT);
+        stdDev.getField().setHorizontalAlignment(SwingConstants.RIGHT);
+        threshold.getField().setHorizontalAlignment(SwingConstants.RIGHT);
+        color.getField().setHorizontalAlignment(SwingConstants.RIGHT);
+
         defineLayout();
+
+        final FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
+        if (!(desc instanceof AdaptiveDescriptor)) {
+            mean.setVisible(false);
+            stdDev.setVisible(false);
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -114,21 +135,29 @@ public class BinarizationBoard
     //--------------//
     private void defineLayout ()
     {
-        FormLayout layout = Panel.makeFormLayout(1, 3);
+        final int inset = UIUtil.adjustedSize(3);
+        ((Panel) getBody()).setInsets(inset, 0, inset, inset); // TLBR
+
+        FormLayout layout = Panel.makeFormLayout(2, 3);
         PanelBuilder builder = new PanelBuilder(layout, getBody());
 
-        ///builder.setDefaultDialogBorder();
         CellConstraints cst = new CellConstraints();
 
         int r = 1; // --------------------------------
-        builder.add(mean.getLabel(), cst.xy(1, r));
-        builder.add(mean.getField(), cst.xy(3, r));
 
-        builder.add(stdDev.getLabel(), cst.xy(5, r));
-        builder.add(stdDev.getField(), cst.xy(7, r));
+        builder.add(threshold.getLabel(), cst.xy(1, r));
+        builder.add(threshold.getField(), cst.xy(3, r));
 
-        builder.add(threshold.getLabel(), cst.xy(9, r));
-        builder.add(threshold.getField(), cst.xy(11, r));
+        builder.add(mean.getLabel(), cst.xy(9, r));
+        builder.add(mean.getField(), cst.xy(11, r));
+
+        r += 2;
+
+        builder.add(color.getLabel(), cst.xy(1, r));
+        builder.add(color.getField(), cst.xy(3, r));
+
+        builder.add(stdDev.getLabel(), cst.xy(9, r));
+        builder.add(stdDev.getField(), cst.xy(11, r));
     }
 
     //---------------------//
@@ -141,47 +170,54 @@ public class BinarizationBoard
      */
     protected void handleLocationEvent (LocationEvent sheetLocation)
     {
-        // Display rectangle attributes
-        Rectangle rect = sheetLocation.getData();
-
-        if (rect != null) {
-            FilterDescriptor desc = AdaptiveDescriptor.getDefault();
-            ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.GRAY);
-
-            if (source != null) {
-                PixelFilter filter = desc.getFilter(source);
-
-                if (filter == null) {
-                    filter = new RandomFilter(
-                            source,
-                            AdaptiveDescriptor.getDefaultMeanCoeff(),
-                            AdaptiveDescriptor.getDefaultStdDevCoeff());
-                }
-
-                PixelFilter.Context context = filter.getContext(rect.x, rect.y);
-
-                if (context != null) {
-                    if (context instanceof AdaptiveContext) {
-                        AdaptiveContext ctx = (AdaptiveContext) context;
-                        mean.setValue(ctx.mean);
-                        stdDev.setValue(ctx.standardDeviation);
-                    } else {
-                        mean.setText("");
-                        stdDev.setText("");
-                    }
-
-                    threshold.setValue(context.threshold);
-
-                    return;
-                }
-            } else {
-                logger.info("No GRAY source available");
-            }
-        }
-
+        // Clear all fields
         mean.setText("");
         stdDev.setText("");
         threshold.setText("");
+        color.setText("");
+
+        // Display rectangle attributes
+        final Rectangle rect = sheetLocation.getData();
+        if (rect == null) {
+            return;
+        }
+
+        final ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.GRAY);
+        if (source == null) {
+            logger.info("No GRAY source available");
+            return;
+        }
+
+        final int level = source.get(rect.x, rect.y);
+        final FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
+        final PixelFilter filter = desc.getFilter(source);
+
+        Double thresholdValue = null;
+
+        if (filter instanceof AdaptiveFilter adpFilter) {
+            final PixelFilter.Context context = adpFilter.getContext(rect.x, rect.y);
+
+            if (context != null) {
+                if (context instanceof AdaptiveContext ctx) {
+                    mean.setValue(ctx.mean);
+                    stdDev.setValue(ctx.standardDeviation);
+                } else {
+                    mean.setText("");
+                    stdDev.setText("");
+                }
+
+                thresholdValue = context.threshold;
+            }
+        } else if (filter instanceof GlobalFilter gblFilter) {
+            thresholdValue = Double.valueOf(gblFilter.threshold);
+        }
+
+        if (thresholdValue == null) {
+            return;
+        }
+
+        threshold.setValue(thresholdValue);
+        color.setText(level <= thresholdValue ? "black" : "white");
     }
 
     //---------//
@@ -198,8 +234,8 @@ public class BinarizationBoard
 
             logger.debug("BinarizationBoard: {}", event);
 
-            if (event instanceof LocationEvent) {
-                handleLocationEvent((LocationEvent) event);
+            if (event instanceof LocationEvent locationEvent) {
+                handleLocationEvent(locationEvent);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);

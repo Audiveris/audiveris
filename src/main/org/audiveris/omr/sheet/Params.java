@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.image.FilterDescriptor;
+import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -33,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class <code>Params</code> is the base structure of editable parameters for the Book and
@@ -61,6 +64,11 @@ public abstract class Params<P>
     /** Specification of the input quality to use. */
     @XmlElement(name = "input-quality")
     public InputQualityParam inputQuality;
+
+    /** Specification of binarization filter. */
+    @XmlElement(name = "binarization")
+    @XmlJavaTypeAdapter(FilterParam.JaxbAdapter.class)
+    public FilterParam binarizationFilter;
 
     /** Specification of interline in pixels. */
     @XmlElement(name = "interline")
@@ -110,6 +118,9 @@ public abstract class Params<P>
         if (inputQuality == null)
             inputQuality = new InputQualityParam(null);
 
+        if (binarizationFilter == null)
+            binarizationFilter = new FilterParam(null);
+
         if (interlineSpecification == null)
             interlineSpecification = new IntegerParam(null);
 
@@ -139,6 +150,7 @@ public abstract class Params<P>
         return musicFamily == null //
                 && textFamily == null //
                 && inputQuality == null //
+                && binarizationFilter == null //
                 && interlineSpecification == null //
                 && barlineSpecification == null //
                 && beamSpecification == null //
@@ -164,6 +176,10 @@ public abstract class Params<P>
 
         if ((inputQuality != null) && !inputQuality.isSpecific()) {
             inputQuality = null;
+        }
+
+        if ((binarizationFilter != null) && !binarizationFilter.isSpecific()) {
+            binarizationFilter = null;
         }
 
         if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
@@ -212,6 +228,7 @@ public abstract class Params<P>
         musicFamily.setScope(scope);
         textFamily.setScope(scope);
         inputQuality.setScope(scope);
+        binarizationFilter.setScope(scope);
         interlineSpecification.setScope(scope);
         barlineSpecification.setScope(scope);
         beamSpecification.setScope(scope);
@@ -251,6 +268,7 @@ public abstract class Params<P>
             musicFamily.setParent(MusicFont.defaultMusicParam);
             textFamily.setParent(TextFont.defaultTextParam);
             inputQuality.setParent(Profiles.defaultQualityParam);
+            binarizationFilter.setParent(FilterDescriptor.defaultFilter);
             interlineSpecification.setParent(Scale.defaultInterlineSpecification);
             barlineSpecification.setParent(BarlineHeight.defaultParam);
             beamSpecification.setParent(Scale.defaultBeamSpecification);
@@ -288,6 +306,7 @@ public abstract class Params<P>
             musicFamily.setParent(book.getMusicFamilyParam());
             textFamily.setParent(book.getTextFamilyParam());
             inputQuality.setParent(book.getInputQualityParam());
+            binarizationFilter.setParent(book.getBinarizationParam());
             interlineSpecification.setParent(book.getInterlineSpecificationParam());
             barlineSpecification.setParent(book.getBarlineHeightParam());
             beamSpecification.setParent(book.getBeamSpecificationParam());

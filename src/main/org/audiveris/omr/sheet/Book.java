@@ -28,6 +28,7 @@ import org.audiveris.omr.classifier.Annotations;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.image.ImageLoading;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.score.OpusExporter;
@@ -278,6 +279,10 @@ public class Book
     @Deprecated
     @XmlElement(name = "input-quality")
     private volatile InputQualityParam old_inputQuality;
+
+    @XmlElement(name = "binarization")
+    @XmlJavaTypeAdapter(FilterParam.JaxbAdapter.class)
+    private volatile FilterParam old_binarizationFilter;
 
     @Deprecated
     @XmlElement(name = "beam-specification")
@@ -670,6 +675,14 @@ public class Book
     public IntegerParam getBeamSpecificationParam ()
     {
         return parameters.beamSpecification;
+    }
+
+    //----------------------//
+    // getBinarizationParam //
+    //----------------------//
+    public FilterParam getBinarizationParam ()
+    {
+        return parameters.binarizationFilter;
     }
 
     //-------------//
@@ -1834,6 +1847,11 @@ public class Book
         if (old_ocrLanguages != null) {
             upgradeParameters().ocrLanguages = old_ocrLanguages;
             old_ocrLanguages = null;
+        }
+
+        if (old_binarizationFilter != null) {
+            upgradeParameters().binarizationFilter = old_binarizationFilter;
+            old_binarizationFilter = null;
         }
 
         if (old_switches != null) {

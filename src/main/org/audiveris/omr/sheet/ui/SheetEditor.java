@@ -289,6 +289,19 @@ public class SheetEditor
         return shapeBoard;
     }
 
+    //----------//
+    // getSheet //
+    //----------//
+    /**
+     * Report the related sheet.
+     *
+     * @return the underlying sheet
+     */
+    public Sheet getSheet ()
+    {
+        return sheet;
+    }
+
     //---------------------//
     // getSheetKeyListener //
     //---------------------//

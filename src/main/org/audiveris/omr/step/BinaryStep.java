@@ -23,7 +23,6 @@ package org.audiveris.omr.step;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.image.AdaptiveDescriptor;
 import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.PixelFilter;
 import org.audiveris.omr.run.Orientation;
@@ -91,7 +90,7 @@ public class BinaryStep
         Picture picture = sheet.getPicture();
         ByteProcessor initial = picture.getSource(SourceKey.GRAY);
 
-        FilterDescriptor desc = AdaptiveDescriptor.getDefault();
+        FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
         logger.debug("{}", "Binarization");
 
         PixelFilter filter = desc.getFilter(initial);
