@@ -264,8 +264,7 @@ public class PartwiseBuilder
     private static final Logger logger = LoggerFactory.getLogger(PartwiseBuilder.class);
 
     /** A future which reflects whether JAXB has been initialized. */
-    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit( () ->
-    {
+    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit( () -> {
         try {
             Marshalling.getContext(ScorePartwise.class);
         } catch (JAXBException ex) {
@@ -414,54 +413,34 @@ public class PartwiseBuilder
         }
 
         switch (shape) {
-        case G_CLEF:
-        case G_CLEF_SMALL:
-            pmClef.setSign(ClefSign.G);
+        case G_CLEF, G_CLEF_SMALL -> pmClef.setSign(ClefSign.G);
 
-            break;
-
-        case G_CLEF_8VA:
+        case G_CLEF_8VA -> {
             pmClef.setSign(ClefSign.G);
             pmClef.setClefOctaveChange(new BigInteger("1"));
+        }
 
-            break;
-
-        case G_CLEF_8VB:
+        case G_CLEF_8VB -> {
             pmClef.setSign(ClefSign.G);
             pmClef.setClefOctaveChange(new BigInteger("-1"));
+        }
 
-            break;
+        case C_CLEF -> pmClef.setSign(ClefSign.C);
 
-        case C_CLEF:
-            pmClef.setSign(ClefSign.C);
+        case F_CLEF, F_CLEF_SMALL -> pmClef.setSign(ClefSign.F);
 
-            break;
-
-        case F_CLEF:
-        case F_CLEF_SMALL:
-            pmClef.setSign(ClefSign.F);
-
-            break;
-
-        case F_CLEF_8VA:
+        case F_CLEF_8VA -> {
             pmClef.setSign(ClefSign.F);
             pmClef.setClefOctaveChange(new BigInteger("1"));
-
-            break;
-
-        case F_CLEF_8VB:
+        }
+        case F_CLEF_8VB -> {
             pmClef.setSign(ClefSign.F);
             pmClef.setClefOctaveChange(new BigInteger("-1"));
+        }
 
-            break;
+        case PERCUSSION_CLEF -> pmClef.setSign(ClefSign.PERCUSSION);
 
-        case PERCUSSION_CLEF:
-            pmClef.setSign(ClefSign.PERCUSSION);
-
-            break;
-
-        default:
-            logger.error("Clef shape not exported {}", shape);
+        default -> logger.error("Clef shape not exported {}", shape);
         }
 
         return pmClef;
@@ -1198,16 +1177,16 @@ public class PartwiseBuilder
 
             if (endingNumber == null && ending != null) {
                 // Try to infer an endingNumber
-                boolean isFirst = true;
+                boolean isFirstNumber = true;
                 final Measure prevMeasure = current.measure.getPrecedingInPage();
                 if (prevMeasure != null) {
                     final PartBarline prevBar = prevMeasure.getRightPartBarline();
                     if (prevBar != null && prevBar.getEnding(RIGHT) != null) {
-                        isFirst = false;
+                        isFirstNumber = false;
                     }
                 }
 
-                ending.setNumber(endingNumber = isFirst ? "1" : "2");
+                ending.setNumber(endingNumber = isFirstNumber ? "1" : "2");
             }
 
             // Is export of barline element really needed? MusicXML says that if we just have a
@@ -1244,8 +1223,7 @@ public class PartwiseBuilder
                     pmBarline.setBarStyle(barStyleColor);
 
                     switch (location) {
-                    case LEFT:
-                    case MIDDLE:
+                    case LEFT, MIDDLE -> {
                         // (Left) repeat?
                         if (stack.isRepeat(LEFT)) {
                             Repeat repeat = factory.createRepeat();
@@ -1278,10 +1256,9 @@ public class PartwiseBuilder
 
                             pmBarline.setEnding(pmEnding);
                         }
+                    }
 
-                        break;
-
-                    case RIGHT:
+                    case RIGHT -> {
                         // (Right) repeat?
                         if (stack.isRepeat(RIGHT)) {
                             Repeat repeat = factory.createRepeat();
@@ -1335,6 +1312,7 @@ public class PartwiseBuilder
 
                             pmBarline.setEnding(pmEnding);
                         }
+                    }
                     }
 
                     // Everything is now OK
@@ -1846,32 +1824,26 @@ public class PartwiseBuilder
             sound.setDivisions(new BigDecimal(current.page.simpleDurationOf(Rational.QUARTER)));
 
             switch (marker.getShape()) {
-            case CODA:
+            case CODA -> {
                 sound.setCoda(measureId);
                 Coda coda = factory.createCoda();
                 directionType.getCoda().add(coda);
+            }
 
-                break;
-
-            case SEGNO:
+            case SEGNO -> {
                 sound.setSegno(measureId);
                 Segno segno = factory.createSegno();
                 directionType.getSegno().add(segno);
+            }
 
-                break;
-
-            case DA_CAPO:
-            {
+            case DA_CAPO -> {
                 FormattedText text = new FormattedText();
                 text.setValue("D.C.");
                 directionType.getWordsOrSymbol().add(text);
                 sound.setDacapo(YesNo.YES);
             }
 
-                break;
-
-            case DAL_SEGNO:
-            {
+            case DAL_SEGNO -> {
                 // Example:
                 //  <direction placement="above">
                 //	<direction-type>
@@ -1887,12 +1859,11 @@ public class PartwiseBuilder
                 ///sound.setDalsegno(measureId); // NO, not this measure, but the target measure!
             }
 
-                break;
-
-            default:
+            default -> {
                 logger.warn("Unknown marker shape: {}", marker.getShape());
 
                 return;
+            }
             }
 
             // Everything is now OK
@@ -2156,10 +2127,10 @@ public class PartwiseBuilder
                 }
 
                 for (int i = 0, iMax = toCopy.size() - 1; i <= iMax; i++) {
-                    final Measure source = toCopy.get(i);
+                    final Measure sourceMeasure = toCopy.get(i);
                     current.repeatCopying = true;
-                    logger.debug("{} copying {}", measure, source);
-                    processMeasure(source);
+                    logger.debug("{} copying {}", measure, sourceMeasure);
+                    processMeasure(sourceMeasure);
 
                     if (i < iMax) {
                         // Allocate a new Measure
@@ -2804,13 +2775,23 @@ public class PartwiseBuilder
                 // Let the Marshalling class handle it
 
                 // [Encoding]/Supports
-                for (String feature : new String[]
+                // 1/ Attributes of 'print' element
+                for (String attribute : new String[]
                 { "new-system", "new-page" }) {
-                    Supports supports = factory.createSupports();
-                    supports.setAttribute(feature);
+                    final Supports supports = factory.createSupports();
                     supports.setElement("print");
                     supports.setType(YesNo.YES);
+                    supports.setAttribute(attribute);
                     supports.setValue("yes");
+                    encoding.getEncodingDateOrEncoderOrSoftware().add(
+                            factory.createEncodingSupports(supports));
+                }
+                // 2/ Other elements
+                for (String element : new String[]
+                { "accidental", "beam", "stem" }) {
+                    final Supports supports = factory.createSupports();
+                    supports.setElement(element);
+                    supports.setType(YesNo.YES);
                     encoding.getEncodingDateOrEncoderOrSoftware().add(
                             factory.createEncodingSupports(supports));
                 }
@@ -2897,68 +2878,40 @@ public class PartwiseBuilder
             TypedText typedText = null;
 
             switch (role) {
-            case Title:
-                ///getWork().setWorkTitle(sentence.getValue());
-                scorePartwise.setMovementTitle(sentence.getValue());
+            case Title -> ///getWork().setWorkTitle(sentence.getValue());
+                    scorePartwise.setMovementTitle(sentence.getValue());
 
-                break;
+            case Number -> ///getWork().setWorkNumber(sentence.getValue());
+                    scorePartwise.setMovementNumber(sentence.getValue());
 
-            case Number:
-                ///getWork().setWorkNumber(sentence.getValue());
-                scorePartwise.setMovementNumber(sentence.getValue());
-
-                break;
-
-            case Rights:
-            {
+            case Rights -> {
                 typedText = factory.createTypedText();
                 typedText.setValue(sentence.getValue());
                 scorePartwise.getIdentification().getRights().add(typedText);
             }
 
-                break;
-
-            case CreatorArranger:
-            case CreatorComposer:
-            case CreatorLyricist:
-            case Creator:
-            {
+            case CreatorArranger, CreatorComposer, CreatorLyricist, Creator -> {
                 typedText = factory.createTypedText();
                 typedText.setValue(sentence.getValue());
 
                 // Additional type information?
                 switch (role) {
-                case CreatorArranger:
-                    typedText.setType("arranger");
-
-                    break;
-
-                case CreatorComposer:
-                    typedText.setType("composer");
-
-                    break;
-
-                case CreatorLyricist:
-                    typedText.setType("lyricist");
-
-                    break;
-
-                default:
-                    break;
+                case CreatorArranger -> typedText.setType("arranger");
+                case CreatorComposer -> typedText.setType("composer");
+                case CreatorLyricist -> typedText.setType("lyricist");
+                default -> {}
                 }
 
                 scorePartwise.getIdentification().getCreator().add(typedText);
             }
 
-                break;
+            case UnknownRole -> {}
 
-            case UnknownRole:
-                break;
-
-            default: // LyricsItem, Direction, ChordName
-
+            default -> {
+                // LyricsItem, Direction, ChordName
                 // Handle them through related Note
                 return;
+            }
             }
 
             // Credits
@@ -3196,17 +3149,10 @@ public class PartwiseBuilder
         // Symbol?
         if (shape != null) {
             switch (shape) {
-            case COMMON_TIME:
-                time.setSymbol(TimeSymbol.COMMON);
+            case COMMON_TIME -> time.setSymbol(TimeSymbol.COMMON);
+            case CUT_TIME -> time.setSymbol(TimeSymbol.CUT);
 
-                break;
-
-            case CUT_TIME:
-                time.setSymbol(TimeSymbol.CUT);
-
-                break;
-
-            default:
+            default -> {}
             }
         }
 
