@@ -41,7 +41,7 @@ import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sheet.ui.ObjectEditor;
 import org.audiveris.omr.sheet.ui.SheetEditor;
-import org.audiveris.omr.sheet.ui.StaffEditionTask;
+import org.audiveris.omr.sheet.ui.StaffEditingTask;
 import org.audiveris.omr.sheet.ui.StaffEditor;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -506,8 +506,8 @@ public class InterController
                                 final TextRole newRole)
     {
         // If sentence/words are to be replaced by other instances,
-        // then we must first complete any on-going edition on a to-be-replaced word.
-        completePotentialWordEdition(sentence, newRole);
+        // then we must first complete any on-going editing on a to-be-replaced word.
+        completePotentialWordEditing(sentence, newRole);
 
         new CtrlTask(DO, "changeSentence")
         {
@@ -519,8 +519,7 @@ public class InterController
                 final SIGraph sig = system.getSig();
 
                 switch (newRole) {
-                case Lyrics ->
-                {
+                case Lyrics -> {
                     // Convert to LyricItem words, all within a single LyricLine sentence
                     final LyricLineInter line = new LyricLineInter(
                             sentence.getBounds(),
@@ -566,8 +565,7 @@ public class InterController
                     }
                 }
 
-                case ChordName ->
-                {
+                case ChordName -> {
                     // Convert to ChordName words within the sentence
                     for (Inter inter : sentence.getMembers()) {
                         if (!(inter instanceof ChordNameInter)) {
@@ -595,8 +593,7 @@ public class InterController
                     }
                 }
 
-                default ->
-                {
+                default -> {
                     // Convert to SentenceInter if so needed
                     final SentenceInter finalSentence;
 
@@ -760,11 +757,11 @@ public class InterController
     }
 
     //------------------------------//
-    // completePotentialWordEdition //
+    // completePotentialWordEditing //
     //------------------------------//
     /**
      * If sentence/words are to be replaced by other sentence/words,
-     * make sure we first complete the on-going edition on any to-be-replaced word.
+     * make sure we first complete the on-going editing on any to-be-replaced word.
      * <p>
      * We must detect the following replacements:
      * <ul>
@@ -775,7 +772,7 @@ public class InterController
      * @param sentence the sentence whose role is about to be changed
      * @param newRole  the new role to be assigned to the sentence
      */
-    private void completePotentialWordEdition (final SentenceInter sentence,
+    private void completePotentialWordEditing (final SentenceInter sentence,
                                                final TextRole newRole)
     {
         final ObjectEditor objectEditor = sheet.getSheetEditor().getObjectEditor();
@@ -795,7 +792,7 @@ public class InterController
 
         if (sentence instanceof LyricLineInter || newRole == TextRole.Lyrics
                 || newRole == TextRole.ChordName) {
-            logger.debug("Completing edition of {}", editedInter);
+            logger.debug("Completing editing of {}", editedInter);
             objectEditor.endProcess();
         }
     }
@@ -832,8 +829,7 @@ public class InterController
             {
                 switch (kind) {
                 default:
-                case SLUR_CONNECTION:
-                {
+                case SLUR_CONNECTION: {
                     final Page page = one.getSig().getSystem().getPage();
                     final SlurInter s1 = (SlurInter) one;
                     final SlurInter s2 = (SlurInter) two;
@@ -1003,7 +999,7 @@ public class InterController
             protected void build ()
             {
                 if (editor instanceof StaffEditor staffEditor) {
-                    seq.add(new StaffEditionTask(staffEditor));
+                    seq.add(new StaffEditingTask(staffEditor));
                 } else {
                     throw new IllegalArgumentException("Unexpected editor " + editor);
                 }
@@ -1547,7 +1543,7 @@ public class InterController
             {
                 sheet.getInterIndex().publish(null);
 
-                // Make sure an on-going edition is not impacted
+                // Make sure an on-going editing is not impacted
                 Inter edited = sheet.getSheetEditor().getEditedInter();
 
                 if (edited != null && inters.contains(edited)) {
@@ -1769,7 +1765,7 @@ public class InterController
     @UIThread
     public void undo ()
     {
-        // If an object is being edited, "undo" simply cancels the ongoing edition
+        // If an object is being edited, "undo" simply cancels the ongoing editing
         ObjectEditor objectEditor = sheet.getSheetEditor().getObjectEditor();
 
         if (objectEditor != null) {

@@ -189,8 +189,7 @@ public class LogicalPartsEditor
             }
         });
 
-        table.getSelectionModel().addListSelectionListener( (ListSelectionEvent e) ->
-        {
+        table.getSelectionModel().addListSelectionListener( (ListSelectionEvent e) -> {
             logger.debug("ListSelection valueChanged");
             setSelected(checkSelected());
             setUpEnabled(checkUpEnabled());
@@ -522,7 +521,7 @@ public class LogicalPartsEditor
     // save //
     //------//
     /**
-     * Save the user editions.
+     * Save the user editings.
      * <p>
      * Keep assignments, especially the manual ones, as much as possible.
      * <ul>
@@ -834,18 +833,15 @@ public class LogicalPartsEditor
             logger.debug("setValueAt row:{} col:{} value:{}", row, col, value);
 
             switch (header) {
-            case Name ->
-            {
+            case Name -> {
                 final String newName = (String) value;
                 logical.setName(newName);
             }
-            case Abbrev ->
-            {
+            case Abbrev -> {
                 final String newAbbrev = (String) value;
                 logical.setAbbreviation(newAbbrev);
             }
-            case Midi ->
-            {
+            case Midi -> {
                 final String newMidi = (String) value;
                 if (newMidi.isBlank()) {
                     logical.setMidiProgram(null);
@@ -862,8 +858,7 @@ public class LogicalPartsEditor
                     }
                 }
             }
-            case Staves ->
-            {
+            case Staves -> {
                 final String str = (String) value;
                 final String[] tokens = str.split("\\s*,\\s*");
                 final List<StaffConfig> newConfigs = new ArrayList<>();
@@ -899,9 +894,7 @@ public class LogicalPartsEditor
                     logical.setStaffConfigs(newConfigs);
                 }
             }
-            default ->
-                    {
-                    }
+            default -> {}
             }
 
             fireTableCellUpdated(row, col);

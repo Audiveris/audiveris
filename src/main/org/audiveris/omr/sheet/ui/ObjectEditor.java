@@ -47,13 +47,13 @@ import java.util.List;
 /**
  * Class <code>ObjectEditor</code> allows to edit a graphical object set into an edit mode.
  * <p>
- * Edition means the ability to modify the underlying object, by shifting or resizing it.
+ * Editing means the ability to modify the underlying object, by shifting or resizing it.
  * The edited object cannot leave its initial system (as opposed to an {@link InterDnd}) but view
  * can be shifted if needed when the object gets close to view border.
  * <p>
  * An ObjectEditor handles 2 versions of the same data model that is used to modify the object:
  * <ol>
- * <li>The "original" version which is recorded at edition start.
+ * <li>The "original" version which is recorded at editing start.
  * <li>The "latest" version which always corresponds to the latest modification.
  * </ol>
  * This kind of data is kept internal to the editor, it <b>can't be shared live</b> with the object,
@@ -142,7 +142,7 @@ public abstract class ObjectEditor
     // endProcess //
     //------------//
     /**
-     * End of edition, triggered by keyboard Enter or by mouse pointing outside a handle.
+     * End of editing, triggered by keyboard Enter or by mouse pointing outside a handle.
      */
     public void endProcess ()
     {
@@ -155,7 +155,7 @@ public abstract class ObjectEditor
     /**
      * Apply final (modified) model to object geometry.
      * <p>
-     * This method is called at end of edition.
+     * This method is called at end of editing.
      */
     public void finalDoit ()
     {
@@ -199,9 +199,9 @@ public abstract class ObjectEditor
                                int dy)
     {
         if ((dx != 0) || (dy != 0)) {
-            // Make sure we stay within system area
             final Point newPt = new Point(lastPt.x + dx, lastPt.y + dy);
 
+            // Make sure we stay within system area
             if (system.getArea().contains(newPt)) {
                 // Move the selected handle
                 if (selectedHandle.move(dx, dy)) {
@@ -350,7 +350,7 @@ public abstract class ObjectEditor
     public void render (Graphics2D g)
     {
         // Each handle rectangle
-        g.setColor(Colors.EDITION_HANDLE);
+        g.setColor(Colors.EDITING_HANDLE);
         UIUtil.setAbsoluteStroke(g, 1.5f);
 
         for (Handle handle : handles) {

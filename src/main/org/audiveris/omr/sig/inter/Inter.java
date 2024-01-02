@@ -209,7 +209,7 @@ public interface Inter
     String getDetails ();
 
     /**
-     * Report a proper editor for manual inter edition.
+     * Report a proper editor for manual inter editing.
      *
      * @return proper editor
      */
@@ -484,7 +484,7 @@ public interface Inter
                                    Wrapper<Inter> toPublish);
 
     /**
-     * Prepare the manual edition of this inter.
+     * Prepare the manual editing of this inter.
      *
      * @param editor the current editor on this inter
      * @return the sequence of additional UI tasks

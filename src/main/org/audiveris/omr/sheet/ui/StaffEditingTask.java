@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                 S t a f f E d i t i o n T a s k                                //
+//                                 S t a f f E d i t i n g T a s k                                //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -24,12 +24,12 @@ package org.audiveris.omr.sheet.ui;
 import org.audiveris.omr.sig.ui.UITask;
 
 /**
- * Class <code>StaffEditionTask</code> handles the user edition of a staff, regardless
+ * Class <code>StaffEditingTask</code> handles the user editing of a staff, regardless
  * of its mode (global or lines).
  *
  * @author Hervé Bitteur
  */
-public class StaffEditionTask
+public class StaffEditingTask
         extends UITask
 {
     //~ Instance fields ----------------------------------------------------------------------------
@@ -40,13 +40,13 @@ public class StaffEditionTask
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a <code>StaffEditionTask</code> instance.
+     * Creates a <code>StaffEditingTask</code> instance.
      *
      * @param editor the underlying staff editor
      */
-    public StaffEditionTask (StaffEditor editor)
+    public StaffEditingTask (StaffEditor editor)
     {
-        super(editor.getSystem().getSheet(), "staff-edition");
+        super(editor.getSystem().getSheet(), "staff-editing");
         this.editor = editor;
     }
 

@@ -42,7 +42,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.DefaultEditor;
-import org.audiveris.omr.sig.ui.EditionTask;
+import org.audiveris.omr.sig.ui.EditingTask;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
@@ -1224,12 +1224,12 @@ public abstract class AbstractInter
     @Override
     public List<? extends UITask> preEdit (InterEditor editor)
     {
-        // Append the EditionTask with inter links and unlinks
+        // Append the EditingTask with inter links and unlinks
         final SystemInfo system = getSig().getSystem();
         final Collection<Link> links = searchLinks(system);
         final Collection<Link> unlinks = searchUnlinks(system, links);
         final List<UITask> tasks = new ArrayList<>();
-        tasks.add(new EditionTask(editor, links, unlinks));
+        tasks.add(new EditingTask(editor, links, unlinks));
 
         return tasks;
     }

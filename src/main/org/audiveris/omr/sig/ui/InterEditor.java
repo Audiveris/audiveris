@@ -41,7 +41,7 @@ import java.awt.Graphics2D;
  * <li>From an existing inter, by a double-click or by opening the edit mode.
  * <li>By checking the "Edit" box in InterBoard where the inter appears.
  * <li>By clicking on a location while the repetitive mode is on.
- * This creates a new inter at current location and sets it immediately in edition mode.
+ * This creates a new inter at current location and sets it immediately in editing mode.
  * Dragging operates on the global handle.
  * </ul>
  * <p>
@@ -70,7 +70,7 @@ import java.awt.Graphics2D;
  * <li>The user can keep on editing, by pressing and dragging any handle.
  * <p>
  * <li>When the user presses the mouse outside of any handle or presses the keyboard Enter key,
- * {@link #endProcess()} method is called to finish edition.
+ * {@link #endProcess()} method is called to finish editing.
  * <br>
  * {@link InterController#editInter(InterEditor)} is thus called to create a
  * <code>CtrlTask</code> to formally record and perform the action (and allow its future undo/redo).
@@ -80,8 +80,8 @@ import java.awt.Graphics2D;
  * <ol>
  * <li><code>build()</code> to populate the sequence of tasks to perform.
  * <br>
- * For an Inter edition, this method uses {@link Inter#preEdit(InterEditor)} to at least
- * append an {@link Editiontask} with related links and unlinks for the edited inter.
+ * For an Inter editing, this method uses {@link Inter#preEdit(InterEditor)} to at least
+ * append an {@link Editingtask} with related links and unlinks for the edited inter.
  * <br>
  * Subclasses can append additional tasks to the sequence.
  * <i>For example a HeadInter will append an AdditionTask for each of the needed ledgers.</i>
@@ -99,14 +99,14 @@ import java.awt.Graphics2D;
  * removal (or re-insertion) of vertices and edges in SIG)
  * <li><code>publish()</code> pushes relevant event information to InterIndex,
  * GlyphIndex, shape history, etc as needed.
- * <li><code>epilog()</code> updates any sheet step(s) impacted by the edition.
+ * <li><code>epilog()</code> updates any sheet step(s) impacted by the editing.
  * </ol>
  * <li>When CtrlTask completes successfully, its task sequence is appended to InterController
  * history, making it available for user undo/redo.
  * <p>
  * <li>Finally, user display is refreshed.
  * </ol>
- * <img alt="Edition diagram" src="doc-files/Editor.png">
+ * <img alt="Editing diagram" src="doc-files/Editor.png">
  *
  * @see InterDnd
  * @author Hervé Bitteur
@@ -187,7 +187,7 @@ public abstract class InterEditor
     @Override
     public void endProcess ()
     {
-        logger.debug("End of inter edition");
+        logger.debug("End of inter editing");
 
         if (hasMoved) {
             system.getSheet().getInterController().editInter(this);
@@ -266,7 +266,7 @@ public abstract class InterEditor
         }
 
         // Lookup attachments are no longer consistent, we can simply remove them
-        // They will be recreated anew on next edition action
+        // They will be recreated anew on next editing action
         inter.removeAttachments("");
 
         updateEnsemble();

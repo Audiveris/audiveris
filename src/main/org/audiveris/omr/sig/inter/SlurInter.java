@@ -122,8 +122,7 @@ public class SlurInter
     /**
      * Predicate for a slur not connected on both ends.
      */
-    public static final Predicate<SlurInter> isOrphan = (slur) ->
-    {
+    public static final Predicate<SlurInter> isOrphan = (slur) -> {
         for (HorizontalSide side : HorizontalSide.values()) {
             if (slur.getHead(side) == null) {
                 return true;
@@ -134,8 +133,7 @@ public class SlurInter
     };
 
     /** Predicate for an orphan slur at the end of its system/part. */
-    public static final Predicate<SlurInter> isEndingOrphan = (slur) ->
-    {
+    public static final Predicate<SlurInter> isEndingOrphan = (slur) -> {
         if ((slur.getHead(RIGHT) == null) && (slur.getExtension(RIGHT) == null)) {
             // Check we end in last measure or beyond
             Point2D end = slur.getCurve().getP2();
@@ -161,8 +159,7 @@ public class SlurInter
     };
 
     /** Predicate for an orphan slur at the beginning of its system/part. */
-    public static final Predicate<SlurInter> isBeginningOrphan = (slur) ->
-    {
+    public static final Predicate<SlurInter> isBeginningOrphan = (slur) -> {
         if ((slur.getHead(LEFT) == null) && (slur.getExtension(LEFT) == null)) {
             // Check we are in first measure
             Point2D end = slur.getCurve().getP1();
@@ -1282,7 +1279,7 @@ public class SlurInter
         {
             // First, draw lines between handles
             if (!handles.isEmpty()) {
-                g.setColor(Colors.EDITION_LINE);
+                g.setColor(Colors.EDITING_LINE);
                 UIUtil.setAbsoluteStroke(g, 1f);
 
                 Point2D last = null;

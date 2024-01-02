@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      E d i t i o n T a s k                                     //
+//                                      E d i t i n g T a s k                                     //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -29,11 +29,11 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
- * Class <code>EditionTask</code> modifies the location and/or geometry of an inter.
+ * Class <code>EditingTask</code> modifies the location and/or geometry of an inter.
  *
  * @author Hervé Bitteur
  */
-public class EditionTask
+public class EditingTask
         extends InterTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
@@ -47,13 +47,13 @@ public class EditionTask
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>EditionTask</code> object.
+     * Creates a new <code>EditingTask</code> object.
      *
      * @param editor  the editor used on inter
      * @param links   relations to set
      * @param unlinks relations to unset
      */
-    public EditionTask (InterEditor editor,
+    public EditingTask (InterEditor editor,
                         Collection<Link> links,
                         Collection<Link> unlinks)
     {

@@ -462,7 +462,7 @@ public class SheetEditor
      * Set the provided Staff into edit mode.
      *
      * @param staff  the staff to edit
-     * @param global true for global staff edition, false for lines edition
+     * @param global true for global staff editing, false for lines editing
      */
     public void openEditMode (Staff staff,
                               boolean global)
@@ -564,7 +564,7 @@ public class SheetEditor
     //------------//
     /**
      * This is the main view, displaying the sheet image with sections, glyphs
-     * and inters/staffLines for edition.
+     * and inters/staffLines for editing.
      */
     private final class EditorView
             extends NestView
@@ -603,15 +603,15 @@ public class SheetEditor
             sheet.getInterIndex().getEntityService().subscribeStrongly(EntityListEvent.class, this);
 
             // Arrow keys + Enter key for inter editor
-            bindInterEditionKeys();
+            bindInterEditingKeys();
             addKeyListener(keyListener);
 
         }
 
         //----------------------//
-        // bindInterEditionKeys //
+        // bindInterEditingKeys //
         //----------------------//
-        private void bindInterEditionKeys ()
+        private void bindInterEditingKeys ()
         {
             final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
             final ActionMap actionMap = getActionMap();
@@ -630,9 +630,9 @@ public class SheetEditor
             inputMap.put(KeyStroke.getKeyStroke("alt RIGHT"), "RightTranslateAction");
             actionMap.put("RightTranslateAction", new EditTranslateAction(1, 0));
 
-            // End of edition
-            inputMap.put(KeyStroke.getKeyStroke("ENTER"), "EndInterEditionAction");
-            actionMap.put("EndInterEditionAction", new EndInterEditionAction());
+            // End of editing
+            inputMap.put(KeyStroke.getKeyStroke("ENTER"), "EndInterEditingAction");
+            actionMap.put("EndInterEditingAction", new EndInterEditingAction());
         }
 
         //--------------//
@@ -772,7 +772,7 @@ public class SheetEditor
         // objectSelected //
         //----------------//
         /**
-         * Selection (by left button double-click), this can start inter edition.
+         * Selection (by left button double-click), this can start inter editing.
          *
          * @param pt       the selected point in model pixel coordinates
          * @param movement the mouse movement
@@ -836,7 +836,7 @@ public class SheetEditor
                 objectEditor = createEditor(pt);
             }
 
-            // On-going inter edition?
+            // On-going inter editing?
             if (objectEditor != null) {
                 // Publish (transient) location to allow shifting when getting close to view borders
                 locationService.publish(
@@ -1164,9 +1164,9 @@ public class SheetEditor
         }
 
         //-----------------------//
-        // EndInterEditionAction //
+        // EndInterEditingAction //
         //-----------------------//
-        private class EndInterEditionAction
+        private class EndInterEditingAction
                 extends AbstractAction
         {
 

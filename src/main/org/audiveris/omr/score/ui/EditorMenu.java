@@ -559,7 +559,7 @@ public class EditorMenu
 
         private final PartsCollation partsCollation = new PartsCollation();
 
-        private final LogicalsEdition logicalsEdition = new LogicalsEdition();
+        private final LogicalsEditing logicalsEditing = new LogicalsEditing();
 
         ScoreMenu ()
         {
@@ -597,19 +597,19 @@ public class EditorMenu
             }
 
             add(new JMenuItem(partsCollation));
-            add(new JMenuItem(logicalsEdition));
+            add(new JMenuItem(logicalsEditing));
 
-            logicalsEdition.update();
+            logicalsEditing.update();
             partsCollation.update();
         }
 
         /**
          * Edits and locks/unlocks the list of logical parts defined in score.
          */
-        private class LogicalsEdition
+        private class LogicalsEditing
                 extends AbstractAction
         {
-            LogicalsEdition ()
+            LogicalsEditing ()
             {
                 putValue(NAME, "Edit logical parts");
                 putValue(SHORT_DESCRIPTION, "Review the definition of all logical parts in score");
@@ -768,9 +768,9 @@ public class EditorMenu
 
         private Staff staff;
 
-        private StaffEditionAction edition = new StaffEditionAction();
+        private StaffEditingAction editing = new StaffEditingAction();
 
-        private LineEditionAction lineEdition = new LineEditionAction();
+        private LineEditingAction lineEditing = new LineEditingAction();
 
         private Point2D center; // Current user location
 
@@ -781,8 +781,8 @@ public class EditorMenu
         {
             super("Staff");
 
-            add(new JMenuItem(edition));
-            add(new JMenuItem(lineEdition));
+            add(new JMenuItem(editing));
+            add(new JMenuItem(lineEditing));
 
             if (AdvancedTopics.Topic.PLOTS.isSet()) {
                 addSeparator();
@@ -807,19 +807,19 @@ public class EditorMenu
                 final int left = staff.getAbscissa(HorizontalSide.LEFT);
                 final int right = staff.getAbscissa(HorizontalSide.RIGHT);
 
-                edition.setEnabled(true);
-                lineEdition.setEnabled((x >= (left - margin)) && (x <= (right + margin)));
+                editing.setEnabled(true);
+                lineEditing.setEnabled((x >= (left - margin)) && (x <= (right + margin)));
             }
         }
 
         /**
-         * Launch user edition on current staff line.
+         * Launch user editing on current staff line.
          */
-        private class LineEditionAction
+        private class LineEditingAction
                 extends AbstractAction
         {
 
-            LineEditionAction ()
+            LineEditingAction ()
             {
                 putValue(NAME, "Edit lines");
                 putValue(SHORT_DESCRIPTION, "Edit the staff lines individually");
@@ -889,13 +889,13 @@ public class EditorMenu
         }
 
         /**
-         * Launch user edition on current staff.
+         * Launch user editing on current staff.
          */
-        private class StaffEditionAction
+        private class StaffEditingAction
                 extends AbstractAction
         {
 
-            StaffEditionAction ()
+            StaffEditingAction ()
             {
                 putValue(NAME, "Edit staff");
                 putValue(SHORT_DESCRIPTION, "Edit the staff as a whole");

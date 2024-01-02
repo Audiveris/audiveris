@@ -60,7 +60,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Class <code>StaffEditor</code> allows the end-user to manually edit the geometry of a staff.
  * <p>
- * There are two edition modes:
+ * There are two editing modes:
  * <ul>
  * <li><b>Lines</b> mode.
  * In this mode, all staff lines can be modified individually.
@@ -109,7 +109,7 @@ public abstract class StaffEditor
     /** Sheet horizontal lag. */
     protected final Lag hLag;
 
-    /** Relevant horizontal sections for staff edition, ordered by starting ordinate. */
+    /** Relevant horizontal sections for staff editing, ordered by starting ordinate. */
     protected final SortedSet<Section> staffSections;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -145,7 +145,7 @@ public abstract class StaffEditor
     // collectRelevantSections //
     //-------------------------//
     /**
-     * Collect just the horizontal sections that may be impacted by staff edition.
+     * Collect just the horizontal sections that may be impacted by staff editing.
      *
      * @return the set of relevant sections, ordered by starting ordinate
      */
@@ -445,6 +445,9 @@ public abstract class StaffEditor
             staff.setAbscissa(LEFT, (int) Math.rint(left));
             staff.setAbscissa(RIGHT, (int) Math.rint(right));
             staff.setArea(null);
+
+            // TODO: update every StaffLine glyph?
+            // TODO: invalidate no-staff
         }
 
         /**
@@ -541,6 +544,9 @@ public abstract class StaffEditor
                 final StaffLine staffLine = (StaffLine) lines.get(il);
                 staffLine.setPoints(lam.lineModels.get(il).points);
             }
+
+            // TODO: update the modified StaffLine glyph
+            // TODO: invalidate no-staff
         }
 
         /** One model per staff line. */

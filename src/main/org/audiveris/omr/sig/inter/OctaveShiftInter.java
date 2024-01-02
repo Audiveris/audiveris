@@ -38,7 +38,7 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.OctaveShiftChordRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.AdditionTask;
-import org.audiveris.omr.sig.ui.EditionTask;
+import org.audiveris.omr.sig.ui.EditingTask;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterService;
 import org.audiveris.omr.sig.ui.RemovalTask;
@@ -725,14 +725,14 @@ public class OctaveShiftInter
         final Editor editor = (Editor) interEditor;
         final List<UITask> tasks = new ArrayList<>();
 
-        // Editions
+        // Editings
         final Set<OctaveShiftInter> editedKeys = new LinkedHashSet<>(editor.models.keySet());
         editedKeys.retainAll(editor.originalSeq);
         for (OctaveShiftInter os : editedKeys) {
             final SystemInfo system = os.staff.getSystem();
             final Collection<Link> links = os.searchLinks(system);
             final Collection<Link> unlinks = os.searchUnlinks(system, links);
-            tasks.add(new EditionTask(editor.getMiniEditor(os), links, unlinks));
+            tasks.add(new EditingTask(editor.getMiniEditor(os), links, unlinks));
         }
 
         // Removals
@@ -940,7 +940,7 @@ public class OctaveShiftInter
      * A logical octave shift can span several systems, starting in one system and stopping
      * in another system.
      * <p>
-     * User edition of such logical octave shift includes the ability to extend or shrink the
+     * User editing of such logical octave shift includes the ability to extend or shrink the
      * logical octave shift, which implies to work on several physical instances.
      * <p>
      * The chosen implementation for this "possibly-multi-system" editor is to work on the whole
@@ -1496,7 +1496,7 @@ public class OctaveShiftInter
         // MiniEditor //
         //------------//
         /**
-         * This class is a trick to fill an EditionTask focused on a specific OctaveShiftInter.
+         * This class is a trick to fill an EditingTask focused on a specific OctaveShiftInter.
          */
         private class MiniEditor
                 extends InterEditor
