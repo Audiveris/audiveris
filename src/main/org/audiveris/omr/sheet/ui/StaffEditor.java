@@ -159,8 +159,7 @@ public abstract class StaffEditor
         staffBox.setBounds(0, staffBox.y, sheet.getWidth(), staffBox.height);
 
         final List<Section> sections = new ArrayList<>();
-        hLag.getEntities().forEach(section ->
-        {
+        hLag.getEntities().forEach(section -> {
             if (section.getBounds().intersects(staffBox)) {
                 sections.add(section);
             }
@@ -185,8 +184,7 @@ public abstract class StaffEditor
         applyModel(model); // Change lines geometry
 
         // Detect and remove sections on staff lines
-        lines.forEach(line ->
-        {
+        lines.forEach(line -> {
             final StaffLine staffLine = (StaffLine) line;
             final List<Section> lineRemovedSections = getRemovals(staffLine);
             model.removedSections.setEntities(lineRemovedSections);
@@ -226,8 +224,8 @@ public abstract class StaffEditor
                 // Refine intersection check
                 final double yLeft = staffLine.yAt((double) box.x);
                 final double yRight = staffLine.yAt((double) (box.x + box.width));
-                if (yLeft >= box.y && yLeft <= box.y + box.height || (yRight >= box.y
-                        && yRight <= box.y + box.height)) {
+                if ((yLeft >= box.y && yLeft <= box.y + box.height) //
+                        || (yRight >= box.y && yRight <= box.y + box.height)) {
 
                     // Check minimum ratio width / height
                     final double wh = box.width / (double) box.height;
@@ -254,6 +252,9 @@ public abstract class StaffEditor
         return (Staff) object;
     }
 
+    //-------------//
+    // getStickers //
+    //-------------//
     /**
      * Retrieve the sections stuck on the provided core sections
      *

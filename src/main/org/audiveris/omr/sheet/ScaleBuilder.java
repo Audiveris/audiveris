@@ -336,7 +336,7 @@ public class ScaleBuilder
         final Scale scl = sheet.getScale();
 
         if (dummy || scl == null) {
-            binary = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+            binary = sheet.getPicture().getVerticalTable(Picture.TableKey.BINARY);
             histoKeeper = new HistoKeeper();
 
             histoKeeper.buildBlacks();

@@ -77,10 +77,8 @@ public class BeamStructure
 
     /** Comparator on abscissae. */
     public static final Comparator<BeamStructure> byAbscissa = (b1,
-                                                                b2) -> Integer.compare(
-                                                                        b1.getGlyph().getBounds().x,
-                                                                        b2.getGlyph()
-                                                                                .getBounds().x);
+                                                                b2) -> //
+    Integer.compare(b1.getGlyph().getBounds().x, b2.getGlyph().getBounds().x);
 
     //~ Instance fields ----------------------------------------------------------------------------
 

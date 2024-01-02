@@ -28,9 +28,9 @@ import org.audiveris.omr.math.Population;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-
 import ij.process.ByteProcessor;
+
+import java.util.Arrays;
 
 /**
  * Class <code>AdaptiveFilter</code> is an abstract implementation of
@@ -363,7 +363,7 @@ public abstract class AdaptiveFilter
         {
             // Translate the absolute column to circular buffer column
             final int tx = x % TILE_WIDTH;
-            final long[] column = sums[tx];
+            final long[] column = sums[tx]; // Don't remove this statement
 
             // The column to the left (modulo tile width)
             final int prevTx = ((x + TILE_WIDTH) - 1) % TILE_WIDTH;

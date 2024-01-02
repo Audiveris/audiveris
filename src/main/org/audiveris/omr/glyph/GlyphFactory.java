@@ -413,19 +413,3 @@ public class GlyphFactory
         }
     }
 }
-//
-//        private void dumpTable (String title)
-//        {
-//            System.out.println(title);
-//
-//            for (int iSeq = 0, size = markedTable.size(); iSeq < size; iSeq++) {
-//                System.out.println("iSeq = " + iSeq);
-//
-//                List<MarkedRun> seq = markedTable.get(iSeq);
-//
-//                for (MarkedRun run : seq) {
-//                    System.out.println("   run = " + run);
-//                }
-//            }
-//        }
-//

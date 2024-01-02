@@ -68,8 +68,7 @@ public class JunctionRatioPolicy
     /**
      * Creates a policy based on ratio of run length versus mean length of section runs.
      *
-     * @param maxLengthRatio maximum difference ratio to continue the
-     *                       current section
+     * @param maxLengthRatio maximum difference ratio to continue the current section
      */
     public JunctionRatioPolicy (double maxLengthRatio)
     {

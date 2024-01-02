@@ -25,9 +25,9 @@ import org.audiveris.omr.run.Run;
 
 /**
  * Interface <code>JunctionPolicy</code> encapsulates the policy that decides if a run can
- * extend a given section.
+ * extend a given section, assuming the provided run is adjacent to the last run of the section.
  * <p>
- * If not, the run is part of a new section, linked to the previous one by a junction.
+ * If not, the run will be part of a new section.
  *
  * @author Hervé Bitteur
  */
@@ -39,11 +39,11 @@ public interface JunctionPolicy
     // consistentRun //
     //---------------//
     /**
-     * Check if provided run is consistent with the section defined so far.
+     * Check if the provided run is consistent with the section defined so far.
      *
      * @param run     the candidate run for section extension
      * @param section the to-be extended section
-     * @return true is extension is compatible with the defined junction policy
+     * @return true if extension is compatible with the defined junction policy
      */
     public abstract boolean consistentRun (Run run,
                                            Section section);

@@ -468,7 +468,7 @@ public class Sheet
 
             // Sheet image
             Path imgPath = sheetFolder.resolve(getId() + Annotations.SHEET_IMAGE_EXTENSION);
-            RunTable runTable = picture.getTable(Picture.TableKey.BINARY);
+            RunTable runTable = picture.getVerticalTable(Picture.TableKey.BINARY);
             BufferedImage img = runTable.getBufferedImage();
             os = Files.newOutputStream(imgPath, CREATE);
             ImageIO.write(img, Annotations.SHEET_IMAGE_FORMAT, os);

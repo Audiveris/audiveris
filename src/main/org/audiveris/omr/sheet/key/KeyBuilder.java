@@ -1529,7 +1529,7 @@ public class KeyBuilder
                 }
             }
 
-            ClefInter bestClef = null; // Best clef (compatible of not)
+            ClefInter bestClef = null; // Best clef (compatible or not)
 
             if (bestCompatibleClef != null) {
                 double bestClefGrade = -1;

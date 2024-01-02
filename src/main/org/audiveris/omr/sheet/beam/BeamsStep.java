@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.lag.BasicLag;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Lags;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.step.AbstractSystemStep;

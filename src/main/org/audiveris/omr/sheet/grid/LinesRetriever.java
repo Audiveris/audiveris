@@ -189,11 +189,11 @@ public class LinesRetriever
                 ? new RunsViewer(sheet)
                 : null;
 
-        RunTable sourceTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+        final RunTable sourceTable = sheet.getPicture().getVerticalTable(Picture.TableKey.BINARY);
 
-        // Filter runs whose height is larger than line thickness
-        RunTable longVertTable = new RunTable(VERTICAL, sheet.getWidth(), sheet.getHeight());
-        RunTable horiTable = sheet.getLagManager().filterRuns(sourceTable, longVertTable);
+        // Filter the vertical runs that are longer than the (adjusted) line thickness
+        final RunTable longVertTable = new RunTable(VERTICAL, sheet.getWidth(), sheet.getHeight());
+        final RunTable horiTable = sheet.getLagManager().filterRuns(sourceTable, longVertTable);
 
         if (runsViewer != null) {
             runsViewer.display("long-vert", longVertTable);
@@ -202,7 +202,7 @@ public class LinesRetriever
         // Split horizontal runs into short & long tables
         shortHoriTable = new RunTable(HORIZONTAL, sheet.getWidth(), sheet.getHeight());
 
-        RunTable longHoriTable = horiTable.purge(
+        final RunTable longHoriTable = horiTable.purge(
                 (Run run) -> run.getLength() < params.minRunLength,
                 shortHoriTable);
 
@@ -232,13 +232,13 @@ public class LinesRetriever
      * <p>
      * Then each valid cluster can give birth to a staff, with preliminary values, since we don't
      * know yet precisely the starting and ending abscissa values of each staff.
-     * This will be refined later, using staff projection to retrieve major bar lines as well as
+     * This can be refined later, using staff projection to retrieve major bar lines as well as
      * staff side limits.
      */
     private void buildStaves ()
     {
         // Accumulate all clusters, standard and small ones, and sort them by layout
-        List<LineCluster> allClusters = new ArrayList<>();
+        final List<LineCluster> allClusters = new ArrayList<>();
         allClusters.addAll(clustersRetriever.getClusters());
 
         Integer smallInterline = null;
@@ -267,7 +267,7 @@ public class LinesRetriever
             logger.debug("{}", cluster);
 
             // Copy array of lines
-            List<StaffFilament> lines = new ArrayList<>(cluster.getLines());
+            final List<StaffFilament> lines = new ArrayList<>(cluster.getLines());
 
             // Determine rough abscissa values for left & right sides
             // Rather than extrema, we use median values
@@ -283,30 +283,17 @@ public class LinesRetriever
             final double right = rights.get(rights.size() / 2);
 
             // Allocate Staff (or Tablature) instance
-            List<LineInfo> infos = new ArrayList<>(lines.size());
+            final List<LineInfo> infos = new ArrayList<>(lines.size());
 
             for (StaffFilament line : lines) {
                 infos.add(line);
             }
 
-            final Staff staff;
-
-            switch (infos.size()) {
-            case 5:
-                staff = new Staff(++staffId, left, right, cluster.getInterline(), infos);
-
-                break;
-
-            case 1:
-                staff = new OneLineStaff(++staffId, left, right, cluster.getInterline(), infos);
-
-                break;
-
-            default:
-                staff = new Tablature(++staffId, left, right, cluster.getInterline(), infos);
-
-                break;
-            }
+            final Staff staff = switch (infos.size()) {
+            case 5 -> new Staff(++staffId, left, right, cluster.getInterline(), infos);
+            case 1 -> new OneLineStaff(++staffId, left, right, cluster.getInterline(), infos);
+            default -> new Tablature(++staffId, left, right, cluster.getInterline(), infos);
+            };
 
             staffManager.addStaff(staff);
 

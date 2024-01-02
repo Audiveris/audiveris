@@ -29,6 +29,9 @@ import org.audiveris.omr.run.RunTableFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+import net.jcip.annotations.NotThreadSafe;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -36,9 +39,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import ij.process.ByteProcessor;
-import net.jcip.annotations.NotThreadSafe;
+import java.util.stream.Collectors;
 
 /**
  * Class <code>SectionFactory</code> builds a collection of sections out of provided runs.
@@ -131,7 +132,7 @@ public class SectionFactory
                                          Point offset)
     {
         // Runs
-        RunTable runTable = new RunTableFactory(orientation).createTable(buffer);
+        final RunTable runTable = new RunTableFactory(orientation).createTable(buffer);
 
         return createSections(runTable, offset, false);
     }
@@ -151,10 +152,10 @@ public class SectionFactory
                                          Rectangle roi)
     {
         // Runs
-        RunTable runTable = new RunTableFactory(orientation).createTable(buffer, roi);
+        final RunTable runTable = new RunTableFactory(orientation).createTable(buffer, roi);
 
         // Offset?
-        Point offset = ((roi.x != 0) || (roi.y != 0)) ? roi.getLocation() : null;
+        final Point offset = ((roi.x != 0) || (roi.y != 0)) ? roi.getLocation() : null;
 
         // Create sections within roi/runtable
         return createSections(runTable, offset, false);
@@ -176,36 +177,15 @@ public class SectionFactory
                                          boolean include)
     {
         // Build sections with runTable-based coordinates
-        List<DynamicSection> sections = new Build().buildSections(runTable, include);
+        final List<DynamicSection> sections = new Build().buildSections(runTable, include);
 
-        // Translate sections to absolute coordinates if an offset was provided
-        if (offset != null) {
-            for (DynamicSection dynSection : sections) {
-                dynSection.translate(offset);
+        return sections.stream().map(ds ->
+        {
+            if (offset != null) {
+                ds.translate(offset); // Translate to absolute coordinates
             }
-        }
-
-        return getImmutables(sections);
-    }
-
-    //---------------//
-    // getImmutables //
-    //---------------//
-    /**
-     * Report immutable version of sections.
-     *
-     * @param dynSections (mutable) sections
-     * @return immutable sections
-     */
-    private List<Section> getImmutables (List<DynamicSection> dynSections)
-    {
-        final List<Section> sections = new ArrayList<>(dynSections.size());
-
-        for (DynamicSection dynSection : dynSections) {
-            sections.add(new BasicSection(dynSection));
-        }
-
-        return sections;
+            return new BasicSection(ds); // Use immutable section
+        }).collect(Collectors.toList());
     }
 
     //-------------//
@@ -371,15 +351,15 @@ public class SectionFactory
         {
             logger.debug("processNextSide for run {}", run);
 
-            int nextStart = run.getStart();
-            int nextStop = run.getStop();
+            final int nextStart = run.getStart();
+            final int nextStop = run.getStop();
 
             // Check if overlap with a section run in previous sequence
             // All such sections are then stored in overlappingSections
             overlappingSections.clear();
 
             for (DynamicSection dynSection : prevActives) {
-                Run lastRun = dynSection.getLastRun();
+                final Run lastRun = dynSection.getLastRun();
 
                 if (lastRun.getStart() > nextStop) {
                     break;
@@ -395,30 +375,31 @@ public class SectionFactory
             logger.debug("overlap={}", overlappingSections.size());
 
             switch (overlappingSections.size()) {
-            case 0: // Begin a brand new section
-                nextActives.add(createSection(col, run));
+            // Begin a brand new section
+            case 0 -> nextActives.add(createSection(col, run));
 
-                break;
-
-            case 1: // Continuing sections (if not finished)
-
-                DynamicSection prevSection = overlappingSections.get(0);
+            // Continuing sections (if not finished)
+            case 1 ->
+            {
+                final DynamicSection prevSection = overlappingSections.get(0);
 
                 if (!isProcessed(prevSection)) {
                     continueSection(prevSection, run);
                 } else {
-                    // Create a new section, linked by a junction
-                    DynamicSection newSection = createSection(col, run);
+                    // Create a new section
+                    final DynamicSection newSection = createSection(col, run);
                     nextActives.add(newSection);
                 }
+            }
 
-                break;
-
-            default: // Converging sections, end them, start a new one
+            // Converging sections, end them, start a new one
+            default ->
+            {
                 logger.debug("Converging at {}", run);
 
-                DynamicSection newSection = createSection(col, run);
+                final DynamicSection newSection = createSection(col, run);
                 nextActives.add(newSection);
+            }
             }
         }
 
@@ -437,9 +418,9 @@ public class SectionFactory
                                       RunTable runTable,
                                       int nextCol)
         {
-            Run lastRun = dynSection.getLastRun();
-            int prevStart = lastRun.getStart();
-            int prevStop = lastRun.getStop();
+            final Run lastRun = dynSection.getLastRun();
+            final int prevStart = lastRun.getStart();
+            final int prevStop = lastRun.getStop();
             logger.debug("processPrevSide for section {}", dynSection);
 
             // Check if overlap with a run in next sequence
@@ -447,7 +428,7 @@ public class SectionFactory
             Run overlapRun = null;
 
             for (Iterator<Run> it = runTable.iterator(nextCol); it.hasNext();) {
-                Run run = it.next();
+                final Run run = it.next();
 
                 if (run.getStart() > prevStop) {
                     break;
@@ -464,30 +445,22 @@ public class SectionFactory
             logger.debug("overlap={}", overlapNb);
 
             switch (overlapNb) {
-            case 0: // Nothing : end of the section
-                logger.debug("Ending section {}", dynSection);
+            // Nothing : end of the section
+            case 0 -> logger.debug("Ending section {}", dynSection);
 
-                break;
-
-            case 1: // Continue if consistent
-
+            // Continue if consistent
+            case 1 ->
+            {
                 if (junctionPolicy.consistentRun(overlapRun, dynSection)) {
-                    logger.debug(
-                            "Perhaps extending section {} with run {}",
-                            dynSection,
-                            overlapRun);
+                    logger.debug("Extending {} with run {}", dynSection, overlapRun);
                 } else {
-                    logger.debug(
-                            "Incompatible height between {} and run {}",
-                            dynSection,
-                            overlapRun);
+                    logger.debug("Incompatibility between {} and run {}", dynSection, overlapRun);
                     setProcessed(dynSection);
                 }
+            }
 
-                break;
-
-            default: // Diverging, so conclude the section here
-                setProcessed(dynSection);
+            // Diverging, so conclude the section here
+            default -> setProcessed(dynSection);
             }
         }
     }

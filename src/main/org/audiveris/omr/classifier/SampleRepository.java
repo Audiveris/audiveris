@@ -719,7 +719,7 @@ public class SampleRepository
         return findSampleSheet(
                 sheet.getId(),
                 longSheetName,
-                sheet.getPicture().getTable(Picture.TableKey.BINARY));
+                sheet.getPicture().getVerticalTable(Picture.TableKey.BINARY));
     }
 
     //-----------------//
@@ -1535,7 +1535,7 @@ public class SampleRepository
      */
     public SampleSheet pokeSampleSheet (Sheet sheet)
     {
-        RunTable image = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+        RunTable image = sheet.getPicture().getVerticalTable(Picture.TableKey.BINARY);
 
         return imageMap.get(image);
     }

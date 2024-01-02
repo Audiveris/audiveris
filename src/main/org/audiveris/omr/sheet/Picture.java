@@ -740,30 +740,23 @@ public class Picture
         return null;
     }
 
-    //----------//
-    // getTable //
-    //----------//
+    //------------------//
+    // getVerticalTable //
+    //------------------//
     /**
-     * Report the desired table.
+     * Report the desired vertical table.
      *
      * @param key key of desired table
-     * @return the table found, if any, null otherwise
+     * @return the vertical table found, if any, null otherwise
      */
-    public RunTable getTable (TableKey key)
+    public RunTable getVerticalTable (TableKey key)
     {
         RunTable tbl = getStrongRef(key);
 
         if (tbl == null) {
             switch (key) {
-            case BINARY:
-                tbl = tableOf(ImageKey.BINARY);
-
-                break;
-
-            case HEAD_SPOTS:
-                tbl = tableOf(ImageKey.HEAD_SPOTS);
-
-                break;
+            case BINARY -> tbl = verticalTableOf(ImageKey.BINARY);
+            case HEAD_SPOTS -> tbl = verticalTableOf(ImageKey.HEAD_SPOTS);
             }
 
             if (tbl != null) {
@@ -1048,30 +1041,6 @@ public class Picture
         }
     }
 
-    //---------//
-    // tableOf //
-    //---------//
-    /**
-     * Build table from provided image.
-     *
-     * @param key key to image
-     * @return the table built, or null if image could not be found
-     */
-    private RunTable tableOf (ImageKey key)
-    {
-        final ImageHolder imageHolder = images.get(key);
-
-        if ((imageHolder != null) && !imageHolder.hasNoData()) {
-            BufferedImage image = imageHolder.getData(sheet.getStub());
-
-            if (image != null) {
-                return tableOf(image);
-            }
-        }
-
-        return null;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -1079,6 +1048,30 @@ public class Picture
     public String toString ()
     {
         return getName();
+    }
+
+    //-----------------//
+    // verticalTableOf //
+    //----------------//
+    /**
+     * Build a vertical table from the provided image.
+     *
+     * @param key key to image
+     * @return the table built, or null if image could not be found
+     */
+    private RunTable verticalTableOf (ImageKey key)
+    {
+        final ImageHolder imageHolder = images.get(key);
+
+        if ((imageHolder != null) && !imageHolder.hasNoData()) {
+            final BufferedImage image = imageHolder.getData(sheet.getStub());
+
+            if (image != null) {
+                return verticalTableOf(image);
+            }
+        }
+
+        return null;
     }
 
     //--------//
@@ -1169,16 +1162,16 @@ public class Picture
         }
     }
 
-    //---------//
-    // tableOf //
-    //---------//
+    //-----------------//
+    // verticalTableOf //
+    //-----------------//
     /**
-     * Report the (vertical) RunTable built from the provided binary image.
+     * Report the vertical RunTable built from the provided binary image.
      *
      * @param binaryImg provided binary image
      * @return the binary RunTable
      */
-    public static RunTable tableOf (BufferedImage binaryImg)
+    public static RunTable verticalTableOf (BufferedImage binaryImg)
     {
         return new RunTableFactory(VERTICAL).createTable(new ByteProcessor(binaryImg));
     }

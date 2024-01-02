@@ -107,7 +107,7 @@ public class StructureElement
             break;
         }
 
-        case SQARE:
+        case SQUARE:
         {
             mask = createSquareMask(shift, 2 * radius, offset);
 
@@ -521,7 +521,7 @@ public class StructureElement
             break;
         }
 
-        case SQARE:
+        case SQUARE:
         {
             d = Math.max(Math.abs(X[0]), Math.abs(X[1]));
 

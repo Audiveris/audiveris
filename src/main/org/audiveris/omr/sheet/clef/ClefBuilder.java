@@ -82,6 +82,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -404,18 +405,13 @@ public class ClefBuilder
     private void purgeParts (List<Glyph> parts,
                              boolean isFirstPass)
     {
-        List<Glyph> toRemove = new ArrayList<>();
+        for (Iterator<Glyph> it = parts.iterator(); it.hasNext();) {
+            final Glyph part = it.next();
 
-        for (Glyph part : parts) {
-            if (part.getWeight() < params.minPartWeight) {
-                toRemove.add(part);
-            } else if (isFirstPass && !part.getBounds().intersects(innerRect)) {
-                toRemove.add(part);
+            if ((part.getWeight() < params.minPartWeight) //
+                    || (isFirstPass && !part.getBounds().intersects(innerRect))) {
+                it.remove();
             }
-        }
-
-        if (!toRemove.isEmpty()) {
-            parts.removeAll(toRemove);
         }
 
         if (parts.size() > params.maxPartCount) {

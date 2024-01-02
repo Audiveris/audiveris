@@ -48,7 +48,7 @@ public interface MorphoConstants
 
     public static final int VPOINTS = 5;
 
-    public static final int SQARE = 7;
+    public static final int SQUARE = 7;
 
     public static final int RING = 8;
 

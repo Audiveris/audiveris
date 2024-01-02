@@ -58,7 +58,7 @@ public class JunctionShiftPolicy
     //---------------//
     /**
      * Check whether the Run is consistent with the provided Section, according to this
-     * junction policy, based on run position and last section run position.
+     * junction policy, based on run coordinates and last section run coordinates.
      *
      * @param run     the Run candidate
      * @param section the potentially hosting Section
@@ -69,10 +69,10 @@ public class JunctionShiftPolicy
                                   Section section)
     {
         // Check based on positions of the two runs
-        Run last = section.getLastRun();
+        final Run last = section.getLastRun();
 
-        return (Math.abs(run.getStart() - last.getStart()) <= maxShift) && (Math.abs(
-                run.getStop() - last.getStop()) <= maxShift);
+        return (Math.abs(run.getStart() - last.getStart()) <= maxShift) //
+                && (Math.abs(run.getStop() - last.getStop()) <= maxShift);
     }
 
     //----------//

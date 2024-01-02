@@ -137,7 +137,7 @@ public class ArcRetriever
     {
         this.curves = curves;
         sheet = curves.getSheet();
-        verticalRuns = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+        verticalRuns = sheet.getPicture().getVerticalTable(Picture.TableKey.BINARY);
         skeleton = curves.getSkeleton();
 
         params = new Parameters(sheet.getScale());

@@ -109,7 +109,7 @@ public class HeadSpotsBuilder
      */
     public Map<SystemInfo, List<Glyph>> getSpots ()
     {
-        RunTable headRuns = sheet.getPicture().getTable(Picture.TableKey.HEAD_SPOTS);
+        RunTable headRuns = sheet.getPicture().getVerticalTable(Picture.TableKey.HEAD_SPOTS);
         List<Glyph> spots = GlyphFactory.buildGlyphs(
                 headRuns,
                 new Point(0, 0),

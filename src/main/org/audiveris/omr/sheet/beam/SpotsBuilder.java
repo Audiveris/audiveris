@@ -149,7 +149,7 @@ public class SpotsBuilder
             if ((OMR.gui != null) && constants.displayBeamSpots.isSet()) {
                 watch.start("spotsController");
 
-                SpotsController spotController = new SpotsController(sheet, spots, spotLag);
+                final SpotsController spotController = new SpotsController(sheet, spots, spotLag);
                 spotController.refresh();
             }
         } catch (Exception ex) {

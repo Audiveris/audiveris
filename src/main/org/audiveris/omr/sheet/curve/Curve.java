@@ -498,7 +498,7 @@ public abstract class Curve
                                 double minRunRatio)
     {
         // Sheet global vertical run table
-        final RunTable sheetTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+        final RunTable sheetTable = sheet.getPicture().getVerticalTable(Picture.TableKey.BINARY);
 
         // Allocate a curve run table with proper dimension
         final Rectangle fatBox = getBounds();

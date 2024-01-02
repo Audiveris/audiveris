@@ -1076,13 +1076,13 @@ public class SheetStub
     private RunTable grabBinaryTable ()
     {
         // Avoid loading sheet just to reset to binary:
-        // If sheet is available, use its picture.getTable()
+        // If sheet is available, use its picture.getVerticalTable()
         // Otherwise, load binary image from disk and convert to RunTable
         RunTable binaryTable = null;
 
         if (hasSheet()) {
             logger.debug("Sheet#{} getting BINARY from sheet", number);
-            binaryTable = getSheet().getPicture().getTable(TableKey.BINARY);
+            binaryTable = getSheet().getPicture().getVerticalTable(TableKey.BINARY);
         }
 
         if (binaryTable == null) {
@@ -1091,7 +1091,7 @@ public class SheetStub
 
             if (binaryImg != null) {
                 logger.debug("Sheet#{} getting BINARY table from image", number);
-                binaryTable = Picture.tableOf(binaryImg);
+                binaryTable = Picture.verticalTableOf(binaryImg);
             }
         }
 

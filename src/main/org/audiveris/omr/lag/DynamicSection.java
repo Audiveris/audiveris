@@ -381,16 +381,13 @@ public class DynamicSection
     public void translate (Point vector)
     {
         // Get the coord/pos equivalent of dx/dy vector
-        Point cp = orientation.oriented(vector);
-        int dc = cp.x;
-        int dp = cp.y;
+        final Point cp = orientation.oriented(vector);
+        final int dc = cp.x;
+        final int dp = cp.y;
 
         // Apply the needed modifications
         firstPos += dp;
-
-        for (Run run : runs) {
-            run.translate(dc);
-        }
+        runs.forEach(run -> run.translate(dc));
 
         // Force update
         invalidateCache();

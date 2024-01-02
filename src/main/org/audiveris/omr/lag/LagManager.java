@@ -21,13 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.lag;
 
-import static org.audiveris.omr.run.Orientation.HORIZONTAL;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.run.Orientation;
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
@@ -146,9 +145,10 @@ public class LagManager
     // filterRuns //
     //------------//
     /**
-     * Filter the source table into vertical table and horizontal table.
+     * Filter the source table into vertical table and horizontal table,
+     * based on the (adjusted) maximum line thickness.
      *
-     * @param sourceTable the source table (BINARY or NO_STAF)
+     * @param sourceTable the source vertical table (BINARY or NO_STAFF)
      * @param vertTable   (output) populated by long vertical runs, can be null
      * @return the horizontal table built from no-long vertical runs
      */
@@ -163,11 +163,11 @@ public class LagManager
                 sheet.getScale().getMaxFore() * constants.ledgerThickness.getValue());
 
         // Remove runs whose height is larger than line thickness
-        RunTable shortVertTable = sourceTable.copy().purge(
+        final RunTable shortVertTable = sourceTable.copy().purge(
                 (Run run) -> run.getLength() >= minVerticalRunLength,
                 vertTable);
-        RunTableFactory runFactory = new RunTableFactory(HORIZONTAL);
-        RunTable horiTable = runFactory.createTable(shortVertTable.getBuffer());
+        final RunTableFactory runFactory = new RunTableFactory(HORIZONTAL);
+        final RunTable horiTable = runFactory.createTable(shortVertTable.getBuffer());
 
         return horiTable;
     }

@@ -44,8 +44,7 @@ public class JunctionDeltaPolicy
     /**
      * Creates an instance of policy based on delta run length.
      *
-     * @param maxDeltaLength the maximum possible length gap between two
-     *                       consecutive rows
+     * @param maxDeltaLength the maximum possible length gap between two consecutive rows
      */
     public JunctionDeltaPolicy (int maxDeltaLength)
     {
@@ -71,9 +70,7 @@ public class JunctionDeltaPolicy
                                   Section section)
     {
         // Check based on absolute differences between the two runs
-        Run last = section.getLastRun();
-
-        return Math.abs(run.getLength() - last.getLength()) <= maxDeltaLength;
+        return Math.abs(run.getLength() - section.getLastRun().getLength()) <= maxDeltaLength;
     }
 
     //----------//

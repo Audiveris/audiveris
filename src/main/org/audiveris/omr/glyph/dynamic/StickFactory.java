@@ -166,7 +166,8 @@ public class StickFactory
                 // Main orientation
                 for (LinkedSection linked : getNeighbors(ls, reverse)) {
                     // Must be thin & isolated on the border
-                    if ((linked.getCompound() == null) && (linked.getRunCount() == 1)
+                    if ((linked.getCompound() == null) //
+                            && (linked.getRunCount() == 1) //
                             && getNeighbors(linked, reverse).isEmpty()) {
                         stickers.add(linked);
                     }
@@ -195,8 +196,7 @@ public class StickFactory
         for (Section sticker : stickers) {
             fil.addSection(sticker);
 
-            if (sticker instanceof LinkedSection) {
-                LinkedSection linked = (LinkedSection) sticker;
+            if (sticker instanceof LinkedSection linked) {
                 linked.setCompound(fil);
                 setProcessed(linked);
             }
@@ -306,8 +306,8 @@ public class StickFactory
 
         // Discard too thick or too short sections
         for (LinkedSection ls : allSections) {
-            if ((ls.getRunCount() <= params.maxStickThickness) && (ls.getLength(
-                    orientation) >= params.minCoreSectionLength)) {
+            if ((ls.getRunCount() <= params.maxStickThickness) //
+                    && (ls.getLength(orientation) >= params.minCoreSectionLength)) {
                 if ((predicate == null) || predicate.test(ls)) {
                     candidates.add(ls);
                 }

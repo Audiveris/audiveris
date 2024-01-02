@@ -213,7 +213,7 @@ public class PictureView
             }
 
             if (ok) {
-                RunTable table = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+                RunTable table = sheet.getPicture().getVerticalTable(Picture.TableKey.BINARY);
                 doRender(g, input, output, voice, table);
             } else {
                 // Spawn
@@ -226,7 +226,7 @@ public class PictureView
                         try {
                             LogUtil.start(sheet.getStub());
 
-                            return sheet.getPicture().getTable(Picture.TableKey.BINARY);
+                            return sheet.getPicture().getVerticalTable(Picture.TableKey.BINARY);
                         } finally {
                             LogUtil.stopStub();
                         }

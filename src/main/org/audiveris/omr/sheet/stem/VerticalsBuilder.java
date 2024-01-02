@@ -49,9 +49,9 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Class <code>VerticalsBuilder</code> is in charge of retrieving major vertical sticks of a
@@ -119,12 +119,12 @@ public class VerticalsBuilder
             final SheetAssembly assembly = sheet.getStub().getAssembly();
 
             // Filament board
-            EntityService<Filament> fService = sheet.getFilamentIndex().getEntityService();
+            final EntityService<Filament> fService = sheet.getFilamentIndex().getEntityService();
             assembly.addBoard(SheetTab.DATA_TAB, new FilamentBoard(fService, false));
         }
 
         // Retrieve candidates
-        List<StraightFilament> candidates = retrieveCandidates();
+        final List<StraightFilament> candidates = retrieveCandidates();
 
         // Apply seed checks
         checkVerticals(candidates);
@@ -186,31 +186,27 @@ public class VerticalsBuilder
     {
         // Select suitable (vertical) sections
         // Since we are looking for major seeds, we'll start only with vertical sections
-        List<Section> vSections = new ArrayList<>();
-
-        for (Section section : system.getVerticalSections()) {
+        final List<Section> vSections = system.getVerticalSections().stream().filter(s ->
+        {
             // Check section is within system left and right boundaries
-            Point center = section.getAreaCenter();
+            final Point center = s.getAreaCenter();
+            return (center.x > system.getLeft()) && (center.x < system.getRight());
 
-            if ((center.x > system.getLeft()) && (center.x < system.getRight())) {
-                vSections.add(section);
-            }
-        }
+        }).collect(Collectors.toList());
 
         // Horizontal sections (to contribute to stickers)
-        List<Section> hSections = new ArrayList<>();
-
-        for (Section section : system.getHorizontalSections()) {
-            // Limit width to 1 pixel
-            if (section.getLength(HORIZONTAL) == 1) {
-                // Check section is within system left and right boundaries
-                Point center = section.getAreaCenter();
-
-                if ((center.x > system.getLeft()) && (center.x < system.getRight())) {
-                    hSections.add(section);
-                }
+        final List<Section> hSections = system.getHorizontalSections().stream().filter(s ->
+        {
+            // Limit width to 1 pixel!
+            if (s.getLength(HORIZONTAL) != 1) {
+                return false;
             }
-        }
+
+            // Check section is within system left and right boundaries
+            final Point center = s.getAreaCenter();
+            return (center.x > system.getLeft()) && (center.x < system.getRight());
+
+        }).collect(Collectors.toList());
 
         final StickFactory factory = new StickFactory(
                 Orientation.VERTICAL,

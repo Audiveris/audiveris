@@ -542,6 +542,8 @@ public class KeyExtractor
         return ink >= params.minGlyphWeight;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+
     //--------------------//
     // AbstractKeyAdapter //
     //--------------------//
@@ -664,8 +666,6 @@ public class KeyExtractor
                                                Evaluation eval);
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-
     //-----------//
     // Candidate //
     //-----------//
@@ -677,17 +677,13 @@ public class KeyExtractor
 
         /** To sort according to decreasing grade. */
         public static final Comparator<Candidate> byReverseGrade = (Candidate c1,
-                                                                    Candidate c2) -> (c1 == c2) ? 0
-                                                                            : Double.compare(
-                                                                                    c2.eval.grade,
-                                                                                    c1.eval.grade);
+                                                                    Candidate c2) -> //
+        (c1 == c2) ? 0 : Double.compare(c2.eval.grade, c1.eval.grade);
 
         /** To sort according to left abscissa. */
         public static final Comparator<Candidate> byAbscissa = (Candidate c1,
-                                                                Candidate c2) -> (c1 == c2) ? 0
-                                                                        : Double.compare(
-                                                                                c1.glyph.getLeft(),
-                                                                                c2.glyph.getLeft());
+                                                                Candidate c2) -> //
+        (c1 == c2) ? 0 : Double.compare(c1.glyph.getLeft(), c2.glyph.getLeft());
 
         final Glyph glyph;
 

@@ -279,7 +279,7 @@ public class SheetDiff
     public BufferedImage getImage (DiffKind kind)
     {
         final Color veryLight = new Color(222, 222, 200);
-        final RunTable input = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+        final RunTable input = sheet.getPicture().getVerticalTable(Picture.TableKey.BINARY);
         final Point offset = new Point(0, 0);
         final BufferedImage img = new BufferedImage(
                 sheet.getWidth(),
