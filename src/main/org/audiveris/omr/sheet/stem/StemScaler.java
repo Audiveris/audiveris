@@ -24,7 +24,6 @@ package org.audiveris.omr.sheet.stem;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.image.ImageFormatException;
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.math.HiLoPeakFinder;
 import org.audiveris.omr.math.HiLoPeakFinder.Quorum;
@@ -52,10 +51,11 @@ import org.slf4j.LoggerFactory;
 
 import ij.process.ByteProcessor;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -174,58 +174,38 @@ public class StemScaler
      * And within staff area, we even have to hide pixels that belong to barlines and barline
      * connectors.
      *
-     * @return the buffer where the most frequent horizontal run lengths most likely belong to
-     *         stems.
+     * @return the buffer where the most frequent horizontal run lengths likely belong to stems.
      */
     private ByteProcessor getBuffer ()
     {
-        // Build a mask focused on sheet staff areas
-        final BufferedImage mask = new BufferedImage(
-                sheet.getWidth(),
-                sheet.getHeight(),
-                BufferedImage.TYPE_INT_ARGB);
-        final Graphics2D g = mask.createGraphics();
-        g.setComposite(AlphaComposite.Src);
-        g.setColor(Color.WHITE);
-
-        final StaffManager mgr = sheet.getStaffManager();
-
-        for (Staff staff : mgr.getStaves()) {
-            g.fill(mgr.getCoreStaffPath(staff));
-        }
-
         // Obtain image without staff lines and barlines
         final ByteProcessor buf = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
         final BufferedImage img = buf.getBufferedImage();
-        final StemsCleaner eraser = new StemsCleaner(buf, img.createGraphics(), sheet);
-        eraser.eraseShapes(
+        final Graphics2D g = img.createGraphics();
+        new StemsCleaner(buf, g, sheet).eraseShapes(
                 Arrays.asList(
                         Shape.THICK_BARLINE,
                         Shape.THICK_CONNECTOR,
                         Shape.THIN_BARLINE,
                         Shape.THIN_CONNECTOR));
-        buf.threshold(127); // Binarize
 
-        // Then draw image composite on top of mask
-        g.setComposite(AlphaComposite.SrcAtop);
-        g.drawImage(img, 0, 0, null);
+        // Paint in white the exterior of staves
+        final Area area = new Area(new Rectangle(0, 0, buf.getWidth(), buf.getHeight()));
+        final StaffManager mgr = sheet.getStaffManager();
 
-        try {
-            // We need a TYPE_BYTE_GRAY image for ByteProcessor
-            BufferedImage image = Picture.adjustImageFormat(mask);
-            ByteProcessor buffer = new ByteProcessor(image);
-
-            // Keep a copy on disk?
-            if (constants.saveStemImage.isSet()) {
-                ImageUtil.saveOnDisk(image, sheet.getId(), "stems");
-            }
-
-            return buffer;
-        } catch (ImageFormatException ex) {
-            logger.warn("{}", ex);
-
-            return null;
+        for (Staff staff : mgr.getStaves()) {
+            area.subtract(new Area(mgr.getCoreStaffPath(staff)));
         }
+
+        g.setColor(Color.WHITE);
+        g.fill(area);
+
+        // Keep a copy on disk?
+        if (constants.saveStemImage.isSet()) {
+            ImageUtil.saveOnDisk(img, sheet.getId(), "stems");
+        }
+
+        return buf;
     }
 
     //-------------------//
