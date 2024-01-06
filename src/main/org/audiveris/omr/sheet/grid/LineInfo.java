@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.grid;
 
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.util.HorizontalSide;
@@ -56,13 +55,6 @@ public interface LineInfo
      * @return left point
      */
     Point2D getEndPoint (HorizontalSide side);
-
-    /**
-     * Selector for the underlying glyph
-     *
-     * @return the underlying glyph
-     */
-    Glyph getGlyph ();
 
     /**
      * Selector for the underlying spline.

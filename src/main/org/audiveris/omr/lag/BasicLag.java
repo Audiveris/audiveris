@@ -200,21 +200,21 @@ public class BasicLag
     // remove //
     //--------//
     @Override
-    public void remove (Section section)
+    public Section remove (Section section)
     {
         // Make sure the section has not already been removed
         if (getEntity(section.getId()) == null) {
-            logger.info("Section {} already removed", section);
-        } else {
-            // Remove the related runs from the underlying runTable
-            int pos = section.getFirstPos();
-
-            for (Run run : section.getRuns()) {
-                runTable.removeRun(pos++, run);
-            }
-
-            super.remove(section);
+            return null;
         }
+
+        // Remove the related runs from the underlying runTable
+        int pos = section.getFirstPos();
+
+        for (Run run : section.getRuns()) {
+            runTable.removeRun(pos++, run);
+        }
+
+        return super.remove(section);
     }
 
     //----------------//

@@ -418,12 +418,17 @@ public class GlyphIndex
     // remove //
     //--------//
     @Override
-    public void remove (Glyph glyph)
+    public Glyph remove (Glyph glyph)
     {
-        WeakGlyph weak = new WeakGlyph(glyph);
+        final WeakGlyph weak = new WeakGlyph(glyph);
 
         // Remove from global index
-        weakIndex.remove(weak);
+        final WeakGlyph previous = weakIndex.remove(weak);
+        if (previous == null) {
+            return null;
+        }
+
+        return previous.get();
     }
 
     //-------//

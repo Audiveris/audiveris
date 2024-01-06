@@ -21,11 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.StopWatch;
 
-import java.awt.image.BufferedImage;
-
 import ij.process.ByteProcessor;
+
+import java.awt.image.BufferedImage;
 
 /**
  * Class <code>AbstractGrayFilter</code> is the basis for filters operating on gray-level
@@ -35,6 +37,10 @@ import ij.process.ByteProcessor;
  */
 public abstract class AbstractGrayFilter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
+
     //~ Methods ------------------------------------------------------------------------------------
 
     //--------//
@@ -78,12 +84,15 @@ public abstract class AbstractGrayFilter
     public ByteProcessor filter (final ByteProcessor input)
     {
         final ByteProcessor output = new ByteProcessor(input.getWidth(), input.getHeight());
-        StopWatch watch = new StopWatch(getClass().getSimpleName());
-        watch.start("filter");
+        final StopWatch watch = new StopWatch(getClass().getSimpleName());
 
+        watch.start("filter");
         filter(input, output);
 
-        ///watch.print();
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
+
         return output;
     }
 
@@ -99,4 +108,17 @@ public abstract class AbstractGrayFilter
      */
     public abstract void filter (final ByteProcessor input,
                                  final ByteProcessor output);
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+    }
 }

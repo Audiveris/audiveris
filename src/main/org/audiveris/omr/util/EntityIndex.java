@@ -145,11 +145,12 @@ public interface EntityIndex<E extends Entity>
     int register (E entity);
 
     /**
-     * Remove the provided entity
+     * Remove the provided entity.
      *
      * @param entity the entity to remove
+     * @return the removed entity, null if none
      */
-    void remove (E entity);
+    E remove (E entity);
 
     /**
      * Reset index internals (entities and last ID value).

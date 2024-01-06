@@ -173,49 +173,20 @@ public class LinesRetriever
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------------------//
-    // buildHorizontalLag //
-    //--------------------//
+    //------------------//
+    // addShortSections //
+    //------------------//
     /**
-     * Build the underlying horizontal lag, and first populate it with only the long
-     * horizontal sections.
-     * Short horizontal sections will be added later (via {@link #createShortSections()})
-     *
-     * @return the table of long vertical runs (a side effect of building the long horizontal ones)
+     * Add the horizontal sections from shortHoriTable runs to hLag,
+     * which already contains all the other (long) horizontal sections.
      */
-    public RunTable buildHorizontalLag ()
+    public void addShortSections ()
     {
-        final RunsViewer runsViewer = (constants.displayRuns.isSet() && (OMR.gui != null))
-                ? new RunsViewer(sheet)
-                : null;
-
-        final RunTable sourceTable = sheet.getPicture().getVerticalTable(Picture.TableKey.BINARY);
-
-        // Filter the vertical runs that are longer than the (adjusted) line thickness
-        final RunTable longVertTable = new RunTable(VERTICAL, sheet.getWidth(), sheet.getHeight());
-        final RunTable horiTable = sheet.getLagManager().filterRuns(sourceTable, longVertTable);
-
-        if (runsViewer != null) {
-            runsViewer.display("long-vert", longVertTable);
-        }
-
-        // Split horizontal runs into short & long tables
-        shortHoriTable = new RunTable(HORIZONTAL, sheet.getWidth(), sheet.getHeight());
-
-        final RunTable longHoriTable = horiTable.purge(
-                (Run run) -> run.getLength() < params.minRunLength,
-                shortHoriTable);
-
-        if (runsViewer != null) {
-            runsViewer.display("short-hori", shortHoriTable);
-            runsViewer.display("long-hori-snapshot", longHoriTable.copy());
-        }
-
-        // Populate the horizontal hLag with the long horizontal runs
-        // (short horizontal runs will be added later via createShortSections())
-        hLag = sheet.getLagManager().buildHorizontalLag(longHoriTable, null);
-
-        return longVertTable;
+        final SectionFactory sectionsFactory = new SectionFactory(
+                hLag,
+                JunctionRatioPolicy.DEFAULT);
+        sectionsFactory.createSections(shortHoriTable, null, true);
+        sheet.getLagManager().setVipSections(HORIZONTAL);
     }
 
     //-------------//
@@ -486,8 +457,8 @@ public class LinesRetriever
     //---------------//
     // @formatter:off
     /**
-     * Complete the retrieved staff lines whenever possible with filaments and short
-     * sections left over.
+     * Complete the retrieved staff lines whenever possible with filaments and short sections
+     * left over.
      * <p>
      * When this method is called, the precise staff abscissa endings are known (thanks to staff
      * projection and barline handling).
@@ -521,7 +492,7 @@ public class LinesRetriever
     // @formatter:on
     public void completeLines ()
     {
-        StopWatch watch = new StopWatch("completeLines");
+        final StopWatch watch = new StopWatch("completeLines");
         binaryBuffer = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
 
         try {
@@ -573,24 +544,49 @@ public class LinesRetriever
         }
     }
 
-    //---------------------//
-    // createShortSections //
-    //---------------------//
+    //----------------//
+    // createBothLags //
+    //----------------//
     /**
-     * Build horizontal sections out of shortHoriTable runs
-     *
-     * @return the list of created sections
+     * From the BINARY table, create both the vertical lag (for barlines) and
+     * the horizontal lag (for staff lines).
+     * <p>
+     * NOTA: The horizontal lag is initialized with long horizontal sections only.
+     * The short horizontal sections will be added later (via {@link #addShortSections()})
      */
-    public List<Section> createShortSections ()
+    public void createBothLags ()
     {
-        // Complete the horizontal hLag with the short sections
-        // (it already contains all the other (long) horizontal sections)
-        SectionFactory sectionsFactory = new SectionFactory(hLag, JunctionRatioPolicy.DEFAULT);
-        List<Section> shortSections = sectionsFactory.createSections(shortHoriTable, null, true);
+        final RunsViewer runsViewer = (constants.displayRuns.isSet() && (OMR.gui != null))
+                ? new RunsViewer(sheet)
+                : null;
 
-        sheet.getLagManager().setVipSections(HORIZONTAL);
+        final RunTable sourceTable = sheet.getPicture().getVerticalTable(Picture.TableKey.BINARY);
 
-        return shortSections;
+        // Retrieve the vertical runs that are longer than the (adjusted) line thickness
+        final RunTable longVertTable = new RunTable(VERTICAL, sheet.getWidth(), sheet.getHeight());
+        final RunTable horiTable = sheet.getLagManager().dispatchRuns(sourceTable, longVertTable);
+
+        if (runsViewer != null) {
+            runsViewer.display("long-vert", longVertTable);
+        }
+
+        // Dispatch horizontal runs into short & long tables
+        shortHoriTable = new RunTable(HORIZONTAL, sheet.getWidth(), sheet.getHeight());
+        final RunTable longHoriTable = horiTable.purge(
+                (Run run) -> run.getLength() < params.minRunLength,
+                shortHoriTable);
+
+        if (runsViewer != null) {
+            runsViewer.display("short-hori", shortHoriTable);
+            runsViewer.display("long-hori-snapshot", longHoriTable.copy());
+        }
+
+        // Populate vLag with the long vertical runs
+        sheet.getLagManager().buildVerticalLag(longVertTable);
+
+        // Populate hLag with ONLY the long horizontal runs
+        // (short horizontal runs will be added later via addShortSections())
+        hLag = sheet.getLagManager().buildHorizontalLag(longHoriTable, null);
     }
 
     //-----------------//
@@ -652,14 +648,14 @@ public class LinesRetriever
             logger.debug("{}", staff);
 
             // Insert line intermediate points, if so needed
-            List<StaffFilament> fils = new ArrayList<>();
+            final List<StaffFilament> fils = new ArrayList<>();
 
             for (LineInfo line : staff.getLines()) {
                 fils.add((StaffFilament) line);
             }
 
             for (int pos = 0; pos < staff.getLines().size(); pos++) {
-                StaffFilament line = (StaffFilament) staff.getLines().get(pos);
+                final StaffFilament line = (StaffFilament) staff.getLines().get(pos);
                 line.fillHoles(pos, fils);
             }
         }
@@ -1043,8 +1039,7 @@ public class LinesRetriever
             final Integer line = scale.getFore();
             if (line != null) {
                 final List<LineCluster> slopedOneLines = oneLines.stream() //
-                        .filter(cl ->
-                        {
+                        .filter(cl -> {
                             final Rectangle bounds = cl.getBounds();
                             final double slope = (double) (bounds.height - line) / bounds.width;
                             return Math.abs(slope) > params.maxOneLineSlope;
@@ -1095,8 +1090,7 @@ public class LinesRetriever
         // A 1-line full cluster cannot be indented on its right side
         final Skew skew = sheet.getSkew();
         final List<LineCluster> indentedOneLines = fullOneLines.stream() //
-                .filter(cl ->
-                {
+                .filter(cl -> {
                     final LineCluster below = ClustersRetriever.getClusterBelow(cl, allClusters);
                     if (below == null) {
                         return false;
@@ -1480,7 +1474,7 @@ public class LinesRetriever
     public void retrieveLines ()
         throws StepException
     {
-        StopWatch watch = new StopWatch("retrieveLines");
+        final StopWatch watch = new StopWatch("retrieveLines");
 
         try {
             // Retrieve filaments out of merged long sections

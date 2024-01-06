@@ -241,7 +241,7 @@ public class LedgersBuilder
     public void buildLedgers (List<Section> sections)
     {
         try {
-            StopWatch watch = new StopWatch("buildLedgers S#" + system.getId());
+            final StopWatch watch = new StopWatch("buildLedgers S#" + system.getId());
 
             // Put apart the (good) system beams, not hooks, they can't intersect ledgers.
             watch.start("getGoodFullBeams");
@@ -601,15 +601,13 @@ public class LedgersBuilder
         final List<LedgerInter> systemLedgers = new ArrayList<>(stick2ledger.values());
 
         final Set<Staff> impactedStaves = new LinkedHashSet<>();
-        discarded.forEach( (LedgerInter ledger) ->
-        {
+        discarded.forEach( (LedgerInter ledger) -> {
             impactedStaves.add(ledger.getStaff());
             ledgerCandidates.remove(ledger2stick.get(ledger));
             ledger.remove();
         });
 
-        impactedStaves.forEach(staff ->
-        {
+        impactedStaves.forEach(staff -> {
             staff.clearLedgers();
             filterLedgers(staff);
         });

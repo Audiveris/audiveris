@@ -91,7 +91,7 @@ public class LagManager
     /**
      * Build the underlying horizontal lag from the provided runs table.
      *
-     * @param horiTable the provided table of all (horizontal) runs
+     * @param horiTable the provided table of (horizontal) runs
      * @param hLag      the horizontal lag to populate, existing or created if null
      * @return the created hLag
      */
@@ -141,28 +141,27 @@ public class LagManager
         return vLag;
     }
 
-    //------------//
-    // filterRuns //
-    //------------//
+    //--------------//
+    // dispatchRuns //
+    //--------------//
     /**
-     * Filter the source table into vertical table and horizontal table,
+     * Dispatch a (vertical) source table into vertical table and horizontal table,
      * based on the (adjusted) maximum line thickness.
      *
-     * @param sourceTable the source vertical table (BINARY or NO_STAFF)
+     * @param sourceTable (unmodified input) the source vertical table (BINARY or NO_STAFF)
      * @param vertTable   (output) populated by long vertical runs, can be null
-     * @return the horizontal table built from no-long vertical runs
+     * @return the horizontal table built from the short vertical runs
      */
-    public RunTable filterRuns (RunTable sourceTable,
-                                RunTable vertTable)
+    public RunTable dispatchRuns (RunTable sourceTable,
+                                  RunTable vertTable)
     {
         if (sheet.getScale() == null) {
             return null;
         }
 
+        // Remove all vertical runs whose length is greater than line thickness
         final int minVerticalRunLength = 1 + (int) Math.rint(
                 sheet.getScale().getMaxFore() * constants.ledgerThickness.getValue());
-
-        // Remove runs whose height is larger than line thickness
         final RunTable shortVertTable = sourceTable.copy().purge(
                 (Run run) -> run.getLength() >= minVerticalRunLength,
                 vertTable);
@@ -192,7 +191,7 @@ public class LagManager
      * Report the desired lag.
      *
      * @param key the lag name
-     * @return the lag if already registered, null otherwise
+     * @return the lag if already registered; else rebuilt HLAG/VLAG; otherwise null
      */
     public Lag getLag (String key)
     {
@@ -200,18 +199,17 @@ public class LagManager
 
         if (lag == null) {
             switch (key) {
-            case Lags.HLAG:
+            case Lags.HLAG -> {
                 rebuildBothLags();
-
                 return lagMap.get(key);
+            }
 
-            case Lags.VLAG:
+            case Lags.VLAG -> {
                 rebuildBothLags();
-
                 return lagMap.get(key);
+            }
 
-            default:
-                break;
+            default -> {}
             }
         }
 
@@ -244,19 +242,19 @@ public class LagManager
     // rebuildBothLags //
     //-----------------//
     /**
-     * Rebuild both hLag and vLag directly from NO_STAFF table.
+     * Rebuild both hLag and vLag directly from the NO_STAFF table.
      */
     private void rebuildBothLags ()
     {
         // Build tables
-        RunTable sourceTable = sheet.getPicture().buildNoStaffTable();
+        final RunTable sourceTable = sheet.getPicture().buildNoStaffTable();
 
         if (sourceTable == null) {
             return;
         }
 
-        RunTable vertTable = new RunTable(VERTICAL, sheet.getWidth(), sheet.getHeight());
-        RunTable horiTable = filterRuns(sourceTable, vertTable);
+        final RunTable vertTable = new RunTable(VERTICAL, sheet.getWidth(), sheet.getHeight());
+        final RunTable horiTable = dispatchRuns(sourceTable, vertTable);
 
         // Build lags
         buildHorizontalLag(horiTable, null);
@@ -272,16 +270,16 @@ public class LagManager
     public void rebuildHLag ()
     {
         // Build tables
-        RunTable sourceTable = sheet.getPicture().buildNoStaffTable();
+        final RunTable sourceTable = sheet.getPicture().buildNoStaffTable();
 
         if (sourceTable == null) {
             return;
         }
 
-        RunTable horiTable = filterRuns(sourceTable, null);
+        final RunTable horiTable = dispatchRuns(sourceTable, null);
 
         // Repopulate hLag
-        Lag hLag = lagMap.get(Lags.HLAG);
+        final Lag hLag = lagMap.get(Lags.HLAG);
         hLag.reset();
         buildHorizontalLag(horiTable, hLag);
     }

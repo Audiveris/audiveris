@@ -179,7 +179,7 @@ public class SheetDiff
     public void computeRatios ()
     {
         final int total = sheet.getWidth() * sheet.getHeight();
-        StopWatch watch = new StopWatch("computeRatios");
+        final StopWatch watch = new StopWatch("computeRatios");
 
         watch.start("input");
 

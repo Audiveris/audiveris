@@ -997,9 +997,9 @@ public class Staff
     public ObjectEditor getEditor (boolean global)
     {
         if (global) {
-            return new StaffEditor.Global(this);
+            return new StaffEditor.GlobalEditor(this);
         } else {
-            return new StaffEditor.Lines(this);
+            return new StaffEditor.LinesEditor(this);
         }
     }
 
@@ -2143,16 +2143,16 @@ public class Staff
     public List<LineInfo> simplifyLines (Sheet sheet)
     {
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
-        List<LineInfo> copies = new ArrayList<>(lines);
+        final List<LineInfo> originals = new ArrayList<>(lines);
         lines.clear();
 
-        for (LineInfo line : copies) {
-            StaffFilament staffFilament = (StaffFilament) line;
-            StaffLine staffLine = staffFilament.toStaffLine(glyphIndex);
+        for (LineInfo original : originals) {
+            final StaffFilament staffFilament = (StaffFilament) original;
+            final StaffLine staffLine = staffFilament.toStaffLine(glyphIndex); // Simplification
             lines.add(staffLine);
         }
 
-        return copies;
+        return originals;
     }
 
     //----------//

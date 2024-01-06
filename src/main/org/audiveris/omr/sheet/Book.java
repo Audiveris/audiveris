@@ -454,8 +454,7 @@ public class Book
 
         // Close contained stubs/sheets
         if (OMR.gui != null) {
-            SwingUtilities.invokeLater( () ->
-            {
+            SwingUtilities.invokeLater( () -> {
                 try {
                     LogUtil.start(Book.this);
 
@@ -1471,8 +1470,7 @@ public class Book
      */
     public void hideInvalidStubs ()
     {
-        SwingUtilities.invokeLater( () ->
-        {
+        SwingUtilities.invokeLater( () -> {
             final StubsController controller = StubsController.getInstance();
 
             for (SheetStub stub : stubs) {
@@ -1560,8 +1558,7 @@ public class Book
                 final CheckResult status = Versions.check(new Version(version));
 
                 switch (status) {
-                case BOOK_TOO_OLD ->
-                {
+                case BOOK_TOO_OLD -> {
                     final String msg = bookPath + " version " + version;
                     logger.warn(msg);
 
@@ -1583,8 +1580,7 @@ public class Book
                     return false;
                 }
 
-                case PROGRAM_TOO_OLD ->
-                {
+                case PROGRAM_TOO_OLD -> {
                     final String msg = bookPath + " version " + version
                             + "\nPlease use a more recent Audiveris version";
                     logger.warn(msg);
@@ -1596,8 +1592,7 @@ public class Book
                     return false;
                 }
 
-                case COMPATIBLE ->
-                {
+                case COMPATIBLE -> {
                     return true;
                 }
                 }
@@ -1982,8 +1977,7 @@ public class Book
                     List<Callable<Boolean>> tasks = new ArrayList<>();
 
                     for (final SheetStub stub : theStubs) {
-                        tasks.add( () ->
-                        {
+                        tasks.add( () -> {
                             LogUtil.start(stub);
 
                             try {
@@ -2285,8 +2279,7 @@ public class Book
         this.modified = modified;
 
         if (OMR.gui != null) {
-            SwingUtilities.invokeLater( () ->
-            {
+            SwingUtilities.invokeLater( () -> {
                 final StubsController controller = StubsController.getInstance();
                 final SheetStub stub = controller.getSelectedStub();
 
@@ -2761,7 +2754,7 @@ public class Book
      */
     public void upgradeStubs ()
     {
-        StopWatch watch = new StopWatch("upgradeStubs for " + this);
+        final StopWatch watch = new StopWatch("upgradeStubs for " + this);
         try {
             final List<SheetStub> upgraded = new ArrayList<>();
 
@@ -2794,7 +2787,9 @@ public class Book
             logger.warn("Error upgrading stubs", ex);
         }
 
-        ///watch.print();
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
@@ -2957,7 +2952,7 @@ public class Book
      */
     public static Book loadBook (Path bookPath)
     {
-        StopWatch watch = new StopWatch("loadBook " + bookPath);
+        final StopWatch watch = new StopWatch("loadBook " + bookPath);
         Book book = null;
 
         try {
@@ -3051,7 +3046,7 @@ public class Book
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
-                "Should we print out the stop watch for book loading?");
+                "Should we print out the stop watch?");
 
         private final Constant.Boolean processAllStubsInParallel = new Constant.Boolean(
                 false,

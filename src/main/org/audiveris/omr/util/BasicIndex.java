@@ -388,9 +388,9 @@ public class BasicIndex<E extends Entity>
     // remove //
     //--------//
     @Override
-    public void remove (E entity)
+    public E remove (E entity)
     {
-        entities.remove(entity.getId());
+        return entities.remove(entity.getId());
     }
 
     //-------//

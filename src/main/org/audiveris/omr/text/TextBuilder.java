@@ -955,7 +955,7 @@ public class TextBuilder
     {
         logger.trace("processSystem #{}", system.getId());
 
-        StopWatch watch = new StopWatch("Texts processSystem #" + system.getId());
+        final StopWatch watch = new StopWatch("Texts processSystem #" + system.getId());
         watch.start("retrieveRawLines");
 
         final List<TextLine> validLines = getSystemValidLines(sheetLines);

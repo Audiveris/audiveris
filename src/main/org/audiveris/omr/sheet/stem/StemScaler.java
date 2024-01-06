@@ -218,7 +218,7 @@ public class StemScaler
      */
     public StemScale retrieveStemWidth ()
     {
-        StopWatch watch = new StopWatch("Stem scaler for " + sheet.getId());
+        final StopWatch watch = new StopWatch("Stem scaler for " + sheet.getId());
 
         try {
             // Use a buffer focused on staff areas with barlines and connectors removed

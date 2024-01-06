@@ -86,15 +86,15 @@ public class StaffLineCleaner
      */
     public void process ()
     {
-        StopWatch watch = new StopWatch("StaffLineCleaner");
+        final StopWatch watch = new StopWatch("StaffLineCleaner");
 
         // Replace staff line filaments by lighter data
         watch.start("simplify staff lines");
 
         for (Staff staff : sheet.getStaffManager().getStaves()) {
-            List<LineInfo> originals = staff.simplifyLines(sheet);
+            final List<LineInfo> originals = staff.simplifyLines(sheet);
 
-            // Remove staff line sections from hLag
+            // Remove staff line original sections from hLag
             for (LineInfo line : originals) {
                 hLag.removeSections(((SectionCompound) line).getMembers());
             }

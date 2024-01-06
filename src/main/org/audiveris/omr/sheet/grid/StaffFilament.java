@@ -242,15 +242,6 @@ public class StaffFilament
         }
     }
 
-    //----------//
-    // getGlyph //
-    //----------//
-    @Override
-    public Glyph getGlyph ()
-    {
-        throw new UnsupportedOperationException("Feature not supported by StaffFilament!");
-    }
-
     //--------------//
     // getThickness //
     //--------------//
@@ -346,7 +337,7 @@ public class StaffFilament
         }
 
         final StaffLine staffLine = new StaffLine(points, getThickness());
-        staffLine.simplify(constants.maxSimplificationShift.getValue(), segmentLength);
+        staffLine.simplifyPoints(constants.maxSimplificationShift.getValue(), segmentLength);
         staffLine.setGlyph(glyph);
 
         return staffLine;

@@ -126,7 +126,7 @@ public class Curves
     public void buildCurves ()
     {
         // Retrieve junctions.
-        StopWatch watch = new StopWatch("Curves");
+        final StopWatch watch = new StopWatch("Curves");
         watch.start("Junctions retrieval");
         new JunctionRetriever(skeleton).scanImage();
 

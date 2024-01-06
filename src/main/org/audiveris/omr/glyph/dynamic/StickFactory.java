@@ -208,11 +208,11 @@ public class StickFactory
     //-------------------//
     private List<LinkedSection> buildSectionGraph (List<Section> sections)
     {
-        StopWatch watch = new StopWatch(
+        final StopWatch watch = new StopWatch(
                 "buildSectionGraph S#" + system.getId() + " size:" + sections.size());
         watch.start("create list");
 
-        List<LinkedSection> list = new ArrayList<>();
+        final List<LinkedSection> list = new ArrayList<>();
 
         for (Section section : sections) {
             list.add(new LinkedSection(section));
@@ -248,7 +248,10 @@ public class StickFactory
             }
         }
 
-        ///watch.print();
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
+
         return list;
     }
 
@@ -430,7 +433,7 @@ public class StickFactory
     public List<StraightFilament> retrieveSticks (List<Section> systemSections,
                                                   List<Section> oppositeStickers)
     {
-        StopWatch watch = new StopWatch("StickFactory S#" + system.getId());
+        final StopWatch watch = new StopWatch("StickFactory S#" + system.getId());
 
         try {
             // All sections in desired orientation
@@ -588,10 +591,9 @@ public class StickFactory
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
-                "Should we print out the stop watch for StickFactory?");
+                "Should we print out the stop watch?");
     }
 
     //------------//

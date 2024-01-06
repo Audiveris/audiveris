@@ -480,8 +480,7 @@ public class SheetStub
             }
 
             // Implement a timeout for this step on the stub
-            future = OmrExecutors.getCachedLowExecutor().submit( () ->
-            {
+            future = OmrExecutors.getCachedLowExecutor().submit( () -> {
                 LogUtil.start(SheetStub.this);
 
                 try {
@@ -1522,8 +1521,7 @@ public class SheetStub
         this.upgraded = upgraded;
 
         if (OMR.gui != null) {
-            SwingUtilities.invokeLater( () ->
-            {
+            SwingUtilities.invokeLater( () -> {
                 final StubsController controller = StubsController.getInstance();
                 final SheetStub stub = controller.getSelectedStub();
 
@@ -1599,8 +1597,7 @@ public class SheetStub
             }
 
             if (OMR.gui != null) {
-                SwingUtilities.invokeLater( () ->
-                {
+                SwingUtilities.invokeLater( () -> {
                     // Gray out the related tab
                     StubsController ctrl = StubsController.getInstance();
                     ctrl.markTab(SheetStub.this, Colors.SHEET_NOT_LOADED);
@@ -1689,7 +1686,7 @@ public class SheetStub
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
-                "Should we print out the stop watch for sheet loading");
+                "Should we print out the stop watch");
     }
 
     //------------//

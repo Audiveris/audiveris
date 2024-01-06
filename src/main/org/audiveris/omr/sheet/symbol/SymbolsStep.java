@@ -114,7 +114,7 @@ public class SymbolsStep
                           Context context)
         throws StepException
     {
-        StopWatch watch = new StopWatch("SymbolsStep doSystem #" + system.getId());
+        final StopWatch watch = new StopWatch("SymbolsStep doSystem #" + system.getId());
         watch.start("factory");
 
         final InterFactory factory = new InterFactory(system);

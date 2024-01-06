@@ -237,7 +237,7 @@ public class Picture
     {
         if (img != null) {
             if (img.getType() != BufferedImage.TYPE_BYTE_GRAY) {
-                StopWatch watch = new StopWatch("ToGray");
+                final StopWatch watch = new StopWatch("ToGray");
                 watch.start("convertToByteProcessor");
 
                 ColorProcessor cp = new ColorProcessor(img);
@@ -259,42 +259,34 @@ public class Picture
     //--------------------//
     // buildNoStaffBuffer //
     //--------------------//
+    /**
+     * Build a no-staff buffer by painting each staff line glyph in white on the binary image.
+     *
+     * @return the no-staff buffer
+     */
     private ByteProcessor buildNoStaffBuffer ()
     {
-        boolean linesErased = false;
-        ByteProcessor src = getSource(SourceKey.BINARY);
-        ByteProcessor buf = (ByteProcessor) src.duplicate();
-        BufferedImage img = buf.getBufferedImage();
-        Graphics2D g = img.createGraphics();
+        final ByteProcessor src = getSource(SourceKey.BINARY);
+        final BufferedImage img = src.getBufferedImage();
+        final Graphics2D g = img.createGraphics();
         g.setColor(Color.WHITE);
 
         for (SystemInfo system : sheet.getSystems()) {
             for (Staff staff : system.getStaves()) {
                 for (LineInfo li : staff.getLines()) {
-                    StaffLine line = (StaffLine) li;
-                    Glyph glyph = line.getGlyph();
+                    final StaffLine line = (StaffLine) li;
+                    final Glyph glyph = line.getGlyph();
 
                     if (glyph == null) {
-                        logger.warn("glyph is null for line " + line + " staff:" + staff);
+                        logger.warn("No glyph for line " + line + " staff:" + staff);
                     } else {
-                        if (glyph.getRunTable() == null) {
-                            logger.warn("glyph runtable is null");
-                        } else {
-                            glyph.getRunTable().render(g, glyph.getTopLeft());
-                            linesErased = true;
-                        }
+                        glyph.getRunTable().render(g, glyph.getTopLeft());
                     }
                 }
             }
         }
 
         g.dispose();
-
-        if (!linesErased) {
-            logger.warn("No system lines to build NO_STAFF buffer"); // Should not happen!
-
-            return null;
-        }
 
         return new ByteProcessor(img);
     }
@@ -303,13 +295,13 @@ public class Picture
     // buildNoStaffTable //
     //-------------------//
     /**
-     * Build the table without staff lines.
+     * Build the vertical table without staff lines pixels.
      *
-     * @return the no-staff table
+     * @return the no-staff vertical table
      */
     public RunTable buildNoStaffTable ()
     {
-        ByteProcessor source = getSource(SourceKey.NO_STAFF);
+        final ByteProcessor source = getSource(SourceKey.NO_STAFF);
 
         if (source == null) {
             return null;
@@ -504,7 +496,7 @@ public class Picture
      */
     public ByteProcessor gaussianFiltered (ByteProcessor src)
     {
-        StopWatch watch = new StopWatch("Gaussian");
+        final StopWatch watch = new StopWatch("Gaussian");
 
         try {
             watch.start("Filter " + src.getWidth() + "x" + src.getHeight());
@@ -648,8 +640,7 @@ public class Picture
             switch (key) {
             case GRAY -> src = buildGraySource(getGrayImage());
 
-            case BINARY ->
-            {
+            case BINARY -> {
                 // Built from binary image, if available
                 BufferedImage image = getImage(ImageKey.BINARY);
 
@@ -1187,7 +1178,7 @@ public class Picture
 
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
-                "Should we print out the stop watch(es)?");
+                "Should we print out the stop watch?");
 
         private final Constant.Integer gaussianRadius = new Constant.Integer(
                 "pixels",

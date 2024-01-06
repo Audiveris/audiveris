@@ -92,6 +92,8 @@ public class StaffLine
     /** Bounding box. */
     protected Rectangle bounds;
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * No-arg constructor meant for JAXB.
      */
@@ -100,8 +102,6 @@ public class StaffLine
     {
         this.thickness = 0;
     }
-
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new <code>StaffLine</code> object.
@@ -164,7 +164,11 @@ public class StaffLine
     //----------//
     // getGlyph //
     //----------//
-    @Override
+    /**
+     * Report the underlying glyph.
+     *
+     * @return the underlying glyph
+     */
     public Glyph getGlyph ()
     {
         return glyph;
@@ -254,6 +258,9 @@ public class StaffLine
         bounds = null;
     }
 
+    //----------------//
+    // simplifyPoints //
+    //----------------//
     /**
      * Reduce the number of intermediate defining points while respecting the provided
      * maximum ordinate shift.
@@ -271,8 +278,8 @@ public class StaffLine
      * @param maxDy         maximum acceptable ordinate shift
      * @param segmentLength original segments length
      */
-    public void simplify (double maxDy,
-                          int segmentLength)
+    public void simplifyPoints (double maxDy,
+                                int segmentLength)
     {
         final Point2D left = points.get(0);
         final Point2D right = points.get(points.size() - 1);

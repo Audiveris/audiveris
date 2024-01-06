@@ -393,7 +393,7 @@ public class BasicClassifier
             return;
         }
 
-        StopWatch watch = new StopWatch("train");
+        final StopWatch watch = new StopWatch("train");
         watch.start("shuffle");
 
         // Shuffle the collection of samples

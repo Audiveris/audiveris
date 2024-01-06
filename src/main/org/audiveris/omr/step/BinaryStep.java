@@ -84,7 +84,7 @@ public class BinaryStep
     public void doit (Sheet sheet)
         throws StepException
     {
-        StopWatch watch = new StopWatch("Binary step for " + sheet.getId());
+        final StopWatch watch = new StopWatch("Binary step for " + sheet.getId());
         watch.start("Getting initial source");
 
         Picture picture = sheet.getPicture();

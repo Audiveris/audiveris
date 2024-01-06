@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.grid;
 
-import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.dynamic.CurvedFilament;
@@ -30,6 +28,7 @@ import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.glyph.dynamic.FilamentFactory;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.GeoUtil;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.StopWatch;
@@ -100,7 +99,7 @@ public class BarFilamentFactory
     public Filament buildBarFilament (Collection<Section> source,
                                       Rectangle absCore)
     {
-        StopWatch watch = new StopWatch("buildBarFilament");
+        final StopWatch watch = new StopWatch("buildBarFilament");
 
         try {
             // Aggregate long sections that intersect line core onto skeleton line

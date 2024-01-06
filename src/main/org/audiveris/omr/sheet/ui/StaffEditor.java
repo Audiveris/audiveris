@@ -21,19 +21,28 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.dynamic.CurvedFilament;
+import org.audiveris.omr.glyph.dynamic.Filament;
+import org.audiveris.omr.lag.BasicSection;
+import org.audiveris.omr.lag.DynamicSection;
+import org.audiveris.omr.lag.JunctionRatioPolicy;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.lag.Section;
+import org.audiveris.omr.lag.SectionFactory;
 import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.math.PointUtil;
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.run.Run;
+import org.audiveris.omr.run.RunTable;
+import org.audiveris.omr.run.RunTableFactory;
+import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.grid.LineInfo;
-import org.audiveris.omr.util.BasicIndex;
+import org.audiveris.omr.ui.view.RubberPanel;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.VerticalSide;
@@ -42,20 +51,26 @@ import static org.audiveris.omr.util.VerticalSide.TOP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import static java.awt.image.BufferedImage.TYPE_BYTE_GRAY;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Class <code>StaffEditor</code> allows the end-user to manually edit the geometry of a staff.
@@ -85,20 +100,13 @@ public abstract class StaffEditor
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Constants constants = new Constants();
-
     private static final Logger logger = LoggerFactory.getLogger(StaffEditor.class);
-
-    /** Minimum section width/height ratio for line core sections. */
-    protected static final double minWidthHeightRatio = constants.minWidthHeightRatio.getValue();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
     protected StaffModel originalModel;
 
     protected StaffModel model;
-
-    protected final BasicIndex<Section> removedSections = new BasicIndex<>(new AtomicInteger(0));
 
     /** Staff lines. */
     protected final List<LineInfo> lines;
@@ -109,8 +117,11 @@ public abstract class StaffEditor
     /** Sheet horizontal lag. */
     protected final Lag hLag;
 
-    /** Relevant horizontal sections for staff editing, ordered by starting ordinate. */
-    protected final SortedSet<Section> staffSections;
+    /** Original horizontal sections from staff lines glyphs, per line index. */
+    protected final TreeMap<Integer, Set<Section>> originalInternals;
+
+    /** All horizontal internal and external sections potentially impacted by staff editing. */
+    protected final Collection<Section> allSections = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -126,7 +137,10 @@ public abstract class StaffEditor
         maxLineThickness = system.getSheet().getScale().getMaxFore();
         hLag = system.getSheet().getLagManager().getLag(Lags.HLAG);
 
-        staffSections = collectRelevantSections();
+        // Collect all relevant sections (internals and externals)
+        originalInternals = collectInternalSections();
+        originalInternals.values().forEach(list -> allSections.addAll(list));
+        allSections.addAll(collectExternalSections());
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -142,33 +156,73 @@ public abstract class StaffEditor
     protected abstract void applyModel (StaffModel model);
 
     //-------------------------//
-    // collectRelevantSections //
+    // collectInternalSections //
     //-------------------------//
     /**
-     * Collect just the horizontal sections that may be impacted by staff editing.
+     * Collect the sections from original lines.
+     * <p>
+     * These line sections are created from the staff line glyphs.
+     * They are coded as {@link LineSection} instances, to easily separate them from hLag sections.
      *
-     * @return the set of relevant sections, ordered by starting ordinate
+     * @return the original internal sections, per line
      */
-    private SortedSet<Section> collectRelevantSections ()
+    private TreeMap<Integer, Set<Section>> collectInternalSections ()
+    {
+        final TreeMap<Integer, Set<Section>> map = new TreeMap<>();
+        final Staff staff = getStaff();
+        final Sheet sheet = system.getSheet();
+        final int width = sheet.getWidth();
+        final int height = sheet.getHeight();
+        final BufferedImage img = new BufferedImage(width, height, TYPE_BYTE_GRAY);
+        final Graphics2D g = (Graphics2D) img.getGraphics();
+
+        staff.getLines().forEach(line -> {
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, width, height);
+            g.setColor(Color.BLACK);
+            final StaffLine staffLine = (StaffLine) line;
+            final Glyph glyph = staffLine.getGlyph();
+            glyph.getRunTable().render(g, glyph.getTopLeft());
+
+            final RunTableFactory runFactory = new RunTableFactory(HORIZONTAL);
+            final RunTable linesTable = runFactory.createTable(new ByteProcessor(img));
+
+            final SectionFactory sectionFactory = new SectionFactory(
+                    HORIZONTAL,
+                    JunctionRatioPolicy.DEFAULT);
+            final List<DynamicSection> sections = sectionFactory.buildDynamicSections(
+                    linesTable,
+                    true);
+            final Set<Section> set = sections.stream().map(ds -> new LineSection(ds)).collect(
+                    Collectors.toSet());
+            map.put(staff.getLines().indexOf(line), set);
+        });
+
+        g.dispose();
+
+        return map;
+    }
+
+    //-------------------------//
+    // collectExternalSections //
+    //-------------------------//
+    /**
+     * Collect the external (non-line) sections that may be impacted by staff editing.
+     *
+     * @return the collection of relevant sections
+     */
+    private Collection<Section> collectExternalSections ()
     {
         final Staff staff = getStaff();
         final Rectangle staffBox = staff.getAreaBounds().getBounds();
 
         // Side abscissae may not be the ultimate ones, so let's widen staffBox until sheet limits
-        final Sheet sheet = staff.getSystem().getSheet();
+        final Sheet sheet = system.getSheet();
         staffBox.setBounds(0, staffBox.y, sheet.getWidth(), staffBox.height);
 
-        final List<Section> sections = new ArrayList<>();
-        hLag.getEntities().forEach(section -> {
-            if (section.getBounds().intersects(staffBox)) {
-                sections.add(section);
-            }
-        });
-
-        final SortedSet<Section> set = new TreeSet<>(Section.byFullPosition);
-        set.addAll(sections);
-
-        return set;
+        return hLag.getEntities().stream() //
+                .filter(section -> section.getBounds().intersects(staffBox)) //
+                .collect(Collectors.toList());
     }
 
     //------//
@@ -177,19 +231,42 @@ public abstract class StaffEditor
     @Override
     public void doit ()
     {
-        // Reset sections to their initial status
-        hLag.insertSections(model.removedSections.getEntities());
-        model.removedSections.reset();
+        // Reset standard sections to their initial status
+        hLag.insertSections(model.hLagRemovals);
+        model.hLagRemovals.clear();
 
-        applyModel(model); // Change lines geometry
+        applyModel(model); // Change lines definition
 
-        // Detect and remove sections on staff lines
+        final Staff staff = getStaff();
+        final int interline = staff.getSpecificInterline();
+
+        // Rebuild each staffLine glyph, according to new line definition
         lines.forEach(line -> {
             final StaffLine staffLine = (StaffLine) line;
-            final List<Section> lineRemovedSections = getRemovals(staffLine);
-            model.removedSections.setEntities(lineRemovedSections);
-            hLag.removeSections(lineRemovedSections);
+
+            // Retrieve all sections related to the new staff line
+            final Set<Section> internals = getInternals(staffLine); // Not perfect, but OK enough
+
+            // Make sure no original internal section has been forgotten in the new internals
+            final int idx = staff.getLines().indexOf(line);
+            internals.addAll(originalInternals.get(idx));
+
+            // Build a filament from the sections
+            final Filament fil = new CurvedFilament(interline, 0);
+            internals.forEach(s -> fil.addSection(s));
+
+            // Build the line glyph from the filament
+            final Glyph glyph = fil.toGlyph(null);
+            staffLine.setGlyph(glyph);
+
+            // Removals on hLag
+            model.hLagRemovals.addAll(
+                    internals.stream().filter(s -> !(s instanceof LineSection)).collect(toList()));
+
+            hLag.removeSections(model.hLagRemovals);
         });
+
+        updateNoStaff();
     }
 
     //------------//
@@ -205,19 +282,23 @@ public abstract class StaffEditor
         system.getSheet().getSheetEditor().closeEditMode();
     }
 
+    //--------------//
+    // getInternals //
+    //--------------//
     /**
-     * Retrieve the horizontal sections to remove on the provided staff line.
+     * Retrieve the sections that currently belong to the provided staff line,
+     * only defined by its spline points.
      *
      * @param staffLine the staff line to process
-     * @return the sections to remove
+     * @return the sections that "compose" the staff line
      */
-    private List<Section> getRemovals (StaffLine staffLine)
+    private Set<Section> getInternals (StaffLine staffLine)
     {
         final NaturalSpline spline = staffLine.getSpline();
-        final List<Section> toRemove = new ArrayList<>();
+        final Set<Section> internals = new HashSet<>();
 
-        // First, retrieve sections intersected by the staff spline
-        for (Section section : staffSections) {
+        // First, retrieve the sections intersected by the staff line (the core sections)
+        for (Section section : allSections) {
             final Rectangle box = section.getBounds();
 
             if (spline.intersects(box)) {
@@ -226,22 +307,16 @@ public abstract class StaffEditor
                 final double yRight = staffLine.yAt((double) (box.x + box.width));
                 if ((yLeft >= box.y && yLeft <= box.y + box.height) //
                         || (yRight >= box.y && yRight <= box.y + box.height)) {
-
-                    // Check minimum ratio width / height
-                    final double wh = box.width / (double) box.height;
-                    //                logger.info(" {} w:{} h:{} w/h: {}",
-                    //                            section, box.width, box.height, String.format("%.1f", wh));
-                    if (wh >= minWidthHeightRatio) {
-                        toRemove.add(section);
-                    }
+                    internals.add(section);
                 }
             }
         }
 
         // Second, retrieve stuck sections
-        toRemove.addAll(getStickers(toRemove));
+        // Could be improved, based on resulting thickness? Not really needed.
+        internals.addAll(getStickers(internals));
 
-        return toRemove;
+        return internals;
     }
 
     //----------//
@@ -261,14 +336,14 @@ public abstract class StaffEditor
      * @param coreSections the provided core sections
      * @return the sticker sections
      */
-    private Set<Section> getStickers (List<Section> coreSections)
+    private Set<Section> getStickers (Collection<Section> coreSections)
     {
         final Set<Section> stickers = new HashSet<>();
-        final List<Section> candidates = new ArrayList<>(staffSections);
+        final List<Section> candidates = new ArrayList<>(allSections);
         candidates.removeAll(coreSections);
 
         for (Section core : coreSections) {
-            final int maxCandThickness = maxLineThickness - core.getRunCount();
+            final int maxCandidateThickness = maxLineThickness - core.getRunCount();
 
             for (VerticalSide vSide : VerticalSide.values()) {
                 final Run run = (vSide == TOP) ? core.getFirstRun() : core.getLastRun();
@@ -289,7 +364,7 @@ public abstract class StaffEditor
 
                         if (candRun.getStart() <= xMax && candRun.getStop() >= xMin) {
                             // Check resulting line thickness
-                            if (cand.getRunCount() <= maxCandThickness) {
+                            if (cand.getRunCount() <= maxCandidateThickness) {
                                 stickers.add(cand);
                                 it.remove();
                             }
@@ -308,44 +383,57 @@ public abstract class StaffEditor
     @Override
     public void undo ()
     {
-        applyModel(originalModel); // Reset lines geometry
+        applyModel(originalModel); // Reset lines definition
 
-        // Cancel the sections removal
-        hLag.insertSections(model.removedSections.getEntities());
+        // Replace the lines glyphs by the original glyphs
+        lines.forEach(line -> {
+            final int idx = lines.indexOf(line);
+            ((StaffLine) line).setGlyph(originalModel.staffLineGlyphs.get(idx));
+        });
+
+        // Cancel the hLag sections removal
+        hLag.insertSections(model.hLagRemovals);
+
+        updateNoStaff();
+    }
+
+    //---------------//
+    // updateNoStaff //
+    //---------------//
+    /**
+     * Invalidate the no-staff buffer, and trigger a tab refresh.
+     */
+    private void updateNoStaff ()
+    {
+        // Invalidate the buffer, to be rebuilt on demand only
+        final Sheet sheet = getStaff().getSystem().getSheet();
+        sheet.getPicture().disposeSource(Picture.SourceKey.NO_STAFF);
+
+        // Refresh the current tab
+        final SheetAssembly assembly = sheet.getStub().getAssembly();
+        final RubberPanel panel = assembly.getSelectedScrollView().getView();
+        panel.repaint();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Ratio minWidthHeightRatio = new Constant.Ratio(
-                2.0,
-                "Minimum width/height ratio for a core section on a staff line");
-    }
-
-    //--------//
-    // Global //
-    //--------//
+    //--------------//
+    // GlobalEditor //
+    //--------------//
     /**
      * Editor to edit the staff as a whole, where staff lines are kept parallel.
      * <p>
      * There is a horizontal sequence of handles on staff midline, all moving vertically,
      * except for the side handles which can move both horizontally and vertically.
      */
-    public static class Global
+    public static class GlobalEditor
             extends StaffEditor
     {
-
-        /** Staff middle line. */
+        /** The staff middle line. */
         private final StaffLine midLine;
 
         /**
-         * Map of vertical distances for every defining point WRT staff midLine.
+         * The map of vertical distances for every defining point WRT staff midLine.
          * <ul>
          * <li>Key: line index in staff lines
          * <li>Value: list of ordinate deltas, one for each defining point of the line
@@ -353,7 +441,7 @@ public abstract class StaffEditor
          */
         private final SortedMap<Integer, List<Double>> dyMap = new TreeMap<>();
 
-        public Global (Staff staff)
+        public GlobalEditor (Staff staff)
         {
             super(staff);
 
@@ -363,8 +451,8 @@ public abstract class StaffEditor
             populateDyMap();
 
             // Models
-            originalModel = new GlobalModel(midLine);
-            model = new GlobalModel(midLine);
+            originalModel = new GlobalModel(staff, midLine);
+            model = new GlobalModel(staff, midLine);
 
             final List<Point2D> points = ((GlobalModel) model).midModel.points;
             final int nb = points.size();
@@ -382,6 +470,9 @@ public abstract class StaffEditor
                     return true;
                 }
             }));
+
+            // Pre-select the left-side handle
+            selectedHandle = handles.get(0);
 
             // Inside handles
             points.subList(1, nb - 1).forEach(p -> handles.add(new Handle(p)
@@ -445,9 +536,6 @@ public abstract class StaffEditor
             staff.setAbscissa(LEFT, (int) Math.rint(left));
             staff.setAbscissa(RIGHT, (int) Math.rint(right));
             staff.setArea(null);
-
-            // TODO: update every StaffLine glyph?
-            // TODO: invalidate no-staff
         }
 
         /**
@@ -470,11 +558,12 @@ public abstract class StaffEditor
         private static class GlobalModel
                 extends StaffModel
         {
-
             public final LineModel midModel;
 
-            public GlobalModel (StaffLine staffLine)
+            public GlobalModel (Staff staff,
+                                StaffLine staffLine)
             {
+                super(staff);
                 midModel = new LineModel(staffLine);
             }
         }
@@ -483,9 +572,10 @@ public abstract class StaffEditor
     //-----------//
     // LineModel //
     //-----------//
+    /** Model for one staff line. */
     protected static class LineModel
     {
-
+        // The line defining points
         public final List<Point2D> points = new ArrayList<>();
 
         public LineModel (StaffLine staffLine)
@@ -495,25 +585,38 @@ public abstract class StaffEditor
         }
     }
 
-    //-------//
-    // Lines //
-    //-------//
+    //-------------//
+    // LineSection //
+    //-------------//
+    /** Class meant to easily recognize the internal sections built from staff line glyphs. */
+    private static class LineSection
+            extends BasicSection
+    {
+        public LineSection (DynamicSection ds)
+        {
+            super(ds);
+            id = ds.getId();
+        }
+    }
+
+    //-------------//
+    // LinesEditor //
+    //-------------//
     /**
      * Editor to edit all lines individually.
      * <p>
      * There are as many handles as lines defining points, all moving only vertically.
      */
-    public static class Lines
+    public static class LinesEditor
             extends StaffEditor
     {
-
-        public Lines (Staff staff)
+        public LinesEditor (Staff staff)
         {
             super(staff);
 
             // Models
-            originalModel = new LineArrayModel();
-            model = new LineArrayModel();
+            originalModel = new LineArrayModel(staff);
+            model = new LineArrayModel(staff);
 
             // Handles
             ((LineArrayModel) model).lineModels.forEach(
@@ -544,21 +647,18 @@ public abstract class StaffEditor
                 final StaffLine staffLine = (StaffLine) lines.get(il);
                 staffLine.setPoints(lam.lineModels.get(il).points);
             }
-
-            // TODO: update the modified StaffLine glyph
-            // TODO: invalidate no-staff
         }
 
         /** One model per staff line. */
-        private class LineArrayModel
+        private static class LineArrayModel
                 extends StaffModel
         {
-
             public final List<LineModel> lineModels = new ArrayList<>();
 
-            public LineArrayModel ()
+            public LineArrayModel (Staff staff)
             {
-                lines.forEach(line -> lineModels.add(new LineModel((StaffLine) line)));
+                super(staff);
+                staff.getLines().forEach(line -> lineModels.add(new LineModel((StaffLine) line)));
             }
         }
     }
@@ -569,7 +669,15 @@ public abstract class StaffEditor
     protected static abstract class StaffModel
             implements ObjectUIModel
     {
+        /** Original staff lines glyphs, one per line. */
+        public final List<Glyph> staffLineGlyphs = new ArrayList<>();
 
-        public final BasicIndex<Section> removedSections = new BasicIndex<>(new AtomicInteger(0));
+        /** Sections removed from hLag. */
+        public final Set<Section> hLagRemovals = new HashSet<>();
+
+        public StaffModel (Staff staff)
+        {
+            staff.getLines().forEach(l -> staffLineGlyphs.add(((StaffLine) l).getGlyph()));
+        }
     }
 }

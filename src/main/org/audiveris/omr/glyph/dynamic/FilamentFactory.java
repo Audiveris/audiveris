@@ -803,8 +803,8 @@ public class FilamentFactory<F extends Filament>
      */
     public List<F> retrieveFilaments (Collection<Section> source)
     {
-        StopWatch watch = new StopWatch("FilamentsFactory " + orientation);
-        List<F> filaments = new ArrayList<>();
+        final StopWatch watch = new StopWatch("FilamentsFactory " + orientation);
+        final List<F> filaments = new ArrayList<>();
 
         try {
             // Create a filament for each section long & slim
@@ -855,7 +855,7 @@ public class FilamentFactory<F extends Filament>
     public Filament retrieveLineFilament (Collection<Section> source,
                                           Line line)
     {
-        StopWatch watch = new StopWatch("retrieveLineFilament " + orientation);
+        final StopWatch watch = new StopWatch("retrieveLineFilament " + orientation);
 
         try {
             // Aggregate long sections that intersect line core onto skeleton line

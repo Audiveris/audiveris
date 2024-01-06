@@ -701,8 +701,6 @@ public class RunTable
                            Point offset,
                            boolean fat)
     {
-        table.fill(255); // All white
-
         if (tableOrigin == null) {
             tableOrigin = new Point(0, 0);
         }

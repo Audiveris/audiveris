@@ -51,6 +51,8 @@ import org.audiveris.omr.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.ByteProcessor;
+
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -60,8 +62,6 @@ import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-
-import ij.process.ByteProcessor;
 
 /**
  * Class <code>SheetScanner</code> runs OCR on the whole sheet, where good inters and
@@ -162,7 +162,7 @@ public class SheetScanner
      */
     public List<TextLine> scanSheet ()
     {
-        StopWatch watch = new StopWatch("scanSheet");
+        final StopWatch watch = new StopWatch("scanSheet");
 
         try {
             // Get clean sheet image

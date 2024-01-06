@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.Table;
 
@@ -50,6 +52,8 @@ public class PixelBuffer
         implements PixelFilter, PixelSink
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(PixelBuffer.class);
 
@@ -115,7 +119,9 @@ public class PixelBuffer
             }
         }
 
-        ///watch.print();
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -212,7 +218,7 @@ public class PixelBuffer
      */
     public BufferedImage toBufferedImage ()
     {
-        StopWatch watch = new StopWatch("PixelBuffer");
+        final StopWatch watch = new StopWatch("PixelBuffer");
         watch.start("toImage");
 
         final BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
@@ -226,7 +232,23 @@ public class PixelBuffer
             }
         }
 
-        ///watch.print();
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
+
         return img;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
     }
 }

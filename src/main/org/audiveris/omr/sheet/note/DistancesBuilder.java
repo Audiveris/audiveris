@@ -32,6 +32,7 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.ui.DistanceBoard;
@@ -153,7 +154,7 @@ public class DistancesBuilder
                 for (LineInfo line : staff.getLines()) {
                     // Paint the line glyph.
                     // Note this does not erase staff line pixels at crossing objects
-                    Glyph glyph = line.getGlyph();
+                    Glyph glyph = ((StaffLine) line).getGlyph();
                     painter.paintGlyph(glyph);
 
                     // Also paint the whole line, even at crossing objects.

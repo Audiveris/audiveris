@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
+import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.math.BasicLine;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointsCollector;
@@ -30,6 +31,7 @@ import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Table;
 
@@ -59,17 +61,15 @@ import javax.xml.bind.annotation.XmlRootElement;
  * A glyph is un-mutable, meaning one cannot add or remove pixels to/from an existing instance,
  * although one can always create another glyph instance with the proper collection of pixels.
  * Instead of Glyph, see {@link org.audiveris.omr.glyph.dynamic.SectionCompound} class to deal with
- * growing
- * compounds of sections.
+ * growing compounds of sections.
  * <p>
  * A glyph is implemented and persisted as a run table located at a given absolute origin.
  * <p>
  * A glyph has no intrinsic orientation, hence some methods such as {@link #getLength} require that
  * view orientation be provided as a parameter.
  * <p>
- * A glyph has no shape, see {@link org.audiveris.omr.sig.inter.Inter} class for glyph
- * interpretation and {@link org.audiveris.omr.classifier.Sample} class for training of shape
- * classifiers.
+ * A glyph has no shape, see {@link Inter} class for glyph interpretation
+ * and {@link Sample} class for training of shape classifiers.
  * <p>
  * Additional features are made available via the {@link Glyphs} class.
  *
@@ -204,18 +204,9 @@ public class Glyph
 
         // We have a problem if glyph is just 0 or 1 pixel: no computable slope!
         switch (basicLine.getNumberOfPoints()) {
-        case 0:
-            throw new IllegalStateException("Glyph has no pixel, cannot compute line.");
-
-        case 1:
-            slope = 0d; // we just need a value.
-
-            break;
-
-        default:
-            slope = basicLine.getSlope();
-
-            break;
+        case 0 -> throw new IllegalStateException("Glyph has no pixel, cannot compute line.");
+        case 1 -> slope = 0d; // we just need a value.
+        default -> slope = basicLine.getSlope();
         }
 
         line = basicLine.toDouble();

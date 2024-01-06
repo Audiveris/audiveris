@@ -122,7 +122,7 @@ public class LinksStep
                           Void context)
         throws StepException
     {
-        StopWatch watch = new StopWatch("LinksStep doSystem #" + system.getId());
+        final StopWatch watch = new StopWatch("LinksStep doSystem #" + system.getId());
 
         watch.start("SymbolsLinker");
         new SymbolsLinker(system).process();

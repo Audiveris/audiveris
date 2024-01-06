@@ -217,7 +217,7 @@ public abstract class AbstractClassifier<M extends Object>
      */
     public DataSet getRawDataSet (Collection<Sample> samples)
     {
-        StopWatch watch = new StopWatch("getRawDataSet");
+        final StopWatch watch = new StopWatch("getRawDataSet");
         watch.start("allocate doubles");
 
         final double[][] inputs = new double[samples.size()][];

@@ -283,7 +283,7 @@ public class UnitManager
      */
     public void preLoadUnits ()
     {
-        StopWatch watch = new StopWatch("Reflections");
+        final StopWatch watch = new StopWatch("Reflections");
         watch.start("new Reflections()");
 
         // Look into omr package hierarchy
@@ -309,6 +309,7 @@ public class UnitManager
             }
         }
 
+        // NOTA: We cannot use a constant set since this would lead to circular elaboration!
         ///watch.print();
     }
 

@@ -35,7 +35,6 @@ import org.audiveris.omr.score.ui.SheetScaling;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.ExportPattern;
-import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.ScaleBuilder;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
@@ -71,8 +70,6 @@ import org.jdesktop.application.Task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ij.process.ByteProcessor;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -395,8 +392,7 @@ public class BookActions
             dialog.setContentPane(optionPane);
             dialog.setName("SheetScalingDialog"); // For SAF life cycle
 
-            optionPane.addPropertyChangeListener( (PropertyChangeEvent e1) ->
-            {
+            optionPane.addPropertyChangeListener( (PropertyChangeEvent e1) -> {
                 String prop = e1.getPropertyName();
                 if (dialog.isVisible() && (e1.getSource() == optionPane) && (prop.equals(
                         JOptionPane.VALUE_PROPERTY))) {
@@ -529,10 +525,9 @@ public class BookActions
 
             if (assembly.getView(tab.label) == null) {
                 Sheet sheet = stub.getSheet(); // This may load the sheet...
-                ByteProcessor noStaff = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
                 assembly.addViewTab(
                         tab,
-                        new ScrollImageView(sheet, new ImageView(noStaff.getBufferedImage())),
+                        new ScrollImageView(sheet, new NoStaffView(sheet)),
                         new BoardsPane(new PixelBoard(sheet)));
             } else {
                 assembly.selectViewTab(tab);
@@ -910,8 +905,7 @@ public class BookActions
         popup.add(title);
         popup.addSeparator();
 
-        final ActionListener listener = (ActionEvent e1) ->
-        {
+        final ActionListener listener = (ActionEvent e1) -> {
             final int index = Integer.decode(e1.getActionCommand()) - 1;
             final Staff staff = staffManager.getStaff(index);
             new StaffProjector(sheet, staff, null).plot();
@@ -1710,8 +1704,7 @@ public class BookActions
                     null,
                     new Object[]
                     { UserOpt.OK, UserOpt.Apply, UserOpt.Cancel });
-            optionPane.addPropertyChangeListener(e ->
-            {
+            optionPane.addPropertyChangeListener(e -> {
                 if (dialog.isVisible() && (e.getSource() == optionPane) && (e.getPropertyName()
                         .equals(JOptionPane.VALUE_PROPERTY))) {
                     final Object choice = optionPane.getValue();

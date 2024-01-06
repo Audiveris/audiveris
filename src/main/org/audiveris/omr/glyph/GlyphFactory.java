@@ -21,12 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.run.MarkedRun;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.util.ByteUtil;
+import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +61,8 @@ import java.util.Map.Entry;
 public class GlyphFactory
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphFactory.class);
 
@@ -253,23 +258,24 @@ public class GlyphFactory
      */
     private List<Glyph> process ()
     {
-        //        StopWatch watch = new StopWatch("GlyphFactory");
-        //
-        //        try {
-        //            watch.start("scan");
-        scanTable();
-        //
-        //            watch.start("lut");
-        createLut();
-        //
-        //            watch.start("glyphs");
-        buildAllGlyphs();
+        final StopWatch watch = new StopWatch("GlyphFactory");
 
-        return created;
+        try {
+            watch.start("scan");
+            scanTable();
 
-        //        } finally {
-        //            watch.print();
-        //        }
+            watch.start("lut");
+            createLut();
+
+            watch.start("glyphs");
+            buildAllGlyphs();
+
+            return created;
+
+        } finally {
+            if (constants.printWatch.isSet())
+                watch.print();
+        }
     }
 
     /**
@@ -392,6 +398,17 @@ public class GlyphFactory
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+    }
 
     //----------//
     // Sequence //

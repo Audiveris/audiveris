@@ -63,10 +63,8 @@ public abstract class Glyphs
 
     /** To compare glyphs according to their left abscissa. */
     public static final Comparator<Glyph> byAbscissa = (g1,
-                                                        g2) -> (g1 == g2) ? 0
-                                                                : Integer.compare(
-                                                                        g1.getLeft(),
-                                                                        g2.getLeft());
+                                                        g2) -> //
+    (g1 == g2) ? 0 : Integer.compare(g1.getLeft(), g2.getLeft());
 
     /**
      * To compare glyphs according to their left abscissa (then top ordinate, then id).
@@ -74,8 +72,7 @@ public abstract class Glyphs
      * set.
      */
     public static final Comparator<Glyph> byFullAbscissa = (g1,
-                                                            g2) ->
-    {
+                                                            g2) -> {
         if (g1 == g2) {
             return 0;
         }
@@ -100,18 +97,15 @@ public abstract class Glyphs
 
     /** To compare glyphs according to their top ordinate. */
     public static final Comparator<Glyph> byOrdinate = (g1,
-                                                        g2) -> (g1 == g2) ? 0
-                                                                : Integer.compare(
-                                                                        g1.getTop(),
-                                                                        g2.getTop());
+                                                        g2) -> //
+    (g1 == g2) ? 0 : Integer.compare(g1.getTop(), g2.getTop());
 
     /**
      * To compare glyphs according to their top ordinate (then left abscissa, then id).
      * This comparator, which requires that all handled glyphs have an ID, can be used for a set.
      */
     public static final Comparator<Glyph> byFullOrdinate = (g1,
-                                                            g2) ->
-    {
+                                                            g2) -> {
         if (g1 == g2) {
             return 0;
         }
@@ -136,33 +130,23 @@ public abstract class Glyphs
 
     /** To compare glyphs according to their decreasing bottom ordinate. */
     public static final Comparator<Glyph> byReverseBottom = (g1,
-                                                             g2) -> (g1 == g2) ? 0
-                                                                     : Integer.compare(
-                                                                             g2.getTop() + g2
-                                                                                     .getHeight(),
-                                                                             g1.getTop() + g1
-                                                                                     .getHeight());
+                                                             g2) -> //
+    (g1 == g2) ? 0 : Integer.compare(g2.getTop() + g2.getHeight(), g1.getTop() + g1.getHeight());
 
     /** To compare glyphs according to their (increasing) weight. */
     public static final Comparator<Glyph> byWeight = (g1,
-                                                      g2) -> (g1 == g2) ? 0
-                                                              : Integer.compare(
-                                                                      g1.getWeight(),
-                                                                      g2.getWeight());
+                                                      g2) -> //
+    (g1 == g2) ? 0 : Integer.compare(g1.getWeight(), g2.getWeight());
 
     /** To compare glyphs according to their (increasing) width. */
     public static final Comparator<Glyph> byWidth = (g1,
-                                                     g2) -> (g1 == g2) ? 0
-                                                             : Integer.compare(
-                                                                     g1.getWidth(),
-                                                                     g2.getWidth());
+                                                     g2) -> //
+    (g1 == g2) ? 0 : Integer.compare(g1.getWidth(), g2.getWidth());
 
     /** To compare glyphs according to their decreasing weight. */
     public static final Comparator<Glyph> byReverseWeight = (g1,
-                                                             g2) -> (g1 == g2) ? 0
-                                                                     : Integer.compare(
-                                                                             g2.getWeight(),
-                                                                             g1.getWeight());
+                                                             g2) -> //
+    (g1 == g2) ? 0 : Integer.compare(g2.getWeight(), g1.getWeight());
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -507,6 +491,7 @@ public abstract class Glyphs
 
         // More precise test
         Table.UnsignedByte table = new Table.UnsignedByte(clip.width, clip.height);
+        table.fill(255); // All white
         one.fillTable(table, clip.getLocation(), fat);
 
         return two.intersects(table, clip.getLocation());

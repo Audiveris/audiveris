@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        I m a g e V i e w                                       //
+//                                      N o S t a f f V i e w                                     //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -21,41 +21,39 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import org.audiveris.omr.ui.view.RubberPanel;
+import org.audiveris.omr.sheet.Picture;
+import org.audiveris.omr.sheet.Sheet;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.image.RenderedImage;
 
 /**
- * Class <code>ImageView</code> displays a view on an image.
- * Typically, subclasses would have to only override the {@link #renderItems} method.
+ * Class <code>NoStaffView</code> is a RubberPanel which displays the NO_STAFF buffer.
  *
  * @author Hervé Bitteur
  */
-public class ImageView
-        extends RubberPanel
+public class NoStaffView
+        extends ImageView
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    protected RenderedImage image;
+    private final Sheet sheet;
+
+    private ByteProcessor buffer;
 
     //~ Constructors -------------------------------------------------------------------------------
 
-    /**
-     * Creates a new ImageView object.
-     *
-     * @param image the image to display
-     */
-    public ImageView (RenderedImage image)
+    public NoStaffView (Sheet sheet)
     {
-        this.image = image;
+        super(null);
 
-        setName("Image-View");
+        this.sheet = sheet;
 
-        if (image != null) {
-            setModelSize(new Dimension(image.getWidth(), image.getHeight()));
-        }
+        setName("No-Staff-View");
+
+        setModelSize(new Dimension(sheet.getWidth(), sheet.getHeight()));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -63,6 +61,16 @@ public class ImageView
     @Override
     public void render (Graphics2D g)
     {
-        g.drawRenderedImage(image, null);
+        // Buffer updated?
+        final ByteProcessor noStaff = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
+
+        if (buffer != noStaff) {
+            buffer = noStaff;
+            image = buffer.getBufferedImage();
+        }
+
+        if (image != null) {
+            g.drawRenderedImage(image, null);
+        }
     }
 }

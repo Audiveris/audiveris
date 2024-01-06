@@ -362,7 +362,7 @@ public class SpotsBuilder
      */
     private ByteProcessor getBuffer ()
     {
-        StopWatch watch = new StopWatch("SpotsBuilder.getBuffer");
+        final StopWatch watch = new StopWatch("SpotsBuilder.getBuffer");
 
         try {
             final Picture picture = sheet.getPicture();

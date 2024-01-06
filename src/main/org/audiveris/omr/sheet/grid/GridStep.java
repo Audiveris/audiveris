@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class <code>GridStep</code> implements <b>GRID</b> step, which retrieves all staves and
+ * Class <code>GridStep</code> implements the <b>GRID</b> step, which retrieves all staves and
  * systems of a sheet.
  *
  * @author Hervé Bitteur
@@ -92,16 +92,18 @@ public class GridStep
     public void doit (Sheet sheet)
         throws StepException
     {
-        StopWatch watch = new StopWatch("GridStep");
+        final StopWatch watch = new StopWatch("GridStep");
         watch.start("GridBuilder");
         new GridBuilder(sheet).buildInfo();
 
         watch.start("StaffLineCleaner");
         new StaffLineCleaner(sheet).process();
 
+        watch.start("book.updateScores");
         sheet.getStub().getBook().updateScores(sheet.getStub());
 
-        ///watch.print();
+        if (constants.printWatch.isSet())
+            watch.print();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -112,6 +114,9 @@ public class GridStep
     private static class Constants
             extends ConstantSet
     {
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
         private final Constant.Boolean displayNoStaff = new Constant.Boolean(
                 false,

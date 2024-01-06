@@ -24,11 +24,9 @@ package org.audiveris.omr.sheet.grid;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.glyph.dynamic.FilamentBoard;
 import org.audiveris.omr.glyph.dynamic.FilamentView;
-import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
@@ -44,8 +42,6 @@ import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
 
 /**
  * Class <code>GridBuilder</code> computes the grid of systems of a sheet picture, based on
@@ -102,35 +98,6 @@ public class GridBuilder
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //--------------//
-    // buildAllLags //
-    //--------------//
-    /**
-     * From the BINARY table, build the horizontal lag (for staff lines) and the
-     * vertical lag (for barlines).
-     */
-    private void buildAllLags ()
-    {
-        final StopWatch watch = new StopWatch("buildAllLags");
-
-        try {
-            // We already have all foreground pixels as vertical runs
-
-            // hLag creation
-            watch.start("buildHorizontalLag");
-
-            RunTable longVertTable = linesRetriever.buildHorizontalLag();
-
-            // vLag creation
-            watch.start("buildVerticalLag");
-            sheet.getLagManager().buildVerticalLag(longVertTable);
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
-    }
-
     //-----------//
     // buildInfo //
     //-----------//
@@ -142,12 +109,12 @@ public class GridBuilder
     public void buildInfo ()
         throws StepException
     {
-        StopWatch watch = new StopWatch("GridBuilder");
+        final StopWatch watch = new StopWatch("GridBuilder");
 
         try {
-            // Build the vertical and horizontal lags
-            watch.start("buildAllLags");
-            buildAllLags();
+            // Create the vertical and horizontal lags
+            watch.start("createBothLags");
+            linesRetriever.createBothLags();
 
             // Display
             if (OMR.gui != null) {
@@ -179,8 +146,8 @@ public class GridBuilder
             watch.start("retrieveLines");
             linesRetriever.retrieveLines();
 
-            // Complete horizontal lag with short sections
-            linesRetriever.createShortSections();
+            // Complete horizontal lag with short horizontal sections
+            linesRetriever.addShortSections();
 
             // Retrieve the vertical barlines and thus the systems
             watch.start("retrieveBarlines");
@@ -198,33 +165,6 @@ public class GridBuilder
                 watch.print();
             }
         }
-    }
-
-    //------------//
-    // updateBars //
-    //------------//
-    /**
-     * Update the collection of bar candidates, removing the discarded
-     * ones and adding the new ones, and rebuild the barlines.
-     *
-     * @param oldSticks former glyphs to discard
-     * @param newSticks new glyphs to take as manual bar sticks
-     */
-    public void updateBars (Collection<Glyph> oldSticks,
-                            Collection<Glyph> newSticks)
-    {
-        //        logger.info("updateBars");
-        //        logger.info("Old {}", Glyphs.toString(oldSticks));
-        //        logger.info("New {}", Glyphs.toString(newSticks));
-        //
-        //        try {
-        //            barsRetriever.process(oldSticks, newSticks);
-        //        } catch (Exception ex) {
-        //            logger.warn("updateBars. process", ex);
-        //        }
-        //
-        //        barsRetriever.retrieveMeasureBars();
-        //        barsRetriever.adjustSystemBars();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

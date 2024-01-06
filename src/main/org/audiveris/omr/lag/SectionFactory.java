@@ -118,6 +118,22 @@ public class SectionFactory
 
     //~ Methods ------------------------------------------------------------------------------------
 
+    //----------------------//
+    // buildDynamicSections //
+    //----------------------//
+    /**
+     * Build dynamic sections from the provided table of runs.
+     *
+     * @param runTable the table of runs
+     * @param include  if true, include the content of runTable into the lag if any
+     * @return the list of created dynamic sections
+     */
+    public List<DynamicSection> buildDynamicSections (RunTable runTable,
+                                                      boolean include)
+    {
+        return new Build().buildSections(runTable, include);
+    }
+
     //----------------//
     // createSections //
     //----------------//
@@ -176,11 +192,10 @@ public class SectionFactory
                                          Point offset,
                                          boolean include)
     {
-        // Build sections with runTable-based coordinates
-        final List<DynamicSection> sections = new Build().buildSections(runTable, include);
+        // Build (dynamic) sections with runTable-based coordinates
+        final List<DynamicSection> sections = buildDynamicSections(runTable, include);
 
-        return sections.stream().map(ds ->
-        {
+        return sections.stream().map(ds -> {
             if (offset != null) {
                 ds.translate(offset); // Translate to absolute coordinates
             }
@@ -379,8 +394,7 @@ public class SectionFactory
             case 0 -> nextActives.add(createSection(col, run));
 
             // Continuing sections (if not finished)
-            case 1 ->
-            {
+            case 1 -> {
                 final DynamicSection prevSection = overlappingSections.get(0);
 
                 if (!isProcessed(prevSection)) {
@@ -393,8 +407,7 @@ public class SectionFactory
             }
 
             // Converging sections, end them, start a new one
-            default ->
-            {
+            default -> {
                 logger.debug("Converging at {}", run);
 
                 final DynamicSection newSection = createSection(col, run);
@@ -449,8 +462,7 @@ public class SectionFactory
             case 0 -> logger.debug("Ending section {}", dynSection);
 
             // Continue if consistent
-            case 1 ->
-            {
+            case 1 -> {
                 if (junctionPolicy.consistentRun(overlapRun, dynSection)) {
                     logger.debug("Extending {} with run {}", dynSection, overlapRun);
                 } else {
