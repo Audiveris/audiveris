@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.dynamic.CurvedFilament;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.lag.BasicSection;
@@ -280,6 +281,25 @@ public abstract class StaffEditor
         }
 
         system.getSheet().getSheetEditor().closeEditMode();
+    }
+
+    //-----------//
+    // finalDoit //
+    //-----------//
+    public void finalDoit ()
+    {
+        super.finalDoit();
+
+        // Register staff lines glyphs
+        final GlyphIndex glyphIndex = system.getSheet().getGlyphIndex();
+        lines.forEach(line -> {
+            final StaffLine staffLine = (StaffLine) line;
+            Glyph glyph = staffLine.getGlyph();
+            glyph = glyphIndex.registerOriginal(glyph);
+            staffLine.setGlyph(glyph);
+        });
+
+        // Check if system indentation has changed
     }
 
     //--------------//

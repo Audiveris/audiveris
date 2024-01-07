@@ -278,7 +278,8 @@ public class Picture
                     final Glyph glyph = line.getGlyph();
 
                     if (glyph == null) {
-                        logger.warn("No glyph for line " + line + " staff:" + staff);
+                        final int idx = staff.getLines().indexOf(line);
+                        logger.warn("Staff #{} no glyph for line #{}", staff.getId(), 1 + idx);
                     } else {
                         glyph.getRunTable().render(g, glyph.getTopLeft());
                     }
