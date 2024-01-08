@@ -536,9 +536,7 @@ public class Sheet
                 case FLAG_3_UP -> modified |= inter.renameShapeAs(Shape.FLAG_3_DOWN);
                 case FLAG_4_UP -> modified |= inter.renameShapeAs(Shape.FLAG_4_DOWN);
                 case FLAG_5_UP -> modified |= inter.renameShapeAs(Shape.FLAG_5_DOWN);
-                default ->
-                        {
-                        }
+                default -> {}
                 }
             }
         }
@@ -558,6 +556,17 @@ public class Sheet
     public Rectangle clamp (Rectangle rect)
     {
         return picture.clamp(rect);
+    }
+
+    //------------//
+    // clearPages //
+    //------------//
+    /**
+     * Remove all pages in this sheet.
+     */
+    public void clearPages ()
+    {
+        pages.clear();
     }
 
     //------------------//

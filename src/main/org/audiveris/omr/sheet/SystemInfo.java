@@ -107,10 +107,9 @@ public class SystemInfo
     private static final Logger logger = LoggerFactory.getLogger(SystemInfo.class);
 
     /** To sort by system id. */
-    public static final Comparator<SystemInfo> byId = (SystemInfo o1,
-                                                       SystemInfo o2) -> Integer.compare(
-                                                               o1.id,
-                                                               o2.id);
+    public static final Comparator<SystemInfo> byId = //
+            (SystemInfo o1,
+             SystemInfo o2) -> Integer.compare(o1.id, o2.id);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -149,7 +148,7 @@ public class SystemInfo
 
     /**
      * Symbol Interpretation Graph for this system.
-     * NOTA: sig must be marshalled AFTER parts hierarchy to separate IDs and IDREFs handling.
+     * NOTA: sig must be marshaled AFTER parts hierarchy to separate IDs and IDREFs handling.
      */
     @XmlElement(name = "sig")
     private SIGraph sig;
@@ -1014,7 +1013,7 @@ public class SystemInfo
     // getProfile //
     //------------//
     /**
-     * Convenient method to report the sheet processing profile based on poor switch.
+     * Convenient method to report the sheet processing profile based on poor-input switch.
      *
      * @return sheet processing profile
      */
@@ -1107,6 +1106,7 @@ public class SystemInfo
     //-----------------------------//
     /**
      * Report the smallest measure-long rest shape (WHOLE_REST or BREVE_REST).
+     * <p>
      * This depends on whether the 'partialWholeRests' switch is on or off for this sheet.
      *
      * @return WHOLE_REST or BREVE_REST
@@ -1492,21 +1492,14 @@ public class SystemInfo
      */
     public boolean isMeasureRestShape (Shape shape)
     {
-        switch (shape) {
-        case LONG_REST:
-        case BREVE_REST:
-            return true;
+        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
 
-        case WHOLE_REST:
-        {
-            final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+        return switch (shape) {
+        case LONG_REST, BREVE_REST -> true;
+        case WHOLE_REST -> !switches.getValue(ProcessingSwitch.partialWholeRests);
 
-            return !switches.getValue(ProcessingSwitch.partialWholeRests);
-        }
-
-        default:
-            return false;
-        }
+        default -> false;
+        };
     }
 
     //--------------//
@@ -1580,11 +1573,8 @@ public class SystemInfo
         vSections.addAll(systemBelow.vSections);
 
         // bottom, deltaY, left, top, width
-        updateCoordinates();
-
         // area, areaLeft, areaRight
-        area = null;
-        getArea();
+        updateCoordinates();
 
         // stacks
         for (int i = 0; i < stacks.size(); i++) {
@@ -1971,7 +1961,7 @@ public class SystemInfo
     // updateCoordinates //
     //-------------------//
     /**
-     *
+     * Update system coordinates.
      */
     public final void updateCoordinates ()
     {
@@ -1998,6 +1988,9 @@ public class SystemInfo
             deltaY = (int) Math.rint(
                     lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
             bottom = (int) Math.rint(botLeft.getY());
+
+            area = null;
+            getArea();
         } catch (Exception ex) {
             logger.warn("Error updating coordinates for system#{}", id, ex);
         }

@@ -120,33 +120,18 @@ public class SystemManager
     //---------------//
     /**
      * Allocate page(s) for the sheet, as well as contained systems and parts.
-     * <p>
-     * Detect if an indented system starts a new movement (and thus a new score).
-     * <p>
-     * This behavior is driven by the "indentations" processing switch.
-     *
-     * @see <a href="https://github.com/Audiveris/audiveris/pull/350">PR of Vladimir Buyanov</a>
      */
-    public void allocatePages ()
+    private void allocatePages ()
     {
         final SheetStub stub = sheet.getStub();
-        final ProcessingSwitches switches = stub.getProcessingSwitches();
-        final boolean useIndentation = switches.getValue(ProcessingSwitch.indentations);
         Page page = null;
         PageRef pageRef = null;
-
-        if (useIndentation) {
-            // Look at left indentation of (deskewed) systems
-            checkIndentations();
-        }
-
-        // Allocate systems and pages
         for (SystemInfo system : systems) {
             final int pageId = 1 + sheet.getPages().size();
 
             if (system.isIndented()) {
                 final int systId = system.getId();
-                logger.info("Indentation detected for system#{}", systId);
+                logger.info("Indentation detected for system #{}", systId);
 
                 // We have a movement start
                 if (page != null) {
@@ -177,36 +162,91 @@ public class SystemManager
     // checkIndentations //
     //-------------------//
     /**
-     * Check all (de-skewed) systems for left-indentation that would signal a new movement.
+     * Check all systems for left-indentation that would signal a new movement,
+     * and flag them as such.
+     * <p>
+     * This behavior is driven by the "indentations" processing switch.
+     *
+     * @see <a href="https://github.com/Audiveris/audiveris/pull/350">PR of Vladimir Buyanov</a>
      */
     private void checkIndentations ()
     {
+        if (sheet.getStub().getProcessingSwitches().getValue(ProcessingSwitch.indentations)) {
+            systems.forEach(system -> system.setIndented(checkIndentation(system)));
+        }
+    }
+
+    //------------------//
+    // checkIndentation //
+    //------------------//
+    /**
+     * Check whether the provided system is left-indented with respect to its neighboring
+     * systems above and below.
+     *
+     * @param system the system to check
+     * @return true if system is indeed indented
+     */
+    public boolean checkIndentation (SystemInfo system)
+    {
+        // For side by side systems, only the leftmost one is concerned
+        if (system.getAreaEnd(LEFT) != 0) {
+            return false;
+        }
+
         final Skew skew = sheet.getSkew();
         final double minIndentation = sheet.getScale().toPixels(constants.minIndentation);
+        final Point2D ul = skew.deskewed(new Point(system.getLeft(), system.getTop()));
 
-        for (SystemInfo system : systems) {
-            // For side by side systems, only the leftmost one is concerned
-            if (system.getAreaEnd(LEFT) != 0) {
-                continue;
-            }
+        for (VerticalSide side : VerticalSide.values()) {
+            final List<SystemInfo> others = verticalNeighbors(system, side);
 
-            final Point2D ul = skew.deskewed(new Point(system.getLeft(), system.getTop()));
+            if (!others.isEmpty()) {
+                final SystemInfo other = others.get(0);
+                final Point2D ulOther = skew.deskewed(new Point(other.getLeft(), other.getTop()));
 
-            for (VerticalSide side : VerticalSide.values()) {
-                final List<SystemInfo> others = verticalNeighbors(system, side);
-
-                if (!others.isEmpty()) {
-                    SystemInfo other = others.get(0);
-                    Point2D ulOther = skew.deskewed(new Point(other.getLeft(), other.getTop()));
-
-                    if ((ul.getX() - ulOther.getX()) >= minIndentation) {
-                        system.setIndented(true);
-
-                        break;
-                    }
+                if ((ul.getX() - ulOther.getX()) >= minIndentation) {
+                    return true;
                 }
             }
         }
+
+        return false;
+    }
+
+    //---------------------//
+    // checkNewIndentation //
+    //---------------------//
+    /**
+     * If indentation is used and has changed for the provided system,
+     * reorganize the containing page(s) and score(s) accordingly.
+     *
+     * @param system the system to check
+     * @return true if changed
+     */
+    public boolean checkNewIndentation (SystemInfo system)
+    {
+        final SheetStub stub = sheet.getStub();
+        if (!stub.getProcessingSwitches().getValue(ProcessingSwitch.indentations)) {
+            return false;
+        }
+
+        final boolean newIndent = checkIndentation(system);
+        if (newIndent == system.isIndented()) {
+            return false;
+        }
+
+        logger.info("Indentation changed  for system #{}", system.getId());
+        system.setIndented(newIndent);
+
+        // Rebuild pages, pageRefs and scores
+        stub.clearPageRefs();
+        sheet.clearPages();
+        allocatePages();
+        stub.getBook().updateScores(stub);
+
+        reportResults();
+
+        return true;
     }
 
     //-------------------//
@@ -620,6 +660,9 @@ public class SystemManager
         dispatchHorizontalSections();
         dispatchVerticalSections();
 
+        // Check systems indentation
+        checkIndentations();
+
         // Allocate one (or several) page instances for the sheet
         allocatePages();
 
@@ -681,7 +724,7 @@ public class SystemManager
         }
 
         for (Page page : sheet.getPages()) {
-            StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
 
             if (pageNb > 1) {
                 sb.append("Page #").append(1 + sheet.getPages().indexOf(page)).append(": ");
@@ -712,7 +755,7 @@ public class SystemManager
                 sb.append("no part found");
             }
 
-            int sysNb = page.getSystems().size();
+            final int sysNb = page.getSystems().size();
 
             if (sysNb > 0) {
                 sb.append(" along ").append(sysNb).append(" system");
@@ -749,7 +792,7 @@ public class SystemManager
     }
 
     //------------//
-    // setSystemsFrom //
+    // setSystems //
     //------------//
     /**
      * Assign the whole sequence of systems

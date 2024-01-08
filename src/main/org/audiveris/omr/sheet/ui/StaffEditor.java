@@ -39,7 +39,9 @@ import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.grid.LineInfo;
@@ -286,12 +288,16 @@ public abstract class StaffEditor
     //-----------//
     // finalDoit //
     //-----------//
+    @Override
     public void finalDoit ()
     {
         super.finalDoit();
 
+        final Staff staff = getStaff();
+        final Sheet sheet = system.getSheet();
+
         // Register staff lines glyphs
-        final GlyphIndex glyphIndex = system.getSheet().getGlyphIndex();
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
         lines.forEach(line -> {
             final StaffLine staffLine = (StaffLine) line;
             Glyph glyph = staffLine.getGlyph();
@@ -299,7 +305,16 @@ public abstract class StaffEditor
             staffLine.setGlyph(glyph);
         });
 
-        // Check if system indentation has changed
+        staff.getSystem().updateCoordinates();
+
+        // Check for potential change in system indentation
+        if (staff == system.getFirstStaff()) {
+            final SheetStub stub = sheet.getStub();
+
+            if (stub.getProcessingSwitches().getValue(ProcessingSwitch.indentations)) {
+                sheet.getSystemManager().checkNewIndentation(system);
+            }
+        }
     }
 
     //--------------//
