@@ -515,7 +515,7 @@ public class SystemManager
 
         if (point != null) {
             for (SystemInfo system : systems) {
-                Area area = system.getArea();
+                final Area area = system.getArea();
 
                 if ((area != null) && area.contains(point)) {
                     found.add(system);

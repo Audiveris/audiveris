@@ -148,7 +148,7 @@ public class SystemInfo
 
     /**
      * Symbol Interpretation Graph for this system.
-     * NOTA: sig must be marshaled AFTER parts hierarchy to separate IDs and IDREFs handling.
+     * NOTA: sig must be marshalled AFTER parts hierarchy to separate IDs and IDREFs handling.
      */
     @XmlElement(name = "sig")
     private SIGraph sig;
@@ -832,8 +832,7 @@ public class SystemInfo
     // getMutableHorizontalSections //
     //------------------------------//
     /**
-     * Report the (modifiable) collection of horizontal sections in the
-     * system related area.
+     * Report the (modifiable) collection of horizontal sections in the system related area.
      *
      * @return the area vertical sections
      */
@@ -846,8 +845,7 @@ public class SystemInfo
     // getMutableVerticalSections //
     //----------------------------//
     /**
-     * Report the (modifiable) collection of vertical sections in the
-     * system related area.
+     * Report the (modifiable) collection of vertical sections in the system related area.
      *
      * @return the vertical sections
      */
@@ -1573,8 +1571,10 @@ public class SystemInfo
         vSections.addAll(systemBelow.vSections);
 
         // bottom, deltaY, left, top, width
-        // area, areaLeft, areaRight
         updateCoordinates();
+
+        // area, areaLeft, areaRight
+        updateArea();
 
         // stacks
         for (int i = 0; i < stacks.size(); i++) {
@@ -1941,8 +1941,7 @@ public class SystemInfo
         updateCoordinates();
 
         // area, areaLeft, areaRight
-        area = null;
-        getArea();
+        updateArea();
 
         // stacks
         for (int i = 0; i < stacks.size(); i++) {
@@ -1955,6 +1954,18 @@ public class SystemInfo
         sig.excludeSig(systemBelow.getSig());
 
         sheet.getStub().setModified(true);
+    }
+
+    //------------//
+    // updateArea //
+    //------------//
+    /**
+     * Recompute area, areaLeft and areaRight.
+     */
+    public void updateArea ()
+    {
+        area = null;
+        getArea();
     }
 
     //-------------------//
@@ -1988,9 +1999,6 @@ public class SystemInfo
             deltaY = (int) Math.rint(
                     lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
             bottom = (int) Math.rint(botLeft.getY());
-
-            area = null;
-            getArea();
         } catch (Exception ex) {
             logger.warn("Error updating coordinates for system#{}", id, ex);
         }

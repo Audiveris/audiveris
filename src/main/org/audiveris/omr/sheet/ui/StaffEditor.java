@@ -305,7 +305,8 @@ public abstract class StaffEditor
             staffLine.setGlyph(glyph);
         });
 
-        staff.getSystem().updateCoordinates();
+        system.updateCoordinates();
+        system.updateArea();
 
         // Check for potential change in system indentation
         if (staff == system.getFirstStaff()) {
