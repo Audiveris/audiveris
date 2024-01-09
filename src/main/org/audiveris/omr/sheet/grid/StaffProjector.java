@@ -1279,10 +1279,14 @@ public class StaffProjector
 
         final int dx = params.verticalSerifWidth;
         final int minCount = params.barThreshold / 2;
-        final int outDer = minCount - params.linesThreshold;
-        final int inDer = minCount - addedChunk;
+        final int outDer = Math.max(1, minCount - (3 * params.linesThreshold / 4));
+        final int inDer = Math.max(1, outDer - addedChunk);
         final int minDerUp = (restSide == HorizontalSide.LEFT) ? outDer : inDer;
         final int minDerDown = (restSide == HorizontalSide.LEFT) ? inDer : outDer;
+
+        // Adjust x to target the middle of expected serif
+        final int halfDx = (int) Math.ceil(dx * 0.5);
+        x += (restSide == HorizontalSide.LEFT) ? halfDx / 2 : -halfDx / 2;
 
         final List<StaffPeak> sidePeaks = findPeaksInRange(
                 x - dx,

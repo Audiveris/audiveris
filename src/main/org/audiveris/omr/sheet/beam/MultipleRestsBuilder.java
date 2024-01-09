@@ -257,11 +257,11 @@ public class MultipleRestsBuilder
         final Map<HorizontalSide, StaffPeak> serifPeaks = new EnumMap<>(HorizontalSide.class);
         final StaffProjector projector = getProjector(staff);
         final Rectangle bounds = beam.getBounds();
+        final int addedChunk = (int) Math.rint(
+                beam.getHeight() - staff.getMidLine().getThickness());
 
         for (HorizontalSide side : HorizontalSide.values()) {
             final int x = (side == HorizontalSide.LEFT) ? bounds.x : bounds.x + bounds.width - 1;
-            final int addedChunk = (int) Math.rint(
-                    beam.getHeight() - staff.getMidLine().getThickness());
             final List<StaffPeak> peaks = projector.processMultiRestSide(x, side, addedChunk);
             logger.debug("{} {} {}", beam, side, peaks);
 
