@@ -761,6 +761,21 @@ public class BeamLinker
                 .append('}').toString();
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //------------------------------//
+    // allowSmallHeadOnStandardBeam //
+    //------------------------------//
+    /**
+     * Tell the engine if it must accept to connect a standard beam with a small head.
+     *
+     * @return true if allowed
+     */
+    public static boolean allowSmallHeadOnStandardBeam ()
+    {
+        return constants.allowSmallHeadOnStandardBeam.isSet();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
 
     //---------//
@@ -1326,12 +1341,14 @@ public class BeamLinker
                     final HeadInter head = (HeadInter) hInter;
                     final Shape headShape = head.getShape();
 
-                    // Today, beam size and head size must match
-                    if (beam.isSmall() != headShape.isSmallHead()) {
-                        if (beam.isVip() || head.isVip()) {
-                            logger.info("VIP no size match between {} and {}", beam, head);
+                    // Small heads may not be allowed on standard beams
+                    if (!allowSmallHeadOnStandardBeam()) {
+                        if (headShape.isSmallHead() && !beam.isSmall()) {
+                            if (beam.isVip() || head.isVip()) {
+                                logger.info("VIP no size match between {} and {}", beam, head);
+                            }
+                            continue;
                         }
-                        continue;
                     }
 
                     // Check head is far enough from beam group end
@@ -1778,6 +1795,9 @@ public class BeamLinker
     private static class Constants
             extends ConstantSet
     {
+        private final Constant.Boolean allowSmallHeadOnStandardBeam = new Constant.Boolean(
+                false,
+                "Should we allow small heads linked with standard beams?");
 
         private final Constant.Ratio maxShorterRatio = new Constant.Ratio(
                 0.8,

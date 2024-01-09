@@ -34,6 +34,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.stem.BeamLinker;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
@@ -133,8 +134,7 @@ public class SigReducer
     { BeamGroupInter.class, LedgerInter.class, SentenceInter.class, WedgeInter.class };
 
     /** Predicate for non-disabled overlap. */
-    private static final Predicate<Inter> overlapPredicate = (Inter inter) ->
-    {
+    private static final Predicate<Inter> overlapPredicate = (Inter inter) -> {
         final Class<?> interClass = inter.getClass();
 
         for (Class<?> classe : disabledClasses) {
@@ -342,7 +342,7 @@ public class SigReducer
                 }
             }
 
-            // Head/Beam support or exclusion based on size
+            // Head/Beam exclusion based on size
             for (Entry<Size, Set<Inter>> beamEntry : beams.entrySet()) {
                 final Size beamSize = beamEntry.getKey();
                 final Set<Inter> beamSet = beamEntry.getValue();
@@ -359,12 +359,14 @@ public class SigReducer
                         }
                     }
                 } else {
-                    // Standard beams exclude small (oval) heads
-                    for (Shape small : ShapeSet.HeadsOvalSmall) {
-                        final Set<Inter> smallHeadSet = heads.get(small);
+                    // Standard beams may exclude small (oval) heads
+                    if (!BeamLinker.allowSmallHeadOnStandardBeam()) {
+                        for (Shape small : ShapeSet.HeadsOvalSmall) {
+                            final Set<Inter> smallHeadSet = heads.get(small);
 
-                        if (smallHeadSet != null) {
-                            exclude(beamSet, smallHeadSet, INCOMPATIBLE);
+                            if (smallHeadSet != null) {
+                                exclude(beamSet, smallHeadSet, INCOMPATIBLE);
+                            }
                         }
                     }
                 }
@@ -610,7 +612,7 @@ public class SigReducer
             { BeamPortion.LEFT, BeamPortion.RIGHT }) {
                 if (beam.getStemOn(portion) == null) {
                     if (beam.isVip()) {
-                        logger.info("VIP deleting beam lacking stem {} on {}", beam, portion);
+                        logger.info("VIP deleting {} lacking stem on {}", beam, portion);
                     }
 
                     beam.remove();
@@ -1515,8 +1517,7 @@ public class SigReducer
             logger.info("Owner: {} other: {}", owner, other);
 
             ledgers.stream().forEach(inter -> inter.setStaff(owner));
-            heads.stream().forEach(inter ->
-            {
+            heads.stream().forEach(inter -> {
                 final HeadInter h = (HeadInter) inter;
                 if (h.getStaff() != owner) {
                     h.setPitch(null); // To force new pitch computation
