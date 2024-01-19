@@ -45,6 +45,7 @@ import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.grid.LineInfo;
+import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.ui.view.RubberPanel;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
@@ -304,6 +305,16 @@ public abstract class StaffEditor
             glyph = glyphIndex.registerOriginal(glyph);
             staffLine.setGlyph(glyph);
         });
+
+        // Update header if so needed
+        final StaffHeader header = staff.getHeader();
+        if (header != null) {
+            if (header.stop == header.start) {
+                final int stop = staff.getAbscissa(LEFT);
+                staff.setHeaderStop(stop);
+                model.headerStop = stop;
+            }
+        }
 
         system.updateCoordinates();
         system.updateArea();
@@ -572,6 +583,10 @@ public abstract class StaffEditor
             staff.setAbscissa(LEFT, (int) Math.rint(left));
             staff.setAbscissa(RIGHT, (int) Math.rint(right));
             staff.setArea(null);
+
+            if (model.headerStop != null) {
+                staff.getHeader().stop = model.headerStop;
+            }
         }
 
         /**
@@ -711,9 +726,16 @@ public abstract class StaffEditor
         /** Sections removed from hLag. */
         public final Set<Section> hLagRemovals = new HashSet<>();
 
+        /** Header stop, if any. */
+        public Integer headerStop;
+
         public StaffModel (Staff staff)
         {
             staff.getLines().forEach(l -> staffLineGlyphs.add(((StaffLine) l).getGlyph()));
+
+            if (staff.getHeader() != null) {
+                headerStop = staff.getHeader().stop;
+            }
         }
     }
 }
