@@ -1184,8 +1184,7 @@ public class TextBuilder
     // retrieveSections //
     //------------------//
     /**
-     * Report the set of sections that relate to the provided collection of TextChar
-     * instances.
+     * Report the set of sections that relate to the provided collection of TextChar instances.
      *
      * @param chars       the OCR char descriptors
      * @param allSections the candidate sections

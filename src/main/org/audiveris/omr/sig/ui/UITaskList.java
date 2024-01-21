@@ -116,11 +116,11 @@ public class UITaskList
      */
     public List<Inter> getInters (Class... classes)
     {
-        List<Inter> found = new ArrayList<>();
+        final List<Inter> found = new ArrayList<>();
 
         for (UITask task : list) {
-            if (task instanceof InterTask) {
-                final Inter inter = ((InterTask) task).getInter();
+            if (task instanceof InterTask interTask) {
+                final Inter inter = interTask.getInter();
 
                 if (classes.length == 0) {
                     found.add(inter);
@@ -150,11 +150,11 @@ public class UITaskList
      */
     public List<Relation> getRelations (Class... classes)
     {
-        List<Relation> found = new ArrayList<>();
+        final List<Relation> found = new ArrayList<>();
 
         for (UITask task : list) {
-            if (task instanceof RelationTask) {
-                final Relation relation = ((RelationTask) task).getRelation();
+            if (task instanceof RelationTask relationTask) {
+                final Relation relation = relationTask.getRelation();
 
                 if (classes.length == 0) {
                     found.add(relation);

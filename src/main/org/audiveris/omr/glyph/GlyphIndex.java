@@ -76,10 +76,10 @@ public class GlyphIndex
     // Persistent data
     //----------------
 
-    /*
+    /**
      * See {@link #getEntities()} and {@link #setEntities(java.util.ArrayList)} methods
      * which are called by private methods
-     * Sheet#getGlyphIndexContent() and Sheet#setGlyphIndexContent()
+     * {@link Sheet#getGlyphIndexContent()} and {@link Sheet#setGlyphIndexContent()}
      * triggered by JAXB (un)marshalling.
      */
 
@@ -399,9 +399,9 @@ public class GlyphIndex
      */
     public synchronized Glyph registerOriginal (Glyph glyph)
     {
-        WeakGlyph weak = new WeakGlyph(glyph);
-        WeakGlyph orgWeak = originals.putIfAbsent(weak, weak);
-        Glyph orgGlyph = (orgWeak != null) ? orgWeak.get() : null;
+        final WeakGlyph weak = new WeakGlyph(glyph);
+        final WeakGlyph orgWeak = originals.putIfAbsent(weak, weak);
+        final Glyph orgGlyph = (orgWeak != null) ? orgWeak.get() : null;
 
         if (orgGlyph == null) {
             privateRegister(glyph);
@@ -409,6 +409,7 @@ public class GlyphIndex
             return glyph;
         } else {
             logger.debug("Reuse original {}", orgGlyph);
+            weakIndex.insert(orgWeak); // Safer if original has been removed from index
 
             return orgGlyph;
         }

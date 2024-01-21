@@ -52,8 +52,7 @@ public abstract class Inters
      * Comparator to put members first and ensembles last.
      */
     public static final Comparator<Inter> membersFirst = (o1,
-                                                          o2) ->
-    {
+                                                          o2) -> {
         if (o1 instanceof InterEnsemble interEnsemble1) {
             if (o2 instanceof InterEnsemble interEnsemble2) {
                 if (interEnsemble1.getMembers().contains(o2)) {
@@ -127,8 +126,7 @@ public abstract class Inters
      * For comparing interpretations by right abscissa.
      */
     public static final Comparator<Inter> byRightAbscissa = (i1,
-                                                             i2) ->
-    {
+                                                             i2) -> {
         Rectangle b1 = i1.getBounds();
         Rectangle b2 = i2.getBounds();
 
@@ -141,8 +139,7 @@ public abstract class Inters
      * This comparator can thus be used for a TreeSet.
      */
     public static final Comparator<Inter> byFullAbscissa = (o1,
-                                                            o2) ->
-    {
+                                                            o2) -> {
         if (o1 == o2) {
             return 0;
         }
@@ -174,8 +171,7 @@ public abstract class Inters
      * This comparator can thus be used for a TreeSet.
      */
     public static final Comparator<Inter> byFullCenterAbscissa = (o1,
-                                                                  o2) ->
-    {
+                                                                  o2) -> {
         if (o1 == o2) {
             return 0;
         }
@@ -253,8 +249,7 @@ public abstract class Inters
      * For comparing inter instances by decreasing mean grade.
      */
     public static final Comparator<Collection<? extends Inter>> byReverseMeanGrade = (c1,
-                                                                                      c2) ->
-    {
+                                                                                      c2) -> {
         return Double.compare(getMeanGrade(c2), getMeanGrade(c1));
     };
 
@@ -262,8 +257,7 @@ public abstract class Inters
      * For comparing inter instances by decreasing mean contextual grade.
      */
     public static final Comparator<Collection<? extends Inter>> byReverseMeanContextualGrade = (c1,
-                                                                                                c2) ->
-    {
+                                                                                                c2) -> {
         return Double.compare(getMeanBestGrade(c2), getMeanBestGrade(c1));
     };
 
@@ -294,7 +288,7 @@ public abstract class Inters
             final SIGraph sig = inter.getSig();
 
             if ((sig != null) && sig.containsVertex(inter)) {
-                sum += sig.computeContextualGrade(inter);
+                sum += inter.getBestGrade();
                 count++;
             }
         }
@@ -590,23 +584,19 @@ public abstract class Inters
                 found.add(inter);
             } else {
                 switch (order) {
-                case BY_ABSCISSA ->
-                {
+                case BY_ABSCISSA -> {
                     if (iBox.x > xMax) {
                         return found;
                     }
                 }
 
-                case BY_ORDINATE ->
-                {
+                case BY_ORDINATE -> {
                     if (iBox.y > yMax) {
                         return found;
                     }
                 }
 
-                case NONE ->
-                        {
-                        }
+                case NONE -> {}
                 }
             }
         }

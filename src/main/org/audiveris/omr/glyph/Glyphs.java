@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.Table;
 
@@ -491,7 +492,7 @@ public abstract class Glyphs
 
         // More precise test
         Table.UnsignedByte table = new Table.UnsignedByte(clip.width, clip.height);
-        table.fill(255); // All white
+        table.fill(BACKGROUND); // All white
         one.fillTable(table, clip.getLocation(), fat);
 
         return two.intersects(table, clip.getLocation());

@@ -1623,7 +1623,7 @@ public class SystemInfo
     // registerGlyph //
     //---------------//
     /**
-     * Make glyph original, registered and included in freeGlyphs.
+     * Make glyph original and registered.
      *
      * @param glyph the glyph to register
      * @param group group to assign, or null
@@ -1636,7 +1636,9 @@ public class SystemInfo
 
         glyph = glyphIndex.registerOriginal(glyph);
         glyph.addGroup(group);
-        addFreeGlyph(glyph);
+
+        /// TODO: This seems no longer mandatory
+        /// addFreeGlyph(glyph);
 
         return glyph;
     }

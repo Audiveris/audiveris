@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
+
 import ij.process.ByteProcessor;
 
 import java.util.Arrays;
@@ -60,6 +62,6 @@ public abstract class ByteUtil
      */
     public static void raz (ByteProcessor bp)
     {
-        fill(bp, 255);
+        fill(bp, BACKGROUND);
     }
 }

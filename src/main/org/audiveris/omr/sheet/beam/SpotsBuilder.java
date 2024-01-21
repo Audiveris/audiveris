@@ -303,7 +303,7 @@ public class SpotsBuilder
                 if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
                     glyph = glyphIndex.registerOriginal(glyph);
                     glyph.addGroup(GlyphGroup.BEAM_SPOT);
-                    system.addFreeGlyph(glyph);
+                    system.addFreeGlyph(glyph); // Needed to survive until end of BEAMS step
                     created = true;
                 }
             }

@@ -1193,8 +1193,7 @@ public class BeamsBuilder
 
         // We look for collections of good cue black heads + stem, close enough
         // to be able to be connected by a cue beam.
-        List<Inter> smallBlacks = sig.inters( (Inter inter) ->
-        {
+        List<Inter> smallBlacks = sig.inters( (Inter inter) -> {
             if (inter.isRemoved() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
                 return false;
             }
@@ -1322,8 +1321,7 @@ public class BeamsBuilder
                 Collections.sort(
                         others,
                         (Inter o1,
-                         Inter o2) ->
-                        {
+                         Inter o2) -> {
                             AbstractBeamInter b1 = (AbstractBeamInter) o1;
                             AbstractBeamInter b2 = (AbstractBeamInter) o2;
 
@@ -1511,9 +1509,6 @@ public class BeamsBuilder
 
         Glyph glyph = retrieveGlyph(beam);
         beam.setGlyph(glyph);
-
-        // Make this glyph survive the beam removal if any
-        system.addFreeGlyph(glyph);
     }
 
     //---------------//
@@ -2055,13 +2050,13 @@ public class BeamsBuilder
             // Determine stem direction in the aggregate
             globalDir = getDirection();
             if (globalDir == 0) {
-                logger.info("Mixed or unknown direction in cue area {}", this);
+                logger.info("Mixed or unknown direction in cue area {} {}", id, bounds);
 
                 return;
             }
 
             // Retrieve candidate glyphs from spots
-            List<Glyph> glyphs = getCueGlyphs();
+            final List<Glyph> glyphs = getCueGlyphs();
 
             // Retrieve beams from candidate glyphs
             final List<Inter> beams = new ArrayList<>();

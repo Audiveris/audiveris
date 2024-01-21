@@ -46,7 +46,6 @@ import org.audiveris.omr.sig.ui.EditingTask;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.InterTracker;
 import org.audiveris.omr.sig.ui.UITask;
-import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFamily;
@@ -1308,15 +1307,15 @@ public abstract class AbstractInter
 
             sig.removeVertex(this);
 
-            // Make sure the underlying glyph remains accessible
-            if (glyph != null) {
-                final SystemInfo system = sig.getSystem();
-                final OmrStep step = system.getSheet().getStub().getLatestStep();
-
-                if (step != null && step.compareTo(OmrStep.CURVES) >= 0) {
-                    system.addFreeGlyph(glyph);
-                }
-            }
+            //            // Make sure the underlying glyph remains accessible
+            //            if (glyph != null) {
+            //                final SystemInfo system = sig.getSystem();
+            //                final OmrStep step = system.getSheet().getStub().getLatestStep();
+            //
+            //                if (step != null && step.compareTo(OmrStep.CURVES) >= 0) {
+            //                    system.addFreeGlyph(glyph);
+            //                }
+            //            }
         }
     }
 

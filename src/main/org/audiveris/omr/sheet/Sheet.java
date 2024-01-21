@@ -250,6 +250,8 @@ public class Sheet
     /** Delta measurements. */
     private SheetDiff sheetDelta;
 
+    //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * No-arg constructor needed for JAXB.
      */
@@ -293,8 +295,6 @@ public class Sheet
             setImage(image, adjustImage);
         }
     }
-
-    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new <code>Sheet</code> object with a binary table.

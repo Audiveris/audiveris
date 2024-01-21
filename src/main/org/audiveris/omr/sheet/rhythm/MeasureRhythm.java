@@ -564,9 +564,9 @@ public class MeasureRhythm
         for (AbstractChordInter ch : rookies) {
             // Voice
             measure.addVoice(
-                    measureRestsChords.contains(ch) ? Voice.createMeasureRestVoice(
-                            (RestChordInter) ch,
-                            measure) : new Voice(ch, measure));
+                    measureRestsChords.contains(ch) //
+                            ? Voice.createMeasureRestVoice((RestChordInter) ch, measure)
+                            : new Voice(ch, measure));
 
             // Time
             ch.setAndPushTime(Rational.ZERO);
@@ -1070,8 +1070,7 @@ public class MeasureRhythm
             Collections.sort(
                     siblings,
                     (AbstractChordInter c1,
-                     AbstractChordInter c2) ->
-                    {
+                     AbstractChordInter c2) -> {
                         // In fact any SlotsRetriever (narrow or wide) could fit!
                         Rel r1 = narrowSlotsRetriever.getRel(rookie, c1);
                         Rel r2 = narrowSlotsRetriever.getRel(rookie, c2);

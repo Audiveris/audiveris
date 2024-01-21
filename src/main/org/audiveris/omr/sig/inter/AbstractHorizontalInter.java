@@ -33,6 +33,7 @@ import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
@@ -184,11 +185,20 @@ public class AbstractHorizontalInter
             return true;
         }
 
+        return getArea().contains(point);
+    }
+
+    //---------//
+    // getArea //
+    //---------//
+    @Override
+    public Area getArea ()
+    {
         if (area == null) {
             computeArea();
         }
 
-        return area.contains(point);
+        return area;
     }
 
     //-----------//
@@ -225,11 +235,7 @@ public class AbstractHorizontalInter
             return new Rectangle(bounds = glyph.getBounds());
         }
 
-        if (area == null) {
-            computeArea();
-        }
-
-        return new Rectangle(bounds = area.getBounds());
+        return new Rectangle(bounds = getArea().getBounds());
     }
 
     //-----------//

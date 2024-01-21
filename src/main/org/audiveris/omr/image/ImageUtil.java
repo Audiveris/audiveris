@@ -26,6 +26,8 @@ import org.audiveris.omr.WellKnowns;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
@@ -278,6 +280,30 @@ public abstract class ImageUtil
                                    String name)
     {
         saveOnDisk(image, "", name);
+    }
+
+    //------------//
+    // saveOnDisk //
+    //------------//
+    /**
+     * Convenient method to save a BufferedImage to disk (in application temp area)
+     *
+     * @param s     applied scaling
+     * @param image the image to save
+     * @param name  file name, without extension
+     */
+    public static void saveOnDisk (int s,
+                                   BufferedImage image,
+                                   String name)
+    {
+        final BufferedImage scaledImg = new BufferedImage(
+                s * image.getWidth(),
+                s * image.getHeight(),
+                image.getType());
+        final AffineTransform at = AffineTransform.getScaleInstance(s, s);
+        AffineTransformOp scaleOp = new AffineTransformOp(at, null);
+        scaleOp.filter(image, scaledImg);
+        saveOnDisk(scaledImg, "", name);
     }
 
     //------------//

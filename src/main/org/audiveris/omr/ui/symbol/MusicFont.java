@@ -585,23 +585,14 @@ public class MusicFont
      * @return proper point size for font
      */
     public static int getHeadPointSize (Scale scale,
-                                        int staffInterline)
+                                        double staffInterline)
     {
         final Scale.MusicFontScale musicFontScale = scale.getMusicFontScale();
-        final Integer smallInterline = scale.getSmallInterline();
-        final boolean isSmallStaff = (smallInterline != null) && (smallInterline == staffInterline);
 
         if (musicFontScale != null) {
-            if (isSmallStaff) {
-                // Interpolate from large staff information
-                final double smallRatio = (double) staffInterline / scale.getInterline();
-
-                return (int) Math.rint(smallRatio * musicFontScale.getPointSize());
-            } else {
-                // Precise large information
-                logger.debug("MusicFont. Using {}", musicFontScale);
-                return musicFontScale.getPointSize();
-            }
+            // Interpolate from large staff information
+            final double ratio = (double) staffInterline / scale.getInterline();
+            return (int) Math.rint(ratio * musicFontScale.getPointSize());
         } else {
             // No precise information available, fall back using head ratio constant...
             logger.debug("MusicFont. Using head ratio constant");

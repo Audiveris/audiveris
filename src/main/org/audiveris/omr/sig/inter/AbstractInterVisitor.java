@@ -116,7 +116,7 @@ public abstract class AbstractInterVisitor
     @Override
     public void visit (GraceChordInter inter)
     {
-        visit((SmallChordInter) inter);
+        visit((AbstractChordInter) inter);
     }
 
     @Override

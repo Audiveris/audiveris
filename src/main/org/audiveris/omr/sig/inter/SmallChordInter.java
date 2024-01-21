@@ -237,6 +237,6 @@ public class SmallChordInter
     @Override
     public void setVoice (Voice voice)
     {
-        throw new IllegalStateException("Attempt to setVoice() on a SmallChordInter");
+        throw new IllegalStateException("Attempt to setVoice() on " + this);
     }
 }

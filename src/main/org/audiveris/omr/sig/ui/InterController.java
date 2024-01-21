@@ -26,15 +26,25 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
+import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ui.NestView;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
+import static org.audiveris.omr.image.PixelSource.FOREGROUND;
+import org.audiveris.omr.image.Template;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
+import org.audiveris.omr.run.RunTable;
+import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.TimeRational;
+import org.audiveris.omr.sheet.PageCleaner;
+import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.symbol.InterFactory;
@@ -87,12 +97,18 @@ import org.audiveris.omr.text.TextBuilder;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.text.TextWord;
+import org.audiveris.omr.ui.selection.LocationEvent;
+import static org.audiveris.omr.ui.selection.MouseMovement.PRESSING;
 import org.audiveris.omr.ui.selection.SelectionHint;
+import static org.audiveris.omr.ui.selection.SelectionHint.LOCATION_INIT;
+import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.util.UIThread;
+import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.VoidTask;
 import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.Wrapper;
@@ -100,23 +116,32 @@ import org.audiveris.omr.util.Wrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ij.process.Blitter;
 import ij.process.ByteProcessor;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import static java.awt.image.BufferedImage.TYPE_BYTE_GRAY;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
@@ -1363,6 +1388,185 @@ public class InterController
         return lists;
     }
 
+    //---------------//
+    // rebuildGlyphs //
+    //---------------//
+    /**
+     * After inters removal, we'll have to rebuild the glyphs landscape around these inters
+     * as if the inters had not existed and broken up the regions of foreground pixels.
+     * <p>
+     * When inters are removed, their underlying glyphs (together with the dilation ring applied for
+     * heads) should return to the glyph landscape from which the user could pick up separated
+     * glyph(s) for a manual assignment.
+     * <p>
+     * Strategy:
+     * <ol>
+     * <li>Work on the bounding box of the removed inters (box augmented with dilation value).
+     * <li>Retrieve all the foreground pixels previously occupied by each removed inter and its
+     * dilation ring if any, but not by any (non-removed) neighbor.
+     * <li>From this whole buffer, extract separated glyphs.
+     * </ol>
+     * And only once the REDUCTION step has been run:
+     * <ol>
+     * <li>For each of the extracted glyphs, look for adjacent existing glyphs (free of inter).
+     * <li>Merge each extracted glyph with the touching existing glyph(s).
+     * </ol>
+     * <p>
+     * This method does not really remove or create glyphs, but it builds the corresponding
+     * removal and addition tasks in the UI task list.
+     *
+     * @param seq (input/output) the UI task list
+     */
+    private void rebuildGlyphs (UITaskList seq)
+    {
+        // All inters to be removed (directly or indirectly)
+        final List<Inter> intersToRemove = seq.getInters();
+
+        final StopWatch watch = new StopWatch("rebuildGlyphs");
+        final int dilation = sheet.getScale().toPixels(Template.dilation());
+        final Rectangle scene = Inters.getBounds(intersToRemove);
+        scene.grow(dilation, dilation);
+        final Point sceneLoc = scene.getLocation();
+
+        // Region of no-staff for scene
+        watch.start("Extracting scene noStaff");
+        final ByteProcessor sheetBuf = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
+        final ByteProcessor noStaff = new ByteProcessor(scene.width, scene.height);
+        noStaff.copyBits(sheetBuf, -scene.x, -scene.y, Blitter.COPY);
+
+        // Impacted neighbors in scene
+        watch.start("Retrieving neighbors");
+        final List<SystemInfo> systems = sheet.getSystems().stream() //
+                .filter(s -> s.getBounds().intersects(scene)).collect(toList());
+        final Set<Inter> neighbors = systems.stream().flatMap(
+                system -> system.getSig().vertexSet().stream()).filter(
+                        inter -> inter.getGlyph() != null //
+                                && !inter.isRemoved() //
+                                && !intersToRemove.contains(inter) //
+                                && inter.getBounds().intersects(scene)).collect(toSet());
+
+        // Retrieving pixels from the inters to be removed (and from their dilation ring)
+        watch.start("Retrieving revealed pixels");
+        final BufferedImage itemsImg = new BufferedImage(scene.width, scene.height, TYPE_BYTE_GRAY);
+        final ByteProcessor items = new ByteProcessor(itemsImg);
+        ByteUtil.fill(items, BACKGROUND);
+        final Graphics2D g = itemsImg.createGraphics();
+        new PixelsRetriever(noStaff, items, sceneLoc, g, sheet, neighbors).processInters(
+                intersToRemove);
+
+        // To avoid GC to discard our old/new glyphs, we simply pick up the first system involved
+        // to host them in its collection of free glyphs.
+        final SystemInfo system = intersToRemove.get(0).getSig().getSystem();
+
+        // Deleting glyphs from removed inters
+        watch.start("Retrieving old glyphs");
+        final Set<Glyph> oldGlyphs = intersToRemove.stream().map(inter -> inter.getGlyph()) //
+                .filter(gl -> gl != null).collect(toSet());
+
+        // Picking up from items foreground only those pixels that are also foreground in noStaff
+        watch.start("Picking up pixels");
+        final ByteProcessor finalBuf = new ByteProcessor(scene.width, scene.height);
+        ByteUtil.fill(finalBuf, BACKGROUND);
+        for (int idx = scene.height * scene.width - 1; idx >= 0; idx--) {
+            if ((items.get(idx) == FOREGROUND) && (noStaff.get(idx) == FOREGROUND)) {
+                finalBuf.set(idx, FOREGROUND);
+            }
+        }
+
+        // Building new glyphs
+        watch.start("Building new glyphs");
+        final RunTable runTable = new RunTableFactory(VERTICAL).createTable(finalBuf);
+        final List<Glyph> newGlyphs = GlyphFactory.buildGlyphs(runTable, scene.getLocation());
+        if (newGlyphs.isEmpty()) {
+            logger.info("Inter deletion with no new glyphs!");
+        }
+
+        // Merging is really interesting only after the REDUCTION step
+        if (sheet.getStub().getLatestStep().compareTo(OmrStep.REDUCTION) >= 0) {
+            // Retrieving candidate scene glyphs (non-removed, non inter-assigned, non staff lines)
+            watch.start("Retrieving scene glyphs");
+            final List<Glyph> sceneGlyphs = sheet.getGlyphIndex().getIntersectedEntities(scene);
+            sceneGlyphs.removeAll(oldGlyphs);
+            neighbors.forEach(inter -> sceneGlyphs.remove(inter.getGlyph()));
+            systems.forEach(
+                    s -> s.getStaves().forEach(
+                            staff -> staff.getLines().forEach(
+                                    l -> sceneGlyphs.remove(((StaffLine) l).getGlyph()))));
+
+            // Merging the new glyphs with the adjacent scene glyphs
+            watch.start("Reducing glyphs");
+            oldGlyphs.addAll(reduceGlyphs(sceneGlyphs, newGlyphs));
+        }
+
+        // Tasks added to UI task list
+        seq.add(new GlyphsRemovalTask(system, oldGlyphs));
+        seq.add(new GlyphsAdditionTask(system, newGlyphs));
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
+    }
+
+    //--------------//
+    // reduceGlyphs //
+    //--------------//
+    /**
+     * Merge the provided new glyphs with the candidate scene glyphs where they touch to
+     * reduce the number of glyph parts.
+     *
+     * @param sceneGlyphs the candidate scene glyphs
+     * @param newGlyphs   the new glyphs
+     * @return the scene glyphs to be removed
+     */
+    private Set<Glyph> reduceGlyphs (List<Glyph> sceneGlyphs,
+                                     List<Glyph> newGlyphs)
+    {
+        final Set<Glyph> parts = new LinkedHashSet<>();
+        final Set<Glyph> toRemove = new LinkedHashSet<>();
+
+        // Merging new glyphs with scene glyphs?
+        for (ListIterator<Glyph> it = newGlyphs.listIterator(); it.hasNext();) {
+            final Glyph g1 = it.next();
+            parts.clear();
+
+            for (Iterator<Glyph> it2 = sceneGlyphs.iterator(); it2.hasNext();) {
+                final Glyph g2 = it2.next();
+                if (Glyphs.intersect(g1, g2, true)) {
+                    parts.add(g2);
+                    toRemove.add(g2);
+                    it2.remove();
+                }
+            }
+
+            if (!parts.isEmpty()) {
+                parts.add(g1);
+                it.set(GlyphFactory.buildGlyph(parts));
+            }
+        }
+
+        // Merging the new glyphs themselves?
+        for (int i = 0; i < newGlyphs.size(); i++) {
+            final Glyph g1 = newGlyphs.get(i);
+            parts.clear();
+
+            for (int j = i + 1; j < newGlyphs.size(); j++) {
+                final Glyph g2 = newGlyphs.get(j);
+
+                if (Glyphs.intersect(g1, g2, true)) {
+                    parts.add(g2);
+                    newGlyphs.remove(j--);
+                }
+            }
+
+            if (!parts.isEmpty()) {
+                parts.add(g1);
+                newGlyphs.set(i, GlyphFactory.buildGlyph(parts));
+            }
+        }
+
+        return toRemove;
+    }
+
     //------//
     // redo //
     //------//
@@ -1535,7 +1739,14 @@ public class InterController
             @Override
             protected void build ()
             {
+                // The inters to be removed (directly or indirectly)
                 new RemovalScenario().populate(inters, seq);
+
+                if (!seq.isCancelled()) {
+                    // Handle the glyphs to be removed with inters
+                    // Handle the glyphs to be added/rebuilt once inters are removed
+                    rebuildGlyphs(seq);
+                }
             }
 
             @Override
@@ -1544,10 +1755,19 @@ public class InterController
                 sheet.getInterIndex().publish(null);
 
                 // Make sure an on-going editing is not impacted
-                Inter edited = sheet.getSheetEditor().getEditedInter();
+                final Inter edited = sheet.getSheetEditor().getEditedInter();
 
                 if (edited != null && inters.contains(edited)) {
                     sheet.getSheetEditor().closeEditMode();
+                }
+
+                // Re-publish a proper location event to update the dependent artifacts
+                final SelectionService locService = sheet.getLocationService();
+                final LocationEvent event = (LocationEvent) locService.getLastEvent(
+                        LocationEvent.class);
+                if (event != null) {
+                    locService.publish(
+                            new LocationEvent(this, LOCATION_INIT, PRESSING, event.getData()));
                 }
             }
         }.execute();
@@ -1766,7 +1986,7 @@ public class InterController
     public void undo ()
     {
         // If an object is being edited, "undo" simply cancels the ongoing editing
-        ObjectEditor objectEditor = sheet.getSheetEditor().getObjectEditor();
+        final ObjectEditor objectEditor = sheet.getSheetEditor().getObjectEditor();
 
         if (objectEditor != null) {
             objectEditor.undo();
@@ -1832,6 +2052,9 @@ public class InterController
     private static class Constants
             extends ConstantSet
     {
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
         private final Constant.Boolean useStaffLink = new Constant.Boolean(
                 true,
@@ -1855,14 +2078,17 @@ public class InterController
     private abstract class CtrlTask
             extends VoidTask
     {
+        /** Kind of operation to be performed (DO/UNDO/REDO). */
+        protected final OpKind opKind;
 
-        protected final OpKind opKind; // Kind of operation to be performed (DO/UNDO/REDO)
+        /** Descriptive name of user action. */
+        protected final String opName;
 
-        protected final String opName; // Descriptive name of user action
+        /** Atomic sequence of tasks. */
+        protected UITaskList seq = new UITaskList();
 
-        protected UITaskList seq = new UITaskList(); // Atomic sequence of tasks
-
-        protected Wrapper<Inter> toPublish = new Wrapper<>(null); // Inter to publish
+        /** Inter to publish. */
+        protected Wrapper<Inter> toPublish = new Wrapper<>(null);
 
         public CtrlTask (OpKind opKind,
                          String opName,
@@ -1984,6 +2210,103 @@ public class InterController
 
             // Refresh user display
             refreshUI();
+        }
+    }
+
+    //-----------------//
+    // PixelsRetriever //
+    //-----------------//
+    /**
+     * This is a specific PageCleaner, to gather the foreground pixels related to some
+     * inters (perhaps dilated) while preserving the pixels of the neighbors.
+     */
+    private static class PixelsRetriever
+            extends PageCleaner
+    {
+        /** The source buffer. */
+        protected final ByteProcessor source;
+
+        /** Buffer offset with respect to sheet. */
+        protected final Point bufferOffset;
+
+        /** The neighbors to protect. */
+        protected final Collection<Inter> neighbors;
+
+        /**
+         * Creates a retriever operating on provided inters to be removed, preserving neighbors.
+         *
+         * @param source       (input) the buffer to read, perhaps smaller than the sheet
+         * @param target       (output) the buffer to write, perhaps smaller than the sheet
+         * @param bufferOffset origin of buffer, relative to sheet origin
+         * @param g            the graphics context on buffer.
+         *                     'g' is to be used with absolute (sheet-based) coordinates
+         * @param sheet        the containing sheet
+         * @param neighbors    the relevant neighbors
+         */
+        public PixelsRetriever (ByteProcessor source,
+                                ByteProcessor target,
+                                Point bufferOffset,
+                                Graphics2D g,
+                                Sheet sheet,
+                                Collection<Inter> neighbors)
+        {
+            super(target, g, sheet);
+            this.source = source;
+            this.bufferOffset = new Point(bufferOffset);
+            this.neighbors = neighbors;
+
+            g.translate(-bufferOffset.x, -bufferOffset.y);
+            g.setColor(Color.BLACK);
+        }
+
+        /**
+         * Process the provided (to be removed) inters while respecting the neighbors.
+         *
+         * @param intersToRemove the provided inters meant to be removed
+         */
+        public void processInters (List<? extends Inter> intersToRemove)
+        {
+            intersToRemove.forEach(inter -> inter.accept(this));
+        }
+
+        /**
+         * Specific painting of any note head, which must preserve the neighbors.
+         *
+         * @param head the note head to paint (head and dilation ring)
+         */
+        @Override
+        public void visit (HeadInter head)
+        {
+            final Template tpl = head.getTemplate();
+            final Rectangle tplBox = tpl.getBounds(head.getBounds());
+            tplBox.translate(-bufferOffset.x, -bufferOffset.y);
+
+            // Use underlying glyph (dilated)
+            final List<Point> fores = tpl.getForegroundPixels(tplBox, source, true);
+
+            // Paint foreground pixels
+            // (Only those which don't overlap neighbors)
+            ForesLoop:
+            for (final Point p : fores) {
+                // Graphics expect sheet absolute coordinates
+                final Point absPt = new Point(
+                        bufferOffset.x + tplBox.x + p.x,
+                        bufferOffset.y + tplBox.y + p.y);
+
+                for (Inter neighbor : neighbors) {
+                    if (neighbor.getGlyph().contains(absPt)) {
+                        continue ForesLoop;
+                    }
+                }
+
+                g.fillRect(absPt.x, absPt.y, 1, 1);
+            }
+        }
+
+        @Override
+        public void visit (StemInter inter)
+        {
+            processGlyph(inter.getGlyph());
         }
     }
 

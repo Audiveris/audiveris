@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Class <code>Entities</code> provides utility methods for entities.
@@ -47,8 +48,7 @@ public class Entities
      * For comparing entities by center abscissa.
      */
     public static final Comparator<Entity> byCenterAbscissa = (e1,
-                                                               e2) ->
-    {
+                                                               e2) -> {
         final Rectangle b1 = e1.getBounds();
         final Rectangle b2 = e2.getBounds();
 
@@ -220,19 +220,14 @@ public class Entities
                               Collection<? extends Entity> entities)
     {
         if (entities == null) {
-            return "";
+            return "null";
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(label).append("[");
-
-        for (Entity entity : entities) {
-            sb.append("#").append(entity.getFullId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
+        return new StringBuilder() //
+                .append(label) //
+                .append("[") //
+                .append(entities.stream().map(e -> e.getFullId()).collect(Collectors.joining(", ")))
+                .append("]").toString();
     }
 
     //---------------------//

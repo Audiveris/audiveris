@@ -32,6 +32,7 @@ import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.image.MedianGrayFilter;
 import org.audiveris.omr.image.PixelFilter;
 import org.audiveris.omr.image.PixelSource;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
@@ -471,7 +472,7 @@ public class Picture
             for (int x = xMin; x <= xMax; x++) {
                 int pix = source.get(x, y);
 
-                if (pix == 255) { // White background
+                if (pix == BACKGROUND) { // White background
                     sb.append("   .");
                 } else {
                     sb.append(String.format("%4d", pix));

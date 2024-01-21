@@ -23,8 +23,12 @@ package org.audiveris.omr.step;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigReducer;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
@@ -34,7 +38,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>ReductionStep</code> implements <b>REDUCTION</b> step, which tries to reduce
@@ -95,6 +101,34 @@ public class ReductionStep
                     medianValue,
                     String.format("%.1f", medianFraction));
         }
+
+        // Clean up glyphs
+        final Set<Glyph> toKeep = new LinkedHashSet<>();
+        sheet.getSystems().forEach(system -> {
+            // Staves lines glyphs
+            system.getStaves().forEach(staff -> staff.getLines().forEach(line -> {
+                final Glyph glyph = ((StaffLine) line).getGlyph();
+                if (glyph != null) {
+                    toKeep.add(glyph);
+                }
+            }));
+
+            // SIG inters
+            final SIGraph sig = system.getSig();
+            sig.vertexSet().forEach(inter -> {
+                final Glyph glyph = inter.getGlyph();
+                if (glyph != null) {
+                    toKeep.add(glyph);
+                }
+            });
+        });
+
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+        glyphIndex.getEntities().forEach(glyph -> {
+            if (!toKeep.contains(glyph)) {
+                glyphIndex.remove(glyph);
+            }
+        });
     }
 
     //----------//

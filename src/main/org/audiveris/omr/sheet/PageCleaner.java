@@ -27,7 +27,10 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.AbstractFlagInter;
 import org.audiveris.omr.sig.inter.AbstractInterVisitor;
+import org.audiveris.omr.sig.inter.AbstractNumberInter;
+import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BraceInter;
@@ -40,18 +43,23 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
+import org.audiveris.omr.sig.inter.MultipleRestInter;
+import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
+import org.audiveris.omr.sig.inter.VerticalSerifInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.OmrFont;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,16 +122,16 @@ public abstract class PageCleaner
     /** Preferred font family for sheet at hand. */
     private final MusicFamily family;
 
-    /** Slightly dilated font point size. */
-    private final int dilatedSize;
+    /** Slightly enlarged font point size. */
+    private final int enlargedSize;
 
-    /** Slightly dilated font point size for heads. */
-    private final int dilatedHeadSize;
+    /** Slightly enlarged font point size for heads. */
+    private final int enlargedHeadSize;
 
     /** Font point size on small staves, if any. */
     private final int smallPointSize;
 
-    /** Font point size for heads on small staves, if any. */
+    /** Font point size for small heads, if any. */
     private final int smallHeadSize;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -148,17 +156,15 @@ public abstract class PageCleaner
 
         // NOTA: To clean items from buffer, we use slightly dilated music fonts
         final int interline = scale.getInterline();
-        dilatedSize = dilated(MusicFont.getPointSize(interline));
-        dilatedHeadSize = dilated(MusicFont.getHeadPointSize(scale, interline));
+        enlargedSize = enlarged(MusicFont.getPointSize(interline));
+        enlargedHeadSize = enlarged(MusicFont.getHeadPointSize(scale, interline));
 
-        // TODO: Should we use a similar dilation for small items?
+        // Item size for small staves
         final Integer smallInterline = scale.getSmallInterline();
-        if (smallInterline != null) {
-            smallPointSize = MusicFont.getPointSize(smallInterline);
-            smallHeadSize = MusicFont.getHeadPointSize(scale, smallInterline);
-        } else {
-            smallPointSize = smallHeadSize = 0; // To keep compiler happy
-        }
+        smallPointSize = (smallInterline != null) ? MusicFont.getPointSize(smallInterline) : 0;
+
+        // Size for small heads (regardless of staff size)
+        smallHeadSize = MusicFont.getHeadPointSize(scale, interline * OmrFont.RATIO_SMALL);
 
         // Thickness of margins applied (around areas & lines)
         final float marginThickness = (float) scale.toPixelsDouble(constants.lineMargin);
@@ -191,18 +197,18 @@ public abstract class PageCleaner
         return inter.isFrozen() || inter.isContextuallyGood();
     }
 
-    //---------//
-    // dilated //
-    //---------//
+    //----------//
+    // enlarged //
+    //----------//
     /**
-     * Report a slightly dilated value of provided point size
+     * Report a slightly enlarged value of provided point size
      *
      * @param pointSize the provided point size
      * @return slightly increased point size value
      */
-    private int dilated (int pointSize)
+    private int enlarged (int pointSize)
     {
-        return (int) Math.rint(pointSize * constants.dilationRatio.getValue());
+        return (int) Math.rint(pointSize * constants.enlargementRatio.getValue());
     }
 
     //-------------------//
@@ -224,11 +230,11 @@ public abstract class PageCleaner
                 continue;
             }
 
-            int dy = InterlineScale.toPixels(staff.getSpecificInterline(), yMargin);
-            int left = staff.getHeaderStart();
-            int right = staff.getHeaderStop();
-            int top = staff.getFirstLine().yAt(right) - dy;
-            int bot = staff.getLastLine().yAt(right) + dy;
+            final int dy = InterlineScale.toPixels(staff.getSpecificInterline(), yMargin);
+            final int left = staff.getHeaderStart();
+            final int right = staff.getHeaderStop();
+            final int top = staff.getFirstLine().yAt(right) - dy;
+            final int bot = staff.getLastLine().yAt(right) + dy;
             g.fillRect(left, top, right - left + 1, bot - top + 1);
         }
     }
@@ -275,9 +281,7 @@ public abstract class PageCleaner
      */
     public void eraseTablatures (Scale.Fraction yMargin)
     {
-        for (SystemInfo system : sheet.getSystems()) {
-            eraseTablatures(system, yMargin);
-        }
+        sheet.getSystems().forEach(system -> eraseTablatures(system, yMargin));
     }
 
     //-----------------//
@@ -294,8 +298,8 @@ public abstract class PageCleaner
     {
         for (Staff staff : system.getStaves()) {
             if (staff.isTablature()) {
-                int dy = InterlineScale.toPixels(staff.getSpecificInterline(), yMargin);
-                Area core = StaffManager.getCoreArea(staff, 0, dy);
+                final int dy = InterlineScale.toPixels(staff.getSpecificInterline(), yMargin);
+                final Area core = StaffManager.getCoreArea(staff, 0, dy);
                 g.fill(core);
             }
         }
@@ -347,9 +351,25 @@ public abstract class PageCleaner
     @Override
     public void visit (AbstractChordInter inter)
     {
-        for (Inter member : inter.getNotes()) {
-            member.accept(this);
-        }
+        inter.getNotes().forEach(note -> note.accept(this));
+    }
+
+    @Override
+    public void visit (AbstractFlagInter inter)
+    {
+        processGlyph(inter.getGlyph());
+    }
+
+    @Override
+    public void visit (AbstractNumberInter inter)
+    {
+        processGlyph(inter.getGlyph());
+    }
+
+    @Override
+    public void visit (ArpeggiatoInter inter)
+    {
+        processGlyph(inter.getGlyph());
     }
 
     @Override
@@ -363,6 +383,8 @@ public abstract class PageCleaner
     {
         processArea(inter.getArea());
     }
+
+    // No BeamGroup
 
     @Override
     public void visit (BraceInter inter)
@@ -406,8 +428,8 @@ public abstract class PageCleaner
     @Override
     public void visit (HeadInter head)
     {
-
-        final int size = head.getStaff().isSmall() ? smallHeadSize : dilatedHeadSize;
+        // We now check small size for head directly (regardless of the containing staff size)
+        final int size = head.getShape().isSmallHead() ? smallHeadSize : enlargedHeadSize;
         final FontSymbol fs = head.getShape().getFontSymbolBySize(family, size);
 
         if (fs.symbol == null) {
@@ -421,7 +443,7 @@ public abstract class PageCleaner
     }
 
     /**
-     * Default strategy for a basic inter is to paint in white the related symbol.
+     * Default strategy for a basic inter is to paint the related symbol.
      *
      * @param inter the basic inter to erase
      */
@@ -433,7 +455,7 @@ public abstract class PageCleaner
         }
 
         final boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
-        final int size = isSmall ? smallPointSize : dilatedSize;
+        final int size = isSmall ? smallPointSize : enlargedSize;
         final FontSymbol fs = inter.getShape().getFontSymbolBySize(family, size);
 
         if (fs.symbol == null) {
@@ -458,10 +480,7 @@ public abstract class PageCleaner
     @Override
     public void visit (KeyInter key)
     {
-        for (Inter member : key.getMembers()) {
-            KeyAlterInter alter = (KeyAlterInter) member;
-            processGlyph(alter.getGlyph());
-        }
+        key.getMembers().forEach(member -> processGlyph(((KeyAlterInter) member).getGlyph()));
     }
 
     @Override
@@ -471,11 +490,25 @@ public abstract class PageCleaner
     }
 
     @Override
+    public void visit (MultipleRestInter inter)
+    {
+        if (inter.getGlyph() != null) {
+            processGlyph(inter.getGlyph());
+        } else {
+            processArea(inter.getArea());
+        }
+    }
+
+    @Override
+    public void visit (OctaveShiftInter inter)
+    {
+        processGlyph(inter.getGlyph());
+    }
+
+    @Override
     public void visit (SentenceInter inter)
     {
-        for (Inter member : inter.getMembers()) {
-            processGlyph(member.getGlyph());
-        }
+        inter.getMembers().forEach(member -> processGlyph(member.getGlyph()));
     }
 
     @Override
@@ -487,12 +520,10 @@ public abstract class PageCleaner
     @Override
     public void visit (StaffBarlineInter inter)
     {
-        List<Inter> members = inter.getMembers();
+        final List<Inter> members = inter.getMembers();
 
         if (!members.isEmpty()) {
-            for (Inter member : members) {
-                member.accept(this);
-            }
+            members.forEach(member -> member.accept(this));
         } else if (inter.getShape() != null) {
             visit((Inter) inter);
         }
@@ -509,15 +540,25 @@ public abstract class PageCleaner
     }
 
     @Override
+    public void visit (TimeCustomInter inter)
+    {
+        processGlyph(inter.getGlyph());
+    }
+
+    @Override
     public void visit (TimePairInter pair)
     {
-        for (Inter member : pair.getMembers()) {
-            processGlyph(member.getGlyph());
-        }
+        pair.getMembers().forEach(member -> processGlyph(member.getGlyph()));
     }
 
     @Override
     public void visit (TimeWholeInter inter)
+    {
+        processGlyph(inter.getGlyph());
+    }
+
+    @Override
+    public void visit (VerticalSerifInter inter)
     {
         processGlyph(inter.getGlyph());
     }
@@ -545,13 +586,9 @@ public abstract class PageCleaner
             extends ConstantSet
     {
 
-        private final Constant.Ratio dilationRatio = new Constant.Ratio(
+        private final Constant.Ratio enlargementRatio = new Constant.Ratio(
                 1.1,
                 "Size augmentation to use with eraser music font");
-
-        private final Scale.Fraction symbolSize = new Scale.Fraction(
-                1.1,
-                "Symbols size to use with eraser music font");
 
         private final Scale.Fraction lineMargin = new Scale.Fraction(
                 0.1,

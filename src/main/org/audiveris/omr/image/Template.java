@@ -397,9 +397,9 @@ public class Template
      * Collect the image foreground pixels located under the template foreground areas,
      * with some additional margin.
      *
-     * @param tplBox  absolute positioning of template box in global image
-     * @param image   global image to be read
-     * @param dilated true for applying dilation before processing
+     * @param tplBox  positioning of template box in provided image
+     * @param image   the provided image to be read
+     * @param dilated true for applying dilation on foreground areas
      * @return the collection of foreground pixels, relative to template box.
      */
     public List<Point> getForegroundPixels (Rectangle tplBox,
@@ -642,6 +642,19 @@ public class Template
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
+
+    //----------//
+    // dilation //
+    //----------//
+    /**
+     * Report the erasing dilation value applied on templates.
+     *
+     * @return the dilation fraction
+     */
+    public static Scale.Fraction dilation ()
+    {
+        return constants.dilation;
+    }
 
     //----------//
     // impactOf //

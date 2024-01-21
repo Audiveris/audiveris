@@ -78,13 +78,10 @@ public enum SelectionHint
      */
     public boolean isContext ()
     {
-        switch (this) {
-        case CONTEXT_INIT:
-        case CONTEXT_ADD:
-            return true;
-        }
-
-        return false;
+        return switch (this) {
+        case CONTEXT_INIT, CONTEXT_ADD -> true;
+        default -> false;
+        };
     }
 
     //------------//
@@ -97,12 +94,9 @@ public enum SelectionHint
      */
     public boolean isLocation ()
     {
-        switch (this) {
-        case LOCATION_INIT:
-        case LOCATION_ADD:
-            return true;
-        }
-
-        return false;
+        return switch (this) {
+        case LOCATION_INIT, LOCATION_ADD -> true;
+        default -> false;
+        };
     }
 }

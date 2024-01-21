@@ -478,56 +478,9 @@ public class HeadLinker
 
         return new ArrayList<>(groups);
     }
-    //
-    //    //------------------//
-    //    // saveHeadVicinity //
-    //    //------------------//
-    //    /**
-    //     * An attempt to check usable chunks in head vicinity.
-    //     * <p>
-    //     * We erase head glyph before looking for suitable vertical sections as stem chunks.
-    //     */
-    //    private void saveHeadVicinity ()
-    //    {
-    //        final Sheet sheet = head.getSig().getSystem().getSheet();
-    //        final ByteProcessor noStaff = sheet.getPicture().getSource(NO_STAFF);
-    //        final Rectangle bounds = head.getBounds();
-    //        final Rectangle box = new Rectangle(bounds);
-    //
-    //        final int interline = sheet.getInterline();
-    //        box.grow(interline, 2 * interline);
-    //        final Point offset = box.getLocation();
-    //
-    //        noStaff.setRoi(box);
-    //        final ByteProcessor bp = (ByteProcessor) noStaff.crop();
-    //        noStaff.resetRoi();
-    //
-    //        // Erase head glyph pixels
-    //        final Glyph headGlyph = head.getGlyph();
-    //        for (int y = 0; y < box.height; y++) {
-    //            for (int x = 0; x < box.width; x++) {
-    //                final Point p = new Point(offset.x + x, offset.y + y);
-    //                if (headGlyph.contains(p)) {
-    //                    bp.putPixel(x, y, 255);
-    ////                    bp.putPixel(x - 1, y, 255);
-    ////                    bp.putPixel(x + 1, y, 255);
-    //                }
-    //            }
-    //        }
-    //
-    //        final int zoom = 20;
-    //        final BufferedImage img = new BufferedImage(zoom * box.width,
-    //                                                    zoom * box.height,
-    //                                                    BufferedImage.TYPE_INT_RGB);
-    //        final Graphics2D g = img.createGraphics();
-    //        final AffineTransform at = AffineTransform.getScaleInstance(zoom, zoom);
-    //        g.drawImage(bp.getBufferedImage(), at, null);
-    //
-    //        ImageUtil.saveOnDisk(img, sheet.getStub().getId(), "head#" + head.getId());
-    //    }
-    //
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //---------//
     // SLinker //
     //---------//

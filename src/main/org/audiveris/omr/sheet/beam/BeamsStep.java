@@ -80,9 +80,7 @@ public class BeamsStep
                              Context context)
         throws StepException
     {
-        for (SystemInfo system : sheet.getSystems()) {
-            system.removeGroupedGlyphs(GlyphGroup.BEAM_SPOT);
-        }
+        sheet.getSystems().forEach(system -> system.removeGroupedGlyphs(GlyphGroup.BEAM_SPOT));
     }
 
     //----------//
@@ -99,7 +97,7 @@ public class BeamsStep
     @Override
     protected Context doProlog (Sheet sheet)
     {
-        Lag spotLag = new BasicLag(Lags.SPOT_LAG, SpotsBuilder.SPOT_ORIENTATION);
+        final Lag spotLag = new BasicLag(Lags.SPOT_LAG, SpotsBuilder.SPOT_ORIENTATION);
 
         // Retrieve significant spots for the whole sheet
         new SpotsBuilder(sheet).buildSheetSpots(spotLag);
@@ -131,7 +129,6 @@ public class BeamsStep
      */
     protected static class Context
     {
-
         /** Lag of spot sections. */
         public final Lag spotLag;
 

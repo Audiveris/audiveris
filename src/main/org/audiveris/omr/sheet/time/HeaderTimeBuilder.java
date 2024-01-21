@@ -208,13 +208,13 @@ public class HeaderTimeBuilder
     @Override
     public void cleanup ()
     {
-        //        for (TimeBuilder.TimeKind kind : TimeBuilder.TimeKind.values()) {
-        //            TimeAdapter adapter = adapters.get(kind);
-        //
-        //            if (adapter != null) {
-        //                adapter.cleanup();
-        //            }
-        //        }
+        for (TimeBuilder.TimeKind kind : TimeBuilder.TimeKind.values()) {
+            TimeAdapter adapter = adapters.get(kind);
+
+            if (adapter != null) {
+                adapter.cleanup();
+            }
+        }
     }
 
     //---------------//
@@ -279,7 +279,6 @@ public class HeaderTimeBuilder
         for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
             final Glyph part = li.next();
             Glyph glyph = glyphIndex.registerOriginal(part);
-            system.addFreeGlyph(glyph);
             li.set(glyph);
         }
 
@@ -526,6 +525,8 @@ public class HeaderTimeBuilder
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // HalfAdapter //
     //-------------//
@@ -591,8 +592,6 @@ public class HeaderTimeBuilder
             return weight < params.minHalfTimeWeight;
         }
     }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
 
     //-------//
     // Space //

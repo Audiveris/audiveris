@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class <code>RemovalScenario</code> defines order of inter removals.
+ * Class <code>RemovalScenario</code> defines the order of inter removals.
  *
  * @author Hervé Bitteur
  */
@@ -54,13 +54,13 @@ public class RemovalScenario
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Non-ensemble inters to be removed. */
-    LinkedHashSet<Inter> inters = new LinkedHashSet<>();
+    final LinkedHashSet<Inter> inters = new LinkedHashSet<>();
 
     /** Ensemble inters to be removed. */
-    LinkedHashSet<InterEnsemble> ensembles = new LinkedHashSet<>();
+    final LinkedHashSet<InterEnsemble> ensembles = new LinkedHashSet<>();
 
     /** Ensemble inters to be watched for potential removal. */
-    LinkedHashSet<InterEnsemble> watched = new LinkedHashSet<>();
+    final LinkedHashSet<InterEnsemble> watched = new LinkedHashSet<>();
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -78,9 +78,8 @@ public class RemovalScenario
     //---------//
     private void include (Inter inter)
     {
-        if (inter instanceof InterEnsemble) {
+        if (inter instanceof InterEnsemble ens) {
             // Include the ensemble and its members
-            final InterEnsemble ens = (InterEnsemble) inter;
             final List<Inter> members = ens.getMembers();
 
             if (members.isEmpty()) {
@@ -91,6 +90,7 @@ public class RemovalScenario
             }
         } else {
             inters.add(inter);
+
             // Watch the containing ensemble (if not already to be removed)
             final SIGraph sig = inter.getSig();
 
@@ -128,18 +128,16 @@ public class RemovalScenario
             }
 
             // Removals: this inter plus related inters to remove as well
-            WrappedBoolean cancel = seq.isOptionSet(Option.VALIDATED) ? null
+            final WrappedBoolean cancel = seq.isOptionSet(Option.VALIDATED) ? null
                     : new WrappedBoolean(false);
-            Set<? extends Inter> toRemove = inter.preRemove(cancel);
+            final Set<? extends Inter> toRemove = inter.preRemove(cancel);
 
             if ((cancel != null) && cancel.isSet()) {
                 seq.setCancelled(true);
                 return;
             }
 
-            for (Inter item : toRemove) {
-                include(item);
-            }
+            toRemove.forEach(item -> include(item));
         }
 
         // Now set the removal tasks
@@ -158,7 +156,7 @@ public class RemovalScenario
     {
         // Examine watched ensembles
         for (InterEnsemble ens : watched) {
-            List<Inter> members = new ArrayList<>(ens.getMembers());
+            final List<Inter> members = new ArrayList<>(ens.getMembers());
             members.removeAll(inters);
 
             if (members.isEmpty()) {
@@ -167,18 +165,13 @@ public class RemovalScenario
         }
 
         // Ensembles to remove first
-        List<InterEnsemble> sortedEnsembles = new ArrayList<>(ensembles);
+        final List<InterEnsemble> sortedEnsembles = new ArrayList<>(ensembles);
         Collections.sort(sortedEnsembles, Inters.membersFirst);
         Collections.reverse(sortedEnsembles);
-
-        for (InterEnsemble ens : sortedEnsembles) {
-            seq.add(new RemovalTask(ens));
-        }
+        sortedEnsembles.forEach(ens -> seq.add(new RemovalTask(ens)));
 
         // Simple inters to remove second
-        for (Inter inter : inters) {
-            seq.add(new RemovalTask(inter));
-        }
+        inters.forEach(inter -> seq.add(new RemovalTask(inter)));
     }
 
     //----------//
@@ -187,10 +180,9 @@ public class RemovalScenario
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("RemovalScenario{");
-        sb.append("ensembles:").append(ensembles);
-        sb.append(" inters:").append(inters);
-        sb.append("}");
-        return sb.toString();
+        return new StringBuilder("RemovalScenario{") //
+                .append("ensembles:").append(ensembles) //
+                .append(" inters:").append(inters) //
+                .append("}").toString();
     }
 }

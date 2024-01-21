@@ -1258,6 +1258,8 @@ public abstract class SheetPainter
             g.fill(barline.getArea());
         }
 
+        // No beam group
+
         //-------//
         // visit //
         //-------//
@@ -1635,6 +1637,8 @@ public abstract class SheetPainter
             }
         }
 
+        // No time pair
+
         //-------//
         // visit //
         //-------//
@@ -1650,10 +1654,12 @@ public abstract class SheetPainter
         @Override
         public void visit (VerticalSerifInter serif)
         {
-            // We don't display the vertical serifs
+            // We don't display the vertical serifs if the MultipleRestInter is present
             // because the MultipleRestInter already displays the left & right portions
-            //            setColor(serif);
-            //            g.fill(serif.getArea());
+            if (serif.isAbnormal()) {
+                setColor(serif);
+                g.fill(serif.getArea());
+            }
         }
 
         //-------//

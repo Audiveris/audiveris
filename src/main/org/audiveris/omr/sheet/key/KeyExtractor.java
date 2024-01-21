@@ -613,7 +613,6 @@ public class KeyExtractor
 
             if (glyph.getId() == 0) {
                 glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-                system.addFreeGlyph(glyph);
             }
 
             if (glyph.isVip()) {

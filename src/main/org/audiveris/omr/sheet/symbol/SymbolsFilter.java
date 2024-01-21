@@ -27,8 +27,10 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.GlyphGroup;
+import static org.audiveris.omr.glyph.GlyphGroup.SYMBOL;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.image.ImageUtil;
+import static org.audiveris.omr.image.PixelSource.FOREGROUND;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
@@ -123,11 +125,11 @@ public class SymbolsFilter
     private void buildSymbolsGlyphs (ByteProcessor buffer)
     {
         // Runs
-        RunTableFactory runFactory = new RunTableFactory(SYMBOL_ORIENTATION);
-        RunTable runTable = runFactory.createTable(buffer);
+        final RunTableFactory runFactory = new RunTableFactory(SYMBOL_ORIENTATION);
+        final RunTable runTable = runFactory.createTable(buffer);
 
         // Glyphs
-        List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable, new Point(0, 0), GlyphGroup.SYMBOL);
+        final List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable, new Point(0, 0), SYMBOL);
         logger.debug("Symbol glyphs: {}", glyphs.size());
 
         // Dispatch each glyph to its relevant system(s)
@@ -149,15 +151,12 @@ public class SymbolsFilter
         final SystemManager systemManager = sheet.getSystemManager();
 
         for (Glyph glyph : glyphs) {
-            glyph = glyphIndex.registerOriginal(glyph);
-            glyph.addGroup(GlyphGroup.SYMBOL);
+            final Glyph registeredGlyph = glyphIndex.registerOriginal(glyph);
+            registeredGlyph.addGroup(GlyphGroup.SYMBOL);
 
-            Point center = glyph.getCentroid();
+            final Point center = registeredGlyph.getCentroid();
             systemManager.getSystemsOf(center, relevants);
-
-            for (SystemInfo system : relevants) {
-                system.addFreeGlyph(glyph);
-            }
+            relevants.forEach(system -> system.addFreeGlyph(registeredGlyph));
         }
     }
 
@@ -180,13 +179,13 @@ public class SymbolsFilter
     {
         logger.debug("SymbolsFilter running...");
 
-        ByteProcessor rawBuf = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
-        BufferedImage img = rawBuf.getBufferedImage();
-        ByteProcessor buffer = new ByteProcessor(img);
+        final ByteProcessor rawBuf = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
+        final BufferedImage img = rawBuf.getBufferedImage();
+        final ByteProcessor buffer = new ByteProcessor(img);
 
         // Prepare the ground for symbols retrieval, noting optional (weak) glyphs per system
-        Graphics2D g = img.createGraphics();
-        SymbolsCleaner eraser = new SymbolsCleaner(buffer, g, sheet);
+        final Graphics2D g = img.createGraphics();
+        final SymbolsCleaner eraser = new SymbolsCleaner(buffer, g, sheet);
         eraser.eraseInters(optionalsMap);
         buffer.threshold(127);
 
@@ -231,6 +230,14 @@ public class SymbolsFilter
                 "letter count",
                 3,
                 "Maximum number of chars for a word to be checked as a symbol");
+
+        private final Constant.Ratio minHeadContextualGrade = new Constant.Ratio(
+                0.6,
+                "Minimum contextual grade to hide a head");
+
+        private final Constant.Ratio minStemContextualGrade = new Constant.Ratio(
+                0.7,
+                "Minimum contextual grade to hide a stem");
     }
 
     //----------------//
@@ -244,7 +251,7 @@ public class SymbolsFilter
      * Doing so, the {@link SymbolsBuilder} will be able to try all combinations with, as well as
      * without, these optional weak glyphs.</li>
      * </ul>
-     * Nota for text items: A one-char word within a one-word sentence is very suspicious and might
+     * NOTA for text items: A one-char word within a one-word sentence is very suspicious and might
      * well be a symbol. Hence, we consider it as a "weak" inter whatever its assigned grade.
      * <p>
      * TODO: The saving of weak inters is implemented only for glyph-based inters and for notes.
@@ -254,7 +261,6 @@ public class SymbolsFilter
     private static class SymbolsCleaner
             extends PageCleaner
     {
-
         /**
          * Current system list of weak glyphs.
          * Null value when processing strong inters, non-null value when processing weak ones.
@@ -288,14 +294,14 @@ public class SymbolsFilter
         @Override
         protected boolean canHide (Inter inter)
         {
-            double ctxGrade = inter.getBestGrade();
+            final double ctxGrade = inter.getBestGrade();
 
             if (inter instanceof StemInter) {
-                return ctxGrade >= 0.7; // TODO a stem should be protected via its head chord?
+                return ctxGrade >= constants.minStemContextualGrade.getValue();
             }
 
             if (inter instanceof HeadInter) {
-                return ctxGrade >= 0.6; // TODO
+                return ctxGrade >= constants.minHeadContextualGrade.getValue();
             }
 
             return super.canHide(inter);
@@ -344,7 +350,8 @@ public class SymbolsFilter
 
                     // Members are handled via their ensemble
                     // Except for beams and words
-                    if ((inter.getEnsemble() != null) && !(inter instanceof AbstractBeamInter)
+                    if ((inter.getEnsemble() != null) //
+                            && !(inter instanceof AbstractBeamInter)
                             && !(inter instanceof WordInter)) {
                         continue;
                     }
@@ -362,17 +369,12 @@ public class SymbolsFilter
                 }
 
                 // Simply erase the strongs
-                for (Inter inter : strongs) {
-                    inter.accept(this);
-                }
+                strongs.forEach(inter -> inter.accept(this));
 
                 // Save the weaks apart and erase them
                 systemWeaks = new ArrayList<>();
                 weaksMap.put(system, systemWeaks);
-
-                for (Inter inter : weaks) {
-                    inter.accept(this);
-                }
+                weaks.forEach(inter -> inter.accept(this));
 
                 systemWeaks = null;
             }
@@ -431,19 +433,17 @@ public class SymbolsFilter
         private void savePixels (Rectangle box,
                                  List<Point> fores)
         {
-            ByteProcessor buf = new ByteProcessor(box.width, box.height);
+            final ByteProcessor buf = new ByteProcessor(box.width, box.height);
             ByteUtil.raz(buf); // buf.invert();
 
-            for (Point p : fores) {
-                buf.set(p.x, p.y, 0);
-            }
+            fores.forEach(p -> buf.set(p.x, p.y, FOREGROUND));
 
             // Runs
-            RunTableFactory factory = new RunTableFactory(SYMBOL_ORIENTATION);
-            RunTable runTable = factory.createTable(buf);
+            final RunTableFactory factory = new RunTableFactory(SYMBOL_ORIENTATION);
+            final RunTable runTable = factory.createTable(buf);
 
             // Glyphs
-            List<Glyph> glyphs = GlyphFactory.buildGlyphs(
+            final List<Glyph> glyphs = GlyphFactory.buildGlyphs(
                     runTable,
                     new Point(0, 0),
                     GlyphGroup.SYMBOL);
@@ -460,13 +460,11 @@ public class SymbolsFilter
             final Template tpl = head.getTemplate();
             final Rectangle tplBox = tpl.getBounds(head.getBounds());
 
-            // Use underlying glyph (enlarged only for strong inters)
+            // Use underlying glyph (dilated only for strong inters)
             final List<Point> fores = tpl.getForegroundPixels(tplBox, buffer, systemWeaks == null);
 
             // Erase foreground pixels
-            for (final Point p : fores) {
-                g.fillRect(tplBox.x + p.x, tplBox.y + p.y, 1, 1);
-            }
+            fores.forEach(p -> g.fillRect(tplBox.x + p.x, tplBox.y + p.y, 1, 1));
 
             // Save foreground pixels for optional (weak) glyphs
             if (systemWeaks != null) {
@@ -484,20 +482,15 @@ public class SymbolsFilter
     private class SymbolsView
             extends ImageView
     {
-
-        // All optional glyphs. */
-        private final Set<Glyph> optionals;
+        /** All optional glyphs. */
+        private final Set<Glyph> optionals = new LinkedHashSet<>();
 
         SymbolsView (BufferedImage image,
                      Map<SystemInfo, List<Glyph>> optionalMap)
         {
             super(image);
 
-            optionals = new LinkedHashSet<>();
-
-            for (List<Glyph> glyphs : optionalMap.values()) {
-                optionals.addAll(glyphs);
-            }
+            optionalMap.values().forEach(glyphs -> optionals.addAll(glyphs));
         }
 
         @Override
@@ -507,7 +500,7 @@ public class SymbolsFilter
 
             // Good inters are erased and not taken into account for symbols
             // Weak ones are temporarily erased and used as optional glyphs for symbols
-            Color oldColor = g.getColor();
+            final Color oldColor = g.getColor();
             g.setColor(Color.GREEN);
 
             for (Glyph glyph : optionals) {

@@ -151,7 +151,6 @@ public class BlackHeadSizer
             // Check glyph is within system abscissa boundaries
             if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
                 glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-                system.addFreeGlyph(glyph);
             }
         }
 

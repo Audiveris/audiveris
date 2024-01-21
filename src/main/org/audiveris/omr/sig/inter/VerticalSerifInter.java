@@ -24,6 +24,7 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.relation.MultipleRestSerifRelation;
 
 import java.awt.geom.Line2D;
 
@@ -64,6 +65,7 @@ public class VerticalSerifInter
                                Double width)
     {
         super(glyph, Shape.VERTICAL_SERIF, grade, median, width);
+        setAbnormal(true);
     }
 
     /**
@@ -80,6 +82,7 @@ public class VerticalSerifInter
                                Double width)
     {
         super(glyph, Shape.VERTICAL_SERIF, impacts, median, width);
+        setAbnormal(true);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -91,5 +94,21 @@ public class VerticalSerifInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    /**
+     * Check if a multiple rest is connected.
+     *
+     * @return true if abnormal
+     */
+    @Override
+    public boolean checkAbnormal ()
+    {
+        setAbnormal(!sig.hasRelation(this, MultipleRestSerifRelation.class));
+
+        return isAbnormal();
     }
 }

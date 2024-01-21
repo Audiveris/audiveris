@@ -129,23 +129,6 @@ public class MultipleRestInter
     @Override
     public boolean checkAbnormal ()
     {
-        //        boolean left = false;
-        //        boolean right = false;
-        //
-        //        for (Relation rel : sig.getRelations(this, MultipleRestSerifRelation.class)) {
-        //            final MultipleRestSerifRelation msRel = (MultipleRestSerifRelation) rel;
-        //            final HorizontalSide restSide = msRel.getRestSide();
-        //
-        //            if (restSide == HorizontalSide.LEFT) {
-        //                left = true;
-        //            } else if (restSide == HorizontalSide.RIGHT) {
-        //                right = true;
-        //            }
-        //        }
-        //
-        //        setAbnormal(!left || !right);
-        //
-
         setAbnormal(!sig.hasRelation(this, MultipleRestCountRelation.class));
 
         return isAbnormal();
