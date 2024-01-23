@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.lag;
 
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.util.ByteUtil;
 
 import ij.process.ByteProcessor;
@@ -76,7 +77,7 @@ public class Lags
     {
         final Point offset = new Point(0, 0);
         final ByteProcessor buf = new ByteProcessor(width, height);
-        ByteUtil.raz(buf); // buf.invert();
+        ByteUtil.fill(buf, BACKGROUND);
 
         for (Lag lag : lags) {
             for (Section section : lag.getEntities()) {

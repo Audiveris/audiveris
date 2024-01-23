@@ -22,6 +22,7 @@
 package org.audiveris.omr.classifier;
 
 import org.audiveris.omr.glyph.Glyph;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.util.ByteUtil;
 
@@ -87,7 +88,7 @@ public class ScaledBuffer
         final int targetDy = (int) Math.rint(dy * scale); // Scaled y shift
 
         final ByteProcessor buffer = new ByteProcessor(WIDTH, HEIGHT); // Same dim for any symbol
-        ByteUtil.raz(buffer); // Correct
+        ByteUtil.fill(buffer, BACKGROUND); // Correct
         ///ByteUtil.fill(targetBuffer, 100); // Not correct, just meant to visualize limits...
 
         final int xOffset = ((WIDTH - scaledWidth) / 2) - targetDx;

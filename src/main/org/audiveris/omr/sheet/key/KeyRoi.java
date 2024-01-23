@@ -23,13 +23,18 @@ package org.audiveris.omr.sheet.key;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
+import org.audiveris.omr.util.ByteUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.Blitter;
+import ij.process.ByteProcessor;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -39,9 +44,6 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import ij.process.Blitter;
-import ij.process.ByteProcessor;
 
 /**
  * Class <code>KeyRoi</code> handles the region of interest for key retrieval,
@@ -202,8 +204,9 @@ public class KeyRoi
     public ByteProcessor getAreaPixels (ByteProcessor source,
                                         StaffHeader.Range range)
     {
-        Rectangle keyRect = new Rectangle(range.getStart(), y, range.getWidth(), height);
-        ByteProcessor keyBuffer = new ByteProcessor(keyRect.width, height);
+        final Rectangle keyRect = new Rectangle(range.getStart(), y, range.getWidth(), height);
+        final ByteProcessor keyBuffer = new ByteProcessor(keyRect.width, height);
+        ByteUtil.fill(keyBuffer, BACKGROUND);
         keyBuffer.copyBits(source, -keyRect.x, -y, Blitter.COPY);
 
         return keyBuffer;
@@ -274,12 +277,13 @@ public class KeyRoi
                                          KeySlice slice,
                                          boolean cropNeighbors)
     {
-        Rectangle sRect = slice.getRect();
-        BufferedImage sImage = new BufferedImage(
+        final Rectangle sRect = slice.getRect();
+        final BufferedImage sImage = new BufferedImage(
                 sRect.width,
                 sRect.height,
                 BufferedImage.TYPE_BYTE_GRAY);
-        ByteProcessor sBuffer = new ByteProcessor(sImage);
+        final ByteProcessor sBuffer = new ByteProcessor(sImage);
+        ByteUtil.fill(sBuffer, BACKGROUND);
         sBuffer.copyBits(source, -sRect.x, -sRect.y, Blitter.COPY);
 
         if (cropNeighbors) {

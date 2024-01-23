@@ -701,8 +701,7 @@ public class NoteHeadsBuilder
      */
     private List<Inter> getSystemCompetitors ()
     {
-        final List<Inter> comps = sig.inters(inter ->
-        {
+        final List<Inter> comps = sig.inters(inter -> {
             if (!inter.isGood() || !COMPETING_SHAPES.contains(inter.getShape())) {
                 return false;
             }
@@ -1987,9 +1986,12 @@ public class NoteHeadsBuilder
             for (int x0 = scanLeft; x0 <= scanRight; x0++) {
                 final int y0 = getTheoreticalOrdinate(x0);
 
+                // Safety check
                 // Make sure there is some foreground within template reach
-                final double d = distances.getValue(x0 + templateHalf, y0);
-                if (d / ChamferDistance.DEFAULT_NORMALIZER > templateHalf) {
+                if ((x0 + templateHalf >= distances.getWidth()) //
+                        || (y0 < 0) || (y0 >= distances.getHeight()) //
+                        || (distances.getValue(x0 + templateHalf, y0)
+                                / ChamferDistance.DEFAULT_NORMALIZER > templateHalf)) {
                     x0 += 2 * templateHalf - 1;
                     continue;
                 }

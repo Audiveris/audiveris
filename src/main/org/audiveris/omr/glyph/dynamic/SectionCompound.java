@@ -21,21 +21,23 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.dynamic;
 
-import static org.audiveris.omr.run.Orientation.HORIZONTAL;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.glyph.AbstractWeightedEntity;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.Sections;
 import org.audiveris.omr.math.Barycenter;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
+import static org.audiveris.omr.run.Orientation.HORIZONTAL;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.util.ByteUtil;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -44,8 +46,6 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import ij.process.ByteProcessor;
 
 /**
  * Class <code>SectionCompound</code> represents a dynamic collection of sections, allowing
@@ -494,7 +494,7 @@ public class SectionCompound
 
         final Point offset = bounds.getLocation();
         final ByteProcessor buffer = new ByteProcessor(bounds.width, bounds.height);
-        ByteUtil.raz(buffer); // buffer.invert();
+        ByteUtil.fill(buffer, BACKGROUND);
 
         for (Section section : getMembers()) {
             section.fillBuffer(buffer, offset);

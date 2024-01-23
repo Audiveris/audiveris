@@ -27,6 +27,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.math.GeoOrder;
@@ -1090,7 +1091,7 @@ public class HeadInter
         final Rectangle foreBox = PointUtil.boundsOf(fores);
 
         final ByteProcessor buf = new ByteProcessor(foreBox.width, foreBox.height);
-        ByteUtil.raz(buf);
+        ByteUtil.fill(buf, BACKGROUND);
 
         for (Point p : fores) {
             buf.set(p.x - foreBox.x, p.y - foreBox.y, 0);

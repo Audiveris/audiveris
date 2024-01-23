@@ -23,6 +23,7 @@ package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.run.MarkedRun;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.Run;
@@ -352,7 +353,7 @@ public class GlyphFactory
     {
         final Rectangle box = Glyphs.getBounds(parts);
         final ByteProcessor buffer = new ByteProcessor(box.width, box.height);
-        ByteUtil.raz(buffer); // buffer.invert();
+        ByteUtil.fill(buffer, BACKGROUND);
 
         for (Glyph part : parts) {
             part.getRunTable().write(buffer, part.getLeft() - box.x, part.getTop() - box.y);

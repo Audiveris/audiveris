@@ -30,6 +30,7 @@ import org.audiveris.omr.glyph.GlyphGroup;
 import static org.audiveris.omr.glyph.GlyphGroup.SYMBOL;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.image.ImageUtil;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import static org.audiveris.omr.image.PixelSource.FOREGROUND;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.run.Orientation;
@@ -434,7 +435,7 @@ public class SymbolsFilter
                                  List<Point> fores)
         {
             final ByteProcessor buf = new ByteProcessor(box.width, box.height);
-            ByteUtil.raz(buf); // buf.invert();
+            ByteUtil.fill(buf, BACKGROUND);
 
             fores.forEach(p -> buf.set(p.x, p.y, FOREGROUND));
 

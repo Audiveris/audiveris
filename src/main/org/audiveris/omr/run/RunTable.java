@@ -859,7 +859,7 @@ public class RunTable
     {
         // Determine the bounding box
         final ByteProcessor buffer = new ByteProcessor(width, height);
-        ByteUtil.raz(buffer); // buffer.invert();
+        ByteUtil.fill(buffer, BACKGROUND);
 
         for (int iSeq = 0, size = getSize(); iSeq < size; iSeq++) {
             for (Itr it = new Itr(iSeq); it.hasNext();) {

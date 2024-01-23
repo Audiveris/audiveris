@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.GlobalFilter;
 import org.audiveris.omr.image.ImageUtil;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.sheet.ui.ImageView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
@@ -125,7 +126,7 @@ public class SheetDiff
         watch.start("xor");
 
         final ByteProcessor xor = new ByteProcessor(width, height);
-        ByteUtil.raz(xor); // xor.invert();
+        ByteUtil.fill(xor, BACKGROUND);
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {

@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Scale;
@@ -419,7 +420,7 @@ public class Template
         bufBox.grow(dilation, dilation);
 
         final ByteProcessor buf = new ByteProcessor(bufBox.width, bufBox.height);
-        ByteUtil.raz(buf); //buf.invert();
+        ByteUtil.fill(buf, BACKGROUND);
 
         for (Point p : fores) {
             buf.set(p.x + dilation, p.y + dilation, 0);

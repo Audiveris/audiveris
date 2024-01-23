@@ -29,6 +29,7 @@ import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.image.AreaMask;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoOrder;
@@ -1528,7 +1529,7 @@ public class BeamsBuilder
         final ByteProcessor buf = new ByteProcessor(box.width, box.height);
         final int filterWidth = pixelFilter.getWidth();
         final int filterHeight = pixelFilter.getHeight();
-        ByteUtil.raz(buf);
+        ByteUtil.fill(buf, BACKGROUND);
 
         final Point p = new Point(0, 0);
 
