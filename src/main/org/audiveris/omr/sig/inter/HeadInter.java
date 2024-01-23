@@ -868,26 +868,28 @@ public class HeadInter
         double bestGrade = 0;
 
         for (HorizontalSide hSide : HorizontalSide.values()) {
+            final int xDir = hSide.direction();
+
             for (VerticalSide vSide : VerticalSide.values()) {
-                Point refPt = PointUtil.rounded(getStemReferencePoint(hSide, vSide));
-                int xMin = refPt.x - ((hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
-                int yMin = refPt.y - ((vSide == TOP) ? maxYGap : 0);
-                Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
-                List<Inter> stems = Inters.intersectedInters(
+                final Point refPt = PointUtil.rounded(getStemReferencePoint(hSide, vSide));
+                final int xMin = refPt.x - ((hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
+                final int yMin = refPt.y - ((vSide == TOP) ? maxYGap : 0);
+                final Rectangle luBox;
+                luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
+                final List<Inter> stems = Inters.intersectedInters(
                         candidateStems,
                         GeoOrder.BY_ABSCISSA,
                         luBox);
-                int xDir = hSide.direction();
 
                 for (Inter inter : stems) {
-                    StemInter stem = (StemInter) inter;
+                    final StemInter stem = (StemInter) inter;
                     final Point2D start = stem.getTop();
                     final Point2D stop = stem.getBottom();
 
-                    double crossX = LineUtil.xAtY(start, stop, refPt.getY());
+                    final double crossX = LineUtil.xAtY(start, stop, refPt.getY());
                     final double xGap = xDir * (crossX - refPt.getX());
-                    final double yGap;
 
+                    final double yGap;
                     if (refPt.getY() < start.getY()) {
                         yGap = start.getY() - refPt.getY();
                     } else if (refPt.getY() > stop.getY()) {
@@ -896,7 +898,7 @@ public class HeadInter
                         yGap = 0;
                     }
 
-                    HeadStemRelation rel = new HeadStemRelation();
+                    final HeadStemRelation rel = new HeadStemRelation();
                     rel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
                     if (rel.getGrade() >= rel.getMinGrade()) {

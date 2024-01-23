@@ -80,11 +80,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>
  * <
  * pre>
- *    |
- *    |
- *  +O+
- *  |
- *  |
+ * |
+ * |
+ * +O+
+ * |
+ * |
  * </pre>
  * <p>
  * A rather long stem will boost a standard-size head while a rather short stem will boost a
@@ -734,6 +734,9 @@ public class HeadStemRelation
 
         @SuppressWarnings("unused")
         private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(0.25, "Idem for profile 1");
+
+        @SuppressWarnings("unused")
+        private final Scale.Fraction xOutGapMax_p2 = new Scale.Fraction(0.35, "Idem for profile 2");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,
