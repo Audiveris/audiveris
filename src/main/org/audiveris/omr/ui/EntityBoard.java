@@ -164,22 +164,17 @@ public class EntityBoard<E extends Entity>
 
         // Id
         switch (idOption) {
-        case ID_LABEL:
-            idLabel = new LLabel(
-                    resources.getString("idLabel.text"),
-                    resources.getString("idLabel.toolTipText"));
-
-            break;
-
-        case ID_SPINNER:
-            idSpinner = makeIdSpinner(entityService.getIndex());
-            idSpinner.setName("idSpinner");
-            idSpinner.setToolTipText(resources.getString("idSpinner.toolTipText"));
-
-            break;
-
-        default:
-        case ID_NONE:
+            case ID_LABEL -> {
+                idLabel = new LLabel(
+                        resources.getString("idLabel.text"),
+                        resources.getString("idLabel.toolTipText"));
+            }
+            case ID_SPINNER -> {
+                idSpinner = makeIdSpinner(entityService.getIndex());
+                idSpinner.setName("idSpinner");
+                idSpinner.setToolTipText(resources.getString("idSpinner.toolTipText"));
+            }
+            case ID_NONE -> {}
         }
 
         builder = new PanelBuilder(layout, getBody());

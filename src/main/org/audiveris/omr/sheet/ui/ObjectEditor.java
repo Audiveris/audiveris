@@ -257,9 +257,8 @@ public abstract class ObjectEditor
     {
         boolean active = false;
 
-        if (null != movement) {
-            switch (movement) {
-            case PRESSING:
+        switch (movement) {
+            case PRESSING -> {
                 // Drag must start within a handle vicinity
                 selectedHandle = null;
                 lastPt = null;
@@ -289,11 +288,9 @@ public abstract class ObjectEditor
                 }
 
                 hasMoved = false;
+            }
 
-                break;
-
-            case DRAGGING:
-
+            case DRAGGING -> {
                 if (selectedHandle != null) {
                     if (lastPt != null) {
                         final Point vector = PointUtil.subtraction(pt, lastPt);
@@ -307,11 +304,9 @@ public abstract class ObjectEditor
                     lastPt = null;
                     hasMoved = false;
                 }
+            }
 
-                break;
-
-            case RELEASING:
-
+            case RELEASING -> {
                 if (hasMoved) {
                     // Perhaps switch selection to a specific handle
                     switchHandleOnRelease();
@@ -319,12 +314,9 @@ public abstract class ObjectEditor
 
                 lastPt = null;
                 active = true;
-
-                break;
-
-            default:
-                break;
             }
+
+            case null, default -> {}
         }
 
         return active;

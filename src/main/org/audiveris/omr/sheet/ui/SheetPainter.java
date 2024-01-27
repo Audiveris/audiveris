@@ -1549,9 +1549,9 @@ public abstract class SheetPainter
         public void visit (RestInter rest)
         {
             switch (rest.getShape()) {
-            default -> paintPitched(rest, rest);
-            // Symbols for these shapes are not aligned with pitch ordinate, so we use area center
-            case HALF_REST, WHOLE_REST, BREVE_REST -> paintCenter(rest, rest);
+                default -> paintPitched(rest, rest);
+                // Symbols for these shapes are not aligned with pitch ordinate, so we use area center
+                case HALF_REST, WHOLE_REST, BREVE_REST -> paintCenter(rest, rest);
             }
         }
 

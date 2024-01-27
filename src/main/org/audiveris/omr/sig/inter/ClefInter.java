@@ -138,41 +138,24 @@ public class ClefInter
      */
     private int absolutePitchOf (int intPitch)
     {
-        switch (shape) {
-        case G_CLEF:
-        case G_CLEF_SMALL:
-            return 34 - intPitch;
+        return switch (shape) {
+            case G_CLEF, G_CLEF_SMALL -> 34 - intPitch;
+            case G_CLEF_8VA -> (34 + 7) - intPitch;
+            case G_CLEF_8VB -> 34 - 7 - intPitch;
+            case C_CLEF ->
+                    // Depending on precise clef position, we can have
+                    // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
+                    28 - (int) Math.rint(this.pitch) - intPitch;
+            case F_CLEF, F_CLEF_SMALL -> 22 - intPitch;
+            case F_CLEF_8VA -> (22 + 7) - intPitch;
+            case F_CLEF_8VB -> 22 - 7 - intPitch;
+            case PERCUSSION_CLEF -> 0;
 
-        case G_CLEF_8VA:
-            return (34 + 7) - intPitch;
-
-        case G_CLEF_8VB:
-            return 34 - 7 - intPitch;
-
-        case C_CLEF:
-
-            // Depending on precise clef position, we can have
-            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
-            return 28 - (int) Math.rint(this.pitch) - intPitch;
-
-        case F_CLEF:
-        case F_CLEF_SMALL:
-            return 22 - intPitch;
-
-        case F_CLEF_8VA:
-            return (22 + 7) - intPitch;
-
-        case F_CLEF_8VB:
-            return 22 - 7 - intPitch;
-
-        case PERCUSSION_CLEF:
-            return 0;
-
-        default:
-            logger.error("No absolute note pitch defined for {}", this);
-
-            return 0; // To keep compiler happy
-        }
+            default -> {
+                logger.error("No absolute note pitch defined for {}", this);
+                yield 0; // To keep compiler happy
+            }
+        };
     }
 
     //--------//
@@ -237,30 +220,23 @@ public class ClefInter
      */
     private HeadInter.NoteStep noteStepOf (int pitch)
     {
-        switch (shape) {
-        case G_CLEF:
-        case G_CLEF_SMALL:
-        case G_CLEF_8VA:
-        case G_CLEF_8VB:
-        case PERCUSSION_CLEF:
-            return HeadInter.NoteStep.values()[(71 - pitch) % 7];
+        return switch (shape) {
+            case G_CLEF, G_CLEF_SMALL, G_CLEF_8VA, G_CLEF_8VB, PERCUSSION_CLEF -> //
+                    HeadInter.NoteStep.values()[(71 - pitch) % 7];
 
-        case C_CLEF:
-            // Depending on precise clef position, we can have
-            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
-            return HeadInter.NoteStep.values()[((72 + (int) Math.rint(this.pitch)) - pitch) % 7];
+            case C_CLEF ->
+                    // Depending on precise clef position, we can have
+                    // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
+                    HeadInter.NoteStep.values()[((72 + (int) Math.rint(this.pitch)) - pitch) % 7];
 
-        case F_CLEF:
-        case F_CLEF_SMALL:
-        case F_CLEF_8VA:
-        case F_CLEF_8VB:
-            return HeadInter.NoteStep.values()[(73 - pitch) % 7];
+            case F_CLEF, F_CLEF_SMALL, F_CLEF_8VA, F_CLEF_8VB -> //
+                    HeadInter.NoteStep.values()[(73 - pitch) % 7];
 
-        default:
-            logger.error("No note step defined for {}", this);
-
-            return null; // To keep compiler happy
-        }
+            default -> {
+                logger.error("No note step defined for {}", this);
+                yield null; // To keep compiler happy
+            }
+        };
     }
 
     //----------//
@@ -275,40 +251,25 @@ public class ClefInter
      */
     private int octaveOf (double pitchPosition)
     {
-        int intPitch = (int) Math.rint(pitchPosition);
+        final int intPitch = (int) Math.rint(pitchPosition);
 
-        switch (shape) {
-        case G_CLEF:
-        case G_CLEF_SMALL:
-        case PERCUSSION_CLEF:
-            return (34 - intPitch) / 7;
+        return switch (shape) {
+            case G_CLEF, G_CLEF_SMALL, PERCUSSION_CLEF -> (34 - intPitch) / 7;
+            case G_CLEF_8VA -> ((34 - intPitch) / 7) + 1;
+            case G_CLEF_8VB -> ((34 - intPitch) / 7) - 1;
+            case C_CLEF ->
+                    // Depending on precise clef position, we can have
+                    // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
+                    ((28 + (int) Math.rint(this.pitch)) - intPitch) / 7;
+            case F_CLEF, F_CLEF_SMALL -> (22 - intPitch) / 7;
+            case F_CLEF_8VA -> ((22 - intPitch) / 7) + 1;
+            case F_CLEF_8VB -> ((22 - intPitch) / 7) - 1;
 
-        case G_CLEF_8VA:
-            return ((34 - intPitch) / 7) + 1;
-
-        case G_CLEF_8VB:
-            return ((34 - intPitch) / 7) - 1;
-
-        case C_CLEF:
-            // Depending on precise clef position, we can have
-            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
-            return ((28 + (int) Math.rint(this.pitch)) - intPitch) / 7;
-
-        case F_CLEF:
-        case F_CLEF_SMALL:
-            return (22 - intPitch) / 7;
-
-        case F_CLEF_8VA:
-            return ((22 - intPitch) / 7) + 1;
-
-        case F_CLEF_8VB:
-            return ((22 - intPitch) / 7) - 1;
-
-        default:
-            logger.error("No note octave defined for {}", this);
-
-            return 0; // To keep compiler happy
-        }
+            default -> {
+                logger.error("No note octave defined for {}", this);
+                yield 0; // To keep compiler happy
+            }
+        };
     }
 
     //--------//
@@ -402,35 +363,27 @@ public class ClefInter
             return null;
         }
 
-        switch (shape) {
-        case G_CLEF:
-        case G_CLEF_SMALL:
-        case G_CLEF_8VA:
-        case G_CLEF_8VB:
-            return new ClefInter(glyph, shape, grade, staff, 2.0, ClefKind.TREBLE);
+        return switch (shape) {
+            default -> null;
 
-        case C_CLEF:
+            case G_CLEF, G_CLEF_SMALL, G_CLEF_8VA, G_CLEF_8VB -> //
+                    new ClefInter(glyph, shape, grade, staff, 2.0, ClefKind.TREBLE);
 
-            // Depending on precise clef position, we can have
-            // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2)
-            Point2D center = glyph.getCenter2D();
-            double pp = Math.rint(staff.pitchPositionOf(center));
-            ClefKind kind = (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
+            case C_CLEF -> {
+                // Depending on precise clef position, we can have
+                // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2)
+                final Point2D center = glyph.getCenter2D();
+                final double pp = Math.rint(staff.pitchPositionOf(center));
+                final ClefKind kind = (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
+                yield new ClefInter(glyph, shape, grade, staff, pp, kind);
+            }
 
-            return new ClefInter(glyph, shape, grade, staff, pp, kind);
+            case F_CLEF, F_CLEF_SMALL, F_CLEF_8VA, F_CLEF_8VB -> //
+                    new ClefInter(glyph, shape, grade, staff, -2.0, ClefKind.BASS);
 
-        case F_CLEF:
-        case F_CLEF_SMALL:
-        case F_CLEF_8VA:
-        case F_CLEF_8VB:
-            return new ClefInter(glyph, shape, grade, staff, -2.0, ClefKind.BASS);
-
-        case PERCUSSION_CLEF:
-            return new ClefInter(glyph, shape, grade, staff, 0.0, ClefKind.PERCUSSION);
-
-        default:
-            return null;
-        }
+            case PERCUSSION_CLEF -> //
+                    new ClefInter(glyph, shape, grade, staff, 0.0, ClefKind.PERCUSSION);
+        };
     }
 
     //--------//
@@ -445,32 +398,14 @@ public class ClefInter
      */
     public static ClefKind kindOf (OmrShape omrShape)
     {
-        switch (omrShape) {
-        case gClef:
-        case gClef8vb:
-        case gClef8va:
-        case gClef15mb:
-        case gClef15ma:
-            return ClefKind.TREBLE;
-
-        case cClefAlto:
-            return ClefKind.ALTO;
-
-        case cClefTenor:
-            return ClefKind.TENOR;
-
-        case fClef:
-        case fClef8vb:
-        case fClef8va:
-        case fClef15mb:
-        case fClef15ma:
-            return ClefKind.BASS;
-
-        case unpitchedPercussionClef1:
-            return ClefKind.PERCUSSION;
-        }
-
-        throw new IllegalArgumentException("No ClefKind for " + omrShape);
+        return switch (omrShape) {
+            case gClef, gClef8vb, gClef8va, gClef15mb, gClef15ma -> ClefKind.TREBLE;
+            case cClefAlto -> ClefKind.ALTO;
+            case cClefTenor -> ClefKind.TENOR;
+            case fClef, fClef8vb, fClef8va, fClef15mb, fClef15ma -> ClefKind.BASS;
+            case unpitchedPercussionClef1 -> ClefKind.PERCUSSION;
+            default -> throw new IllegalArgumentException("No ClefKind for " + omrShape);
+        };
     }
 
     //--------//
@@ -492,32 +427,17 @@ public class ClefInter
             return null;
         }
 
-        switch (shape) {
-        case G_CLEF:
-        case G_CLEF_SMALL:
-        case G_CLEF_8VA:
-        case G_CLEF_8VB:
-            return ClefKind.TREBLE;
-
-        case C_CLEF:
-
-            // Disambiguate between Alto C-clef (pp=0) and Tenor C-clef (pp=-2)
-            int pp = (int) Math.rint(staff.pitchPositionOf(center));
-
-            return (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
-
-        case F_CLEF:
-        case F_CLEF_SMALL:
-        case F_CLEF_8VA:
-        case F_CLEF_8VB:
-            return ClefKind.BASS;
-
-        case PERCUSSION_CLEF:
-            return ClefKind.PERCUSSION;
-
-        default:
-            return null;
-        }
+        return switch (shape) {
+            case G_CLEF, G_CLEF_SMALL, G_CLEF_8VA, G_CLEF_8VB -> ClefKind.TREBLE;
+            case C_CLEF -> {
+                // Disambiguate between Alto C-clef (pp=0) and Tenor C-clef (pp=-2)
+                final int pp = (int) Math.rint(staff.pitchPositionOf(center));
+                yield (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
+            }
+            case F_CLEF, F_CLEF_SMALL, F_CLEF_8VA, F_CLEF_8VB -> ClefKind.BASS;
+            case PERCUSSION_CLEF -> ClefKind.PERCUSSION;
+            default -> null;
+        };
     }
 
     //------------//

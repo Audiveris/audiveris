@@ -196,99 +196,96 @@ public enum TextRole
 
         // Decisions ...
         switch (systemPosition) {
-        case ABOVE_STAVES: // Title, Number, Creator, Direction, ChordName, Lyrics above staff
-
-            if (tinySentence) {
-                if (isAllChords) {
-                    return ChordName;
-                } else {
-                    return UnknownRole;
-                }
-            }
-
-            if (firstSystem) {
-                if (leftOfStaves) {
-                    return CreatorLyricist;
-                } else if (rightAligned) {
-                    return CreatorComposer;
-                } else if (closeToStaff) {
+            case ABOVE_STAVES: // Title, Number, Creator, Direction, ChordName, Lyrics above staff
+                if (tinySentence) {
                     if (isAllChords) {
                         return ChordName;
                     } else {
+                        return UnknownRole;
+                    }
+                }
+
+                if (firstSystem) {
+                    if (leftOfStaves) {
+                        return CreatorLyricist;
+                    } else if (rightAligned) {
+                        return CreatorComposer;
+                    } else if (closeToStaff) {
+                        if (isAllChords) {
+                            return ChordName;
+                        } else {
+                            return Direction;
+                        }
+                    } else if (pageCentered) { // Title, Number
+
+                        if (highText) {
+                            return Title;
+                        } else {
+                            return Number;
+                        }
+                    }
+                } else if (isAllChords) {
+                    return ChordName;
+                } else {
+                    if (lyricsAllowed //
+                            && hasVowel //
+                            ///&& (!isMainlyItalic) //
+                            && (switches.getValue(ProcessingSwitch.lyricsAboveStaff))) {
+                        return Lyrics;
+                    } else {
                         return Direction;
                     }
-                } else if (pageCentered) { // Title, Number
+                }
 
-                    if (highText) {
-                        return Title;
-                    } else {
-                        return Number;
+                break;
+
+            case WITHIN_STAVES: // Name, Lyrics, Direction
+                if (leftOfStaves) {
+                    if (TextWord.PART_NAME_WORDS != null) {
+                        Matcher matcher = TextWord.PART_NAME_WORDS.matcher(line.getValue());
+
+                        if (matcher.matches()) {
+                            return PartName;
+                        } else {
+                            logger.debug("Abnormal part name: {}", line);
+                        }
                     }
-                }
-            } else if (isAllChords) {
-                return ChordName;
-            } else {
-                if (lyricsAllowed //
-                        && hasVowel //
-                        ///&& (!isMainlyItalic) //
-                        && (switches.getValue(ProcessingSwitch.lyricsAboveStaff))) {
-                    return Lyrics;
-                } else {
-                    return Direction;
-                }
-            }
-
-            break;
-
-        case WITHIN_STAVES: // Name, Lyrics, Direction
-
-            if (leftOfStaves) {
-                if (TextWord.PART_NAME_WORDS != null) {
-                    Matcher matcher = TextWord.PART_NAME_WORDS.matcher(line.getValue());
-
-                    if (matcher.matches()) {
-                        return PartName;
-                    } else {
-                        logger.debug("Abnormal part name: {}", line);
-                    }
-                }
-            } else if (lyricsAllowed //
-                    && hasVowel //
-                    ///&& !isMainlyItalic //
-                    && (switches.getValue(ProcessingSwitch.lyrics) //
-                            || switches.getValue(ProcessingSwitch.lyricsAboveStaff))
-                    && ((partPosition == StaffPosition.BELOW_STAVES)
-                            || ((partPosition == StaffPosition.ABOVE_STAVES) //
-                                    && switches.getValue(ProcessingSwitch.lyricsAboveStaff)))) {
-                return Lyrics;
-            } else if (!tinySentence) {
-                return Direction;
-            }
-
-        case BELOW_STAVES: // Copyright, Lyrics for single-staff part, Direction
-
-            if (tinySentence) {
-                return UnknownRole;
-            }
-
-            if (isMainlyItalic) {
-                return Direction;
-            }
-
-            if (pageCentered && shortSentence && lastSystem && farFromStaff) {
-                return Rights;
-            }
-
-            if (part.getStaves().size() == 1) {
-                if (lyricsAllowed //
+                } else if (lyricsAllowed //
                         && hasVowel //
                         ///&& !isMainlyItalic //
                         && (switches.getValue(ProcessingSwitch.lyrics) //
                                 || switches.getValue(ProcessingSwitch.lyricsAboveStaff))
-                        && (partPosition == StaffPosition.BELOW_STAVES)) {
+                        && ((partPosition == StaffPosition.BELOW_STAVES)
+                                || ((partPosition == StaffPosition.ABOVE_STAVES) //
+                                        && switches.getValue(ProcessingSwitch.lyricsAboveStaff)))) {
                     return Lyrics;
+                } else if (!tinySentence) {
+                    return Direction;
                 }
-            }
+
+            case BELOW_STAVES: // Copyright, Lyrics for single-staff part, Direction
+                if (tinySentence) {
+                    return UnknownRole;
+                }
+
+                if (isMainlyItalic) {
+                    return Direction;
+                }
+
+                if (pageCentered && shortSentence && lastSystem && farFromStaff) {
+                    return Rights;
+                }
+
+                if (part.getStaves().size() == 1) {
+                    if (lyricsAllowed //
+                            && hasVowel //
+                            ///&& !isMainlyItalic //
+                            && (switches.getValue(ProcessingSwitch.lyrics) //
+                                    || switches.getValue(ProcessingSwitch.lyricsAboveStaff))
+                            && (partPosition == StaffPosition.BELOW_STAVES)) {
+                        return Lyrics;
+                    }
+                }
         }
 
         // Default

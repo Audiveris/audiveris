@@ -189,27 +189,25 @@ public class TimeRational
     {
         final String[] tokens = str.split("\\s*/\\s*");
 
-        switch (tokens.length) {
-        case 2:
-        {
-            int num = Integer.decode(tokens[0].trim());
+        return switch (tokens.length) {
+            case 2 -> {
+                final int num = Integer.decode(tokens[0].trim());
+                if ((num < 0) || (num > 99)) {
+                    throw new IllegalArgumentException(
+                            "numerator " + num + " outside [0..99] range");
+                }
 
-            if ((num < 0) || (num > 99)) {
-                throw new IllegalArgumentException("numerator " + num + " outside [0..99] range");
+                final int den = Integer.decode(tokens[1].trim());
+                if ((den < 0) || (den > 99)) {
+                    throw new IllegalArgumentException(
+                            "denominator " + num + " outside [0..99] range");
+                }
+
+                yield new TimeRational(num, den);
             }
 
-            int den = Integer.decode(tokens[1].trim());
-
-            if ((den < 0) || (den > 99)) {
-                throw new IllegalArgumentException("denominator " + num + " outside [0..99] range");
-            }
-
-            return new TimeRational(num, den);
-        }
-
-        default:
-            throw new NumberFormatException(str);
-        }
+            default -> throw new NumberFormatException(str);
+        };
     }
 
     //-------------//

@@ -122,34 +122,21 @@ public class SlotsRetriever
 
     /** Comparator based on inter-chord relationships, then on timeOffset when known. */
     private final Comparator<AbstractChordInter> byRel = (c1,
-                                                          c2) ->
-    {
+                                                          c2) -> {
         if (c1 == c2) {
             return 0;
         }
 
-        Rel rel = getRel(c1, c2);
+        return switch (getRel(c1, c2)) {
+            case null -> 0;
+            case BEFORE -> -1;
+            case AFTER -> 1;
 
-        if (rel == null) {
-            return 0;
-        } else {
-            switch (rel) {
-            case BEFORE:
-                return -1;
-
-            case AFTER:
-                return 1;
-
-            default:
-
-                // Use time offset difference when known
-                if ((c1.getTimeOffset() != null) && (c2.getTimeOffset() != null)) {
-                    return c1.getTimeOffset().compareTo(c2.getTimeOffset());
-                } else {
-                    return 0;
-                }
-            }
-        }
+            // Use time offset difference when known
+            default -> ((c1.getTimeOffset() != null) && (c2.getTimeOffset() != null)) //
+                    ? c1.getTimeOffset().compareTo(c2.getTimeOffset())
+                    : 0;
+        };
     };
 
     /** Candidate measure chords for slots. Measure-long rests and small chords are excluded. */

@@ -111,13 +111,13 @@ public abstract class ConnectionTask
         public void performDo ()
         {
             switch (kind) {
-            default:
-            case SLUR_CONNECTION:
-                final SlurInter s1 = (SlurInter) one;
-                final SlurInter s2 = (SlurInter) two;
-                s1.setExtension(RIGHT, s2);
-                s2.setExtension(LEFT, s1);
-                logger.info("Slur connection between #{} and #{}", s1.getId(), s2.getId());
+                default:
+                case SLUR_CONNECTION:
+                    final SlurInter s1 = (SlurInter) one;
+                    final SlurInter s2 = (SlurInter) two;
+                    s1.setExtension(RIGHT, s2);
+                    s2.setExtension(LEFT, s1);
+                    logger.info("Slur connection between #{} and #{}", s1.getId(), s2.getId());
             }
         }
 
@@ -125,13 +125,13 @@ public abstract class ConnectionTask
         public void performUndo ()
         {
             switch (kind) {
-            default:
-            case SLUR_CONNECTION:
-                final SlurInter s1 = (SlurInter) one;
-                final SlurInter s2 = (SlurInter) two;
-                s1.setExtension(RIGHT, null);
-                s2.setExtension(LEFT, null);
-                logger.info("Slur un-connection between #{} and #{}", s1.getId(), s2.getId());
+                default:
+                case SLUR_CONNECTION:
+                    final SlurInter s1 = (SlurInter) one;
+                    final SlurInter s2 = (SlurInter) two;
+                    s1.setExtension(RIGHT, null);
+                    s2.setExtension(LEFT, null);
+                    logger.info("Slur un-connection between #{} and #{}", s1.getId(), s2.getId());
             }
         }
     }
@@ -156,13 +156,13 @@ public abstract class ConnectionTask
         public void performDo ()
         {
             switch (kind) {
-            default:
-            case SLUR_CONNECTION:
-                final SlurInter s1 = (SlurInter) one;
-                final SlurInter s2 = (SlurInter) two;
-                s1.setExtension(RIGHT, null);
-                s2.setExtension(LEFT, null);
-                logger.info("Slur disconnection between #{} and #{}", s1.getId(), s2.getId());
+                default:
+                case SLUR_CONNECTION:
+                    final SlurInter s1 = (SlurInter) one;
+                    final SlurInter s2 = (SlurInter) two;
+                    s1.setExtension(RIGHT, null);
+                    s2.setExtension(LEFT, null);
+                    logger.info("Slur disconnection between #{} and #{}", s1.getId(), s2.getId());
             }
         }
 
@@ -170,13 +170,13 @@ public abstract class ConnectionTask
         public void performUndo ()
         {
             switch (kind) {
-            default:
-            case SLUR_CONNECTION:
-                final SlurInter s1 = (SlurInter) one;
-                final SlurInter s2 = (SlurInter) two;
-                s1.setExtension(RIGHT, s2);
-                s2.setExtension(LEFT, s1);
-                logger.info("Slur re-connection between #{} and #{}", s1.getId(), s2.getId());
+                default:
+                case SLUR_CONNECTION:
+                    final SlurInter s1 = (SlurInter) one;
+                    final SlurInter s2 = (SlurInter) two;
+                    s1.setExtension(RIGHT, s2);
+                    s2.setExtension(LEFT, s1);
+                    logger.info("Slur re-connection between #{} and #{}", s1.getId(), s2.getId());
             }
         }
     }

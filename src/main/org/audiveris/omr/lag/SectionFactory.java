@@ -390,29 +390,29 @@ public class SectionFactory
             logger.debug("overlap={}", overlappingSections.size());
 
             switch (overlappingSections.size()) {
-            // Begin a brand new section
-            case 0 -> nextActives.add(createSection(col, run));
+                // Begin a brand new section
+                case 0 -> nextActives.add(createSection(col, run));
 
-            // Continuing sections (if not finished)
-            case 1 -> {
-                final DynamicSection prevSection = overlappingSections.get(0);
+                // Continuing sections (if not finished)
+                case 1 -> {
+                    final DynamicSection prevSection = overlappingSections.get(0);
 
-                if (!isProcessed(prevSection)) {
-                    continueSection(prevSection, run);
-                } else {
-                    // Create a new section
+                    if (!isProcessed(prevSection)) {
+                        continueSection(prevSection, run);
+                    } else {
+                        // Create a new section
+                        final DynamicSection newSection = createSection(col, run);
+                        nextActives.add(newSection);
+                    }
+                }
+
+                // Converging sections, end them, start a new one
+                default -> {
+                    logger.debug("Converging at {}", run);
+
                     final DynamicSection newSection = createSection(col, run);
                     nextActives.add(newSection);
                 }
-            }
-
-            // Converging sections, end them, start a new one
-            default -> {
-                logger.debug("Converging at {}", run);
-
-                final DynamicSection newSection = createSection(col, run);
-                nextActives.add(newSection);
-            }
             }
         }
 
@@ -458,21 +458,24 @@ public class SectionFactory
             logger.debug("overlap={}", overlapNb);
 
             switch (overlapNb) {
-            // Nothing : end of the section
-            case 0 -> logger.debug("Ending section {}", dynSection);
+                // Nothing : end of the section
+                case 0 -> logger.debug("Ending section {}", dynSection);
 
-            // Continue if consistent
-            case 1 -> {
-                if (junctionPolicy.consistentRun(overlapRun, dynSection)) {
-                    logger.debug("Extending {} with run {}", dynSection, overlapRun);
-                } else {
-                    logger.debug("Incompatibility between {} and run {}", dynSection, overlapRun);
-                    setProcessed(dynSection);
+                // Continue if consistent
+                case 1 -> {
+                    if (junctionPolicy.consistentRun(overlapRun, dynSection)) {
+                        logger.debug("Extending {} with run {}", dynSection, overlapRun);
+                    } else {
+                        logger.debug(
+                                "Incompatibility between {} and run {}",
+                                dynSection,
+                                overlapRun);
+                        setProcessed(dynSection);
+                    }
                 }
-            }
 
-            // Diverging, so conclude the section here
-            default -> setProcessed(dynSection);
+                // Diverging, so conclude the section here
+                default -> setProcessed(dynSection);
             }
         }
     }

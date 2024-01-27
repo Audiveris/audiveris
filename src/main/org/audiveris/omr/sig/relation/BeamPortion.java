@@ -44,16 +44,10 @@ public enum BeamPortion
      */
     public HorizontalSide side ()
     {
-        switch (this) {
-        case LEFT:
-            return HorizontalSide.LEFT;
-
-        case RIGHT:
-            return HorizontalSide.RIGHT;
-
-        default:
-        case CENTER:
-            return null;
-        }
+        return switch (this) {
+            case LEFT -> HorizontalSide.LEFT;
+            case RIGHT -> HorizontalSide.RIGHT;
+            case CENTER -> null;
+        };
     }
 }

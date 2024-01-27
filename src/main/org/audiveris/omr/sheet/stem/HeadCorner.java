@@ -21,13 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
 
+import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.BOTTOM;
 import static org.audiveris.omr.util.VerticalSide.TOP;
-
-import org.audiveris.omr.util.HorizontalSide;
-import org.audiveris.omr.util.VerticalSide;
 
 /**
  * Class <code>HeadCorner</code> defines the four corners suitable for head connection to stem.
@@ -76,28 +75,16 @@ public enum HeadCorner
     public static HeadCorner of (VerticalSide vSide,
                                  HorizontalSide hSide)
     {
-        switch (vSide) {
-        case TOP:
+        return switch (vSide) {
+            case TOP -> switch (hSide) {
+                case LEFT -> TOP_LEFT;
+                case RIGHT -> TOP_RIGHT;
+            };
 
-            switch (hSide) {
-            case LEFT:
-                return TOP_LEFT;
-
-            case RIGHT:
-                return TOP_RIGHT;
-            }
-
-        case BOTTOM:
-
-            switch (hSide) {
-            case LEFT:
-                return BOTTOM_LEFT;
-
-            case RIGHT:
-                return BOTTOM_RIGHT;
-            }
-        }
-
-        return null; // To keep compiler happy...
+            case BOTTOM -> switch (hSide) {
+                case LEFT -> BOTTOM_LEFT;
+                case RIGHT -> BOTTOM_RIGHT;
+            };
+        };
     }
 }

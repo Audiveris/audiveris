@@ -749,58 +749,58 @@ public enum Shape
     public Rational getNoteDuration ()
     {
         switch (this) {
-        case LONG_REST:
-            return new Rational(4, 1);
+            case LONG_REST:
+                return new Rational(4, 1);
 
-        case BREVE_REST:
-        case BREVE:
-        case BREVE_SMALL:
-        case BREVE_CROSS:
-        case BREVE_DIAMOND:
-        case BREVE_TRIANGLE_DOWN, BREVE_CIRCLE_X:
-            return Rational.TWO;
+            case BREVE_REST:
+            case BREVE:
+            case BREVE_SMALL:
+            case BREVE_CROSS:
+            case BREVE_DIAMOND:
+            case BREVE_TRIANGLE_DOWN, BREVE_CIRCLE_X:
+                return Rational.TWO;
 
-        case WHOLE_REST:
-        case WHOLE_NOTE:
-        case WHOLE_NOTE_SMALL:
-        case WHOLE_NOTE_CROSS:
-        case WHOLE_NOTE_DIAMOND, WHOLE_NOTE_TRIANGLE_DOWN:
-        case WHOLE_NOTE_CIRCLE_X:
-            return Rational.ONE;
+            case WHOLE_REST:
+            case WHOLE_NOTE:
+            case WHOLE_NOTE_SMALL:
+            case WHOLE_NOTE_CROSS:
+            case WHOLE_NOTE_DIAMOND, WHOLE_NOTE_TRIANGLE_DOWN:
+            case WHOLE_NOTE_CIRCLE_X:
+                return Rational.ONE;
 
-        case HALF_REST:
-        case NOTEHEAD_VOID:
-        case NOTEHEAD_VOID_SMALL:
-        case NOTEHEAD_CROSS_VOID, NOTEHEAD_DIAMOND_VOID:
-        case NOTEHEAD_TRIANGLE_DOWN_VOID:
-        case NOTEHEAD_CIRCLE_X_VOID:
-            return Rational.HALF;
+            case HALF_REST:
+            case NOTEHEAD_VOID:
+            case NOTEHEAD_VOID_SMALL:
+            case NOTEHEAD_CROSS_VOID, NOTEHEAD_DIAMOND_VOID:
+            case NOTEHEAD_TRIANGLE_DOWN_VOID:
+            case NOTEHEAD_CIRCLE_X_VOID:
+                return Rational.HALF;
 
-        case QUARTER_REST:
-        case NOTEHEAD_BLACK:
-        case NOTEHEAD_BLACK_SMALL:
-        case NOTEHEAD_CROSS, NOTEHEAD_DIAMOND_FILLED:
-        case NOTEHEAD_TRIANGLE_DOWN_FILLED:
-        case NOTEHEAD_CIRCLE_X:
-            return Rational.QUARTER;
+            case QUARTER_REST:
+            case NOTEHEAD_BLACK:
+            case NOTEHEAD_BLACK_SMALL:
+            case NOTEHEAD_CROSS, NOTEHEAD_DIAMOND_FILLED:
+            case NOTEHEAD_TRIANGLE_DOWN_FILLED:
+            case NOTEHEAD_CIRCLE_X:
+                return Rational.QUARTER;
 
-        case EIGHTH_REST:
-            return new Rational(1, 8);
+            case EIGHTH_REST:
+                return new Rational(1, 8);
 
-        case ONE_16TH_REST:
-            return new Rational(1, 16);
+            case ONE_16TH_REST:
+                return new Rational(1, 16);
 
-        case ONE_32ND_REST:
-            return new Rational(1, 32);
+            case ONE_32ND_REST:
+                return new Rational(1, 32);
 
-        case ONE_64TH_REST:
-            return new Rational(1, 64);
+            case ONE_64TH_REST:
+                return new Rational(1, 64);
 
-        case ONE_128TH_REST:
-            return new Rational(1, 128);
+            case ONE_128TH_REST:
+                return new Rational(1, 128);
 
-        default:
-            return null;
+            default:
+                return null;
         }
     }
 
@@ -832,10 +832,10 @@ public enum Shape
     public int getSlashCount ()
     {
         return switch (this) {
-        case REPEAT_ONE_BAR -> 1;
-        case REPEAT_TWO_BARS -> 2;
-        case REPEAT_FOUR_BARS -> 4;
-        default -> 0;
+            case REPEAT_ONE_BAR -> 1;
+            case REPEAT_TWO_BARS -> 2;
+            case REPEAT_FOUR_BARS -> 4;
+            default -> 0;
         };
     }
 

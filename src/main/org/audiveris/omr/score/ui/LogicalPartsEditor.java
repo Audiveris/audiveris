@@ -789,11 +789,10 @@ public class LogicalPartsEditor
             final Header header = Header.values()[col];
 
             return switch (header) {
-            case Staves -> StaffConfig.toCsvString(logical.getStaffConfigs());
-            case Name -> logical.getName();
-            case Abbrev -> logical.getAbbreviation();
-            case Midi -> logical.getMidiProgram();
-            default -> null; // To keep compiler happy
+                case Staves -> StaffConfig.toCsvString(logical.getStaffConfigs());
+                case Name -> logical.getName();
+                case Abbrev -> logical.getAbbreviation();
+                case Midi -> logical.getMidiProgram();
             };
         }
 
@@ -833,68 +832,67 @@ public class LogicalPartsEditor
             logger.debug("setValueAt row:{} col:{} value:{}", row, col, value);
 
             switch (header) {
-            case Name -> {
-                final String newName = (String) value;
-                logical.setName(newName);
-            }
-            case Abbrev -> {
-                final String newAbbrev = (String) value;
-                logical.setAbbreviation(newAbbrev);
-            }
-            case Midi -> {
-                final String newMidi = (String) value;
-                if (newMidi.isBlank()) {
-                    logical.setMidiProgram(null);
-                } else {
-                    try {
-                        final int midi = Integer.decode(newMidi);
-                        if (midi < 1 || midi > constants.maxMidi.getValue()) {
-                            logger.warn("Illegal midi value: {}", midi);
-                        } else {
-                            logical.setMidiProgram(midi);
-                        }
-                    } catch (NumberFormatException ex) {
-                        logger.warn("Illegal midi value: '{}'", newMidi);
-                    }
+                case Name -> {
+                    final String newName = (String) value;
+                    logical.setName(newName);
                 }
-            }
-            case Staves -> {
-                final String str = (String) value;
-                final String[] tokens = str.split("\\s*,\\s*");
-                final List<StaffConfig> newConfigs = new ArrayList<>();
-                boolean ok = true;
-
-                for (String rawToken : tokens) {
-                    final String token = rawToken.trim();
-
-                    if (token.isEmpty()) {
-                        logger.warn("Illegal staff config: '{}'", str);
-                        ok = false;
-                        break;
+                case Abbrev -> {
+                    final String newAbbrev = (String) value;
+                    logical.setAbbreviation(newAbbrev);
+                }
+                case Midi -> {
+                    final String newMidi = (String) value;
+                    if (newMidi.isBlank()) {
+                        logical.setMidiProgram(null);
                     } else {
                         try {
-                            final StaffConfig config = StaffConfig.decode(token);
-                            final int count = config.count;
-                            if (count < 1 || count > constants.maxLineCount.getValue()) {
-                                logger.warn("Illegal count value: '{}'", count);
+                            final int midi = Integer.decode(newMidi);
+                            if (midi < 1 || midi > constants.maxMidi.getValue()) {
+                                logger.warn("Illegal midi value: {}", midi);
+                            } else {
+                                logical.setMidiProgram(midi);
+                            }
+                        } catch (NumberFormatException ex) {
+                            logger.warn("Illegal midi value: '{}'", newMidi);
+                        }
+                    }
+                }
+                case Staves -> {
+                    final String str = (String) value;
+                    final String[] tokens = str.split("\\s*,\\s*");
+                    final List<StaffConfig> newConfigs = new ArrayList<>();
+                    boolean ok = true;
+
+                    for (String rawToken : tokens) {
+                        final String token = rawToken.trim();
+
+                        if (token.isEmpty()) {
+                            logger.warn("Illegal staff config: '{}'", str);
+                            ok = false;
+                            break;
+                        } else {
+                            try {
+                                final StaffConfig config = StaffConfig.decode(token);
+                                final int count = config.count;
+                                if (count < 1 || count > constants.maxLineCount.getValue()) {
+                                    logger.warn("Illegal count value: '{}'", count);
+                                    ok = false;
+                                    break;
+                                }
+
+                                newConfigs.add(config);
+                            } catch (Exception ex) {
+                                logger.warn("Illegal config: '{}'", token);
                                 ok = false;
                                 break;
                             }
-
-                            newConfigs.add(config);
-                        } catch (Exception ex) {
-                            logger.warn("Illegal config: '{}'", token);
-                            ok = false;
-                            break;
                         }
                     }
-                }
 
-                if (ok) {
-                    logical.setStaffConfigs(newConfigs);
+                    if (ok) {
+                        logical.setStaffConfigs(newConfigs);
+                    }
                 }
-            }
-            default -> {}
             }
 
             fireTableCellUpdated(row, col);

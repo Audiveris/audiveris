@@ -712,21 +712,12 @@ public class ChordNameInter
          */
         private static Integer toAlter (String str)
         {
-            switch (str) {
-            case SHARP:
-            case "#":
-                return 1;
-
-            case FLAT:
-            case "b":
-                return -1;
-
-            case "":
-                return 0;
-
-            default:
-                return null;
-            }
+            return switch (str) {
+                case SHARP, "#" -> 1;
+                case FLAT, "b" -> -1;
+                case "" -> 0;
+                case null, default -> null;
+            };
         }
 
         /**
@@ -968,23 +959,21 @@ public class ChordNameInter
         private static ChordKind create (Matcher matcher,
                                          String dominant)
         {
-            String kindStr = getGroup(matcher, KIND);
-
-            String parStr = getGroup(matcher, PARS);
-            boolean parentheses = !parStr.isEmpty();
+            final String kindStr = getGroup(matcher, KIND);
+            final String parStr = getGroup(matcher, PARS);
+            final boolean parentheses = !parStr.isEmpty();
 
             // Check for suspended first
-            String susStr = getGroup(matcher, SUS);
+            final String susStr = getGroup(matcher, SUS);
 
             switch (susStr.toLowerCase()) {
-            case "sus2":
-                return new ChordKind(SUSPENDED_SECOND, kindStr, false, parentheses);
+                case "sus2" -> {
+                    return new ChordKind(SUSPENDED_SECOND, kindStr, false, parentheses);
+                }
 
-            case "sus4":
-                return new ChordKind(SUSPENDED_FOURTH, kindStr, false, parentheses);
-
-            case "": // Fall through
-
+                case "sus4" -> {
+                    return new ChordKind(SUSPENDED_FOURTH, kindStr, false, parentheses);
+                }
             }
 
             // Then check for other combinations
@@ -999,8 +988,8 @@ public class ChordNameInter
             }
 
             // Use of symbol?
-            boolean symbol = getGroup(matcher, MAJ).equals(DELTA) || getGroup(matcher, MIN).equals(
-                    "-") || getGroup(matcher, AUG).equals("+");
+            final boolean symbol = getGroup(matcher, MAJ).equals(DELTA) //
+                    || getGroup(matcher, MIN).equals("-") || getGroup(matcher, AUG).equals("+");
 
             return (type != null) ? new ChordKind(type, kindStr, symbol, parentheses) : null;
         }
@@ -1013,81 +1002,36 @@ public class ChordNameInter
          */
         private static ChordType typeOf (String str)
         {
-            switch (str) {
-            case "":
-            case MAJ:
-                return MAJOR;
+            return switch (str) {
+                case "", MAJ -> MAJOR;
+                case MIN -> MINOR;
+                case AUG -> AUGMENTED;
+                case DIM -> DIMINISHED;
+                case "7" -> DOMINANT;
+                case MAJ + "7" -> MAJOR_SEVENTH;
+                case MIN + "7" -> MINOR_SEVENTH;
+                case DIM + "7" -> DIMINISHED_SEVENTH;
+                case AUG + "7" -> AUGMENTED_SEVENTH;
+                case HDIM -> HALF_DIMINISHED;
+                case MIN + PMAJ7 -> MAJOR_MINOR;
+                case MAJ + "6", "6" -> MAJOR_SIXTH;
+                case MIN + "6" -> MINOR_SIXTH;
+                case "9" -> DOMINANT_NINTH;
+                case MAJ + "9" -> MAJOR_NINTH;
+                case MIN + "9" -> MINOR_NINTH;
+                case "11" -> DOMINANT_11_TH;
+                case MAJ + "11" -> MAJOR_11_TH;
+                case MIN + "11" -> MINOR_11_TH;
+                case "13" -> DOMINANT_13_TH;
+                case MAJ + "13" -> MAJOR_13_TH;
+                case MIN + "13" -> MINOR_13_TH;
 
-            case MIN:
-                return MINOR;
-
-            case AUG:
-                return AUGMENTED;
-
-            case DIM:
-                return DIMINISHED;
-
-            case "7":
-                return DOMINANT;
-
-            case MAJ + "7":
-                return MAJOR_SEVENTH;
-
-            case MIN + "7":
-                return MINOR_SEVENTH;
-
-            case DIM + "7":
-                return DIMINISHED_SEVENTH;
-
-            case AUG + "7":
-                return AUGMENTED_SEVENTH;
-
-            case HDIM:
-                return HALF_DIMINISHED;
-
-            case MIN + PMAJ7:
-                return MAJOR_MINOR;
-
-            case MAJ + "6":
-            case "6":
-                return MAJOR_SIXTH;
-
-            case MIN + "6":
-                return MINOR_SIXTH;
-
-            case "9":
-                return DOMINANT_NINTH;
-
-            case MAJ + "9":
-                return MAJOR_NINTH;
-
-            case MIN + "9":
-                return MINOR_NINTH;
-
-            case "11":
-                return DOMINANT_11_TH;
-
-            case MAJ + "11":
-                return MAJOR_11_TH;
-
-            case MIN + "11":
-                return MINOR_11_TH;
-
-            case "13":
-                return DOMINANT_13_TH;
-
-            case MAJ + "13":
-                return MAJOR_13_TH;
-
-            case MIN + "13":
-                return MINOR_13_TH;
-
-            default:
-                // Nota: Thanks to regexp match, this should not happen
-                logger.warn("ChordName. No kind type for {}", str);
-
-                return null;
-            }
+                default -> {
+                    // Nota: Thanks to regexp match, this should not happen
+                    logger.warn("ChordName. No kind type for {}", str);
+                    yield null;
+                }
+            };
         }
 
         public static enum ChordType

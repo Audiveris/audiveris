@@ -210,18 +210,14 @@ public class TupletsBuilder
      */
     private static int expectedCount (Shape shape)
     {
-        switch (shape) {
-        case TUPLET_THREE:
-            return 3;
-
-        case TUPLET_SIX:
-            return 6;
-
-        default:
-            logger.error("Incorrect tuplet shape");
-
-            return 0;
-        }
+        return switch (shape) {
+            case TUPLET_THREE -> 3;
+            case TUPLET_SIX -> 6;
+            default -> {
+                logger.error("Incorrect tuplet shape {}", shape);
+                yield 0;
+            }
+        };
     }
 
     //------------------------//

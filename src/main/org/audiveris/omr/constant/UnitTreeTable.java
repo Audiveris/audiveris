@@ -130,29 +130,23 @@ public class UnitTreeTable
         UnitModel.Column column = UnitModel.Column.values()[col];
 
         switch (column) {
-        case MODIF:
-        {
-            Object node = nodeForRow(row);
+            case MODIF -> {
+                final Object node = nodeForRow(row);
 
-            if (node instanceof Constant) {
-                return getDefaultEditor(Boolean.class);
+                if (node instanceof Constant) {
+                    return getDefaultEditor(Boolean.class);
+                }
             }
-        }
 
-            break;
+            case VALUE -> {
+                final Object obj = getModel().getValueAt(row, col);
 
-        case VALUE:
-        {
-            Object obj = getModel().getValueAt(row, col);
-
-            if (obj instanceof Boolean) {
-                return getDefaultEditor(Boolean.class);
+                if (obj instanceof Boolean) {
+                    return getDefaultEditor(Boolean.class);
+                }
             }
-        }
 
-            break;
-
-        default:
+            default -> {}
         }
 
         // Default cell editor (determined by column class)
@@ -177,35 +171,35 @@ public class UnitTreeTable
         UnitModel.Column column = UnitModel.Column.values()[col];
 
         switch (column) {
-        case MODIF:
-        {
-            Object obj = getModel().getValueAt(row, col);
+            case MODIF -> {
+                Object obj = getModel().getValueAt(row, col);
 
-            if (obj instanceof Boolean) {
-                // A constant => Modif flag
-                return getDefaultRenderer(Boolean.class);
-            } else {
-                // A node (unit or package)
-                return getDefaultRenderer(Object.class);
+                if (obj instanceof Boolean) {
+                    // A constant => Modif flag
+                    return getDefaultRenderer(Boolean.class);
+                } else {
+                    // A node (unit or package)
+                    return getDefaultRenderer(Object.class);
+                }
             }
-        }
 
-        case VALUE:
-        {
-            Object obj = getModel().getValueAt(row, col);
+            case VALUE -> {
+                Object obj = getModel().getValueAt(row, col);
 
-            if (obj instanceof Boolean) {
-                return getDefaultRenderer(Boolean.class);
-            } else {
-                return valueRenderer;
+                if (obj instanceof Boolean) {
+                    return getDefaultRenderer(Boolean.class);
+                } else {
+                    return valueRenderer;
+                }
             }
-        }
 
-        case PIXEL:
-            return pixelRenderer;
+            case PIXEL -> {
+                return pixelRenderer;
+            }
 
-        default:
-            return getDefaultRenderer(getColumnClass(col));
+            default -> {
+                return getDefaultRenderer(getColumnClass(col));
+            }
         }
     }
 
@@ -278,8 +272,7 @@ public class UnitTreeTable
 
         Container container = getParent();
 
-        if (container instanceof JComponent) {
-            JComponent comp = (JComponent) container;
+        if (container instanceof JComponent comp) {
             rect.grow(0, comp.getHeight() / 2);
         } else {
             rect.grow(0, height);
@@ -299,27 +292,29 @@ public class UnitTreeTable
      */
     public List<Integer> setNodesSelection (Collection<Object> matches)
     {
-        List<TreePath> paths = new ArrayList<>();
+        final List<TreePath> paths = new ArrayList<>();
 
         for (Object object : matches) {
-            if (object instanceof Constant) {
-                Constant constant = (Constant) object;
-                TreePath path = getPath(constant, constant.getQualifiedName());
-                paths.add(path);
-            } else if (object instanceof Node) {
-                Node node = (Node) object;
-                TreePath path = getPath(node, node.getName());
-                paths.add(path);
+            switch (object) {
+                case Constant constant -> {
+                    TreePath path = getPath(constant, constant.getQualifiedName());
+                    paths.add(path);
+                }
+                case Node node -> {
+                    TreePath path = getPath(node, node.getName());
+                    paths.add(path);
+                }
+                default -> {}
             }
         }
 
         // Selection on tree side
-        tree.setSelectionPaths(paths.toArray(new TreePath[paths.size()]));
+        tree.setSelectionPaths(paths.toArray(TreePath[]::new));
 
         // Selection on table side
         clearSelection();
 
-        List<Integer> rows = new ArrayList<>();
+        final List<Integer> rows = new ArrayList<>();
 
         for (TreePath path : paths) {
             int row = tree.getRowForPath(path);

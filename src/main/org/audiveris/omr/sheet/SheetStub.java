@@ -905,9 +905,9 @@ public class SheetStub
         final InputQuality quality = getInputQuality();
 
         return switch (quality) {
-        case Synthetic -> Profiles.STRICT;
-        case Standard -> Profiles.STANDARD;
-        case Poor -> Profiles.POOR;
+            case Synthetic -> Profiles.STRICT;
+            case Standard -> Profiles.STANDARD;
+            case Poor -> Profiles.POOR;
         };
     }
 

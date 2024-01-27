@@ -171,8 +171,7 @@ public abstract class AbstractPauseInter
         final int xMin = measure.getAbscissa(HorizontalSide.LEFT, staff);
         final int xMax = getCenterRight().x;
 
-        final List<Inter> chords = Inters.inters(systemHeadChords, (Inter inter) ->
-        {
+        final List<Inter> chords = Inters.inters(systemHeadChords, (Inter inter) -> {
             if (inter instanceof HeadChordInter headChord) {
                 if (!headChord.getStaves().contains(staff)) {
                     return false;
@@ -255,9 +254,9 @@ public abstract class AbstractPauseInter
         }
 
         final AbstractPauseInter pause = switch (shape) {
-        case BREATH_MARK -> new BreathMarkInter(glyph, grade);
-        case CAESURA -> new CaesuraInter(glyph, grade);
-        default -> throw new IllegalArgumentException("No PauseInter for shape " + shape);
+            case BREATH_MARK -> new BreathMarkInter(glyph, grade);
+            case CAESURA -> new CaesuraInter(glyph, grade);
+            default -> throw new IllegalArgumentException("No PauseInter for shape " + shape);
         };
 
         pause.setStaff(staff);
@@ -274,7 +273,4 @@ public abstract class AbstractPauseInter
 
         return null;
     }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-
 }

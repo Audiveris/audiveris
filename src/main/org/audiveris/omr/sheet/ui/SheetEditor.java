@@ -867,28 +867,19 @@ public class SheetEditor
                                             MouseMovement movement)
         {
             switch (movement) {
-            case PRESSING:
-                relationVector = tryVector(pt); // Starting vector, perhaps null
-
-                break;
-
-            case DRAGGING:
-                if (relationVector != null) {
-                    relationVector.extendTo(pt); // Extension
+                case PRESSING -> relationVector = tryVector(pt); // Starting vector, perhaps null
+                case DRAGGING -> {
+                    if (relationVector != null) {
+                        relationVector.extendTo(pt); // Extension
+                    }
                 }
-
-                break;
-
-            case RELEASING:
-                if ((relationVector != null)) {
-                    relationVector.process(); // Handle end of vector
-                    relationVector = null; // This is the end
+                case RELEASING -> {
+                    if ((relationVector != null)) {
+                        relationVector.process(); // Handle end of vector
+                        relationVector = null; // This is the end
+                    }
                 }
-
-                break;
-
-            default:
-                break;
+                case null, default -> {}
             }
         }
 

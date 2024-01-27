@@ -109,20 +109,20 @@ public class FretInter
     public static String symbolStringOf (int value)
     {
         return switch (value) {
-        case 1 -> "I";
-        case 2 -> "II";
-        case 3 -> "III";
-        case 4 -> "IV";
-        case 5 -> "V";
-        case 6 -> "VI";
-        case 7 -> "VII";
-        case 8 -> "VIII";
-        case 9 -> "IX";
-        case 10 -> "X";
-        case 11 -> "XI";
-        case 12 -> "XII";
+            case 1 -> "I";
+            case 2 -> "II";
+            case 3 -> "III";
+            case 4 -> "IV";
+            case 5 -> "V";
+            case 6 -> "VI";
+            case 7 -> "VII";
+            case 8 -> "VIII";
+            case 9 -> "IX";
+            case 10 -> "X";
+            case 11 -> "XI";
+            case 12 -> "XII";
 
-        default -> null;
+            default -> null;
         };
     }
 
@@ -132,20 +132,20 @@ public class FretInter
     public static Integer valueOf (Shape shape)
     {
         return switch (shape) {
-        case ROMAN_I -> 1;
-        case ROMAN_II -> 2;
-        case ROMAN_III -> 3;
-        case ROMAN_IV -> 4;
-        case ROMAN_V -> 5;
-        case ROMAN_VI -> 6;
-        case ROMAN_VII -> 7;
-        case ROMAN_VIII -> 8;
-        case ROMAN_IX -> 9;
-        case ROMAN_X -> 10;
-        case ROMAN_XI -> 11;
-        case ROMAN_XII -> 12;
+            case ROMAN_I -> 1;
+            case ROMAN_II -> 2;
+            case ROMAN_III -> 3;
+            case ROMAN_IV -> 4;
+            case ROMAN_V -> 5;
+            case ROMAN_VI -> 6;
+            case ROMAN_VII -> 7;
+            case ROMAN_VIII -> 8;
+            case ROMAN_IX -> 9;
+            case ROMAN_X -> 10;
+            case ROMAN_XI -> 11;
+            case ROMAN_XII -> 12;
 
-        default -> null;
+            default -> null;
         };
     }
 }

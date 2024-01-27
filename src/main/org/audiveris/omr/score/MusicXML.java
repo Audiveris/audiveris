@@ -22,7 +22,6 @@
 package org.audiveris.omr.score;
 
 import org.audiveris.omr.glyph.Shape;
-import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
@@ -141,16 +140,11 @@ public abstract class MusicXML
         try {
             // Special trick for back-to-back config
             if (style == PartBarline.Style.LIGHT_HEAVY_LIGHT) {
-                switch (location) {
-                case LEFT:
-                    return BarStyle.HEAVY_LIGHT;
-
-                case MIDDLE:
-                    return BarStyle.LIGHT_LIGHT; // What else?
-
-                case RIGHT:
-                    return BarStyle.LIGHT_HEAVY;
-                }
+                return switch (location) {
+                    case LEFT -> BarStyle.HEAVY_LIGHT;
+                    case MIDDLE -> BarStyle.LIGHT_LIGHT; // What else?
+                    case RIGHT -> BarStyle.LIGHT_HEAVY;
+                };
             }
 
             return BarStyle.valueOf(style.name());
@@ -172,45 +166,33 @@ public abstract class MusicXML
         ObjectFactory factory = new ObjectFactory();
         EmptyPlacement ep = factory.createEmptyPlacement();
 
-        switch (shape) {
-        case DOT_set:
-        case STACCATO:
-            return factory.createArticulationsStaccato(ep);
-
-        case ACCENT:
-            return factory.createArticulationsAccent(ep);
-
-        case STRONG_ACCENT:
-            // Type for strong accent: either up (^) or down (v)
-            // For the time being we recognize only up ones
-            StrongAccent strongAccent = factory.createStrongAccent();
-
-            if (shape == Shape.STRONG_ACCENT) {
+        return switch (shape) {
+            case DOT_set, STACCATO -> factory.createArticulationsStaccato(ep);
+            case ACCENT -> factory.createArticulationsAccent(ep);
+            case STRONG_ACCENT -> {
+                // Type for strong accent: either up (^) or down (v)
+                // For the time being we recognize only up ones
+                final StrongAccent strongAccent = factory.createStrongAccent();
                 strongAccent.setType(UpDown.UP);
+                yield factory.createArticulationsStrongAccent(strongAccent);
+            }
+            case TENUTO -> factory.createArticulationsTenuto(ep);
+            case STACCATISSIMO -> factory.createArticulationsStaccatissimo(ep);
+            case BREATH_MARK -> {
+                BreathMark breathMark = factory.createBreathMark();
+                breathMark.setValue("comma");
+                yield factory.createArticulationsBreathMark(breathMark);
+            }
+            case CAESURA -> {
+                final Caesura caesura = factory.createCaesura();
+                yield factory.createArticulationsCaesura(caesura);
             }
 
-            return factory.createArticulationsStrongAccent(strongAccent);
-
-        case TENUTO:
-            return factory.createArticulationsTenuto(ep);
-
-        case STACCATISSIMO:
-            return factory.createArticulationsStaccatissimo(ep);
-
-        case BREATH_MARK:
-            BreathMark breathMark = factory.createBreathMark();
-            breathMark.setValue("comma");
-
-            return factory.createArticulationsBreathMark(breathMark);
-
-        case CAESURA:
-            final Caesura caesura = factory.createCaesura();
-            return factory.createArticulationsCaesura(caesura);
-        }
-
-        logger.error("Unsupported articulation shape:{}", shape);
-
-        return null;
+            default -> {
+                logger.error("Unsupported articulation shape:{}", shape);
+                yield null;
+            }
+        };
     }
 
     //-------------------//
@@ -218,83 +200,39 @@ public abstract class MusicXML
     //-------------------//
     public static JAXBElement<?> getDynamicsObject (Shape shape)
     {
-        ObjectFactory factory = new ObjectFactory();
-        Empty empty = factory.createEmpty();
+        final ObjectFactory factory = new ObjectFactory();
+        final Empty empty = factory.createEmpty();
 
-        switch (shape) {
-        case DYNAMICS_F:
-            return factory.createDynamicsF(empty);
+        return switch (shape) {
+            case DYNAMICS_F -> factory.createDynamicsF(empty);
+            case DYNAMICS_FF -> factory.createDynamicsFf(empty);
+            //        case DYNAMICS_FFF -> factory.createDynamicsFff(empty);
+            //        case DYNAMICS_FFFF -> factory.createDynamicsFfff(empty);
+            //        case DYNAMICS_FFFFF -> factory.createDynamicsFffff(empty);
+            //        case DYNAMICS_FFFFFF ->factory.createDynamicsFfffff(empty);
+            case DYNAMICS_FP -> factory.createDynamicsFp(empty);
+            //        case DYNAMICS_FZ -> factory.createDynamicsFz(empty);
+            case DYNAMICS_MF -> factory.createDynamicsMf(empty);
+            case DYNAMICS_MP -> factory.createDynamicsMp(empty);
+            case DYNAMICS_P -> factory.createDynamicsP(empty);
+            case DYNAMICS_PP -> factory.createDynamicsPp(empty);
+            //        case DYNAMICS_PPP -> factory.createDynamicsPpp(empty);
+            //        case DYNAMICS_PPPP -> factory.createDynamicsPppp(empty);
+            //        case DYNAMICS_PPPPP -> factory.createDynamicsPpppp(empty);
+            //        case DYNAMICS_PPPPPP -> factory.createDynamicsPppppp(empty);
+            //        case DYNAMICS_RF -> factory.createDynamicsRf(empty);
+            //        case DYNAMICS_RFZ -> factory.createDynamicsRfz(empty);
+            case DYNAMICS_SF -> factory.createDynamicsSf(empty);
+            //        case DYNAMICS_SFFZ -> factory.createDynamicsSffz(empty);
+            //        case DYNAMICS_SFP -> factory.createDynamicsSfp(empty);
+            //        case DYNAMICS_SFPP -> factory.createDynamicsSfpp(empty);
+            case DYNAMICS_SFZ -> factory.createDynamicsSfz(empty);
 
-        case DYNAMICS_FF:
-            return factory.createDynamicsFf(empty);
-
-        //        case DYNAMICS_FFF:
-        //            return factory.createDynamicsFff(empty);
-        //
-        //        case DYNAMICS_FFFF :
-        //            return factory.createDynamicsFfff(empty);
-        //
-        //        case DYNAMICS_FFFFF :
-        //            return factory.createDynamicsFffff(empty);
-        //
-        //        case DYNAMICS_FFFFFF :
-        //            return factory.createDynamicsFfffff(empty);
-        case DYNAMICS_FP:
-            return factory.createDynamicsFp(empty);
-
-        //
-        //        case DYNAMICS_FZ:
-        //            return factory.createDynamicsFz(empty);
-        case DYNAMICS_MF:
-            return factory.createDynamicsMf(empty);
-
-        case DYNAMICS_MP:
-            return factory.createDynamicsMp(empty);
-
-        case DYNAMICS_P:
-            return factory.createDynamicsP(empty);
-
-        case DYNAMICS_PP:
-            return factory.createDynamicsPp(empty);
-
-        //
-        //        case DYNAMICS_PPP:
-        //            return factory.createDynamicsPpp(empty);
-        //
-        //        case DYNAMICS_PPPP :
-        //            return factory.createDynamicsPppp(empty);
-        //
-        //        case DYNAMICS_PPPPP :
-        //            return factory.createDynamicsPpppp(empty);
-        //
-        //        case DYNAMICS_PPPPPP :
-        //            return factory.createDynamicsPppppp(empty);
-        //        case DYNAMICS_RF:
-        //            return factory.createDynamicsRf(empty);
-        //
-        //        case DYNAMICS_RFZ:
-        //            return factory.createDynamicsRfz(empty);
-        //
-        case DYNAMICS_SF:
-            return factory.createDynamicsSf(empty);
-
-        //
-        //        case DYNAMICS_SFFZ:
-        //            return factory.createDynamicsSffz(empty);
-        //
-        //        case DYNAMICS_SFP:
-        //            return factory.createDynamicsSfp(empty);
-        //
-        //        case DYNAMICS_SFPP:
-        //            return factory.createDynamicsSfpp(empty);
-        //
-        case DYNAMICS_SFZ:
-            return factory.createDynamicsSfz(empty);
-        }
-
-        logger.error("Unsupported dynamics shape:{}", shape);
-
-        return null;
+            default -> {
+                logger.error("Unsupported dynamics shape:{}", shape);
+                yield null;
+            }
+        };
     }
 
     //-----------------//
@@ -323,8 +261,8 @@ public abstract class MusicXML
     public static String getNoteTypeName (Rational duration)
     {
         // Since quarter is at index 6 in noteTypeNames, use 2**6 = 64
-        double dur = 64 * duration.divides(Rational.QUARTER).doubleValue();
-        int index = (int) Math.rint(Math.log(dur) / Math.log(2));
+        final double dur = 64 * duration.divides(Rational.QUARTER).doubleValue();
+        final int index = (int) Math.rint(Math.log(dur) / Math.log(2));
 
         return noteTypeNames[index];
     }
@@ -350,60 +288,35 @@ public abstract class MusicXML
         final ObjectFactory factory = new ObjectFactory();
         final Shape shape = ornament.getShape();
 
-        switch (shape) {
-        case MORDENT ->
-        {
-            //      note that inverted-mordent in MusicXML refers to a MORDENT
-            //      and mordent in MusicXML refers to a MORDENT_INVERTED
-            return factory.createOrnamentsInvertedMordent(factory.createMordent());
-        }
+        return switch (shape) {
+            // NOTA: inverted-mordent in MusicXML refers to a MORDENT
+            // while mordent in MusicXML refers to a MORDENT_INVERTED
+            case MORDENT -> factory.createOrnamentsInvertedMordent(factory.createMordent());
+            case MORDENT_INVERTED -> factory.createOrnamentsMordent(factory.createMordent());
 
-        case MORDENT_INVERTED ->
-        {
-            return factory.createOrnamentsMordent(factory.createMordent());
-        }
+            case TR -> factory.createOrnamentsTrillMark(factory.createEmptyTrillSound());
+            case TURN -> factory.createOrnamentsTurn(factory.createHorizontalTurn());
+            case TURN_INVERTED -> factory.createOrnamentsInvertedTurn(
+                    factory.createHorizontalTurn());
+            case TURN_SLASH -> {
+                final HorizontalTurn horizontalTurn = factory.createHorizontalTurn();
+                horizontalTurn.setSlash(YesNo.YES);
+                yield factory.createOrnamentsInvertedTurn(horizontalTurn);
+            }
+            case TURN_UP -> factory.createOrnamentsVerticalTurn(factory.createEmptyTrillSound());
+            case TREMOLO_1, TREMOLO_2, TREMOLO_3 -> {
+                final Tremolo tremolo = factory.createTremolo();
+                tremolo.setDefaultY(defaultY);
+                tremolo.setType(TremoloType.SINGLE);
+                tremolo.setValue(TremoloInter.getTremoloValue(shape));
+                yield factory.createOrnamentsTremolo(tremolo);
+            }
 
-        case TR ->
-        {
-            return factory.createOrnamentsTrillMark(factory.createEmptyTrillSound());
-        }
-
-        case TURN ->
-        {
-            return factory.createOrnamentsTurn(factory.createHorizontalTurn());
-        }
-
-        case TURN_INVERTED ->
-        {
-            return factory.createOrnamentsInvertedTurn(factory.createHorizontalTurn());
-        }
-
-        case TURN_SLASH ->
-        {
-            HorizontalTurn horizontalTurn = factory.createHorizontalTurn();
-            horizontalTurn.setSlash(YesNo.YES);
-
-            return factory.createOrnamentsInvertedTurn(horizontalTurn);
-        }
-
-        case TURN_UP ->
-        {
-            return factory.createOrnamentsVerticalTurn(factory.createEmptyTrillSound());
-        }
-
-        case TREMOLO_1, TREMOLO_2, TREMOLO_3 ->
-        {
-            final Tremolo tremolo = factory.createTremolo();
-            tremolo.setDefaultY(defaultY);
-            tremolo.setType(TremoloType.SINGLE);
-            tremolo.setValue(TremoloInter.getTremoloValue(shape));
-            return factory.createOrnamentsTremolo(tremolo);
-        }
-        }
-
-        logger.error("Unsupported ornament shape: {}", shape);
-
-        return null;
+            default -> {
+                logger.error("Unsupported ornament shape: {}", shape);
+                yield null;
+            }
+        };
     }
 
     //----------------//
@@ -416,23 +329,22 @@ public abstract class MusicXML
         //        detached-legato | staccatissimo | spiccato |
         //        scoop | plop | doit | falloff | breath-mark |
         //        caesura | stress | unstress | other-articulation)*)>
-        ObjectFactory factory = new ObjectFactory();
 
-        switch (shape) {
-        case BREATH_MARK:
-            BreathMark breathMark = factory.createBreathMark();
-            breathMark.setValue("comma");
+        final ObjectFactory factory = new ObjectFactory();
 
-            return factory.createArticulationsBreathMark(breathMark);
+        return switch (shape) {
+            case BREATH_MARK -> {
+                final BreathMark breathMark = factory.createBreathMark();
+                breathMark.setValue("comma");
+                yield factory.createArticulationsBreathMark(breathMark);
+            }
+            case CAESURA -> factory.createArticulationsCaesura(factory.createCaesura());
 
-        case CAESURA:
-            final Caesura caesura = factory.createCaesura();
-            return factory.createArticulationsCaesura(caesura);
-        }
-
-        logger.error("Unsupported pause shape:{}", shape);
-
-        return null;
+            default -> {
+                logger.error("Unsupported pause shape:{}", shape);
+                yield null;
+            }
+        };
     }
 
     //-------------//
@@ -448,7 +360,7 @@ public abstract class MusicXML
     //--------//
     /**
      * Converts from Audiveris <code>ChordNameInter.ChordKind.ChordType</code> type
-     * to Proxymusic <code>KindValue</code> type
+     * to Proxymusic <code>KindValue</code> type.
      *
      * @param type Audiveris enum ChordSymbol.ChordType
      * @return Proxymusic enum KindValue
@@ -462,7 +374,7 @@ public abstract class MusicXML
     // stepOf //
     //--------//
     /**
-     * Convert from Audiveris NoteStep type to Proxymusic NoteStep type
+     * Convert from Audiveris NoteStep type to Proxymusic NoteStep type.
      *
      * @param step Audiveris enum step
      * @return Proxymusic enum step

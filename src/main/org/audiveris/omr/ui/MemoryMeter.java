@@ -113,8 +113,8 @@ public class MemoryMeter
     public void collectGarbage ()
     {
         System.gc();
-        System.runFinalization();
-        System.gc();
+//        System.runFinalization();
+//        System.gc();
         displayMemory();
     }
 

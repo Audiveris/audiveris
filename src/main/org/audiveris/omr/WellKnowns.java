@@ -320,17 +320,11 @@ public abstract class WellKnowns
         if (xdg != null) {
             final Path audiverisPath = Paths.get(xdg + TOOL_PREFIX);
 
-            switch (kind) {
-            case DATA:
-                return audiverisPath;
-
-            case CONFIG:
-                return audiverisPath;
-
-            default:
-            case LOG:
-                return audiverisPath.resolve("log");
-            }
+            return switch (kind) {
+                case DATA -> audiverisPath;
+                case CONFIG -> audiverisPath;
+                case LOG -> audiverisPath.resolve("log");
+            };
         }
 
         // Fall back using home
@@ -342,17 +336,11 @@ public abstract class WellKnowns
             return null;
         }
 
-        switch (kind) {
-        case DATA:
-            return Paths.get(home + "/.local/share" + TOOL_PREFIX);
-
-        case CONFIG:
-            return Paths.get(home + "/.config" + TOOL_PREFIX);
-
-        default:
-        case LOG:
-            return Paths.get(home + "/.cache" + TOOL_PREFIX + "/log");
-        }
+        return switch (kind) {
+            case DATA -> Paths.get(home + "/.local/share" + TOOL_PREFIX);
+            case CONFIG -> Paths.get(home + "/.config" + TOOL_PREFIX);
+            case LOG -> Paths.get(home + "/.cache" + TOOL_PREFIX + "/log");
+        };
     }
 
     //-----------------//
@@ -368,17 +356,11 @@ public abstract class WellKnowns
             return null;
         }
 
-        switch (kind) {
-        case DATA:
-            return Paths.get(home + "/Library/" + TOOL_PREFIX + "/data");
-
-        case CONFIG:
-            return Paths.get(home + "/Library/Application Support/" + TOOL_PREFIX);
-
-        default:
-        case LOG:
-            return Paths.get(home + "/Library/" + TOOL_PREFIX + "/log");
-        }
+        return switch (kind) {
+            case DATA -> Paths.get(home + "/Library/" + TOOL_PREFIX + "/data");
+            case CONFIG -> Paths.get(home + "/Library/Application Support/" + TOOL_PREFIX);
+            case LOG -> Paths.get(home + "/Library/" + TOOL_PREFIX + "/log");
+        };
     }
 
     //---------------------//
@@ -400,17 +382,11 @@ public abstract class WellKnowns
         // User Documents
         final String userDocs = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
 
-        switch (kind) {
-        case DATA:
-            return Paths.get(userDocs + "/" + TOOL_NAME);
-
-        case CONFIG:
-            return audiverisPath.resolve("config");
-
-        default:
-        case LOG:
-            return audiverisPath.resolve("log");
-        }
+        return switch (kind) {
+            case DATA -> Paths.get(userDocs + "/" + TOOL_NAME);
+            case CONFIG -> audiverisPath.resolve("config");
+            case LOG -> audiverisPath.resolve("log");
+        };
     }
 
     //------------//
@@ -483,17 +459,11 @@ public abstract class WellKnowns
     //-------------//
     private static String xdgProperty (FolderKind kind)
     {
-        switch (kind) {
-        case DATA:
-            return "XDG_DATA_HOME";
-
-        case CONFIG:
-            return "XDG_CONFIG_HOME";
-
-        default:
-        case LOG:
-            return "XDG_CACHE_HOME";
-        }
+        return switch (kind) {
+            case DATA -> "XDG_DATA_HOME";
+            case CONFIG -> "XDG_CONFIG_HOME";
+            case LOG -> "XDG_CACHE_HOME";
+        };
     }
 
     //~ Enumerations -------------------------------------------------------------------------------

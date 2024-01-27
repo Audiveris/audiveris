@@ -204,9 +204,9 @@ public class Glyph
 
         // We have a problem if glyph is just 0 or 1 pixel: no computable slope!
         switch (basicLine.getNumberOfPoints()) {
-        case 0 -> throw new IllegalStateException("Glyph has no pixel, cannot compute line.");
-        case 1 -> slope = 0d; // we just need a value.
-        default -> slope = basicLine.getSlope();
+            case 0 -> throw new IllegalStateException("Glyph has no pixel, cannot compute line.");
+            case 1 -> slope = 0d; // we just need a value.
+            default -> slope = basicLine.getSlope();
         }
 
         line = basicLine.toDouble();

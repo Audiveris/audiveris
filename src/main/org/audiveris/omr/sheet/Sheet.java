@@ -531,12 +531,12 @@ public class Sheet
                 }
 
                 switch (shape) {
-                case FLAG_1_UP -> modified |= inter.renameShapeAs(Shape.FLAG_1_DOWN);
-                case FLAG_2_UP -> modified |= inter.renameShapeAs(Shape.FLAG_2_DOWN);
-                case FLAG_3_UP -> modified |= inter.renameShapeAs(Shape.FLAG_3_DOWN);
-                case FLAG_4_UP -> modified |= inter.renameShapeAs(Shape.FLAG_4_DOWN);
-                case FLAG_5_UP -> modified |= inter.renameShapeAs(Shape.FLAG_5_DOWN);
-                default -> {}
+                    case FLAG_1_UP -> modified |= inter.renameShapeAs(Shape.FLAG_1_DOWN);
+                    case FLAG_2_UP -> modified |= inter.renameShapeAs(Shape.FLAG_2_DOWN);
+                    case FLAG_3_UP -> modified |= inter.renameShapeAs(Shape.FLAG_3_DOWN);
+                    case FLAG_4_UP -> modified |= inter.renameShapeAs(Shape.FLAG_4_DOWN);
+                    case FLAG_5_UP -> modified |= inter.renameShapeAs(Shape.FLAG_5_DOWN);
+                    default -> {}
                 }
             }
         }
@@ -1324,30 +1324,30 @@ public class Sheet
     void reset (OmrStep step)
     {
         switch (step) {
-        default:
-            break;
+            default:
+                break;
 
-        case LOAD:
-            picture = null;
+            case LOAD:
+                picture = null;
 
-            // Fall-through!
-        case BINARY:
-            scale = null;
+                // Fall-through!
+            case BINARY:
+                scale = null;
 
-            // Fall-through!
-        case SCALE:
-        case GRID:
-            pages.clear();
-            stub.clearPageRefs();
-            skew = null;
+                // Fall-through!
+            case SCALE:
+            case GRID:
+                pages.clear();
+                stub.clearPageRefs();
+                skew = null;
 
-            lagManager.setLag(Lags.HLAG, null);
-            lagManager.setLag(Lags.VLAG, null);
+                lagManager.setLag(Lags.HLAG, null);
+                lagManager.setLag(Lags.VLAG, null);
 
-            staffManager.reset();
-            systemManager.reset();
-            glyphsController = null;
-            sheetEditor = null;
+                staffManager.reset();
+                systemManager.reset();
+                glyphsController = null;
+                sheetEditor = null;
         }
 
         // Clear errors and history for this step

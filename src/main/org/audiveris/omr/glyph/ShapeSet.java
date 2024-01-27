@@ -909,17 +909,14 @@ public class ShapeSet
     //-------------//
     public static List<Shape> getMotifSet (HeadMotif motif)
     {
-        if (motif == null) {
-            return null;
-        }
-
         return switch (motif) {
-        case oval -> HeadsOval;
-        case small -> HeadsOvalSmall;
-        case cross -> HeadsCross;
-        case diamond -> HeadsDiamond;
-        case triangle -> HeadsTriangle;
-        case circle -> HeadsCircle;
+            case null -> null;
+            case oval -> HeadsOval;
+            case small -> HeadsOvalSmall;
+            case cross -> HeadsCross;
+            case diamond -> HeadsDiamond;
+            case triangle -> HeadsTriangle;
+            case circle -> HeadsCircle;
         };
     }
 

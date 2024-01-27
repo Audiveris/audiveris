@@ -386,20 +386,9 @@ public class Skeleton
             g.setColor(ARC_LAMBDA);
         } else {
             switch (arc.getShape()) {
-            case SLUR:
-                g.setColor(ARC_SLUR);
-
-                break;
-
-            case LINE:
-                g.setColor(ARC_LINE);
-
-                break;
-
-            default:
-                g.setColor(ARC_LAMBDA);
-
-                break;
+                case SLUR -> g.setColor(ARC_SLUR);
+                case LINE -> g.setColor(ARC_LINE);
+                default -> g.setColor(ARC_LAMBDA);
             }
         }
     }

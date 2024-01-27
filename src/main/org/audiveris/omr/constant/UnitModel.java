@@ -81,15 +81,12 @@ public class UnitModel
     public Object getChild (Object parent,
                             int i)
     {
-        if (parent instanceof PackageNode) {
-            PackageNode pNode = (PackageNode) parent;
-
+        if (parent instanceof PackageNode pNode) {
             return pNode.getChild(i);
         }
 
-        if (parent instanceof UnitNode) {
-            UnitNode unit = (UnitNode) parent;
-            ConstantSet set = unit.getConstantSet();
+        if (parent instanceof UnitNode unit) {
+            final ConstantSet set = unit.getConstantSet();
 
             if (set != null) {
                 return set.getConstant(i);
@@ -115,15 +112,12 @@ public class UnitModel
     @Override
     public int getChildCount (Object parent)
     {
-        if (parent instanceof PackageNode) {
-            return ((PackageNode) parent).getChildCount();
+        if (parent instanceof PackageNode packageNode) {
+            return packageNode.getChildCount();
         }
 
-        if (parent instanceof UnitNode) {
-            UnitNode unit = (UnitNode) parent;
-            ConstantSet set = unit.getConstantSet();
-
-            return set.size();
+        if (parent instanceof UnitNode unit) {
+            return unit.getConstantSet().size();
         }
 
         if (parent instanceof Constant) {
@@ -195,110 +189,103 @@ public class UnitModel
     public Object getValueAt (Object node,
                               int col)
     {
-        Column column = Column.values()[col];
+        final Column column = Column.values()[col];
 
         switch (column) {
-        case MODIF:
-
-            if (node instanceof PackageNode) {
-                return null;
-            } else if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
-                return !constant.isSourceValue();
-            }
-
-            return "";
-
-        case VALUE:
-
-            if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
-                if (constant instanceof Constant.Boolean) {
-                    Constant.Boolean cb = (Constant.Boolean) constant;
-
-                    return cb.getCachedValue();
-                } else {
-                    return constant.getStringValue();
+            case MODIF -> {
+                if (node instanceof PackageNode) {
+                    return null;
+                } else if (node instanceof Constant constant) {
+                    return !constant.isSourceValue();
                 }
-            } else {
+
                 return "";
             }
 
-        case TYPE:
-
-            if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
-                return constant.getClass().getSimpleName();
-            } else {
-                return "";
-            }
-
-        case UNIT:
-
-            if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
-                return (constant.getQuantityUnit() != null) ? constant.getQuantityUnit() : "";
-            } else {
-                return "";
-            }
-
-        case PIXEL:
-
-            if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
-                if (constant instanceof Scale.Fraction || constant instanceof Scale.LineFraction
-                        || constant instanceof Scale.AreaFraction) {
-                    // Compute the equivalent in pixels of this interline-based
-                    // fraction, line or area fraction, provided that we have a
-                    // current sheet and its scale is available.
-                    SheetStub stub = StubsController.getCurrentStub();
-
-                    if ((stub != null) && stub.hasSheet()) {
-                        Scale scale = stub.getSheet().getScale();
-
-                        if (scale != null) {
-                            if (constant instanceof Scale.Fraction) {
-                                return String.format(
-                                        "%.1f",
-                                        scale.toPixelsDouble((Scale.Fraction) constant));
-                            } else if (constant instanceof Scale.LineFraction) {
-                                return scale.toPixels((Scale.LineFraction) constant);
-                            } else if (constant instanceof Scale.AreaFraction) {
-                                return scale.toPixels((Scale.AreaFraction) constant);
-                            }
-                        }
+            case VALUE -> {
+                if (node instanceof Constant constant) {
+                    if (constant instanceof Constant.Boolean cb) {
+                        return cb.getCachedValue();
                     } else {
-                        return "?"; // Cannot compute the value
+                        return constant.getStringValue();
+                    }
+                } else {
+                    return "";
+                }
+            }
+
+            case TYPE -> {
+                if (node instanceof Constant constant) {
+                    return constant.getClass().getSimpleName();
+                } else {
+                    return "";
+                }
+            }
+
+            case UNIT -> {
+                if (node instanceof Constant constant) {
+                    return (constant.getQuantityUnit() != null) ? constant.getQuantityUnit() : "";
+                } else {
+                    return "";
+                }
+            }
+
+            case PIXEL -> {
+                if (node instanceof Constant constant) {
+                    if (constant instanceof Scale.Fraction || constant instanceof Scale.LineFraction
+                            || constant instanceof Scale.AreaFraction) {
+                        // Compute the equivalent in pixels of this interline-based
+                        // fraction, line or area fraction, provided that we have a
+                        // current sheet and its scale is available.
+                        SheetStub stub = StubsController.getCurrentStub();
+
+                        if ((stub != null) && stub.hasSheet()) {
+                            Scale scale = stub.getSheet().getScale();
+
+                            if (scale != null) {
+                                switch (constant) {
+                                    case Scale.Fraction fraction -> {
+                                        return String.format(
+                                                "%.1f",
+                                                scale.toPixelsDouble(fraction));
+                                    }
+                                    case Scale.LineFraction lineFraction -> {
+                                        return scale.toPixels(lineFraction);
+                                    }
+                                    case Scale.AreaFraction areaFraction -> {
+                                        return scale.toPixels(areaFraction);
+                                    }
+                                    default -> {}
+                                }
+                            }
+                        } else {
+                            return "?"; // Cannot compute the value
+                        }
                     }
                 }
+
+                return "";
             }
 
-            return "";
+            case DESC -> {
+                if (node instanceof Constant constant) {
+                    return constant.getDescription();
+                } else {
+                    return null;
+                }
+            }
 
-        case DESC:
-
-            if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
-                return constant.getDescription();
-            } else {
+            default -> {
                 return null;
             }
         }
-
-        return null; // For the compiler
     }
 
     //----------------//
     // isCellEditable //
     //----------------//
     /**
-     * Predicate on cell being editable
+     * Predicate on cell being editable.
      *
      * @param node   the related tree node
      * @param column the related table column
@@ -308,16 +295,11 @@ public class UnitModel
     public boolean isCellEditable (Object node,
                                    int column)
     {
-        Column col = Column.values()[column];
+        final Column col = Column.values()[column];
 
         if (col == Column.MODIF) {
-            if (node instanceof Constant) {
-                Constant constant = (Constant) node;
-
+            if (node instanceof Constant constant) {
                 return !constant.isSourceValue();
-
-                //            } else if (node instanceof UnitNode) {
-                //                return true;
             } else {
                 return false;
             }
@@ -342,9 +324,7 @@ public class UnitModel
             return true;
         }
 
-        if (node instanceof UnitNode) {
-            UnitNode unit = (UnitNode) node;
-
+        if (node instanceof UnitNode unit) {
             return (unit.getConstantSet() == null);
         }
 
@@ -366,37 +346,32 @@ public class UnitModel
                             Object node,
                             int col)
     {
-        if (node instanceof Constant) {
-            Constant constant = (Constant) node;
+        if (node instanceof Constant constant) {
             Column column = Column.values()[col];
 
             switch (column) {
-            case VALUE:
+                case VALUE -> {
+                    try {
+                        constant.setStringValue(value.toString());
 
-                try {
-                    constant.setStringValue(value.toString());
-
-                    // Forward modif to the modif status column and to the pixel
-                    // column (brute force!)
-                    fireTreeNodesChanged(this, new Object[]
-                    { getRoot() }, null, null);
-                } catch (NumberFormatException ex) {
-                    OMR.gui.displayError("Illegal number format");
+                        // Forward modif to the modif status column and to the pixel
+                        // column (brute force!)
+                        fireTreeNodesChanged(this, new Object[]
+                        { getRoot() }, null, null);
+                    } catch (NumberFormatException ex) {
+                        OMR.gui.displayError("Illegal number format");
+                    }
                 }
 
-                break;
-
-            case MODIF:
-
-                if (!((Boolean) value)) {
-                    constant.resetToSource();
-                    fireTreeNodesChanged(this, new Object[]
-                    { getRoot() }, null, null);
+                case MODIF -> {
+                    if (!((Boolean) value)) {
+                        constant.resetToSource();
+                        fireTreeNodesChanged(this, new Object[]
+                        { getRoot() }, null, null);
+                    }
                 }
 
-                break;
-
-            default:
+                default -> {}
             }
         }
     }
@@ -404,7 +379,7 @@ public class UnitModel
     //~ Enumerations -------------------------------------------------------------------------------
 
     /**
-     * Enumeration type to describe each column of the JTreeTable
+     * Enumeration type to describe each column of the JTreeTable.
      */
     public static enum Column
     {

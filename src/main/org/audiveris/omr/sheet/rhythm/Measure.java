@@ -669,31 +669,17 @@ public class Measure
                             Staff staff)
     {
         Objects.requireNonNull(staff, "Null staff for Measure.getAbscissa()");
-
-        switch (side) {
-        case LEFT:
-
-            // measure (left) bar?
-            PartBarline leftBar = getPartBarlineOn(LEFT);
-
-            if (leftBar != null) {
-                return leftBar.getRightX(part, staff);
+        return switch (side) {
+            case LEFT -> {
+                final PartBarline leftBar = getPartBarlineOn(LEFT);
+                yield (leftBar != null) //
+                        ? leftBar.getRightX(part, staff)
+                        : staff.getAbscissa(LEFT);
             }
-
-            // Use start of staff
-            return staff.getAbscissa(LEFT);
-
-        default:
-        case RIGHT:
-
-            // Measure (right) bar?
-            if (rightBarline != null) {
-                return rightBarline.getRightX(part, staff);
-            }
-
-            // Use end of staff
-            return staff.getAbscissa(RIGHT);
-        }
+            case RIGHT -> (rightBarline != null) //
+                    ? rightBarline.getRightX(part, staff)
+                    : staff.getAbscissa(RIGHT);
+        };
     }
 
     //---------------------//
@@ -1162,34 +1148,29 @@ public class Measure
      */
     public PartBarline getPartBarlineOn (HorizontalSide side)
     {
-        switch (side) {
-        case LEFT:
+        return switch (side) {
+            case LEFT -> {
+                // Measure specific left bar?
+                if (leftBarline != null) {
+                    yield leftBarline;
+                }
 
-            // Measure specific left bar?
-            if (leftBarline != null) {
-                return leftBarline;
+                // Previous measure in part?
+                final Measure prevMeasure = getSibling(LEFT);
+
+                if (prevMeasure != null) {
+                    yield prevMeasure.getRightPartBarline();
+                }
+
+                // Part starting bar?
+                if (part.getLeftPartBarline() != null) {
+                    yield part.getLeftPartBarline();
+                }
+
+                yield null; // No barline found on LEFT
             }
-
-            // Previous measure in part?
-            Measure prevMeasure = getSibling(LEFT);
-
-            if (prevMeasure != null) {
-                return prevMeasure.getRightPartBarline();
-            }
-
-            // Part starting bar?
-            if (part.getLeftPartBarline() != null) {
-                return part.getLeftPartBarline();
-            }
-
-            return null; // No barline found on LEFT
-
-        default:
-        case RIGHT:
-
-            // Measure (right) bar?
-            return rightBarline;
-        }
+            case RIGHT -> rightBarline; // Measure (right) bar?
+        };
     }
 
     //--------------------//
@@ -1332,26 +1313,12 @@ public class Measure
     public Measure getSibling (HorizontalSide side)
     {
         final List<Measure> measures = part.getMeasures();
-        int index = measures.indexOf(this);
+        final int index = measures.indexOf(this);
 
-        switch (side) {
-        case LEFT:
-
-            if (index > 0) {
-                return measures.get(index - 1);
-            }
-
-            return null;
-
-        default:
-        case RIGHT:
-
-            if (index < (measures.size() - 1)) {
-                return measures.get(index + 1);
-            }
-
-            return null;
-        }
+        return switch (side) {
+            case LEFT -> (index > 0) ? measures.get(index - 1) : null;
+            case RIGHT -> (index < (measures.size() - 1)) ? measures.get(index + 1) : null;
+        };
     }
 
     //----------//
@@ -1367,52 +1334,41 @@ public class Measure
     public Point2D getSidePoint (HorizontalSide side,
                                  Staff staff)
     {
-        switch (side) {
-        case LEFT:
+        return switch (side) {
+            case LEFT -> {
+                // Measure specific left bar?
+                if (leftBarline != null) {
+                    yield leftBarline.getStaffBarline(part, staff).getReferenceCenter();
+                }
 
-            // Measure specific left bar?
-            if (leftBarline != null) {
-                return leftBarline.getStaffBarline(part, staff).getReferenceCenter();
+                // Previous measure in part?
+                final Measure prevMeasure = getSibling(LEFT);
+                if (prevMeasure != null) {
+                    yield prevMeasure.getSidePoint(RIGHT, staff);
+                }
+
+                // Part starting bar?
+                if (part.getLeftPartBarline() != null) {
+                    yield part.getLeftPartBarline().getStaffBarline(part, staff)
+                            .getReferenceCenter();
+                }
+
+                // No bar, use start of staff
+                final int x = staff.getAbscissa(LEFT);
+                yield new Point(x, staff.getMidLine().yAt(x));
             }
 
-            // Previous measure in part?
-            Measure prevMeasure = getSibling(LEFT);
+            case RIGHT -> {
+                // Measure (right) bar?
+                if (rightBarline != null) {
+                    yield rightBarline.getStaffBarline(part, staff).getReferenceCenter();
+                }
 
-            if (prevMeasure != null) {
-                return prevMeasure.getSidePoint(RIGHT, staff);
+                // No bar, use end of staff
+                final int x = staff.getAbscissa(RIGHT);
+                yield new Point(x, staff.getMidLine().yAt(x));
             }
-
-            // Part starting bar?
-            if (part.getLeftPartBarline() != null) {
-                return part.getLeftPartBarline().getStaffBarline(part, staff).getReferenceCenter();
-            }
-
-        // No bar, use start of staff
-        {
-            List<LineInfo> lines = staff.getLines();
-            LineInfo midLine = lines.get(lines.size() / 2);
-            int x = staff.getAbscissa(LEFT);
-
-            return new Point(x, midLine.yAt(x));
-        }
-
-        default:
-        case RIGHT:
-
-            // Measure (right) bar?
-            if (rightBarline != null) {
-                return rightBarline.getStaffBarline(part, staff).getReferenceCenter();
-            }
-
-        // No bar, use end of staff
-        {
-            List<LineInfo> lines = staff.getLines();
-            LineInfo midLine = lines.get(lines.size() / 2);
-            int x = staff.getAbscissa(RIGHT);
-
-            return new Point(x, midLine.yAt(x));
-        }
-        }
+        };
     }
 
     //----------//
@@ -1659,12 +1615,12 @@ public class Measure
 
         if (part.isMerged()) {
             return switch (chord.getStemDir()) {
-            case -1 -> VoiceKind.HIGH;
-            case +1 -> VoiceKind.LOW;
-            default -> (startingStaff == part.getFirstStaff()) ? VoiceKind.HIGH : VoiceKind.LOW;
+                case -1 -> VoiceKind.HIGH;
+                case +1 -> VoiceKind.LOW;
+                default -> (startingStaff == part.getFirstStaff()) ? VoiceKind.HIGH : VoiceKind.LOW;
             };
         } else {
-            int index = part.getStaves().indexOf(startingStaff);
+            final int index = part.getStaves().indexOf(startingStaff);
 
             if ((index >= 0) && (index < VoiceKind.values().length)) {
                 return VoiceKind.values()[index];

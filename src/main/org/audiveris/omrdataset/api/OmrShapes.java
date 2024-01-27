@@ -287,45 +287,21 @@ public abstract class OmrShapes
      */
     public static Integer integerValueOf (OmrShape shape)
     {
-        switch (shape) {
-        case timeSig0:
-            return 0;
-
-        case timeSig1:
-            return 1;
-
-        case timeSig2:
-            return 2;
-
-        case timeSig3:
-            return 3;
-
-        case timeSig4:
-            return 4;
-
-        case timeSig5:
-            return 5;
-
-        case timeSig6:
-            return 6;
-
-        case timeSig7:
-            return 7;
-
-        case timeSig8:
-            return 8;
-
-        case timeSig9:
-            return 9;
-
-        case timeSig12:
-            return 12;
-
-        case timeSig16:
-            return 16;
-        }
-
-        return null;
+        return switch (shape) {
+            case timeSig0 -> 0;
+            case timeSig1 -> 1;
+            case timeSig2 -> 2;
+            case timeSig3 -> 3;
+            case timeSig4 -> 4;
+            case timeSig5 -> 5;
+            case timeSig6 -> 6;
+            case timeSig7 -> 7;
+            case timeSig8 -> 8;
+            case timeSig9 -> 9;
+            case timeSig12 -> 12;
+            case timeSig16 -> 16;
+            default -> null;
+        };
     }
 
     /**

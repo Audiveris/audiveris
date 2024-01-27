@@ -29,7 +29,6 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
-import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
@@ -40,6 +39,7 @@ import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
+import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -322,76 +322,74 @@ public class SymbolsLinker
             final Scale scale = system.getSheet().getScale();
 
             switch (role) {
-            case Lyrics ->
-            {
-                // Map each syllable with proper chord, in assigned staff
-                for (Inter wInter : sentence.getMembers()) {
-                    final LyricItemInter item = (LyricItemInter) wInter;
-                    final int profile = Math.max(item.getProfile(), system.getProfile());
-                    item.mapToChord(profile);
+                case Lyrics -> {
+                    // Map each syllable with proper chord, in assigned staff
+                    for (Inter wInter : sentence.getMembers()) {
+                        final LyricItemInter item = (LyricItemInter) wInter;
+                        final int profile = Math.max(item.getProfile(), system.getProfile());
+                        item.mapToChord(profile);
+                    }
                 }
-            }
 
-            case Direction ->
-            {
-                // Map direction with proper chord
-                MeasureStack stack = system.getStackAt(location);
+                case Direction -> {
+                    // Map direction with proper chord
+                    MeasureStack stack = system.getStackAt(location);
 
-                if (stack == null) {
-                    logger.info(
-                            "No measure stack for direction {} {}",
+                    if (stack == null) {
+                        logger.info(
+                                "No measure stack for direction {} {}",
+                                sentence,
+                                sentence.getValue());
+                    } else {
+                        int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
+                        Rectangle fatBounds = new Rectangle(bounds);
+                        fatBounds.grow(xGapMax, 0);
+
+                        AbstractChordInter chord = stack.getEventChord(location, fatBounds);
+
+                        if (chord != null) {
+                            sig.addEdge(chord, sentence, new ChordSentenceRelation());
+                        } else {
+                            logger.info(
+                                    "No chord near direction {} {}",
+                                    sentence,
+                                    sentence.getValue());
+                        }
+                    }
+                }
+
+                case PartName -> {
+                    // Assign part name to proper part
+                    Staff staff = system.getClosestStaff(sentence.getCenter());
+                    Part part = staff.getPart();
+                    part.setName(sentence);
+                }
+
+                case ChordName -> {
+                    // Map each word with proper chord, in assigned staff
+                    for (Inter wInter : sentence.getMembers()) {
+                        final ChordNameInter word = (ChordNameInter) wInter;
+                        final Link link = word.lookupLink(system);
+
+                        if (link == null) {
+                            logger.info("No chord below {}", word);
+                        } else {
+                            link.applyTo(wInter);
+                        }
+                    }
+                }
+
+                case EndingNumber, EndingText -> {
+                    // Look for related ending
+                    final Link link = sentence.lookupEndingLink(system);
+
+                    if ((link != null) && (null == sig.getRelation(
+                            link.partner,
                             sentence,
-                            sentence.getValue());
-                } else {
-                    int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
-                    Rectangle fatBounds = new Rectangle(bounds);
-                    fatBounds.grow(xGapMax, 0);
-
-                    AbstractChordInter chord = stack.getEventChord(location, fatBounds);
-
-                    if (chord != null) {
-                        sig.addEdge(chord, sentence, new ChordSentenceRelation());
-                    } else {
-                        logger.info("No chord near direction {} {}", sentence, sentence.getValue());
+                            EndingSentenceRelation.class))) {
+                        sig.addEdge(link.partner, sentence, link.relation);
                     }
                 }
-            }
-
-            case PartName ->
-            {
-                // Assign part name to proper part
-                Staff staff = system.getClosestStaff(sentence.getCenter());
-                Part part = staff.getPart();
-                part.setName(sentence);
-            }
-
-            case ChordName ->
-            {
-                // Map each word with proper chord, in assigned staff
-                for (Inter wInter : sentence.getMembers()) {
-                    final ChordNameInter word = (ChordNameInter) wInter;
-                    final Link link = word.lookupLink(system);
-
-                    if (link == null) {
-                        logger.info("No chord below {}", word);
-                    } else {
-                        link.applyTo(wInter);
-                    }
-                }
-            }
-
-            case EndingNumber, EndingText ->
-            {
-                // Look for related ending
-                final Link link = sentence.lookupEndingLink(system);
-
-                if ((link != null) && (null == sig.getRelation(
-                        link.partner,
-                        sentence,
-                        EndingSentenceRelation.class))) {
-                    sig.addEdge(link.partner, sentence, link.relation);
-                }
-            }
             }
             // Roles UnknownRole, Title, Number, Creator*, Rights stand by themselves
         } catch (Exception ex) {
@@ -520,54 +518,32 @@ public class SymbolsLinker
                 logger.info("VIP unlinkOneSentence for {}", sentence);
             }
 
-            if (oldRole == null) {
-                logger.info("Null old role for {}", sentence);
-
-                return;
-            }
-
             switch (oldRole) {
-            case Lyrics ->
-            {
-                for (Inter wInter : sentence.getMembers()) {
-                    LyricItemInter item = (LyricItemInter) wInter;
+                case null -> logger.info("Null old role for {}", sentence);
+                default -> {}
 
-                    for (Relation rel : sig.getRelations(item, ChordSyllableRelation.class)) {
-                        sig.removeEdge(rel);
-                    }
+                case Lyrics -> sentence.getMembers().forEach(
+                        wInter -> sig.getRelations(wInter, ChordSyllableRelation.class).forEach(
+                                rel -> sig.removeEdge(rel)));
+
+                case Direction -> sig.getRelations(sentence, ChordSentenceRelation.class).forEach(
+                        rel -> sig.removeEdge(rel));
+
+                case PartName -> {
+                    // Look for proper part
+                    final Staff staff = system.getClosestStaff(sentence.getCenter());
+                    final Part part = staff.getPart();
+                    part.setName((SentenceInter) null);
                 }
-            }
 
-            case Direction ->
-            {
-                for (Relation rel : sig.getRelations(sentence, ChordSentenceRelation.class)) {
-                    sig.removeEdge(rel);
-                }
-            }
+                case ChordName -> sentence.getMembers().forEach(
+                        wInter -> sig.getRelations(wInter, ChordNameRelation.class).forEach(
+                                rel -> sig.removeEdge(rel)));
 
-            case PartName ->
-            {
-                // Look for proper part
-                Staff staff = system.getClosestStaff(sentence.getCenter());
-                final Part part = staff.getPart();
-                part.setName((SentenceInter) null);
-            }
+                case EndingNumber, EndingText -> //
+                        sig.getRelations(sentence, EndingSentenceRelation.class).forEach(
+                                rel -> sig.removeEdge(rel));
 
-            case ChordName ->
-            {
-                for (Inter wInter : sentence.getMembers()) {
-                    for (Relation rel : sig.getRelations(wInter, ChordNameRelation.class)) {
-                        sig.removeEdge(rel);
-                    }
-                }
-            }
-
-            case EndingNumber, EndingText ->
-            {
-                for (Relation rel : sig.getRelations(sentence, EndingSentenceRelation.class)) {
-                    sig.removeEdge(rel);
-                }
-            }
             }
         } catch (Exception ex) {
             logger.warn("Error in unlinkOneSentence for {} {}", sentence, ex.toString(), ex);

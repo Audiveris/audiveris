@@ -413,34 +413,34 @@ public class PartwiseBuilder
         }
 
         switch (shape) {
-        case G_CLEF, G_CLEF_SMALL -> pmClef.setSign(ClefSign.G);
+            case G_CLEF, G_CLEF_SMALL -> pmClef.setSign(ClefSign.G);
 
-        case G_CLEF_8VA -> {
-            pmClef.setSign(ClefSign.G);
-            pmClef.setClefOctaveChange(new BigInteger("1"));
-        }
+            case G_CLEF_8VA -> {
+                pmClef.setSign(ClefSign.G);
+                pmClef.setClefOctaveChange(new BigInteger("1"));
+            }
 
-        case G_CLEF_8VB -> {
-            pmClef.setSign(ClefSign.G);
-            pmClef.setClefOctaveChange(new BigInteger("-1"));
-        }
+            case G_CLEF_8VB -> {
+                pmClef.setSign(ClefSign.G);
+                pmClef.setClefOctaveChange(new BigInteger("-1"));
+            }
 
-        case C_CLEF -> pmClef.setSign(ClefSign.C);
+            case C_CLEF -> pmClef.setSign(ClefSign.C);
 
-        case F_CLEF, F_CLEF_SMALL -> pmClef.setSign(ClefSign.F);
+            case F_CLEF, F_CLEF_SMALL -> pmClef.setSign(ClefSign.F);
 
-        case F_CLEF_8VA -> {
-            pmClef.setSign(ClefSign.F);
-            pmClef.setClefOctaveChange(new BigInteger("1"));
-        }
-        case F_CLEF_8VB -> {
-            pmClef.setSign(ClefSign.F);
-            pmClef.setClefOctaveChange(new BigInteger("-1"));
-        }
+            case F_CLEF_8VA -> {
+                pmClef.setSign(ClefSign.F);
+                pmClef.setClefOctaveChange(new BigInteger("1"));
+            }
+            case F_CLEF_8VB -> {
+                pmClef.setSign(ClefSign.F);
+                pmClef.setClefOctaveChange(new BigInteger("-1"));
+            }
 
-        case PERCUSSION_CLEF -> pmClef.setSign(ClefSign.PERCUSSION);
+            case PERCUSSION_CLEF -> pmClef.setSign(ClefSign.PERCUSSION);
 
-        default -> logger.error("Clef shape not exported {}", shape);
+            default -> logger.error("Clef shape not exported {}", shape);
         }
 
         return pmClef;
@@ -1223,96 +1223,96 @@ public class PartwiseBuilder
                     pmBarline.setBarStyle(barStyleColor);
 
                     switch (location) {
-                    case LEFT, MIDDLE -> {
-                        // (Left) repeat?
-                        if (stack.isRepeat(LEFT)) {
-                            Repeat repeat = factory.createRepeat();
-                            repeat.setDirection(BackwardForward.FORWARD);
-                            pmBarline.setRepeat(repeat);
-                        }
-
-                        // (Left side of) Ending?
-                        if (ending != null) {
-                            Ending pmEnding = factory.createEnding();
-                            Point2D pt = ending.getLine().getP1();
-
-                            Staff staff = current.measure.getPart().getFirstStaff();
-                            pmEnding.setDefaultY(yOf(pt, staff));
-
-                            Line2D leg = ending.getLeftLeg();
-                            if (leg != null) {
-                                pmEnding.setEndLength(toTenths(leg.getY2() - pt.getY()));
+                        case LEFT, MIDDLE -> {
+                            // (Left) repeat?
+                            if (stack.isRepeat(LEFT)) {
+                                Repeat repeat = factory.createRepeat();
+                                repeat.setDirection(BackwardForward.FORWARD);
+                                pmBarline.setRepeat(repeat);
                             }
 
-                            pmEnding.setType(StartStopDiscontinue.START);
+                            // (Left side of) Ending?
+                            if (ending != null) {
+                                Ending pmEnding = factory.createEnding();
+                                Point2D pt = ending.getLine().getP1();
 
-                            // Number (mandatory)
-                            pmEnding.setNumber(endingNumber);
+                                Staff staff = current.measure.getPart().getFirstStaff();
+                                pmEnding.setDefaultY(yOf(pt, staff));
 
-                            // Value (optional)
-                            if (endingValue != null) {
-                                pmEnding.setValue(endingValue);
-                            }
-
-                            pmBarline.setEnding(pmEnding);
-                        }
-                    }
-
-                    case RIGHT -> {
-                        // (Right) repeat?
-                        if (stack.isRepeat(RIGHT)) {
-                            Repeat repeat = factory.createRepeat();
-                            repeat.setDirection(BackwardForward.BACKWARD);
-                            pmBarline.setRepeat(repeat);
-                        }
-
-                        // Fermata(s)?
-                        if (!fermatas.isEmpty()) {
-                            // Pick up first upright fermata if any
-                            for (FermataInter f : fermatas) {
-                                if (f.getShape() == Shape.FERMATA) {
-                                    processFermata(f, pmBarline);
+                                Line2D leg = ending.getLeftLeg();
+                                if (leg != null) {
+                                    pmEnding.setEndLength(toTenths(leg.getY2() - pt.getY()));
                                 }
 
-                                break;
-                            }
+                                pmEnding.setType(StartStopDiscontinue.START);
 
-                            // Pick up last inverted fermata if any.
-                            for (ListIterator<FermataInter> it = fermatas.listIterator(
-                                    fermatas.size()); it.hasPrevious();) {
-                                FermataInter f = it.previous();
+                                // Number (mandatory)
+                                pmEnding.setNumber(endingNumber);
 
-                                if (f.getShape() == Shape.FERMATA_BELOW) {
-                                    processFermata(f, pmBarline);
+                                // Value (optional)
+                                if (endingValue != null) {
+                                    pmEnding.setValue(endingValue);
                                 }
 
-                                break;
+                                pmBarline.setEnding(pmEnding);
                             }
                         }
 
-                        // (Right side of) Ending?
-                        if (ending != null) {
-                            Ending pmEnding = factory.createEnding();
-                            Point2D pt = ending.getLine().getP2();
-
-                            Staff staff = current.measure.getPart().getFirstStaff();
-                            pmEnding.setDefaultY(yOf(pt, staff));
-
-                            Line2D leg = ending.getRightLeg();
-
-                            if (leg != null) {
-                                pmEnding.setEndLength(toTenths(leg.getY2() - pt.getY()));
-                                pmEnding.setType(StartStopDiscontinue.STOP);
-                            } else {
-                                pmEnding.setType(StartStopDiscontinue.DISCONTINUE);
+                        case RIGHT -> {
+                            // (Right) repeat?
+                            if (stack.isRepeat(RIGHT)) {
+                                Repeat repeat = factory.createRepeat();
+                                repeat.setDirection(BackwardForward.BACKWARD);
+                                pmBarline.setRepeat(repeat);
                             }
 
-                            // Number (mandatory)
-                            pmEnding.setNumber(endingNumber);
+                            // Fermata(s)?
+                            if (!fermatas.isEmpty()) {
+                                // Pick up first upright fermata if any
+                                for (FermataInter f : fermatas) {
+                                    if (f.getShape() == Shape.FERMATA) {
+                                        processFermata(f, pmBarline);
+                                    }
 
-                            pmBarline.setEnding(pmEnding);
+                                    break;
+                                }
+
+                                // Pick up last inverted fermata if any.
+                                for (ListIterator<FermataInter> it = fermatas.listIterator(
+                                        fermatas.size()); it.hasPrevious();) {
+                                    FermataInter f = it.previous();
+
+                                    if (f.getShape() == Shape.FERMATA_BELOW) {
+                                        processFermata(f, pmBarline);
+                                    }
+
+                                    break;
+                                }
+                            }
+
+                            // (Right side of) Ending?
+                            if (ending != null) {
+                                Ending pmEnding = factory.createEnding();
+                                Point2D pt = ending.getLine().getP2();
+
+                                Staff staff = current.measure.getPart().getFirstStaff();
+                                pmEnding.setDefaultY(yOf(pt, staff));
+
+                                Line2D leg = ending.getRightLeg();
+
+                                if (leg != null) {
+                                    pmEnding.setEndLength(toTenths(leg.getY2() - pt.getY()));
+                                    pmEnding.setType(StartStopDiscontinue.STOP);
+                                } else {
+                                    pmEnding.setType(StartStopDiscontinue.DISCONTINUE);
+                                }
+
+                                // Number (mandatory)
+                                pmEnding.setNumber(endingNumber);
+
+                                pmBarline.setEnding(pmEnding);
+                            }
                         }
-                    }
                     }
 
                     // Everything is now OK
@@ -1824,46 +1824,45 @@ public class PartwiseBuilder
             sound.setDivisions(new BigDecimal(current.page.simpleDurationOf(Rational.QUARTER)));
 
             switch (marker.getShape()) {
-            case CODA -> {
-                sound.setCoda(measureId);
-                Coda coda = factory.createCoda();
-                directionType.getCoda().add(coda);
-            }
+                case CODA -> {
+                    sound.setCoda(measureId);
+                    Coda coda = factory.createCoda();
+                    directionType.getCoda().add(coda);
+                }
 
-            case SEGNO -> {
-                sound.setSegno(measureId);
-                Segno segno = factory.createSegno();
-                directionType.getSegno().add(segno);
-            }
+                case SEGNO -> {
+                    sound.setSegno(measureId);
+                    Segno segno = factory.createSegno();
+                    directionType.getSegno().add(segno);
+                }
 
-            case DA_CAPO -> {
-                FormattedText text = new FormattedText();
-                text.setValue("D.C.");
-                directionType.getWordsOrSymbol().add(text);
-                sound.setDacapo(YesNo.YES);
-            }
+                case DA_CAPO -> {
+                    FormattedText text = new FormattedText();
+                    text.setValue("D.C.");
+                    directionType.getWordsOrSymbol().add(text);
+                    sound.setDacapo(YesNo.YES);
+                }
 
-            case DAL_SEGNO -> {
-                // Example:
-                //  <direction placement="above">
-                //	<direction-type>
-                //	    <words font-style="italic">D.S. al Fine</words>
-                //	</direction-type>
-                //	<sound dalsegno="9"/>
-                //  </direction>
-                FormattedText text = new FormattedText();
-                text.setValue("D.S.");
-                directionType.getWordsOrSymbol().add(text);
+                case DAL_SEGNO -> {
+                    // Example:
+                    //  <direction placement="above">
+                    //	<direction-type>
+                    //	    <words font-style="italic">D.S. al Fine</words>
+                    //	</direction-type>
+                    //	<sound dalsegno="9"/>
+                    //  </direction>
+                    FormattedText text = new FormattedText();
+                    text.setValue("D.S.");
+                    directionType.getWordsOrSymbol().add(text);
 
-                //TODO: we need to point back to id of measure where segno is located
-                ///sound.setDalsegno(measureId); // NO, not this measure, but the target measure!
-            }
+                    //TODO: we need to point back to id of measure where segno is located
+                    ///sound.setDalsegno(measureId); // NO, not this measure, but the target measure!
+                }
 
-            default -> {
-                logger.warn("Unknown marker shape: {}", marker.getShape());
-
-                return;
-            }
+                default -> {
+                    logger.warn("Unknown marker shape: {}", marker.getShape());
+                    return;
+                }
             }
 
             // Everything is now OK
@@ -2283,10 +2282,10 @@ public class PartwiseBuilder
                 if (motif != HeadMotif.oval && motif != HeadMotif.small) {
                     final Notehead notehead = factory.createNotehead();
                     switch (motif) {
-                    case cross -> notehead.setValue(NoteheadValue.X);
-                    case diamond -> notehead.setValue(NoteheadValue.DIAMOND);
-                    case triangle -> notehead.setValue(NoteheadValue.INVERTED_TRIANGLE);
-                    case circle -> notehead.setValue(NoteheadValue.CIRCLE_X);
+                        case cross -> notehead.setValue(NoteheadValue.X);
+                        case diamond -> notehead.setValue(NoteheadValue.DIAMOND);
+                        case triangle -> notehead.setValue(NoteheadValue.INVERTED_TRIANGLE);
+                        case circle -> notehead.setValue(NoteheadValue.CIRCLE_X);
                     }
                     current.pmNote.setNotehead(notehead);
                 }
@@ -2878,40 +2877,40 @@ public class PartwiseBuilder
             TypedText typedText = null;
 
             switch (role) {
-            case Title -> ///getWork().setWorkTitle(sentence.getValue());
-                    scorePartwise.setMovementTitle(sentence.getValue());
+                case Title -> ///getWork().setWorkTitle(sentence.getValue());
+                        scorePartwise.setMovementTitle(sentence.getValue());
 
-            case Number -> ///getWork().setWorkNumber(sentence.getValue());
-                    scorePartwise.setMovementNumber(sentence.getValue());
+                case Number -> ///getWork().setWorkNumber(sentence.getValue());
+                        scorePartwise.setMovementNumber(sentence.getValue());
 
-            case Rights -> {
-                typedText = factory.createTypedText();
-                typedText.setValue(sentence.getValue());
-                scorePartwise.getIdentification().getRights().add(typedText);
-            }
-
-            case CreatorArranger, CreatorComposer, CreatorLyricist, Creator -> {
-                typedText = factory.createTypedText();
-                typedText.setValue(sentence.getValue());
-
-                // Additional type information?
-                switch (role) {
-                case CreatorArranger -> typedText.setType("arranger");
-                case CreatorComposer -> typedText.setType("composer");
-                case CreatorLyricist -> typedText.setType("lyricist");
-                default -> {}
+                case Rights -> {
+                    typedText = factory.createTypedText();
+                    typedText.setValue(sentence.getValue());
+                    scorePartwise.getIdentification().getRights().add(typedText);
                 }
 
-                scorePartwise.getIdentification().getCreator().add(typedText);
-            }
+                case CreatorArranger, CreatorComposer, CreatorLyricist, Creator -> {
+                    typedText = factory.createTypedText();
+                    typedText.setValue(sentence.getValue());
 
-            case UnknownRole -> {}
+                    // Additional type information?
+                    switch (role) {
+                        case CreatorArranger -> typedText.setType("arranger");
+                        case CreatorComposer -> typedText.setType("composer");
+                        case CreatorLyricist -> typedText.setType("lyricist");
+                        default -> {}
+                    }
 
-            default -> {
-                // LyricsItem, Direction, ChordName
-                // Handle them through related Note
-                return;
-            }
+                    scorePartwise.getIdentification().getCreator().add(typedText);
+                }
+
+                case UnknownRole -> {}
+
+                default -> {
+                    // LyricsItem, Direction, ChordName
+                    // Handle them through related Note
+                    return;
+                }
             }
 
             // Credits
@@ -3138,7 +3137,7 @@ public class PartwiseBuilder
                               int den,
                               Shape shape)
     {
-        Time time = factory.createTime();
+        final Time time = factory.createTime();
 
         // Beats
         time.getTimeSignature().add(factory.createTimeBeats("" + num));
@@ -3149,14 +3148,14 @@ public class PartwiseBuilder
         // Symbol?
         if (shape != null) {
             switch (shape) {
-            case COMMON_TIME -> time.setSymbol(TimeSymbol.COMMON);
-            case CUT_TIME -> time.setSymbol(TimeSymbol.CUT);
+                case COMMON_TIME -> time.setSymbol(TimeSymbol.COMMON);
+                case CUT_TIME -> time.setSymbol(TimeSymbol.CUT);
 
-            default -> {}
+                default -> {}
             }
         }
 
-        List<Time> times = getAttributes().getTime();
+        final List<Time> times = getAttributes().getTime();
         times.add(time);
     }
 

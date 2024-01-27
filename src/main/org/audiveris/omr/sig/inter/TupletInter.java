@@ -343,18 +343,15 @@ public class TupletInter
      */
     private static DurationFactor getFactor (Shape shape)
     {
-        switch (shape) {
-        case TUPLET_THREE:
-            return new DurationFactor(2, 3);
+        return switch (shape) {
+            case TUPLET_THREE -> new DurationFactor(2, 3);
+            case TUPLET_SIX -> new DurationFactor(4, 6);
 
-        case TUPLET_SIX:
-            return new DurationFactor(4, 6);
-
-        default:
-            logger.error("Incorrect tuplet shape " + shape);
-
-            return null;
-        }
+            default -> {
+                logger.error("Incorrect tuplet shape " + shape);
+                yield null;
+            }
+        };
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -365,7 +362,6 @@ public class TupletInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxTupletChordDx = new Scale.Fraction(
                 3,
                 "Maximum abscissa gap between tuplet and closest chord");

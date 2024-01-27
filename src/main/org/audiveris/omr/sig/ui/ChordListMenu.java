@@ -755,26 +755,25 @@ public class ChordListMenu
                     final int actionsStartCount = getItemCount();
 
                     switch (sysChords.size()) {
-                    case 0:
-                        return; // Cannot occur actually
+                        case 0 -> {
+                            return; // Cannot occur actually
+                        }
+                        case 1 -> {
+                            buildSplitItem(sysChords.get(0), listener);
+                            buildVoiceMenu(sysChords.get(0), listener);
+                        }
 
-                    case 1:
-                        buildSplitItem(sysChords.get(0), listener);
-                        buildVoiceMenu(sysChords.get(0), listener);
+                        case 2 -> {
+                            buildMergeItem(sysChords, listener);
+                            buildVoiceItems(sysChords, listener);
+                            buildTimeItems(sysChords, listener);
+                        }
 
-                        break;
-
-                    case 2:
-                        buildMergeItem(sysChords, listener);
-                        buildVoiceItems(sysChords, listener);
-                        buildTimeItems(sysChords, listener);
-
-                        break;
-
-                    default:
-                        // 3 and above
-                        buildMergeItem(sysChords, listener);
-                        buildTimeItems(sysChords, listener);
+                        default -> {
+                            // 3 and above
+                            buildMergeItem(sysChords, listener);
+                            buildTimeItems(sysChords, listener);
+                        }
                     }
 
                     if (getItemCount() == actionsStartCount) {

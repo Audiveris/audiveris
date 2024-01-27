@@ -82,20 +82,15 @@ public class InterService
     @Override
     protected Inter getMostRelevant (List<Inter> list)
     {
-        switch (list.size()) {
-        case 0:
-            return null;
-
-        case 1:
-            return list.get(0);
-
-        default:
-
-            List<Inter> copy = new ArrayList<>(list);
-            Collections.sort(copy, Inters.membersFirst);
-
-            return copy.get(0);
-        }
+        return switch (list.size()) {
+            case 0 -> null;
+            case 1 -> list.get(0);
+            default -> {
+                final List<Inter> copy = new ArrayList<>(list);
+                Collections.sort(copy, Inters.membersFirst);
+                yield copy.get(0);
+            }
+        };
     }
 
     //-----------------------//

@@ -142,30 +142,12 @@ public class ReversePathIterator
                 first = false;
             }
 
-            int copy;
-
-            switch (segType) {
-            case SEG_MOVETO:
-            case SEG_LINETO:
-                copy = 2;
-
-                break;
-
-            case SEG_QUADTO:
-                copy = 4;
-
-                break;
-
-            case SEG_CUBICTO:
-                copy = 6;
-
-                break;
-
-            default:
-                copy = 0;
-
-                break;
-            }
+            final int copy = switch (segType) {
+                case SEG_MOVETO, SEG_LINETO -> 2;
+                case SEG_QUADTO -> 4;
+                case SEG_CUBICTO -> 6;
+                default -> 0;
+            };
 
             if (copy > 0) {
                 if ((coordPos + copy) > coords.length) {
@@ -202,26 +184,16 @@ public class ReversePathIterator
 
             for (int s = segPos - 1; s > 0; --s) {
                 switch (segTypes[s]) {
-                case SEG_MOVETO:
+                    case SEG_MOVETO -> {
+                        if (pendingClose) {
+                            pendingClose = false;
+                            segmentTypes[sr++] = SEG_CLOSE;
+                        }
 
-                    if (pendingClose) {
-                        pendingClose = false;
-                        segmentTypes[sr++] = SEG_CLOSE;
+                        segmentTypes[sr++] = SEG_MOVETO;
                     }
-
-                    segmentTypes[sr++] = SEG_MOVETO;
-
-                    break;
-
-                case SEG_CLOSE:
-                    pendingClose = true;
-
-                    break;
-
-                default:
-                    segmentTypes[sr++] = segTypes[s];
-
-                    break;
+                    case SEG_CLOSE -> pendingClose = true;
+                    default -> segmentTypes[sr++] = segTypes[s];
                 }
             }
 
@@ -353,19 +325,12 @@ public class ReversePathIterator
      */
     private static int coordinatesForSegmentType (int segtype)
     {
-        switch (segtype) {
-        case SEG_MOVETO:
-        case SEG_LINETO:
-            return 2;
-
-        case SEG_QUADTO:
-            return 4;
-
-        case SEG_CUBICTO:
-            return 6;
-        }
-
-        return 0;
+        return switch (segtype) {
+            case SEG_MOVETO, SEG_LINETO -> 2;
+            case SEG_QUADTO -> 4;
+            case SEG_CUBICTO -> 6;
+            default -> 0;
+        };
     }
 
     /**

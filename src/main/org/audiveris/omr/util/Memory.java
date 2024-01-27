@@ -64,7 +64,7 @@ public abstract class Memory
      */
     public static void gc ()
     {
-        rt.runFinalization();
+        //        rt.runFinalization();
         rt.gc();
     }
 

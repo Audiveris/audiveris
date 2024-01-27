@@ -164,8 +164,7 @@ public class ShapeBoard
      * Called-back when a set is selected:
      * The global panel is replaced by the selected set panel.
      */
-    private final ActionListener setListener = (ActionEvent e) ->
-    {
+    private final ActionListener setListener = (ActionEvent e) -> {
         String setName = ((Component) e.getSource()).getName();
         ShapeSet set = ShapeSet.getShapeSet(setName);
         selectSet(set);
@@ -175,8 +174,7 @@ public class ShapeBoard
      * Called-back when a set panel is closed:
      * It is replaced by the global panel to allow the selection of another set.
      */
-    private final ActionListener closeListener = (ActionEvent e) ->
-    {
+    private final ActionListener closeListener = (ActionEvent e) -> {
         closeSet();
     };
 
@@ -228,8 +226,7 @@ public class ShapeBoard
     private final SheetKeyListener keyListener;
 
     /** When split container is resized, we reshape this board. */
-    private final PropertyChangeListener dividerListener = (PropertyChangeEvent pce) ->
-    {
+    private final PropertyChangeListener dividerListener = (PropertyChangeEvent pce) -> {
         resizeBoard();
     };
 
@@ -1183,39 +1180,32 @@ public class ShapeBoard
         private int headRow (HeadMotif motif,
                              Shape shape)
         {
-            if (motif == null) {
-                if (ShapeSet.Playings.contains(shape)) {
-                    return 15;
-                } else {
-                    return 13;
-                }
-            }
-
             return switch (motif) {
-            case oval -> 1;
-            case small -> 3;
-            case cross -> 5;
-            case diamond -> 7;
-            case triangle -> 9;
-            case circle -> 11;
-            default -> throw new IllegalArgumentException("No headRow for head motif " + motif);
+                case null -> ShapeSet.Playings.contains(shape) ? 15 : 13;
+                case oval -> 1;
+                case small -> 3;
+                case cross -> 5;
+                case diamond -> 7;
+                case triangle -> 9;
+                case circle -> 11;
+                default -> throw new IllegalArgumentException("No headRow for head motif " + motif);
             };
         }
 
         private int shapeCol (Shape shape)
         {
             return switch (shape) {
-            case AUGMENTATION_DOT -> 1;
-            case QUARTER_NOTE_UP -> 3;
-            case QUARTER_NOTE_DOWN -> 5;
-            case HALF_NOTE_UP -> 7;
-            case HALF_NOTE_DOWN -> 9;
+                case AUGMENTATION_DOT -> 1;
+                case QUARTER_NOTE_UP -> 3;
+                case QUARTER_NOTE_DOWN -> 5;
+                case HALF_NOTE_UP -> 7;
+                case HALF_NOTE_DOWN -> 9;
 
-            case PLAYING_OPEN -> 3;
-            case PLAYING_HALF_OPEN -> 5;
-            case PLAYING_CLOSED -> 7;
+                case PLAYING_OPEN -> 3;
+                case PLAYING_HALF_OPEN -> 5;
+                case PLAYING_CLOSED -> 7;
 
-            default -> throw new IllegalArgumentException("No shapeCol for " + shape);
+                default -> throw new IllegalArgumentException("No shapeCol for " + shape);
             };
         }
     }

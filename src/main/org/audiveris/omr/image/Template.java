@@ -482,15 +482,15 @@ public class Template
 
         // We have to round abscissa in symmetrical manner around slim rectangle
         return switch (anchor.hSide()) {
-        case LEFT -> new Point(
-                (int) Math.round(offset.getX() - 0.5 - 0.001),
-                (int) Math.round(offset.getY() - 0.5));
-        default -> new Point(
-                (int) Math.round(offset.getX() - 0.5),
-                (int) Math.round(offset.getY() - 0.5));
-        case RIGHT -> new Point(
-                (int) Math.round(offset.getX() - 0.5 + 0.001),
-                (int) Math.round(offset.getY() - 0.5));
+            case LEFT -> new Point(
+                    (int) Math.round(offset.getX() - 0.5 - 0.001),
+                    (int) Math.round(offset.getY() - 0.5));
+            case null -> new Point(
+                    (int) Math.round(offset.getX() - 0.5),
+                    (int) Math.round(offset.getY() - 0.5));
+            case RIGHT -> new Point(
+                    (int) Math.round(offset.getX() - 0.5 + 0.001),
+                    (int) Math.round(offset.getY() - 0.5));
         };
     }
 

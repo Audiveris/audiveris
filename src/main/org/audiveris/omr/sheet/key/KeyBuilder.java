@@ -1946,20 +1946,15 @@ public class KeyBuilder
          */
         private int getFifths ()
         {
-            if (roi.isEmpty() || (keyShape == null)) {
+            if (roi.isEmpty()) {
                 return 0;
             }
 
-            switch (keyShape) {
-            case SHARP:
-                return roi.size();
-
-            case FLAT:
-                return -roi.size();
-
-            default:
-                return 0;
-            }
+            return switch (keyShape) {
+                case SHARP -> roi.size();
+                case FLAT -> -roi.size();
+                case null, default -> 0;
+            };
         }
 
         //-------------//

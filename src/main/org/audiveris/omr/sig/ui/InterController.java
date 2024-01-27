@@ -544,135 +544,143 @@ public class InterController
                 final SIGraph sig = system.getSig();
 
                 switch (newRole) {
-                case Lyrics -> {
-                    // Convert to LyricItem words, all within a single LyricLine sentence
-                    final LyricLineInter line = new LyricLineInter(
-                            sentence.getBounds(),
-                            sentence.getGrade(),
-                            sentence.getMeanFont());
-                    line.setManual(true);
-                    line.setStaff(staff);
-                    seq.add(
-                            new AdditionTask(
-                                    sig,
-                                    line,
-                                    line.getBounds(),
-                                    line.searchLinks(system)));
-
-                    for (Inter inter : sentence.getMembers()) {
-                        if (!(inter instanceof LyricItemInter)) {
-                            // Add new LyricItemInter for any plain WordInter
-                            final WordInter orgWord = (WordInter) inter;
-                            final LyricItemInter item = new LyricItemInter(orgWord);
-                            item.setManual(true);
-                            item.setStaff(staff);
-                            seq.add(
-                                    new AdditionTask(
-                                            sig,
-                                            item,
-                                            item.getBounds(),
-                                            Arrays.asList(
-                                                    new Link(line, new Containment(), false))));
-
-                            for (Link link : item.searchLinks(system)) {
-                                // Link from chord to syllable
-                                seq.add(new LinkTask(sig, link.partner, item, link.relation));
-                            }
-
-                            // Remove the plain word
-                            seq.add(new RemovalTask(orgWord));
-                        }
-                    }
-
-                    if (!seq.getTasks().isEmpty()) {
-                        // Remove the now useless original sentence (and its original relations)
-                        seq.add(new RemovalTask(sentence));
-                    }
-                }
-
-                case ChordName -> {
-                    // Convert to ChordName words within the sentence
-                    for (Inter inter : sentence.getMembers()) {
-                        if (!(inter instanceof ChordNameInter)) {
-                            // Add a new ChordNameInter for any original word
-                            final WordInter orgWord = (WordInter) inter;
-                            final ChordNameInter chordName = new ChordNameInter(orgWord);
-                            chordName.setManual(true);
-                            chordName.setStaff(staff);
-                            seq.add(
-                                    new AdditionTask(
-                                            sig,
-                                            chordName,
-                                            chordName.getBounds(),
-                                            Arrays.asList(
-                                                    new Link(sentence, new Containment(), false))));
-
-                            // Remove the original word
-                            seq.add(new RemovalTask(orgWord));
-
-                            // Look for suitable related head chord
-                            for (Link link : chordName.searchLinks(system)) {
-                                seq.add(new LinkTask(sig, link.partner, chordName, link.relation));
-                            }
-                        }
-                    }
-                }
-
-                default -> {
-                    // Convert to SentenceInter if so needed
-                    final SentenceInter finalSentence;
-
-                    if (sentence.getClass() != SentenceInter.class) {
-                        // Create a basic SentenceInter
-                        finalSentence = new SentenceInter(
+                    case Lyrics -> {
+                        // Convert to LyricItem words, all within a single LyricLine sentence
+                        final LyricLineInter line = new LyricLineInter(
                                 sentence.getBounds(),
-                                1.0,
-                                sentence.getMeanFont(),
-                                newRole);
-                        finalSentence.setManual(true);
-                        finalSentence.setStaff(staff);
+                                sentence.getGrade(),
+                                sentence.getMeanFont());
+                        line.setManual(true);
+                        line.setStaff(staff);
                         seq.add(
                                 new AdditionTask(
                                         sig,
-                                        finalSentence,
-                                        finalSentence.getBounds(),
-                                        finalSentence.searchLinks(system)));
-                    } else {
-                        finalSentence = sentence;
-                    }
+                                        line,
+                                        line.getBounds(),
+                                        line.searchLinks(system)));
 
-                    // Convert each word to WordInter if so needed
-                    for (Inter inter : sentence.getMembers()) {
-                        if (inter.getClass() != WordInter.class) {
-                            // LyricItem/ChordName -> WordInter
-                            WordInter orgWord = (WordInter) inter;
-                            WordInter word = new WordInter(orgWord, Shape.TEXT);
-                            word.setManual(true);
-                            word.setStaff(staff);
-                            seq.add(
-                                    new AdditionTask(
-                                            sig,
-                                            word,
-                                            word.getBounds(),
-                                            Arrays.asList(
-                                                    new Link(
-                                                            finalSentence,
-                                                            new Containment(),
-                                                            false))));
+                        for (Inter inter : sentence.getMembers()) {
+                            if (!(inter instanceof LyricItemInter)) {
+                                // Add new LyricItemInter for any plain WordInter
+                                final WordInter orgWord = (WordInter) inter;
+                                final LyricItemInter item = new LyricItemInter(orgWord);
+                                item.setManual(true);
+                                item.setStaff(staff);
+                                seq.add(
+                                        new AdditionTask(
+                                                sig,
+                                                item,
+                                                item.getBounds(),
+                                                Arrays.asList(
+                                                        new Link(line, new Containment(), false))));
 
-                            // Remove the original word
-                            seq.add(new RemovalTask(orgWord));
+                                for (Link link : item.searchLinks(system)) {
+                                    // Link from chord to syllable
+                                    seq.add(new LinkTask(sig, link.partner, item, link.relation));
+                                }
+
+                                // Remove the plain word
+                                seq.add(new RemovalTask(orgWord));
+                            }
+                        }
+
+                        if (!seq.getTasks().isEmpty()) {
+                            // Remove the now useless original sentence (and its original relations)
+                            seq.add(new RemovalTask(sentence));
                         }
                     }
 
-                    if (finalSentence == sentence) {
-                        // New role
-                        seq.add(new SentenceRoleTask(sentence, newRole));
-                    } else {
-                        // Remove original sentence (and its original relations)
-                        seq.add(new RemovalTask(sentence));
+                    case ChordName -> {
+                        // Convert to ChordName words within the sentence
+                        for (Inter inter : sentence.getMembers()) {
+                            if (!(inter instanceof ChordNameInter)) {
+                                // Add a new ChordNameInter for any original word
+                                final WordInter orgWord = (WordInter) inter;
+                                final ChordNameInter chordName = new ChordNameInter(orgWord);
+                                chordName.setManual(true);
+                                chordName.setStaff(staff);
+                                seq.add(
+                                        new AdditionTask(
+                                                sig,
+                                                chordName,
+                                                chordName.getBounds(),
+                                                Arrays.asList(
+                                                        new Link(
+                                                                sentence,
+                                                                new Containment(),
+                                                                false))));
+
+                                // Remove the original word
+                                seq.add(new RemovalTask(orgWord));
+
+                                // Look for suitable related head chord
+                                for (Link link : chordName.searchLinks(system)) {
+                                    seq.add(
+                                            new LinkTask(
+                                                    sig,
+                                                    link.partner,
+                                                    chordName,
+                                                    link.relation));
+                                }
+                            }
+                        }
                     }
-                }
+
+                    default -> {
+                        // Convert to SentenceInter if so needed
+                        final SentenceInter finalSentence;
+
+                        if (sentence.getClass() != SentenceInter.class) {
+                            // Create a basic SentenceInter
+                            finalSentence = new SentenceInter(
+                                    sentence.getBounds(),
+                                    1.0,
+                                    sentence.getMeanFont(),
+                                    newRole);
+                            finalSentence.setManual(true);
+                            finalSentence.setStaff(staff);
+                            seq.add(
+                                    new AdditionTask(
+                                            sig,
+                                            finalSentence,
+                                            finalSentence.getBounds(),
+                                            finalSentence.searchLinks(system)));
+                        } else {
+                            finalSentence = sentence;
+                        }
+
+                        // Convert each word to WordInter if so needed
+                        for (Inter inter : sentence.getMembers()) {
+                            if (inter.getClass() != WordInter.class) {
+                                // LyricItem/ChordName -> WordInter
+                                WordInter orgWord = (WordInter) inter;
+                                WordInter word = new WordInter(orgWord, Shape.TEXT);
+                                word.setManual(true);
+                                word.setStaff(staff);
+                                seq.add(
+                                        new AdditionTask(
+                                                sig,
+                                                word,
+                                                word.getBounds(),
+                                                Arrays.asList(
+                                                        new Link(
+                                                                finalSentence,
+                                                                new Containment(),
+                                                                false))));
+
+                                // Remove the original word
+                                seq.add(new RemovalTask(orgWord));
+                            }
+                        }
+
+                        if (finalSentence == sentence) {
+                            // New role
+                            seq.add(new SentenceRoleTask(sentence, newRole));
+                        } else {
+                            // Remove original sentence (and its original relations)
+                            seq.add(new RemovalTask(sentence));
+                        }
+                    }
                 }
             }
 
@@ -853,36 +861,35 @@ public class InterController
             protected void build ()
             {
                 switch (kind) {
-                default:
-                case SLUR_CONNECTION: {
-                    final Page page = one.getSig().getSystem().getPage();
-                    final SlurInter s1 = (SlurInter) one;
-                    final SlurInter s2 = (SlurInter) two;
+                    default:
+                    case SLUR_CONNECTION: {
+                        final SlurInter s1 = (SlurInter) one;
+                        final SlurInter s2 = (SlurInter) two;
 
-                    // Remove conflicting connections/relations if any
-                    final SlurInter rightSlur = s1.getExtension(RIGHT);
-                    if (rightSlur != null) {
-                        seq.add(new DisconnectTask(s1, rightSlur, kind));
+                        // Remove conflicting connections/relations if any
+                        final SlurInter rightSlur = s1.getExtension(RIGHT);
+                        if (rightSlur != null) {
+                            seq.add(new DisconnectTask(s1, rightSlur, kind));
+                        }
+
+                        final SlurHeadRelation rightRel = s1.getHeadRelation(RIGHT);
+                        if (rightRel != null) {
+                            seq.add(new UnlinkTask(s1.getSig(), rightRel));
+                        }
+
+                        final SlurInter leftSlur = s2.getExtension(LEFT);
+                        if (leftSlur != null) {
+                            seq.add(new DisconnectTask(leftSlur, s2, kind));
+                        }
+
+                        final SlurHeadRelation leftRel = s2.getHeadRelation(LEFT);
+                        if (leftRel != null) {
+                            seq.add(new UnlinkTask(s2.getSig(), leftRel));
+                        }
+
+                        // Finally, add connection
+                        seq.add(new ConnectTask(s1, s2, kind));
                     }
-
-                    final SlurHeadRelation rightRel = s1.getHeadRelation(RIGHT);
-                    if (rightRel != null) {
-                        seq.add(new UnlinkTask(s1.getSig(), rightRel));
-                    }
-
-                    final SlurInter leftSlur = s2.getExtension(LEFT);
-                    if (leftSlur != null) {
-                        seq.add(new DisconnectTask(leftSlur, s2, kind));
-                    }
-
-                    final SlurHeadRelation leftRel = s2.getHeadRelation(LEFT);
-                    if (leftRel != null) {
-                        seq.add(new UnlinkTask(s2.getSig(), leftRel));
-                    }
-
-                    // Finally, add connection
-                    seq.add(new ConnectTask(s1, s2, kind));
-                }
                 }
             }
         }.execute();

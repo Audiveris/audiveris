@@ -417,25 +417,13 @@ public class Rational
     {
         final String[] tokens = str.split("\\s*/\\s*");
 
-        switch (tokens.length) {
-        case 2:
-        {
-            int num = Integer.decode(tokens[0].trim());
-            int den = Integer.decode(tokens[1].trim());
-
-            return new Rational(num, den);
-        }
-
-        case 1:
-        {
-            int num = Integer.decode(tokens[0].trim());
-
-            return new Rational(num, 1);
-        }
-
-        default:
-            throw new NumberFormatException(str);
-        }
+        return switch (tokens.length) {
+            case 2 -> new Rational(
+                    Integer.decode(tokens[0].trim()),
+                    Integer.decode(tokens[1].trim()));
+            case 1 -> new Rational(Integer.decode(tokens[0].trim()), 1);
+            default -> throw new NumberFormatException(str);
+        };
     }
 
     //-----//

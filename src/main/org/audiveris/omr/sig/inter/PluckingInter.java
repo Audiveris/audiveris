@@ -264,12 +264,12 @@ public class PluckingInter
     public static char valueOf (OmrShape omrShape)
     {
         return switch (omrShape) {
-        case fingeringPLower -> 'p';
-        case fingeringILower -> 'i';
-        case fingeringMLower -> 'm';
-        case fingeringALower -> 'a';
+            case fingeringPLower -> 'p';
+            case fingeringILower -> 'i';
+            case fingeringMLower -> 'm';
+            case fingeringALower -> 'a';
 
-        default -> throw new IllegalArgumentException("Invalid plucking shape " + omrShape);
+            default -> throw new IllegalArgumentException("Invalid plucking shape " + omrShape);
         };
     }
 
@@ -279,12 +279,12 @@ public class PluckingInter
     public static char valueOf (Shape shape)
     {
         return switch (shape) {
-        case PLUCK_P -> 'p';
-        case PLUCK_I -> 'i';
-        case PLUCK_M -> 'm';
-        case PLUCK_A -> 'a';
+            case PLUCK_P -> 'p';
+            case PLUCK_I -> 'i';
+            case PLUCK_M -> 'm';
+            case PLUCK_A -> 'a';
 
-        default -> throw new IllegalArgumentException("Invalid plucking shape " + shape);
+            default -> throw new IllegalArgumentException("Invalid plucking shape " + shape);
         };
     }
 }

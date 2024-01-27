@@ -1558,43 +1558,43 @@ public class Book
                 final CheckResult status = Versions.check(new Version(version));
 
                 switch (status) {
-                case BOOK_TOO_OLD -> {
-                    final String msg = bookPath + " version " + version;
-                    logger.warn(msg);
+                    case BOOK_TOO_OLD -> {
+                        final String msg = bookPath + " version " + version;
+                        logger.warn(msg);
 
-                    // Reset book sheets to binary?
-                    if (((OMR.gui == null) && constants.resetOldBooks.isSet()) || ((OMR.gui != null)
-                            && OMR.gui.displayConfirmation(
-                                    msg + "\nConfirm reset to binary?",
-                                    "Too old book version"))) {
-                        resetTo(OmrStep.BINARY);
-                        logger.info("Book {} reset to binary.", radix);
-                        version = WellKnowns.TOOL_REF;
-                        build = WellKnowns.TOOL_BUILD;
+                        // Reset book sheets to binary?
+                        if (((OMR.gui == null) && constants.resetOldBooks.isSet())
+                                || ((OMR.gui != null) && OMR.gui.displayConfirmation(
+                                        msg + "\nConfirm reset to binary?",
+                                        "Too old book version"))) {
+                            resetTo(OmrStep.BINARY);
+                            logger.info("Book {} reset to binary.", radix);
+                            version = WellKnowns.TOOL_REF;
+                            build = WellKnowns.TOOL_BUILD;
 
+                            return true;
+                        } else {
+                            logger.info("Too old book version, ignored.");
+                        }
+
+                        return false;
+                    }
+
+                    case PROGRAM_TOO_OLD -> {
+                        final String msg = bookPath + " version " + version
+                                + "\nPlease use a more recent Audiveris version";
+                        logger.warn(msg);
+
+                        if (OMR.gui != null) {
+                            OMR.gui.displayWarning(msg, "Too old Audiveris software version");
+                        }
+
+                        return false;
+                    }
+
+                    case COMPATIBLE -> {
                         return true;
-                    } else {
-                        logger.info("Too old book version, ignored.");
                     }
-
-                    return false;
-                }
-
-                case PROGRAM_TOO_OLD -> {
-                    final String msg = bookPath + " version " + version
-                            + "\nPlease use a more recent Audiveris version";
-                    logger.warn(msg);
-
-                    if (OMR.gui != null) {
-                        OMR.gui.displayWarning(msg, "Too old Audiveris software version");
-                    }
-
-                    return false;
-                }
-
-                case COMPATIBLE -> {
-                    return true;
-                }
                 }
             }
         }

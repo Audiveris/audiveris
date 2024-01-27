@@ -237,9 +237,9 @@ public class LogicalPart
     public String getDefaultName ()
     {
         return switch (staffCount) {
-        case 1 -> constants.defaultSingleStaffPartName.getValue();
-        case 2 -> constants.defaultDoubleStaffPartName.getValue();
-        default -> constants.defaultPartName.getValue();
+            case 1 -> constants.defaultSingleStaffPartName.getValue();
+            case 2 -> constants.defaultDoubleStaffPartName.getValue();
+            default -> constants.defaultPartName.getValue();
         };
     }
 
@@ -256,9 +256,9 @@ public class LogicalPart
         logger.debug("Part #{} count={}", getId(), staffCount);
 
         return switch (staffCount) {
-        case 1 -> constants.defaultSingleStaffPartProgram.getValue();
-        case 2 -> constants.defaultDoubleStaffPartProgram.getValue();
-        default -> constants.defaultPartProgram.getValue();
+            case 1 -> constants.defaultSingleStaffPartProgram.getValue();
+            case 2 -> constants.defaultDoubleStaffPartProgram.getValue();
+            default -> constants.defaultPartProgram.getValue();
         };
     }
 

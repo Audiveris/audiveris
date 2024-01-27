@@ -639,6 +639,7 @@ public class SampleSheet
         // afterUnmarshal //
         //----------------//
         /**
+         * {@inheritDoc}
          * Rename the old flag shapes.
          */
         @SuppressWarnings("unused")
@@ -650,14 +651,12 @@ public class SampleSheet
             for (Sample sample : samples) {
                 final Shape shape = sample.getShape();
                 switch (shape) {
-                case FLAG_1_UP -> modified |= sample.renameShapeAs(Shape.FLAG_1_DOWN);
-                case FLAG_2_UP -> modified |= sample.renameShapeAs(Shape.FLAG_2_DOWN);
-                case FLAG_3_UP -> modified |= sample.renameShapeAs(Shape.FLAG_3_DOWN);
-                case FLAG_4_UP -> modified |= sample.renameShapeAs(Shape.FLAG_4_DOWN);
-                case FLAG_5_UP -> modified |= sample.renameShapeAs(Shape.FLAG_5_DOWN);
-                default ->
-                        {
-                        }
+                    case FLAG_1_UP -> modified |= sample.renameShapeAs(Shape.FLAG_1_DOWN);
+                    case FLAG_2_UP -> modified |= sample.renameShapeAs(Shape.FLAG_2_DOWN);
+                    case FLAG_3_UP -> modified |= sample.renameShapeAs(Shape.FLAG_3_DOWN);
+                    case FLAG_4_UP -> modified |= sample.renameShapeAs(Shape.FLAG_4_DOWN);
+                    case FLAG_5_UP -> modified |= sample.renameShapeAs(Shape.FLAG_5_DOWN);
+                    default -> {}
                 }
             }
         }

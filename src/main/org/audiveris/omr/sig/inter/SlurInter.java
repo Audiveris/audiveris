@@ -676,13 +676,10 @@ public class SlurInter
     public Point2D getRelationCenter (Relation relation)
     {
         if (relation instanceof SlurHeadRelation shRel) {
-            switch (shRel.getSide()) {
-            default:
-            case LEFT:
-                return curve.getP1();
-            case RIGHT:
-                return curve.getP2();
-            }
+            return switch (shRel.getSide()) {
+                case LEFT -> curve.getP1();
+                case RIGHT -> curve.getP2();
+            };
         } else {
             return getRelationCenter();
         }

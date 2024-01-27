@@ -77,7 +77,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -496,15 +495,12 @@ public class OctaveShiftInter
      */
     public OctaveShiftInter getExtension (HorizontalSide side)
     {
-        Objects.requireNonNull(side, "No side provided for OctaveShift getExtension");
-
-        switch (side) {
-        default:
-        case LEFT:
-            return leftExtension;
-        case RIGHT:
-            return rightExtension;
-        }
+        return switch (side) {
+            case null -> throw new NullPointerException(
+                    "No side provided for OctaveShift getExtension");
+            case LEFT -> leftExtension;
+            case RIGHT -> rightExtension;
+        };
     }
 
     //-------------//
@@ -577,13 +573,10 @@ public class OctaveShiftInter
     public Point2D getRelationCenter (Relation relation)
     {
         if (relation instanceof OctaveShiftChordRelation osr) {
-            switch (osr.getSide()) {
-            default:
-            case LEFT:
-                return line.getP1();
-            case RIGHT:
-                return line.getP2();
-            }
+            return switch (osr.getSide()) {
+                case LEFT -> line.getP1();
+                case RIGHT -> line.getP2();
+            };
         } else {
             return getRelationCenter();
         }
@@ -635,10 +628,10 @@ public class OctaveShiftInter
         final int sign = (kind == Kind.ALTA) ? 1 : -1;
 
         return switch (shape) {
-        case OTTAVA -> sign * 1;
-        case QUINDICESIMA -> sign * 2;
-        case VENTIDUESIMA -> sign * 3;
-        default -> null; // Should not occur!
+            case OTTAVA -> sign * 1;
+            case QUINDICESIMA -> sign * 2;
+            case VENTIDUESIMA -> sign * 3;
+            default -> null; // Should not occur!
         };
     }
 
@@ -653,10 +646,10 @@ public class OctaveShiftInter
     public Integer getValue ()
     {
         return switch (shape) {
-        case OTTAVA -> 8;
-        case QUINDICESIMA -> 15;
-        case VENTIDUESIMA -> 22;
-        default -> null; // Should not occur!
+            case OTTAVA -> 8;
+            case QUINDICESIMA -> 15;
+            case VENTIDUESIMA -> 22;
+            default -> null; // Should not occur!
         };
     }
 
@@ -817,13 +810,11 @@ public class OctaveShiftInter
     public void setExtension (HorizontalSide side,
                               OctaveShiftInter other)
     {
-        Objects.requireNonNull(side, "No side provided for OctaveShift setExtension");
-
         switch (side) {
-        case LEFT:
-            leftExtension = other;
-        case RIGHT:
-            rightExtension = other;
+            case null -> throw new NullPointerException(
+                    "No side provided for OctaveShift setExtension");
+            case LEFT -> leftExtension = other;
+            case RIGHT -> rightExtension = other;
         }
     }
 
@@ -1025,51 +1016,52 @@ public class OctaveShiftInter
             final Point middle = PointUtil.rounded(PointUtil.middle(os.getLine()));
             final int mx = middle.x; // Middle point abscissa
             final int targetMy = middle.y + dy; // Middle point target ordinate
-
             final int minYGap = scale.toPixels(constants.minGapFromStaff);
             int yGap;
 
             switch (os.getKind()) {
-            default:
-            case ALTA:
-                // Stay above current staff
-                yGap = (staff.getFirstLine().yAt(mx) - minYGap) - targetMy;
-                if (yGap < 0) {
-                    dy += yGap;
-                } else {
-                    // Stay below upper staff if any
-                    final Staff upper = getLimitingStaff(stfMgr.vertNeighbors(staff, TOP), os);
-                    if (upper != null) {
-                        yGap = targetMy - (upper.getLastLine().yAt(mx) + minYGap);
-                        if (yGap < 0) {
-                            dy -= yGap;
-                        }
+                case ALTA -> {
+                    // Stay above current staff
+                    yGap = (staff.getFirstLine().yAt(mx) - minYGap) - targetMy;
+                    if (yGap < 0) {
+                        dy += yGap;
                     } else {
-                        // Stay below top of sheet
-                        if (targetMy < 0) {
-                            dy -= targetMy;
+                        // Stay below upper staff if any
+                        final Staff upper = getLimitingStaff(stfMgr.vertNeighbors(staff, TOP), os);
+                        if (upper != null) {
+                            yGap = targetMy - (upper.getLastLine().yAt(mx) + minYGap);
+                            if (yGap < 0) {
+                                dy -= yGap;
+                            }
+                        } else {
+                            // Stay below top of sheet
+                            if (targetMy < 0) {
+                                dy -= targetMy;
+                            }
                         }
                     }
                 }
-                break;
-            case BASSA:
-                // Stay below current staff
-                yGap = targetMy - (staff.getLastLine().yAt(mx) + minYGap);
-                if (yGap < 0) {
-                    dy -= yGap;
-                } else {
-                    // Stay above lower staff if any
-                    final Staff lower = getLimitingStaff(stfMgr.vertNeighbors(staff, BOTTOM), os);
-                    if (lower != null) {
-                        yGap = (lower.getFirstLine().yAt(mx) - minYGap) - targetMy;
-                        if (yGap < 0) {
-                            dy += yGap;
-                        }
+                case BASSA -> {
+                    // Stay below current staff
+                    yGap = targetMy - (staff.getLastLine().yAt(mx) + minYGap);
+                    if (yGap < 0) {
+                        dy -= yGap;
                     } else {
-                        // Stay above bottom of sheet
-                        yGap = sheet.getPicture().getHeight() - targetMy;
-                        if (yGap < 0) {
-                            dy += yGap;
+                        // Stay above lower staff if any
+                        final Staff lower = getLimitingStaff(
+                                stfMgr.vertNeighbors(staff, BOTTOM),
+                                os);
+                        if (lower != null) {
+                            yGap = (lower.getFirstLine().yAt(mx) - minYGap) - targetMy;
+                            if (yGap < 0) {
+                                dy += yGap;
+                            }
+                        } else {
+                            // Stay above bottom of sheet
+                            yGap = sheet.getPicture().getHeight() - targetMy;
+                            if (yGap < 0) {
+                                dy += yGap;
+                            }
                         }
                     }
                 }

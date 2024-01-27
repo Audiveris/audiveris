@@ -213,20 +213,21 @@ public abstract class AbstractNumberInter
     protected static int valueOf (OmrShape omrShape)
     {
         return switch (omrShape) {
-        case timeSig0 -> 0;
-        case timeSig1 -> 1;
-        case timeSig2 -> 2;
-        case timeSig3 -> 3;
-        case timeSig4 -> 4;
-        case timeSig5 -> 5;
-        case timeSig6 -> 6;
-        case timeSig7 -> 7;
-        case timeSig8 -> 8;
-        case timeSig9 -> 9;
-        case timeSig12 -> 12;
-        case timeSig16 -> 16;
+            case timeSig0 -> 0;
+            case timeSig1 -> 1;
+            case timeSig2 -> 2;
+            case timeSig3 -> 3;
+            case timeSig4 -> 4;
+            case timeSig5 -> 5;
+            case timeSig6 -> 6;
+            case timeSig7 -> 7;
+            case timeSig8 -> 8;
+            case timeSig9 -> 9;
+            case timeSig12 -> 12;
+            case timeSig16 -> 16;
 
-        default -> throw new IllegalArgumentException("No integer value defined for " + omrShape);
+            default -> throw new IllegalArgumentException(
+                    "No integer value defined for " + omrShape);
         };
     }
 
@@ -241,21 +242,20 @@ public abstract class AbstractNumberInter
      */
     public static Integer valueOf (Shape shape)
     {
-        return (shape == null) ? null : switch (shape) {
-        case NUMBER_CUSTOM, TIME_ZERO -> 0;
-        case TIME_ONE -> 1;
-        case TIME_TWO -> 2;
-        case TIME_THREE -> 3;
-        case TIME_FOUR -> 4;
-        case TIME_FIVE -> 5;
-        case TIME_SIX -> 6;
-        case TIME_SEVEN -> 7;
-        case TIME_EIGHT -> 8;
-        case TIME_NINE -> 9;
-        case TIME_TWELVE -> 12;
-        case TIME_SIXTEEN -> 16;
-
-        default -> null;
+        return switch (shape) {
+            case NUMBER_CUSTOM, TIME_ZERO -> 0;
+            case TIME_ONE -> 1;
+            case TIME_TWO -> 2;
+            case TIME_THREE -> 3;
+            case TIME_FOUR -> 4;
+            case TIME_FIVE -> 5;
+            case TIME_SIX -> 6;
+            case TIME_SEVEN -> 7;
+            case TIME_EIGHT -> 8;
+            case TIME_NINE -> 9;
+            case TIME_TWELVE -> 12;
+            case TIME_SIXTEEN -> 16;
+            case null, default -> null;
         };
     }
 }

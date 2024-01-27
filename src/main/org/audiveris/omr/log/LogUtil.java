@@ -398,28 +398,15 @@ public abstract class LogUtil
      */
     public static Level toLevel (final String str)
     {
-        switch (str.toUpperCase()) {
-        case "ALL":
-            return Level.ALL;
-
-        case "TRACE":
-            return Level.TRACE;
-
-        case "DEBUG":
-            return Level.DEBUG;
-
-        case "INFO":
-            return Level.INFO;
-
-        case "WARN":
-            return Level.WARN;
-
-        case "ERROR":
-            return Level.ERROR;
-
-        default:
-        case "OFF":
-            return Level.OFF;
-        }
+        return switch (str.toUpperCase()) {
+            case "ALL" -> Level.ALL;
+            case "TRACE" -> Level.TRACE;
+            case "DEBUG" -> Level.DEBUG;
+            case "INFO" -> Level.INFO;
+            case "WARN" -> Level.WARN;
+            case "ERROR" -> Level.ERROR;
+            case "OFF" -> Level.OFF;
+            default -> Level.OFF;
+        };
     }
 }

@@ -57,18 +57,10 @@ public enum Orientation
             return null;
         }
 
-        switch (this) {
-        case HORIZONTAL:
-
-            // Identity: coord->x, pos->y
-            return new Point(cp.x, cp.y);
-
-        default:
-        case VERTICAL:
-
-            // swap: coord->y, pos->x
-            return new Point(cp.y, cp.x);
-        }
+        return switch (this) {
+            case HORIZONTAL -> new Point(cp.x, cp.y); // Identity: coord->x, pos->y
+            case VERTICAL -> new Point(cp.y, cp.x); // swap: coord->y, pos->x
+        };
     }
 
     //----------//
@@ -87,18 +79,10 @@ public enum Orientation
             return null;
         }
 
-        switch (this) {
-        case HORIZONTAL:
-
-            // Identity
-            return new Point2D.Double(cp.getX(), cp.getY());
-
-        default:
-        case VERTICAL:
-
-            // Swap: coord->y, pos->x
-            return new Point2D.Double(cp.getY(), cp.getX());
-        }
+        return switch (this) {
+            case HORIZONTAL -> new Point2D.Double(cp.getX(), cp.getY()); // Identity
+            case VERTICAL -> new Point2D.Double(cp.getY(), cp.getX()); // Swap: coord->y, pos->x
+        };
     }
 
     //----------//
@@ -117,18 +101,13 @@ public enum Orientation
             return null;
         }
 
-        switch (this) {
-        case HORIZONTAL:
-
+        return switch (this) {
             // coord->x, pos->y, length->width, thickness->height
-            return new Rectangle(cplt);
-
-        default:
-        case VERTICAL:
+            case HORIZONTAL -> new Rectangle(cplt);
 
             // coord->y, pos->x, length->height, thickness->width
-            return new Rectangle(cplt.y, cplt.x, cplt.height, cplt.width);
-        }
+            case VERTICAL -> new Rectangle(cplt.y, cplt.x, cplt.height, cplt.width);
+        };
     }
 
     //------------//
@@ -155,14 +134,10 @@ public enum Orientation
      */
     public Orientation opposite ()
     {
-        switch (this) {
-        case HORIZONTAL:
-            return VERTICAL;
-
-        default:
-        case VERTICAL:
-            return HORIZONTAL;
-        }
+        return switch (this) {
+            case HORIZONTAL -> VERTICAL;
+            case VERTICAL -> HORIZONTAL;
+        };
     }
 
     //----------//
@@ -226,17 +201,14 @@ public enum Orientation
             return null;
         }
 
-        switch (this) {
-        case HORIZONTAL:
+        return switch (this) {
+            case HORIZONTAL -> {
+                final Line absLine = new BasicLine();
+                absLine.includeLine(relLine);
+                yield absLine;
+            }
 
-            Line absLine = new BasicLine();
-            absLine.includeLine(relLine);
-
-            return absLine;
-
-        default:
-        case VERTICAL:
-            return relLine.swappedCoordinates();
-        }
+            case VERTICAL -> relLine.swappedCoordinates();
+        };
     }
 }

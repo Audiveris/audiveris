@@ -1493,10 +1493,9 @@ public class SystemInfo
         final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
 
         return switch (shape) {
-        case LONG_REST, BREVE_REST -> true;
-        case WHOLE_REST -> !switches.getValue(ProcessingSwitch.partialWholeRests);
-
-        default -> false;
+            case LONG_REST, BREVE_REST -> true;
+            case WHOLE_REST -> !switches.getValue(ProcessingSwitch.partialWholeRests);
+            default -> false;
         };
     }
 

@@ -261,9 +261,9 @@ public class LinesRetriever
             }
 
             final Staff staff = switch (infos.size()) {
-            case 5 -> new Staff(++staffId, left, right, cluster.getInterline(), infos);
-            case 1 -> new OneLineStaff(++staffId, left, right, cluster.getInterline(), infos);
-            default -> new Tablature(++staffId, left, right, cluster.getInterline(), infos);
+                case 5 -> new Staff(++staffId, left, right, cluster.getInterline(), infos);
+                case 1 -> new OneLineStaff(++staffId, left, right, cluster.getInterline(), infos);
+                default -> new Tablature(++staffId, left, right, cluster.getInterline(), infos);
             };
 
             staffManager.addStaff(staff);

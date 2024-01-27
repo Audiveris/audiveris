@@ -162,24 +162,24 @@ public class TimePairInter
     {
         final List<Inter> members = getMembers();
 
-        switch (members.size()) {
-        case 2:
-            return (TimeNumberInter) members.get((side == TOP) ? 0 : 1);
+        return switch (members.size()) {
+            case 2 -> (TimeNumberInter) members.get((side == TOP) ? 0 : 1);
 
-        case 1:
-            if ((staff != null) && !staff.isTablature()) {
-                final TimeNumberInter tni = (TimeNumberInter) members.get(0);
-                final double pp = staff.pitchPositionOf(tni.getCenter());
+            case 1 -> {
+                if ((staff != null) && !staff.isTablature()) {
+                    final TimeNumberInter tni = (TimeNumberInter) members.get(0);
+                    final double pp = staff.pitchPositionOf(tni.getCenter());
 
-                if (((side == TOP) && (pp < 0)) || ((side == BOTTOM) && (pp > 0))) {
-                    return tni;
+                    if (((side == TOP) && (pp < 0)) || ((side == BOTTOM) && (pp > 0))) {
+                        yield tni;
+                    }
                 }
+                yield null;
             }
 
-        default:
-        case 0:
-            return null;
-        }
+            case 0 -> null;
+            default -> null;
+        };
     }
 
     //------------//

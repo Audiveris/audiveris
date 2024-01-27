@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                    : b u i l d . g r a d l e                                   //
+//                                     b u i l d . g r a d l e                                    //
 //                                                                                                //
 //--------------------------------------------------------------------------------------------------
 //
@@ -17,7 +17,7 @@ apply plugin: 'application'
 
 project.version  = '5.4-alpha'
 
-def minJavaVersion = '17'
+def minJavaVersion = '21'
 sourceCompatibility = JavaLanguageVersion.of(minJavaVersion)
 
 // Central location for the specific versions of tesseract dependencies

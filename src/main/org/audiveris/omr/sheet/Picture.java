@@ -640,43 +640,41 @@ public class Picture
 
         if (src == null) {
             switch (key) {
-            case GRAY -> src = buildGraySource(getGrayImage());
+                case GRAY -> src = buildGraySource(getGrayImage());
 
-            case BINARY -> {
-                // Built from binary image, if available
-                BufferedImage image = getImage(ImageKey.BINARY);
+                case BINARY -> {
+                    // Built from binary image, if available
+                    BufferedImage image = getImage(ImageKey.BINARY);
 
-                if (image != null) {
-                    src = new ByteProcessor(image);
-                } else {
-                    // Otherwise, built via binarization of initial gray source if any
-                    final ByteProcessor gray = getSource(SourceKey.GRAY);
-
-                    if (gray != null) {
-                        src = binarized(gray);
-
-                        // Register binary image for possible future use
-                        image = src.getBufferedImage();
-                        setImage(ImageKey.BINARY, image, true);
-                        sheet.getStub().setModified(true);
+                    if (image != null) {
+                        src = new ByteProcessor(image);
                     } else {
-                        logger.warn("Cannot provide BINARY source");
+                        // Otherwise, built via binarization of initial gray source if any
+                        final ByteProcessor gray = getSource(SourceKey.GRAY);
 
-                        return null;
+                        if (gray != null) {
+                            src = binarized(gray);
+
+                            // Register binary image for possible future use
+                            image = src.getBufferedImage();
+                            setImage(ImageKey.BINARY, image, true);
+                            sheet.getStub().setModified(true);
+                        } else {
+                            logger.warn("Cannot provide BINARY source");
+
+                            return null;
+                        }
                     }
                 }
-            }
 
-            case GAUSSIAN -> // Built from median
-                    src = gaussianFiltered(getSource(SourceKey.MEDIAN));
+                case GAUSSIAN -> // Built from median
+                        src = gaussianFiltered(getSource(SourceKey.MEDIAN));
 
-            case MEDIAN -> // Built from no_staff
-                    src = medianFiltered(getSource(SourceKey.NO_STAFF));
+                case MEDIAN -> // Built from no_staff
+                        src = medianFiltered(getSource(SourceKey.NO_STAFF));
 
-            case NO_STAFF -> // Built by erasing StaffLines glyphs from binary source
-                    src = buildNoStaffBuffer();
-
-            default -> logger.error("Source " + key + " is not yet supported");
+                case NO_STAFF -> // Built by erasing StaffLines glyphs from binary source
+                        src = buildNoStaffBuffer();
             }
 
             if (src != null) {
@@ -748,8 +746,8 @@ public class Picture
 
         if (tbl == null) {
             switch (key) {
-            case BINARY -> tbl = verticalTableOf(ImageKey.BINARY);
-            case HEAD_SPOTS -> tbl = verticalTableOf(ImageKey.HEAD_SPOTS);
+                case BINARY -> tbl = verticalTableOf(ImageKey.BINARY);
+                case HEAD_SPOTS -> tbl = verticalTableOf(ImageKey.HEAD_SPOTS);
             }
 
             if (tbl != null) {

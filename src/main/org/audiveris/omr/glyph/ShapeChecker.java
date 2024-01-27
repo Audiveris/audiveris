@@ -327,34 +327,21 @@ public class ShapeChecker
                 }
 
                 switch (p2) {
-                case -13:
-                case -9:
-                case -5:
-                case -1:
-                case 3:
-                case 7:
-                case 11:
-                case 15:
-                    eval.shape = Shape.HALF_REST; // Standard pitch: -0.5
+                    case -13, -9, -5, -1, 3, 7, 11, 15 -> {
+                        eval.shape = Shape.HALF_REST; // Standard pitch: -0.5
 
-                    return true;
+                        return true;
+                    }
+                    case -15, -11, -7, -3, 1, 5, 9, 13 -> {
+                        eval.shape = Shape.WHOLE_REST; // Standard pitch: -1.5
 
-                case -15:
-                case -11:
-                case -7:
-                case -3:
-                case 1:
-                case 5:
-                case 9:
-                case 13:
-                    eval.shape = Shape.WHOLE_REST; // Standard pitch: -1.5
+                        return true;
+                    }
+                    default -> {
+                        eval.failure = new Evaluation.Failure("pitch");
 
-                    return true;
-
-                default:
-                    eval.failure = new Evaluation.Failure("pitch");
-
-                    return false;
+                        return false;
+                    }
                 }
             }
 

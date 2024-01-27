@@ -770,14 +770,14 @@ public class HeadInter
                                           VerticalSide vSide)
     {
         final Anchor anchor = switch (hSide) {
-        case LEFT -> switch (vSide) {
-        case TOP -> Anchor.TOP_LEFT_STEM;
-        case BOTTOM -> Anchor.BOTTOM_LEFT_STEM;
-        };
-        case RIGHT -> switch (vSide) {
-        case TOP -> Anchor.TOP_RIGHT_STEM;
-        case BOTTOM -> Anchor.BOTTOM_RIGHT_STEM;
-        };
+            case LEFT -> switch (vSide) {
+                case TOP -> Anchor.TOP_LEFT_STEM;
+                case BOTTOM -> Anchor.BOTTOM_LEFT_STEM;
+            };
+            case RIGHT -> switch (vSide) {
+                case TOP -> Anchor.TOP_RIGHT_STEM;
+                case BOTTOM -> Anchor.BOTTOM_RIGHT_STEM;
+            };
         };
 
         return getStemReferencePoint(anchor);

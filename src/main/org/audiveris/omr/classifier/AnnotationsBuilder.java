@@ -493,24 +493,25 @@ public class AnnotationsBuilder
                 return null;
             }
 
-            switch (inter.getShape()) {
-            case ACCENT:
-                return above ? OmrShape.articAccentAbove : OmrShape.articAccentBelow;
+            return switch (inter.getShape()) {
+                case ACCENT -> above //
+                        ? OmrShape.articAccentAbove
+                        : OmrShape.articAccentBelow;
+                case STACCATO -> above //
+                        ? OmrShape.articStaccatoAbove
+                        : OmrShape.articStaccatoBelow;
+                case TENUTO -> above //
+                        ? OmrShape.articTenutoAbove
+                        : OmrShape.articTenutoBelow;
+                case STACCATISSIMO -> above //
+                        ? OmrShape.articStaccatissimoAbove
+                        : OmrShape.articStaccatissimoBelow;
+                case STRONG_ACCENT -> above //
+                        ? OmrShape.articMarcatoAbove
+                        : OmrShape.articMarcatoBelow;
+                default -> null;
+            };
 
-            case STACCATO:
-                return above ? OmrShape.articStaccatoAbove : OmrShape.articStaccatoBelow;
-
-            case TENUTO:
-                return above ? OmrShape.articTenutoAbove : OmrShape.articTenutoBelow;
-
-            case STACCATISSIMO:
-                return above ? OmrShape.articStaccatissimoAbove : OmrShape.articStaccatissimoBelow;
-
-            case STRONG_ACCENT:
-                return above ? OmrShape.articMarcatoAbove : OmrShape.articMarcatoBelow;
-            }
-
-            return null;
         }
 
         /**
@@ -521,18 +522,12 @@ public class AnnotationsBuilder
          */
         private OmrShape getOmrShape (KeyAlterInter inter)
         {
-            switch (inter.getShape()) {
-            case FLAT:
-                return OmrShape.keyFlat;
-
-            case NATURAL:
-                return OmrShape.keyNatural;
-
-            case SHARP:
-                return OmrShape.keySharp;
-            }
-
-            return null;
+            return switch (inter.getShape()) {
+                case FLAT -> OmrShape.keyFlat;
+                case NATURAL -> OmrShape.keyNatural;
+                case SHARP -> OmrShape.keySharp;
+                default -> null;
+            };
         }
 
         /**

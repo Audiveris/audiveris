@@ -442,32 +442,29 @@ public class TemplateFactory
         final List<Point> holeSeeds = new ArrayList<>();
 
         switch (shape) {
-        case WHOLE_NOTE_CIRCLE_X, NOTEHEAD_CIRCLE_X_VOID, NOTEHEAD_CIRCLE_X ->
-        {
-            // 4 holes on vertical and on horizontal axes
-            holeSeeds.add(new Point(box.x + (box.width / 4), box.y + (box.height / 2)));
-            holeSeeds.add(new Point(box.x + (3 * box.width / 4), box.y + (box.height / 2)));
-            holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 4)));
-            holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (3 * box.height / 4)));
-        }
-        case BREVE_CIRCLE_X ->
-        {
-            // 4 holes on vertical and on horizontal axes
-            holeSeeds.add(new Point(box.x + ((3 * box.width) / 8), box.y + (box.height / 2)));
-            holeSeeds.add(new Point(box.x + ((5 * box.width) / 8), box.y + (box.height / 2)));
-            holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 4)));
-            holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (3 * box.height / 4)));
-        }
-        case BREVE_CROSS ->
-        {
-            // 3 holes on horizontal axis
-            holeSeeds.add(new Point(box.x + (box.width / 4), box.y + (box.height / 2)));
-            holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
-            holeSeeds.add(new Point(box.x + (3 * box.width / 4), box.y + (box.height / 2)));
-        }
-        default ->
-                // Just one hole in the symbol center
+            case WHOLE_NOTE_CIRCLE_X, NOTEHEAD_CIRCLE_X_VOID, NOTEHEAD_CIRCLE_X -> {
+                // 4 holes on vertical and on horizontal axes
+                holeSeeds.add(new Point(box.x + (box.width / 4), box.y + (box.height / 2)));
+                holeSeeds.add(new Point(box.x + (3 * box.width / 4), box.y + (box.height / 2)));
+                holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 4)));
+                holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (3 * box.height / 4)));
+            }
+            case BREVE_CIRCLE_X -> {
+                // 4 holes on vertical and on horizontal axes
+                holeSeeds.add(new Point(box.x + ((3 * box.width) / 8), box.y + (box.height / 2)));
+                holeSeeds.add(new Point(box.x + ((5 * box.width) / 8), box.y + (box.height / 2)));
+                holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 4)));
+                holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (3 * box.height / 4)));
+            }
+            case BREVE_CROSS -> {
+                // 3 holes on horizontal axis
+                holeSeeds.add(new Point(box.x + (box.width / 4), box.y + (box.height / 2)));
                 holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
+                holeSeeds.add(new Point(box.x + (3 * box.width / 4), box.y + (box.height / 2)));
+            }
+            default ->
+                    // Just one hole in the symbol center
+                    holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
         }
 
         // Fill the holes if any with HOLE color
@@ -653,25 +650,23 @@ public class TemplateFactory
                                      Rectangle slimBox,
                                      HorizontalSide hSide)
     {
-        // @formatter:off
         return switch (shape) {
-        case NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL, NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL ->
-                switch (hSide) {
-                case LEFT -> slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
-                case RIGHT -> slimBox.y + 0.5 * slimBox.height;
-                };
-        case NOTEHEAD_CROSS ->
-                switch (hSide) {
-                case LEFT -> slimBox.y + slimBox.height;
-                case RIGHT -> slimBox.y + (1 - 0.2) * slimBox.height;
-                };
-        case NOTEHEAD_CROSS_VOID -> slimBox.y + slimBox.height;
-        case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID -> slimBox.y + slimBox.height / 2.0;
-        case NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID -> slimBox.y;
+            case NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL, NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL -> //
+                    switch (hSide) {
+                        case LEFT -> slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
+                        case RIGHT -> slimBox.y + 0.5 * slimBox.height;
+                    };
+            case NOTEHEAD_CROSS -> //
+                    switch (hSide) {
+                        case LEFT -> slimBox.y + slimBox.height;
+                        case RIGHT -> slimBox.y + (1 - 0.2) * slimBox.height;
+                    };
+            case NOTEHEAD_CROSS_VOID -> slimBox.y + slimBox.height;
+            case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID -> slimBox.y + slimBox.height / 2.0;
+            case NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID -> slimBox.y;
 
-        default -> slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
+            default -> slimBox.y + slimBox.height * (1 + constants.stemDy.getValue());
         };
-        // @formatter:on
     }
 
     //-------------//
@@ -791,17 +786,21 @@ public class TemplateFactory
                                   HorizontalSide hSide)
     {
         return switch (shape) {
-        case NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL, NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL -> switch (hSide) {
-        case LEFT -> slimBox.y + 0.5 * slimBox.height;
-        case RIGHT -> slimBox.y - constants.stemDy.getValue() * slimBox.height;
-        };
-        case NOTEHEAD_CROSS -> switch (hSide) {
-        case LEFT -> slimBox.y + 0.2 * slimBox.height;
-        case RIGHT -> slimBox.y;
-        };
-        case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID -> slimBox.y + slimBox.height / 2.0;
-        case NOTEHEAD_CROSS_VOID, NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID -> slimBox.y;
-        default -> slimBox.y - constants.stemDy.getValue() * slimBox.height;
+            case NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL, NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL -> //
+                    switch (hSide) {
+                        case LEFT -> slimBox.y + 0.5 * slimBox.height;
+                        case RIGHT -> slimBox.y - constants.stemDy.getValue() * slimBox.height;
+                    };
+            case NOTEHEAD_CROSS -> //
+                    switch (hSide) {
+                        case LEFT -> slimBox.y + 0.2 * slimBox.height;
+                        case RIGHT -> slimBox.y;
+                    };
+            case NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_DIAMOND_VOID -> //
+                    slimBox.y + slimBox.height / 2.0;
+            case NOTEHEAD_CROSS_VOID, NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_TRIANGLE_DOWN_VOID -> //
+                    slimBox.y;
+            default -> slimBox.y - constants.stemDy.getValue() * slimBox.height;
         };
     }
 

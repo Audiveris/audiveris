@@ -130,85 +130,81 @@ public class NestView
         sheet.renderItems(g);
 
         switch (ViewParameters.getInstance().getSelectionMode()) {
-        case MODE_GLYPH:
+            case MODE_GLYPH -> {
+                // Render the selected glyph(s) if any
+                List<Glyph> selectedGlyphs = glyphIndex.getSelectedGlyphList();
 
-            // Render the selected glyph(s) if any
-            List<Glyph> selectedGlyphs = glyphIndex.getSelectedGlyphList();
+                if (!selectedGlyphs.isEmpty()) {
+                    // Decorations first
+                    g.setColor(Color.RED);
 
-            if (!selectedGlyphs.isEmpty()) {
-                // Decorations first
-                g.setColor(Color.RED);
+                    for (Glyph glyph : selectedGlyphs) {
+                        // Draw selected glyph in specific color
+                        glyph.getRunTable().render(g, glyph.getTopLeft());
 
-                for (Glyph glyph : selectedGlyphs) {
-                    // Draw selected glyph in specific color
-                    glyph.getRunTable().render(g, glyph.getTopLeft());
+                        //
+                        //                    // Draw character boxes for textual glyphs?
+                        //                    if (glyph.isText()) {
+                        //                        if (ViewParameters.getInstance().isLetterBoxPainting()) {
+                        //                            TextWord word = glyph.getTextWord();
+                        //
+                        //                            if (word != null) {
+                        //                                for (TextChar ch : word.getChars()) {
+                        //                                    Rectangle b = ch.getBounds();
+                        //                                    g.drawRect(b.x, b.y, b.width, b.height);
+                        //                                }
+                        //                            }
+                        //                        }
+                        //                    }
+                        //
+                        // Draw attachments, if any
+                        glyph.renderAttachments(g);
 
-                    //
-                    //                    // Draw character boxes for textual glyphs?
-                    //                    if (glyph.isText()) {
-                    //                        if (ViewParameters.getInstance().isLetterBoxPainting()) {
-                    //                            TextWord word = glyph.getTextWord();
-                    //
-                    //                            if (word != null) {
-                    //                                for (TextChar ch : word.getChars()) {
-                    //                                    Rectangle b = ch.getBounds();
-                    //                                    g.drawRect(b.x, b.y, b.width, b.height);
-                    //                                }
-                    //                            }
-                    //                        }
-                    //                    }
-                    //
-                    // Draw attachments, if any
-                    glyph.renderAttachments(g);
-
-                    // Draw glyph line?
-                    if (ViewParameters.getInstance().isLinePainting()) {
-                        glyph.renderLine(g);
+                        // Draw glyph line?
+                        if (ViewParameters.getInstance().isLinePainting()) {
+                            glyph.renderLine(g);
+                        }
                     }
+
+                    // Glyph areas second
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setColor(Color.gray);
+                    UIUtil.setAbsoluteStroke(g2, 1f);
+
+                    for (Glyph glyph : selectedGlyphs) {
+                        renderBoxArea(glyph.getBounds(), g2);
+                    }
+
+                    g2.dispose();
+
+                    //
+                    //                // Display words of a sentence, if any
+                    //                if (ViewParameters.getInstance().isSentencePainting()) {
+                    //                    for (Glyph glyph : glyphs) {
+                    //                        renderGlyphSentence(glyph, g);
+                    //                    }
+                    //                }
+                    //
+                    //                // Display translation links, if any
+                    //                if (ViewParameters.getInstance().isTranslationPainting()) {
+                    //                    for (Glyph glyph : glyphs) {
+                    //                        renderGlyphTranslations(glyph, g);
+                    //                    }
+                    //                }
                 }
-
-                // Glyph areas second
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setColor(Color.gray);
-                UIUtil.setAbsoluteStroke(g2, 1f);
-
-                for (Glyph glyph : selectedGlyphs) {
-                    renderBoxArea(glyph.getBounds(), g2);
-                }
-
-                g2.dispose();
-
-                //
-                //                // Display words of a sentence, if any
-                //                if (ViewParameters.getInstance().isSentencePainting()) {
-                //                    for (Glyph glyph : glyphs) {
-                //                        renderGlyphSentence(glyph, g);
-                //                    }
-                //                }
-                //
-                //                // Display translation links, if any
-                //                if (ViewParameters.getInstance().isTranslationPainting()) {
-                //                    for (Glyph glyph : glyphs) {
-                //                        renderGlyphTranslations(glyph, g);
-                //                    }
-                //                }
             }
 
-            break;
+            case MODE_INTER -> {}
 
-        case MODE_INTER:
-
-            // TODO: something to do with selected inters???
-            break;
-
-        case MODE_SECTION:
-
-            for (Lag lag : lags) {
-                for (Section section : lag.getEntityService().getSelectedEntityList()) {
-                    section.renderSelected(g);
+            case MODE_SECTION -> {
+                for (Lag lag : lags) {
+                    for (Section section : lag.getEntityService().getSelectedEntityList()) {
+                        section.renderSelected(g);
+                    }
                 }
             }
         }
+        // TODO: something to do with selected inters???
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

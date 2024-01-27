@@ -177,22 +177,17 @@ public class AlterInter
                                MusicFont font,
                                Point dropLocation)
     {
-        switch (shape) {
-        case FLAT:
-        case DOUBLE_FLAT:
-        {
+        return switch (shape) {
             // Alters for FLAT/DOUBLE_FLAT have a focus center different from area center
-            final FlatSymbol flatSymbol = (FlatSymbol) symbol;
-            final Model model = flatSymbol.getModel(font, dropLocation);
-            setBounds(model.box.getBounds());
-
-            return true;
-        }
-
-        default:
+            case FLAT, DOUBLE_FLAT -> {
+                final FlatSymbol flatSymbol = (FlatSymbol) symbol;
+                final Model model = flatSymbol.getModel(font, dropLocation);
+                setBounds(model.box.getBounds());
+                yield true;
+            }
             // The other alters have their area center as focus center
-            return super.deriveFrom(symbol, sheet, font, dropLocation);
-        }
+            default -> super.deriveFrom(symbol, sheet, font, dropLocation);
+        };
     }
 
     //------------//
@@ -227,20 +222,16 @@ public class AlterInter
     {
         final Point2D center = getCenter2D();
 
-        switch (shape) {
-        case FLAT:
-        case DOUBLE_FLAT:
-        {
-            double il = (staff != null) ? staff.getSpecificInterline()
-                    : getBounds().height / constants.flatTypicalHeight.getValue();
-            return new Point2D.Double(
-                    center.getX(),
-                    center.getY() + (0.5 * il * getAreaPitchOffset(Shape.FLAT)));
-        }
-
-        default:
-            return center;
-        }
+        return switch (shape) {
+            case FLAT, DOUBLE_FLAT -> {
+                final double il = (staff != null) ? staff.getSpecificInterline()
+                        : getBounds().height / constants.flatTypicalHeight.getValue();
+                yield new Point2D.Double(
+                        center.getX(),
+                        center.getY() + (0.5 * il * getAreaPitchOffset(Shape.FLAT)));
+            }
+            default -> center;
+        };
     }
 
     //----------//
@@ -395,30 +386,21 @@ public class AlterInter
             return 0;
         }
 
-        switch (accidental.getShape()) {
-        case SHARP:
-            return 1;
+        return switch (accidental.getShape()) {
+            case DOUBLE_FLAT -> -2;
+            case FLAT -> -1;
+            case NATURAL -> 0;
+            case SHARP -> 1;
+            case DOUBLE_SHARP -> 2;
 
-        case DOUBLE_SHARP:
-            return 2;
-
-        case FLAT:
-            return -1;
-
-        case DOUBLE_FLAT:
-            return -2;
-
-        case NATURAL:
-            return 0;
-
-        default:
-            logger.warn(
-                    "Weird shape {} for accidental {}",
-                    accidental.getShape(),
-                    accidental.getId());
-
-            return 0; // Should not happen
-        }
+            default -> {
+                logger.warn(
+                        "Weird shape {} for accidental {}",
+                        accidental.getShape(),
+                        accidental.getId());
+                yield 0; // Should not happen
+            }
+        };
     }
 
     //--------------//

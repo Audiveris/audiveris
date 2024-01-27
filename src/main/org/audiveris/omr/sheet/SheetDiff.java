@@ -294,34 +294,28 @@ public class SheetDiff
         gbi.setComposite(AlphaComposite.SrcOver);
         gbi.setColor(Color.BLACK);
 
-        SheetResultPainter outputPainter = new SheetResultPainter(sheet, gbi);
+        final SheetResultPainter outputPainter = new SheetResultPainter(sheet, gbi);
 
         switch (kind) {
-        case NEGATIVES:
-            input.render(gbi, offset);
-            gbi.setComposite(AlphaComposite.DstOut);
-            outputPainter.process();
+            case NEGATIVES -> {
+                input.render(gbi, offset);
+                gbi.setComposite(AlphaComposite.DstOut);
+                outputPainter.process();
+            }
 
-            break;
+            case POSITIVES -> {
+                gbi.setColor(veryLight); // Could be totally white...
+                input.render(gbi, offset);
+                gbi.setComposite(AlphaComposite.SrcIn);
+                gbi.setColor(Color.BLACK);
+                outputPainter.process();
+            }
 
-        case POSITIVES:
-            gbi.setColor(veryLight); // Could be totally white...
-            input.render(gbi, offset);
-            gbi.setComposite(AlphaComposite.SrcIn);
-            gbi.setColor(Color.BLACK);
-            outputPainter.process();
-
-            break;
-
-        case FALSE_POSITIVES:
-            outputPainter.process();
-            gbi.setComposite(AlphaComposite.DstOut);
-            input.render(gbi, offset);
-
-            break;
-
-        default:
-            assert false : "Unhandled DeltaKind";
+            case FALSE_POSITIVES -> {
+                outputPainter.process();
+                gbi.setComposite(AlphaComposite.DstOut);
+                input.render(gbi, offset);
+            }
         }
 
         //        // Paint all the other pixels in white

@@ -389,35 +389,19 @@ public abstract class AbstractFlagInter
      */
     private static int getFlagValue (Shape shape)
     {
-        switch (shape) {
-        case FLAG_1:
-        case FLAG_1_DOWN:
-        case SMALL_FLAG:
-        case SMALL_FLAG_DOWN:
-        case SMALL_FLAG_SLASH:
-        case SMALL_FLAG_SLASH_DOWN:
-            return 1;
+        return switch (shape) {
+            case FLAG_1, FLAG_1_DOWN, //
+                    SMALL_FLAG, SMALL_FLAG_DOWN, SMALL_FLAG_SLASH, SMALL_FLAG_SLASH_DOWN -> 1;
+            case FLAG_2, FLAG_2_DOWN -> 2;
+            case FLAG_3, FLAG_3_DOWN -> 3;
+            case FLAG_4, FLAG_4_DOWN -> 4;
+            case FLAG_5, FLAG_5_DOWN -> 5;
 
-        case FLAG_2:
-        case FLAG_2_DOWN:
-            return 2;
-
-        case FLAG_3:
-        case FLAG_3_DOWN:
-            return 3;
-
-        case FLAG_4:
-        case FLAG_4_DOWN:
-            return 4;
-
-        case FLAG_5:
-        case FLAG_5_DOWN:
-            return 5;
-        }
-
-        logger.error("Illegal flag shape: {}", shape);
-
-        return 0;
+            default -> {
+                logger.error("Illegal flag shape: {}", shape);
+                yield 0;
+            }
+        };
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

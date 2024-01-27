@@ -159,7 +159,8 @@ public class KeyColumn
 
         // All staves within the same part should have identical key signatures
         // Strategy: pick up the "best" KeyInter and try to replicate it in the other stave(s)
-        PartLoop: for (Part part : system.getParts()) {
+        PartLoop:
+        for (Part part : system.getParts()) {
             List<Staff> staves = part.getStaves();
 
             if (staves.size() > 1) {
@@ -175,27 +176,24 @@ public class KeyColumn
                     do {
                         modified = false;
 
-                        StaffLoop: for (Staff staff : staves) {
+                        StaffLoop:
+                        for (Staff staff : staves) {
                             if (staff == bestStaff) {
                                 bestKeyBuilder.getShapeBuilder(-fifths).destroy();
                             } else {
                                 KeyBuilder builder = builders.get(staff);
 
                                 switch (builder.checkReplicate(bestBuilder)) {
-                                case OK:
-                                case NO_CLEF:
-                                case NO_REPLICATE:
-                                    break;
-
-                                case SHRINK:
-                                    globalOffsets.remove(globalOffsets.size() - 1);
-                                    bestBuilder.shrink();
-                                    modified = true;
-
-                                    break StaffLoop;
-
-                                case DESTROY:
-                                    return false;
+                                    case OK, NO_CLEF, NO_REPLICATE -> {}
+                                    case SHRINK -> {
+                                        globalOffsets.remove(globalOffsets.size() - 1);
+                                        bestBuilder.shrink();
+                                        modified = true;
+                                        break StaffLoop;
+                                    }
+                                    case DESTROY -> {
+                                        return false;
+                                    }
                                 }
                             }
                         }

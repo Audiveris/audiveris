@@ -281,29 +281,13 @@ public class GeoPath
         final double t = (y - p1.y) / (p2.y - p1.y);
         final double u = 1 - t;
 
-        switch (segmentKind) {
-        case SEG_LINETO:
-            return p1.x + (t * (p2.x - p1.x));
-
-        case SEG_QUADTO:
-        {
-            double cpx = coords[0];
-
-            return (p1.x * u * u) + (2 * cpx * t * u) + (p2.x * t * t);
-        }
-
-        case SEG_CUBICTO:
-        {
-            double cpx1 = coords[0];
-            double cpx2 = coords[2];
-
-            return (p1.x * u * u * u) + (3 * cpx1 * t * u * u) + (3 * cpx2 * t * t * u) + (p2.x * t
-                    * t * t);
-        }
-
-        default:
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
+        return switch (segmentKind) {
+            case SEG_LINETO -> p1.x + (t * (p2.x - p1.x));
+            case SEG_QUADTO -> (p1.x * u * u) + (2 * coords[0] * t * u) + (p2.x * t * t);
+            case SEG_CUBICTO -> (p1.x * u * u * u) + (3 * coords[0] * t * u * u) //
+                    + (3 * coords[2] * t * t * u) + (p2.x * t * t * t);
+            default -> throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        };
     }
 
     //---------//
@@ -350,29 +334,13 @@ public class GeoPath
         final double t = (x - p1.x) / (p2.x - p1.x);
         final double u = 1 - t;
 
-        switch (segmentKind) {
-        case SEG_LINETO:
-            return p1.y + (t * (p2.y - p1.y));
-
-        case SEG_QUADTO:
-        {
-            double cpy = coords[1];
-
-            return (p1.y * u * u) + (2 * cpy * t * u) + (p2.y * t * t);
-        }
-
-        case SEG_CUBICTO:
-        {
-            double cpy1 = coords[1];
-            double cpy2 = coords[3];
-
-            return (p1.y * u * u * u) + (3 * cpy1 * t * u * u) + (3 * cpy2 * t * t * u) + (p2.y * t
-                    * t * t);
-        }
-
-        default:
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
+        return switch (segmentKind) {
+            case SEG_LINETO -> p1.y + (t * (p2.y - p1.y));
+            case SEG_QUADTO -> (p1.y * u * u) + (2 * coords[1] * t * u) + (p2.y * t * t);
+            case SEG_CUBICTO -> (p1.y * u * u * u) + (3 * coords[1] * t * u * u) //
+                    + (3 * coords[3] * t * t * u) + (p2.y * t * t * t);
+            default -> throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        };
     }
 
     //---------//
@@ -413,23 +381,13 @@ public class GeoPath
      */
     protected static int countOf (int segmentKind)
     {
-        switch (segmentKind) {
-        case SEG_MOVETO:
-        case SEG_LINETO:
-            return 2;
-
-        case SEG_QUADTO:
-            return 4;
-
-        case SEG_CUBICTO:
-            return 6;
-
-        case SEG_CLOSE:
-            return 0;
-
-        default:
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
+        return switch (segmentKind) {
+            case SEG_MOVETO, SEG_LINETO -> 2;
+            case SEG_QUADTO -> 4;
+            case SEG_CUBICTO -> 6;
+            case SEG_CLOSE -> 0;
+            default -> throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        };
     }
 
     //---------//
@@ -443,24 +401,13 @@ public class GeoPath
      */
     public static String labelOf (int segmentKind)
     {
-        switch (segmentKind) {
-        case SEG_MOVETO:
-            return "SEG_MOVETO";
-
-        case SEG_LINETO:
-            return "SEG_LINETO";
-
-        case SEG_QUADTO:
-            return "SEG_QUADTO";
-
-        case SEG_CUBICTO:
-            return "SEG_CUBICTO";
-
-        case SEG_CLOSE:
-            return "SEG_CLOSE";
-
-        default:
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
+        return switch (segmentKind) {
+            case SEG_MOVETO -> "SEG_MOVETO";
+            case SEG_LINETO -> "SEG_LINETO";
+            case SEG_QUADTO -> "SEG_QUADTO";
+            case SEG_CUBICTO -> "SEG_CUBICTO";
+            case SEG_CLOSE -> "SEG_CLOSE";
+            default -> throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        };
     }
 }

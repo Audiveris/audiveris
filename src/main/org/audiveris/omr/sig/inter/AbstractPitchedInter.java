@@ -54,8 +54,7 @@ public abstract class AbstractPitchedInter
 
     /** To order from bottom to top. */
     public static final Comparator<AbstractPitchedInter> bottomUp = (AbstractPitchedInter p1,
-                                                                     AbstractPitchedInter p2) ->
-    {
+                                                                     AbstractPitchedInter p2) -> {
         // Pitch comparison is usable only within the SAME staff
         if ((p1.getStaff() != null) && (p2.getStaff() == p1.getStaff())) {
             return Double.compare(p2.pitch, p1.pitch);
@@ -239,45 +238,19 @@ public abstract class AbstractPitchedInter
      */
     public static double getAreaPitchOffset (Shape shape)
     {
-        switch (shape) {
-        case G_CLEF:
-            return constants.areaPitchOffset_G_CLEF.getValue();
-
-        case G_CLEF_SMALL:
-            return constants.areaPitchOffset_G_CLEF_SMALL.getValue();
-
-        case G_CLEF_8VA:
-            return constants.areaPitchOffset_G_CLEF_8VA.getValue();
-
-        case G_CLEF_8VB:
-            return constants.areaPitchOffset_G_CLEF_8VB.getValue();
-
-        case F_CLEF:
-            return constants.areaPitchOffset_F_CLEF.getValue();
-
-        case F_CLEF_SMALL:
-            return constants.areaPitchOffset_F_CLEF_SMALL.getValue();
-
-        case F_CLEF_8VA:
-            return constants.areaPitchOffset_F_CLEF_8VA.getValue();
-
-        case F_CLEF_8VB:
-            return constants.areaPitchOffset_F_CLEF_8VB.getValue();
-
-        case FLAT:
-        case DOUBLE_FLAT:
-        case KEY_FLAT_7:
-        case KEY_FLAT_6:
-        case KEY_FLAT_5:
-        case KEY_FLAT_4:
-        case KEY_FLAT_3:
-        case KEY_FLAT_2:
-        case KEY_FLAT_1:
-            return constants.areaPitchOffset_FLAT.getValue();
-
-        default:
-            return 0;
-        }
+        return switch (shape) {
+            case G_CLEF -> constants.areaPitchOffset_G_CLEF.getValue();
+            case G_CLEF_SMALL -> constants.areaPitchOffset_G_CLEF_SMALL.getValue();
+            case G_CLEF_8VA -> constants.areaPitchOffset_G_CLEF_8VA.getValue();
+            case G_CLEF_8VB -> constants.areaPitchOffset_G_CLEF_8VB.getValue();
+            case F_CLEF -> constants.areaPitchOffset_F_CLEF.getValue();
+            case F_CLEF_SMALL -> constants.areaPitchOffset_F_CLEF_SMALL.getValue();
+            case F_CLEF_8VA -> constants.areaPitchOffset_F_CLEF_8VA.getValue();
+            case F_CLEF_8VB -> constants.areaPitchOffset_F_CLEF_8VB.getValue();
+            case FLAT, DOUBLE_FLAT, KEY_FLAT_7, KEY_FLAT_6, KEY_FLAT_5, KEY_FLAT_4, KEY_FLAT_3, //
+                    KEY_FLAT_2, KEY_FLAT_1 -> constants.areaPitchOffset_FLAT.getValue();
+            default -> 0;
+        };
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

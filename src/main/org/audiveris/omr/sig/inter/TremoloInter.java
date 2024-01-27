@@ -666,10 +666,10 @@ public class TremoloInter
     public static Shape getTremoloShape (int value)
     {
         return switch (value) {
-        case 1 -> TREMOLO_1;
-        case 2 -> TREMOLO_2;
-        case 3 -> TREMOLO_3;
-        default -> throw new IllegalArgumentException("Unsupported tremolo value " + value);
+            case 1 -> TREMOLO_1;
+            case 2 -> TREMOLO_2;
+            case 3 -> TREMOLO_3;
+            default -> throw new IllegalArgumentException("Unsupported tremolo value " + value);
         };
     }
 
@@ -685,10 +685,10 @@ public class TremoloInter
     public static int getTremoloValue (Shape shape)
     {
         return switch (shape) {
-        case TREMOLO_1 -> 1;
-        case TREMOLO_2 -> 2;
-        case TREMOLO_3 -> 3;
-        default -> throw new IllegalArgumentException("Unsupported tremolo shape " + shape);
+            case TREMOLO_1 -> 1;
+            case TREMOLO_2 -> 2;
+            case TREMOLO_3 -> 3;
+            default -> throw new IllegalArgumentException("Unsupported tremolo shape " + shape);
         };
     }
 

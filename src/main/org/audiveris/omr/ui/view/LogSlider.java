@@ -93,12 +93,11 @@ public class LogSlider
         setPaintTicks(true);
 
         // More room given to labels
-        //         switch (orientation) {
-        //         case HORIZONTAL : setBorder (BorderFactory.createEmptyBorder(0,0,5,0));
-        //             break;
-        //         case VERTICAL   : setBorder (BorderFactory.createEmptyBorder(0,0,0,5));
-        //         }
-        //
+        //        switch (orientation) {
+        //        case HORIZONTAL -> setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
+        //        case VERTICAL -> setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+        //        }
+
         /**
          * Create and populate the label table.
          * NOTA: Obsolete class Hashtable is imposed by {@link JSlider#setLabelTable(Dictionary)}

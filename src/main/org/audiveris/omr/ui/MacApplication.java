@@ -96,35 +96,20 @@ public class MacApplication
         logger.debug(name);
 
         switch (name) {
-        case "handlePreferences":
-            GuiActions.getInstance().defineOptions(null);
+            case "handlePreferences" -> GuiActions.getInstance().defineOptions(null);
+            case "handleQuit" -> GuiActions.getInstance().exit(null);
+            case "handleAbout" -> GuiActions.getInstance().showAbout(null);
+            case "handleOpenFile" -> {
+                logger.debug(filename);
 
-            break;
-
-        case "handleQuit":
-            GuiActions.getInstance().exit(null);
-
-            break;
-
-        case "handleAbout":
-            GuiActions.getInstance().showAbout(null);
-
-            break;
-
-        case "handleOpenFile":
-            logger.debug(filename);
-
-            // Actually load the book
-            Book book = OMR.engine.loadInput(Paths.get(filename));
-            book.createStubs();
-            if (OMR.gui != null) {
-                StubsController.getInstance().displayStubs(book, null);
+                // Actually load the book
+                final Book book = OMR.engine.loadInput(Paths.get(filename));
+                book.createStubs();
+                if (OMR.gui != null) {
+                    StubsController.getInstance().displayStubs(book, null);
+                }
             }
-
-            break;
-
-        default:
-            break;
+            default -> {}
         }
 
         return null;

@@ -78,8 +78,8 @@ public enum BarlineHeight
     public int count ()
     {
         return switch (this) {
-        case four, twoThenFour -> 4;
-        case two, oneThenTwo -> 2;
+            case four, twoThenFour -> 4;
+            case two, oneThenTwo -> 2;
         };
     }
 
@@ -94,10 +94,10 @@ public enum BarlineHeight
     public int initialCount ()
     {
         return switch (this) {
-        case four -> 4;
-        case twoThenFour -> 2;
-        case two -> 2;
-        case oneThenTwo -> 1;
+            case four -> 4;
+            case twoThenFour -> 2;
+            case two -> 2;
+            case oneThenTwo -> 1;
         };
     }
 

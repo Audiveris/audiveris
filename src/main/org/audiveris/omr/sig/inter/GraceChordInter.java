@@ -214,9 +214,9 @@ public class GraceChordInter
     public boolean hasSlash ()
     {
         return switch (shape) {
-        case GRACE_NOTE_SLASH, GRACE_NOTE_SLASH_DOWN -> true;
-        case GRACE_NOTE, GRACE_NOTE_DOWN -> false;
-        default -> throw new IllegalArgumentException("Unsupported grace Shape " + shape);
+            case GRACE_NOTE_SLASH, GRACE_NOTE_SLASH_DOWN -> true;
+            case GRACE_NOTE, GRACE_NOTE_DOWN -> false;
+            default -> throw new IllegalArgumentException("Unsupported grace Shape " + shape);
         };
     }
 
@@ -375,9 +375,9 @@ public class GraceChordInter
     public static boolean isUp (Shape shape)
     {
         return switch (shape) {
-        case GRACE_NOTE, GRACE_NOTE_SLASH -> true;
-        case GRACE_NOTE_DOWN, GRACE_NOTE_SLASH_DOWN -> false;
-        default -> throw new IllegalArgumentException("Unsupported grace Shape " + shape);
+            case GRACE_NOTE, GRACE_NOTE_SLASH -> true;
+            case GRACE_NOTE_DOWN, GRACE_NOTE_SLASH_DOWN -> false;
+            default -> throw new IllegalArgumentException("Unsupported grace Shape " + shape);
         };
     }
 

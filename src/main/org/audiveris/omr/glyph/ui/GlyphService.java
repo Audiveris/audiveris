@@ -80,20 +80,15 @@ public class GlyphService
     @Override
     protected Glyph getMostRelevant (List<Glyph> list)
     {
-        switch (list.size()) {
-        case 0:
-            return null;
-
-        case 1:
-            return list.get(0);
-
-        default:
-
-            List<Glyph> copy = new ArrayList<>(list);
-            Collections.sort(copy, Glyphs.byWeight);
-
-            return copy.get(0);
-        }
+        return switch (list.size()) {
+            case 0 ->null;
+            case 1 -> list.get(0);
+            default -> {
+                final List<Glyph> copy = new ArrayList<>(list);
+                Collections.sort(copy, Glyphs.byWeight);
+                yield copy.get(0);
+            }
+        };
     }
 
     //---------------------//

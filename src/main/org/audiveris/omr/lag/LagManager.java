@@ -199,17 +199,17 @@ public class LagManager
 
         if (lag == null) {
             switch (key) {
-            case Lags.HLAG -> {
-                rebuildBothLags();
-                return lagMap.get(key);
-            }
+                case Lags.HLAG -> {
+                    rebuildBothLags();
+                    return lagMap.get(key);
+                }
 
-            case Lags.VLAG -> {
-                rebuildBothLags();
-                return lagMap.get(key);
-            }
+                case Lags.VLAG -> {
+                    rebuildBothLags();
+                    return lagMap.get(key);
+                }
 
-            default -> {}
+                default -> {}
             }
         }
 

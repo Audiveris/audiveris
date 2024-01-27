@@ -622,29 +622,25 @@ public class StaffManager
         // All staves whose area contains the provided point
         final List<Staff> found = getStavesOf(point, theStaves);
 
-        switch (found.size()) {
-        case 0:
-            return null;
+        return switch (found.size()) {
+            case 0 -> null;
+            case 1 -> found.get(0);
+            default -> {
+                Staff bestStaff = null;
+                double bestDist = Double.MAX_VALUE;
 
-        case 1:
-            return found.get(0);
+                for (Staff staff : found) {
+                    double dist = staff.distanceTo(point);
 
-        default:
-
-            Staff bestStaff = null;
-            double bestDist = Double.MAX_VALUE;
-
-            for (Staff staff : found) {
-                double dist = staff.distanceTo(point);
-
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    bestStaff = staff;
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestStaff = staff;
+                    }
                 }
-            }
 
-            return bestStaff;
-        }
+                yield bestStaff;
+            }
+        };
     }
 
     //-------------//

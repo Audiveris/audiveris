@@ -288,14 +288,12 @@ public abstract class Versions
         final Frequency frequency = constants.releaseCheckFrequency.getValue();
 
         switch (frequency) {
-        case Always ->
-                {
-                }
-        case Daily -> next.add(Calendar.DAY_OF_MONTH, 1);
-        case Weekly -> next.add(Calendar.WEEK_OF_MONTH, 1);
-        case Monthly -> next.add(Calendar.MONTH, 1);
-        case Yearly -> next.add(Calendar.YEAR, 1);
-        case Never -> next = null;
+            case Always -> {}
+            case Daily -> next.add(Calendar.DAY_OF_MONTH, 1);
+            case Weekly -> next.add(Calendar.WEEK_OF_MONTH, 1);
+            case Monthly -> next.add(Calendar.MONTH, 1);
+            case Yearly -> next.add(Calendar.YEAR, 1);
+            case Never -> next = null;
         }
 
         logger.info(

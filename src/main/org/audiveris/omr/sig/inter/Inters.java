@@ -584,19 +584,19 @@ public abstract class Inters
                 found.add(inter);
             } else {
                 switch (order) {
-                case BY_ABSCISSA -> {
-                    if (iBox.x > xMax) {
-                        return found;
+                    case BY_ABSCISSA -> {
+                        if (iBox.x > xMax) {
+                            return found;
+                        }
                     }
-                }
 
-                case BY_ORDINATE -> {
-                    if (iBox.y > yMax) {
-                        return found;
+                    case BY_ORDINATE -> {
+                        if (iBox.y > yMax) {
+                            return found;
+                        }
                     }
-                }
 
-                case NONE -> {}
+                    case NONE -> {}
                 }
             }
         }

@@ -297,44 +297,38 @@ public class EntityService<E extends Entity>
 
                 // Update basket
                 switch (hint) {
-                case LOCATION_INIT:
-
-                    if (entity != null) {
-                        basket.clear();
-                        basket.add(entity);
-                    } else {
-                        basket.clear();
-                    }
-
-                    break;
-
-                case LOCATION_ADD:
-
-                    if (entity != null) {
-                        if (basket.contains(entity)) {
-                            basket.remove(entity);
-                        } else {
-                            basket.add(entity);
-                        }
-                    }
-
-                    break;
-
-                case CONTEXT_INIT:
-
-                    if (entity != null) {
-                        if (!basket.contains(entity)) {
+                    case LOCATION_INIT -> {
+                        if (entity != null) {
                             basket.clear();
                             basket.add(entity);
+                        } else {
+                            basket.clear();
                         }
-                    } else {
-                        basket.clear();
                     }
 
-                    break;
+                    case LOCATION_ADD -> {
+                        if (entity != null) {
+                            if (basket.contains(entity)) {
+                                basket.remove(entity);
+                            } else {
+                                basket.add(entity);
+                            }
+                        }
+                    }
 
-                case CONTEXT_ADD:
-                default:
+                    case CONTEXT_INIT -> {
+                        if (entity != null) {
+                            if (!basket.contains(entity)) {
+                                basket.clear();
+                                basket.add(entity);
+                            }
+                        } else {
+                            basket.clear();
+                        }
+                    }
+
+                    case CONTEXT_ADD -> {}
+                    default -> {}
                 }
 
                 // Publish basket

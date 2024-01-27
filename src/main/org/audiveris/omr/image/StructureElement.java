@@ -93,69 +93,52 @@ public class StructureElement
         this.type = type;
 
         switch (type) {
-        case CIRCLE:
-        {
-            mask = createCircularMask(shift, radius, offset);
+            case CIRCLE -> {
+                mask = createCircularMask(shift, radius, offset);
+            }
 
-            break;
-        }
+            case DIAMOND -> {
+                mask = createDiamondMask(shift, radius, offset);
+            }
 
-        case DIAMOND:
-        {
-            mask = createDiamondMask(shift, radius, offset);
+            case SQUARE -> {
+                mask = createSquareMask(shift, 2 * radius, offset);
+            }
 
-            break;
-        }
+            case HLINE -> {
+                //this.height=1;
+                this.shift = 1;
+                mask = createLineMask(shift, 2 * radius, 0, offset);
+            }
 
-        case SQUARE:
-        {
-            mask = createSquareMask(shift, 2 * radius, offset);
+            case VLINE -> {
+                //this.height=width;
+                // this.width=1;
+                this.shift = 1;
+                mask = createLineMask(shift, 2 * radius, Math.PI / 2, offset);
+            }
 
-            break;
-        }
+            case HPOINTS -> {
+                r = (int) radius;
+                this.width = r + 2;
+                this.height = 1;
+                mask = new int[width];
+                mask[1] = 255;
+                mask[width - 1] = 255;
+            }
 
-        case HLINE:
-        {
-            //this.height=1;
-            this.shift = 1;
-            mask = createLineMask(shift, 2 * radius, 0, offset);
+            case VPOINTS -> {
+                r = (int) radius;
+                this.height = r + 2;
+                this.width = 1;
+                mask = new int[height];
+                mask[1] = 255;
+                mask[height - 1] = 255;
+            }
 
-            break;
-        }
+            case RING -> {}
 
-        case VLINE:
-        {
-            //this.height=width;
-            // this.width=1;
-            this.shift = 1;
-            mask = createLineMask(shift, 2 * radius, Math.PI / 2, offset);
-
-            break;
-        }
-
-        case HPOINTS:
-            r = (int) radius;
-            this.width = r + 2;
-            this.height = 1;
-            mask = new int[width];
-            mask[1] = 255;
-            mask[width - 1] = 255;
-
-            break;
-
-        case VPOINTS:
-            r = (int) radius;
-            this.height = r + 2;
-            this.width = 1;
-            mask = new int[height];
-            mask[1] = 255;
-            mask[height - 1] = 255;
-
-            break;
-
-        case RING:
-        default:
-            ; //mask=inputStrEl();
+            default -> {}
         }
 
         vect = calcVect(mask, width);
@@ -500,39 +483,13 @@ public class StructureElement
     public double getDistance (int[] X,
                                int metrics)
     {
-        double d = 0d;
-        double g = 0;
-
         //System.out.println("type: " +metrics);
-        switch (metrics) {
-        case CIRCLE:
-        {
-            g = (X[0] * X[0]) + (X[1] * X[1]);
-            d = Math.sqrt(g + 1) + cor3;
-
-            // if (g==2) d=2.0d;
-            break;
-        }
-
-        case DIAMOND:
-        {
-            d = (Math.abs(X[0]) + Math.abs(X[1]));
-
-            break;
-        }
-
-        case SQUARE:
-        {
-            d = Math.max(Math.abs(X[0]), Math.abs(X[1]));
-
-            break;
-        }
-
-        default:
-            d = Math.sqrt((X[0] * X[0]) + (X[1] * X[1]));
-        }
-
-        return d;
+        return switch (metrics) {
+            case CIRCLE -> Math.sqrt((X[0] * X[0]) + (X[1] * X[1]) + 1) + cor3;
+            case DIAMOND -> (Math.abs(X[0]) + Math.abs(X[1]));
+            case SQUARE -> Math.max(Math.abs(X[0]), Math.abs(X[1]));
+            default -> Math.sqrt((X[0] * X[0]) + (X[1] * X[1]));
+        };
     }
 
     public int getHeight ()

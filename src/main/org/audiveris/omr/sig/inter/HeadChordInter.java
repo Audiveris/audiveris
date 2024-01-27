@@ -73,8 +73,7 @@ public class HeadChordInter
      * It implements total ordering.
      */
     public static final Comparator<HeadInter> headComparator = (HeadInter n1,
-                                                                HeadInter n2) ->
-    {
+                                                                HeadInter n2) -> {
         if (n1 == n2) {
             return 0;
         }
@@ -195,35 +194,30 @@ public class HeadChordInter
     public HeadChordInter duplicate (boolean toBlack)
     {
         // Beams are not copied
-        HeadChordInter clone = new HeadChordInter(getGrade());
+        final HeadChordInter clone = new HeadChordInter(getGrade());
         sig.addVertex(clone);
 
         clone.setStaff(staff);
 
         // Notes (we make a deep copy of each note head)
         for (Inter note : getMembers()) {
-            HeadInter head = (HeadInter) note;
+            final HeadInter head = (HeadInter) note;
             AbstractNoteInter newHead = null;
 
             switch (head.getShape()) {
-            case NOTEHEAD_BLACK:
-                newHead = head.duplicate();
-                sig.addVertex(newHead);
-                newHead.setMirror(head);
+                case NOTEHEAD_BLACK -> {
+                    newHead = head.duplicate();
+                    sig.addVertex(newHead);
+                    newHead.setMirror(head);
+                }
 
-                break;
+                case NOTEHEAD_VOID -> {
+                    newHead = toBlack ? head.duplicateAs(Shape.NOTEHEAD_BLACK) : head.duplicate();
+                    sig.addVertex(newHead);
+                    newHead.setMirror(head);
+                }
 
-            case NOTEHEAD_VOID:
-                newHead = toBlack ? head.duplicateAs(Shape.NOTEHEAD_BLACK) : head.duplicate();
-                sig.addVertex(newHead);
-                newHead.setMirror(head);
-
-                break;
-
-            default:
-                logger.error("No duplication supported for {}", note);
-
-                break;
+                default -> logger.error("No duplication supported for {}", note);
             }
 
             if (newHead != null) {

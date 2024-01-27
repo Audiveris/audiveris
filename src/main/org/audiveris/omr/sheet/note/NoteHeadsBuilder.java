@@ -1690,23 +1690,21 @@ public class NoteHeadsBuilder
                     // 0, +1, -1, +2, +3, +4, +5 ... (for dir == +1)
                     // 0, -1, +1, -2, -3, -4, -5 ... (for dir == -1)
                     switch (i) {
-                    case 0:
-                        offsets[0] = 0;
+                        case 0 -> {
+                            offsets[0] = 0;
+                        }
 
-                        break;
+                        case 1 -> {
+                            offsets[1] = dir;
+                        }
 
-                    case 1:
-                        offsets[1] = dir;
+                        case 2 -> {
+                            offsets[2] = -dir;
+                        }
 
-                        break;
-
-                    case 2:
-                        offsets[2] = -dir;
-
-                        break;
-
-                    default:
-                        offsets[i] = dir * (i - 1);
+                        default -> {
+                            offsets[i] = dir * (i - 1);
+                        }
                     }
                 }
 

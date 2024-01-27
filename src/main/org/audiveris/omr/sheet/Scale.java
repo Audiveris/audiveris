@@ -403,19 +403,12 @@ public class Scale
     public Integer getItemValue (Item item)
     {
         return switch (item) {
-        case line -> getFore();
-
-        case interline -> getInterline();
-
-        case smallInterline -> getSmallInterline();
-
-        case beam -> getBeamThickness();
-
-        case smallBeam -> (smallBeamScale != null) ? smallBeamScale.getMain() : null;
-
-        case stem -> getStemThickness();
-
-        default -> throw new IllegalArgumentException("No value defined for scaling item " + item);
+            case line -> getFore();
+            case interline -> getInterline();
+            case smallInterline -> getSmallInterline();
+            case beam -> getBeamThickness();
+            case smallBeam -> (smallBeamScale != null) ? smallBeamScale.getMain() : null;
+            case stem -> getStemThickness();
         };
     }
 
@@ -694,28 +687,15 @@ public class Scale
     public Object setItemValue (Item item,
                                 int v)
     {
-        switch (item) {
-        case line:
-            return lineScale = (v <= 0) ? null : new LineScale(v, v, v);
-
-        case interline:
-            return interlineScale = (v <= 0) ? null : new InterlineScale(v, v, v);
-
-        case smallInterline:
-            return smallInterlineScale = (v <= 0) ? null : new InterlineScale(v, v, v);
-
-        case beam:
-            return beamScale = (v <= 0) ? null : new BeamScale(v, false);
-
-        case smallBeam:
-            return smallBeamScale = (v <= 0) ? null : new BeamScale(v, false);
-
-        case stem:
-            return stemScale = (v <= 0) ? null : new StemScale(v, v);
-
-        default:
-            throw new IllegalArgumentException("No value defined for scaling item " + item);
-        }
+        return switch (item) {
+            case line -> lineScale = (v <= 0) ? null : new LineScale(v, v, v);
+            case interline -> interlineScale = (v <= 0) ? null : new InterlineScale(v, v, v);
+            case smallInterline -> smallInterlineScale = (v <= 0) ? null
+                    : new InterlineScale(v, v, v);
+            case beam -> beamScale = (v <= 0) ? null : new BeamScale(v, false);
+            case smallBeam -> smallBeamScale = (v <= 0) ? null : new BeamScale(v, false);
+            case stem -> stemScale = (v <= 0) ? null : new StemScale(v, v);
+        };
     }
 
     //-------------------//

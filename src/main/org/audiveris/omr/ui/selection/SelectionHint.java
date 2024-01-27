@@ -79,8 +79,8 @@ public enum SelectionHint
     public boolean isContext ()
     {
         return switch (this) {
-        case CONTEXT_INIT, CONTEXT_ADD -> true;
-        default -> false;
+            case CONTEXT_INIT, CONTEXT_ADD -> true;
+            default -> false;
         };
     }
 
@@ -95,8 +95,8 @@ public enum SelectionHint
     public boolean isLocation ()
     {
         return switch (this) {
-        case LOCATION_INIT, LOCATION_ADD -> true;
-        default -> false;
+            case LOCATION_INIT, LOCATION_ADD -> true;
+            default -> false;
         };
     }
 }

@@ -244,28 +244,20 @@ public final class StaffBarlineInter
      */
     private Style computeStyle ()
     {
-        switch (getMembers().size()) {
-        case 0:
-            return NONE;
+        return switch (getMembers().size()) {
+            case 0 -> NONE;
+            case 1 -> (getLeftBar().getShape() == Shape.THIN_BARLINE) ? REGULAR : HEAVY;
+            case 2 -> (getLeftBar().getShape() == Shape.THIN_BARLINE) //
+                    ? ((getRightBar().getShape() == Shape.THIN_BARLINE) ? LIGHT_LIGHT : LIGHT_HEAVY)
+                    : ((getRightBar().getShape() == Shape.THIN_BARLINE) ? HEAVY_LIGHT
+                            : HEAVY_HEAVY);
+            case 3 -> LIGHT_HEAVY_LIGHT;
 
-        case 1:
-            return (getLeftBar().getShape() == Shape.THIN_BARLINE) ? REGULAR : HEAVY;
-
-        case 2:
-            if (getLeftBar().getShape() == Shape.THIN_BARLINE) {
-                return (getRightBar().getShape() == Shape.THIN_BARLINE) ? LIGHT_LIGHT : LIGHT_HEAVY;
-            } else {
-                return (getRightBar().getShape() == Shape.THIN_BARLINE) ? HEAVY_LIGHT : HEAVY_HEAVY;
+            default -> {
+                logger.warn("Unknown style for {}", this);
+                yield null;
             }
-
-        case 3:
-            return LIGHT_HEAVY_LIGHT;
-
-        default:
-            logger.warn("Unknown style for {}", this);
-
-            return null;
-        }
+        };
     }
 
     //----------//
@@ -565,8 +557,7 @@ public final class StaffBarlineInter
      */
     public Point2D getReferenceCenter ()
     {
-        BarlineInter rightBar = getRightBar();
-
+        final BarlineInter rightBar = getRightBar();
         if (rightBar != null) {
             return rightBar.getCenter2D();
         }
@@ -575,25 +566,15 @@ public final class StaffBarlineInter
         if ((shape != null) && (bounds != null)) {
             final int y = bounds.y + (bounds.height / 2);
 
-            switch (shape) {
-            case THIN_BARLINE:
-            case THICK_BARLINE:
-                return GeoUtil.center2D(bounds);
-
-            case DOUBLE_BARLINE:
-            case REVERSE_FINAL_BARLINE:
-                return new Point2D.Double(bounds.x + (0.9 * bounds.width), y);
-
-            case FINAL_BARLINE:
-                return new Point2D.Double(bounds.x + (0.7 * bounds.width), y);
-
-            case LEFT_REPEAT_SIGN:
-            case RIGHT_REPEAT_SIGN:
-            case BACK_TO_BACK_REPEAT_SIGN:
-                return new Point2D.Double(bounds.x + (0.5 * bounds.width), y);
-
-            default:
-            }
+            return switch (shape) {
+                case THIN_BARLINE, THICK_BARLINE -> GeoUtil.center2D(bounds);
+                case DOUBLE_BARLINE, REVERSE_FINAL_BARLINE -> //
+                        new Point2D.Double(bounds.x + (0.9 * bounds.width), y);
+                case FINAL_BARLINE -> new Point2D.Double(bounds.x + (0.7 * bounds.width), y);
+                case LEFT_REPEAT_SIGN, RIGHT_REPEAT_SIGN, BACK_TO_BACK_REPEAT_SIGN -> //
+                        new Point2D.Double(bounds.x + (0.5 * bounds.width), y);
+                default -> null;
+            };
         }
 
         return null;
@@ -906,31 +887,28 @@ public final class StaffBarlineInter
         final int size = bars.size();
         getStyle();
 
-        switch (size) {
-        case 2:
-            // Style should be HEAVY_LIGHT
-            if (style != HEAVY_LIGHT) {
-                BarlineInter b1 = (BarlineInter) bars.get(0);
-                double w1 = b1.getWidth();
-                BarlineInter b2 = (BarlineInter) bars.get(1);
-                double w2 = b2.getWidth();
+        return switch (size) {
+            case 2 -> { // Style should be HEAVY_LIGHT
+                if (style != HEAVY_LIGHT) {
+                    final BarlineInter b1 = (BarlineInter) bars.get(0);
+                    final double w1 = b1.getWidth();
+                    final BarlineInter b2 = (BarlineInter) bars.get(1);
+                    final double w2 = b2.getWidth();
 
-                if (w2 < w1) {
-                    style = HEAVY_LIGHT;
-                    b1.setShape(Shape.THICK_BARLINE);
-                    b2.setShape(Shape.THIN_BARLINE);
+                    if (w2 < w1) {
+                        style = HEAVY_LIGHT;
+                        b1.setShape(Shape.THICK_BARLINE);
+                        b2.setShape(Shape.THIN_BARLINE);
+                    }
                 }
+
+                yield true;
             }
 
-            return true;
+            case 3 -> true; // Style should be LIGHT_HEAVY_LIGHT
 
-        case 3:
-            // Style should be LIGHT_HEAVY_LIGHT
-            return true;
-
-        default:
-            return false;
-        }
+            default -> false;
+        };
     }
 
     //---------------//
@@ -957,31 +935,28 @@ public final class StaffBarlineInter
         final int size = bars.size();
         getStyle();
 
-        switch (size) {
-        case 2:
-            // Style should be LIGHT_HEAVY
-            if (style != LIGHT_HEAVY) {
-                BarlineInter b1 = (BarlineInter) bars.get(0);
-                double w1 = b1.getWidth();
-                BarlineInter b2 = (BarlineInter) bars.get(1);
-                double w2 = b2.getWidth();
+        return switch (size) {
+            case 2 -> { // Style should be LIGHT_HEAVY
+                if (style != LIGHT_HEAVY) {
+                    final BarlineInter b1 = (BarlineInter) bars.get(0);
+                    final double w1 = b1.getWidth();
+                    final BarlineInter b2 = (BarlineInter) bars.get(1);
+                    final double w2 = b2.getWidth();
 
-                if (w2 > w1) {
-                    style = LIGHT_HEAVY;
-                    b1.setShape(Shape.THIN_BARLINE);
-                    b2.setShape(Shape.THICK_BARLINE);
+                    if (w2 > w1) {
+                        style = LIGHT_HEAVY;
+                        b1.setShape(Shape.THIN_BARLINE);
+                        b2.setShape(Shape.THICK_BARLINE);
+                    }
                 }
+
+                yield true;
             }
 
-            return true;
+            case 3 -> true; // Style should be LIGHT_HEAVY_LIGHT
 
-        case 3:
-            // Style should be LIGHT_HEAVY_LIGHT
-            return true;
-
-        default:
-            return false;
-        }
+            default -> false;
+        };
     }
 
     //------------//
@@ -1140,36 +1115,21 @@ public final class StaffBarlineInter
     //---------//
     private Style toStyle (Shape shape)
     {
-        switch (shape) {
-        case THIN_BARLINE:
-            return Style.REGULAR;
+        return switch (shape) {
+            case THIN_BARLINE -> Style.REGULAR;
+            case THICK_BARLINE -> Style.HEAVY;
+            case DOUBLE_BARLINE -> Style.LIGHT_LIGHT;
+            case FINAL_BARLINE -> Style.LIGHT_HEAVY;
+            case REVERSE_FINAL_BARLINE -> Style.HEAVY_LIGHT;
+            case LEFT_REPEAT_SIGN -> Style.HEAVY_LIGHT; // + dots
+            case RIGHT_REPEAT_SIGN -> Style.LIGHT_HEAVY; // + dots
+            case BACK_TO_BACK_REPEAT_SIGN -> Style.LIGHT_HEAVY; // Bof! + dots on both sides
 
-        case THICK_BARLINE:
-            return Style.HEAVY;
-
-        case DOUBLE_BARLINE:
-            return Style.LIGHT_LIGHT;
-
-        case FINAL_BARLINE:
-            return Style.LIGHT_HEAVY;
-
-        case REVERSE_FINAL_BARLINE:
-            return Style.HEAVY_LIGHT;
-
-        case LEFT_REPEAT_SIGN:
-            return Style.HEAVY_LIGHT; // + dots
-
-        case RIGHT_REPEAT_SIGN:
-            return Style.LIGHT_HEAVY; // + dots
-
-        case BACK_TO_BACK_REPEAT_SIGN:
-            return Style.LIGHT_HEAVY; // Bof! + dots on both sides
-
-        default:
-            logger.warn("No style for barline shape {}", shape);
-
-            return null;
-        }
+            default -> {
+                logger.warn("No style for barline shape {}", shape);
+                yield null;
+            }
+        };
     }
 
     //~ Static Methods -----------------------------------------------------------------------------

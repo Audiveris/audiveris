@@ -21,9 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
-import static org.audiveris.omr.ui.selection.MouseMovement.PRESSING;
-import static org.audiveris.omr.ui.selection.SelectionHint.LOCATION_INIT;
-
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleSheet;
@@ -32,6 +29,8 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
+import static org.audiveris.omr.ui.selection.MouseMovement.PRESSING;
+import static org.audiveris.omr.ui.selection.SelectionHint.LOCATION_INIT;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.view.Rubber;
@@ -171,20 +170,9 @@ public class SampleContext
 
                 if (sampleSheet != null) {
                     switch (sampleSheet.getImageStatus(repository)) {
-                    case NO_IMAGE:
-                        sheetTable = null;
-
-                        break;
-
-                    case ON_DISK:
-                        sheetTable = repository.loadImage(sampleSheet);
-
-                        break;
-
-                    case LOADED:
-                        sheetTable = sampleSheet.getImage();
-
-                        break;
+                        case NO_IMAGE -> sheetTable = null;
+                        case ON_DISK -> sheetTable = repository.loadImage(sampleSheet);
+                        case LOADED -> sheetTable = sampleSheet.getImage();
                     }
                 } else {
                     sheetTable = null;

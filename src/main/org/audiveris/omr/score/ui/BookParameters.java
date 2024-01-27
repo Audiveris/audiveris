@@ -571,19 +571,17 @@ public class BookParameters
 
             // Adjust visibility of parameter fields
             switch (readKind()) {
-            case GLOBAL ->
-            {
-                localDataMean.setVisible(false);
-                localDataDev.setVisible(false);
-                globalData.setVisible(true);
-            }
+                case GLOBAL -> {
+                    localDataMean.setVisible(false);
+                    localDataDev.setVisible(false);
+                    globalData.setVisible(true);
+                }
 
-            case ADAPTIVE ->
-            {
-                globalData.setVisible(false);
-                localDataMean.setVisible(true);
-                localDataDev.setVisible(true);
-            }
+                case ADAPTIVE -> {
+                    globalData.setVisible(false);
+                    localDataMean.setVisible(true);
+                    localDataDev.setVisible(true);
+                }
             }
         }
 
@@ -592,13 +590,12 @@ public class BookParameters
         {
             try {
                 switch (readKind()) {
-                case GLOBAL -> globalData.spinner.commitEdit();
+                    case GLOBAL -> globalData.spinner.commitEdit();
 
-                case ADAPTIVE ->
-                {
-                    localDataMean.spinner.commitEdit();
-                    localDataDev.spinner.commitEdit();
-                }
+                    case ADAPTIVE -> {
+                        localDataMean.spinner.commitEdit();
+                        localDataDev.spinner.commitEdit();
+                    }
                 }
             } catch (ParseException ignored) {
             }
@@ -631,18 +628,16 @@ public class BookParameters
             kindCombo.setSelectedItem(kind);
 
             switch (kind) {
-            case GLOBAL ->
-            {
-                GlobalDescriptor globalDesc = (GlobalDescriptor) desc;
-                globalData.spinner.setValue(globalDesc.threshold);
-            }
+                case GLOBAL -> {
+                    GlobalDescriptor globalDesc = (GlobalDescriptor) desc;
+                    globalData.spinner.setValue(globalDesc.threshold);
+                }
 
-            case ADAPTIVE ->
-            {
-                AdaptiveDescriptor localDesc = (AdaptiveDescriptor) desc;
-                localDataMean.spinner.setValue(localDesc.meanCoeff);
-                localDataDev.spinner.setValue(localDesc.stdDevCoeff);
-            }
+                case ADAPTIVE -> {
+                    AdaptiveDescriptor localDesc = (AdaptiveDescriptor) desc;
+                    localDataMean.spinner.setValue(localDesc.meanCoeff);
+                    localDataDev.spinner.setValue(localDesc.stdDevCoeff);
+                }
             }
         }
 
@@ -808,35 +803,33 @@ public class BookParameters
             super.display(content);
 
             switch (key) {
-            case oneLineStaves ->
-            {
-                // We display the barline height specification if and only if
-                // the switch for 1-line staves is ON
-                final Object scope = model.getScope();
-                final XactPane barlinePane = barlinePanes.get(scope);
-                barlinePane.setVisible((content != null) && content);
-            }
-            case fiveLineStaves, drumNotation ->
-            {
-                // We display the interline pane if and only if
-                // both switches for 5-line standard staves and for 5-line percussion staves are OFF
-                // Otherwise, it is safer to set the interline spec to zero (i.e. disabled)
-                final Object scope = model.getScope();
-                final XactPane interlinePane = interlinePanes.get(scope);
+                case oneLineStaves -> {
+                    // We display the barline height specification if and only if
+                    // the switch for 1-line staves is ON
+                    final Object scope = model.getScope();
+                    final XactPane barlinePane = barlinePanes.get(scope);
+                    barlinePane.setVisible((content != null) && content);
+                }
+                case fiveLineStaves, drumNotation -> {
+                    // We display the interline pane if and only if both switches
+                    // for 5-line standard staves and for 5-line percussion staves are OFF.
+                    // Otherwise, it is safer to set the interline spec to zero (i.e. disabled)
+                    final Object scope = model.getScope();
+                    final XactPane interlinePane = interlinePanes.get(scope);
 
-                if (interlinePane != null) {
-                    final ProcessingSwitch other = (key == ProcessingSwitch.fiveLineStaves)
-                            ? ProcessingSwitch.drumNotation
-                            : ProcessingSwitch.fiveLineStaves;
-                    boolean bothOff = (content == null) || !content;
-                    bothOff &= !isSet(scope, other);
-                    interlinePane.setVisible(bothOff);
+                    if (interlinePane != null) {
+                        final ProcessingSwitch other = (key == ProcessingSwitch.fiveLineStaves)
+                                ? ProcessingSwitch.drumNotation
+                                : ProcessingSwitch.fiveLineStaves;
+                        boolean bothOff = (content == null) || !content;
+                        bothOff &= !isSet(scope, other);
+                        interlinePane.setVisible(bothOff);
 
-                    if (!bothOff) {
-                        interlinePane.display(0); // Warning here
+                        if (!bothOff) {
+                            interlinePane.display(0); // Warning here
+                        }
                     }
                 }
-            }
             }
         }
 
@@ -1019,14 +1012,14 @@ public class BookParameters
         {
             for (Entry<Tag, XactPane> entry : tagMap.entrySet()) {
                 switch (entry.getKey()) {
-                case Music -> entry.getValue().setModel(MusicFont.defaultMusicParam);
-                case Text -> entry.getValue().setModel(TextFont.defaultTextParam);
-                case Quality -> entry.getValue().setModel(Profiles.defaultQualityParam);
-                case Lang -> entry.getValue().setModel(Language.ocrDefaultLanguages);
-                case Filter -> entry.getValue().setModel(FilterDescriptor.defaultFilter);
-                // No Interline
-                case Barline -> entry.getValue().setModel(BarlineHeight.defaultParam);
-                // No Beam
+                    case Music -> entry.getValue().setModel(MusicFont.defaultMusicParam);
+                    case Text -> entry.getValue().setModel(TextFont.defaultTextParam);
+                    case Quality -> entry.getValue().setModel(Profiles.defaultQualityParam);
+                    case Lang -> entry.getValue().setModel(Language.ocrDefaultLanguages);
+                    case Filter -> entry.getValue().setModel(FilterDescriptor.defaultFilter);
+                    // No Interline
+                    case Barline -> entry.getValue().setModel(BarlineHeight.defaultParam);
+                    // No Beam
                 }
             }
 
@@ -1053,14 +1046,14 @@ public class BookParameters
         {
             for (Entry<Tag, XactPane> entry : tagMap.entrySet()) {
                 entry.getValue().setModel(switch (entry.getKey()) {
-                case Music -> book.getMusicFamilyParam();
-                case Text -> book.getTextFamilyParam();
-                case Quality -> book.getInputQualityParam();
-                case Lang -> book.getOcrLanguagesParam();
-                case Filter -> book.getBinarizationParam();
-                case Interline -> book.getInterlineSpecificationParam();
-                case Barline -> book.getBarlineHeightParam();
-                case Beam -> book.getBeamSpecificationParam();
+                    case Music -> book.getMusicFamilyParam();
+                    case Text -> book.getTextFamilyParam();
+                    case Quality -> book.getInputQualityParam();
+                    case Lang -> book.getOcrLanguagesParam();
+                    case Filter -> book.getBinarizationParam();
+                    case Interline -> book.getInterlineSpecificationParam();
+                    case Barline -> book.getBarlineHeightParam();
+                    case Beam -> book.getBeamSpecificationParam();
                 });
             }
 
@@ -1087,14 +1080,14 @@ public class BookParameters
         {
             for (Entry<Tag, XactPane> entry : tagMap.entrySet()) {
                 entry.getValue().setModel(switch (entry.getKey()) {
-                case Music -> stub.getMusicFamilyParam();
-                case Text -> stub.getTextFamilyParam();
-                case Quality -> stub.getInputQualityParam();
-                case Lang -> stub.getOcrLanguagesParam();
-                case Filter -> stub.getBinarizationFilterParam();
-                case Interline -> stub.getInterlineSpecificationParam();
-                case Barline -> stub.getBarlineHeightParam();
-                case Beam -> stub.getBeamSpecificationParam();
+                    case Music -> stub.getMusicFamilyParam();
+                    case Text -> stub.getTextFamilyParam();
+                    case Quality -> stub.getInputQualityParam();
+                    case Lang -> stub.getOcrLanguagesParam();
+                    case Filter -> stub.getBinarizationFilterParam();
+                    case Interline -> stub.getInterlineSpecificationParam();
+                    case Barline -> stub.getBarlineHeightParam();
+                    case Beam -> stub.getBeamSpecificationParam();
                 });
             }
 

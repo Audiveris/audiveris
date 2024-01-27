@@ -263,14 +263,14 @@ public class FingeringInter
     public static int valueOf (OmrShape omrShape)
     {
         return switch (omrShape) {
-        case fingering0 -> 0;
-        case fingering1 -> 1;
-        case fingering2 -> 2;
-        case fingering3 -> 3;
-        case fingering4 -> 4;
-        case fingering5 -> 5;
+            case fingering0 -> 0;
+            case fingering1 -> 1;
+            case fingering2 -> 2;
+            case fingering3 -> 3;
+            case fingering4 -> 4;
+            case fingering5 -> 5;
 
-        default -> throw new IllegalArgumentException("No fingering value for " + omrShape);
+            default -> throw new IllegalArgumentException("No fingering value for " + omrShape);
         };
     }
 
@@ -280,14 +280,14 @@ public class FingeringInter
     public static int valueOf (Shape shape)
     {
         return switch (shape) {
-        case DIGIT_0 -> 0;
-        case DIGIT_1 -> 1;
-        case DIGIT_2 -> 2;
-        case DIGIT_3 -> 3;
-        case DIGIT_4 -> 4;
-        case DIGIT_5 -> 5;
+            case DIGIT_0 -> 0;
+            case DIGIT_1 -> 1;
+            case DIGIT_2 -> 2;
+            case DIGIT_3 -> 3;
+            case DIGIT_4 -> 4;
+            case DIGIT_5 -> 5;
 
-        default -> throw new IllegalArgumentException("No fingering value for " + shape);
+            default -> throw new IllegalArgumentException("No fingering value for " + shape);
         };
     }
 }

@@ -105,17 +105,13 @@ public class RestSymbol
      */
     private double getYOffset (double height)
     {
-        switch (shape) {
-        default:
-        case LONG_REST:
-            return 0;
-        case BREVE_REST:
-            return -0.5 * height;
-        case WHOLE_REST:
-            return -1.25 * height;
-        case HALF_REST:
-            return -0.5 * height;
-        }
+        return switch (shape) {
+            default -> 0;
+            case LONG_REST -> 0;
+            case BREVE_REST -> -0.5 * height;
+            case WHOLE_REST -> -1.25 * height;
+            case HALF_REST -> -0.5 * height;
+        };
     }
 
     //-------//

@@ -215,57 +215,30 @@ public class SymbolInfo
      */
     private OmrShape getSmallShape (OmrShape omrShape)
     {
-        if (omrShape == null) {
-            return null;
-        }
+        return switch (omrShape) {
+            // Clefs (change)
+            case cClefAlto -> OmrShape.cClefAltoChange;
+            case cClefTenor -> OmrShape.cClefTenorChange;
+            case fClef -> OmrShape.fClefChange;
+            case gClef -> OmrShape.gClefChange;
 
-        switch (omrShape) {
-        // Clefs (change)
-        case cClefAlto:
-            return OmrShape.cClefAltoChange;
+            // Accidentals
+            case accidentalFlat -> OmrShape.accidentalFlatSmall;
+            case accidentalNatural -> OmrShape.accidentalNaturalSmall;
+            case accidentalSharp -> OmrShape.accidentalSharpSmall;
 
-        case cClefTenor:
-            return OmrShape.cClefTenorChange;
+            // Flags
+            case flag8thUp -> OmrShape.flag8thUpSmall;
+            case flag8thDown -> OmrShape.flag8thDownSmall;
 
-        case fClef:
-            return OmrShape.fClefChange;
+            // Note heads
+            case noteheadBlack -> OmrShape.noteheadBlackSmall;
+            case noteheadHalf -> OmrShape.noteheadHalfSmall;
+            case noteheadWhole -> OmrShape.noteheadWholeSmall;
+            case noteheadDoubleWhole -> OmrShape.noteheadDoubleWholeSmall;
 
-        case gClef:
-            return OmrShape.gClefChange;
-
-        // Accidentals
-        case accidentalFlat:
-            return OmrShape.accidentalFlatSmall;
-
-        case accidentalNatural:
-            return OmrShape.accidentalNaturalSmall;
-
-        case accidentalSharp:
-            return OmrShape.accidentalSharpSmall;
-
-        // Flags
-        case flag8thUp:
-            return OmrShape.flag8thUpSmall;
-
-        case flag8thDown:
-            return OmrShape.flag8thDownSmall;
-
-        // Note heads
-        case noteheadBlack:
-            return OmrShape.noteheadBlackSmall;
-
-        case noteheadHalf:
-            return OmrShape.noteheadHalfSmall;
-
-        case noteheadWhole:
-            return OmrShape.noteheadWholeSmall;
-
-        case noteheadDoubleWhole:
-            return OmrShape.noteheadDoubleWholeSmall;
-
-        default:
-            return null;
-        }
+            case null, default -> null;
+        };
     }
 
     /**

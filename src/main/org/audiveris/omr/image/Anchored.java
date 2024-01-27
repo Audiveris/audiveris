@@ -150,9 +150,9 @@ public interface Anchored
         public HorizontalSide hSide ()
         {
             return switch (this) {
-            case MIDDLE_LEFT, LEFT_STEM, TOP_LEFT_STEM, BOTTOM_LEFT_STEM -> LEFT;
-            case CENTER -> null;
-            case TOP_RIGHT_STEM, MIDDLE_RIGHT, RIGHT_STEM, BOTTOM_RIGHT_STEM -> RIGHT;
+                case MIDDLE_LEFT, LEFT_STEM, TOP_LEFT_STEM, BOTTOM_LEFT_STEM -> LEFT;
+                case CENTER -> null;
+                case TOP_RIGHT_STEM, MIDDLE_RIGHT, RIGHT_STEM, BOTTOM_RIGHT_STEM -> RIGHT;
             };
         }
 
@@ -164,9 +164,9 @@ public interface Anchored
         public VerticalSide vSide ()
         {
             return switch (this) {
-            case TOP_LEFT_STEM, TOP_RIGHT_STEM -> TOP;
-            case MIDDLE_LEFT, LEFT_STEM, CENTER, RIGHT_STEM, MIDDLE_RIGHT -> null;
-            case BOTTOM_LEFT_STEM, BOTTOM_RIGHT_STEM -> BOTTOM;
+                case TOP_LEFT_STEM, TOP_RIGHT_STEM -> TOP;
+                case MIDDLE_LEFT, LEFT_STEM, CENTER, RIGHT_STEM, MIDDLE_RIGHT -> null;
+                case BOTTOM_LEFT_STEM, BOTTOM_RIGHT_STEM -> BOTTOM;
             };
         }
     }

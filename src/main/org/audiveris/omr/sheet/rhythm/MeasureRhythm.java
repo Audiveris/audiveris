@@ -911,30 +911,21 @@ public class MeasureRhythm
                     TreeMap<Rational, List<AbstractChordInter>> times = inferSlotTimes(narrow);
 
                     switch (times.size()) {
-                    case 0:
                         // No mapping for this narrow slot
-                        logger.debug("no times for {}", narrow);
-
-                        break;
-
-                    case 1:
+                        case 0 -> logger.debug("no times for {}", narrow);
 
                         // Perfect case
-                        Rational time = times.firstKey();
-                        narrow.setTimeOffset(time);
+                        case 1 -> narrow.setTimeOffset(times.firstKey());
 
-                        break;
-
-                    default:
                         // Several values
-                        logger.debug("Slot#{} times {}", slot.getId(), times);
-                        // Check delta ratio since previous synchro (w/o slot time)
-                        ok |= analyzeTimes(times);
+                        default -> {
+                            logger.debug("Slot#{} times {}", slot.getId(), times);
+                            // Check delta ratio since previous synchro (w/o slot time)
+                            ok |= analyzeTimes(times);
 
-                        // Pick up the lowest time value
-                        Entry<Rational, List<AbstractChordInter>> bestEntry = times.firstEntry();
-                        Rational bestTime = bestEntry.getKey();
-                        narrow.setTimeOffset(bestTime);
+                            // Pick up the lowest time value
+                            narrow.setTimeOffset(times.firstEntry().getKey());
+                        }
                     }
                 }
             }

@@ -201,31 +201,14 @@ public class NaturalSpline
         final double t = (y - p1.y) / deltaY;
         final double u = 1 - t;
 
-        // dx/dy = dx/dt * dt/dy
-        // dt/dy = 1/deltaY
-        switch (segmentKind) {
-        case SEG_LINETO:
-            return (p2.x - p1.x) / deltaY;
-
-        case SEG_QUADTO:
-        {
-            double cpx = coords[0];
-
-            return ((-2 * p1.x * u) + (2 * cpx * (1 - (2 * t))) + (2 * p2.x * t)) / deltaY;
-        }
-
-        case SEG_CUBICTO:
-        {
-            double cpx1 = coords[0];
-            double cpx2 = coords[2];
-
-            return ((-3 * p1.x * u * u) + (3 * cpx1 * ((u * u) - (2 * u * t))) + (3 * cpx2 * ((2 * t
-                    * u) - (t * t))) + (3 * p2.x * t * t)) / deltaY;
-        }
-
-        default:
-            throw new RuntimeException("Illegal currentSegment " + segmentKind);
-        }
+        return switch (segmentKind) {
+            case SEG_LINETO -> (p2.x - p1.x) / deltaY;
+            case SEG_QUADTO -> ((-2 * p1.x * u) + (2 * coords[0] * (1 - (2 * t))) + (2 * p2.x * t))
+                    / deltaY;
+            case SEG_CUBICTO -> ((-3 * p1.x * u * u) + (3 * coords[0] * ((u * u) - (2 * u * t))) //
+                    + (3 * coords[2] * ((2 * t * u) - (t * t))) + (3 * p2.x * t * t)) / deltaY;
+            default -> throw new RuntimeException("Illegal currentSegment " + segmentKind);
+        };
     }
 
     //------//
@@ -264,29 +247,14 @@ public class NaturalSpline
 
         // dy/dx = dy/dt * dt/dx
         // dt/dx = 1/deltaX
-        switch (segmentKind) {
-        case SEG_LINETO:
-            return (p2.y - p1.y) / deltaX;
-
-        case SEG_QUADTO:
-        {
-            double cpy = buffer[1];
-
-            return ((-2 * p1.y * u) + (2 * cpy * (1 - (2 * t))) + (2 * p2.y * t)) / deltaX;
-        }
-
-        case SEG_CUBICTO:
-        {
-            double cpy1 = buffer[1];
-            double cpy2 = buffer[3];
-
-            return ((-3 * p1.y * u * u) + (3 * cpy1 * ((u * u) - (2 * u * t))) + (3 * cpy2 * ((2 * t
-                    * u) - (t * t))) + (3 * p2.y * t * t)) / deltaX;
-        }
-
-        default:
-            throw new RuntimeException("Illegal currentSegment " + segmentKind);
-        }
+        return switch (segmentKind) {
+            case SEG_LINETO -> (p2.y - p1.y) / deltaX;
+            case SEG_QUADTO -> ((-2 * p1.y * u) + (2 * buffer[1] * (1 - (2 * t))) + (2 * p2.y * t))
+                    / deltaX;
+            case SEG_CUBICTO -> ((-3 * p1.y * u * u) + (3 * buffer[1] * ((u * u) - (2 * u * t))) //
+                    + (3 * buffer[3] * ((2 * t * u) - (t * t))) + (3 * p2.y * t * t)) / deltaX;
+            default -> throw new RuntimeException("Illegal currentSegment " + segmentKind);
+        };
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
@@ -407,41 +375,44 @@ public class NaturalSpline
         }
 
         switch (n) {
-        case 1:
-            // Use a Line
-            return new NaturalSpline(new Line2D.Double(xx[0], yy[0], xx[1], yy[1]));
-
-        case 2:
-            // Use a Quadratic
-            return new NaturalSpline(
-                    new QuadCurve2D.Double(
-                            xx[0],
-                            yy[0],
-                            (2 * xx[1]) - ((xx[0] + xx[2]) / 2),
-                            (2 * yy[1]) - ((yy[0] + yy[2]) / 2),
-                            xx[2],
-                            yy[2]));
-
-        default:
-            // Use a sequence of cubics
-            double[] dx = getCubicDerivatives(xx);
-            double[] dy = getCubicDerivatives(yy);
-            Shape[] curves = new Shape[n];
-
-            for (int i = 0; i < n; i++) {
-                // Build each segment curve
-                curves[i] = new CubicCurve2D.Double(
-                        xx[i],
-                        yy[i],
-                        xx[i] + (dx[i] / 3),
-                        yy[i] + (dy[i] / 3),
-                        xx[i + 1] - (dx[i + 1] / 3),
-                        yy[i + 1] - (dy[i + 1] / 3),
-                        xx[i + 1],
-                        yy[i + 1]);
+            case 1 -> {
+                // Use a Line
+                return new NaturalSpline(new Line2D.Double(xx[0], yy[0], xx[1], yy[1]));
             }
 
-            return new NaturalSpline(curves);
+            case 2 -> {
+                // Use a Quadratic
+                return new NaturalSpline(
+                        new QuadCurve2D.Double(
+                                xx[0],
+                                yy[0],
+                                (2 * xx[1]) - ((xx[0] + xx[2]) / 2),
+                                (2 * yy[1]) - ((yy[0] + yy[2]) / 2),
+                                xx[2],
+                                yy[2]));
+            }
+
+            default -> {
+                // Use a sequence of cubics
+                double[] dx = getCubicDerivatives(xx);
+                double[] dy = getCubicDerivatives(yy);
+                Shape[] curves = new Shape[n];
+
+                for (int i = 0; i < n; i++) {
+                    // Build each segment curve
+                    curves[i] = new CubicCurve2D.Double(
+                            xx[i],
+                            yy[i],
+                            xx[i] + (dx[i] / 3),
+                            yy[i] + (dy[i] / 3),
+                            xx[i + 1] - (dx[i + 1] / 3),
+                            yy[i + 1] - (dy[i + 1] / 3),
+                            xx[i + 1],
+                            yy[i + 1]);
+                }
+
+                return new NaturalSpline(curves);
+            }
         }
     }
 }

@@ -219,14 +219,10 @@ public class TesseractOCR
             return tesseract.PSM_SINGLE_BLOCK;
         }
 
-        switch (layoutMode) {
-        case MULTI_BLOCK:
-            return tesseract.PSM_AUTO;
-
-        default:
-        case SINGLE_BLOCK:
-            return tesseract.PSM_SINGLE_BLOCK;
-        }
+        return switch (layoutMode) {
+            case MULTI_BLOCK -> tesseract.PSM_AUTO;
+            case SINGLE_BLOCK -> tesseract.PSM_SINGLE_BLOCK;
+        };
     }
 
     //--------------//

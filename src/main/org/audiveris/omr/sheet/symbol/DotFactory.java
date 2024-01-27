@@ -391,25 +391,25 @@ public class DotFactory
                     Rational mDur = mirror.getChord().getDurationSansDotOrTuplet();
 
                     switch (mDur.compareTo(hDur)) {
-                    case -1:
-                        heads.remove(mirror);
-                        modified = true;
+                        case -1 -> {
+                            heads.remove(mirror);
+                            modified = true;
+                            break InterLoop;
+                        }
 
-                        break InterLoop;
+                        case +1 -> {
+                            heads.remove(head);
+                            modified = true;
+                            break InterLoop;
+                        }
 
-                    case +1:
-                        heads.remove(head);
-                        modified = true;
-
-                        break InterLoop;
-
-                    case 0:
-                        // Same duration (but we don't have flags yet!)
-                        // Keep the one with lower ID
-                        heads.remove(mirror);
-                        modified = true;
-
-                        break InterLoop;
+                        case 0 -> {
+                            // Same duration (but we don't have flags yet!)
+                            // Keep the one with lower ID
+                            heads.remove(mirror);
+                            modified = true;
+                            break InterLoop;
+                        }
                     }
                 }
             }
@@ -756,8 +756,7 @@ public class DotFactory
          * Sorting dots by left abscissa.
          */
         public static final Comparator<Dot> byAbscissa = (Dot d1,
-                                                          Dot d2) ->
-        {
+                                                          Dot d2) -> {
             return Integer.compare(d1.getBounds().x, d2.getBounds().x);
         };
 

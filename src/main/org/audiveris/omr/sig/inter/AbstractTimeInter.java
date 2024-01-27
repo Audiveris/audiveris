@@ -422,55 +422,22 @@ public abstract class AbstractTimeInter
      */
     public static TimeRational rationalOf (OmrShape omrShape)
     {
-        if (omrShape == null) {
-            return null;
-        }
-
-        switch (omrShape) {
-        case timeSigCommon:
-        case timeSig4over4:
-            return new TimeRational(4, 4);
-
-        case timeSigCutCommon:
-        case timeSig2over2:
-            return new TimeRational(2, 2);
-
-        case timeSig2over4:
-            return new TimeRational(2, 4);
-
-        case timeSig3over2:
-            return new TimeRational(3, 2);
-
-        case timeSig3over4:
-            return new TimeRational(3, 4);
-
-        case timeSig3over8:
-            return new TimeRational(3, 8);
-
-        case timeSig5over4:
-            return new TimeRational(5, 4);
-
-        case timeSig5over8:
-            return new TimeRational(5, 8);
-
-        case timeSig6over4:
-            return new TimeRational(6, 4);
-
-        case timeSig6over8:
-            return new TimeRational(6, 8);
-
-        case timeSig7over8:
-            return new TimeRational(7, 8);
-
-        case timeSig9over8:
-            return new TimeRational(9, 8);
-
-        case timeSig12over8:
-            return new TimeRational(12, 8);
-
-        default:
-            return null;
-        }
+        return switch (omrShape) {
+            case timeSigCommon, timeSig4over4 -> new TimeRational(4, 4);
+            case timeSigCutCommon, timeSig2over2 -> new TimeRational(2, 2);
+            case timeSig2over4 -> new TimeRational(2, 4);
+            case timeSig3over2 -> new TimeRational(3, 2);
+            case timeSig3over4 -> new TimeRational(3, 4);
+            case timeSig3over8 -> new TimeRational(3, 8);
+            case timeSig5over4 -> new TimeRational(5, 4);
+            case timeSig5over8 -> new TimeRational(5, 8);
+            case timeSig6over4 -> new TimeRational(6, 4);
+            case timeSig6over8 -> new TimeRational(6, 8);
+            case timeSig7over8 -> new TimeRational(7, 8);
+            case timeSig9over8 -> new TimeRational(9, 8);
+            case timeSig12over8 -> new TimeRational(12, 8);
+            case null, default -> null;
+        };
     }
 
     //------------//
@@ -484,43 +451,18 @@ public abstract class AbstractTimeInter
      */
     public static TimeRational rationalOf (Shape shape)
     {
-        if (shape == null) {
-            return null;
-        }
-
-        switch (shape) {
-        case COMMON_TIME:
-        case TIME_FOUR_FOUR:
-            return new TimeRational(4, 4);
-
-        case CUT_TIME:
-        case TIME_TWO_TWO:
-            return new TimeRational(2, 2);
-
-        case TIME_TWO_FOUR:
-            return new TimeRational(2, 4);
-
-        case TIME_THREE_FOUR:
-            return new TimeRational(3, 4);
-
-        case TIME_FIVE_FOUR:
-            return new TimeRational(5, 4);
-
-        case TIME_SIX_FOUR:
-            return new TimeRational(6, 4);
-
-        case TIME_THREE_EIGHT:
-            return new TimeRational(3, 8);
-
-        case TIME_SIX_EIGHT:
-            return new TimeRational(6, 8);
-
-        case TIME_TWELVE_EIGHT:
-            return new TimeRational(12, 8);
-
-        default:
-            return null;
-        }
+        return switch (shape) {
+            case COMMON_TIME, TIME_FOUR_FOUR -> new TimeRational(4, 4);
+            case CUT_TIME, TIME_TWO_TWO -> new TimeRational(2, 2);
+            case TIME_TWO_FOUR -> new TimeRational(2, 4);
+            case TIME_THREE_FOUR -> new TimeRational(3, 4);
+            case TIME_FIVE_FOUR -> new TimeRational(5, 4);
+            case TIME_SIX_FOUR -> new TimeRational(6, 4);
+            case TIME_THREE_EIGHT -> new TimeRational(3, 8);
+            case TIME_SIX_EIGHT -> new TimeRational(6, 8);
+            case TIME_TWELVE_EIGHT -> new TimeRational(12, 8);
+            case null, default -> null;
+        };
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

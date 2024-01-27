@@ -353,23 +353,12 @@ public class Rubber
         double ratio = zoom.getRatio();
 
         switch (increment) {
-        case -1:
-            ratio /= ZOOM_FACTOR;
-
-            break;
-
-        case 0:
-            ratio = 1.0;
-
-            break;
-
-        case +1:
-            ratio *= ZOOM_FACTOR;
-
-            break;
-
-        default:
-            return;
+            case -1 -> ratio /= ZOOM_FACTOR;
+            case 0 -> ratio = 1.0;
+            case +1 -> ratio *= ZOOM_FACTOR;
+            default -> {
+                return;
+            }
         }
 
         zoom.setRatio(ratio);

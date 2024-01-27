@@ -168,14 +168,10 @@ public abstract class FilterDescriptor
         {
             final FilterKind sourceKind = constants.defaultKind.getSourceValue();
 
-            switch (sourceKind) {
-            case GLOBAL:
-                return GlobalDescriptor.getSourceValue();
-
-            default:
-            case ADAPTIVE:
-                return AdaptiveDescriptor.getSourceValue();
-            }
+            return switch (sourceKind) {
+                case GLOBAL -> GlobalDescriptor.getSourceValue();
+                case ADAPTIVE -> AdaptiveDescriptor.getSourceValue();
+            };
         }
 
         @Override
@@ -191,14 +187,10 @@ public abstract class FilterDescriptor
         @Override
         public FilterDescriptor getValue ()
         {
-            switch (getDefaultKind()) {
-            case GLOBAL:
-                return GlobalDescriptor.getDefault();
-
-            default:
-            case ADAPTIVE:
-                return AdaptiveDescriptor.getDefault();
-            }
+            return switch (getDefaultKind()) {
+                case GLOBAL -> GlobalDescriptor.getDefault();
+                case ADAPTIVE -> AdaptiveDescriptor.getDefault();
+            };
         }
 
         @Override
@@ -208,14 +200,10 @@ public abstract class FilterDescriptor
                 return true;
             }
 
-            switch (getDefaultKind()) {
-            case GLOBAL:
-                return GlobalDescriptor.defaultIsSpecific();
-
-            default:
-            case ADAPTIVE:
-                return AdaptiveDescriptor.defaultIsSpecific();
-            }
+            return switch (getDefaultKind()) {
+                case GLOBAL -> GlobalDescriptor.defaultIsSpecific();
+                case ADAPTIVE -> AdaptiveDescriptor.defaultIsSpecific();
+            };
         }
 
         @Override
@@ -244,22 +232,18 @@ public abstract class FilterDescriptor
                     FilterDescriptor.setDefaultKind(kind);
 
                     switch (kind) {
-                    case GLOBAL:
+                        case GLOBAL -> {
+                            final GlobalDescriptor gDesc = (GlobalDescriptor) specific;
+                            GlobalDescriptor.setDefaultThreshold(gDesc.threshold);
+                            AdaptiveDescriptor.resetToSource();
+                        }
 
-                        GlobalDescriptor gDesc = (GlobalDescriptor) specific;
-                        GlobalDescriptor.setDefaultThreshold(gDesc.threshold);
-                        AdaptiveDescriptor.resetToSource();
-
-                        break;
-
-                    case ADAPTIVE:
-
-                        AdaptiveDescriptor aDesc = (AdaptiveDescriptor) specific;
-                        AdaptiveDescriptor.setDefaultMeanCoeff(aDesc.meanCoeff);
-                        AdaptiveDescriptor.setDefaultStdDevCoeff(aDesc.stdDevCoeff);
-                        GlobalDescriptor.resetToSource();
-
-                        break;
+                        case ADAPTIVE -> {
+                            final AdaptiveDescriptor aDesc = (AdaptiveDescriptor) specific;
+                            AdaptiveDescriptor.setDefaultMeanCoeff(aDesc.meanCoeff);
+                            AdaptiveDescriptor.setDefaultStdDevCoeff(aDesc.stdDevCoeff);
+                            GlobalDescriptor.resetToSource();
+                        }
                     }
                 }
 
