@@ -9,7 +9,7 @@ repository](https://github.com/flathub/org.audiveris.Audiveris).
 The audiveris git tree now contains a submodule for the flathub code
 under `dev/flathub`. To initialize this submodule, run
 
-    git submodule init --all
+    git submodule init
 	git submodule update
 
 By tracking this as a git submodule rather than keeping the code
