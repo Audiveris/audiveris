@@ -59,7 +59,6 @@ import javax.xml.stream.XMLStreamException;
  *
  * @author Hervé Bitteur
  */
-@Deprecated
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "neural-network")
 public class NeuralNetwork
