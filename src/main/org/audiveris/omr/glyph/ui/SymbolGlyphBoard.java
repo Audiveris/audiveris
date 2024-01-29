@@ -31,8 +31,6 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.layout.CellConstraints;
-
 /**
  * Class <code>SymbolGlyphBoard</code> defines an extended glyph board, with normalized
  * values for weight, width and height.
@@ -105,22 +103,20 @@ public class SymbolGlyphBoard
      */
     private void defineLayout ()
     {
-        final CellConstraints cst = new CellConstraints();
-
         int r = 1; // --------------------------------
         // id + width
 
-        builder.add(width.getLabel(), cst.xy(9, r));
-        builder.add(width.getField(), cst.xy(11, r));
+        builder.addRaw(width.getLabel()).xy(9, r);
+        builder.addRaw(width.getField()).xy(11, r);
 
         r += 2; // --------------------------------
         // weight + height
 
-        builder.add(weight.getLabel(), cst.xy(5, r));
-        builder.add(weight.getField(), cst.xy(7, r));
+        builder.addRaw(weight.getLabel()).xy(5, r);
+        builder.addRaw(weight.getField()).xy(7, r);
 
-        builder.add(height.getLabel(), cst.xy(9, r));
-        builder.add(height.getField(), cst.xy(11, r));
+        builder.addRaw(height.getLabel()).xy(9, r);
+        builder.addRaw(height.getField()).xy(11, r);
     }
 
     //-----------------------//

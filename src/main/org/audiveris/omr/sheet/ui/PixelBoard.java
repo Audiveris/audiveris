@@ -34,8 +34,7 @@ import org.audiveris.omr.ui.util.Panel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Rectangle;
@@ -120,7 +119,7 @@ public class PixelBoard
     //--------------//
     private void defineLayout ()
     {
-        FormLayout layout = Panel.makeFormLayout(2, 3);
+        final FormLayout layout = Panel.makeFormLayout(2, 3);
 
         // Specify that columns 1, 5 & 9 as well as 3, 7 & 11 have equal widths
         //        layout.setColumnGroups(
@@ -128,28 +127,25 @@ public class PixelBoard
         //                    {1, 5, 9},
         //                    {3, 7, 11}
         //                });
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
-
-        ///builder.setDefaultDialogBorder();
-        CellConstraints cst = new CellConstraints();
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
 
         int r = 1; // --------------------------------
 
-        builder.add(level.getLabel(), cst.xy(1, r));
-        builder.add(level.getField(), cst.xy(3, r));
+        builder.addRaw(level.getLabel()).xy(1, r);
+        builder.addRaw(level.getField()).xy(3, r);
 
-        builder.add(x.getLabel(), cst.xy(5, r));
-        builder.add(x.getField(), cst.xy(7, r));
+        builder.addRaw(x.getLabel()).xy(5, r);
+        builder.addRaw(x.getField()).xy(7, r);
         ///x.getField().setColumns(5);
-        builder.add(width.getLabel(), cst.xy(9, r));
-        builder.add(width.getField(), cst.xy(11, r));
+        builder.addRaw(width.getLabel()).xy(9, r);
+        builder.addRaw(width.getField()).xy(11, r);
 
         r += 2; // --------------------------------
-        builder.add(y.getLabel(), cst.xy(5, r));
-        builder.add(y.getField(), cst.xy(7, r));
+        builder.addRaw(y.getLabel()).xy(5, r);
+        builder.addRaw(y.getField()).xy(7, r);
 
-        builder.add(height.getLabel(), cst.xy(9, r));
-        builder.add(height.getField(), cst.xy(11, r));
+        builder.addRaw(height.getLabel()).xy(9, r);
+        builder.addRaw(height.getField()).xy(11, r);
     }
 
     //---------------------//

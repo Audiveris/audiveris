@@ -41,6 +41,7 @@ import javax.xml.bind.annotation.XmlValue;
  * @author Hervé Bitteur
  */
 @Deprecated
+@SuppressWarnings("deprecation")
 @XmlAccessorType(XmlAccessType.NONE)
 public class OldStaffBarline
 {

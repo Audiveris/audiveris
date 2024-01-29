@@ -37,7 +37,7 @@ import org.jdesktop.application.SingleFrameApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -172,14 +172,14 @@ public class Trainer
         //
         FormLayout layout = new FormLayout("pref, 10dlu, pref", "pref, 10dlu, pref");
         CellConstraints cst = new CellConstraints();
-        PanelBuilder builder = new PanelBuilder(layout, new Panel());
+        FormBuilder builder = FormBuilder.create().layout(layout).panel(new Panel());
 
         int r = 1; // --------------------------------
-        builder.add(selectionPanel.getComponent(), cst.xyw(1, r, 3, "center, fill"));
+        builder.addRaw(selectionPanel.getComponent()).xyw(1, r, 3, "center, fill");
 
         r += 2; // --------------------------------
-        builder.add(definePanel(ShapeClassifier.getInstance()), cst.xy(1, r));
-        //        builder.add(definePanel(ShapeClassifier.getSecondInstance()), cst.xy(3, r));
+        builder.addRaw(definePanel(ShapeClassifier.getInstance())).xy(1, r);
+        //        builder.addRaw(definePanel(ShapeClassifier.getSecondInstance())).xy(3, r));
         //
         frame.add(builder.getPanel());
 
@@ -200,17 +200,18 @@ public class Trainer
         FormLayout layout = new FormLayout("pref", "pref," + pi + ",pref," + pi + ",pref");
 
         CellConstraints cst = new CellConstraints();
-        PanelBuilder builder = new PanelBuilder(layout, new TitledPanel(classifier.getName()));
+        FormBuilder builder = FormBuilder.create().layout(layout).panel(
+                new TitledPanel(classifier.getName()));
         Task task = new Task(classifier);
 
         int r = 1; // --------------------------------
-        builder.add(new TrainingPanel(task, selectionPanel).getComponent(), cst.xy(1, r));
+        builder.addRaw(new TrainingPanel(task, selectionPanel).getComponent()).xy(1, r);
 
         r += 2; // --------------------------------
-        builder.add(new ValidationPanel(task, selectionPanel, true).getComponent(), cst.xy(1, r));
+        builder.addRaw(new ValidationPanel(task, selectionPanel, true).getComponent()).xy(1, r);
 
         r += 2; // --------------------------------
-        builder.add(new ValidationPanel(task, selectionPanel, false).getComponent(), cst.xy(1, r));
+        builder.addRaw(new ValidationPanel(task, selectionPanel, false).getComponent()).xy(1, r);
 
         return builder.getPanel();
     }

@@ -60,7 +60,7 @@ import org.audiveris.omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -492,16 +492,17 @@ public class ShapeBoard
     //--------------//
     private void defineLayout ()
     {
-        CellConstraints cst = new CellConstraints();
-        FormLayout layout = new FormLayout("pref", "pref," + Panel.getFieldInterline() + ",pref");
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
+        final FormLayout layout = new FormLayout(
+                "pref",
+                "pref," + Panel.getFieldInterline() + ",pref");
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
         getBody().setName("ShapeBody");
 
-        builder.add(shapeHistory.panel, cst.xy(1, 1));
-        builder.add(globalPanel, cst.xy(1, 3));
+        builder.addRaw(shapeHistory.panel).xy(1, 1);
+        builder.addRaw(globalPanel).xy(1, 3);
 
         for (Panel sp : setPanels.values()) {
-            builder.add(sp, cst.xy(1, 3)); // Global panel and all set panels overlap!
+            builder.addRaw(sp).xy(1, 3); // Global panel and all set panels overlap!
             sp.setVisible(false);
         }
     }
@@ -999,7 +1000,7 @@ public class ShapeBoard
         {
             final int rows = (int) Math.ceil((double) shapes.size() / cols);
             final FormLayout layout = new FormLayout(colSpec(cols), rowSpec(rows));
-            final PanelBuilder builder = new PanelBuilder(layout, table);
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(table);
 
             int row = 1;
             int col = -1;
@@ -1017,7 +1018,7 @@ public class ShapeBoard
                 if (symbol != null) {
                     final ShapeButton button = new ShapeButton(symbol);
                     addButton(null, button);
-                    builder.add(button, cst.xy(col, row));
+                    builder.addRaw(button).xy(col, row);
                 } else {
                     logger.warn("Panel. No button symbol for {}", shape);
                 }
@@ -1103,7 +1104,7 @@ public class ShapeBoard
         {
             final int rows = 8; // A maximum of 8 rows
             final FormLayout layout = new FormLayout(colSpec(cols), rowSpec(rows));
-            final PanelBuilder builder = new PanelBuilder(layout, table);
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(table);
             final EnumSet<HeadMotif> motifs = EnumSet.noneOf(HeadMotif.class);
 
             for (Shape shape : filtered) {
@@ -1123,7 +1124,7 @@ public class ShapeBoard
 
                     // Add motif label if still needed
                     if (!motifs.contains(motif)) {
-                        builder.addLabel(motif.name(), cst.xy(1, row));
+                        builder.addROLabel(motif.name()).xy(1, row);
                         motifs.add(motif);
                     }
                 } else {
@@ -1131,13 +1132,13 @@ public class ShapeBoard
 
                     // Add a label for the row of playings
                     if (shape == Shape.PLAYING_OPEN) {
-                        builder.addLabel("sign", cst.xy(1, row));
+                        builder.addROLabel("sign").xy(1, row);
                     }
                 }
 
                 final ShapeButton button = new ShapeButton(symbol);
                 addButton(null, button);
-                builder.add(button, cst.xy(col, row));
+                builder.addRaw(button).xy(col, row);
             }
 
             panel.add(table);

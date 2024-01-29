@@ -48,8 +48,7 @@ import org.audiveris.omr.ui.util.Panel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Point;
@@ -193,26 +192,23 @@ public class TemplateBoard
     //--------------//
     private void defineLayout ()
     {
-        FormLayout layout = Panel.makeFormLayout(2, 3);
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
-
-        ///builder.setDefaultDialogBorder();
-        CellConstraints cst = new CellConstraints();
+        final FormLayout layout = Panel.makeFormLayout(2, 3);
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
 
         int r = 1; // --------------------------------
-        builder.add(evalField, cst.xy(1, r));
-        builder.add(anchorSpinner, cst.xyw(3, r, 3));
-        builder.add(shapeSpinner, cst.xyw(7, r, 5));
+        builder.addRaw(evalField).xy(1, r);
+        builder.addRaw(anchorSpinner).xyw(3, r, 3);
+        builder.addRaw(shapeSpinner).xyw(7, r, 5);
 
         r += 2; // --------------------------------
-        builder.add(gradeField.getLabel(), cst.xy(1, r));
-        builder.add(gradeField.getField(), cst.xy(3, r));
+        builder.addRaw(gradeField.getLabel()).xy(1, r);
+        builder.addRaw(gradeField.getField()).xy(3, r);
 
-        builder.add(rawField.getLabel(), cst.xy(5, r));
-        builder.add(rawField.getField(), cst.xy(7, r));
+        builder.addRaw(rawField.getLabel()).xy(5, r);
+        builder.addRaw(rawField.getField()).xy(7, r);
 
-        builder.add(keyPointField.getLabel(), cst.xy(9, r));
-        builder.add(keyPointField.getField(), cst.xy(11, r));
+        builder.addRaw(keyPointField.getLabel()).xy(9, r);
+        builder.addRaw(keyPointField.getField()).xy(11, r);
     }
 
     //---------------------//

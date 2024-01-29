@@ -38,8 +38,7 @@ import org.audiveris.omr.ui.util.Panel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
@@ -243,42 +242,41 @@ class TrainingPanel
     {
         progressBar.setForeground(Colors.PROGRESS_BAR);
 
-        FormLayout layout = Panel.makeFormLayout(
+        final FormLayout layout = Panel.makeFormLayout(
                 3,
                 3,
                 "",
                 Trainer.LABEL_WIDTH,
                 Trainer.FIELD_WIDTH);
-        PanelBuilder builder = new PanelBuilder(layout, component);
-        CellConstraints cst = new CellConstraints();
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(component);
 
         // Evaluator Title & Progress Bar
         int r = 1; // ----------------------------
         String title = "Training";
-        builder.addSeparator(title, cst.xyw(1, r, 3));
-        builder.add(progressBar, cst.xyw(5, r, 7));
+        builder.addSeparator(title).xyw(1, r, 3);
+        builder.addRaw(progressBar).xyw(5, r, 7);
 
         r += 2; // ----------------------------
 
-        builder.add(new JButton(resetAction), cst.xy(3, r));
+        builder.addRaw(new JButton(resetAction)).xy(3, r);
 
-        builder.add(maxEpochs.getLabel(), cst.xy(5, r));
-        builder.add(maxEpochs.getField(), cst.xy(7, r));
+        builder.addRaw(maxEpochs.getLabel()).xy(5, r);
+        builder.addRaw(maxEpochs.getField()).xy(7, r);
 
-        builder.add(epochIndex.getLabel(), cst.xy(9, r));
-        builder.add(epochIndex.getField(), cst.xy(11, r));
+        builder.addRaw(epochIndex.getLabel()).xy(9, r);
+        builder.addRaw(epochIndex.getField()).xy(11, r);
 
         r += 2; // ----------------------------
 
-        builder.add(new JButton(stopAction), cst.xy(1, r));
+        builder.addRaw(new JButton(stopAction)).xy(1, r);
 
-        builder.add(new JButton(trainAction), cst.xy(3, r));
+        builder.addRaw(new JButton(trainAction)).xy(3, r);
 
-        builder.add(iterIndex.getLabel(), cst.xy(5, r));
-        builder.add(iterIndex.getField(), cst.xy(7, r));
+        builder.addRaw(iterIndex.getLabel()).xy(5, r);
+        builder.addRaw(iterIndex.getField()).xy(7, r);
 
-        builder.add(trainScore.getLabel(), cst.xy(9, r));
-        builder.add(trainScore.getField(), cst.xy(11, r));
+        builder.addRaw(trainScore.getLabel()).xy(9, r);
+        builder.addRaw(trainScore.getField()).xy(11, r);
     }
 
     private void display (final int epoch,
@@ -286,8 +284,7 @@ class TrainingPanel
                           final double score)
     {
         // This part is run on swing thread
-        SwingUtilities.invokeLater( () ->
-        {
+        SwingUtilities.invokeLater( () -> {
             // Update current values
             epochIndex.setText(Integer.toString(epoch));
             iterIndex.setText(Integer.toString(iter));

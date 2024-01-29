@@ -36,8 +36,7 @@ import org.audiveris.omr.ui.util.Panel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
@@ -172,63 +171,60 @@ public class ValidationPanel
     //--------------//
     private void defineLayout ()
     {
-        /** Common JGoogies constraints for this class and its subclass if any */
-        CellConstraints cst = new CellConstraints();
-
         /** Common JGoogies builder for this class and its subclass if any */
-        FormLayout layout = Panel.makeFormLayout(
+        final FormLayout layout = Panel.makeFormLayout(
                 5,
                 3,
                 "",
                 Trainer.LABEL_WIDTH,
                 Trainer.FIELD_WIDTH);
-        PanelBuilder builder = new PanelBuilder(layout, component);
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(component);
 
         // Validation title & progress bar
         int r = 1;
-        String title = "Validation [" + setName + " set]";
-        builder.addSeparator(title, cst.xyw(1, r, 3));
-        builder.add(progressBar, cst.xyw(5, r, 7));
+        final String title = "Validation [" + setName + " set]";
+        builder.addSeparator(title).xyw(1, r, 3);
+        builder.addRaw(progressBar).xyw(5, r, 7);
         progressBar.setForeground(Colors.PROGRESS_BAR);
 
         r += 2; // ----------------------------
 
-        builder.add(positiveValue.getLabel(), cst.xyw(4, r, 2));
-        builder.add(positiveValue.getField(), cst.xy(7, r));
+        builder.addRaw(positiveValue.getLabel()).xyw(4, r, 2);
+        builder.addRaw(positiveValue.getField()).xy(7, r);
 
-        builder.add(falsePositiveValue.getLabel(), cst.xyw(8, r, 2));
-        builder.add(falsePositiveValue.getField(), cst.xy(11, r));
+        builder.addRaw(falsePositiveValue.getLabel()).xyw(8, r, 2);
+        builder.addRaw(falsePositiveValue.getField()).xy(11, r);
 
         r += 2; // ----------------------------
 
-        JButton validateButton = new JButton(validateAction);
+        final JButton validateButton = new JButton(validateAction);
         validateButton.setToolTipText("Validate the classifier on current base of samples");
-        builder.add(validateButton, cst.xy(3, r));
+        builder.addRaw(validateButton).xy(3, r);
 
-        JButton falsePositiveButton = new JButton(falsePositiveAction);
+        final JButton falsePositiveButton = new JButton(falsePositiveAction);
         falsePositiveButton.setToolTipText("Display the impacted samples for verification");
-        builder.add(falsePositiveButton, cst.xy(11, r));
+        builder.addRaw(falsePositiveButton).xy(11, r);
 
         r += 2; // ----------------------------
 
-        builder.add(accuracyValue.getLabel(), cst.xy(1, r));
-        builder.add(accuracyValue.getField(), cst.xy(3, r));
+        builder.addRaw(accuracyValue.getLabel()).xy(1, r);
+        builder.addRaw(accuracyValue.getField()).xy(3, r);
 
-        builder.add(weakPositiveValue.getLabel(), cst.xyw(4, r, 2));
-        builder.add(weakPositiveValue.getField(), cst.xy(7, r));
+        builder.addRaw(weakPositiveValue.getLabel()).xyw(4, r, 2);
+        builder.addRaw(weakPositiveValue.getField()).xy(7, r);
 
-        builder.add(weakNegativeValue.getLabel(), cst.xyw(8, r, 2));
-        builder.add(weakNegativeValue.getField(), cst.xy(11, r));
+        builder.addRaw(weakNegativeValue.getLabel()).xyw(8, r, 2);
+        builder.addRaw(weakNegativeValue.getField()).xy(11, r);
 
         r += 2; // ----------------------------
 
-        JButton weakPositiveButton = new JButton(weakPositiveAction);
+        final JButton weakPositiveButton = new JButton(weakPositiveAction);
         weakPositiveButton.setToolTipText("Display the impacted samples for verification");
-        builder.add(weakPositiveButton, cst.xy(7, r));
+        builder.addRaw(weakPositiveButton).xy(7, r);
 
-        JButton weakNegativeButton = new JButton(weakNegativeAction);
+        final JButton weakNegativeButton = new JButton(weakNegativeAction);
         weakNegativeButton.setToolTipText("Display the impacted samples for verification");
-        builder.add(weakNegativeButton, cst.xy(11, r));
+        builder.addRaw(weakNegativeButton).xy(11, r);
     }
 
     //--------------//
@@ -405,8 +401,7 @@ public class ValidationPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            executor.execute( () ->
-            {
+            executor.execute( () -> {
                 setEnabled(false);
 
                 if (task != null) {

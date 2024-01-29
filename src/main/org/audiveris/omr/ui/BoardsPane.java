@@ -29,8 +29,7 @@ import org.audiveris.omr.ui.util.UIUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Dimension;
@@ -195,16 +194,15 @@ public class BoardsPane
             return; // No selected boards
         }
 
-        FormLayout layout = new FormLayout("fill:pref:grow", sbr.toString());
-        PanelBuilder builder = new PanelBuilder(layout, component);
-        CellConstraints cst = new CellConstraints();
+        final FormLayout layout = new FormLayout("fill:pref:grow", sbr.toString());
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(component);
 
         // Now add the desired components, using provided order
         int r = 1;
 
         for (Board board : boards) {
             if (board.isSelected()) {
-                builder.add(board.getComponent(), cst.xy(1, r));
+                builder.addRaw(board.getComponent()).xy(1, r);
                 r += 2;
             }
         }

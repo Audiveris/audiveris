@@ -55,8 +55,7 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
@@ -602,21 +601,20 @@ public class BookParameters
         }
 
         @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
+        public int defineLayout (FormBuilder builder,
                                  int titleWidth,
                                  int r)
         {
-            super.defineLayout(builder, cst, 1, r); // sel + title, no advance
+            super.defineLayout(builder, 1, r); // sel + title, no advance
 
-            builder.add(kindLabel, cst.xyw(3, r, 3));
-            builder.add(kindCombo, cst.xyw(7, r, 3));
+            builder.addRaw(kindLabel).xyw(3, r, 3);
+            builder.addRaw(kindCombo).xyw(7, r, 3);
             r += 2;
 
             // Layout global and local data as mutual overlays
-            globalData.defineLayout(builder, cst, r);
-            r = localDataMean.defineLayout(builder, cst, r);
-            r = localDataDev.defineLayout(builder, cst, r);
+            globalData.defineLayout(builder, r);
+            r = localDataMean.defineLayout(builder, r);
+            r = localDataDev.defineLayout(builder, r);
 
             return r;
         }
@@ -718,15 +716,14 @@ public class BookParameters
         }
 
         @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
+        public int defineLayout (FormBuilder builder,
                                  int titleWidth,
                                  int r)
         {
-            super.defineLayout(builder, cst, titleWidth, r); // sel + title, no advance
+            super.defineLayout(builder, titleWidth, r); // sel + title, no advance
 
-            builder.add(langSpec, cst.xyw(3, r, 3));
-            builder.add(langScroll, cst.xyw(7, r, 3));
+            builder.addRaw(langSpec).xyw(3, r, 3);
+            builder.addRaw(langScroll).xyw(7, r, 3);
 
             return r + 2;
         }

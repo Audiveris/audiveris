@@ -34,8 +34,7 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
@@ -111,13 +110,12 @@ public class StubsSelection
                         .append("pref").append(',').append(Panel.getLabelInterval()).append(',')
                         .append("100dlu").toString(),
                 Panel.makeRows(1)); // Rows spec
-        final CellConstraints cst = new CellConstraints();
         final Panel panel = new Panel();
-        final PanelBuilder builder = new PanelBuilder(layout, panel);
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(panel);
         panel.setNoInsets();
 
-        builder.add(specField.getLabel(), cst.xy(1, 1));
-        builder.add(specField.getField(), cst.xy(3, 1));
+        builder.addRaw(specField.getLabel()).xy(1, 1);
+        builder.addRaw(specField.getField()).xy(3, 1);
         specField.getField().setHorizontalAlignment(JTextField.LEFT);
 
         return new JOptionPane(panel, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);

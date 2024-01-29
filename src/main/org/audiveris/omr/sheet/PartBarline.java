@@ -369,6 +369,7 @@ public class PartBarline
      *
      * @return true if really upgraded
      */
+    @SuppressWarnings("deprecation")
     public boolean upgradeOldStuff ()
     {
         if (oldStaffBarlines != null) {

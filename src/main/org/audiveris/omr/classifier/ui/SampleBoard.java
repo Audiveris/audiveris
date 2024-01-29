@@ -40,7 +40,6 @@ import org.jdesktop.application.ApplicationAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Dimension;
@@ -149,56 +148,53 @@ public class SampleBoard
      */
     private void defineLayout ()
     {
-        final CellConstraints cst = new CellConstraints();
-
-        // Layout
         int r = 1; // -----------------------------
 
-        JButton removeButton = new JButton(controller.getRemoveAction());
+        final JButton removeButton = new JButton(controller.getRemoveAction());
         removeButton.setHorizontalTextPosition(SwingConstants.LEFT);
         removeButton.setHorizontalAlignment(SwingConstants.RIGHT);
         removeAction.setEnabled(false);
-        builder.add(removeButton, cst.xyw(5, r, 3));
+        builder.addRaw(removeButton).xyw(5, r, 3);
 
         assignButton = new JButton(assignAction);
         assignButton.setHorizontalTextPosition(SwingConstants.LEFT);
         assignButton.setHorizontalAlignment(SwingConstants.RIGHT);
         assignAction.setEnabled(false);
-        builder.add(assignButton, cst.xyw(9, r, 3));
+        builder.addRaw(assignButton).xyw(9, r, 3);
 
         r += 2; // --------------------------------
 
         // Shape Icon (start, spans several rows)
-        builder.add(shapeIcon, cst.xywh(3, r, 1, 9));
+        builder.addRaw(shapeIcon).xywh(3, r, 1, 9);
 
-        builder.add(sheetName.getLabel(), cst.xy(1, r));
-        builder.add(sheetName.getField(), cst.xyw(3, r, 9));
-
-        r += 2; // --------------------------------
-
-        builder.add(shapeField.getLabel(), cst.xy(5, r));
-        builder.add(shapeField.getField(), cst.xyw(7, r, 5));
+        builder.addRaw(sheetName.getLabel()).xy(1, r);
+        builder.addRaw(sheetName.getField()).xyw(3, r, 9);
 
         r += 2; // --------------------------------
 
-        builder.add(iLine.getLabel(), cst.xy(5, r));
-        builder.add(iLine.getField(), cst.xy(7, r));
-
-        builder.add(width.getLabel(), cst.xy(9, r));
-        builder.add(width.getField(), cst.xy(11, r));
+        builder.addRaw(shapeField.getLabel()).xy(5, r);
+        builder.addRaw(shapeField.getField()).xyw(7, r, 5);
 
         r += 2; // --------------------------------
 
-        builder.add(weight.getLabel(), cst.xy(5, r));
-        builder.add(weight.getField(), cst.xy(7, r));
+        builder.addRaw(iLine.getLabel()).xy(5, r);
+        builder.addRaw(iLine.getField()).xy(7, r);
 
-        builder.add(height.getLabel(), cst.xy(9, r));
-        builder.add(height.getField(), cst.xy(11, r));
+        builder.addRaw(width.getLabel()).xy(9, r);
+        builder.addRaw(width.getField()).xy(11, r);
 
         r += 2; // --------------------------------
 
-        builder.add(pitch.getLabel(), cst.xy(9, r));
-        builder.add(pitch.getField(), cst.xy(11, r));
+        builder.addRaw(weight.getLabel()).xy(5, r);
+        builder.addRaw(weight.getField()).xy(7, r);
+
+        builder.addRaw(height.getLabel()).xy(9, r);
+        builder.addRaw(height.getField()).xy(11, r);
+
+        r += 2; // --------------------------------
+
+        builder.addRaw(pitch.getLabel()).xy(9, r);
+        builder.addRaw(pitch.getField()).xy(11, r);
     }
 
     //---------------//

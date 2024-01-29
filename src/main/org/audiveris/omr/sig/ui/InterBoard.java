@@ -270,45 +270,40 @@ public class InterBoard
      */
     private void defineLayout ()
     {
-        final CellConstraints cst = new CellConstraints();
-
-        // Layout
         int r = 1; // -----------------------------
 
         // Shape Icon (start, spans several rows) + grade + Deassign button
-        builder.add(
-                shapeIcon,
-                cst.xywh(1, r, 1, 7, CellConstraints.CENTER, CellConstraints.CENTER));
+        builder.addRaw(shapeIcon).xywh(1, r, 1, 7, CellConstraints.CENTER, CellConstraints.CENTER);
 
         // Grade
-        builder.add(grade.getLabel(), cst.xy(5, r));
-        builder.add(grade.getField(), cst.xy(7, r));
+        builder.addRaw(grade.getLabel()).xy(5, r);
+        builder.addRaw(grade.getField()).xy(7, r);
 
         // Deassign
-        JButton deassignButton = new JButton(deassignAction);
+        final JButton deassignButton = new JButton(deassignAction);
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
         deassignButton.setHorizontalAlignment(SwingConstants.RIGHT);
         deassignAction.setEnabled(false);
-        builder.add(deassignButton, cst.xyw(9, r, 3));
+        builder.addRaw(deassignButton).xyw(9, r, 3);
 
         r += 2; // --------------------------------
 
         // Edit
-        JPanel editPane = new JPanel(new BorderLayout());
+        final JPanel editPane = new JPanel(new BorderLayout());
         edit.getLabel().setHorizontalAlignment(SwingConstants.CENTER);
         editPane.add(edit.getLabel(), BorderLayout.CENTER);
         editPane.add(edit.getField(), BorderLayout.EAST);
-        builder.add(editPane, cst.xyw(3, r, 1));
+        builder.addRaw(editPane).xyw(3, r, 1);
 
         // Specific (MANUAL or IMPLICIT) if any
-        builder.add(specific, cst.xyw(5, r, 4));
+        builder.addRaw(specific).xyw(5, r, 4);
 
         // To ensemble
-        JButton toEnsButton = new JButton(toEnsAction);
+        final JButton toEnsButton = new JButton(toEnsAction);
         toEnsButton.setHorizontalTextPosition(SwingConstants.LEFT);
         toEnsButton.setHorizontalAlignment(SwingConstants.RIGHT);
         toEnsAction.setEnabled(false);
-        builder.add(toEnsButton, cst.xyw(9, r, 3));
+        builder.addRaw(toEnsButton).xyw(9, r, 3);
 
         r += 2; // --------------------------------
 
@@ -316,41 +311,41 @@ public class InterBoard
         roleCombo.getField().setMaximumRowCount(TextRole.values().length);
         roleCombo.addActionListener(paramAction);
         roleCombo.setVisible(false);
-        builder.add(roleCombo.getField(), cst.xyw(3, r, 4));
+        builder.addRaw(roleCombo.getField()).xyw(3, r, 4);
 
         // Tie (for a SlurInter only)
-        JPanel tiePane = new JPanel(new BorderLayout());
+        final JPanel tiePane = new JPanel(new BorderLayout());
         tie.getLabel().setHorizontalAlignment(SwingConstants.CENTER);
         tiePane.add(tie.getLabel(), BorderLayout.CENTER);
         tiePane.add(tie.getField(), BorderLayout.EAST);
         tie.setVisible(false);
-        builder.add(tiePane, cst.xyw(3, r, 1));
+        builder.addRaw(tiePane).xyw(3, r, 1);
 
         // Shape name
-        builder.add(shapeName.getField(), cst.xyw(7, r, 5));
+        builder.addRaw(shapeName.getField()).xyw(7, r, 5);
 
         r += 2; // --------------------------------
 
         // Text field
         textField.getField().setHorizontalAlignment(JTextField.LEFT);
         textField.setVisible(false);
-        builder.add(textField.getField(), cst.xyw(3, r, 9));
+        builder.addRaw(textField.getField()).xyw(3, r, 9);
 
         // Custom time
         custom.setVisible(false);
-        builder.add(custom.getLabel(), cst.xyw(1, r, 1));
-        builder.add(custom.getField(), cst.xyw(3, r, 1));
+        builder.addRaw(custom.getLabel()).xyw(1, r, 1);
+        builder.addRaw(custom.getField()).xyw(3, r, 1);
 
         r += 2; // --------------------------------
 
         // Voice, Verse, Above
-        builder.add(voice.getLabel(), cst.xyw(1, r, 1));
-        builder.add(voice.getField(), cst.xyw(3, r, 1));
+        builder.addRaw(voice.getLabel()).xyw(1, r, 1);
+        builder.addRaw(voice.getField()).xyw(3, r, 1);
 
-        builder.add(verse.getLabel(), cst.xyw(5, r, 1));
-        builder.add(verse.getField(), cst.xyw(7, r, 1));
+        builder.addRaw(verse.getLabel()).xyw(5, r, 1);
+        builder.addRaw(verse.getField()).xyw(7, r, 1);
 
-        builder.add(aboveBelow, cst.xyw(9, r, 3));
+        builder.addRaw(aboveBelow).xyw(9, r, 3);
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(

@@ -235,6 +235,7 @@ public class Measure
     @XmlElement(name = "similes")
     @Trimmable.Collection
     @Deprecated
+    @SuppressWarnings("deprecation")
     private final LinkedHashSet<SimileMarkInter> OLD_similes = new LinkedHashSet<>();
 
     /** All measure repeat signs in this measure. */
@@ -460,6 +461,7 @@ public class Measure
     /**
      * To be called right after unmarshalling.
      */
+    @SuppressWarnings("deprecation")
     public void afterReload ()
     {
         try {

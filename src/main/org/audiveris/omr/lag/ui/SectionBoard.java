@@ -35,8 +35,6 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.layout.CellConstraints;
-
 import java.awt.Rectangle;
 
 /**
@@ -131,24 +129,22 @@ public class SectionBoard
     //--------------//
     private void defineLayout ()
     {
-        CellConstraints cst = new CellConstraints();
-
         int r = 1; // --------------------------------
-        builder.add(x.getLabel(), cst.xy(5, r));
-        builder.add(x.getField(), cst.xy(7, r));
+        builder.addRaw(x.getLabel()).xy(5, r);
+        builder.addRaw(x.getField()).xy(7, r);
 
-        builder.add(width.getLabel(), cst.xy(9, r));
-        builder.add(width.getField(), cst.xy(11, r));
+        builder.addRaw(width.getLabel()).xy(9, r);
+        builder.addRaw(width.getField()).xy(11, r);
 
         r += 2; // --------------------------------
-        builder.add(weight.getLabel(), cst.xy(1, r));
-        builder.add(weight.getField(), cst.xy(3, r));
+        builder.addRaw(weight.getLabel()).xy(1, r);
+        builder.addRaw(weight.getField()).xy(3, r);
 
-        builder.add(y.getLabel(), cst.xy(5, r));
-        builder.add(y.getField(), cst.xy(7, r));
+        builder.addRaw(y.getLabel()).xy(5, r);
+        builder.addRaw(y.getField()).xy(7, r);
 
-        builder.add(height.getLabel(), cst.xy(9, r));
-        builder.add(height.getField(), cst.xy(11, r));
+        builder.addRaw(height.getLabel()).xy(9, r);
+        builder.addRaw(height.getField()).xy(11, r);
     }
 
     //-----------------------//

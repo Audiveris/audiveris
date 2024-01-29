@@ -48,7 +48,7 @@ import org.audiveris.omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
@@ -176,14 +176,14 @@ public class EvaluationBoard
             layout.appendRow(FormSpecs.PREF_ROWSPEC);
         }
 
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
+        FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
         CellConstraints cst = new CellConstraints();
 
         for (int i = 0; i < visibleButtons; i++) {
             int r = (2 * i) + 1; // --------------------------------
             EvalButton evb = selector.buttons.get(i);
-            builder.add(evb.grade, cst.xy(5, r));
-            builder.add(isActive ? evb.button : evb.field, cst.xyw(7, r, 5));
+            builder.addRaw(evb.grade).xy(5, r);
+            builder.addRaw(isActive ? evb.button : evb.field).xyw(7, r, 5);
         }
     }
 

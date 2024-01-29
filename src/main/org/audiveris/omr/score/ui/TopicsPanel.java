@@ -25,7 +25,7 @@ import org.audiveris.omr.ui.util.Panel;
 
 import org.jdesktop.application.ResourceMap;
 
-import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -136,7 +136,7 @@ public class TopicsPanel
         }
 
         FormLayout layout = new FormLayout(colSpec, Panel.makeRows(logicalRowCount));
-        PanelBuilder builder = new PanelBuilder(layout, this);
+        FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
         CellConstraints cst = new CellConstraints();
         int r = 1;
 
@@ -144,11 +144,11 @@ public class TopicsPanel
             // Topic title
             final JLabel title = new JLabel(textOf(topic.name));
             title.setHorizontalAlignment(SwingConstants.LEFT);
-            builder.add(title, cst.xyw(1, r, 7));
+            builder.addRaw(title).xyw(1, r, 7);
             r += 2;
 
             for (XactPane pane : topic) {
-                r = pane.defineLayout(builder, cst, titleWidth, r);
+                r = pane.defineLayout(builder, titleWidth, r);
             }
         }
     }

@@ -47,8 +47,7 @@ import org.kohsuke.github.GitHub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Color;
@@ -433,7 +432,7 @@ public abstract class Versions
         protected final FormLayout layout = new FormLayout(getColumnsSpec(), getRowsSpec());
 
         /** The JGoodies/Form builder to be used by all subclasses. */
-        protected final PanelBuilder builder;
+        protected final FormBuilder builder;
 
         /** Handling of entered / selected values. */
         private final Action paramAction;
@@ -448,7 +447,7 @@ public abstract class Versions
             polling.setName("polling");
 
             paramAction = new ParamAction();
-            builder = new PanelBuilder(layout, this);
+            builder = FormBuilder.create().layout(layout).panel(this);
             defineLayout();
 
             tag.setText(release.getTagName());
@@ -459,22 +458,20 @@ public abstract class Versions
 
         private void defineLayout ()
         {
-            final CellConstraints cst = new CellConstraints();
-
             // Status
             int r = 1; // --------------------------------
-            builder.add(status.getLabel(), cst.xy(1, r));
-            builder.add(status.getField(), cst.xyw(3, r, 3));
+            builder.addRaw(status.getLabel()).xy(1, r);
+            builder.addRaw(status.getField()).xyw(3, r, 3);
 
             // Tag
             r += 2; // -----------------------------------
-            builder.add(tag.getLabel(), cst.xy(1, r));
-            builder.add(tag.getField(), cst.xyw(3, r, 3));
+            builder.addRaw(tag.getLabel()).xy(1, r);
+            builder.addRaw(tag.getField()).xyw(3, r, 3);
 
             // Polling
             r += 2; // -----------------------------------
-            builder.add(polling.getLabel(), cst.xy(1, r));
-            builder.add(polling.getField(), cst.xyw(3, r, 1));
+            builder.addRaw(polling.getLabel()).xy(1, r);
+            builder.addRaw(polling.getField()).xyw(3, r, 1);
             polling.addActionListener(paramAction);
 
             setInsets(10, 10, 10, 10);
@@ -648,27 +645,25 @@ public abstract class Versions
 
         private void defineLayout ()
         {
-            final CellConstraints cst = new CellConstraints();
-
             // Published
             int r = 7; // --------------------------------
-            builder.add(published.getLabel(), cst.xy(1, r));
-            builder.add(published.getField(), cst.xyw(3, r, 3));
+            builder.addRaw(published.getLabel()).xy(1, r);
+            builder.addRaw(published.getField()).xyw(3, r, 3);
 
             // Url
             r += 2; // -----------------------------------
-            builder.add(urlLabel, cst.xy(1, r));
-            builder.add(urlField, cst.xyw(3, r, 3));
+            builder.addRaw(urlLabel).xy(1, r);
+            builder.addRaw(urlField).xyw(3, r, 3);
 
             // Title
             r += 2; // -----------------------------------
-            builder.add(releaseTitle.getLabel(), cst.xy(1, r));
-            builder.add(releaseTitle.getField(), cst.xyw(3, r, 3));
+            builder.addRaw(releaseTitle.getLabel()).xy(1, r);
+            builder.addRaw(releaseTitle.getField()).xyw(3, r, 3);
 
             // Content
             r += 2; // -----------------------------------
-            builder.add(contentLabel, cst.xy(1, r));
-            builder.add(contentField, cst.xyw(3, r, 3));
+            builder.addRaw(contentLabel).xy(1, r);
+            builder.addRaw(contentField).xyw(3, r, 3);
         }
 
         @Override

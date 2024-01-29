@@ -32,8 +32,7 @@ import org.audiveris.omr.ui.util.Panel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
@@ -111,16 +110,15 @@ public class RunBoard
     private void defineLayout ()
     {
         final FormLayout layout = Panel.makeFormLayout(1, 3);
-        final PanelBuilder builder = new PanelBuilder(layout, getBody());
-        final CellConstraints cst = new CellConstraints();
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
 
         int r = 1; // --------------------------------
 
-        builder.add(rStart.getLabel(), cst.xy(1, r));
-        builder.add(rStart.getField(), cst.xy(3, r));
+        builder.addRaw(rStart.getLabel()).xy(1, r);
+        builder.addRaw(rStart.getField()).xy(3, r);
 
-        builder.add(rLength.getLabel(), cst.xy(5, r));
-        builder.add(rLength.getField(), cst.xy(7, r));
+        builder.addRaw(rLength.getLabel()).xy(5, r);
+        builder.addRaw(rLength.getField()).xy(7, r);
     }
 
     //---------//

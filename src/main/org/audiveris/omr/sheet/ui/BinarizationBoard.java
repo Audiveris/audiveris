@@ -41,8 +41,7 @@ import org.audiveris.omr.ui.util.UIUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import ij.process.ByteProcessor;
@@ -138,26 +137,24 @@ public class BinarizationBoard
         final int inset = UIUtil.adjustedSize(3);
         ((Panel) getBody()).setInsets(inset, 0, inset, inset); // TLBR
 
-        FormLayout layout = Panel.makeFormLayout(2, 3);
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
-
-        CellConstraints cst = new CellConstraints();
+        final FormLayout layout = Panel.makeFormLayout(2, 3);
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
 
         int r = 1; // --------------------------------
 
-        builder.add(threshold.getLabel(), cst.xy(1, r));
-        builder.add(threshold.getField(), cst.xy(3, r));
+        builder.addRaw(threshold.getLabel()).xy(1, r);
+        builder.addRaw(threshold.getField()).xy(3, r);
 
-        builder.add(mean.getLabel(), cst.xy(9, r));
-        builder.add(mean.getField(), cst.xy(11, r));
+        builder.addRaw(mean.getLabel()).xy(9, r);
+        builder.addRaw(mean.getField()).xy(11, r);
 
         r += 2;
 
-        builder.add(color.getLabel(), cst.xy(1, r));
-        builder.add(color.getField(), cst.xy(3, r));
+        builder.addRaw(color.getLabel()).xy(1, r);
+        builder.addRaw(color.getField()).xy(3, r);
 
-        builder.add(stdDev.getLabel(), cst.xy(9, r));
-        builder.add(stdDev.getField(), cst.xy(11, r));
+        builder.addRaw(stdDev.getLabel()).xy(9, r);
+        builder.addRaw(stdDev.getField()).xy(11, r);
     }
 
     //---------------------//

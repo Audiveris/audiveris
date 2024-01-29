@@ -32,8 +32,7 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 
 import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
@@ -219,15 +218,14 @@ public class SheetScaling
         }
 
         @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
+        public int defineLayout (FormBuilder builder,
                                  int titleWidth,
                                  int r)
         {
-            super.defineLayout(builder, cst, 1, r);
+            super.defineLayout(builder, 1, r);
 
-            builder.add(title, cst.xyw(5, r, 1));
-            builder.add(data.getField(), cst.xyw(7, r, 1));
+            builder.addRaw(title).xyw(5, r, 1);
+            builder.addRaw(data.getField()).xyw(7, r, 1);
 
             return r + 2;
         }

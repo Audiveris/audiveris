@@ -40,8 +40,7 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
@@ -108,23 +107,24 @@ public abstract class AdvancedTopics
      */
     private static JPanel getMessage ()
     {
-        Panel panel = new Panel();
+        final Panel panel = new Panel();
         panel.setName("AdvancedTopicsPanel");
 
-        FormLayout layout = new FormLayout("pref", "pref, 1dlu, pref, 1dlu, pref, 1dlu, pref");
-        PanelBuilder builder = new PanelBuilder(layout, panel);
-        CellConstraints cst = new CellConstraints();
+        final FormLayout layout = new FormLayout(
+                "pref",
+                "pref, 1dlu, pref, 1dlu, pref, 1dlu, pref");
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(panel);
         int r = 1;
-        builder.add(new EarlyPane(), cst.xy(1, r));
+        builder.addRaw(new EarlyPane()).xy(1, r);
 
         r += 2;
-        builder.add(new PluginPane(), cst.xy(1, r));
+        builder.addRaw(new PluginPane()).xy(1, r);
 
         r += 2;
-        builder.add(new OutputsPane(), cst.xy(1, r));
+        builder.addRaw(new OutputsPane()).xy(1, r);
 
         r += 2;
-        builder.add(new AllTopicsPane(), cst.xy(1, r));
+        builder.addRaw(new AllTopicsPane()).xy(1, r);
 
         return panel;
     }
@@ -163,23 +163,24 @@ public abstract class AdvancedTopics
                     Topic.class);
 
             // Layout
-            FormLayout layout = new FormLayout("pref", Panel.makeRows(2 + Topic.values().length));
-            PanelBuilder builder = new PanelBuilder(layout, this);
-            CellConstraints cst = new CellConstraints();
+            final FormLayout layout = new FormLayout(
+                    "pref",
+                    Panel.makeRows(2 + Topic.values().length));
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
             int r = 1;
 
             // Scaling
-            builder.add(new ScalingPane(), cst.xy(1, r));
+            builder.addRaw(new ScalingPane()).xy(1, r);
             r += 2;
 
             // Locale
-            builder.add(new LocalePane(), cst.xy(1, r));
+            builder.addRaw(new LocalePane()).xy(1, r);
             r += 2;
 
             // Switches
             for (Topic topic : Topic.values()) {
                 String topicName = LabeledEnum.valueOf(topic, localeTopics).label;
-                builder.add(new TopicPane(topic, topicName), cst.xy(1, r));
+                builder.addRaw(new TopicPane(topic, topicName)).xy(1, r);
                 r += 2;
             }
         }
@@ -242,10 +243,9 @@ public abstract class AdvancedTopics
             stepBox.addActionListener(this);
 
             // Layout
-            PanelBuilder builder = new PanelBuilder(layout2, this);
-            CellConstraints cst = new CellConstraints();
-            builder.add(stepBox, cst.xy(1, 1));
-            builder.add(new JLabel(tip), cst.xy(3, 1));
+            final FormBuilder builder = FormBuilder.create().layout(layout2).panel(this);
+            builder.addRaw(stepBox).xy(1, 1);
+            builder.addRaw(new JLabel(tip)).xy(3, 1);
 
             // Initial status
             stepBox.setSelectedItem(StubsController.getEarlyStep());
@@ -286,10 +286,9 @@ public abstract class AdvancedTopics
             localeBox.addActionListener(this);
 
             // Layout
-            PanelBuilder builder = new PanelBuilder(layout3, this);
-            CellConstraints cst = new CellConstraints();
-            builder.add(localeBox, cst.xyw(1, 1, 3));
-            builder.add(new JLabel(tip), cst.xy(5, 1));
+            final FormBuilder builder = FormBuilder.create().layout(layout3).panel(this);
+            builder.addRaw(localeBox).xyw(1, 1, 3);
+            builder.addRaw(new JLabel(tip)).xy(5, 1);
 
             // Initial status
             localeBox.setSelectedItem(Locale.getDefault());
@@ -331,11 +330,10 @@ public abstract class AdvancedTopics
             name.setToolTipText(resource.getString(className + ".toolTipText"));
 
             // Layout
-            PanelBuilder builder = new PanelBuilder(layout3, this);
-            CellConstraints cst = new CellConstraints();
-            builder.add(box, cst.xy(1, 1));
-            builder.add(name, cst.xy(3, 1));
-            builder.add(desc, cst.xy(5, 1));
+            final FormBuilder builder = FormBuilder.create().layout(layout3).panel(this);
+            builder.addRaw(box).xy(1, 1);
+            builder.addRaw(name).xy(3, 1);
+            builder.addRaw(desc).xy(5, 1);
         }
 
         @Override
@@ -370,14 +368,13 @@ public abstract class AdvancedTopics
                             resource.getString(className + ".titledBorder.text")));
 
             // Layout
-            FormLayout layout = new FormLayout("pref", Panel.makeRows(2));
-            PanelBuilder builder = new PanelBuilder(layout, this);
-            CellConstraints cst = new CellConstraints();
+            final FormLayout layout = new FormLayout("pref", Panel.makeRows(2));
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
             int r = 1;
-            builder.add(siblingPane, cst.xy(1, r));
+            builder.addRaw(siblingPane).xy(1, r);
 
             r += 2;
-            builder.add(separatePane, cst.xy(1, r));
+            builder.addRaw(separatePane).xy(1, r);
         }
     }
 
@@ -407,10 +404,9 @@ public abstract class AdvancedTopics
             pluginBox.addActionListener(this);
 
             // Layout
-            PanelBuilder builder = new PanelBuilder(layout2, this);
-            CellConstraints cst = new CellConstraints();
-            builder.add(pluginBox, cst.xy(1, 1));
-            builder.add(new JLabel(tip), cst.xy(3, 1));
+            final FormBuilder builder = FormBuilder.create().layout(layout2).panel(this);
+            builder.addRaw(pluginBox).xy(1, 1);
+            builder.addRaw(new JLabel(tip)).xy(3, 1);
 
             // Initial status
             pluginBox.setSelectedItem(PluginsManager.defaultPluginId.getValue());
@@ -467,10 +463,9 @@ public abstract class AdvancedTopics
             });
 
             // Layout
-            PanelBuilder builder = new PanelBuilder(layout3, this);
-            CellConstraints cst = new CellConstraints();
-            builder.add(slider, cst.xyw(1, 1, 3));
-            builder.add(label, cst.xy(5, 1));
+            final FormBuilder builder = FormBuilder.create().layout(layout3).panel(this);
+            builder.addRaw(slider).xyw(1, 1, 3);
+            builder.addRaw(label).xy(5, 1);
 
             // Initial status
             final double ratio = UIUtil.getGlobalFontRatio();
@@ -631,11 +626,10 @@ public abstract class AdvancedTopics
             box.setSelected(topic.isSet());
 
             // Layout
-            PanelBuilder builder = new PanelBuilder(layout3, this);
-            CellConstraints cst = new CellConstraints();
-            builder.add(box, cst.xy(1, 1));
-            builder.add(new JLabel(topicName), cst.xy(3, 1));
-            builder.add(new JLabel(desc), cst.xy(5, 1));
+            final FormBuilder builder = FormBuilder.create().layout(layout3).panel(this);
+            builder.addRaw(box).xy(1, 1);
+            builder.addRaw(new JLabel(topicName)).xy(3, 1);
+            builder.addRaw(new JLabel(desc)).xy(5, 1);
         }
 
         @Override

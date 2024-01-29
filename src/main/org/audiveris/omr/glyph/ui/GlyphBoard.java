@@ -35,7 +35,6 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.util.EnumSet;
@@ -117,11 +116,9 @@ public class GlyphBoard
      */
     private void defineLayout ()
     {
-        final CellConstraints cst = new CellConstraints();
-
         int r = 1; // --------------------------------
 
-        builder.add(groupField, cst.xyw(5, r, 3));
+        builder.addRaw(groupField).xyw(5, r, 3);
     }
 
     //---------------//

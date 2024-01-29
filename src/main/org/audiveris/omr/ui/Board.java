@@ -36,8 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import org.bushe.swing.event.EventSubscriber;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Component;
@@ -278,9 +277,7 @@ public abstract class Board
 
         body.setNoInsets();
 
-        CellConstraints cst = new CellConstraints();
-
-        StringBuilder rowsSpec = new StringBuilder();
+        final StringBuilder rowsSpec = new StringBuilder();
 
         if (header != null) {
             rowsSpec.append("pref,").append(Panel.getFieldInterline()).append(',');
@@ -288,15 +285,15 @@ public abstract class Board
 
         rowsSpec.append("pref");
 
-        FormLayout layout = new FormLayout("fill:pref:grow", rowsSpec.toString());
+        final FormLayout layout = new FormLayout("fill:pref:grow", rowsSpec.toString());
 
-        PanelBuilder builder = new PanelBuilder(layout, component);
+        FormBuilder builder = FormBuilder.create().layout(layout).panel(component);
 
         if (header != null) {
-            builder.add(header, cst.xy(1, 1));
+            builder.addRaw(header).xy(1, 1);
         }
 
-        builder.add(body, cst.xy(1, (header != null) ? 3 : 1));
+        builder.addRaw(body).xy(1, (header != null) ? 3 : 1);
     }
 
     //------------//
@@ -613,8 +610,7 @@ public abstract class Board
 
         private void defineLayout ()
         {
-            CellConstraints cst = new CellConstraints();
-            StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
             // count label
             sb.append("15dlu:grow");
             // vip label+field
@@ -623,20 +619,20 @@ public abstract class Board
             // dump button
             sb.append(",").append(Panel.getFieldInterval()).append(",35dlu");
 
-            FormLayout layout = new FormLayout(sb.toString(), "pref");
-            PanelBuilder builder = new PanelBuilder(layout, this);
+            final FormLayout layout = new FormLayout(sb.toString(), "pref");
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
 
             if (dump != null) {
-                builder.add(dump, cst.xyw(7, 1, 1));
+                builder.addRaw(dump).xyw(7, 1, 1);
             }
 
             if (vip != null) {
-                builder.add(vip.getLabel(), cst.xy(3, 1));
-                builder.add(vip.getField(), cst.xy(5, 1));
+                builder.addRaw(vip.getLabel()).xy(3, 1);
+                builder.addRaw(vip.getField()).xy(5, 1);
             }
 
             if (count != null) {
-                builder.add(count, cst.xy(1, 1, "right, center"));
+                builder.addRaw(count).xy(1, 1, "right, center");
             }
         }
     }

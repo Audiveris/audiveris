@@ -38,8 +38,7 @@ import org.jdesktop.application.SingleFrameApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.BorderLayout;
@@ -322,67 +321,62 @@ public class SymbolRipper
     //---------------//
     private JPanel getParamPanel ()
     {
-        FormLayout layout = Panel.makeFormLayout(13, 2, "right:", "35dlu", "45dlu");
-
-        PanelBuilder builder = new PanelBuilder(layout, new Panel());
-
-        ///builder.setDefaultDialogBorder();
-        CellConstraints cst = new CellConstraints();
-
+        final FormLayout layout = Panel.makeFormLayout(13, 2, "right:", "35dlu", "45dlu");
+        FormBuilder builder = FormBuilder.create().layout(layout).panel(new Panel());
         int r = 1; // --------------------------------
-        builder.addSeparator("Font", cst.xyw(1, r, 7));
+        builder.addSeparator("Font").xyw(1, r, 7);
 
         r += 2; // --------------------------------
-        builder.add(fontName.getLabel(), cst.xy(1, r));
-        builder.add(fontName.getSpinner(), cst.xyw(3, r, 5));
+        builder.addRaw(fontName.getLabel()).xy(1, r);
+        builder.addRaw(fontName.getSpinner()).xyw(3, r, 5);
 
         r += 2; // --------------------------------
-        builder.addLabel("Base", cst.xy(1, r));
-        builder.add(fontBase, cst.xy(3, r));
+        builder.addLabel("Base").xy(1, r);
+        builder.addRaw(fontBase).xy(3, r);
 
-        builder.add(fontSize.getLabel(), cst.xy(5, r));
-        builder.add(fontSize.getSpinner(), cst.xy(7, r));
-
-        r += 2; // --------------------------------
-        builder.add(pointCode.getLabel(), cst.xy(1, r));
-        builder.add(pointCode.getSpinner(), cst.xy(3, r));
-
-        builder.add(hexaCode.getLabel(), cst.xy(5, r));
-        builder.add(hexaCode.getSpinner(), cst.xy(7, r));
+        builder.addRaw(fontSize.getLabel()).xy(5, r);
+        builder.addRaw(fontSize.getSpinner()).xy(7, r);
 
         r += 2; // --------------------------------
-        builder.addSeparator("Drawing", cst.xyw(1, r, 7));
+        builder.addRaw(pointCode.getLabel()).xy(1, r);
+        builder.addRaw(pointCode.getSpinner()).xy(3, r);
+
+        builder.addRaw(hexaCode.getLabel()).xy(5, r);
+        builder.addRaw(hexaCode.getSpinner()).xy(7, r);
 
         r += 2; // --------------------------------
-        builder.add(xOffset.getLabel(), cst.xy(1, r));
-        builder.add(xOffset.getSpinner(), cst.xy(3, r));
-
-        builder.add(width.getLabel(), cst.xy(5, r));
-        builder.add(width.getSpinner(), cst.xy(7, r));
+        builder.addSeparator("Drawing").xyw(1, r, 7);
 
         r += 2; // --------------------------------
-        builder.add(yOffset.getLabel(), cst.xy(1, r));
-        builder.add(yOffset.getSpinner(), cst.xy(3, r));
+        builder.addRaw(xOffset.getLabel()).xy(1, r);
+        builder.addRaw(xOffset.getSpinner()).xy(3, r);
 
-        builder.add(height.getLabel(), cst.xy(5, r));
-        builder.add(height.getSpinner(), cst.xy(7, r));
-
-        r += 2; // --------------------------------
-        builder.addSeparator("Symbol", cst.xyw(1, r, 7));
+        builder.addRaw(width.getLabel()).xy(5, r);
+        builder.addRaw(width.getSpinner()).xy(7, r);
 
         r += 2; // --------------------------------
-        builder.add(xSym.getLabel(), cst.xy(1, r));
-        builder.add(xSym.getField(), cst.xy(3, r));
+        builder.addRaw(yOffset.getLabel()).xy(1, r);
+        builder.addRaw(yOffset.getSpinner()).xy(3, r);
 
-        builder.add(wSym.getLabel(), cst.xy(5, r));
-        builder.add(wSym.getField(), cst.xy(7, r));
+        builder.addRaw(height.getLabel()).xy(5, r);
+        builder.addRaw(height.getSpinner()).xy(7, r);
 
         r += 2; // --------------------------------
-        builder.add(ySym.getLabel(), cst.xy(1, r));
-        builder.add(ySym.getField(), cst.xy(3, r));
+        builder.addSeparator("Symbol").xyw(1, r, 7);
 
-        builder.add(hSym.getLabel(), cst.xy(5, r));
-        builder.add(hSym.getField(), cst.xy(7, r));
+        r += 2; // --------------------------------
+        builder.addRaw(xSym.getLabel()).xy(1, r);
+        builder.addRaw(xSym.getField()).xy(3, r);
+
+        builder.addRaw(wSym.getLabel()).xy(5, r);
+        builder.addRaw(wSym.getField()).xy(7, r);
+
+        r += 2; // --------------------------------
+        builder.addRaw(ySym.getLabel()).xy(1, r);
+        builder.addRaw(ySym.getField()).xy(3, r);
+
+        builder.addRaw(hSym.getLabel()).xy(5, r);
+        builder.addRaw(hSym.getField()).xy(7, r);
 
         return builder.getPanel();
     }

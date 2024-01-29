@@ -29,8 +29,7 @@ import org.audiveris.omr.util.NamedDouble;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Color;
@@ -134,10 +133,8 @@ public class CheckPanel<C>
         }
 
         final int checkNb = suite.getChecks().size();
-        PanelBuilder b = new PanelBuilder(createLayout(checkNb + 1), component);
-
-        ///b.setDefaultDialogBorder();
-        CellConstraints c = new CellConstraints();
+        final FormBuilder b = FormBuilder.create()//
+                .layout(createLayout(checkNb + 1)).panel(component);
 
         // Rows
         int ic = -1; // Check index
@@ -164,7 +161,7 @@ public class CheckPanel<C>
                 values[ic][2].setForeground(RED_COLOR);
             }
 
-            b.add(covariantLabel, c.xy(1, r));
+            b.addRaw(covariantLabel).xy(1, r);
 
             // Name label with proper tooltip
             JLabel nameLabel = new JLabel(check.getName());
@@ -194,14 +191,14 @@ public class CheckPanel<C>
                 nameLabel.setToolTipText(sb.toString());
             }
 
-            b.add(nameLabel, c.xy(3, r));
+            b.addRaw(nameLabel).xy(3, r);
 
             // Value & bound fields
-            b.add(values[ic][0], c.xy(5, r));
-            b.add(bounds[ic][0], c.xy(7, r));
-            b.add(values[ic][1], c.xy(9, r));
-            b.add(bounds[ic][1], c.xy(11, r));
-            b.add(values[ic][2], c.xy(13, r));
+            b.addRaw(values[ic][0]).xy(5, r);
+            b.addRaw(bounds[ic][0]).xy(7, r);
+            b.addRaw(values[ic][1]).xy(9, r);
+            b.addRaw(bounds[ic][1]).xy(11, r);
+            b.addRaw(values[ic][2]).xy(13, r);
         }
 
         // Last row for global result
@@ -209,8 +206,8 @@ public class CheckPanel<C>
 
         JLabel globalLabel = new JLabel("Grade [0 .. " + Grades.intrinsicRatio + "]");
         globalLabel.setToolTipText("Global check result");
-        b.add(globalLabel, c.xyw(5, r, 3));
-        b.add(globalField, c.xy(9, r));
+        b.addRaw(globalLabel).xyw(5, r, 3);
+        b.addRaw(globalField).xy(9, r);
     }
 
     //-------------------//

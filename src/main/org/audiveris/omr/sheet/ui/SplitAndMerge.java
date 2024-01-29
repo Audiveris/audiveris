@@ -51,7 +51,7 @@ import org.jdesktop.application.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -199,16 +199,14 @@ public class SplitAndMerge
 
         defineLayout();
 
-        model.addTableModelListener( (TableModelEvent e) ->
-        {
+        model.addTableModelListener( (TableModelEvent e) -> {
             setEmpty(checkEmpty());
             setBuildable(checkBuildable());
         });
 
         table.setDropMode(DropMode.INSERT_ROWS);
 
-        table.getSelectionModel().addListSelectionListener( (ListSelectionEvent e) ->
-        {
+        table.getSelectionModel().addListSelectionListener( (ListSelectionEvent e) -> {
             logger.debug("ListSelection valueChanged");
             setSelected(checkSelected());
             setUpEnabled(checkUpEnabled());
@@ -316,11 +314,11 @@ public class SplitAndMerge
 
         final FormLayout layout = new FormLayout("pref", rowSpec.toString());
         final CellConstraints cst = new CellConstraints();
-        final PanelBuilder builder = new PanelBuilder(layout, buttonPane);
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(buttonPane);
 
         int r = -1;
         for (String action : actions) {
-            builder.add(new JButton(actionMap.get(action)), cst.xy(1, r += 2, "fill,fill"));
+            builder.addRaw(new JButton(actionMap.get(action))).xy(1, r += 2, "fill,fill");
         }
 
         return buttonPane;
@@ -455,8 +453,7 @@ public class SplitAndMerge
                 new JScrollPane(list),
                 JOptionPane.QUESTION_MESSAGE,
                 JOptionPane.OK_CANCEL_OPTION);
-        optionPane.addPropertyChangeListener( (PropertyChangeEvent e1) ->
-        {
+        optionPane.addPropertyChangeListener( (PropertyChangeEvent e1) -> {
             final String prop = e1.getPropertyName();
             if (includeDialog.isVisible() && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
                 final int value = (Integer) optionPane.getValue();

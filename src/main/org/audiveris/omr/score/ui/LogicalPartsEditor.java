@@ -47,8 +47,7 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.BorderLayout;
@@ -257,8 +256,7 @@ public class LogicalPartsEditor
         }
 
         final FormLayout layout = new FormLayout("pref", rowSpec.toString());
-        final CellConstraints cst = new CellConstraints();
-        final PanelBuilder builder = new PanelBuilder(layout, buttonPane);
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(buttonPane);
 
         int r = -1;
         for (String action : actions) {
@@ -271,7 +269,7 @@ public class LogicalPartsEditor
                 lockButton.setIcon(isLocked() ? lockedIcon : unlockedIcon);
             }
 
-            builder.add(button, cst.xy(1, r += 2, "fill,fill"));
+            builder.addRaw(button).xy(1, r += 2, "fill,fill");
         }
 
         return buttonPane;

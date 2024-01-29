@@ -37,8 +37,7 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Color;
@@ -119,8 +118,7 @@ public class AboutAction
 
         final FormLayout layout = new FormLayout("right:pref, 5dlu, pref", rows.toString());
         final Panel panel = new Panel();
-        final PanelBuilder builder = new PanelBuilder(layout, panel);
-        final CellConstraints cst = new CellConstraints();
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(panel);
 
         // Splash logo
         int iRow = 1;
@@ -128,7 +126,7 @@ public class AboutAction
 
         try {
             JPanel logoPanel = new ImagePanel(uri);
-            builder.add(logoPanel, cst.xyw(1, iRow, 3));
+            builder.addRaw(logoPanel).xyw(1, iRow, 3);
         } catch (MalformedURLException ex) {
             logger.warn("Error on " + uri, ex);
         }
@@ -143,7 +141,7 @@ public class AboutAction
                         Font.BOLD,
                         UIUtil.adjustedSize(constants.titleFontSize.getValue())));
         titleLabel.setName("aboutTitleLabel");
-        builder.add(titleLabel, cst.xyw(1, iRow, 3));
+        builder.addRaw(titleLabel).xyw(1, iRow, 3);
 
         // Each topic in turn (description, version, etc)
         final HyperlinkListener linkListener = new BrowserLinkListener();
@@ -154,7 +152,7 @@ public class AboutAction
             // Label on left
             final JLabel label = new JLabel();
             label.setName(topic + "Label");
-            builder.add(label, cst.xy(1, iRow));
+            builder.addRaw(label).xy(1, iRow);
 
             // Content on right
             topic.comp.setName(topic + "TextField");
@@ -169,7 +167,7 @@ public class AboutAction
                 topic.comp.setFocusable(false);
             }
 
-            builder.add(topic.comp, cst.xy(3, iRow));
+            builder.addRaw(topic.comp).xy(3, iRow);
         }
 
         panel.setInsets(10, 10, 10, 10);

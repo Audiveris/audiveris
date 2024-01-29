@@ -109,7 +109,7 @@ import org.audiveris.omr.util.VerticalSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -554,7 +554,7 @@ public abstract class SheetPainter
 
         final FormLayout layout = new FormLayout(sbc.toString(), "pref");
         final Panel panel = new Panel();
-        final PanelBuilder builder = new PanelBuilder(layout, panel);
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(panel);
         final CellConstraints cst = new CellConstraints();
 
         // Adjust dimensions
@@ -573,7 +573,7 @@ public abstract class SheetPainter
             label.setForeground(color);
 
             int col = (c <= mid) ? c : (c + 1);
-            builder.add(label, cst.xy(col, 1));
+            builder.addRaw(label).xy(col, 1);
         }
         // Separation between staves
         {
@@ -584,7 +584,7 @@ public abstract class SheetPainter
             label.setOpaque(true);
             label.setBackground(background);
             label.setForeground(color);
-            builder.add(label, cst.xy(mid + 1, 1));
+            builder.addRaw(label).xy(mid + 1, 1);
         }
 
         return panel;

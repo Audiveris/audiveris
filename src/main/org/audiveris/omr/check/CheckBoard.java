@@ -29,8 +29,7 @@ import org.audiveris.omr.ui.selection.UserEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
@@ -115,14 +114,13 @@ public class CheckBoard<C>
     //--------------//
     private void defineLayout (String name)
     {
-        FormLayout layout = new FormLayout("pref", "pref");
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
+        final FormLayout layout = new FormLayout("pref", "pref");
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
 
         ///builder.setDefaultDialogBorder();
-        CellConstraints cst = new CellConstraints();
 
         int r = 1; // --------------------------------
-        builder.add(checkPanel.getComponent(), cst.xy(1, r));
+        builder.addRaw(checkPanel.getComponent()).xy(1, r);
     }
 
     //---------//

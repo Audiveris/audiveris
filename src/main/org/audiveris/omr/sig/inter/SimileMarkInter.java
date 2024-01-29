@@ -33,6 +33,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Hervé Bitteur
  */
 @Deprecated
+@SuppressWarnings("deprecation")
 @XmlRootElement(name = "simile")
 public class SimileMarkInter
         extends AbstractInter

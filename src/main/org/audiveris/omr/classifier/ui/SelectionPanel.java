@@ -37,7 +37,7 @@ import org.audiveris.omr.ui.util.Panel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -149,31 +149,31 @@ class SelectionPanel
                 "",
                 Trainer.LABEL_WIDTH,
                 Trainer.FIELD_WIDTH);
-        PanelBuilder builder = new PanelBuilder(layout, component);
+        FormBuilder builder = FormBuilder.create().layout(layout).panel(component);
         CellConstraints cst = new CellConstraints();
 
         int r = 1; // ----------------------------
 
-        builder.addSeparator("Selection", cst.xyw(1, r, 3));
+        builder.addSeparator("Selection").xyw(1, r, 3);
 
-        builder.add(progressBar, cst.xyw(5, r, 7));
-
-        r += 2; // ----------------------------
-
-        builder.add(nbRepoSamples.getLabel(), cst.xy(5, r));
-        builder.add(nbRepoSamples.getField(), cst.xy(7, r));
-
-        builder.add(nbTrainSamples.getLabel(), cst.xy(9, r));
-        builder.add(nbTrainSamples.getField(), cst.xy(11, r));
+        builder.addRaw(progressBar).xyw(5, r, 7);
 
         r += 2; // ----------------------------
 
-        builder.add(new JButton(selectAction), cst.xy(3, r));
+        builder.addRaw(nbRepoSamples.getLabel()).xy(5, r);
+        builder.addRaw(nbRepoSamples.getField()).xy(7, r);
 
-        builder.add(new JButton(storeAction), cst.xy(5, r));
+        builder.addRaw(nbTrainSamples.getLabel()).xy(9, r);
+        builder.addRaw(nbTrainSamples.getField()).xy(11, r);
 
-        builder.add(nbTestSamples.getLabel(), cst.xy(9, r));
-        builder.add(nbTestSamples.getField(), cst.xy(11, r));
+        r += 2; // ----------------------------
+
+        builder.addRaw(new JButton(selectAction)).xy(3, r);
+
+        builder.addRaw(new JButton(storeAction)).xy(5, r);
+
+        builder.addRaw(nbTestSamples.getLabel()).xy(9, r);
+        builder.addRaw(nbTestSamples.getField()).xy(11, r);
     }
 
     //---------------//
@@ -354,8 +354,7 @@ class SelectionPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            executor.execute( () ->
-            {
+            executor.execute( () -> {
                 trains = null;
                 tests = null;
 

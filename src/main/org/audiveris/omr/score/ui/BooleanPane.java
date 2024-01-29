@@ -24,8 +24,7 @@ package org.audiveris.omr.score.ui;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 
 import javax.swing.JCheckBox;
 
@@ -71,13 +70,12 @@ public class BooleanPane
     //~ Methods ------------------------------------------------------------------------------------
 
     @Override
-    public int defineLayout (PanelBuilder builder,
-                             CellConstraints cst,
+    public int defineLayout (FormBuilder builder,
                              int titleWidth,
                              int r)
     {
-        super.defineLayout(builder, cst, titleWidth, r); // No advance
-        builder.add(boolBox, cst.xyw(9, r, 1));
+        super.defineLayout(builder, titleWidth, r); // No advance
+        builder.addRaw(boolBox).xyw(9, r, 1);
 
         return r + 2;
     }

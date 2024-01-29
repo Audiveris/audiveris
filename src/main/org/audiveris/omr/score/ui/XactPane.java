@@ -29,8 +29,7 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -135,14 +134,13 @@ public abstract class XactPane<E>
      * @param r          initial row value
      * @return final row value
      */
-    public int defineLayout (PanelBuilder builder,
-                             CellConstraints cst,
+    public int defineLayout (FormBuilder builder,
                              int titleWidth,
                              int r)
     {
         // Draw the specific/inherit box (+ line advance?)
-        builder.add(selBox, cst.xyw(3, r, 1));
-        builder.add(title, cst.xyw(5, r, titleWidth));
+        builder.addRaw(selBox).xyw(3, r, 1);
+        builder.addRaw(title).xyw(5, r, titleWidth);
 
         return r + 2;
     }

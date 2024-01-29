@@ -41,8 +41,7 @@ import org.jdesktop.application.ResourceMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
@@ -98,7 +97,7 @@ public class EntityBoard<E extends Entity>
     protected final FormLayout layout = getFormLayout();
 
     /** The JGoodies/Form builder to be used by all subclasses. */
-    protected final PanelBuilder builder;
+    protected final FormBuilder builder;
 
     /** To avoid loop, indicate that update() method id being processed. */
     protected boolean selfUpdating = false;
@@ -177,7 +176,7 @@ public class EntityBoard<E extends Entity>
             case ID_NONE -> {}
         }
 
-        builder = new PanelBuilder(layout, getBody());
+        builder = FormBuilder.create().layout(layout).panel(getBody());
 
         defineLayout();
     }
@@ -211,19 +210,16 @@ public class EntityBoard<E extends Entity>
      */
     private void defineLayout ()
     {
-        CellConstraints cst = new CellConstraints();
-
-        // Layout
         int r = 1; // --------------------------------
 
         if (idSpinner != null) {
-            builder.addLabel("Id", cst.xy(1, r));
-            builder.add(idSpinner, cst.xy(3, r));
+            builder.addLabel("Id").xy(1, r);
+            builder.addRaw(idSpinner).xy(3, r);
         }
 
         if (idLabel != null) {
-            builder.add(idLabel.getLabel(), cst.xy(1, r));
-            builder.add(idLabel.getField(), cst.xy(3, r));
+            builder.addRaw(idLabel.getLabel()).xy(1, r);
+            builder.addRaw(idLabel.getField()).xy(3, r);
         }
     }
 

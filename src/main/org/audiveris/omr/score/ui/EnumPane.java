@@ -25,8 +25,7 @@ import org.audiveris.omr.ui.util.ComboBoxTipRenderer;
 
 import org.jdesktop.application.ResourceMap;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 
 import javax.swing.JComboBox;
 
@@ -82,14 +81,13 @@ public class EnumPane<T, E extends Enum<E>>
     //~ Methods ------------------------------------------------------------------------------------
 
     @Override
-    public int defineLayout (PanelBuilder builder,
-                             CellConstraints cst,
+    public int defineLayout (FormBuilder builder,
                              int titleWidth,
                              int r)
     {
-        super.defineLayout(builder, cst, 1, r); // sel + title, no advance
+        super.defineLayout(builder, 1, r); // sel + title, no advance
 
-        builder.add(enumCombo, cst.xyw(7, r, 3));
+        builder.addRaw(enumCombo).xyw(7, r, 3);
 
         return r + 2;
     }

@@ -25,8 +25,7 @@ import org.audiveris.omr.ui.field.SpinnerUtil;
 
 import org.jdesktop.application.ResourceMap;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 
 import java.text.ParseException;
 
@@ -62,13 +61,12 @@ public class IntegerSpinPane<T>
     //~ Methods ------------------------------------------------------------------------------------
 
     @Override
-    public int defineLayout (PanelBuilder builder,
-                             CellConstraints cst,
+    public int defineLayout (FormBuilder builder,
                              int titleWidth,
                              int r)
     {
-        super.defineLayout(builder, cst, 1, r); // sel + title, no advance
-        spinData.defineLayout(builder, cst, r);
+        super.defineLayout(builder, 1, r); // sel + title, no advance
+        spinData.defineLayout(builder, r);
 
         return r + 2;
     }
@@ -139,12 +137,11 @@ public class IntegerSpinPane<T>
             spinner.setToolTipText(tip);
         }
 
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
+        public int defineLayout (FormBuilder builder,
                                  int r)
         {
-            builder.add(label, cst.xyw(5, r, 1));
-            builder.add(spinner, cst.xyw(7, r, 3));
+            builder.addRaw(label).xyw(5, r, 1);
+            builder.addRaw(spinner).xyw(7, r, 3);
 
             r += 2;
 
