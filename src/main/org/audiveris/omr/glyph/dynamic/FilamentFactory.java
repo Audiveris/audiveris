@@ -1087,7 +1087,7 @@ public class FilamentFactory<F extends Filament>
         // --------------------------------------
 
         private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
-                0.7, // Needed for staves with no starting barline, especially with percussion clef
+                0.5, // Decreased for staves with no starting barline, especially w/ percussion clef
                 "Minimum length for a section to be considered as core");
 
         private final Scale.Fraction maxOverlapDeltaPos = new Scale.Fraction(
@@ -1095,7 +1095,7 @@ public class FilamentFactory<F extends Filament>
                 "Maximum delta position between two overlapping filaments");
 
         private final Scale.Fraction maxCoordGap = new Scale.Fraction(
-                1,
+                1.7, // Increased for staves with no starting barline
                 "Maximum delta coordinate for a gap between filaments");
 
         private final Scale.Fraction maxOverlapSpace = new Scale.Fraction(
