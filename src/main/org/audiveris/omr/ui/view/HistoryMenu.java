@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 
 import javax.swing.JMenu;
@@ -89,13 +90,12 @@ public class HistoryMenu
     public void populate (JMenu menu,
                           Class<?> resourceClass)
     {
-        history.feedMenu(menu, (ActionEvent e) ->
-        {
+        history.feedMenu(menu, (ActionEvent e) -> {
             try {
                 final String str = e.getActionCommand().trim();
 
                 if (!str.isEmpty()) {
-                    final PathTask task = pathTaskClass.newInstance();
+                    final PathTask task = pathTaskClass.getDeclaredConstructor().newInstance();
 
                     if (pathTaskClass.isAssignableFrom(LoadBookTask.class)) {
                         ((LoadBookTask) task).setPath(SheetPath.decode(str));
@@ -105,7 +105,8 @@ public class HistoryMenu
 
                     task.execute();
                 }
-            } catch (IllegalAccessException | InstantiationException ex) {
+            } catch (IllegalAccessException | InstantiationException //
+                    | NoSuchMethodException | InvocationTargetException ex) {
                 logger.warn("Error in HistoryMenu " + ex, ex);
             }
         });

@@ -60,6 +60,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -905,13 +906,14 @@ public class ChordListMenu
                             final AbstractChordInter src = chords.get(i);
 
                             for (AbstractChordInter tgt : chords.subList(i + 1, chords.size())) {
-                                Relation rel = relationClass.newInstance();
+                                Relation rel = relationClass.getDeclaredConstructor().newInstance();
                                 strs.add(new SourceTargetRelation(src, tgt, rel));
                             }
                         }
 
                         sheet.getInterController().linkMultiple(sig, strs);
-                    } catch (InstantiationException | IllegalAccessException ex) {
+                    } catch (InstantiationException | IllegalAccessException //
+                            | NoSuchMethodException | InvocationTargetException ex) {
                         logger.error("Could not instantiate class {}", relationClass, ex);
                     }
                 }

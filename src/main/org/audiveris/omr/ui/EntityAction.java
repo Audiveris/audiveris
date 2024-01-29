@@ -138,7 +138,7 @@ public class EntityAction
             item.setAccelerator(
                     KeyStroke.getKeyStroke(
                             key.charAt(0),
-                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         }
 
         // Add an icon in the Tool bar?

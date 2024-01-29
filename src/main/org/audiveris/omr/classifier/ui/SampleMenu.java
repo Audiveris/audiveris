@@ -84,6 +84,7 @@ public class SampleMenu
     //-----------//
     // addSample //
     //-----------//
+    @SuppressWarnings("deprecation")
     private void addSample (Shape shape)
     {
         // TODO: we need staff information (-> interline and pitch)
@@ -146,8 +147,7 @@ public class SampleMenu
             extends JMenu
     {
 
-        private final ActionListener listener = (ActionEvent e) ->
-        {
+        private final ActionListener listener = (ActionEvent e) -> {
             final JMenuItem source = (JMenuItem) e.getSource();
             final Shape shape = Shape.valueOf(source.getText());
             addSample(shape);
@@ -190,8 +190,7 @@ public class SampleMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(sheet.getStub().getMusicFamily(), this, (ActionEvent e) ->
-            {
+            ShapeSet.addAllShapes(sheet.getStub().getMusicFamily(), this, (ActionEvent e) -> {
                 JMenuItem source = (JMenuItem) e.getSource();
                 Shape shape = Shape.valueOf(source.getText());
                 addSample(shape);

@@ -84,6 +84,7 @@ public class StemsStep
      * @throws StepException if step got stopped
      */
     @Override
+    @SuppressWarnings("deprecation")
     protected Void doProlog (Sheet sheet)
         throws StepException
     {

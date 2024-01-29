@@ -207,8 +207,7 @@ public class BeamGroupInter
             Collections.sort(
                     questionableBeams,
                     (b1,
-                     b2) ->
-                    {
+                     b2) -> {
                         final double y1 = LineUtil.yAtX(b1.getMedian(), tail.x);
                         final double tailDy1 = Math.abs(y1 - tail.y);
                         final double y2 = LineUtil.yAtX(b2.getMedian(), tail.x);
@@ -1072,6 +1071,7 @@ public class BeamGroupInter
      * @param system the system to check for beam groups
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     public static void checkSystemForOldBeamGroup (SystemInfo system)
     {
         // Checking one beam is enough

@@ -132,7 +132,7 @@ public class CLI
             if ((params.step != null) && (params.step != OmrStep.last())) {
                 String msg = "'-transcribe' option not compatible with '-step " + params.step
                         + "' option";
-                throw new CmdLineException(parser, msg);
+                throw new CmdLineException(parser, new Throwable(msg));
             }
 
             params.step = OmrStep.last();
@@ -158,8 +158,7 @@ public class CLI
 
         // Task kind is fully determined by argument extension
         params.arguments.stream().map(argument -> argument.toString().trim().replace('\\', '/'))
-                .filter(str -> (!str.isEmpty())).forEachOrdered(str ->
-                {
+                .filter(str -> (!str.isEmpty())).forEachOrdered(str -> {
                     final Path path = Paths.get(str);
 
                     if (str.endsWith(OMR.BOOK_EXTENSION)) {

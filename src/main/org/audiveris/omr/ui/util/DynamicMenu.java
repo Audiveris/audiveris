@@ -24,6 +24,8 @@ package org.audiveris.omr.ui.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
+
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.event.MenuEvent;
@@ -72,12 +74,13 @@ public abstract class DynamicMenu
                         Class<? extends JMenu> menuClass)
     {
         try {
-            menu = menuClass.newInstance();
+            menu = menuClass.getDeclaredConstructor().newInstance();
             menu.setAction(action);
 
             // Listener to menu selection, to modify content on-the-fly
             menu.addMenuListener(menuListener);
-        } catch (IllegalAccessException | InstantiationException ex) {
+        } catch (IllegalAccessException | InstantiationException //
+                | NoSuchMethodException | InvocationTargetException ex) {
             logger.error("Could not instantiate " + menuClass, ex);
             menu = null;
         }
@@ -93,12 +96,13 @@ public abstract class DynamicMenu
                         Class<? extends JMenu> menuClass)
     {
         try {
-            menu = menuClass.newInstance();
+            menu = menuClass.getDeclaredConstructor().newInstance();
             menu.setText(menuLabel);
 
             // Listener to menu selection, to modify content on-the-fly
             menu.addMenuListener(menuListener);
-        } catch (IllegalAccessException | InstantiationException ex) {
+        } catch (IllegalAccessException | InstantiationException //
+                | NoSuchMethodException | InvocationTargetException ex) {
             logger.error("Could not instantiate " + menuClass, ex);
             menu = null;
         }

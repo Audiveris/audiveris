@@ -178,7 +178,7 @@ public class MacApplication
         try {
             //The class used to register hooks
             Class<?> appClass = Class.forName("com.apple.eawt.Application");
-            Object app = appClass.newInstance();
+            Object app = appClass.getDeclaredConstructor().newInstance();
 
             //Enable the about menu item and the preferences menu item
             for (String methodName : new String[]

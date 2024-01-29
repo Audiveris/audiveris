@@ -242,7 +242,7 @@ public class ActionManager
 
             if (instance == null) {
                 // Fall back to allocate a new class instance
-                instance = classe.newInstance();
+                instance = classe.getDeclaredConstructor().newInstance();
             }
 
             // Retrieve the action instance
@@ -252,7 +252,8 @@ public class ActionManager
                 // Insertion of a button on Tool Bar?
                 if (desc.buttonClassName != null) {
                     Class buttonClass = classLoader.loadClass(desc.buttonClassName);
-                    AbstractButton button = (AbstractButton) buttonClass.newInstance();
+                    AbstractButton button = (AbstractButton) buttonClass.getDeclaredConstructor()
+                            .newInstance();
                     button.setAction(action);
                     toolBar.add(button);
                     button.setBorder(UIUtil.getToolBorder());
@@ -262,7 +263,8 @@ public class ActionManager
                 logger.error("Unknown action {} in class {}", desc.methodName, desc.className);
             }
         } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
-                | InstantiationException | SecurityException | InvocationTargetException ex) {
+                | InstantiationException | SecurityException | NoSuchMethodException
+                | InvocationTargetException ex) {
             logger.warn("Error while registering " + desc, ex);
         }
 
@@ -360,7 +362,7 @@ public class ActionManager
                             itemClass = JMenuItem.class;
                         }
 
-                        JMenuItem item = itemClass.newInstance();
+                        JMenuItem item = itemClass.getDeclaredConstructor().newInstance();
 
                         // Inject menu item information
                         if (desc.methodName != null) {
@@ -381,7 +383,8 @@ public class ActionManager
                             menu.add(item);
                         }
                     } catch (ClassNotFoundException | IllegalAccessException
-                            | InstantiationException ex) {
+                            | InstantiationException | NoSuchMethodException
+                            | InvocationTargetException ex) {
                         logger.warn("Error with " + desc.itemClassName, ex);
                     }
                 }

@@ -29,6 +29,7 @@ import org.audiveris.omr.step.OmrStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
@@ -117,8 +118,8 @@ public class BookPdfOutput
                     document.newPage();
                 }
 
-                PdfContentByte cb = writer.getDirectContent();
-                Graphics2D g2 = cb.createGraphics(width, height);
+                final PdfContentByte cb = writer.getDirectContent();
+                final Graphics2D g2 = new PdfGraphics2D(cb, width, height);
 
                 // Scale: 1
                 g2.scale(1, 1);
