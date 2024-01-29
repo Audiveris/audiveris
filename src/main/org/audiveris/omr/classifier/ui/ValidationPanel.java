@@ -40,11 +40,11 @@ import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -60,7 +60,7 @@ import javax.swing.JProgressBar;
  * @author Hervé Bitteur
  */
 public class ValidationPanel
-        implements Observer
+        implements PropertyChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -155,7 +155,7 @@ public class ValidationPanel
         setName = (isTrainSet ? "train" : "test");
 
         if (task != null) {
-            task.addObserver(this);
+            task.addPropertyChangeListener(this);
         }
 
         component = new Panel();
@@ -238,6 +238,26 @@ public class ValidationPanel
     public JComponent getComponent ()
     {
         return component;
+    }
+
+    //----------------//
+    // propertyChange //
+    //----------------//
+    /**
+     * A degenerated version, just to disable by default the
+     * verification actions whenever a new task activity is notified.
+     * These actions are then re-enabled only at the end of the validation run.
+     *
+     * @param evt the triggering event
+     */
+    @Override
+    public void propertyChange (PropertyChangeEvent evt)
+    {
+        weakPositiveAction.setEnabled(!weakPositives.isEmpty());
+        falsePositiveAction.setEnabled(!falsePositives.isEmpty());
+        weakNegativeAction.setEnabled(!weakNegatives.isEmpty());
+
+        validateAction.setEnabled(task.getActivity() == Task.Activity.INACTIVE);
     }
 
     //---------------//
@@ -341,29 +361,6 @@ public class ValidationPanel
         //        }
     }
 
-    //--------//
-    // update //
-    //--------//
-    /**
-     * A degenerated version, just to disable by default the
-     * verification actions whenever a new task activity is notified.
-     * These actions are then re-enabled only at the end of the validation run.
-     *
-     * @param obs    not used
-     * @param unused not used
-     */
-    @Override
-    public void update (Observable obs,
-                        Object unused)
-    {
-        weakPositiveAction.setEnabled(!weakPositives.isEmpty());
-        falsePositiveAction.setEnabled(!falsePositives.isEmpty());
-        weakNegativeAction.setEnabled(!weakNegatives.isEmpty());
-
-        Task task = (Task) obs;
-        validateAction.setEnabled(task.getActivity() == Task.Activity.INACTIVE);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
 
     //---------------------//
@@ -410,9 +407,9 @@ public class ValidationPanel
 
                 runValidation();
 
-                weakPositiveAction.setEnabled(weakPositives.size() > 0);
+                weakPositiveAction.setEnabled(!weakPositives.isEmpty());
                 falsePositiveAction.setEnabled(!falsePositives.isEmpty());
-                weakNegativeAction.setEnabled(weakNegatives.size() > 0);
+                weakNegativeAction.setEnabled(!weakNegatives.isEmpty());
 
                 if (task != null) {
                     task.setActivity(INACTIVE);

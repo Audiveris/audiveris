@@ -38,13 +38,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.jgoodies.forms.builder.FormBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Locale;
-import java.util.Observable;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -169,10 +169,9 @@ public class Trainer
         // | . Validation [test set] . . |
         // | . . . . . . . . . . . . . . |
         // +=============================+
-        //
-        FormLayout layout = new FormLayout("pref, 10dlu, pref", "pref, 10dlu, pref");
-        CellConstraints cst = new CellConstraints();
-        FormBuilder builder = FormBuilder.create().layout(layout).panel(new Panel());
+
+        final FormLayout layout = new FormLayout("pref, 10dlu, pref", "pref, 10dlu, pref");
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(new Panel());
 
         int r = 1; // --------------------------------
         builder.addRaw(selectionPanel.getComponent()).xyw(1, r, 3, "center, fill");
@@ -197,12 +196,10 @@ public class Trainer
     private JPanel definePanel (Classifier classifier)
     {
         final String pi = Panel.getPanelInterline();
-        FormLayout layout = new FormLayout("pref", "pref," + pi + ",pref," + pi + ",pref");
-
-        CellConstraints cst = new CellConstraints();
-        FormBuilder builder = FormBuilder.create().layout(layout).panel(
+        final FormLayout layout = new FormLayout("pref", "pref," + pi + ",pref," + pi + ",pref");
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(
                 new TitledPanel(classifier.getName()));
-        Task task = new Task(classifier);
+        final Task task = new Task(classifier);
 
         int r = 1; // --------------------------------
         builder.addRaw(new TrainingPanel(task, selectionPanel).getComponent()).xy(1, r);
@@ -317,8 +314,9 @@ public class Trainer
     // Task //
     //------//
     public static class Task
-            extends Observable
     {
+        /** Change listeners. */
+        private final PropertyChangeSupport listeners;
 
         /** Managed classifier. */
         public final Classifier classifier;
@@ -334,6 +332,12 @@ public class Trainer
         public Task (Classifier classifier)
         {
             this.classifier = classifier;
+            listeners = new PropertyChangeSupport(this);
+        }
+
+        public void addPropertyChangeListener (PropertyChangeListener pcl)
+        {
+            listeners.addPropertyChangeListener(pcl);
         }
 
         /**
@@ -346,22 +350,27 @@ public class Trainer
             return activity;
         }
 
+        public void removePropertyChangeListener (PropertyChangeListener pcl)
+        {
+            listeners.removePropertyChangeListener(pcl);
+        }
+
         /**
-         * Assign a new current activity and notify all observers
+         * Assign a new current activity and notify all listeners.
          *
          * @param activity the activity to be assigned
          */
         public void setActivity (Activity activity)
         {
+            final Activity old = this.activity;
             this.activity = activity;
-            setChanged();
-            notifyObservers();
+            listeners.firePropertyChange("activity", old, activity);
         }
 
         /**
          * Enum <code>Activity</code> defines all activities in training.
          */
-        static enum Activity
+        public static enum Activity
         {
             /** No ongoing activity */
             INACTIVE,

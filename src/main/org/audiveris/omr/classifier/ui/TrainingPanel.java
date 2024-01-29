@@ -42,13 +42,13 @@ import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -67,7 +67,7 @@ import javax.swing.SwingUtilities;
  * @author Hervé Bitteur
  */
 class TrainingPanel
-        implements TrainingMonitor, Observer
+        implements TrainingMonitor, PropertyChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -115,12 +115,6 @@ class TrainingPanel
     /** Current epoch. */
     private int epoch;
 
-    /** Current iteration count. */
-    private long iterCount;
-
-    /* Useful? */
-    private boolean invoked;
-
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
@@ -138,7 +132,7 @@ class TrainingPanel
         component = new Panel();
         component.setNoInsets();
 
-        task.addObserver(this);
+        task.addPropertyChangeListener(this);
 
         component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                 KeyStroke.getKeyStroke("ENTER"),
@@ -368,19 +362,17 @@ class TrainingPanel
         display(epoch, iter, score);
     }
 
-    //--------//
-    // update //
-    //--------//
+    //----------------//
+    // propertyChange //
+    //----------------//
     /**
      * Method triggered by new task activity : the train action is enabled only
      * when no activity is going on.
      *
-     * @param obs    the task object
-     * @param unused not used
+     * @param evt the signaled event
      */
     @Override
-    public void update (Observable obs,
-                        Object unused)
+    public void propertyChange (PropertyChangeEvent evt)
     {
         resetAction.setEnabled(task.getActivity() == INACTIVE);
         trainAction.setEnabled(task.getActivity() == INACTIVE);
