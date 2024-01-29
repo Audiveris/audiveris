@@ -13,12 +13,16 @@
 //
 //--------------------------------------------------------------------------------------------------
 
-apply plugin: 'application'
-
-project.version  = '5.4-alpha'
+plugins {
+    id 'application'
+}
 
 def minJavaVersion = '21'
-sourceCompatibility = JavaLanguageVersion.of(minJavaVersion)
+java {
+    sourceCompatibility = JavaLanguageVersion.of(minJavaVersion)
+}
+
+project.version = '5.4-alpha'
 
 // Central location for the specific versions of tesseract dependencies
 ext.jcppVersion     = '1.5.9'
@@ -59,6 +63,9 @@ if (project.hasProperty('mainClass')) {
 
 application {
     mainClass.set("$project.ext.mainClass")
+    
+    // Needed to circumvent the limitations brought by Java 9 and above (the JigSaw cuts)
+    applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED"]
 }
 
 // Perhaps no longer needed?
@@ -68,13 +75,10 @@ application {
 // Just uncomment the appropriate option
 allprojects {
     tasks.withType(JavaCompile) {
-        //options.compilerArgs << "-Xlint:deprecation"
+        options.compilerArgs << "-Xlint:deprecation"
         options.compilerArgs << "-Xlint:unchecked"
     }
 }
-
-// This is needed to circumvent the limitations brought by Java 9 and above (the Jigsaw cuts)
-applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED"]
 
 // Run default configuration.
 // Heap size (and other stuff) can be modified via a 'jvmLineArgs' on gradle command line
