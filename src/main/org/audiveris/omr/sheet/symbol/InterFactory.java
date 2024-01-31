@@ -54,8 +54,6 @@ import org.audiveris.omr.sig.inter.ClutterInter;
 import org.audiveris.omr.sig.inter.CompoundNoteInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
-import org.audiveris.omr.sig.inter.FermataArcInter;
-import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.FingeringInter;
 import org.audiveris.omr.sig.inter.FlagInter;
@@ -231,7 +229,6 @@ public class InterFactory
      * <li>Barline
      * <li>Beam, Beam_hook
      * <li>Head
-     * <li>Fermata, Fermata_below (not yet directly handled by OMR engine)
      * <li>Ledger
      * <li>Stem
      * <li>Curve
@@ -267,7 +264,6 @@ public class InterFactory
 
             // All dots:
             // - REPEAT_DOT
-            // - FERMATA_DOT
             // - STACCATO_DOT
             // - AUGMENTATION_DOT
             case DOT_set:
@@ -419,9 +415,9 @@ public class InterFactory
             }
 
             // Holds
-            case FERMATA_ARC:
-            case FERMATA_ARC_BELOW:
-                return FermataArcInter.create(glyph, shape, grade, system);
+            case FERMATA:
+            case FERMATA_BELOW:
+                return FermataInter.createValidAdded(glyph, shape, grade, system);
 
             // Pauses
             case CAESURA:
@@ -1062,10 +1058,7 @@ public class InterFactory
             // Holds
             case FERMATA:
             case FERMATA_BELOW:
-                return new FermataInter(shape, GRADE); // No visit
-
-            case FERMATA_DOT:
-                return new FermataDotInter(null, GRADE); // No visit
+                return new FermataInter(null, shape, GRADE); // No visit
 
             // Pauses
             case BREATH_MARK:

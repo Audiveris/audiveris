@@ -273,6 +273,7 @@ public class Measure
     /**
      * No-arg constructor meant for JAXB.
      */
+    @SuppressWarnings("unused")
     private Measure ()
     {
         this.part = null;
@@ -384,38 +385,34 @@ public class Measure
             logger.info("VIP addInter {} into {}", inter, this);
         }
 
-        if (inter instanceof ClefInter clefInter) {
-            final ClefInter clef = clefInter;
+        switch (inter) {
+            case ClefInter clefInter -> {
+                final ClefInter clef = clefInter;
 
-            if (!clefs.contains(clef)) {
-                clefs.add(clef);
+                if (!clefs.contains(clef)) {
+                    clefs.add(clef);
 
-                if ((clefs.size() > 1) && (clef.getCenter() != null)) {
-                    Collections.sort(clefs, Inters.byFullCenterAbscissa);
+                    if ((clefs.size() > 1) && (clef.getCenter() != null)) {
+                        Collections.sort(clefs, Inters.byFullCenterAbscissa);
+                    }
                 }
             }
-        } else if (inter instanceof KeyInter keyInter) {
-            keys.add(keyInter);
-        } else if (inter instanceof AbstractTimeInter abstractTimeInter) {
-            timeSigs.add(abstractTimeInter);
-        } else if (inter instanceof AbstractChordInter chord) {
-            chord.setMeasure(this);
+            case KeyInter keyInter -> keys.add(keyInter);
+            case AbstractTimeInter abstractTimeInter -> timeSigs.add(abstractTimeInter);
+            case AbstractChordInter chord -> {
+                chord.setMeasure(this);
 
-            if (chord instanceof HeadChordInter headChordInter) {
-                headChords.add(headChordInter);
-            } else if (chord instanceof RestChordInter restChordInter) {
-                restChords.add(restChordInter);
+                switch (chord) {
+                    case HeadChordInter headChordInter -> headChords.add(headChordInter);
+                    case RestChordInter restChordInter -> restChords.add(restChordInter);
+                    default -> {}
+                }
             }
-        } else if (inter instanceof FlagInter flagInter) {
-            flags.add(flagInter);
-        } else if (inter instanceof TupletInter tupletInter) {
-            tuplets.add(tupletInter);
-        } else if (inter instanceof AugmentationDotInter augmentationDotInter) {
-            augDots.add(augmentationDotInter);
-        } else if (inter instanceof MeasureRepeatInter measureRepeat) {
-            repeatSigns.add(measureRepeat);
-        } else {
-            logger.error("Attempt to use addInter() with {}", inter);
+            case FlagInter flagInter -> flags.add(flagInter);
+            case TupletInter tupletInter -> tuplets.add(tupletInter);
+            case AugmentationDotInter augmentationDotInter -> augDots.add(augmentationDotInter);
+            case MeasureRepeatInter measureRepeat -> repeatSigns.add(measureRepeat);
+            default -> logger.error("Attempt to use addInter() with {}", inter);
         }
     }
 
@@ -623,7 +620,7 @@ public class Measure
     private Set<Inter> filterByStaff (Set<? extends Inter> inters,
                                       Staff staff)
     {
-        Set<Inter> found = new LinkedHashSet<>();
+        final Set<Inter> found = new LinkedHashSet<>();
 
         for (Inter inter : inters) {
             if (inter.getStaff() == staff) {
@@ -1809,28 +1806,23 @@ public class Measure
             logger.info("VIP removeInter {} from {}", inter, this);
         }
 
-        if (inter instanceof ClefInter clefInter) {
-            clefs.remove(clefInter);
-        } else if (inter instanceof KeyInter keyInter) {
-            keys.remove(keyInter);
-        } else if (inter instanceof AbstractTimeInter abstractTimeInter) {
-            timeSigs.remove(abstractTimeInter);
-        } else if (inter instanceof HeadChordInter headChordInter) {
-            headChords.remove(headChordInter);
-            removeVoiceChord(headChordInter);
-        } else if (inter instanceof RestChordInter restChordInter) {
-            restChords.remove(restChordInter);
-            removeVoiceChord(restChordInter);
-        } else if (inter instanceof FlagInter flagInter) {
-            flags.remove(flagInter);
-        } else if (inter instanceof TupletInter tupletInter) {
-            tuplets.remove(tupletInter);
-        } else if (inter instanceof AugmentationDotInter augmentationDotInter) {
-            augDots.remove(augmentationDotInter);
-        } else if (inter instanceof MeasureRepeatInter repeatSign) {
-            repeatSigns.remove(repeatSign);
-        } else {
-            logger.error("Attempt to use removeInter() with {}", inter);
+        switch (inter) {
+            case ClefInter clefInter -> clefs.remove(clefInter);
+            case KeyInter keyInter -> keys.remove(keyInter);
+            case AbstractTimeInter abstractTimeInter -> timeSigs.remove(abstractTimeInter);
+            case HeadChordInter headChordInter -> {
+                headChords.remove(headChordInter);
+                removeVoiceChord(headChordInter);
+            }
+            case RestChordInter restChordInter -> {
+                restChords.remove(restChordInter);
+                removeVoiceChord(restChordInter);
+            }
+            case FlagInter flagInter -> flags.remove(flagInter);
+            case TupletInter tupletInter -> tuplets.remove(tupletInter);
+            case AugmentationDotInter augmentationDotInter -> augDots.remove(augmentationDotInter);
+            case MeasureRepeatInter repeatSign -> repeatSigns.remove(repeatSign);
+            default -> logger.error("Attempt to use removeInter() with {}", inter);
         }
     }
 

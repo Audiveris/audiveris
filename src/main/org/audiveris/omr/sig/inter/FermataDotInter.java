@@ -21,9 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.symbol.SymbolsBuilder;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -31,9 +29,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class <code>FermataDotInter</code> represents a dot in a fermata symbol.
+ * <p>
+ * This class is now deprecated, since the full {@link FermataInter} can be directly recognized
+ * by the {@link SymbolsBuilder}.
  *
  * @author Hervé Bitteur
  */
+@Deprecated
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "fermata-dot")
 public class FermataDotInter
@@ -44,39 +46,8 @@ public class FermataDotInter
     /**
      * No-arg constructor meant for JAXB.
      */
+    @SuppressWarnings("unused")
     private FermataDotInter ()
     {
-    }
-
-    /**
-     * Creates a new <code>FermataDotInter</code> object.
-     *
-     * @param glyph underlying glyph
-     * @param grade evaluation value
-     */
-    public FermataDotInter (Glyph glyph,
-                            Double grade)
-    {
-        super(glyph, null, Shape.FERMATA_DOT, grade);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------
-
-    //----------//
-    // getStaff //
-    //----------//
-    @Override
-    public Staff getStaff ()
-    {
-        if (staff == null) {
-            // Use staff information of containing FermataInter ensemble
-            InterEnsemble ens = getEnsemble();
-
-            if (ens != null) {
-                staff = ens.getStaff();
-            }
-        }
-
-        return staff;
     }
 }

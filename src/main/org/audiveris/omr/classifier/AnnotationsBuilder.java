@@ -39,8 +39,6 @@ import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.BracketConnectorInter;
 import org.audiveris.omr.sig.inter.BracketInter;
 import org.audiveris.omr.sig.inter.EndingInter;
-import org.audiveris.omr.sig.inter.FermataArcInter;
-import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -108,8 +106,6 @@ public class AnnotationsBuilder
         excludedInterClasses.add(BracketConnectorInter.class);
         excludedInterClasses.add(BracketInter.class); // TODO: should be defined in OmrShape?
         excludedInterClasses.add(EndingInter.class);
-        excludedInterClasses.add(FermataArcInter.class);
-        excludedInterClasses.add(FermataDotInter.class);
         excludedInterClasses.add(KeyInter.class);
         excludedInterClasses.add(RepeatDotInter.class); // Processed via BarlineInter
         excludedInterClasses.add(SegmentInter.class);

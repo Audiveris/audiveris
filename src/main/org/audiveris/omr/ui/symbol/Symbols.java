@@ -230,9 +230,6 @@ public abstract class Symbols
         symbolMap.put(BEAM_SMALL, new SmallBeamSymbol(family()));
         symbolMap.put(BEAM_HOOK, new BeamHookSymbol(family()));
 
-        symbolMap.put(FERMATA_ARC, new FermataArcSymbol(FERMATA_ARC, family()));
-        symbolMap.put(FERMATA_ARC_BELOW, new FermataArcSymbol(FERMATA_ARC_BELOW, family()));
-
         symbolMap.put(LEDGER, new LedgerSymbol(family()));
 
         symbolMap.put(OTTAVA, new OctaveShiftSymbol(OTTAVA, family()));

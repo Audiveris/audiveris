@@ -40,6 +40,7 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigListener;
+import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
@@ -325,50 +326,45 @@ public class SystemInfo
 
             // Process staves upfront, so that their notes have their staff assigned.
             // Doing so, measure chords can determine which staves they belong to.
-            for (Staff staff : staves) {
-                staff.afterReload();
-            }
+            staves.forEach(staff -> staff.afterReload());
 
-            {
-                // Support for OldStaffBarline
-                // (In part left PartBarline and in measures PartBarlines)
-                boolean upgraded = false;
+            parts.forEach(part -> part.afterReload());
 
-                for (Part part : parts) {
-                    final PartBarline lpb = part.getLeftPartBarline();
+            stacks.forEach(stack -> stack.afterReload(this));
 
-                    if (lpb != null) {
-                        upgraded |= lpb.upgradeOldStuff();
-                    }
+            sig.inters(SentenceInter.class).forEach(inter -> {
+                ((SentenceInter) inter).assignStaff(this, ((SentenceInter) inter).getLocation());
+            });
 
-                    for (Measure measure : part.getMeasures()) {
-                        for (PartBarline pb : measure.getContainedPartBarlines()) {
-                            upgraded |= pb.upgradeOldStuff();
-                        }
-                    }
-                }
+            sig.inters(OctaveShiftInter.class).forEach(
+                    inter -> ((OctaveShiftInter) inter).afterReload(this));
 
-                if (upgraded) {
-                    sheet.getStub().setUpgraded(true);
-                }
-            }
+            boolean upgraded = false;
 
+            // Support for OldStaffBarline
+            // (In part left PartBarline and in measures PartBarlines)
             for (Part part : parts) {
-                part.afterReload();
+                final PartBarline lpb = part.getLeftPartBarline();
+
+                if (lpb != null) {
+                    upgraded |= lpb.upgradeOldStuff();
+                }
+
+                for (Measure measure : part.getMeasures()) {
+                    for (PartBarline pb : measure.getContainedPartBarlines()) {
+                        upgraded |= pb.upgradeOldStuff();
+                    }
+                }
             }
 
-            for (MeasureStack stack : stacks) {
-                stack.afterReload(this);
+            // Support for old fermata arc and dot
+            for (Inter inter : sig.inters(FermataInter.class)) {
+                final FermataInter fermata = (FermataInter) inter;
+                upgraded |= fermata.upgradeOldStuff();
             }
 
-            for (Inter inter : sig.inters(SentenceInter.class)) {
-                SentenceInter sentence = (SentenceInter) inter;
-                sentence.assignStaff(this, sentence.getLocation());
-            }
-
-            for (Inter inter : sig.inters(OctaveShiftInter.class)) {
-                OctaveShiftInter os = (OctaveShiftInter) inter;
-                os.afterReload(this);
+            if (upgraded) {
+                sheet.getStub().setUpgraded(true);
             }
 
             // Listen to sig modifications

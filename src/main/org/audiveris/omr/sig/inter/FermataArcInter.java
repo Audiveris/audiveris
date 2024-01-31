@@ -21,12 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.SystemInfo;
-
-import java.awt.geom.Point2D;
+import org.audiveris.omr.sheet.symbol.SymbolsBuilder;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -34,10 +29,14 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class <code>FermataArcInter</code> represents the arc part of a fermata, either upright or
  * inverted.
  * <p>
- * Combined with a FermataDotInter, it can lead to a (full) FermataInter.
+ * Combined with a FermataDotInter, it could lead to a (full) FermataInter.
+ * <p>
+ * This class is now deprecated, since the full {@link FermataInter} can be directly recognized
+ * by the {@link SymbolsBuilder}.
  *
  * @author Hervé Bitteur
  */
+@Deprecated
 @XmlRootElement(name = "fermata-arc")
 public class FermataArcInter
         extends AbstractInter
@@ -47,55 +46,8 @@ public class FermataArcInter
     /**
      * No-arg constructor meant for JAXB.
      */
+    @SuppressWarnings("unused")
     private FermataArcInter ()
     {
-    }
-
-    /**
-     * Creates a new <code>FermataArcInter</code> object.
-     *
-     * @param glyph the fermata arc glyph
-     * @param shape FERMATA_ARC or FERMATA_ARC_BELOW
-     * @param grade the interpretation quality
-     */
-    private FermataArcInter (Glyph glyph,
-                             Shape shape,
-                             Double grade)
-    {
-        super(glyph, glyph.getBounds(), shape, grade);
-    }
-
-    //~ Static Methods -----------------------------------------------------------------------------
-
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create a fermata arc inter.
-     *
-     * @param glyph  the fermata arc glyph
-     * @param shape  FERMATA_ARC or FERMATA_ARC_BELOW
-     * @param grade  the interpretation quality
-     * @param system the related system
-     * @return the created fermata arc or null
-     */
-    public static FermataArcInter create (Glyph glyph,
-                                          Shape shape,
-                                          double grade,
-                                          SystemInfo system)
-    {
-        // Look for proper staff
-        final Point2D center = glyph.getCenter2D();
-        final Staff staff = (shape == Shape.FERMATA_ARC) ? system.getStaffAtOrBelow(center)
-                : system.getStaffAtOrAbove(center);
-
-        if (staff == null) {
-            return null;
-        }
-
-        final FermataArcInter arc = new FermataArcInter(glyph, shape, grade);
-        arc.setStaff(staff);
-
-        return arc;
     }
 }

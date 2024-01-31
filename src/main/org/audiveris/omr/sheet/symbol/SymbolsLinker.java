@@ -32,8 +32,6 @@ import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
-import org.audiveris.omr.sig.inter.FermataArcInter;
-import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -50,7 +48,6 @@ import org.audiveris.omr.sig.relation.ChordGraceRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
-import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -145,29 +142,12 @@ public class SymbolsLinker
     private void linkFermatas ()
     {
         final int profile = system.getProfile();
+        final List<Inter> fermatas = sig.inters(FermataInter.class);
 
-        // At this point a fermata arc exists only if it is related to a fermata dot
-        List<Inter> arcs = sig.inters(FermataArcInter.class);
-
-        for (Inter arcInter : arcs) {
-            FermataArcInter arc = (FermataArcInter) arcInter;
-            FermataDotInter dot = null;
+        for (Inter fInter : fermatas) {
+            final FermataInter fermata = (FermataInter) fInter;
 
             try {
-                for (Relation rel : sig.getRelations(arc, DotFermataRelation.class)) {
-                    dot = (FermataDotInter) sig.getOppositeInter(arcInter, rel);
-
-                    break;
-                }
-
-                if (dot == null) {
-                    arc.remove();
-
-                    continue;
-                }
-
-                FermataInter fermata = FermataInter.createAdded(arc, dot, system);
-
                 if (fermata.isVip()) {
                     logger.info("VIP linkFermatas on {}", fermata);
                 }
@@ -177,11 +157,11 @@ public class SymbolsLinker
                     // Look for a chord (head or rest) related to this fermata
                     if (!fermata.linkWithChord(profile)) {
                         // No link to barline, no link to chord, discard it
-                        fermata.remove(); // Which also removes arc and dot members
+                        fermata.remove();
                     }
                 }
             } catch (Exception ex) {
-                logger.warn("Error in linkFermatas for {} {}", arc, ex.toString(), ex);
+                logger.warn("Error in linkFermatas for {} {}", fermata, ex.toString(), ex);
             }
         }
     }

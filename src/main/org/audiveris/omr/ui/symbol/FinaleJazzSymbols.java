@@ -110,10 +110,7 @@ public class FinaleJazzSymbols
             case EIGHTH_REST -> ints(0xE4E6);
 
             case FERMATA -> ints(0xE4C0);
-            case FERMATA_ARC -> ints(0xE4C0);
-            case FERMATA_ARC_BELOW -> ints(0xE4C1);
             case FERMATA_BELOW -> ints(0xE4C1);
-            case FERMATA_DOT -> ints(0xE044); // ? useful ?
             ///case FINAL_BARLINE -> ints(0xE032);
             case FLAG_1 -> ints(0xE250);
             case FLAG_1_DOWN -> ints(0xE251);

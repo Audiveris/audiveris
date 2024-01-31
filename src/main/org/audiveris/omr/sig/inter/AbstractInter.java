@@ -1272,14 +1272,16 @@ public abstract class AbstractInter
         if (sig != null) {
             // Extensive is true for non-manual removals only
             if (extensive) {
-                // Handle ensemble - member cases?
-                // Copy is needed to avoid concurrent modification exception
-                List<Relation> relsCopy = new ArrayList<>(sig.incomingEdgesOf(this));
+                // Handle the possible ensemble -> member cases
+
+                // Is this a member of an ensemble?
+                // If so, delete the ensemble if this is the only remaining member
+                // NOTA: Copy is needed to avoid concurrent modification exception
+                final List<Relation> relsCopy = new ArrayList<>(sig.incomingEdgesOf(this));
 
                 for (Relation rel : relsCopy) {
-                    // A member may be contained by several ensembles (case of TimeNumberInter)
                     if (rel instanceof Containment) {
-                        InterEnsemble ens = (InterEnsemble) sig.getEdgeSource(rel);
+                        final InterEnsemble ens = (InterEnsemble) sig.getEdgeSource(rel);
 
                         if (ens.getMembers().size() == 1) {
                             logger.debug("{} removing a dying ensemble {}", this, ens);
@@ -1288,34 +1290,24 @@ public abstract class AbstractInter
                     }
                 }
 
+                // Is this an ensemble of members?
+                // If so, delete all its members that are not part of another ensemble
+                // because a member may be contained by several ensembles (e.g. TimeNumberInter)
                 if (this instanceof InterEnsemble ens) {
-                    // Delete all its members that are not part of another ensemble
                     for (Inter member : ens.getMembers()) {
-                        Set<Inter> ensembles = member.getAllEnsembles();
+                        final Set<Inter> ensembles = member.getAllEnsembles();
+                        ensembles.remove(this);
 
-                        if (!ensembles.isEmpty()) {
-                            ensembles.remove(this);
-
-                            if (ensembles.isEmpty()) {
-                                logger.debug("{} removing a member {}", this, member);
-                                member.remove(false);
-                            }
+                        if (ensembles.isEmpty()) {
+                            logger.debug("{} removing a member {}", this, member);
+                            member.remove(false);
                         }
+
                     }
                 }
             }
 
             sig.removeVertex(this);
-
-            //            // Make sure the underlying glyph remains accessible
-            //            if (glyph != null) {
-            //                final SystemInfo system = sig.getSystem();
-            //                final OmrStep step = system.getSheet().getStub().getLatestStep();
-            //
-            //                if (step != null && step.compareTo(OmrStep.CURVES) >= 0) {
-            //                    system.addFreeGlyph(glyph);
-            //                }
-            //            }
         }
     }
 

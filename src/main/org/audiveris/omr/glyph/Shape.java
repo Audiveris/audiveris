@@ -55,7 +55,6 @@ import java.util.List;
  * <li>an augmentation dot (first or second dot),
  * <li>a part of a repeat sign (upper or lower dot),
  * <li>a staccato sign,
- * <li>a part of fermata sign,
  * <li>a dot of an ending indication,
  * <li>a simple text dot.
  * </ul>
@@ -102,8 +101,8 @@ public enum Shape
     CODA("Closing section"),
     BREATH_MARK("Breath Mark"),
     CAESURA("Caesura"),
-    FERMATA_ARC("Fermata arc, without dot"),
-    FERMATA_ARC_BELOW("Fermata arc below, without dot"),
+    FERMATA("Fermata arc + dot"),
+    FERMATA_BELOW("Fermata below, arc + dot"),
     REPEAT_ONE_BAR("Repeat last bar"),
     REPEAT_TWO_BARS("Repeat last two bars"),
     REPEAT_FOUR_BARS("Repeat last four bars"),
@@ -336,7 +335,6 @@ public enum Shape
     //
     REPEAT_DOT("Repeat dot", DOT_set),
     AUGMENTATION_DOT("Augmentation Dot", DOT_set),
-    FERMATA_DOT("Fermata Dot", DOT_set),
     STACCATO("Staccato dot", DOT_set),
 
     //
@@ -470,12 +468,6 @@ public enum Shape
     VERTICAL_SERIF("Vertical serif"),
 
     //
-    // Full fermatas ---
-    //
-    FERMATA("Fermata with dot"),
-    FERMATA_BELOW("Fermata below with dot"),
-
-    //
     // Other stuff ---
     //
     FORWARD("To indicate a forward"),
@@ -495,7 +487,10 @@ public enum Shape
     FLAG_2_UP("OBSOLETE Double flag up"),
     FLAG_3_UP("OBSOLETE Triple flag up"),
     FLAG_4_UP("OBSOLETE Quadruple flag up"),
-    FLAG_5_UP("OBSOLETE Quintuple flag up");
+    FLAG_5_UP("OBSOLETE Quintuple flag up"),
+    FERMATA_DOT("Fermata dot"),
+    FERMATA_ARC("Fermata arc, without dot"),
+    FERMATA_ARC_BELOW("Fermata arc below, without dot");
 
     // =============================================================================================
     // This is the end of shape enumeration

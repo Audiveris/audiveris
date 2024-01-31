@@ -25,6 +25,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
+import org.audiveris.omr.sig.inter.AbstractPauseInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
@@ -34,8 +35,6 @@ import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
-import org.audiveris.omr.sig.inter.FermataArcInter;
-import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.FingeringInter;
 import org.audiveris.omr.sig.inter.FlagInter;
@@ -49,7 +48,6 @@ import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.MeasureRepeatInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
-import org.audiveris.omr.sig.inter.AbstractPauseInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
@@ -147,8 +145,6 @@ public abstract class Relations
         map(EndingInter.class, EndingBarRelation.class, BarlineInter.class); // Old
         map(EndingInter.class, EndingBarRelation.class, StaffBarlineInter.class);
         map(EndingInter.class, EndingSentenceRelation.class, SentenceInter.class);
-
-        map(FermataDotInter.class, DotFermataRelation.class, FermataArcInter.class); // Temporary!
 
         map(FermataInter.class, FermataBarRelation.class, BarlineInter.class); // Old
         map(FermataInter.class, FermataBarRelation.class, StaffBarlineInter.class);

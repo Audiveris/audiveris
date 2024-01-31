@@ -41,8 +41,6 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
-import org.audiveris.omr.sig.inter.FermataArcInter;
-import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -50,7 +48,6 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
-import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
@@ -83,7 +80,6 @@ import java.util.Set;
  * <li>a part of a repeat sign (upper or lower dot),
  * <li>a staccato sign,
  * <li>an augmentation dot (first or second dot), [TODO: Handle augmentation dot for mirrored notes]
- * <li>a part of a fermata sign,
  * <li>a dot of an ending indication, [TODO: Handle dot in ending]
  * <li>a simple text dot. [TODO: Anything to be done here?]
  * <li>or just some stain...
@@ -109,8 +105,6 @@ public class DotFactory
 
     private final SIGraph sig;
 
-    private final Scale scale;
-
     /** Dot candidates. Sorted top down, then left to right. */
     private final List<Dot> dots = new ArrayList<>();
 
@@ -128,7 +122,6 @@ public class DotFactory
         this.interFactory = interFactory;
         this.system = system;
         sig = system.getSig();
-        scale = system.getSheet().getScale();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -608,69 +601,7 @@ public class DotFactory
 
         // Run all late checks
         lateAugmentationChecks(); // Note-Dot and Note-Dot-Dot configurations
-        lateFermataChecks(); // Dot as part of a fermata sign
         lateRepeatChecks(); // Dot as part of stack repeat (to say the last word)
-    }
-
-    //-------------------//
-    // lateFermataChecks //
-    //-------------------//
-    /**
-     * Try to include the dot in a fermata symbol.
-     */
-    private void lateFermataChecks ()
-    {
-        final int profile = system.getProfile();
-
-        // Collection of fermata arc candidates in the system
-        List<Inter> arcs = sig.inters(FermataArcInter.class);
-
-        if (arcs.isEmpty()) {
-            return;
-        }
-
-        for (Dot dot : dots) {
-            Glyph glyph = dot.getGlyph();
-
-            if (glyph == null) {
-                continue;
-            }
-
-            Rectangle dotBox = dot.getBounds();
-            FermataDotInter dotInter = null;
-
-            for (Inter arc : arcs) {
-                // Box: use lower half for FERMATA_ARC and upper half for FERMATA_ARC_BELOW
-                Rectangle halfBox = arc.getBounds();
-                halfBox.height /= 2;
-
-                if (arc.getShape() == Shape.FERMATA_ARC) {
-                    halfBox.y += halfBox.height;
-                }
-
-                if (halfBox.intersects(dotBox)) {
-                    final Point2D dotCenter = GeoUtil.center2D(dotBox);
-                    double xGap = Math.abs(dotCenter.getX() - (halfBox.x + (halfBox.width / 2)));
-                    double yTarget = (arc.getShape() == Shape.FERMATA_ARC_BELOW) ? (halfBox.y
-                            + (halfBox.height * 0.25)) : (halfBox.y + (halfBox.height * 0.75));
-                    double yGap = Math.abs(dotCenter.getY() - yTarget);
-                    DotFermataRelation rel = new DotFermataRelation();
-                    rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
-
-                    if (rel.getGrade() >= rel.getMinGrade()) {
-                        if (dotInter == null) {
-                            double grade = Grades.intrinsicRatio * dot.getGrade();
-                            dotInter = new FermataDotInter(glyph, grade);
-                            sig.addVertex(dotInter);
-                            logger.debug("Created {}", dotInter);
-                        }
-
-                        sig.addEdge(dotInter, arc, rel);
-                        logger.debug("{} matches dot glyph#{}", arc, glyph.getId());
-                    }
-                }
-            }
-        }
     }
 
     //---------------------------//
