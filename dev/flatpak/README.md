@@ -60,8 +60,8 @@ structure required by **gradle** from the downloaded dependencies.
 
 The flatpak has a built-in set of Tesseract language files for text
 recognition support. By default, the list of languages is English (`eng`),
-French (`fra`), German (`deu` and `deu_frak`), Italian (`ita`), and Latin
-(`lat`). The helper script `languages.sh` can be used to create a flatpak
+French (`fra`), German (`deu`) and Italian (`ita`).
+The helper script `languages.sh` can be used to create a flatpak
 source list with the desired Tesseract files. To run the script:
 
     cd dev/flatpak
@@ -90,7 +90,7 @@ there's probably nothing to do.
 
 **Important:** The dependency generation always uses the currently checked-out
 audiveris sources. But flatpak builds the sources from the `tag` and `commit`
-hardcoded in the manfiest `org.audiveris.audiveris.yml`:
+hardcoded in the manifest `org.audiveris.audiveris.yml`:
 
     sources:
       - type: git
@@ -124,6 +124,6 @@ repository:
 
     git -C dev/flathub push origin HEAD:my-new-branch
 	
-From this branch, a github PR can be created against either the `beta` or the
+From this branch, a github PR can be created against either the `development` or the
 `master` branch of the main flathub, where the flathub build bot will pick
-it up. Build results can be inspected on the [buildbot page](https://buildbot.flathub.org/
+it up. Build results can be inspected on the [buildbot page](https://buildbot.flathub.org/).
