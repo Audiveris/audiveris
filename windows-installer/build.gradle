@@ -19,10 +19,10 @@
 
 apply plugin: 'base'
 
-def rootDir     = project(":").projectDir
-def hostOS      = project(":").property('hostOS')
-def hostOSName  = project(":").property('hostOSName')
-def rootVersion = project(":").property('version')
+def rootDir     = rootProject.projectDir
+def hostOS      = rootProject.property('hostOS')
+def hostOSName  = rootProject.property('hostOSName')
+def rootVersion = rootProject.property('version')
 
 repositories {
     mavenLocal()
@@ -75,8 +75,8 @@ task installers {
 ['windows-x86', 'windows-x86_64'].each { targetOS ->
     task "installer_$targetOS"(type: Exec) {
         dependsOn findNsisCompiler
-        dependsOn project(":").jar
-        dependsOn project(":").startScripts
+        dependsOn rootProject.jar
+        dependsOn rootProject.startScripts
         group "Installers"
         description "Builds installer for $targetOS"
         onlyIf {"windows" == "$hostOSName"}
@@ -107,7 +107,7 @@ task installers {
                 into "$buildDir/installers/$targetOS/lib"
 
                 from "$rootDir/build/jar" // audiveris.jar
-                from project(":").configurations.implementationConfig // Compile jars
+                from rootProject.configurations.implementationConfig // Compile jars
                 from configurations."runtime-$targetOS" // targetOS-specific jars
             }
 

@@ -116,7 +116,6 @@ import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.ClefKeyRelation;
 import org.audiveris.omr.sig.relation.Containment;
-import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
@@ -424,7 +423,6 @@ public class SigValue
                 @XmlElementRef(type = ChordWedgeRelation.class),
                 @XmlElementRef(type = ClefKeyRelation.class),
                 @XmlElementRef(type = Containment.class),
-                @XmlElementRef(type = DotFermataRelation.class),
                 @XmlElementRef(type = DoubleDotRelation.class),
                 @XmlElementRef(type = EndingBarRelation.class),
                 @XmlElementRef(type = EndingSentenceRelation.class),

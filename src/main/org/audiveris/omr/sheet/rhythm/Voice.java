@@ -100,7 +100,7 @@ public class Voice
     private RestChordInter measureRestChord;
 
     /**
-     * This map (SlotId -> SlotVoice) stores chord information for each slot.
+     * This map (SlotId -&gt; SlotVoice) stores chord information for each slot.
      * <ul>
      * <li>If the voice/slot combination is empty, the voice is free for this slot.
      * <li>Otherwise, the active chord is referenced with a status flag to make a difference between

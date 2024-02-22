@@ -206,26 +206,32 @@ public class SheetStub
     // Deprecated persistent data
     //---------------------------
 
+    /** Deprecated, replaced by SheetStub parameters structure. */
     @Deprecated
     @XmlElement(name = "music-font")
     private MusicFamily.MyParam old_musicFamily;
 
+    /** Deprecated, replaced by SheetStub parameters structure. */
     @Deprecated
     @XmlElement(name = "text-font")
     private TextFamily.MyParam old_textFamily;
 
+    /** Deprecated, replaced by SheetStub parameters structure. */
     @Deprecated
     @XmlElement(name = "input-quality")
     private volatile InputQualityParam old_inputQuality;
 
+    /** Deprecated, replaced by SheetStub parameters structure. */
     @Deprecated
     @XmlElement(name = "beam-specification")
     private IntegerParam old_beamSpecification;
 
+    /** Deprecated, replaced by SheetStub parameters structure. */
     @Deprecated
     @XmlElement(name = "ocr-languages")
     private StringParam old_ocrLanguages;
 
+    /** Deprecated, replaced by SheetStub parameters structure. */
     @Deprecated
     @XmlElement(name = "processing")
     private ProcessingSwitches old_switches;

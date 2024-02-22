@@ -117,11 +117,11 @@ public class SystemInfo
     // Persistent data
     //----------------
 
-    /** Unique Id (sequential vertical number starting from 1 in containing sheet). */
+    /** Unique Id (sequential vertical number starting from 1 in the containing sheet). */
     @XmlAttribute(name = "id")
     private int id;
 
-    /** Indentation flag. */
+    /** Tells whether this system is left-indented. */
     @XmlAttribute(name = "indented")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean indented;
@@ -130,16 +130,21 @@ public class SystemInfo
     @XmlElement(name = "stack")
     private final List<MeasureStack> stacks = new ArrayList<>();
 
-    /** Vertical sequence of real parts in this system (no dummy parts included). */
+    /**
+     * Vertical sequence of real parts in this system.
+     * <p>
+     * No dummy parts are included; if needed, they are created on-the-fly for MusicXML output.
+     */
     @XmlElement(name = "part")
     private final List<Part> parts = new ArrayList<>();
 
-    /** PartGroups in this system. */
+    /** The PartGroups in this system. */
     @XmlElement(name = "part-group")
     private final List<PartGroup> partGroups = new ArrayList<>();
 
     /**
-     * Collection of stand-alone glyphs in this system.
+     * A collection of stand-alone glyphs in this system.
+     * <p>
      * This should be limited to glyphs not referenced elsewhere, to avoid garbage collection.
      */
     @XmlList
@@ -148,8 +153,10 @@ public class SystemInfo
     private Set<Glyph> freeGlyphs;
 
     /**
-     * Symbol Interpretation Graph for this system.
-     * NOTA: sig must be marshalled AFTER parts hierarchy to separate IDs and IDREFs handling.
+     * The Symbol Interpretation Graph for this system.
+     * <p>
+     * NOTA: The 'sig' must be marshalled <b>after</b> the 'parts' hierarchy
+     * to separate handling of IDs and handling of IDREFs.
      */
     @XmlElement(name = "sig")
     private SIGraph sig;

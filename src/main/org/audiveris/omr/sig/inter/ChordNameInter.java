@@ -93,7 +93,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>
  * TODO: Add support for classical functions (besides root)
  * <p>
- * TODO: Add support for French steps: Do, Ré, Mi, etc.
+ * TODO: Add support for French steps: Do, Re, Mi, etc.
  *
  * @author Hervé Bitteur
  */

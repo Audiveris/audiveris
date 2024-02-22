@@ -265,39 +265,46 @@ public class Book
     /** A trick to keep parameters intact, even when nullified at marshal time. */
     private BookParams parametersMirror;
 
+    /** Has the book itself been upgraded?. */
+    private boolean bookUpgraded = false;
+
     // Deprecated persistent data
     //---------------------------
 
+    /** Deprecated, replaced by book parameters structure. */
     @Deprecated
     @XmlElement(name = "music-font")
     private volatile MusicFamily.MyParam old_musicFamily;
 
+    /** Deprecated, replaced by book parameters structure. */
     @Deprecated
     @XmlElement(name = "text-font")
     private volatile TextFamily.MyParam old_textFamily;
 
+    /** Deprecated, replaced by book parameters structure. */
     @Deprecated
     @XmlElement(name = "input-quality")
     private volatile InputQualityParam old_inputQuality;
 
+    /** Deprecated, replaced by book parameters structure. */
     @XmlElement(name = "binarization")
     @XmlJavaTypeAdapter(FilterParam.JaxbAdapter.class)
     private volatile FilterParam old_binarizationFilter;
 
+    /** Deprecated, replaced by book parameters structure. */
     @Deprecated
     @XmlElement(name = "beam-specification")
     private volatile IntegerParam old_beamSpecification;
 
+    /** Deprecated, replaced by book parameters structure. */
     @Deprecated
     @XmlElement(name = "ocr-languages")
     private volatile StringParam old_ocrLanguages;
 
+    /** Deprecated, replaced by book parameters structure. */
     @Deprecated
     @XmlElement(name = "processing")
     private volatile ProcessingSwitches old_switches;
-
-    /** Has the book itself been upgraded?. */
-    private boolean bookUpgraded = false;
 
     //~ Constructors -------------------------------------------------------------------------------
 

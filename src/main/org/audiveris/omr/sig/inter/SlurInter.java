@@ -201,7 +201,7 @@ public class SlurInter
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean tie;
 
-    /** The precise Bézier curve. */
+    /** The precise Bezier curve. */
     @XmlElement
     @XmlJavaTypeAdapter(Jaxb.CubicAdapter.class)
     private CubicCurve2D curve;

@@ -154,8 +154,13 @@ public class ScaleBuilder
     // checkResolution //
     //-----------------//
     /**
-     * Check global interline value, to detect pictures with too low
+     * Check the global interline value, to detect pictures with too low
      * resolution or pictures which do not represent music staves.
+     * <p>
+     * <b>Coding note</b>:
+     * The use of text blocks led to a parsing error by the <b>xsltproc</b> software
+     * that is today mandatory to generate the documentation of .omr files.
+     * Hence these text blocks have been replaced by plain String entities.
      *
      * @throws StepException if processing must stop on this sheet
      */
@@ -165,24 +170,22 @@ public class ScaleBuilder
         final int interline = comboPeak.main;
 
         if (interline < constants.minInterline.getValue()) {
-            sheet.getStub().decideOnRemoval("""
-                    %s
-
-                    With a too low interline value of %d pixels,
-                    either this sheet contains no multi-line staves,
-                    or the picture resolution is too low (try 300 DPI).
-
-                    This interline value is NOT RELIABLE!
-                    """.formatted(sheet.getId(), interline), false);
+            final String msg = String.format(
+                    "%s\n\n With a too low interline value of %d pixels,\n"
+                            + " either this sheet contains no multi-line staves,\n"
+                            + " or the picture resolution is too low (try 300 DPI).\n\n"
+                            + " This interline value is NOT RELIABLE!",
+                    sheet.getId(),
+                    interline);
+            sheet.getStub().decideOnRemoval(msg, false);
         } else if (interline > constants.maxInterline.getValue()) {
-            sheet.getStub().decideOnRemoval("""
-                    %s
-
-                    With a too high interline value of %d pixels,
-                    this sheet does not seem to contain multi-line staves.
-
-                    This interline value is NOT RELIABLE!"
-                    """.formatted(sheet.getId(), interline), false);
+            final String msg = String.format(
+                    "%s\n\n With a too high interline value of %d pixels,\n"
+                            + " this sheet does not seem to contain multi-line staves.\n\n"
+                            + " This interline value is NOT RELIABLE!",
+                    sheet.getId(),
+                    interline);
+            sheet.getStub().decideOnRemoval(msg, false);
         }
     }
 

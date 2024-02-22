@@ -173,9 +173,7 @@ public class Scale
     @XmlElement(name = "interline")
     private InterlineScale interlineScale;
 
-    /**
-     * @Deprecated, replaced by <code>smallInterlineScale</code>
-     */
+    /** Deprecated, replaced by <code>smallInterlineScale</code>. */
     @XmlElement(name = "small-staff")
     private Scale oldSmallScale;
 
