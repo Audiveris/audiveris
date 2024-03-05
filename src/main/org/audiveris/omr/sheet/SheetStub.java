@@ -614,6 +614,14 @@ public class SheetStub
         return parameters.binarizationFilter;
     }
 
+    //----------------------------//
+    // setBinarizationFilterParam //
+    //----------------------------//
+    public void setBinarizationFilterParam (FilterParam filterParam)
+    {
+        parameters.binarizationFilter = filterParam;
+    }
+
     //---------//
     // getBook //
     //---------//
