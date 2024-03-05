@@ -45,6 +45,7 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
+import org.audiveris.omr.sheet.ui.BinarizationAdjustBoard;
 import org.audiveris.omr.sheet.ui.BinarizationBoard;
 import org.audiveris.omr.sheet.ui.PictureView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
@@ -595,7 +596,9 @@ public class Sheet
                 assembly.addViewTab(
                         tab,
                         pictureView,
-                        new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+                        new BoardsPane(new PixelBoard(this), 
+                        new BinarizationBoard(this),
+                        new BinarizationAdjustBoard(this)));
             } else {
                 assembly.selectViewTab(tab);
             }
@@ -628,7 +631,7 @@ public class Sheet
         stub.getAssembly().addViewTab(
                 SheetTab.GRAY_TAB,
                 pictureView,
-                new BoardsPane(new PixelBoard(this), bb));
+                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
 
     //----------------//
