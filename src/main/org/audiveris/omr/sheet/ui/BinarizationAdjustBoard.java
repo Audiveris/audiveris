@@ -22,42 +22,35 @@
 package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.image.AdaptiveDescriptor;
-import org.audiveris.omr.image.AdaptiveFilter.AdaptiveContext;
-import org.audiveris.omr.image.FilterDescriptor;
+import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.image.GlobalDescriptor;
 import org.audiveris.omr.image.PixelFilter;
-import org.audiveris.omr.image.RandomFilter;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Picture.SourceKey;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.step.OmrStep;
-import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.field.LIntegerField;
+import org.audiveris.omr.ui.field.LRadioButton;
 import org.audiveris.omr.ui.selection.LocationEvent;
-import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.UserEvent;
-import org.audiveris.omr.ui.util.ButtonTabComponent;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import ij.process.ByteProcessor;
 
-import java.awt.Rectangle;
-import java.awt.event.ItemEvent;
-
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 
 /**
  * Class <code>BinarizationBoard</code> is a board meant to display the
@@ -67,6 +60,7 @@ import javax.swing.JCheckBox;
  */
 public class BinarizationAdjustBoard
         extends Board
+        implements ActionListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -76,26 +70,22 @@ public class BinarizationAdjustBoard
     private static final Class<?>[] eventClasses = new Class<?>[]
     { LocationEvent.class };
 
-    /** Format used for every double field. */
-    private static final String format = "%.2f";
-
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The related sheet. */
     private final Sheet sheet;
 
-    /** Mean level in neighborhood. */
-    private final LDoubleField mean = new LDoubleField(false, "MYMEAN!", "Mean value", format);
+    private final LIntegerField globalThresholdValue = new LIntegerField("Threshold", "Gray threshold for pixels");
+    
+    private final LDoubleField adaptiveMeanValue = new LDoubleField("Mean coeff", "Coefficient for mean value");
+    
+    private final LDoubleField adaptiveStdDevValue = new LDoubleField("Std Dev coeff", "Coefficient for standard deviation value");
 
-    /** Standard deviation in neighborhood. */
-    private final LDoubleField stdDev = new LDoubleField(
-            false,
-            "HELLO!",
-            "Standard deviation value",
-            format);
+    private final JButton applyButton = new JButton("Apply");
 
-    /** Computed threshold. */
-    private final LDoubleField threshold = new LDoubleField(false, "Thres.", "Threshold", format);
+    private final LRadioButton globalFilterRadioButton = new LRadioButton("Use Global Filter", "Converts to black and white by a simply threshold value");
+
+    private final LRadioButton adaptiveFilterRadioButton = new LRadioButton("Use Adaptive Filter", "Converts to black and white by calculating the mean and standard deviation value of a group of pixels");
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -117,6 +107,16 @@ public class BinarizationAdjustBoard
 
         this.sheet = sheet;
 
+        applyButton.addActionListener(this);
+
+        adaptiveFilterRadioButton.getField().setActionCommand("showGray");
+        adaptiveFilterRadioButton.addActionListener(this);
+        adaptiveFilterRadioButton.getField().setSelected(true);
+
+        globalFilterRadioButton.getField().setActionCommand("showBinary");
+        globalFilterRadioButton.addActionListener(this);
+
+
         defineLayout();
     }
 
@@ -127,113 +127,114 @@ public class BinarizationAdjustBoard
     //--------------//
     private void defineLayout ()
     {
-        FormLayout layout = Panel.makeFormLayout(5, 3);
-        PanelBuilder builder = new PanelBuilder(layout, getBody());
+        FormLayout layout = Panel.makeFormLayout(4, 3);
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
+        // PanelBuilder builder = new PanelBuilder(layout, getBody());
 
         ///builder.setDefaultDialogBorder();
-        CellConstraints cst = new CellConstraints();
-
-        LIntegerField globalFilterValue = new LIntegerField("Threshold", "Gray threshold for pixels");
-
-        JCheckBox checkbox = new JCheckBox("Show original gray image: ");
-        checkbox.addItemListener((e) -> {
-            
-            ByteProcessor source;
-            Picture picture = sheet.getPicture();
-            System.out.println("Selected: " + e.getStateChange());
-
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                source = picture.getSource(SourceKey.GRAY);
-            } else {
-                source = picture.getSource(SourceKey.BINARY);
-            }
-
-            RunTableFactory vertFactory = new RunTableFactory(Orientation.VERTICAL);
-            RunTable wholeVertTable = vertFactory.createTable(source);
-            picture.setTable(Picture.TableKey.BINARY, wholeVertTable, false);
-
-        });
+        // CellConstraints cst = new CellConstraints();
         
-        JButton button = new JButton("Apply");
-        button.addActionListener((e) -> {
-            int value = globalFilterValue.getValue();
-            System.out.println(value);
-            sheet.getStub().getBinarizationFilterParam().setSpecific(
-                new GlobalDescriptor(value)
-            );
-            try {
-                OmrStep.BINARY.doit(sheet);
-            } catch (StepException e1) {
-                System.out.println("step exception thrown");
-            }
-        });
+        ButtonGroup imageButtonGroup = new ButtonGroup();
 
-        builder.add(checkbox, cst.xy(1, 1));
+        imageButtonGroup.add(adaptiveFilterRadioButton.getField());
+        imageButtonGroup.add(globalFilterRadioButton.getField());
 
-        builder.add(globalFilterValue.getLabel(), cst.xy(1, 3));
-        builder.add(globalFilterValue.getField(), cst.xy(3, 3));
+        int r = 1;
 
-        builder.add(button, cst.xy(1, 5));
+        builder.addRaw(adaptiveFilterRadioButton.getField()).xy(1, r);
+        builder.addRaw(adaptiveFilterRadioButton.getLabel()).xy(3, r);
 
+        r += 2;
 
+        builder.addRaw(globalFilterRadioButton.getField()).xy(1, r);
+        builder.addRaw(globalFilterRadioButton.getLabel()).xy(3, r);
 
-        
+        r += 2;
 
+        builder.addRaw(globalThresholdValue.getLabel()).xy(1, r);
+        builder.addRaw(globalThresholdValue.getField()).xy(3, r);
+
+        builder.addRaw(adaptiveMeanValue.getLabel()).xy(5, r);
+        builder.addRaw(adaptiveMeanValue.getField()).xy(7, r);
+
+        builder.addRaw(adaptiveStdDevValue.getLabel()).xy(9, r);
+        builder.addRaw(adaptiveStdDevValue.getField()).xy(11, r);
+
+        r += 2;
+
+        builder.addRaw(applyButton).xy(1, r);
 
 
     }
 
-    //---------------------//
-    // handleLocationEvent //
-    //---------------------//
-    /**
-     * Interest in LocationEvent
-     *
-     * @param sheetLocation location
-     */
-    protected void handleLocationEvent (LocationEvent sheetLocation)
-    {
-        // Display rectangle attributes
-        Rectangle rect = sheetLocation.getData();
 
-        if (rect != null) {
-            FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
-            ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.GRAY);
 
-            if (source != null) {
-                PixelFilter filter = desc.getFilter(source);
+    @Override
+    public void actionPerformed(ActionEvent e) {
 
-                if (filter == null) {
-                    filter = new RandomFilter(
-                            source,
-                            AdaptiveDescriptor.getDefaultMeanCoeff(),
-                            AdaptiveDescriptor.getDefaultStdDevCoeff());
-                }
+        if (e.getSource() == applyButton) {
 
-                PixelFilter.Context context = filter.getContext(rect.x, rect.y);
+            Picture picture = sheet.getPicture();
+            ByteProcessor source = picture.getSource(SourceKey.GRAY);
 
-                if (context != null) {
-                    if (context instanceof AdaptiveContext ctx) {
-                        mean.setValue(ctx.mean);
-                        stdDev.setValue(ctx.standardDeviation);
-                    } else {
-                        mean.setText("");
-                        stdDev.setText("");
-                    }
+            FilterParam filterParam = new FilterParam(this);
 
-                    threshold.setValue(context.threshold);
+            if (adaptiveFilterRadioButton.getField().isSelected()) {
+                double mean = adaptiveMeanValue.getValue();
+                double stdDev = adaptiveStdDevValue.getValue();
+                filterParam.setSpecific(new AdaptiveDescriptor(mean, stdDev));
 
-                    return;
-                }
-            } else {
-                logger.info("No GRAY source available");
+            } else if (globalFilterRadioButton.getField().isSelected()) {
+                int value = globalThresholdValue.getValue();
+                filterParam.setSpecific(new GlobalDescriptor(value));
             }
+                
+            sheet.getStub().setBinarizationFilterParam(filterParam);
+
+            PixelFilter filter = sheet.getStub().getBinarizationFilter().getFilter(source);
+            ByteProcessor filteredImage = filter.filteredImage();
+            
+            RunTableFactory vertFactory = new RunTableFactory(Orientation.VERTICAL);
+            RunTable wholeVertTable = vertFactory.createTable(filteredImage);
+            picture.setTable(Picture.TableKey.BINARY, wholeVertTable, true);
+
         }
 
-        mean.setText("");
-        stdDev.setText("");
-        threshold.setText("");
+        // else if (e.getSource() == adaptiveFilterRadioButton.getField()) {
+
+
+
+
+        //     Picture picture = sheet.getPicture();
+        //     ByteProcessor source = picture.getSource(SourceKey.GRAY);
+
+        //     System.out.println(source);
+            
+        //     RunTableFactory vertFactory = new RunTableFactory(Orientation.VERTICAL);
+        //     RunTable wholeVertTable = vertFactory.createTable(source);
+        //     picture.setTable(Picture.TableKey.BINARY, wholeVertTable, true);
+
+        //     applyButton.setEnabled(false);
+
+        // } else if (e.getSource() == globalFilterRadioButton.getField()) {
+
+        //     Picture picture = sheet.getPicture();
+        //     ByteProcessor source = picture.getSource(SourceKey.BINARY);
+            
+        //     RunTableFactory vertFactory = new RunTableFactory(Orientation.VERTICAL);
+        //     RunTable wholeVertTable = vertFactory.createTable(source);
+        //     picture.setTable(Picture.TableKey.BINARY, wholeVertTable, true);
+
+        //     applyButton.setEnabled(true);
+            
+        // }
+
+        sheet.getStub().getAssembly().getCurrentView().getComponent().repaint();
+
     }
+
+
+
 
     //---------//
     // onEvent //
@@ -241,19 +242,21 @@ public class BinarizationAdjustBoard
     @Override
     public void onEvent (UserEvent event)
     {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
+        // try {
+        //     // Ignore RELEASING
+        //     if (event.movement == MouseMovement.RELEASING) {
+        //         return;
+        //     }
 
-            logger.debug("BinarizationAdjustBoard: {}", event);
+        //     logger.debug("BinarizationAdjustBoard: {}", event);
 
-            if (event instanceof LocationEvent) {
-                handleLocationEvent((LocationEvent) event);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
+        //     if (event instanceof LocationEvent) {
+        //         handleLocationEvent((LocationEvent) event);
+        //     }
+        // } catch (Exception ex) {
+        //     logger.warn(getClass().getName() + " onEvent error", ex);
+        // }
     }
+
+
 }
