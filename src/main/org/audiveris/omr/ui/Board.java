@@ -100,7 +100,7 @@ public abstract class Board
 
     public static final Desc BINARIZATION = new Desc("Binarization", 150);
 
-    public static final Desc BINARIZATIONADJUST = new Desc("BinarizationAdjust", 250);
+    public static final Desc BINARIZATIONADJUST = new Desc("Adjust Binarization", 175);
 
     public static final Desc RUN = new Desc("Run", 200);
 
