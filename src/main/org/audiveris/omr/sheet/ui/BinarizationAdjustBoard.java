@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.image.AdaptiveDescriptor;
+import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.image.GlobalDescriptor;
 import org.audiveris.omr.step.BinaryStep;
@@ -82,6 +83,8 @@ public class BinarizationAdjustBoard
 
     private final JButton resetButton = new JButton("Reset");
 
+    private final JButton applyToBookButton = new JButton("Apply to all pages");
+
     private final LRadioButton globalFilterRadioButton = 
         new LRadioButton("Use global filter", "Converts to black and white by using one value for the entire image");
 
@@ -90,6 +93,8 @@ public class BinarizationAdjustBoard
             "Use adaptive filter (recommended)", 
             "Converts a pixel to black and white by looking at its surrounding pixels"
         );
+
+    private FilterDescriptor previousFilter;
     
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -111,38 +116,26 @@ public class BinarizationAdjustBoard
                 false);
 
         this.sheet = sheet;
+        previousFilter = sheet.getStub().getBinarizationFilter();
 
-        applyButton.addActionListener((e) -> changeFilterSettings());
+        applyButton.addActionListener(this);
         resetButton.addActionListener(this);
+        applyToBookButton.addActionListener(this);
 
         adaptiveFilterRadioButton.addActionListener(this);
         globalFilterRadioButton.addActionListener(this);
 
-        // Set initial values for input fields and which radio button is initially selected
-        if (sheet.getStub().getBinarizationFilter() instanceof AdaptiveDescriptor ad) {
+        // Add components to this board
+        defineLayout();
 
-            adaptiveMeanValue.setValue(ad.meanCoeff);
-            adaptiveStdDevValue.setValue(ad.stdDevCoeff);
-            adaptiveFilterRadioButton.getField().setSelected(true);
-
-            globalThresholdValue.setValue(GlobalDescriptor.getDefaultThreshold());
-
-        } else if (sheet.getStub().getBinarizationFilter() instanceof GlobalDescriptor gd) {
-
-            globalThresholdValue.setValue(gd.threshold);
-            globalFilterRadioButton.getField().setSelected(true);
-
-            adaptiveMeanValue.setValue(AdaptiveDescriptor.getDefaultMeanCoeff());
-            adaptiveStdDevValue.setValue(AdaptiveDescriptor.getDefaultStdDevCoeff());
-
-        }
+        initiatizeInputValues();
 
         ButtonGroup imageButtonGroup = new ButtonGroup();
         imageButtonGroup.add(adaptiveFilterRadioButton.getField());
         imageButtonGroup.add(globalFilterRadioButton.getField());
 
         
-        defineLayout();
+        
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -157,7 +150,8 @@ public class BinarizationAdjustBoard
             "right:pref, 4dlu, left:pref, 4dlu, fill:pref, 4dlu, left:pref", 
             "4dlu, center:pref, 4dlu, center:pref, 4dlu, center:pref, 4dlu, center:pref, 4dlu");
 
-        layout.setColumnGroups(new int[][] {{1, 5}, {2, 6}, {3, 7}});
+        // layout.setColumnGroups(new int[][] {{1, 5}, {2, 6}, {3, 7}});
+        // layout.setColumnGroups(new int[][] {{2, 6}, {3, 7}});
         layout.setColumnSpec(1, new ColumnSpec(Sizes.dluX(32)));
         layout.setColumnSpec(2, new ColumnSpec(Sizes.dluX(4)));
 
@@ -187,11 +181,35 @@ public class BinarizationAdjustBoard
         r += 2;
 
         builder.addRaw(applyButton).xyw(1, r, 3);
-        builder.addRaw(resetButton).xyw(5, r, 3);
+        builder.addRaw(resetButton).xy(5, r);
+        builder.addRaw(applyToBookButton).xy(7, r);
 
-        // After adding all of the input fields, disable the ones we don't need
-        addAdaptiveFilterInput();
+    }
 
+    private void initiatizeInputValues() {
+        // Set initial values for input fields, set which radio button is initially 
+        // selected, and set which inputs are shown.
+        if (sheet.getStub().getBinarizationFilter() instanceof AdaptiveDescriptor ad) {
+
+            adaptiveMeanValue.setValue(ad.meanCoeff);
+            adaptiveStdDevValue.setValue(ad.stdDevCoeff);
+            adaptiveFilterRadioButton.getField().setSelected(true);
+
+            globalThresholdValue.setValue(GlobalDescriptor.getDefaultThreshold());
+
+            addAdaptiveFilterInput();
+
+        } else if (sheet.getStub().getBinarizationFilter() instanceof GlobalDescriptor gd) {
+
+            globalThresholdValue.setValue(gd.threshold);
+            globalFilterRadioButton.getField().setSelected(true);
+
+            adaptiveMeanValue.setValue(AdaptiveDescriptor.getDefaultMeanCoeff());
+            adaptiveStdDevValue.setValue(AdaptiveDescriptor.getDefaultStdDevCoeff());
+
+            addGlobalFilterInput();
+        
+        }
     }
 
 
@@ -220,9 +238,9 @@ public class BinarizationAdjustBoard
 
     }
 
-    private void changeFilterSettings() {
+    private FilterParam changeFilterSettings(Sheet sheetToFilter) {
 
-        FilterParam filterParam = new FilterParam(this);
+        FilterParam filterParam = new FilterParam(sheetToFilter);
 
         if (adaptiveFilterRadioButton.getField().isSelected()) {
             double mean = adaptiveMeanValue.getValue();
@@ -234,12 +252,37 @@ public class BinarizationAdjustBoard
             filterParam.setSpecific(new GlobalDescriptor(value));
         }
 
-        sheet.getStub().setBinarizationFilterParam(filterParam);
+        sheetToFilter.getStub().setBinarizationFilterParam(filterParam);
 
-        BinaryStep.runBinarizationFilter(sheet);
+        BinaryStep.runBinarizationFilter(sheetToFilter);
 
         // Force repaint of the SheetView
-        sheet.getStub().getAssembly().getCurrentView().getComponent().repaint();
+        sheetToFilter.getStub().getAssembly().getCurrentView().getComponent().repaint();
+
+        return filterParam;
+    }
+
+
+    @Override
+    public void connect() {
+        super.connect();
+
+        // Re-binarize image if the filter has changed
+        if (sheet.getStub().getBinarizationFilter() != previousFilter) {
+            initiatizeInputValues();
+            BinaryStep.runBinarizationFilter(sheet);
+            sheet.getStub().getAssembly().getCurrentView().getComponent().repaint();
+        }
+ 
+    }
+
+    @Override
+    public void disconnect() {
+        super.disconnect();
+
+        // Save a reference to this filter, in case it gets changed by 
+        // another sheet's BinarizationAdjustBoard later.
+        previousFilter = sheet.getStub().getBinarizationFilter();
     }
 
 
@@ -248,24 +291,31 @@ public class BinarizationAdjustBoard
     public void actionPerformed(ActionEvent e) {
 
         if (e.getSource() == applyButton) {
-            changeFilterSettings();
+            changeFilterSettings(sheet);
+        }
+
+        else if (e.getSource() == applyToBookButton) {
+            FilterParam filter = changeFilterSettings(sheet);
+            sheet.getStub().getBook().getStubs().forEach((stub) -> {
+                stub.setBinarizationFilterParam(filter);
+            });
         }
 
         else if (e.getSource() == resetButton) {
             adaptiveMeanValue.setValue(AdaptiveDescriptor.getDefaultMeanCoeff());
             adaptiveStdDevValue.setValue(AdaptiveDescriptor.getDefaultStdDevCoeff());
             globalThresholdValue.setValue(GlobalDescriptor.getDefaultThreshold());
-            changeFilterSettings();
+            changeFilterSettings(sheet);
         }
 
         else if (e.getSource() == adaptiveFilterRadioButton.getField()) {
             addAdaptiveFilterInput();
-            changeFilterSettings();
+            changeFilterSettings(sheet);
         } 
         
         else if (e.getSource() == globalFilterRadioButton.getField()) {
             addGlobalFilterInput();
-            changeFilterSettings();
+            changeFilterSettings(sheet);
         }
 
     }
