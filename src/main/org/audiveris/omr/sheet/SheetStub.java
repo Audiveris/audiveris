@@ -614,14 +614,6 @@ public class SheetStub
         return parameters.binarizationFilter;
     }
 
-    //----------------------------//
-    // setBinarizationFilterParam //
-    //----------------------------//
-    public void setBinarizationFilterParam (FilterParam filterParam)
-    {
-        parameters.binarizationFilter = filterParam;
-    }
-
     //---------//
     // getBook //
     //---------//
@@ -1452,6 +1444,17 @@ public class SheetStub
         } catch (Throwable ex) {
             logger.warn("Sheet#{} could not reset to gray {}", number, ex.toString(), ex);
         }
+    }
+
+    //----------------------------//
+    // setBinarizationFilterParam //
+    //----------------------------//
+    /**
+     * Set the binarization parameter for this sheet.
+     */
+    public void setBinarizationFilterParam (FilterParam filterParam)
+    {
+        parameters.binarizationFilter = filterParam;
     }
 
     //----------------//
