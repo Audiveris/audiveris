@@ -84,28 +84,12 @@ public class BinaryStep
     public void doit (Sheet sheet)
         throws StepException
     {
-        final StopWatch watch = new StopWatch("Binary step for " + sheet.getId());
-        watch.start("Getting initial source");
 
-        Picture picture = sheet.getPicture();
-        ByteProcessor initial = picture.getSource(SourceKey.GRAY);
-
-        FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
-        logger.debug("{}", "Binarization");
-
-        PixelFilter filter = desc.getFilter(initial);
-        watch.start("Binarize source");
-
-        ByteProcessor binary = filter.filteredImage();
-
-        watch.start("Create binary RunTable");
-
-        RunTableFactory vertFactory = new RunTableFactory(Orientation.VERTICAL);
-        RunTable wholeVertTable = vertFactory.createTable(binary);
-        picture.setTable(Picture.TableKey.BINARY, wholeVertTable, true);
+        // Run filtering process
+        runBinarizationFilter(sheet);
 
         // Dispose of GRAY source
-        picture.disposeSource(SourceKey.GRAY);
+        sheet.getPicture().disposeSource(SourceKey.GRAY);
 
         // Discard GRAY image from disk?
         final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
@@ -114,6 +98,39 @@ public class BinaryStep
         if (!keepGray) {
             sheet.getPicture().discardImage(Picture.ImageKey.GRAY);
         }
+
+    }
+
+    //-----------------------//
+    // runBinarizationFilter //
+    //-----------------------//
+
+    /**
+     * Filters a sheet using its selected binary filter.
+     * 
+     * @param sheet the sheet whose image will be filtered.
+      */
+    public static void runBinarizationFilter(final Sheet sheet) {
+        final StopWatch watch = new StopWatch("Binary step for " + sheet.getId());
+        watch.start("Getting initial source");
+        
+        Picture picture = sheet.getPicture();
+        ByteProcessor initial = picture.getSource(SourceKey.GRAY);
+
+        FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
+
+        logger.debug("{}", "Binarization");
+
+        PixelFilter filter = desc.getFilter(initial);
+        if (watch != null) watch.start("Binarize source");
+
+        ByteProcessor binary = filter.filteredImage();
+
+        if (watch != null) watch.start("Create binary RunTable");
+
+        RunTableFactory vertFactory = new RunTableFactory(Orientation.VERTICAL);
+        RunTable wholeVertTable = vertFactory.createTable(binary);
+        picture.setTable(Picture.TableKey.BINARY, wholeVertTable, true);
 
         if (constants.printWatch.isSet()) {
             watch.print();
