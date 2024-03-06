@@ -593,12 +593,16 @@ public class Sheet
 
                 // Display sheet binary
                 PictureView pictureView = new PictureView(this, tab);
+                BinarizationAdjustBoard baBoard = new BinarizationAdjustBoard(this);
+                baBoard.setSelected(true);
                 assembly.addViewTab(
                         tab,
                         pictureView,
-                        new BoardsPane(new PixelBoard(this), 
-                        new BinarizationBoard(this),
-                        new BinarizationAdjustBoard(this)));
+                        new BoardsPane(
+                            new PixelBoard(this), 
+                            new BinarizationBoard(this),
+                            baBoard
+                        ));
             } else {
                 assembly.selectViewTab(tab);
             }
@@ -631,7 +635,7 @@ public class Sheet
         stub.getAssembly().addViewTab(
                 SheetTab.GRAY_TAB,
                 pictureView,
-                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+                new BoardsPane(new PixelBoard(this), bb));
     }
 
     //----------------//

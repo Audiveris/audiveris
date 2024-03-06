@@ -53,10 +53,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 
 /**
- * Class <code>BinarizationAdjustBoard</code> allows users to quickly
+ * Class <code>BinarizationAdjustBoard</code> allows users to
  * adjust binarization settings and filters on the image.
  *
  * @author Mike Porter
@@ -79,43 +79,30 @@ public class BinarizationAdjustBoard
     private final Sheet sheet;
 
     private final LIntegerField globalThresholdValue = 
-        new LIntegerField("Threshold", "Gray threshold for pixels");
+        new LIntegerField("Threshold", "Gray threshold");
     
     private final LDoubleField adaptiveMeanValue = 
-        new LDoubleField("Mean", "Coefficient for mean value");
+        new LDoubleField("Mean", "Coefficient for mean value", "%.3f");
     
     private final LDoubleField adaptiveStdDevValue = 
-        new LDoubleField("Std Dev", "Coefficient for standard deviation value");
+        new LDoubleField("Std Dev", "Coefficient for standard deviation value", "%.3f");
 
     private final JButton applyButton = new JButton("Apply");
 
     private final LRadioButton globalFilterRadioButton = 
-        new LRadioButton("Use Global Filter", "Converts to black and white by a simply threshold value");
+        new LRadioButton("Use global filter", "Converts to black and white by a simple threshold value");
 
     private final LRadioButton adaptiveFilterRadioButton = 
         new LRadioButton(
-            "Use Adaptive Filter", 
+            "Use adaptive filter (recommended)", 
             "Converts to black and white by calculating the mean and standard deviation value of a group of pixels"
         );
-    
-    private final int inputRow = 5;
-
-    private final FormBuilder builder;
-
-    // Initialize the builder object
-    {
-        FormLayout layout = Panel.makeFormLayout(7, 7);
-        layout.setColumnGroups(new int[][] {{1, 5}, {2, 6}, {3, 7}});
-        layout.setColumnSpec(1, new ColumnSpec(Sizes.dluX(32)));
-        layout.setColumnSpec(2, new ColumnSpec(Sizes.dluX(4)));
-        builder = FormBuilder.create().layout(layout).panel(getBody());
-    }
     
 
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new BinarizationBoard object.
+     * Creates a new BinarizationAdjustBoard object.
      *
      * @param sheet related sheet
      */
@@ -134,31 +121,33 @@ public class BinarizationAdjustBoard
 
         applyButton.addActionListener(this);
 
-        adaptiveFilterRadioButton.getField().setActionCommand("showGray");
         adaptiveFilterRadioButton.addActionListener(this);
         adaptiveFilterRadioButton.getField().setSelected(true);
 
-        globalFilterRadioButton.getField().setActionCommand("showBinary");
         globalFilterRadioButton.addActionListener(this);
 
         // Set initial values for input fields
         if (sheet.getStub().getBinarizationFilter() instanceof AdaptiveDescriptor ad) {
+
             adaptiveMeanValue.setValue(ad.meanCoeff);
             adaptiveStdDevValue.setValue(ad.stdDevCoeff);
-        } else {
+
+            globalThresholdValue.setValue(GlobalDescriptor.getDefaultThreshold());
+
+        } else if (sheet.getStub().getBinarizationFilter() instanceof GlobalDescriptor gd) {
+
+            globalThresholdValue.setValue(gd.threshold);
+
             adaptiveMeanValue.setValue(AdaptiveDescriptor.getDefaultMeanCoeff());
             adaptiveStdDevValue.setValue(AdaptiveDescriptor.getDefaultStdDevCoeff());
-        }
-        
-        if (sheet.getStub().getBinarizationFilter() instanceof GlobalDescriptor gd) {
-            globalThresholdValue.setValue(gd.threshold);
-        } else {
-            globalThresholdValue.setValue(GlobalDescriptor.getDefaultThreshold());
+
         }
 
+        ButtonGroup imageButtonGroup = new ButtonGroup();
+        imageButtonGroup.add(adaptiveFilterRadioButton.getField());
+        imageButtonGroup.add(globalFilterRadioButton.getField());
+
         
-
-
         defineLayout();
     }
 
@@ -170,30 +159,25 @@ public class BinarizationAdjustBoard
     private void defineLayout ()
     {
 
-        ButtonGroup imageButtonGroup = new ButtonGroup();
+        final FormLayout layout = new FormLayout(
+            "right:pref, 4dlu, left:pref, 4dlu, fill:pref, 4dlu, left:pref", 
+            "4dlu, center:pref, 4dlu, center:pref, 4dlu, center:pref, 4dlu, center:pref, 4dlu");
 
-        imageButtonGroup.add(adaptiveFilterRadioButton.getField());
-        imageButtonGroup.add(globalFilterRadioButton.getField());
+        layout.setColumnGroups(new int[][] {{1, 5}, {2, 6}, {3, 7}});
+        layout.setColumnSpec(1, new ColumnSpec(Sizes.dluX(32)));
+        layout.setColumnSpec(2, new ColumnSpec(Sizes.dluX(4)));
 
-
-        // FormLayout layout = Panel.makeFormLayout(7, 7);
-  
-        // PanelBuilder builder = new PanelBuilder(layout, getBody());
-
-        ///builder.setDefaultDialogBorder();
-        // CellConstraints cst = new CellConstraints();
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
         
-        
-
-        int r = 1;
+        int r = 2;
 
         builder.addRaw(adaptiveFilterRadioButton.getField()).xy(1, r, "r, c");
-        builder.addRaw(adaptiveFilterRadioButton.getLabel()).xyw(3, r, 6, "l, c");
+        builder.addRaw(adaptiveFilterRadioButton.getLabel()).xyw(3, r, 5, "l, c");
 
         r += 2;
 
         builder.addRaw(globalFilterRadioButton.getField()).xy(1, r, "r, c");
-        builder.addRaw(globalFilterRadioButton.getLabel()).xyw(3, r, 6, "l, c");
+        builder.addRaw(globalFilterRadioButton.getLabel()).xyw(3, r, 5, "l, c");
 
         r += 2;
 
@@ -210,7 +194,7 @@ public class BinarizationAdjustBoard
 
         builder.addRaw(applyButton).xyw(1, r, 3);
 
-        // Having added all of the input fields, we then disable some of them
+        // After adding all of the input fields, disable the ones we don't need
         addAdaptiveFilterInput();
 
     }
@@ -280,22 +264,17 @@ public class BinarizationAdjustBoard
 
         else if (e.getSource() == adaptiveFilterRadioButton.getField()) {
 
-            System.out.println("adaptive checked");
             addAdaptiveFilterInput();
             changeFilterSettings();
 
         } else if (e.getSource() == globalFilterRadioButton.getField()) {
 
-            System.out.println("global checked");
             addGlobalFilterInput();
             changeFilterSettings();
             
         }
 
-        
-
     }
-
 
 
 
@@ -303,10 +282,6 @@ public class BinarizationAdjustBoard
     // onEvent //
     //---------//
     @Override
-    public void onEvent (UserEvent event)
-    {
-
-    }
-
+    public void onEvent (UserEvent event) {}
 
 }
