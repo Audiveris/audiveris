@@ -1446,17 +1446,6 @@ public class SheetStub
         }
     }
 
-    //----------------------------//
-    // setBinarizationFilterParam //
-    //----------------------------//
-    /**
-     * Set the binarization parameter for this sheet.
-     */
-    public void setBinarizationFilterParam (FilterParam filterParam)
-    {
-        parameters.binarizationFilter = filterParam;
-    }
-
     //----------------//
     // setCurrentStep //
     //----------------//
