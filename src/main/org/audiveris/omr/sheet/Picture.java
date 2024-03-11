@@ -533,6 +533,10 @@ public class Picture
                 // Try to reload image from book input path
                 SheetStub stub = sheet.getStub();
                 gray = stub.getBook().loadSheetImage(stub.getNumber());
+
+                // If file at input path no longer exists, return null
+                if (gray == null) return null;
+                
                 gray = adjustImageFormat(gray);
                 setImage(ImageKey.GRAY, gray, false);
             } catch (ImageFormatException ex) {
@@ -630,9 +634,11 @@ public class Picture
     /**
      * Report the desired source.
      * If the source is not yet cached, build the source and store it in cache via weak reference.
+     * Users are encouraged to check if the gray source exists (!= null) before using it. An .OMR
+     * file which contains an invalid path to the source file may cause the gray source to be null.
      *
      * @param key the key of desired source
-     * @return the source ready to use
+     * @return the source ready to use, or null if not available
      */
     public ByteProcessor getSource (SourceKey key)
     {
