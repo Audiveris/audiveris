@@ -27,9 +27,11 @@ import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.image.GlobalDescriptor;
 import org.audiveris.omr.step.BinaryStep;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Picture.SourceKey;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.field.LIntegerField;
+import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.field.LRadioButton;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.UserEvent;
@@ -103,6 +105,9 @@ public class BinarizationAdjustBoard
 
     /** Reference to the last filter used on this board.  */
     private FilterDescriptor previousFilter;
+
+    /** Equal to false if this sheet has no gray source image to binarize. */
+    private boolean noGraySource;
     
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -123,8 +128,10 @@ public class BinarizationAdjustBoard
                 false,
                 false);
 
+
         this.sheet = sheet;
         previousFilter = sheet.getStub().getBinarizationFilter();
+        noGraySource = sheet.getPicture().getSource(SourceKey.GRAY) == null;
 
         applyButton.addActionListener(this);
         resetButton.addActionListener(this);
@@ -138,13 +145,30 @@ public class BinarizationAdjustBoard
         imageButtonGroup.add(adaptiveFilterRadioButton.getField());
         imageButtonGroup.add(globalFilterRadioButton.getField());
 
-        defineLayout();
-
         initiatizeInputValues();
+
+        defineLayout();
         
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    private void disableBoard() {
+
+        adaptiveFilterRadioButton.setEnabled(false);
+        globalFilterRadioButton.setEnabled(false);
+        adaptiveMeanValue.setEnabled(false);
+        adaptiveStdDevValue.setEnabled(false);
+        globalThresholdValue.setEnabled(false);
+        applyButton.setEnabled(false);
+        resetButton.setEnabled(false);
+        applyToBookButton.setEnabled(false);
+
+    }
+
+
+
+
 
     //--------------//
     // defineLayout //
@@ -157,8 +181,19 @@ public class BinarizationAdjustBoard
             "4dlu, center:pref, 4dlu, center:pref, 4dlu, center:pref, 4dlu, center:pref, 4dlu");
 
         final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
-        
+
         int r = 2;
+
+        // Add a message if no gray source if available
+        if (noGraySource) {
+            builder.appendRows("center:pref, 4dlu");
+            builder.addRaw(new LLabel("No source image available!", "No source image found for binarization").getLabel())
+                .xyw(1, r, 6);
+            
+            disableBoard();
+
+            r += 2;
+        }
 
         builder.addRaw(adaptiveFilterRadioButton.getField()).xy(1, r, "r, c");
         builder.addRaw(adaptiveFilterRadioButton.getLabel()).xyw(3, r, 5, "l, c");
@@ -184,6 +219,8 @@ public class BinarizationAdjustBoard
         builder.addRaw(applyButton).xyw(1, r, 3);
         builder.addRaw(resetButton).xy(5, r);
         builder.addRaw(applyToBookButton).xy(7, r);
+
+
 
     }
 
@@ -292,7 +329,8 @@ public class BinarizationAdjustBoard
         BinaryStep.runBinarizationFilter(sheetToFilter);
 
         // Force repaint of the SheetView
-        sheetToFilter.getStub().getAssembly().getCurrentView().getComponent().repaint();
+        SheetView sheetView = sheetToFilter.getStub().getAssembly().getCurrentView();
+        if (sheetView != null) sheetView.getComponent().repaint();
 
     }
 
@@ -309,7 +347,9 @@ public class BinarizationAdjustBoard
         super.connect();
 
         // Re-binarize image if the filter has changed
-        if (sheet.getStub().getBinarizationFilter() != previousFilter) {
+        if (sheet.getPicture().getSource(SourceKey.GRAY) != null &&
+            sheet.getStub().getBinarizationFilter() != previousFilter
+        ) {
             initiatizeInputValues();
             runBinarizationFilter(sheet);
         }
