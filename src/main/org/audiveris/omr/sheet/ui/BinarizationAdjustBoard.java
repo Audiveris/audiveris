@@ -153,22 +153,52 @@ public class BinarizationAdjustBoard
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    private void disableBoard() {
+    //---------------------//
+    // applyFilterSettings //
+    //---------------------//
+    /** 
+     * Pulls the filter values from the input fields and sets
+     * a new FilterDescriptor for this sheet based on those values.
+     * 
+     * @param sheetToFilter the sheet to apply the current values to.
+     */
+    private void applyFilterSettings(Sheet sheetToFilter) {
 
-        adaptiveFilterRadioButton.setEnabled(false);
-        globalFilterRadioButton.setEnabled(false);
-        adaptiveMeanValue.setEnabled(false);
-        adaptiveStdDevValue.setEnabled(false);
-        globalThresholdValue.setEnabled(false);
-        applyButton.setEnabled(false);
-        resetButton.setEnabled(false);
-        applyToBookButton.setEnabled(false);
+        FilterParam filterParam = sheetToFilter.getStub().getBinarizationFilterParam();
+
+        if (adaptiveFilterRadioButton.getField().isSelected()) {
+            double mean = adaptiveMeanValue.getValue();
+            double stdDev = adaptiveStdDevValue.getValue();
+            filterParam.setSpecific(new AdaptiveDescriptor(mean, stdDev));
+
+        } else if (globalFilterRadioButton.getField().isSelected()) {
+            int value = globalThresholdValue.getValue();
+            filterParam.setSpecific(new GlobalDescriptor(value));
+        }
 
     }
 
+    //---------//
+    // connect //
+    //---------//
+    /** 
+     * Calls parent method, then checks for whether the binarization filter settings
+     * have changed since the board was last disconnected. If so, it runs
+     * binarization with the values from the sheet.
+     */
+    @Override
+    public void connect() {
+        super.connect();
 
-
-
+        // Re-binarize image if the filter has changed
+        if (sheet.getPicture().getSource(SourceKey.GRAY) != null &&
+            sheet.getStub().getBinarizationFilter() != previousFilter
+        ) {
+            initiatizeInputValues();
+            runBinarizationFilter(sheet);
+        }
+ 
+    }
 
     //--------------//
     // defineLayout //
@@ -220,8 +250,42 @@ public class BinarizationAdjustBoard
         builder.addRaw(resetButton).xy(5, r);
         builder.addRaw(applyToBookButton).xy(7, r);
 
+    }
 
+    //--------------//
+    // disableBoard //
+    //--------------//
+    /** 
+     * Disables this board.
+     * 
+     */
+    private void disableBoard() {
 
+        adaptiveFilterRadioButton.setEnabled(false);
+        globalFilterRadioButton.setEnabled(false);
+        adaptiveMeanValue.setEnabled(false);
+        adaptiveStdDevValue.setEnabled(false);
+        globalThresholdValue.setEnabled(false);
+        applyButton.setEnabled(false);
+        resetButton.setEnabled(false);
+        applyToBookButton.setEnabled(false);
+
+    }
+
+    //------------//
+    // disconnect //
+    //------------//
+    /** 
+     * Calls parent method, then saves a reference to the current sheet's
+     * binarization filter settings (FilterDescriptor).
+     */
+    @Override
+    public void disconnect() {
+        super.disconnect();
+
+        // Save a reference to this filter, in case it gets changed by 
+        // another sheet's BinarizationAdjustBoard later.
+        previousFilter = sheet.getStub().getBinarizationFilter();
     }
 
     //-----------------------//
@@ -256,20 +320,20 @@ public class BinarizationAdjustBoard
     }
 
     //-----------------------//
-    // showGlobalFilterInput //
+    // runBinarizationFilter //
     //-----------------------//
     /** 
-     * Makes global filter inputs visible.
+     * Runs binarization on a sheet.
+     * 
+     * @param sheetToFilter the sheet to run binarization on.
      */
-    private void showGlobalFilterInput() {
-   
-        adaptiveMeanValue.getLabel().setVisible(false);
-        adaptiveMeanValue.getField().setVisible(false);
-        adaptiveStdDevValue.getLabel().setVisible(false);
-        adaptiveStdDevValue.getField().setVisible(false);
+    private void runBinarizationFilter(Sheet sheetToFilter) {
 
-        globalThresholdValue.getLabel().setVisible(true);
-        globalThresholdValue.getField().setVisible(true);
+        BinaryStep.runBinarizationFilter(sheetToFilter);
+
+        // Force repaint of the SheetView
+        SheetView sheetView = sheetToFilter.getStub().getAssembly().getCurrentView();
+        if (sheetView != null) sheetView.getComponent().repaint();
 
     }
 
@@ -291,85 +355,22 @@ public class BinarizationAdjustBoard
 
     }
 
-    //---------------------//
-    // applyFilterSettings //
-    //---------------------//
-    /** 
-     * Pulls the filter values from the input fields and sets
-     * a new FilterDescriptor for this sheet based on those values.
-     * 
-     * @param sheetToFilter the sheet to apply the current values to.
-     */
-    private void applyFilterSettings(Sheet sheetToFilter) {
-
-        FilterParam filterParam = sheetToFilter.getStub().getBinarizationFilterParam();
-
-        if (adaptiveFilterRadioButton.getField().isSelected()) {
-            double mean = adaptiveMeanValue.getValue();
-            double stdDev = adaptiveStdDevValue.getValue();
-            filterParam.setSpecific(new AdaptiveDescriptor(mean, stdDev));
-
-        } else if (globalFilterRadioButton.getField().isSelected()) {
-            int value = globalThresholdValue.getValue();
-            filterParam.setSpecific(new GlobalDescriptor(value));
-        }
-
-    }
-
     //-----------------------//
-    // runBinarizationFilter //
+    // showGlobalFilterInput //
     //-----------------------//
     /** 
-     * Runs binarization on a sheet.
-     * 
-     * @param sheetToFilter the sheet to run binarization on.
+     * Makes global filter inputs visible.
      */
-    private void runBinarizationFilter(Sheet sheetToFilter) {
+    private void showGlobalFilterInput() {
+   
+        adaptiveMeanValue.getLabel().setVisible(false);
+        adaptiveMeanValue.getField().setVisible(false);
+        adaptiveStdDevValue.getLabel().setVisible(false);
+        adaptiveStdDevValue.getField().setVisible(false);
 
-        BinaryStep.runBinarizationFilter(sheetToFilter);
+        globalThresholdValue.getLabel().setVisible(true);
+        globalThresholdValue.getField().setVisible(true);
 
-        // Force repaint of the SheetView
-        SheetView sheetView = sheetToFilter.getStub().getAssembly().getCurrentView();
-        if (sheetView != null) sheetView.getComponent().repaint();
-
-    }
-
-    //---------//
-    // connect //
-    //---------//
-    /** 
-     * Calls parent method, then checks for whether the binarization filter settings
-     * have changed since the board was last disconnected. If so, it runs
-     * binarization with the values from the sheet.
-     */
-    @Override
-    public void connect() {
-        super.connect();
-
-        // Re-binarize image if the filter has changed
-        if (sheet.getPicture().getSource(SourceKey.GRAY) != null &&
-            sheet.getStub().getBinarizationFilter() != previousFilter
-        ) {
-            initiatizeInputValues();
-            runBinarizationFilter(sheet);
-        }
- 
-    }
-
-    //------------//
-    // disconnect //
-    //------------//
-    /** 
-     * Calls parent method, then saves a reference to the current sheet's
-     * binarization filter settings (FilterDescriptor).
-     */
-    @Override
-    public void disconnect() {
-        super.disconnect();
-
-        // Save a reference to this filter, in case it gets changed by 
-        // another sheet's BinarizationAdjustBoard later.
-        previousFilter = sheet.getStub().getBinarizationFilter();
     }
 
     //-----------------//
@@ -418,7 +419,6 @@ public class BinarizationAdjustBoard
         }
 
     }
-
 
 
     //---------//
