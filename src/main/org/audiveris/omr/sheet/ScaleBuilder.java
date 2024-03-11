@@ -489,7 +489,7 @@ public class ScaleBuilder
                 "Maximum ratio between beam height and interline");
 
         private final Constant.Ratio beamMinCountRatio = new Constant.Ratio(
-                0.007,
+                0.01,
                 "Minimum ratio of runs for beam height measurement (quorum)");
 
         private final Constant.Ratio beamRangeRatio = new Constant.Ratio(

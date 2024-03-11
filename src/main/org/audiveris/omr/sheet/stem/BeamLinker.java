@@ -644,7 +644,7 @@ public class BeamLinker
     /**
      * Purge the collection of seeds, by filtering out those leading to duplicates.
      *
-     * @param seeds the collection to purge (already sorted in abscissa)
+     * @param seeds the collection to purge (already sorted on abscissa)
      */
     private void purgeSeeds (List<Glyph> seeds)
     {

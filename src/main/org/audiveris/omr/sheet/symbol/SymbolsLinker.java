@@ -187,7 +187,7 @@ public class SymbolsLinker
             // If part of a beam group, focus only on the right-most small chord
             final BeamGroupInter beamGroup = smallChord.getBeamGroup();
             if (beamGroup != null) {
-                final List<AbstractChordInter> siblings = beamGroup.getAllChords();
+                final List<AbstractChordInter> siblings = beamGroup.getChords();
                 if (!siblings.isEmpty() && (smallChord != siblings.get(siblings.size() - 1))) {
                     continue;
                 }

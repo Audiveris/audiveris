@@ -301,9 +301,9 @@ public abstract class AbstractBeamInter
     // getChords //
     //-----------//
     /**
-     * Report the chords that are linked by this beam.
+     * Report the chords (head-chords and interleaved rest-chords) that are linked by this beam.
      *
-     * @return the linked chords (head-chords and interleaved rest-chords)
+     * @return the linked chords (heads and rests) ordered by center abscissa
      */
     public List<AbstractChordInter> getChords ()
     {
@@ -386,6 +386,29 @@ public abstract class AbstractBeamInter
         }
 
         return beamHeads;
+    }
+
+    //---------------//
+    // getHeadChords //
+    //---------------//
+    /**
+     * Report just the head chords (no interleaved rest-chords) that are linked by this beam.
+     *
+     * @return the linked head chords (no rests) ordered by center abscissa
+     */
+    public List<AbstractChordInter> getHeadChords ()
+    {
+        final Set<AbstractChordInter> headChords = new LinkedHashSet<>();
+
+        // Linked head-chords
+        for (StemInter stem : getStems()) {
+            headChords.addAll(stem.getChords());
+        }
+
+        final List<AbstractChordInter> chordList = new ArrayList<>(headChords);
+        Collections.sort(chordList, Inters.byCenterAbscissa);
+
+        return chordList;
     }
 
     //-----------//
@@ -508,13 +531,13 @@ public abstract class AbstractBeamInter
     // getStems //
     //----------//
     /**
-     * Report the stems connected to this beam.
+     * Report the stems linked to this beam.
      *
-     * @return the set of connected stems, perhaps empty
+     * @return the set of linked stems, perhaps empty
      */
     public Set<StemInter> getStems ()
     {
-        Set<StemInter> stems = new LinkedHashSet<>();
+        final Set<StemInter> stems = new LinkedHashSet<>();
 
         for (Relation bs : sig.getRelations(this, BeamStemRelation.class)) {
             StemInter stem = (StemInter) sig.getOppositeInter(this, bs);
@@ -522,6 +545,56 @@ public abstract class AbstractBeamInter
         }
 
         return stems;
+    }
+
+    //------------------//
+    // getConcreteStems //
+    //------------------//
+    /**
+     * Report the stems physically connected to this beam.
+     *
+     * @return the set of physically connected stems, perhaps empty
+     */
+    public Set<StemInter> getConcreteStems ()
+    {
+        final Scale scale = sig.getSystem().getSheet().getScale();
+        final int maxGap = scale.toPixels(constants.maxBeamStemYGap);
+        final Set<StemInter> concreteStems = new LinkedHashSet<>();
+        final Set<StemInter> stems = getStems();
+
+        for (StemInter stem : stems) {
+            final double gap = getStemVerticalGap(stem);
+            if (gap <= maxGap) {
+                concreteStems.add(stem);
+            }
+        }
+
+        return concreteStems;
+    }
+
+    //--------------------//
+    // getStemVerticalGap //
+    //--------------------//
+    /**
+     * Report the vertical gap between this beam and the provided stem.
+     *
+     * @param stem the stem to check
+     * @return the vertical distance, perhaps 0, between stem and the nearest beam border
+     */
+    public double getStemVerticalGap (StemInter stem)
+    {
+        final Line2D stemLine = stem.getMedian();
+        final double beamMiddle = LineUtil.intersection(stemLine, median).getY();
+
+        if (stemLine.getY1() <= beamMiddle) {
+            // Stem is above or across beam
+            final double beamTop = LineUtil.intersection(stemLine, getBorder(TOP)).getY();
+            return Math.max(0, beamTop - stemLine.getY2());
+        } else {
+            // Stem is below or across beam
+            final double beamBottom = LineUtil.intersection(stemLine, getBorder(BOTTOM)).getY();
+            return Math.max(0, stemLine.getY1() - beamBottom);
+        }
     }
 
     //----------//
@@ -950,10 +1023,13 @@ public abstract class AbstractBeamInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Fraction minBeamWidth = new Fraction(
                 0.5,
                 "Minimum width for a beam or beam hook");
+
+        private final Fraction maxBeamStemYGap = new Fraction(
+                0.25,
+                "Maximum vertical gap between beam and stem");
     }
 
     //--------//

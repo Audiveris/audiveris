@@ -81,10 +81,9 @@ public abstract class AbstractChordInter
     private static final Logger logger = LoggerFactory.getLogger(AbstractChordInter.class);
 
     /** For comparing chords by head location ordinate. */
-    public static final Comparator<AbstractChordInter> byHeadOrdinate = (c1,
-                                                                         c2) -> Integer.compare(
-                                                                                 c1.getHeadLocation().y,
-                                                                                 c2.getHeadLocation().y);
+    public static final Comparator<AbstractChordInter> byHeadOrdinate = //
+            (c1,
+             c2) -> Integer.compare(c1.getHeadLocation().y, c2.getHeadLocation().y);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -356,8 +355,7 @@ public abstract class AbstractChordInter
                     Collections.sort(
                             beams,
                             (AbstractBeamInter b1,
-                             AbstractBeamInter b2) ->
-                            {
+                             AbstractBeamInter b2) -> {
                                 int x = getCenter().x;
                                 double y1 = LineUtil.yAtX(b1.getMedian(), x);
                                 double y2 = LineUtil.yAtX(b2.getMedian(), x);
@@ -1195,8 +1193,8 @@ public abstract class AbstractChordInter
         if (group != null) {
             AbstractChordInter prevChord = null;
 
-            // Reminder: group.getAllChords() report head chords plus interleaved rest chords if any
-            for (AbstractChordInter chord : group.getAllChords()) {
+            // Reminder: group.getChords() report head-chords plus interleaved rest-chords if any
+            for (AbstractChordInter chord : group.getChords()) {
                 if (prevChord != null) {
                     try {
                         if (measure == chord.measure) {

@@ -404,7 +404,7 @@ public class SymbolsBuilder
                 "Maximum number of evaluations kept for a symbol");
 
         private final Scale.Fraction maxGap = new Scale.Fraction(
-                0.7,
+                0.8,
                 "Maximum distance between two compound parts");
 
         private final Scale.AreaFraction minWeight = new Scale.AreaFraction(

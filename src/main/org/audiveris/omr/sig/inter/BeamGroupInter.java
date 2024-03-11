@@ -29,6 +29,7 @@ import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.grid.LineInfo;
@@ -59,9 +60,12 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
+import static java.util.stream.Collectors.toList;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -72,7 +76,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 /**
  * Class <code>BeamGroupInter</code> represents a group of related beams.
  * <p>
- * Within a group, beams are rather parallel and with no large vertical gap.
+ * Within a group:
+ * <ul>
+ * <li>All beams are rather parallel and with no large vertical gap.
+ * <li>Any couple of beams that overlap in abscissa must have at least one concrete stem in common.
+ * </ul>
  * <p>
  * It is an <code>InterEnsemble</code> linked via <code>Containment</code> relations to its Beam
  * members.
@@ -178,14 +186,13 @@ public class BeamGroupInter
             // Get the collection of questionable beams WRT chord
             List<AbstractBeamInter> questionableBeams = new ArrayList<>();
 
-            for (Inter bInter : getMembers()) {
-                final AbstractBeamInter beam = (AbstractBeamInter) bInter;
+            for (AbstractBeamInter beam : getBeams()) {
                 // Skip beam hooks
                 // Skip beams attached to this chord
                 // Skip beams with no abscissa overlap WRT this chord
-                if (!beam.isHook() && !beam.getChords().contains(chord) && (GeoUtil.xOverlap(
-                        beam.getBounds(),
-                        chordBox) > 0)) {
+                if (!beam.isHook() //
+                        && !beam.getChords().contains(chord) //
+                        && (GeoUtil.xOverlap(beam.getBounds(), chordBox) > 0)) {
                     // Check vertical gap
                     int lineY = (int) Math.rint(LineUtil.yAtX(beam.getMedian(), tail.x));
                     int yOverlap = Math.min(lineY, chordBox.y + chordBox.height) - Math.max(
@@ -234,6 +241,22 @@ public class BeamGroupInter
         }
 
         return null; // everything is OK
+    }
+
+    //-----------------//
+    // checkMultiStaff //
+    //-----------------//
+    /**
+     * Check whether this beam group encompasses several staves.
+     *
+     * @return true if so
+     */
+    private boolean checkMultiStaff ()
+    {
+        final Set<Staff> staves = new HashSet<>();
+        getChords().forEach(chord -> staves.addAll(chord.getStaves()));
+
+        return staves.size() > 1;
     }
 
     //------------------------//
@@ -308,38 +331,17 @@ public class BeamGroupInter
         }
     }
 
-    //--------------//
-    // getAllChords //
-    //--------------//
+    //----------//
+    // getBeams //
+    //----------//
     /**
-     * Report the x-ordered collection of chords that are grouped by this beam group,
-     * including the interleaved rests if any.
+     * Similar to getMembers(), but return a list of AbstractBeamInter instances.
      *
-     * @return the (perhaps empty) collection of 'beamed' head chords and interleaved rest chords.
-     * @see #getChords()
+     * @return the members as beams
      */
-    public List<AbstractChordInter> getAllChords ()
+    public List<AbstractBeamInter> getBeams ()
     {
-        // Start with beamed head chords
-        final List<AbstractChordInter> allChords = getChords();
-
-        // Add interleaved rests
-        for (Inter member : getMembers()) {
-            final AbstractBeamInter beam = (AbstractBeamInter) member;
-
-            for (Relation rel : sig.getRelations(member, BeamRestRelation.class)) {
-                final RestInter rest = (RestInter) sig.getOppositeInter(beam, rel);
-                final RestChordInter restChord = rest.getChord();
-
-                if (!allChords.contains(restChord)) {
-                    allChords.add(restChord);
-                }
-            }
-        }
-
-        Collections.sort(allChords, Inters.byAbscissa);
-
-        return allChords;
+        return getMembers().stream().map(inter -> (AbstractBeamInter) inter).collect(toList());
     }
 
     //-----------//
@@ -361,28 +363,20 @@ public class BeamGroupInter
     /**
      * Report the x-ordered collection of chords that are grouped by this beam group.
      * <p>
-     * NOTA: This does NOT include any interleaved rest chord, only the really 'beamed' head chords.
+     * This includes the interleaved rest chords as well as the head chords.
      *
-     * @return the (perhaps empty) collection of 'beamed' chords.
+     * @return the (perhaps empty) collection of chords.
      * @see #getAllChords()
      */
     public List<AbstractChordInter> getChords ()
     {
-        final List<AbstractChordInter> chords = new ArrayList<>();
+        final Set<AbstractChordInter> chords = new LinkedHashSet<>();
+        getBeams().forEach(beam -> chords.addAll(beam.getChords()));
 
-        for (Inter bInter : getMembers()) {
-            final AbstractBeamInter beam = (AbstractBeamInter) bInter;
+        final List<AbstractChordInter> chordList = new ArrayList<>(chords);
+        Collections.sort(chordList, Inters.byAbscissa);
 
-            for (AbstractChordInter chord : beam.getChords()) {
-                if (!chords.contains(chord)) {
-                    chords.add(chord);
-                }
-            }
-        }
-
-        Collections.sort(chords, Inters.byAbscissa);
-
-        return chords;
+        return chordList;
     }
 
     //--------------------//
@@ -521,8 +515,7 @@ public class BeamGroupInter
         Line2D mainMedian = null;
         double mainWidth = Double.MIN_VALUE;
 
-        for (Inter bInter : getMembers()) {
-            final AbstractBeamInter beam = (AbstractBeamInter) bInter;
+        for (AbstractBeamInter beam : getBeams()) {
             final Line2D median = beam.getMedian();
             final double width = median.getX2() - median.getX1();
 
@@ -547,8 +540,7 @@ public class BeamGroupInter
     {
         final Set<Measure> measureSet = new LinkedHashSet<>();
 
-        for (Inter member : getMembers()) {
-            final AbstractBeamInter beam = (AbstractBeamInter) member;
+        for (AbstractBeamInter beam : getBeams()) {
             for (AbstractChordInter chord : beam.getChords()) {
                 measureSet.add(chord.getMeasure());
             }
@@ -591,9 +583,9 @@ public class BeamGroupInter
         BeamInter bestBeam = null;
         double bestDist = Double.MAX_VALUE;
 
-        for (Inter member : getMembers()) {
-            if (member instanceof BeamInter) {
-                final BeamInter beam = (BeamInter) member;
+        for (AbstractBeamInter beam : getBeams()) {
+            // Full beam only
+            if (beam instanceof BeamInter) {
                 final Line2D median = beam.getMedian();
                 final Point2D cross = LineUtil.intersection(median, vertical);
 
@@ -601,7 +593,7 @@ public class BeamGroupInter
                     final double dist = PointUtil.length(PointUtil.subtraction(pt, cross));
 
                     if ((bestBeam == null) || (dist < bestDist)) {
-                        bestBeam = beam;
+                        bestBeam = (BeamInter) beam;
                         bestDist = dist;
                     }
                 }
@@ -658,7 +650,7 @@ public class BeamGroupInter
     @Override
     public Voice getVoice ()
     {
-        AbstractChordInter ch = getFirstChord();
+        final AbstractChordInter ch = getFirstChord();
 
         return (ch != null) ? ch.getVoice() : null;
     }
@@ -917,11 +909,51 @@ public class BeamGroupInter
     public void setVoice (Voice voice)
     {
         // Propagate voice to the beamed chords, including the interleaved rests if any
-        for (AbstractChordInter chord : getAllChords()) {
+        for (AbstractChordInter chord : getChords()) {
             if (chord.getMeasure() == voice.getMeasure()) {
                 chord.setVoice(voice);
             }
         }
+    }
+
+    //-------------------//
+    // sortedBeamsAround //
+    //-------------------//
+    /**
+     * Report the beams that overlap abscissa-wise the provided beam, sorted by ordinate.
+     *
+     * @return the sibling (including the provided beam), sorted by abscissa
+     */
+    private List<AbstractBeamInter> sortedBeamsAround (AbstractBeamInter beam)
+    {
+        final Line2D median = beam.getMedian();
+        final Skew skew = sig.getSystem().getSheet().getSkew();
+        final double x1 = skew.deskewed(median.getP1()).getX();
+        final double x2 = skew.deskewed(median.getP2()).getX();
+        final double x = (x1 + x2) / 2;
+
+        final List<AbstractBeamInter> beams = new ArrayList<>();
+        getBeams().forEach(b -> {
+            if (b == beam) {
+                beams.add(b);
+            } else {
+                // Check abscissa overlap
+                final double left = Math.max(x1, skew.deskewed(b.getMedian().getP1()).getX());
+                final double right = Math.min(x2, skew.deskewed(b.getMedian().getP2()).getX());
+                if (right > left) {
+                    beams.add(b);
+                }
+            }
+        });
+
+        Collections.sort(
+                beams,
+                (b1,
+                 b2) -> Double.compare(
+                         LineUtil.yAtX(b1.getMedian(), x),
+                         LineUtil.yAtX(b2.getMedian(), x)));
+
+        return beams;
     }
 
     //-------//
@@ -929,7 +961,7 @@ public class BeamGroupInter
     //-------//
     private void split (AbstractChordInter alienChord)
     {
-        new Splitter(alienChord).process();
+        new SplitterOnChord(alienChord).process();
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
@@ -1061,6 +1093,43 @@ public class BeamGroupInter
         return false;
     }
 
+    //-----------------//
+    // checkBeamGroups //
+    //-----------------//
+    /**
+     * Check all the BeamGroupInter instances of the given system, to detect false groups.
+     * <ul>
+     * <li>Being a multi-staff group? (but during the REDUCTION step, chords are not yet available)
+     * <li>At least a couple of overlapping sibling beams with no concrete stem in common
+     * </ul>
+     *
+     * @param system the system to check
+     */
+    public static void checkBeamGroups (SystemInfo system)
+    {
+        for (Inter groupInter : system.getSig().inters(BeamGroupInter.class)) {
+            final BeamGroupInter group = (BeamGroupInter) groupInter;
+
+            if (group.isVip()) {
+                logger.info("VIP checkBeamGroups for {}", group);
+            }
+
+            for (AbstractBeamInter beam : group.getBeams()) {
+                final List<AbstractBeamInter> siblings = group.sortedBeamsAround(beam);
+                final int idx = siblings.indexOf(beam);
+
+                if (idx > 0) {
+                    final AbstractBeamInter prev = siblings.get(idx - 1);
+                    final Set<StemInter> commonStems = getCommonStems(prev, beam);
+                    if (commonStems.isEmpty()) {
+                        logger.info("Separating beams {} and {}", prev, beam);
+                        group.new SplitterOnSpace(siblings, idx).process();
+                    }
+                }
+            }
+        }
+    }
+
     //----------------------------//
     // checkSystemForOldBeamGroup //
     //----------------------------//
@@ -1112,9 +1181,7 @@ public class BeamGroupInter
         for (Inter inter : groups) {
             final BeamGroupInter group = (BeamGroupInter) inter;
 
-            for (Inter member : group.getMembers()) {
-                final AbstractBeamInter b = (AbstractBeamInter) member;
-
+            for (AbstractBeamInter b : group.getBeams()) {
                 if (canBeNeighbors(beam, b, minXOverlap, maxYDistance, maxSlopeDiff)) {
                     return group;
                 }
@@ -1122,6 +1189,25 @@ public class BeamGroupInter
         }
 
         return null;
+    }
+
+    //----------------//
+    // getCommonStems //
+    //----------------//
+    /**
+     * Report the set of concrete stems in common between the provided beams.
+     *
+     * @param one a beam
+     * @param two another beam
+     * @return the set of (concrete) stems in common
+     */
+    private static Set<StemInter> getCommonStems (AbstractBeamInter one,
+                                                  AbstractBeamInter two)
+    {
+        final Set<StemInter> common = one.getConcreteStems();
+        final Set<StemInter> twoConcretes = two.getConcreteStems();
+        common.retainAll(twoConcretes);
+        return common;
     }
 
     //-----------------//
@@ -1344,7 +1430,22 @@ public class BeamGroupInter
      * Utility class meant to perform a split on this group.
      * This group is shrunk, because some of its beams are moved to a new (alien) group.
      */
-    private class Splitter
+    private abstract class Splitter
+    {
+
+        /** The new alien group. */
+        protected BeamGroupInter alienGroup;
+
+    }
+
+    //-----------------//
+    // SplitterOnChord //
+    //-----------------//
+    /**
+     * Split based on a common chord0
+     */
+    private class SplitterOnChord
+            extends Splitter
     {
 
         /** Chord detected as belonging to a (new) alien group. */
@@ -1356,9 +1457,6 @@ public class BeamGroupInter
          */
         private List<Inter> alienBeams;
 
-        /** The new alien group. */
-        private BeamGroupInter alienGroup;
-
         /** The chord that embraces both (old) group and (new) alien group. */
         private HeadChordInter pivotChord;
 
@@ -1367,14 +1465,11 @@ public class BeamGroupInter
          *
          * @param alienChord a detected chord that should belong to a separate group
          */
-        Splitter (AbstractChordInter alienChord)
+        SplitterOnChord (AbstractChordInter alienChord)
         {
             this.alienChord = alienChord;
         }
 
-        //------------------//
-        // createAlienGroup //
-        //------------------//
         private BeamGroupInter createAlienGroup ()
         {
             alienGroup = new BeamGroupInter();
@@ -1393,9 +1488,6 @@ public class BeamGroupInter
             return alienGroup;
         }
 
-        //------------------//
-        // detectPivotChord //
-        //------------------//
         /**
          * Look through the chords on the alienGroup to detect the one which is shared
          * by both this group and the alienGroup.
@@ -1411,9 +1503,6 @@ public class BeamGroupInter
             return (HeadChordInter) commons.get(0);
         }
 
-        //------------------//
-        // dispatchAllBeams //
-        //------------------//
         /**
          * Inspect all remaining beams in (old) group, and move to the (new) alien group
          * the ones which are connected to alien beams (except through the pivotChord).
@@ -1422,9 +1511,7 @@ public class BeamGroupInter
         {
             List<AbstractBeamInter> pivotBeams = pivotChord.getBeams();
             AllLoop:
-            for (Inter bInter : new ArrayList<>(getMembers())) {
-                final AbstractBeamInter beam = (AbstractBeamInter) bInter;
-
+            for (AbstractBeamInter beam : getBeams()) {
                 // If beam is attached to pivotChord, skip it
                 if (pivotBeams.contains(beam)) {
                     continue;
@@ -1443,9 +1530,6 @@ public class BeamGroupInter
             }
         }
 
-        //--------------------//
-        // dispatchPivotBeams //
-        //--------------------//
         /**
          * Inspect the beams connected to pivotChord, and move to the (new) alien group
          * those which fall on the alienSide of the pivotChord.
@@ -1499,9 +1583,6 @@ public class BeamGroupInter
             }
         }
 
-        //------------------//
-        // extractShortStem //
-        //------------------//
         private StemInter extractShortStem (AbstractChordInter chord,
                                             int yStop)
         {
@@ -1515,9 +1596,6 @@ public class BeamGroupInter
             return rootStem.extractSubStem(yStart, yStop);
         }
 
-        //---------//
-        // process //
-        //---------//
         /**
          * Actually split the group in two, around the detected pivot chord.
          * <p>
@@ -1545,9 +1623,6 @@ public class BeamGroupInter
             splitChord();
         }
 
-        //------------//
-        // splitChord //
-        //------------//
         /**
          * Split the chord which embraces the two beam groups.
          * <p>
@@ -1633,6 +1708,100 @@ public class BeamGroupInter
             pivotChord.invalidateCache();
 
             pivotChord.getMeasure().getStack().addInter(shortChord);
+        }
+    }
+
+    //-----------------//
+    // SplitterOnSpace //
+    //-----------------//
+    /**
+     * Split based on a space (no stem) between consecutive beams.
+     */
+    private class SplitterOnSpace
+            extends Splitter
+    {
+
+        final List<AbstractBeamInter> siblings;
+
+        final int alienIdx;
+
+        /**
+         * Create a splitter for this BeamGroupInter, triggered by two beams.
+         *
+         * @param siblings a top down list of siblings (NOTA: limited to abscissa overlapping)
+         * @param alienIdx index of alien beam in the siblings
+         */
+        SplitterOnSpace (List<AbstractBeamInter> siblings,
+                         int alienIdx)
+        {
+            this.siblings = siblings;
+            this.alienIdx = alienIdx;
+        }
+
+        public void process ()
+        {
+            final AbstractBeamInter upperBeam = siblings.get(alienIdx - 1);
+            final AbstractBeamInter lowerBeam = siblings.get(alienIdx);
+
+            // Create and populate the new (alien) group
+            sig.addVertex(alienGroup = new BeamGroupInter());
+            siblings.subList(alienIdx, siblings.size()).forEach(
+                    beam -> beam.switchToGroup(alienGroup));
+
+            // Remove the beam-stem relations across the two groups
+            final Set<StemInter> lowerStems = lowerBeam.getConcreteStems();
+            lowerStems.forEach(stem -> sig.removeEdge(upperBeam, stem));
+
+            final Set<StemInter> upperStems = upperBeam.getConcreteStems();
+            upperStems.forEach(stem -> sig.removeEdge(lowerBeam, stem));
+
+            // Assign the beams not contained in the siblings
+            getBeams().stream() //
+                    .filter(b -> !siblings.contains(b)) //
+                    .filter(b -> isAlien(b)) //
+                    .peek(b -> b.switchToGroup(alienGroup));
+
+            // Remove the beam-beam relations across the two groups
+            BeamGroupInter.this.getBeams().forEach(b1 -> {
+                alienGroup.getBeams().forEach(b2 -> {
+                    sig.removeEdge(b1, b2);
+                    sig.removeEdge(b2, b1);
+                });
+            });
+        }
+
+        /**
+         * Transitively browse the beam-stem-beam relations until we hit a sibling beam.
+         *
+         * @param root the starting beam
+         * @return true if the reached sibling is part of the alien group
+         */
+        private boolean isAlien (AbstractBeamInter root)
+        {
+            final List<AbstractBeamInter> linkedBeams = new ArrayList<>();
+            linkedBeams.add(root);
+
+            for (ListIterator<AbstractBeamInter> it = linkedBeams.listIterator(); it.hasNext();) {
+                final AbstractBeamInter beam = it.next();
+
+                for (StemInter stem : beam.getStems()) {
+                    final Set<AbstractBeamInter> directBeams = stem.getBeams();
+                    directBeams.removeAll(linkedBeams);
+
+                    for (AbstractBeamInter direct : directBeams) {
+                        final int idx = siblings.indexOf(direct);
+
+                        if (idx != -1) {
+                            // We have reached a sibling beam
+                            return idx >= alienIdx;
+                        }
+
+                        it.add(direct); // Another beam to browse from
+                    }
+                }
+            }
+
+            return false; // To keep the compiler happy
         }
     }
 }

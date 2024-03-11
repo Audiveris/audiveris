@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigReducer;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 
@@ -76,6 +77,11 @@ public class ReductionStep
                              Void context)
         throws StepException
     {
+        // Detect false BeamGroup's
+        for (SystemInfo system : sheet.getSystems()) {
+            BeamGroupInter.checkBeamGroups(system);
+        }
+
         // Measure typical length of stem free portion
         final List<Integer> lengths = new ArrayList<>();
 
@@ -172,7 +178,7 @@ public class ReductionStep
                 "Should we refine every stem head end at terminating head anchor?");
 
         private final Constant.Boolean refineStemTailEnd = new Constant.Boolean(
-                true,
+                false,
                 "Should we refine every stem tail end at last beam?");
     }
 }

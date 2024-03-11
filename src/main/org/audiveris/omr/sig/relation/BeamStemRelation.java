@@ -173,7 +173,7 @@ public class BeamStemRelation
     //----------------//
     /**
      * A stem connected on beam side receives a much higher support that a stem connected
-     * on beam center.
+     * on beam center portion.
      *
      * @return support coefficient for connected stem
      */

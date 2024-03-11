@@ -76,8 +76,7 @@ public abstract class Voices
 
     /** To sort voices by vertical position within their containing measure or stack. */
     public static final Comparator<Voice> byOrdinate = (Voice v1,
-                                                        Voice v2) ->
-    {
+                                                        Voice v2) -> {
         if (v1.getMeasure().getStack() != v2.getMeasure().getStack()) {
             throw new IllegalArgumentException("Comparing voices in different stacks");
         }
@@ -450,7 +449,7 @@ public abstract class Voices
                             if ((beamGroup != null) && beamGroup.getMeasures().contains(
                                     prevMeasure)) {
                                 AbstractChordInter prevCh = null;
-                                for (AbstractChordInter ch : beamGroup.getAllChords()) {
+                                for (AbstractChordInter ch : beamGroup.getChords()) {
                                     if (prevCh != null && ch == ch2) {
                                         if (voice.getId() != prevCh.getVoice().getId()) {
                                             measure.swapVoiceId(voice, prevCh.getVoice().getId());

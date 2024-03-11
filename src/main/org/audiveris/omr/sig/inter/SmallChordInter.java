@@ -115,7 +115,7 @@ public class SmallChordInter
         // If grouped via a beam, only the righ-most cue chord is linked to a standard chord
         final BeamGroupInter beamGroup = getBeamGroup();
         if (beamGroup != null) {
-            final List<AbstractChordInter> siblings = beamGroup.getAllChords();
+            final List<AbstractChordInter> siblings = beamGroup.getChords();
             lastChord = siblings.get(siblings.size() - 1);
         }
 

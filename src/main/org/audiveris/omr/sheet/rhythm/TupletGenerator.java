@@ -353,7 +353,7 @@ public class TupletGenerator
             BeamGroupInter bg = chord.getBeamGroup();
 
             if (bg != null) {
-                for (AbstractChordInter c : bg.getAllChords()) {
+                for (AbstractChordInter c : bg.getChords()) {
                     if (!extGroup.contains(c)) {
                         extGroup.add(c);
                     }
