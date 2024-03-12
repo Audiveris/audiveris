@@ -215,7 +215,7 @@ public class BinarizationAdjustBoard
     {
 
         final FormLayout layout = new FormLayout(
-            "right:pref, 4dlu, left:pref, 4dlu, fill:pref, 4dlu, left:pref", 
+            "right:32dlu, 4dlu, left:pref, 4dlu, fill:pref, 4dlu, left:pref", 
             "4dlu, center:pref, 4dlu, center:pref, 4dlu, center:pref, 4dlu, center:pref, 4dlu");
 
         final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
