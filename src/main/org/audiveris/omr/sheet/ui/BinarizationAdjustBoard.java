@@ -33,6 +33,7 @@ import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.field.LIntegerField;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.field.LRadioButton;
+import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.UserEvent;
 
 import org.slf4j.Logger;
@@ -41,15 +42,19 @@ import org.slf4j.LoggerFactory;
 import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.NoSuchElementException;
 
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * Class <code>BinarizationAdjustBoard</code> allows users to
@@ -140,6 +145,18 @@ public class BinarizationAdjustBoard
         resetButton.addActionListener(this);
         applyToAllSheetsButton.addActionListener(this);
 
+        adaptiveMeanValue.getField().getDocument().addDocumentListener(
+            new LFieldValidater(adaptiveMeanValue, AdaptiveDescriptor.MINMEAN, AdaptiveDescriptor.MAXMEAN)
+        );
+
+        adaptiveStdDevValue.getField().getDocument().addDocumentListener(
+            new LFieldValidater(adaptiveStdDevValue, AdaptiveDescriptor.MINSTDDEV, AdaptiveDescriptor.MAXSTDDEV)
+        );
+
+        globalThresholdValue.getField().getDocument().addDocumentListener(
+            new LFieldValidater(globalThresholdValue, GlobalDescriptor.MINTHRESHOLD, GlobalDescriptor.MAXTHRESHOLD)
+        );
+
         adaptiveFilterRadioButton.addActionListener(this);
         globalFilterRadioButton.addActionListener(this);
 
@@ -175,16 +192,38 @@ public class BinarizationAdjustBoard
 
         FilterParam filterParam = sheetToFilter.getStub().getBinarizationFilterParam();
 
-        if (adaptiveFilterRadioButton.getField().isSelected()) {
-            double mean = adaptiveMeanValue.getValue();
-            double stdDev = adaptiveStdDevValue.getValue();
-            filterParam.setSpecific(new AdaptiveDescriptor(mean, stdDev));
+        try {
+            if (adaptiveFilterRadioButton.getField().isSelected()) {
 
-        } else if (globalFilterRadioButton.getField().isSelected()) {
-            int value = globalThresholdValue.getValue();
-            filterParam.setSpecific(new GlobalDescriptor(value));
+                double mean = adaptiveMeanValue.getValue();
+                double stdDev = adaptiveStdDevValue.getValue();
+
+                if (mean < AdaptiveDescriptor.MINMEAN || mean > AdaptiveDescriptor.MAXMEAN) {
+                    mean = Math.max(Math.min(mean, AdaptiveDescriptor.MAXMEAN), AdaptiveDescriptor.MINMEAN);
+                    adaptiveMeanValue.setValue(mean);
+                }
+
+                if (mean < AdaptiveDescriptor.MINMEAN || mean > AdaptiveDescriptor.MAXMEAN) {
+                    stdDev = Math.max(Math.min(stdDev, AdaptiveDescriptor.MAXSTDDEV), AdaptiveDescriptor.MINSTDDEV);
+                    adaptiveStdDevValue.setValue(stdDev);
+                }
+
+                filterParam.setSpecific(new AdaptiveDescriptor(mean, stdDev));
+    
+            } else if (globalFilterRadioButton.getField().isSelected()) {
+
+                int threshold = globalThresholdValue.getValue();
+
+                if (threshold < AdaptiveDescriptor.MINMEAN || threshold > AdaptiveDescriptor.MAXMEAN) {
+                    threshold = Math.max(Math.min(threshold, GlobalDescriptor.MAXTHRESHOLD), GlobalDescriptor.MINTHRESHOLD);
+                    globalThresholdValue.setValue(threshold);
+                }
+
+                filterParam.setSpecific(new GlobalDescriptor(threshold));
+            }
+        } catch (Exception ex) {
+            // Do nothing For invalid input
         }
-
     }
 
     //---------//
@@ -433,10 +472,79 @@ public class BinarizationAdjustBoard
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
+    /** Check the value of an LTextField, and if it is not a valid number
+     * within the specified range, turn the background red to inform the user.
+     */
+    private class LFieldValidater
+        implements DocumentListener
+    {
+        
+        public double MIN;
+
+        public double MAX;
+
+        public LTextField field;
+
+        public boolean wasValid = true;
+
+        public LFieldValidater(LTextField field, double min, double max) {
+            this.MIN = min;
+            this.MAX = max;
+            this.field = field;
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+
+            boolean currentlyValid = true;
+
+            try {
+
+                double value = Double.parseDouble(field.getText().trim());
+
+                if (value < MIN || value > MAX) {
+                    field.getField().setBackground(new Color(0xFCA5A5));
+                } else {
+                    field.getField().setBackground(Color.WHITE);
+                }
+
+            } catch (NumberFormatException | NoSuchElementException ex) {
+                field.getField().setBackground(new Color(0xFCA5A5));
+                currentlyValid = false;
+
+
+
+            }
+
+            // If there has been a change in validity
+            if (wasValid != currentlyValid) {
+
+                applyButton.setEnabled(currentlyValid);
+                applyToAllSheetsButton.setEnabled(currentlyValid);
+
+            }
+
+            wasValid = currentlyValid;
+
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            insertUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {}
+        
+    }
+
+
+
+
     private class ParamAction
             extends AbstractAction
     {
-        // Method run whenever user presses Return/Enter in one of the parameter fields
+        // Method runs whenever user presses Return/Enter in one of the parameter fields
         @Override
         public void actionPerformed (ActionEvent e)
         {
