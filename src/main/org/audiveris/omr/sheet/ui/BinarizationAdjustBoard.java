@@ -48,12 +48,8 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.util.NoSuchElementException;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -63,10 +59,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.xml.bind.JAXBElement.GlobalScope;
 
 /**
  * Class <code>BinarizationAdjustBoard</code> allows users to
@@ -117,7 +111,7 @@ public class BinarizationAdjustBoard
     private final JButton resetButton = new JButton("Reset");
 
     /** Apply to all pages button.  */
-    private final JButton applyToAllSheetsButton = new JButton("Apply to whole book");
+    private final JButton applyToWholeBook = new JButton("Apply to whole book");
 
     /** Checkbox for overwritting sheets */
     private final LCheckBox overwriteCheckbox = new LCheckBox("Overwrite sheets?", "When applying to the whole book, overwrite individual sheets' binarization settings");
@@ -133,10 +127,6 @@ public class BinarizationAdjustBoard
     
     /** True if this sheet is part of a book with multiple sheets */
     private boolean isMultiSheetBook;
-
-    private LFieldValidater adaptiveMeanValidator;
-    private LFieldValidater adaptiveStdDevValidator;
-    private LFieldValidater globalThresholdValidator;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -165,15 +155,17 @@ public class BinarizationAdjustBoard
 
         applyButton.addActionListener(this);
         resetButton.addActionListener(this);
-        applyToAllSheetsButton.addActionListener(this);
+        applyToWholeBook.addActionListener(this);
 
-        adaptiveMeanValidator = new LFieldValidater(adaptiveMeanValue, AdaptiveDescriptor.MINMEAN, AdaptiveDescriptor.MAXMEAN);
-        adaptiveStdDevValidator = new LFieldValidater(adaptiveStdDevValue, AdaptiveDescriptor.MINSTDDEV, AdaptiveDescriptor.MAXSTDDEV);
-        globalThresholdValidator = new LFieldValidater(globalThresholdValue, GlobalDescriptor.MINTHRESHOLD, GlobalDescriptor.MAXTHRESHOLD);
-
-        adaptiveMeanValue.getField().getDocument().addDocumentListener(adaptiveMeanValidator);
-        adaptiveStdDevValue.getField().getDocument().addDocumentListener(adaptiveStdDevValidator);
-        globalThresholdValue.getField().getDocument().addDocumentListener(globalThresholdValidator);
+        adaptiveMeanValue.getField().getDocument().addDocumentListener(
+            new LFieldValidater(adaptiveMeanValue, AdaptiveDescriptor.MINMEAN, AdaptiveDescriptor.MAXMEAN)
+        );
+        adaptiveStdDevValue.getField().getDocument().addDocumentListener(
+            new LFieldValidater(adaptiveStdDevValue, AdaptiveDescriptor.MINSTDDEV, AdaptiveDescriptor.MAXSTDDEV)
+        );
+        globalThresholdValue.getField().getDocument().addDocumentListener(
+            new LFieldValidater(globalThresholdValue, GlobalDescriptor.MINTHRESHOLD, GlobalDescriptor.MAXTHRESHOLD)
+        );
 
         adaptiveFilterRadioButton.addActionListener(this);
         globalFilterRadioButton.addActionListener(this);
@@ -183,7 +175,7 @@ public class BinarizationAdjustBoard
         imageButtonGroup.add(adaptiveFilterRadioButton.getField());
         imageButtonGroup.add(globalFilterRadioButton.getField());
 
-                // Needed to process user input when RETURN/ENTER is pressed
+        // Needed to process user input when RETURN/ENTER is pressed
         getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                 KeyStroke.getKeyStroke("ENTER"),
                 "ParamAction");
@@ -342,8 +334,8 @@ public class BinarizationAdjustBoard
     
             JPanel buttonRow2 = new JPanel(new FlowLayout(FlowLayout.LEADING, 8, 0));
             buttonRow2.setBorder(BorderFactory.createEmptyBorder(0, 0, 8, 0));
-            applyToAllSheetsButton.setPreferredSize(new Dimension(168, buttonHeight));
-            buttonRow2.add(applyToAllSheetsButton);
+            applyToWholeBook.setPreferredSize(new Dimension(168, buttonHeight));
+            buttonRow2.add(applyToWholeBook);
     
             JPanel overwritePanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 3, 0));
             overwritePanel.add(overwriteCheckbox.getField());
@@ -425,21 +417,28 @@ public class BinarizationAdjustBoard
         }
     }
 
+    //----------------//
+    // inputIsInRange //
+    //----------------//
+    /**
+     * Tests whether the input in a field is within the range of min and max.
+     * 
+     * @param field the field to test.
+     * @param min the minimum valid value.
+     * @param max the maximum valid value.
+     * @return true if this field's number is within min and max.
+      */
+    private boolean inputIsInRange(LTextField field, double min, double max) {
 
-    private boolean inputIsValid(LTextField field, double min, double max) {
         try {
 
             double value = Double.parseDouble(field.getText().trim());
-
-            if (value < min || value > max) {
-                return false;
-            }
-
-        } catch (NumberFormatException | NoSuchElementException ex) {
+            return value > min && value < max;
+            
+        } catch (NumberFormatException e) {
             return false;
         }
 
-        return true;
     }
 
     //-----------------------//
@@ -503,22 +502,17 @@ public class BinarizationAdjustBoard
             applyAndRunFilter();
         }
 
-        else if (e.getSource() == applyToAllSheetsButton) {
-
-            FilterParam desc = sheet.getStub().getBook().getBinarizationParam();
-
-            // Erase every sheet's specific binarization setting
+        else if (e.getSource() == applyToWholeBook) {
+            
+            // Optionally erase every sheet's specific binarization setting
             if (overwriteCheckbox.getField().isSelected()) {
-
                 sheet.getStub().getBook().getStubs().forEach((stub) -> {
                     stub.getBinarizationFilterParam().setSpecific(null);
-                    // applyFilterSettings(stub.getBinarizationFilterParam());
                 });
-
             }
 
             // Apply current filter settings to this book's FilterParam
-            applyFilterSettings(desc);
+            applyFilterSettings(sheet.getStub().getBook().getBinarizationParam());
 
             // Run binarization for this sheet only
             runBinarizationFilter(sheet);
@@ -595,7 +589,7 @@ public class BinarizationAdjustBoard
         @Override
         public void insertUpdate(DocumentEvent e) {
 
-            boolean currentlyValid = inputIsValid(field, MIN, MAX);
+            boolean currentlyValid = inputIsInRange(field, MIN, MAX);
 
             // If there has been a change in validity
             if (wasValid != currentlyValid) {
