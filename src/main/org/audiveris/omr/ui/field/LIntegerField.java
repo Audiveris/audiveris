@@ -21,6 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.ui.field;
 
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
+
 /**
  * Class <code>LIntegerField</code> is an {@link LTextField}, whose field is meant to handle
  * an integer value.
@@ -44,6 +51,7 @@ public class LIntegerField
                           String tip)
     {
         super(editable, label, tip);
+        setFilter();
     }
 
     /**
@@ -60,6 +68,7 @@ public class LIntegerField
                           int width)
     {
         super(editable, label, tip, width);
+        setFilter();
     }
 
     /**
@@ -72,6 +81,7 @@ public class LIntegerField
                           String tip)
     {
         super(true, label, tip);
+        setFilter();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -80,10 +90,9 @@ public class LIntegerField
     // getValue //
     //----------//
     /**
-     * Extract the current integer value form the text field
+     * Extract the current integer value form the text field.
      *
      * @return current integer value (a blank field is assumed to mean 0)
-     * @throws NumberFormatException if the field syntax is incorrect
      */
     public int getValue ()
     {
@@ -94,6 +103,17 @@ public class LIntegerField
         } else {
             return Integer.parseInt(str);
         }
+    }
+
+    //-----------//
+    // setFilter //
+    //-----------//
+    /**
+     * Adds the filter to the input field's document.
+     */
+    private void setFilter() {
+        AbstractDocument doc = (AbstractDocument) getField().getDocument();
+        doc.setDocumentFilter(new IntFilter());
     }
 
     //----------//
@@ -108,4 +128,54 @@ public class LIntegerField
     {
         getField().setText(Integer.toString(val));
     }
+
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    /** 
+     * Intercepts input in the LIntegerField and disallows input that would
+     * result in an invalid int.
+     */
+    private class IntFilter extends DocumentFilter
+    {
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
+            throws BadLocationException {
+
+            Document doc = fb.getDocument();
+            StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
+            sb.insert(offset, string);
+
+            if (test(sb.toString())) {
+                super.insertString(fb, offset, string, attr);
+            }
+
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+          throws BadLocationException {
+
+            Document doc = fb.getDocument();
+            StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
+            sb.replace(offset, offset + length, text);
+
+            if (test(sb.toString())) {
+                super.replace(fb, offset, length, text, attrs);
+            }
+            
+        }
+
+        private boolean test(String text) {
+
+            try {
+                Integer.parseInt(text);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+
+        }
+    }
+
 }

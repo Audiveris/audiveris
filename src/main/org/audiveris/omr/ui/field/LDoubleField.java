@@ -23,6 +23,12 @@ package org.audiveris.omr.ui.field;
 
 import java.util.Scanner;
 
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
+
 /**
  * Class <code>LDoubleField</code> is an {@link LTextField}, whose field is meant to handle
  * a double value.
@@ -56,6 +62,7 @@ public class LDoubleField
                          String tip)
     {
         this(editable, label, tip, null);
+        setFilter();
     }
 
     /**
@@ -73,6 +80,7 @@ public class LDoubleField
     {
         super(editable, label, tip);
         this.format = format;
+        setFilter();
     }
 
     /**
@@ -86,6 +94,7 @@ public class LDoubleField
                          String tip)
     {
         this(label, tip, null);
+        setFilter();
     }
 
     /**
@@ -101,6 +110,7 @@ public class LDoubleField
                          String format)
     {
         this(true, label, tip, format);
+        setFilter();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -109,14 +119,24 @@ public class LDoubleField
     // getValue //
     //----------//
     /**
-     * Extract the double value from the field (more precisely, the first
-     * value found in the text of the field ...)
+     * Extract the double value from the field.
      *
      * @return the value as double
      */
     public double getValue ()
     {
-        return new Scanner(getText()).nextDouble();
+        return Double.parseDouble(getText());
+    }
+
+    //-----------//
+    // setFilter //
+    //-----------//
+    /**
+     * Adds the filter to the input field's document.
+     */
+    private void setFilter() {
+        AbstractDocument doc = (AbstractDocument) getField().getDocument();
+        doc.setDocumentFilter(new DoubleFilter());
     }
 
     //----------//
@@ -145,5 +165,54 @@ public class LDoubleField
                           String format)
     {
         getField().setText(String.format(format, val));
+    }
+
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    /** 
+     * Intercepts input in the LDoubleField and disallows input that would
+     * result in an invalid double.
+     */
+    private class DoubleFilter extends DocumentFilter
+    {
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
+            throws BadLocationException {
+
+            Document doc = fb.getDocument();
+            StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
+            sb.insert(offset, string);
+
+            if (test(sb.toString())) {
+                super.insertString(fb, offset, string, attr);
+            }
+
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+          throws BadLocationException {
+
+            Document doc = fb.getDocument();
+            StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
+            sb.replace(offset, offset + length, text);
+
+            if (test(sb.toString())) {
+                super.replace(fb, offset, length, text, attrs);
+            }
+            
+        }
+
+        private boolean test(String text) {
+
+            try {
+                Double.parseDouble(text);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+
+        }
     }
 }
