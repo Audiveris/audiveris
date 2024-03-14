@@ -119,13 +119,19 @@ public class LDoubleField
     // getValue //
     //----------//
     /**
-     * Extract the double value from the field.
+     * Extract the double value from the field (a blank field is assumed to mean 0.0).
      *
      * @return the value as double
      */
     public double getValue ()
     {
-        return Double.parseDouble(getText());
+        String str = getField().getText().trim();
+
+        if (str.length() == 0) {
+            return 0.0;
+        } else {
+            return Double.parseDouble(str);
+        }
     }
 
     //-----------//
@@ -134,7 +140,7 @@ public class LDoubleField
     /**
      * Adds the filter to the input field's document.
      */
-    private void setFilter() {
+    private void setFilter () {
         AbstractDocument doc = (AbstractDocument) getField().getDocument();
         doc.setDocumentFilter(new DoubleFilter());
     }

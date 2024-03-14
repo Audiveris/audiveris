@@ -92,7 +92,7 @@ public class LIntegerField
     /**
      * Extract the current integer value form the text field.
      *
-     * @return current integer value (a blank field is assumed to mean 0)
+     * @return current integer value (a blank field is assumed to mean 0).
      */
     public int getValue ()
     {
@@ -111,7 +111,7 @@ public class LIntegerField
     /**
      * Adds the filter to the input field's document.
      */
-    private void setFilter() {
+    private void setFilter () {
         AbstractDocument doc = (AbstractDocument) getField().getDocument();
         doc.setDocumentFilter(new IntFilter());
     }
