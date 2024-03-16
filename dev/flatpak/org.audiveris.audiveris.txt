@@ -5,7 +5,6 @@
 # - GRADLE_ZIP:     gradle-8.5-all.zip
 # - GRADLE_SHA256:  bfcdff0229a801e5efd43d312cffb1b0aa24574b4a2f1beed1c751fadbcd44da
 # - TAG:            5.4-alpha
-# - COMMIT:         cc503edf8d5f5c875d14aadceb474ce8f6c2f74f
 # ----
 
 app-id: org.audiveris.audiveris
@@ -70,7 +69,6 @@ modules:
       - type: git
         url: https://github.com/Audiveris/audiveris
         tag: ${TAG}
-        commit: ${COMMIT}
       - type: file
         url: https://services.gradle.org/distributions/${GRADLE_ZIP}
         sha256: ${GRADLE_SHA256}

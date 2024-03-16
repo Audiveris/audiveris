@@ -38,8 +38,6 @@ ext.programVersion  = "$project.version"
 ext.companyName     = "$programName Ltd."
 ext.companyId       = "${programName}Ltd"
 
-ext.programBuildFull = null
-
 /* Name of host OS */
 ext.hostOSName   = System.getProperty('os.name').toLowerCase()\
                      .startsWith('mac os x') ? 'macosx' :\
@@ -338,16 +336,6 @@ task(printTemplates, dependsOn: 'classes', type: JavaExec) {
     }
 }
 
-// Retrieve the full hash for the latest commit from Git
-task "git_build_full"(type:Exec) {
-    commandLine "git rev-parse HEAD".split(' ')
-    standardOutput = new ByteArrayOutputStream()
-
-    doLast {
-        project.ext.programBuildFull = standardOutput.toString().replaceAll('\n', '')
-    }
-}
-
 // Deleting generated files in dev/flathub
 task cleanFlathub(type: Delete) {
     description("Clean dev/flathub")
@@ -361,6 +349,7 @@ task cleanFlathub(type: Delete) {
 // Configuring the flatpakGradleGenerator plugin task
 tasks.flatpakGradleGenerator {
     description("Collect all dependencies for Flatpak")
+    dependsOn('cleanFlathub')
     outputFile = file('dev/flathub/dependencies.json')
     downloadDirectory = './dependencies'
 }
@@ -369,18 +358,17 @@ tasks.flatpakGradleGenerator {
 // NOTA: if we update GRADLE_ZIP, we must update GRADLE_SHA256 as well
 task genFlatpakManifest() {
     description("Generate manifest from template")
-    dependsOn("git_build_full")
+    dependsOn('cleanFlathub')
 
     doLast {
-        println "programBuildFull: ${project.ext.programBuildFull}"
+        println "Generating Flatpak manifest"
         copy {
             from('dev/flatpak/org.audiveris.audiveris.txt') {
                 def binding = [:]
                 binding.OPEN_JDK        = "openjdk$minJavaVersion"
                 binding.GRADLE_ZIP      = 'gradle-8.5-all.zip'
                 binding.GRADLE_SHA256   = 'bfcdff0229a801e5efd43d312cffb1b0aa24574b4a2f1beed1c751fadbcd44da'
-                binding.TAG             = "$version"
-                binding.COMMIT          = "${project.ext.programBuildFull}"
+                binding.TAG             = '5.4-alpha-1'
                 expand(binding)
             }
 
@@ -390,10 +378,14 @@ task genFlatpakManifest() {
     }
 }
 
-task genFlatpak {
-    description("Build the Flatpak distribution")
-    group('Installers')
-    dependsOn('cleanFlathub')
+// Build flatpak on manifest
+task buildFlatpak(type: Exec) {
+    description("Run flatpak-builder on manifest")
     dependsOn('genFlatpakManifest')
     dependsOn('flatpakGradleGenerator')
+    onlyIf {"linux" == "$hostOSName"}
+
+    println "Running flatpak-builder"
+    workingDir('dev/flathub')
+    commandLine('flatpak-builder', '--force-clean', 'build', 'org.audiveris.audiveris.yml')
 }
