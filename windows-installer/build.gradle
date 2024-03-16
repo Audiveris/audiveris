@@ -65,10 +65,10 @@ task findNsisCompiler {
     }
 }
 
-// All installers
-task installers {
+// All installers for Windows
+task WindowsInstallers {
     group "Installers"
-    description "Builds all installers"
+    description "Builds all Windows installers"
 }
 
 // Windows installers for 32-bit and 64-bit targetted OSes
@@ -126,5 +126,5 @@ task installers {
         }
     }
 
-    installers.dependsOn("installer_$targetOS")
+    WindowsInstallers.dependsOn("installer_$targetOS")
 }
