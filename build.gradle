@@ -367,7 +367,7 @@ task genFlatpakManifest() {
                 def binding = [:]
                 binding.OPEN_JDK        = "openjdk$minJavaVersion"
                 binding.GRADLE_ZIP      = 'gradle-8.5-all.zip'
-                binding.GRADLE_SHA256   = 'bfcdff0229a801e5efd43d312cffb1b0aa24574b4a2f1beed1c751fadbcd44da'
+                binding.GRADLE_SHA256   = 'c16d517b50dd28b3f5838f0e844b7520b8f1eb610f2f29de7e4e04a1b7c9c79b'
                 binding.TAG             = '5.4-alpha-1'
                 expand(binding)
             }
@@ -385,7 +385,10 @@ task buildFlatpak(type: Exec) {
     dependsOn('flatpakGradleGenerator')
     onlyIf {"linux" == "$hostOSName"}
 
-    println "Running flatpak-builder"
+    doFirst {
+        println "Running flatpak-builder"
+    }
+
     workingDir('dev/flathub')
     commandLine('flatpak-builder', '--force-clean', 'build', 'org.audiveris.audiveris.yml')
 }
