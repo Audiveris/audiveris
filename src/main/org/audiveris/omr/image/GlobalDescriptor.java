@@ -46,6 +46,12 @@ public class GlobalDescriptor
 
     private static final Constants constants = new Constants();
 
+    /** The maximum value for threshold */
+    public static final int MAXTHRESHOLD = 255;
+
+    /** The minimum value for threshold */
+    public static final int MINTHRESHOLD = 0;
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /**

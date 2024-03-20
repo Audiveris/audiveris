@@ -525,18 +525,18 @@ public class BookParameters
         private final SpinData globalData = new SpinData(
                 resources.getString("FilterPane.globalData.text"),
                 resources.getString("FilterPane.globalData.toolTipText"),
-                new SpinnerNumberModel(0, 0, 255, 1));
+                new SpinnerNumberModel(0, GlobalDescriptor.MINTHRESHOLD, GlobalDescriptor.MAXTHRESHOLD, 1));
 
         // Data for local
         private final SpinData localDataMean = new SpinData(
                 resources.getString("FilterPane.localDataMean.text"),
                 resources.getString("FilterPane.localDataMean.toolTipText"),
-                new SpinnerNumberModel(0.5, 0.0, 1.5, 0.1));
+                new SpinnerNumberModel(0.5, AdaptiveDescriptor.MINMEAN, AdaptiveDescriptor.MAXMEAN, 0.1));
 
         private final SpinData localDataDev = new SpinData(
                 resources.getString("FilterPane.localDataDev.text"),
                 resources.getString("FilterPane.localDataDev.toolTipText"),
-                new SpinnerNumberModel(0.2, 0.0, 1.5, 0.1));
+                new SpinnerNumberModel(0.2, AdaptiveDescriptor.MINSTDDEV, AdaptiveDescriptor.MAXSTDDEV, 0.1));
 
         FilterPane ()
         {

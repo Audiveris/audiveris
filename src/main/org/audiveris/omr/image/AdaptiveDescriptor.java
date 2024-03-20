@@ -69,6 +69,18 @@ public class AdaptiveDescriptor
 
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveDescriptor.class);
 
+    /** The maximum value for meanCoeff */
+    public static final double MAXMEAN = 1.5;
+
+    /** The minimum value for meanCoeff */
+    public static final double MINMEAN = 0.0;
+
+    /** The maximum value for stdDevCoeff */
+    public static final double MAXSTDDEV = 1.5;
+
+    /** The minimum value for stdDevCoeff */
+    public static final double MINSTDDEV = 0.0;
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /**

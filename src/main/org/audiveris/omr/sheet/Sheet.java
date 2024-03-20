@@ -594,7 +594,11 @@ public class Sheet
                 // Display sheet binary
                 PictureView pictureView = new PictureView(this, tab);
                 BinarizationAdjustBoard baBoard = new BinarizationAdjustBoard(this);
-                baBoard.setSelected(true);
+
+                if (this.getPicture().getSource(Picture.SourceKey.GRAY) != null) {
+                    baBoard.setSelected(true);
+                }
+                
                 assembly.addViewTab(
                         tab,
                         pictureView,
