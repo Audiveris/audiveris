@@ -16,11 +16,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Setup Java 17
-        uses: actions/setup-java@v3
+        
+      - name: Retrieve Gradle properties
+        uses: BrycensRanch/read-properties-action@latest
+        id: all
         with:
-          java-version: 17
+          file: gradle.properties
+          all: true
+
+      - name: Setup Java ${{ steps.all.outputs.minJavaVersion }}
+        uses: actions/setup-java@latest
+        with:
+          java-version: ${{ steps.all.outputs.minJavaVersion }}
           distribution: zulu
 
       # cache loaded tessdata files so they don't have to be re-downloaded on every workflow execution
@@ -29,13 +36,15 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.TESSDATA_PREFIX }}
-          key: ${{ runner.os }}-tessdata-${{ env.TESSDATA_TAG }}-eng-deu
+          key: ${{ runner.os }}-tessdata-${{ env.TESSDATA_TAG }}-eng-deu-fra-ita
 
       - name: Install tessdata files
         if: steps.cache-tessdata.outputs.cache-hit != 'true'
         run: |
           ${GITHUB_WORKSPACE}/.github/install-tessdata.sh eng &&
-          ${GITHUB_WORKSPACE}/.github/install-tessdata.sh deu
+          ${GITHUB_WORKSPACE}/.github/install-tessdata.sh deu &&
+          ${GITHUB_WORKSPACE}/.github/install-tessdata.sh fra &&
+          ${GITHUB_WORKSPACE}/.github/install-tessdata.sh ita
 
       - name: Build Audiveris
         uses: gradle/gradle-build-action@v2.7.0

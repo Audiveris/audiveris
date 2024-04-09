@@ -20,7 +20,15 @@ plugins {
     id 'io.github.jwharm.flatpak-gradle-generator' version '1.0.0'
 }
 
-def minJavaVersion = '21'
+// Handling of Java version
+if (project.hasProperty('minJavaVersion')) {
+    ext.minJavaVersion = project.property('minJavaVersion')
+} else {
+    println "*** No 'minJavaVersion' property found, using default value ***"
+    ext.minJavaVersion = 17
+}
+println "minJavaVersion: $minJavaVersion"
+
 java {
     sourceCompatibility = JavaLanguageVersion.of(minJavaVersion)
 }
@@ -391,4 +399,13 @@ task buildFlatpak(type: Exec) {
 
     workingDir('dev/flathub')
     commandLine('flatpak-builder', '--force-clean', 'build', 'org.audiveris.audiveris.yml')
+}
+
+// Utility task to print out all Gradle project properties
+task printProperties {
+    doLast {
+        project.properties.each { prop ->
+            println "${prop.key} = ${prop.value}"
+        }
+    }
 }
