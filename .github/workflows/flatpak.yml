@@ -16,11 +16,18 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true
+        
+      - name: Retrieve Gradle properties
+        uses: BrycensRanch/read-properties-action@v1
+        id: all
+        with:
+          file: gradle.properties
+          all: true
 
-      - name: Setup Java 17
+      - name: Setup Java ${{ steps.all.outputs.minJavaVersion }}
         uses: actions/setup-java@v3
         with:
-          java-version: 17
+          java-version: ${{ steps.all.outputs.minJavaVersion }}
           distribution: zulu
 
       - name: Determine Java dependencies
