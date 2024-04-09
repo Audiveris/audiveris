@@ -1,8 +1,10 @@
 name: Build audiveris flatpak package
 
 # execute this workflow on every push
+#on:
+#  - push
 on:
-  - push
+  - workflow_dispatch
 
 permissions:
   contents: read
