@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TESSDATA_PREFIX: /home/runner/work/audiveris/audiveris/tessdata
-      TESSDATA_TAG: 4.1.0
+      # Hard-coded value has been removed, was TESSDATA_TAG: 4.1.0
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -24,12 +24,20 @@ jobs:
           file: gradle.properties
           all: true
 
-      - name: Setup Java ${{ steps.all.outputs.minJavaVersion }}
+      - name: Setup Java ${{ steps.all.outputs.myMinJavaVersion }}
         uses: actions/setup-java@v3
         with:
-          java-version: ${{ steps.all.outputs.minJavaVersion }}
+          java-version: ${{ steps.all.outputs.myMinJavaVersion }}
           distribution: zulu
 
+      - name: Set environment variable(s)
+        run: |
+          echo "TESSDATA_TAG=${{ steps.all.outputs.myTessdataTag }}" >> $GITHUB_ENV
+
+      - name: Test environment variable
+        run: |
+          echo "TESSDATA_TAG: ${{ env.TESSDATA_TAG }}"
+          
       # cache loaded tessdata files so they don't have to be re-downloaded on every workflow execution
       - name: Get cached tessdata files
         id: cache-tessdata
