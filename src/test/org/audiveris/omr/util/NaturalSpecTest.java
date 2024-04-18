@@ -17,17 +17,15 @@ package org.audiveris.omr.util;
 
 import static org.audiveris.omr.util.BaseTestCase.checkException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-
-import static junit.framework.Assert.fail;
-
 /**
- *
  * @author Hervé Bitteur
  */
 public class NaturalSpecTest

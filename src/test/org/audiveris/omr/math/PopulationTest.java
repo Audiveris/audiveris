@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.math;
 
-import static junit.framework.Assert.*;
-
 import org.audiveris.omr.util.BaseTestCase;
 
 import org.junit.Test;

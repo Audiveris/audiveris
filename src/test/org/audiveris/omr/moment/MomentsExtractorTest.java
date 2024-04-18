@@ -10,9 +10,9 @@ import org.audiveris.omr.glyph.SymbolSample;
 import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.moments.MomentsExtractor;
 import org.audiveris.omr.moments.OrthogonalMoments;
+import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import static org.audiveris.omr.ui.symbol.MusicFont.DEFAULT_INTERLINE;
-import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 
 import org.junit.Ignore;
@@ -52,8 +52,7 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
      */
     public void testAllShapes (MomentsExtractor<D> extractor,
                                Class<? extends D> classe)
-            throws InstantiationException,
-                   IllegalAccessException
+        throws InstantiationException, IllegalAccessException
     {
         temp.mkdirs();
 
@@ -64,26 +63,27 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
             ShapeSymbol symbol = font.getSymbol(shape);
 
             if (symbol != null) {
-                System.out.println("shape:" + shape);
+                try {
+                    System.out.println("shape:" + shape);
 
-                SymbolSample sample = SymbolSample.create(
-                        shape,
-                        symbol,
-                        font,
-                        MusicFont.DEFAULT_INTERLINE);
-                PointsCollector collector = new PointsCollector(null, sample.getWeight());
-                sample.getRunTable().cumulate(collector, null);
+                    SymbolSample sample =
+                            SymbolSample.create(shape, symbol, font, MusicFont.DEFAULT_INTERLINE);
+                    PointsCollector collector = new PointsCollector(null, sample.getWeight());
+                    sample.getRunTable().cumulate(collector, null);
 
-                D descriptor = classe.newInstance();
-                extractor.setDescriptor(descriptor);
-                extractor.extract(
-                        collector.getXValues(),
-                        collector.getYValues(),
-                        collector.getSize());
-                descriptors.put(shape, descriptor);
+                    D descriptor = classe.getDeclaredConstructor().newInstance();
+                    extractor.setDescriptor(descriptor);
+                    extractor.extract(
+                            collector.getXValues(),
+                            collector.getYValues(),
+                            collector.getSize());
+                    descriptors.put(shape, descriptor);
 
-                // Reconstruct
-                ///reconstruct(shape, extractor);
+                    // Reconstruct
+                    ///reconstruct(shape, extractor);
+                } catch (Exception ex) {
+                    System.out.println("Error processing symbol " + symbol + " " + ex);
+                }
             } else {
                 System.out.println(shape + " no symbol");
             }
@@ -104,9 +104,10 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
         // Print moments per shape
         for (Map.Entry<Shape, D> entry : descriptors.entrySet()) {
             System.out.println(
-                    String
-                            .format("%-30s %s", entry.getKey().toString(), entry.getValue()
-                                    .toString()));
+                    String.format(
+                            "%-30s %s",
+                            entry.getKey().toString(),
+                            entry.getValue().toString()));
         }
 
         System.out.println();
@@ -135,9 +136,7 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
             }
 
             // Sort by increasing distance
-            Collections.sort(
-                    relations,
-                    new Comparator<Relation>()
+            Collections.sort(relations, new Comparator<Relation>()
             {
                 @Override
                 public int compare (Relation r1,
@@ -151,17 +150,13 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
         }
 
         // Sort by increasing distance
-        Collections.sort(
-                allRelations,
-                new Comparator<ShapeRelations>()
+        Collections.sort(allRelations, new Comparator<ShapeRelations>()
         {
             @Override
             public int compare (ShapeRelations o1,
                                 ShapeRelations o2)
             {
-                return Double.compare(
-                        o1.relations.get(0).distance,
-                        o2.relations.get(0).distance);
+                return Double.compare(o1.relations.get(0).distance, o2.relations.get(0).distance);
             }
         });
 

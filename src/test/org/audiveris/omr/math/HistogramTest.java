@@ -21,8 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.math;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -39,7 +38,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- *
  * @author Etiolles
  */
 public class HistogramTest
@@ -330,7 +328,7 @@ public class HistogramTest
                                       Entry<Integer, Integer> actual)
     {
         if (!expected.getKey().equals(actual.getKey())
-                    || !expected.getValue().equals(actual.getValue())) {
+                || !expected.getValue().equals(actual.getValue())) {
             throw new AssertionError("Expected: " + expected + " Actual: " + actual);
         }
     }

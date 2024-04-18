@@ -22,7 +22,6 @@
 package org.audiveris.omr.util;
 
 import junit.framework.*;
-import static junit.framework.Assert.*;
 
 /**
  * Class <code>BaseTestCase</code> is a customized version of TestCase, in
@@ -100,7 +99,7 @@ public class BaseTestCase
     //---------//
     @Override
     protected void runTest ()
-            throws Throwable
+        throws Throwable
     {
         System.out.println("\n---\n" + getName() + ":");
         super.runTest();

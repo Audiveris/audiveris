@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.math;
 
-import static junit.framework.Assert.*;
-
 import org.audiveris.omr.util.BaseTestCase;
 
 /**
@@ -34,9 +32,11 @@ public class BasicLineTest
         extends BaseTestCase
 {
 
-    protected static final double[] xx = new double[]{1d, 2d, 3d, 4d, 5d};
+    protected static final double[] xx = new double[]
+    { 1d, 2d, 3d, 4d, 5d };
 
-    protected static final double[] yy = new double[]{4d, 9d, 14d, 19d, 24d};
+    protected static final double[] yy = new double[]
+    { 4d, 9d, 14d, 19d, 24d };
 
     BasicLine l;
 
@@ -47,8 +47,10 @@ public class BasicLineTest
     //@Test (expected = IllegalArgumentException.class)
     public void testDifferentPoints ()
     {
-        double[] my_xx = new double[]{1d, 2d};
-        double[] my_yy = new double[]{4d, 9d, 14d};
+        double[] my_xx = new double[]
+        { 1d, 2d };
+        double[] my_yy = new double[]
+        { 4d, 9d, 14d };
 
         try {
             BasicLine line = new BasicLine(my_xx, my_yy);
@@ -153,8 +155,10 @@ public class BasicLineTest
 
     public void testShortPoints ()
     {
-        double[] xx = new double[]{1d};
-        double[] yy = new double[]{4d};
+        double[] xx = new double[]
+        { 1d };
+        double[] yy = new double[]
+        { 4d };
 
         try {
             BasicLine l = new BasicLine(xx, yy);
@@ -172,8 +176,10 @@ public class BasicLineTest
 
     public void testSingularMeanDistance ()
     {
-        double[] xx = new double[]{1d, 1d, 1d};
-        double[] yy = new double[]{2d, 2d, 2d};
+        double[] xx = new double[]
+        { 1d, 1d, 1d };
+        double[] yy = new double[]
+        { 2d, 2d, 2d };
 
         try {
             BasicLine l = new BasicLine(xx, yy);
@@ -188,8 +194,10 @@ public class BasicLineTest
 
     public void testSingularPoints ()
     {
-        double[] xx = new double[]{1d, 1d, 1d};
-        double[] yy = new double[]{2d, 2d, 2d};
+        double[] xx = new double[]
+        { 1d, 1d, 1d };
+        double[] yy = new double[]
+        { 2d, 2d, 2d };
 
         try {
             BasicLine l = new BasicLine(xx, yy);
@@ -267,7 +275,7 @@ public class BasicLineTest
 
     @Override
     protected void setUp ()
-            throws Exception
+        throws Exception
     {
         System.out.println("BasicLineTest setUp() called.");
 
