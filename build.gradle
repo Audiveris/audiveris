@@ -35,8 +35,8 @@ ext.jcppVersion     = '1.5.9'
 ext.leptVersion     = '1.83.0'
 ext.tessVersion     = '5.3.1'
 
-ext.myTessdataTag   = project.property('myTessdataTag')
-println "myTessdataTag: $myTessdataTag"
+ext.tessdataTag     = project.property('myTessdataTag')
+println "myTessdataTag: $tessdataTag"
 
 ext.programName     = 'Audiveris'
 ext.programId       = 'audiveris'
