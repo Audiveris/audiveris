@@ -926,7 +926,7 @@ public class CLI
                 LogUtil.stopBook();
 
                 if (OMR.gui == null) {
-                    LogUtil.removeAppender(book.getRadix());
+                    LogUtil.stopAndRemoveAppender(book.getRadix());
                 }
             }
         }
