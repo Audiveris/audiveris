@@ -12,7 +12,6 @@ dev/temp-externals/*-javadoc.jar
 dev/temp-externals/*-sources.jar
 nbproject
 
-.gitignore
 .gradle/*
 .idea/*
 .nb-gradle/*
@@ -46,6 +45,7 @@ schemas/bin/
 schemas/build
 schemas/build/*
 target/*
+temp/*
 windows-installer/build
 windows-installer/build/*
 windows-installer/.gradle/*
@@ -54,6 +54,14 @@ windows-installer/.gradle/*
 \.chg\..*$
 \.rej$
 \.conflict\~$
+app/build
+app/build/*
+app/data/temp
+app/data/temp/*
+flatpak/build
+flatpak/build/*
+flatpak/.flatpak-builder
+flatpak/.flatpak-builder/*
 
 # Ignore system files
 .DS_Store

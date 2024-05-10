@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TESSDATA_PREFIX: /home/runner/work/audiveris/audiveris/tessdata
-      # Hard-coded value has been removed, was TESSDATA_TAG: 4.1.0
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -33,10 +32,6 @@ jobs:
       - name: Set environment variable(s)
         run: |
           echo "TESSDATA_TAG=${{ steps.all.outputs.myTessdataTag }}" >> $GITHUB_ENV
-
-      - name: Test environment variable
-        run: |
-          echo "TESSDATA_TAG: ${{ env.TESSDATA_TAG }}"
           
       # cache loaded tessdata files so they don't have to be re-downloaded on every workflow execution
       - name: Get cached tessdata files

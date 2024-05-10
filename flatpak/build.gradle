@@ -1,0 +1,116 @@
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                            : f l a t p a k / b u i l d . g r a d l e                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+//
+// The Linux flatpak
+//
+//--------------------------------------------------------------------------------------------------
+
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+
+plugins {
+    id 'base'
+}
+
+def app     = project(':app')
+def appDir  = app.projectDir
+
+// SHA1 computation
+// Stolen from https://gist.github.com/dagezi/9594839#file-calcsha1-gradle
+// 'file' argument must be a File object.
+def calcSha1(file) 
+{
+    MessageDigest md = MessageDigest.getInstance("SHA-1");
+    file.eachByte 4096, {bytes, size ->
+        md.update(bytes, 0, size);
+    }
+    return md.digest().encodeHex()
+}
+
+// Generate the build/lang_sources.yml file from the content of app/dev/tessdata folder
+task genLanguages {
+    description("Generate languages sources")
+
+    doLast {
+        println "Generating language sources"
+        def outputDir = layout.buildDirectory.get().asFile
+        outputDir.exists() || outputDir.mkdirs()
+        def langFile = new File(outputDir, "lang_sources.yml")
+
+        fileTree("$appDir/dev/tessdata").include('*.traineddata').each { f ->
+            def relPath = relativePath(f).replace("\\","/")
+            def sha1 = calcSha1(f) // perhaps not needed
+            langFile.append("      - type: file\n")
+            langFile.append("        path: ../${relPath}\n")
+            langFile.append("        sha1: ${sha1}\n\n") // perhaps not needed
+        }
+    }
+}
+
+// Grab the dependencies from the app sibling sub-project
+configurations {
+    sharedConfiguration {
+        canBeConsumed = false
+    }
+}
+dependencies {
+    sharedConfiguration(project("path": ":app", "configuration": "sharedConfiguration"))
+}
+task genDependencies {
+    description("Generate app dependencies")
+    dependsOn(':app:classes')
+    dependsOn(':app:flatpakGradleGenerator')
+    
+    FileCollection sharedFiles = configurations.getByName("sharedConfiguration")
+    inputs.files(sharedFiles)
+}
+
+// Generate the Flatpak manifest by expanding key variables
+// We copy gradle refs from the gradle wrapper properties
+def wrapperProps = new Properties();
+file("../gradle/wrapper/gradle-wrapper.properties").withInputStream { wrapperProps.load(it) }
+def gradleUrl = wrapperProps.getProperty("distributionUrl")
+Path path = Paths.get(new URI(gradleUrl).toURL().getFile());
+def gradleName = path.getFileName().toString();
+
+task genManifest {
+    description("Generate manifest from template")
+
+    doLast {
+        println "Generating Flatpak manifest"
+        copy {
+            from('dev/org.audiveris.audiveris.template.yml') {
+                def binding = [:]
+                binding.OPEN_JDK = "openjdk$theMinJavaVersion"
+                binding.GRADLE_URL = "$gradleUrl"
+                binding.GRADLE_NAME = "$gradleName"
+                binding.GRADLE_SHA256 = wrapperProps.getProperty("distributionSha256Sum")
+                binding.TAG = '5.4-alpha-1'
+                expand(binding)
+            }
+            into('build')
+            rename '.template', ''
+        }
+    }
+}
+
+// Build flatpak on manifest
+task buildFlatpak (type: Exec) {
+    description("Run flatpak-builder on manifest")
+///    dependsOn('genLanguages')
+///    dependsOn('genManifest')
+///    dependsOn('genDependencies')
+    onlyIf { app.ext.hostOSName == "linux" }
+
+    doFirst {
+        println "Running flatpak-builder"
+    }
+
+    commandLine('flatpak-builder', '--force-clean', 'fp-build', 'build/org.audiveris.audiveris.yml')
+    //commandLine('pwd')
+}

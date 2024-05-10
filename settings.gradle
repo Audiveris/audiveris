@@ -1,3 +1,20 @@
+pluginManagement {
+  repositories {
+    maven { url="app/build/dependencies" }
+    gradlePluginPortal()
+  }
+}
+
 rootProject.name = 'Audiveris'
+
+// Application
+include 'app'
+
+// Generation of schema-based documentation
 include 'schemas'
+
+// Installer for Windows
 include 'windows-installer'
+
+// Installer for Linux
+include 'flatpak'

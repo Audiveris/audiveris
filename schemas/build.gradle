@@ -7,7 +7,7 @@
 //
 // 1. Generate the 3 XSD schemas that correspond to book.xml and sheet#N.xml files found in any
 //    .omr Audiveris project file and to a PlayList.xml file handled by Split and Merge.
-//    Purpose is to allow any consumer to read these files regardless of the coding language.
+//    The purpose is to allow any consumer to read these files regardless of the coding language.
 //    These schemas could also be used for validation purposes.
 //
 // 2. Automatically generate the end-user documentation for these book.xml, sheet#N.xml
@@ -30,7 +30,7 @@
 //    retrieved from the relevant Java sources.
 //    Tasks: injectJavadoc
 //
-// 3. Add header text at beginning of each schema, renamed according to the root class,
+// 3. Add a header text at the beginning of each schema, renamed according to the root class,
 //    and collect the names of all linked image files.
 //    Tasks: completeSchemas (completeSchemaBook, completeSchemaSheet, completeSchemaPlayList)
 //
@@ -40,7 +40,7 @@
 //
 // 5. Use xs3p.xsl file and an XSLT transformer to generate the HTML files from the annotated schemas.
 //    The XSLT transformer can be one of XsltProc (default), Saxon or Jaxp as specified by the
-//    property 'XsltTransformer'.
+//    property 'theXsltTransformer'.
 //    Tasks: genHtmls (genHtmlBook, genHtmlSheet, genHtmlPlayList)
 //
 // 6. Include an index.html file and wrap all files as a ZIP archive.
@@ -48,6 +48,8 @@
 //--------------------------------------------------------------------------------------------------
 
 apply plugin: 'java'
+
+def app = project(':app')
 
 // Pattern to detect a link to some doc-files folder
 String docFilesPattern = "src=\"doc-files/([^\"]*)\""
@@ -57,16 +59,15 @@ repositories {
 }
 
 // Specification of XSLT transformer
-String prop = rootProject.findProperty('XsltTransformer')
-String transformer = (prop != null) ? "$prop" : 'XsltProc'
-println "Xslt transformer: $transformer"
+ext.xsltTransformer = project.property('theXsltTransformer')
+println "theXsltTransformer: $xsltTransformer"
 
 dependencies { 
     implementation(group: 'args4j', name: 'args4j', version: '2.33')
     implementation(group: 'org.codehaus.mojo', name: 'jaxb2-maven-plugin', version: '2.5.0')
     implementation(group: 'org.apache.maven.plugin-tools', name: 'maven-plugin-annotations', version: '3.5.1')
     
-    if ("$transformer".toString() == 'Saxon') {
+    if ("$xsltTransformer".toString() == 'Saxon') {
         println "Adding saxon library to implementation"
         implementation(group: 'net.sf.saxon', name: 'Saxon-HE', version: '12.4')
     }
@@ -76,22 +77,21 @@ dependencies {
 task genSchemaDoc {
     group("Documentation")
     description("Generate commented schemas and HTML doc to document Audiveris .omr format")
-    
-    dependsOn(':classes')
-    dependsOn('injectJavadoc')    
-    dependsOn('completeSchemas')    
-    dependsOn('copyImages')    
-    dependsOn('genHtmls')    
-    dependsOn('genArchive')    
+    dependsOn(':app:classes')
+    dependsOn('injectJavadoc')
+    dependsOn('completeSchemas')
+    dependsOn('copyImages')
+    dependsOn('genHtmls')
+    dependsOn('genArchive')
 }
 
 task createFolders {
     description("Prepare target schemas structure")
-    
-    doFirst  {
+
+    doFirst {
         mkdir("build/work")
         mkdir("build/output/doc-files")
-    }     
+    }
 }
 
 task genPlainSchemas {
@@ -114,7 +114,7 @@ task checkIndexFile {
 
     doLast {
         file('dev/index.html').eachLine { srcLine ->
-            srcLine.eachMatch(docFilesPattern) { group ->  
+            srcLine.eachMatch(docFilesPattern) { group ->
                 println "Got image " + group[1]
                 project.ext.toCopy.add(group[1])
             }
@@ -135,28 +135,28 @@ task copyImages(type: Copy) {
     dependsOn('createFolders')
     dependsOn('checkIndexFile')
     dependsOn('copyIndexFile')
-    
-    int copied = 0
-    includeEmptyDirs = false    
 
-    from(file("../src/main"), file("dev"))
+    int copied = 0
+    includeEmptyDirs = false
+
+    from(file("../app/src/main/java"), file("dev"))
     include("**/*.png")
     into("build/output/doc-files")
-    
-    eachFile {  fileCopyDetails ->
+
+    eachFile { fileCopyDetails ->
         // Check file name against list of names to copy
         String fName = fileCopyDetails.getName()
-        
+
         if (project.ext.toCopy.contains(fName)) {
             println "Copying image " + fName
             // Discard directory hierarchy information and copy the file
             fileCopyDetails.setPath(fName)
             copied++
         } else {
-            exclude() 
+            exclude()
         }
     }
-    
+
     doLast {
         println copied + " images to " + destinationDir
     }
@@ -166,10 +166,10 @@ task injectJavadoc(type: JavaExec) {
     description("Annotate plain schemas with JavaDoc content")
     dependsOn(genPlainSchemas)
     dependsOn(compileJava)
-    
+
     mainClass = 'org.audiveris.schema.SchemaAnnotator'
     classpath(sourceSets.main.runtimeClasspath)
-    args=["build/work", "build/output", "../src/main/org/audiveris/omr"]
+    args = ["build/work", "build/output", "../app/src/main/java/org/audiveris/omr"]
 }
 
 // Defining 'debug' task allows to set its arguments later
@@ -177,17 +177,17 @@ task debug(type: JavaExec) {
     description("Annotate plain schemas with JavaDoc content in DEBUG mode")
     dependsOn(genPlainSchemas)
     dependsOn('classes')
-    
+
     mainClass = 'org.audiveris.schema.SchemaAnnotator'
     classpath(sourceSets.main.runtimeClasspath)
-    args=["build/work", "build/output", "../src/main/org/audiveris/omr"]
+    args = ["build/work", "build/output", "../app/src/main/java/org/audiveris/omr"]
     debug(true)
 }
 
 ext.xsltprocFound = 'no'
 task checkXsltProc {
     description("Verifies that xsltproc is installed")
-    
+
     doLast {
         try {
             def path = "xsltproc"
@@ -204,7 +204,7 @@ task checkXsltProc {
             println "***    Annotated XSD schemas will still be generated,"
             println "***    but no HTML will be derived from them."
             println "*** =================================================="
-        }        
+        }
     }
 }
 
@@ -226,7 +226,7 @@ int xmlDocWidth = 50
         dependsOn(createFolders)
   
         mainClass = 'org.audiveris.omr.SchemaGeneration'
-        classpath(rootProject.sourceSets.main.runtimeClasspath)
+        classpath(project(':app').sourceSets.main.runtimeClasspath)
         args=["$src", "build/work/$sch"]
         
         doFirst {
@@ -295,7 +295,7 @@ int xmlDocWidth = 50
         dependsOn("completeSchema$cls")
 
         doFirst {
-            def args = (rootProject.ext.hostOSName == "windows") ? ["cmd", "/c"] : []
+            def args = (app.ext.hostOSName == "windows") ? ["cmd", "/c"] : []
 
             if (project.ext.xsltprocFound == 'yes') {
                 println "Generating HTML for $cls class"
@@ -339,7 +339,7 @@ int xmlDocWidth = 50
 
         args(opts)
         mainClass = 'net.sf.saxon.Transform'
-        classpath(sourceSets.main.runtimeClasspath)
+        classpath(project(':app').sourceSets.main.runtimeClasspath)
     }
 
     // Generating HTML from complete schema, using Jaxp
@@ -367,11 +367,11 @@ int xmlDocWidth = 50
 
         args(opts)
         mainClass = 'org.audiveris.schema.XsltTransformer'
-        classpath(sourceSets.main.runtimeClasspath)
+        classpath(project(':app').sourceSets.main.runtimeClasspath)
     }
 
-    // Use of actual XsltTransformer
-    genHtmls.dependsOn("${transformer}GenHtml$cls")       
+    // Use of actual Xslt Transformer
+    genHtmls.dependsOn("${xsltTransformer}GenHtml$cls")       
 }
 
 // Remove the now useless temporary schema*.xsd
@@ -391,9 +391,9 @@ task genArchive(type: Zip) {
     dependsOn("deleteTempSchemas")
 
     setArchiveBaseName("Audiveris_Schemas_Doc")
-    setArchiveVersion(rootProject.version)
+    setArchiveVersion(app.version)
 
     from("build/output")
 
-    eachFile { fileCopyDetails ->  println "Zipping " + fileCopyDetails.getName() }
+    eachFile { fileCopyDetails -> println "Zipping " + fileCopyDetails.getName() }
 }

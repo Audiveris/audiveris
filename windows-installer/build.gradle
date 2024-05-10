@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                  w i n d o w s - i n s t a l l e r : b u i l d . g r a d l e                   //
+//                 : w i n d o w s - i n s t a l l e r / b u i l d . g r a d l e                  //
 //                                                                                                //
 //--------------------------------------------------------------------------------------------------
 //
@@ -13,16 +13,17 @@
 // 1/ Correct handling of Tesseract language data files, to bundle a few languages by default
 //
 // 2/ Run-time test of Java version, to warn the user via a persistent dialog.
-//    (this is actually performed via the startScripts task of the root project)
+//    (this is actually performed via the startScripts task of the :app sibling project)
 //
 //--------------------------------------------------------------------------------------------------
 
 apply plugin: 'base'
 
-def rootDir     = rootProject.projectDir
-def hostOS      = rootProject.property('hostOS')
-def hostOSName  = rootProject.property('hostOSName')
-def rootVersion = rootProject.property('version')
+def app = project(':app')
+def appDir      = app.projectDir
+def hostOS      = app.property('hostOS')
+def hostOSName  = app.property('hostOSName')
+def rootVersion = app.property('version')
 
 repositories {
     mavenLocal()
@@ -32,8 +33,8 @@ repositories {
 // Configurations for specific OS dependencies
 ['windows-x86', 'windows-x86_64'].each { os ->
     configurations.create("runtime-$os")
-    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "$os"])
-    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'leptonica', version: "${app.property('leptVersion')}-${app.property('jcppVersion')}", classifier: "$os"])
+    dependencies.add("runtime-$os", [group: 'org.bytedeco', name: 'tesseract', version: "${app.property('tessVersion')}-${app.property('jcppVersion')}", classifier: "$os"])
 }
 
 // Make sure we have an NSIS compiler available and store it into project.ext.makensisPath
@@ -75,8 +76,8 @@ task WindowsInstallers {
 ['windows-x86', 'windows-x86_64'].each { targetOS ->
     task "installer_$targetOS"(type: Exec) {
         dependsOn findNsisCompiler
-        dependsOn rootProject.jar
-        dependsOn rootProject.startScripts
+        dependsOn app.jar
+        dependsOn app.startScripts
         group "Installers"
         description "Builds installer for $targetOS"
         onlyIf {"windows" == "$hostOSName"}
@@ -97,17 +98,17 @@ task WindowsInstallers {
             copy {
                 into "$buildDir/installers/$targetOS/bin"
 
-                from("$rootDir/build/scripts/Audiveris") {filter updateClassPath.curry('CLASSPATH') }
-                from("$rootDir/build/scripts/Audiveris.bat") {filter updateClassPath.curry('set CLASSPATH')}
-                from "$rootDir/res/icon-256.ico"
+                from("$appDir/build/scripts/Audiveris") {filter updateClassPath.curry('CLASSPATH') }
+                from("$appDir/build/scripts/Audiveris.bat") {filter updateClassPath.curry('set CLASSPATH')}
+                from "$appDir/res/icon-256.ico"
             }
 
             // lib: Libraries
             copy {
                 into "$buildDir/installers/$targetOS/lib"
 
-                from "$rootDir/build/jar" // audiveris.jar
-                from rootProject.configurations.implementationConfig // Compile jars
+                from "$appDir/build/jar" // audiveris.jar
+                from app.configurations.runtimeClasspath // Compile jars
                 from configurations."runtime-$targetOS" // targetOS-specific jars
             }
 
@@ -117,10 +118,10 @@ task WindowsInstallers {
                 "${project.ext.makensisPath}",\
                 "/DPRODUCT_VERSION=$rootVersion",\
                 "/DPROJECT_DIR=$projectDir",\
-                "/DICON=$rootDir/res/icon-256.ico",\
-                "/DLICENSE=$rootDir/LICENSE",\
+                "/DICON=$appDir/res/icon-256.ico",\
+                "/DLICENSE=$rootProject.projectDir/LICENSE",\
                 "/DTARGET_OS=$targetOS",\
-                "/DTESSDATA_SOURCE=$rootDir/dev",\
+                "/DTESSDATA_SOURCE=$appDir/dev",\
                 "/DSUFFIX=$suffix",\
                 "$projectDir/dev/Installer.nsi"
         }
