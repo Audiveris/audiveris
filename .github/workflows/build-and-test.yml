@@ -23,15 +23,15 @@ jobs:
           file: gradle.properties
           all: true
 
-      - name: Setup Java ${{ steps.all.outputs.myMinJavaVersion }}
+      - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
         uses: actions/setup-java@v3
         with:
-          java-version: ${{ steps.all.outputs.myMinJavaVersion }}
+          java-version: ${{ steps.all.outputs.theMinJavaVersion }}
           distribution: zulu
 
       - name: Set environment variable(s)
         run: |
-          echo "TESSDATA_TAG=${{ steps.all.outputs.myTessdataTag }}" >> $GITHUB_ENV
+          echo "TESSDATA_TAG=${{ steps.all.outputs.theTessdataTag }}" >> $GITHUB_ENV
           
       # cache loaded tessdata files so they don't have to be re-downloaded on every workflow execution
       - name: Get cached tessdata files
