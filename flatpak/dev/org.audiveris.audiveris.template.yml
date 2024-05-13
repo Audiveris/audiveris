@@ -9,12 +9,9 @@
 # - GRADLE_NAME:    gradle-8.5-all.zip
 # - GRADLE_SHA256:  c16d517b50dd28b3f5838f0e844b7520b8f1eb610f2f29de7e4e04a1b7c9c79b
 # - TAG:            5.4-alpha
-#
-# NOTA: This is run from flatpak/fp-build folder
-#
 # ----
 
-app-id: org.audiveris.audiveris
+id: org.audiveris.audiveris
 runtime: org.freedesktop.Platform
 runtime-version: '23.08'
 sdk: org.freedesktop.Sdk
@@ -45,38 +42,46 @@ modules:
   - name: audiveris
     buildsystem: simple
     build-commands:
+      # (Assuming these commands are run from sandbox root)
+      #
+      # A few debugging stuff to be removed ASAP
+      - echo "======================================================="
       - echo "checking the pwd"
       - pwd
+      - tree
+      - echo "======================================================="
       
       # We make the Gradle wrapper use our local .zip file
       # NOTA: mind the fact that expand() will reduce the backslashes in template, so double them!
-      - ln --force ${GRADLE_NAME} ../../gradle/wrapper/${GRADLE_NAME}
-      - sed --regexp-extended --in-place 's,https\\\\://services.gradle.org/distributions/,,' ../../gradle/wrapper/gradle-wrapper.properties
+      - ln --force ${GRADLE_NAME} gradle/wrapper/${GRADLE_NAME}
+      - sed --regexp-extended --in-place 's,https\\\\://services.gradle.org/distributions/,,' gradle/wrapper/gradle-wrapper.properties
 
       # Copy the Tesseract language files
-      - install --mode=0644 -D --target-directory=/app/share/tessdata ../../app/dev/tessdata/*.traineddata
+      - install --mode=0644 -D --target-directory=/app/share/tessdata *.traineddata
 
       # Copy some needed icons
-      - install --mode=0644 -D ../../app/res/icon-256.png /app/share/icons/hicolor/256x256/apps/org.audiveris.audiveris.png
-      - install --mode=0644 -D ../../app/res/icon-64.png /app/share/icons/hicolor/64x64/apps/org.audiveris.audiveris.png
-      - install --mode=0644 -D ../../app/src/main/org/audiveris/omr/ui/resources/icon-48.png /app/share/icons/hicolor/48x48/apps/org.audiveris.audiveris.png
-      - install --mode=0644 -D ../../app/src/main/org/audiveris/omr/ui/resources/icon-32.png /app/share/icons/hicolor/32x32/apps/org.audiveris.audiveris.png
-      - install --mode=0644 -D ../../app/src/main/org/audiveris/omr/ui/resources/icon-24.png /app/share/icons/hicolor/24x24/apps/org.audiveris.audiveris.png
-      - install --mode=0644 -D ../../app/src/main/org/audiveris/omr/ui/resources/icon-16.png /app/share/icons/hicolor/16x16/apps/org.audiveris.audiveris.png
+      - install --mode=0644 -D app/res/icon-256.png /app/share/icons/hicolor/256x256/apps/org.audiveris.audiveris.png
+      - install --mode=0644 -D app/res/icon-64.png /app/share/icons/hicolor/64x64/apps/org.audiveris.audiveris.png
+      - install --mode=0644 -D app/src/main/org/audiveris/omr/ui/resources/icon-48.png /app/share/icons/hicolor/48x48/apps/org.audiveris.audiveris.png
+      - install --mode=0644 -D app/src/main/org/audiveris/omr/ui/resources/icon-32.png /app/share/icons/hicolor/32x32/apps/org.audiveris.audiveris.png
+      - install --mode=0644 -D app/src/main/org/audiveris/omr/ui/resources/icon-24.png /app/share/icons/hicolor/24x24/apps/org.audiveris.audiveris.png
+      - install --mode=0644 -D app/src/main/org/audiveris/omr/ui/resources/icon-16.png /app/share/icons/hicolor/16x16/apps/org.audiveris.audiveris.png
 
       # Copy desktop and metainfo
-      - install --mode=0644 -D ../org.audiveris.audiveris.desktop /app/share/applications/org.audiveris.audiveris.desktop
-      - install --mode=0644 -D ../org.audiveris.audiveris.metainfo.xml /app/share/metainfo/org.audiveris.audiveris.metainfo.xml
+      - install --mode=0644 -D org.audiveris.audiveris.desktop /app/share/applications/org.audiveris.audiveris.desktop
+      - install --mode=0644 -D org.audiveris.audiveris.metainfo.xml /app/share/metainfo/org.audiveris.audiveris.metainfo.xml
 
       # Run Gradle build in offline mode, with a specific repository (hence the isFlatpak property)
-      - ../gradlew -PisFlatpak --offline :flatpak:buildFlatpak
+      - gradlew -PisFlatpak --offline :flatpak:buildFlatpak
 
       # Extract lib and bin from Audiveris .tar to /app
-      - tar x --directory=/app --strip-components=1 --file ../../app/build/distributions/Audiveris-*.tar
+      - tar x --directory=/app --strip-components=1 --file app/build/distributions/Audiveris-*.tar
 
       # Insert TESSDATA_PREFIX in Audiveris sh file
-      - sed --in-place --file=../dev/add-tessdata-prefix.sed /app/bin/Audiveris
+      - sed --in-place --file=add-tessdata-prefix.sed /app/bin/Audiveris
     sources:
+      # (Assuming these commands are run from host flatpak subproject)
+      #
       # Audiveris project. We provide the tag only, not the commit value
       - type: git
         url: https://github.com/Audiveris/audiveris
@@ -87,16 +92,16 @@ modules:
         sha256: ${GRADLE_SHA256}
 
       - type: file
-        path: ../org.audiveris.audiveris.desktop
+        path: org.audiveris.audiveris.desktop
 
       - type: file
-        path: ../org.audiveris.audiveris.metainfo.xml
+        path: org.audiveris.audiveris.metainfo.xml
 
       - type: file
-        path: ../dev/add-tessdata-prefix.sed
+        path: dev/add-tessdata-prefix.sed
 
       # Include app dependencies.json, generated by Gradle task genDependencies
-      - ../../app/build/dependencies.json
+      - ../app/build/dependencies.json
 
       # Include lang_sources.yml, generated by Gradle task genLanguages
-      - ../build/lang_sources.yml
+      - build/lang_sources.yml

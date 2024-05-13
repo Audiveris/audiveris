@@ -102,15 +102,21 @@ task genManifest {
 // Build flatpak on manifest
 task buildFlatpak (type: Exec) {
     description("Run flatpak-builder on manifest")
-///    dependsOn('genLanguages')
-///    dependsOn('genManifest')
-///    dependsOn('genDependencies')
+    dependsOn('genLanguages')
+    dependsOn('genManifest')
+    dependsOn('genDependencies')
     onlyIf { app.ext.hostOSName == "linux" }
 
     doFirst {
-        println "Running flatpak-builder"
+        println "Running flatpak-builder in folder $projectDir"
     }
 
-    commandLine('flatpak-builder', '--force-clean', 'fp-build', 'build/org.audiveris.audiveris.yml')
-    //commandLine('pwd')
+    // flatpak-builder is run from the subproject directory
+    // All outputs are located under the 'build' directory for an easier cleanup
+    commandLine('flatpak-builder', 
+        '--verbose', 
+        '--state-dir=build/.flatpak-builder',   // option to define the state-storing directory
+        '--force-clean',                        // option to empty the output directory
+        'build/output',                         // relative path to the output directory to write
+        'build/org.audiveris.audiveris.yml')    // relative path to the manifest file to read
 }
