@@ -42,6 +42,10 @@ task genLanguages {
         outputDir.exists() || outputDir.mkdirs()
         def langFile = new File(outputDir, "lang_sources.yml")
 
+	project.delete(
+	    fileTree(langFile)
+	)
+	
         fileTree("$appDir/dev/tessdata").include('*.traineddata').each { f ->
             def relPath = relativePath(f).replace("\\","/")
             def sha1 = calcSha1(f) // perhaps not needed

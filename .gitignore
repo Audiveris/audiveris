@@ -61,8 +61,8 @@ app/data/temp
 app/data/temp/*
 flatpak/build
 flatpak/build/*
-flatpak/.flatpak-builder
-flatpak/.flatpak-builder/*
+**/.flatpak-builder
+**.flatpak-builder/*
 
 # Ignore system files
 .DS_Store

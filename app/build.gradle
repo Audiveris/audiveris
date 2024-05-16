@@ -240,6 +240,7 @@ task git_build (type: Exec) {
 
     doLast {
         project.ext.programBuild = standardOutput.toString().replaceAll('\n', '')
+        println "programBuild: ${project.ext.programBuild}"
     }
 }
 
