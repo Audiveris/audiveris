@@ -60,12 +60,13 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <p>
  * An upright fermata refers to the chord in the staff right below in the containing part.
  * An inverted fermata refers to the chord in the staff right above in the containing part.
- * A fermata may also refer to a single or double barline, to indicate the end of a phrase.
+ * A fermata may also refer to a single or double bar-line, to indicate the end of a phrase.
  * <p>
- * Such reference is implemented via a Relation instance.
+ * Such reference is implemented via a Relation instance: either a {@link FermataChordRelation}
+ * or a {@link FermataBarRelation}.
  * <p>
- * Initially, the fermata arc and the fermata dot were kept as separated inters because they were
- * often too distant to be grabbed by the {@link SymbolsBuilder}.
+ * History: Initially, the fermata arc and the fermata dot were kept as separated inters
+ * because they were often too distant to be grabbed by the {@link SymbolsBuilder}.
  * Since the SymbolsBuilder now accepts larger gaps, there is no more need for these member inters.
  *
  * @author Hervé Bitteur
@@ -93,7 +94,7 @@ public class FermataInter
     /**
      * Creates a new <code>FermataInter</code> object.
      *
-     * @param glyph the fermata glypg (arc + dot)
+     * @param glyph the fermata glyph (arc + dot)
      * @param shape the fermata shape (FERMATA or FERMATA_BELOW)
      * @param grade the interpretation quality
      */
@@ -101,7 +102,7 @@ public class FermataInter
                          Shape shape,
                          Double grade)
     {
-        super(glyph, glyph.getBounds(), shape, grade);
+        super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -244,8 +245,8 @@ public class FermataInter
 
         // Check vertical distance to bar/staff
         final Scale scale = system.getSheet().getScale();
-        final int maxDy = scale.toPixels(
-                (Scale.Fraction) constants.getConstant(constants.maxFermataDy, profile));
+        final int maxDy = scale
+                .toPixels((Scale.Fraction) constants.getConstant(constants.maxFermataDy, profile));
         final int dyStaff = staff.distanceTo(center);
 
         if (dyStaff > maxDy) {
@@ -279,9 +280,9 @@ public class FermataInter
             return null;
         }
 
-        final Collection<AbstractChordInter> chords = (shape == Shape.FERMATA_BELOW) ? stack
-                .getStandardChordsAbove(center, bounds)
-                : stack.getStandardChordsBelow(center, bounds);
+        final Collection<AbstractChordInter> chords =
+                (shape == Shape.FERMATA_BELOW) ? stack.getStandardChordsAbove(center, bounds)
+                        : stack.getStandardChordsBelow(center, bounds);
 
         // Look for a suitable chord related to this fermata
         AbstractChordInter chord = AbstractChordInter.getClosestChord(chords, center);
@@ -294,8 +295,8 @@ public class FermataInter
 
         // If chord is mirrored, select the closest vertically
         if (chord.getMirror() != null) {
-            double dyMirror = Math.sqrt(
-                    GeoUtil.ptDistanceSq(chord.getMirror().getBounds(), center.x, center.y));
+            double dyMirror = Math
+                    .sqrt(GeoUtil.ptDistanceSq(chord.getMirror().getBounds(), center.x, center.y));
 
             if (dyMirror < dyChord) {
                 dyChord = dyMirror;
@@ -306,13 +307,13 @@ public class FermataInter
 
         // Check vertical distance between fermata and chord
         final Scale scale = system.getSheet().getScale();
-        final int maxDy = scale.toPixels(
-                (Scale.Fraction) constants.getConstant(constants.maxFermataDy, profile));
+        final int maxDy = scale
+                .toPixels((Scale.Fraction) constants.getConstant(constants.maxFermataDy, profile));
 
         if (dyChord > maxDy) {
             // Check vertical distance between fermata and staff
-            final Staff chordStaff = (shape == Shape.FERMATA) ? chord.getTopStaff()
-                    : chord.getBottomStaff();
+            final Staff chordStaff =
+                    (shape == Shape.FERMATA) ? chord.getTopStaff() : chord.getBottomStaff();
             final int dyStaff = chordStaff.distanceTo(center);
 
             if (dyStaff > maxDy) {
