@@ -41,10 +41,14 @@ import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -73,8 +77,8 @@ public class AboutAction
     private static final Logger logger = LoggerFactory.getLogger(AboutAction.class);
 
     // Resource injection
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(AboutAction.class);
+    private static final ResourceMap resources =
+            Application.getInstance().getContext().getResourceMap(AboutAction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -97,11 +101,36 @@ public class AboutAction
             aboutBox = createAboutBox();
         }
 
-        JOptionPane.showMessageDialog(
+        final Object[] options =
+        { "OK", "Copy" };
+
+        final int choice = JOptionPane.showOptionDialog(
                 OMR.gui.getFrame(),
                 aboutBox,
                 resources.getString("AboutDialog.title"),
-                JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                options,
+                options[0]);
+        System.out.println("choice: " + choice);
+
+        if (choice == 1) {
+            copyToClipBoard();
+        }
+    }
+
+    //-----------------//
+    // copyToClipBoard //
+    //-----------------//
+    private void copyToClipBoard ()
+    {
+        final String str = getContents();
+        final Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
+        final StringSelection strSel = new StringSelection(str);
+        clip.setContents(strSel, strSel);
+        JOptionPane
+                .showMessageDialog(OMR.gui.getFrame(), resources.getString("AboutDialog.copied"));
     }
 
     //----------------//
@@ -201,19 +230,54 @@ public class AboutAction
         ((JLabel) Topic.javaVersion.comp).setText(System.getProperty("java.version"));
 
         ((JLabel) Topic.javaRuntime.comp).setText(
-                System.getProperty("java.runtime.name") + " (build " + System.getProperty(
-                        "java.runtime.version") + ")");
+                System.getProperty("java.runtime.name") + " (build "
+                        + System.getProperty("java.runtime.version") + ")");
 
         ((JLabel) Topic.javaVm.comp).setText(
-                System.getProperty("java.vm.name") + " (build " + System.getProperty(
-                        "java.vm.version") + ", " + System.getProperty("java.vm.info") + ")");
+                System.getProperty("java.vm.name") + " (build "
+                        + System.getProperty("java.vm.version") + ", "
+                        + System.getProperty("java.vm.info") + ")");
 
-        ((JLabel) Topic.os.comp).setText(
-                System.getProperty("os.name") + " " + System.getProperty("os.version"));
+        ((JLabel) Topic.os.comp)
+                .setText(System.getProperty("os.name") + " " + System.getProperty("os.version"));
 
         ((JLabel) Topic.osArch.comp).setText(System.getProperty("os.arch"));
 
         return panel;
+    }
+
+    //-------------//
+    // getContents //
+    //-------------//
+    /**
+     * Build the textual content of the panel.
+     *
+     * @return the panel content as a single string with line breaks
+     */
+    private String getContents ()
+    {
+        final StringBuilder sb = new StringBuilder();
+
+        for (Component comp : aboutBox.getComponents()) {
+            switch (comp) {
+            case JLabel label -> {
+                final String text = label.getText();
+                sb.append(text);
+                sb.append(text.endsWith(":") ? " " : WellKnowns.LINE_SEPARATOR);
+            }
+            case JEditorPane pane -> {
+                if (pane == Topic.home.comp) {
+                    sb.append(resources.getString("Application.homepage"));
+                } else if (pane == Topic.project.comp) {
+                    sb.append(resources.getString("Application.projectpage"));
+                }
+                sb.append(WellKnowns.LINE_SEPARATOR);
+            }
+            default -> {}
+            }
+        }
+
+        return sb.toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -225,15 +289,11 @@ public class AboutAction
             extends ConstantSet
     {
 
-        private final Constant.Integer titleFontSize = new Constant.Integer(
-                "Points",
-                14,
-                "Font size for title in about box");
+        private final Constant.Integer titleFontSize =
+                new Constant.Integer("Points", 14, "Font size for title in about box");
 
-        private final Constant.Integer urlFontSize = new Constant.Integer(
-                "Points",
-                10,
-                "Font size for URL in about box");
+        private final Constant.Integer urlFontSize =
+                new Constant.Integer("Points", 10, "Font size for URL in about box");
     }
 
     //------------//
