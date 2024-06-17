@@ -38,20 +38,25 @@ task genLanguages {
     description("Generate languages sources")
 
     doLast {
-        ///flathubDir.exists() || flathubDir.mkdirs()
+    	println "Copying language sources to $flathubDir"
+    	copy {
+    	    from("appdir/dev/tessdata")
+    	    include '*.traineddata'
+    	    into(flathubDir)
+    	}
+    	
         def langFile = new File(flathubDir, "lang_sources.yml")
-        println "Generating language sources into ${langFile}"
+        println "Generating language sources as ${langFile}"
 
         project.delete(
             fileTree(langFile)
         )
 	
         fileTree("$appDir/dev/tessdata").include('*.traineddata').each { f ->
-            def relPath = relativePath(f).replace("\\","/")
+            def fname = f.getName()
             def sha1 = calcSha1(f) // perhaps not needed
             langFile.append("      - type: file\n")
-            langFile.append("        path: ../${relPath}\n")
-            langFile.append("        sha1: ${sha1}\n\n") // perhaps not needed
+            langFile.append("        path: ${fname}\n\n")
         }
     }
 }
@@ -143,7 +148,7 @@ task buildFlatpak (type: Exec) {
 
     // All outputs are located under the 'build' directory for an easier cleanup
     commandLine('flatpak-builder', 
-//        '--verbose', 
+        '--verbose', 
 //        '--state-dir=build/.flatpak-builder',   // option to define the state-storing directory
         '--force-clean',                        // option to empty the output directory
         'build',                                // relative path to the output directory to write
