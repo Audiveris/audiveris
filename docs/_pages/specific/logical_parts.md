@@ -5,7 +5,7 @@ parent: Specific Features
 nav_order: 3
 has_children: false
 ---
-## Logical Parts
+# Logical Parts
 {: .no_toc }
 {: .d-inline-block }
 new in 5.3
@@ -22,7 +22,7 @@ Table of contents
 {:toc}
 ---
 
-### Definition
+## Definition
 
 A part is generally meant to represent a given music instrument.
 It contains one stave, or two staves (piano example), or even 3 staves (organ).  
@@ -35,7 +35,7 @@ In many cases, one (physical) part in a system corresponds to another (physical)
 following system(s). We refer to this logical sequence as a **logical** part, which represents
 the same instrument all along the score.
 
-### Parts mapping
+## Parts mapping
 
 In some cases, from one system to the next, the system composition in terms of physical parts may vary
 as shown in the following example:
@@ -57,11 +57,10 @@ We call this action: "***Part collation***" (into logical parts).
 Part collation is automatically triggered at the end of score transcription,
 and before any export to MusicXML.  
 We can also manually trigger parts collation.
-This is done via a right-click in a score area, which opens a pop-up menu as follows:  
+This is done via a right-click in a score area, which opens a contextual menu as follows:  
 ![](../assets/images/collate_parts.png)
 
-To visualize the current mapping, one easy way is to tick the item ``Show part names``
-in the ``View`` pull-down menu.
+To visualize the current mapping, one easy way is to use the {{ site.view_parts }} pull-down menu.
 This results in:
 
 ![](../assets/images/view_parts.png)
@@ -75,7 +74,7 @@ Each physical part is prefixed with the name of its corresponding logical part.
     - (blank) since we have yet no name for this logical part
     - PIANO (displayed in small size with a slight vertical offset)
 
-### Editing of logical parts
+## Editing of logical parts
 
 Still via a right-click in the score area, we can open an editor on logical parts:  
 ![](../assets/images/edit_logicals.png)
@@ -117,7 +116,7 @@ This means that the logicals just saved are now locked (but can be manually unlo
 Notice also that the main score window now displays the updated parts names:  
 ![](../assets/images/coffrets_parts_final.png)
 
-### Unlocked/Locked logicals configuration
+## Unlocked/Locked logicals configuration
 
 The "Parts collation" action works differently according to the unlocked/locked status
 of our logicals configuration.
@@ -134,7 +133,7 @@ For each physical part -- not manually mapped -- found in sequence in the score:
 2. The physical part is assigned to a compatible logical part
 or a warning is displayed for this un-mappable physical part.
 
-### Mapping algorithm
+## Mapping algorithm
 
 The parts mapping works as follows.  
 For every physical part checked against a logical part:
@@ -150,7 +149,7 @@ then checking goes bottom-up from the piano part,
 and goes top-down for the parts located below the piano part.
 - If there is no piano part, checking is done bottom-up.
 
-### Manual mapping
+## Manual mapping
 
 If the score gets too complex for the OMR engine, we can always fall back
 to the manual mapping of any "un-mappable" physical part.

@@ -5,7 +5,7 @@ parent: Main Features
 nav_order: 2
 has_children: true
 ---
-## Main Entities
+# Main Entities
 
 The purpose is not to describe the full data model of Audiveris, but simply to introduce some
 key notions that are used throughout the whole application and that the end-user needs to

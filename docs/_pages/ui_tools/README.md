@@ -10,7 +10,7 @@ has_children: true
 ## Interaction with the OMR engine
 
 The OMR engine works as a sequence of 20 sheet steps, a step being a kind of mini-batch.  
-You, as an interacting user, can get in only at the end of a step.  
+We, as an interacting user, can get in only at the end of a step.  
 [When a sheet first appears with its Data tab, the OMR engine has already performed the LOAD and
 BINARY steps.]
 
@@ -26,36 +26,37 @@ the OMR engine.
 
 ## Tasks
 
-#### Task sequence
+### Task sequence
 
-Whenever you modify an entity in some way, this task is recorded as such, perhaps with some
+Whenever we modify an entity in some way, this task is recorded as such, perhaps with some
 joint tasks, into a "_task sequence_" which is then performed on the targeted entities.
 
 A task sequence can be pretty large. For example:
 
-*   You can select a dozen inters and ask for the removal of the whole set.
-*   You can remove an inter ensemble; this triggers the removal of all the
+*   We can select a dozen inters and ask for the removal of the whole set.
+*   We can remove an inter ensemble; this triggers the removal of all the
 members of the ensemble: words of a sentence, heads of a head-chord, etc.
 *   Removing the last remaining member of an ensemble also removes the now-empty ensemble.
 
-A task sequence is _indivisible_, but you can **do** it, **undo** and **redo** it at will,
+A task sequence is _indivisible_, but we can **do** it, **undo** and **redo** it at will,
 with no limits.
 Only moving the engine forward (or pseudo backward) from one step to another clears the user
 task history.
 
 
-#### Undo
+### Undo
 
-Undo cancels the last task sequence (whether it was a do or a redo) with all its consequences.
+The ``Undo`` command cancels the last task sequence (whether it was a do or a redo)
+with all its consequences.
 
-*   Press the **Undo** button ![](../assets/images/undo.png) on the tool bar,
+*   We press the **Undo** button ![](../assets/images/undo.png) on the tool bar,
 *   Or type `Ctrl+Z` (`Command+Z` for MacOS)
 
-#### Redo
+### Redo
 
-Redo re-performs the last un-done task sequence.
+The ``Redo`` command re-performs the last un-done task sequence.
 
-*   Press the **Redo** button ![](../assets/images/redo.png) on the tool bar,
+*   We press the **Redo** button ![](../assets/images/redo.png) on the tool bar,
 *   Or type `Ctrl+Shift+Z` (`Command+Shift+Z` for MacOS).
 
 ## When to interact?
@@ -63,23 +64,24 @@ Redo re-performs the last un-done task sequence.
 Most user corrections can be done at the end of a sheet transcription
 (at the final `PAGE` step of the engine pipeline).
 
-Some corrections are more effective at earlier moments; experience will tell you.  
+Some corrections are more effective at earlier moments; experience will tell us.  
 Here are interesting stopping points, presented in chronological order:
 
 * **SCALE** step is an interesting stop if the beams are questionable.  
-That is, if you get a message saying that the beam thickness value is just "extrapolated", be careful!
-This tells you that beam-related data could not reach the quorum needed to infer a reliable
+That is, if we get a message saying that the beam thickness value is just "extrapolated",
+we must be careful!
+This tells us that beam-related data could not reach the quorum needed to infer a reliable
 thickness value.  
-So, measure the actual beam thickness by yourself (using the Pixel Board) and modify the beam scale
-if needed (see the [Sheet scale](../main/sheet_scale.md) section).
+So, let's measure the actual beam thickness on our own (using the Pixel Board) and modify
+the beam scale if needed (see the [Sheet scale](../main/sheet_scale.md) section).
 
 * **GRID** step is where staff lines, then staves and systems are detected.  
-Hence, this is the most convenient point to interact if you need to manually modify lines
+Hence, this is the most convenient point to interact if we need to manually modify lines
 and staves (see the [Staff editing](./staff_editor.md) section).
 
 * **REDUCTION** step is where all candidate note heads are combined with candidate stems and
-beams and then reduced to come up with reliable notes (this does not include any flag or rest,
-which are addressed later in the SYMBOLS step).  
+beams and then reduced to come up with reliable notes
+-- this does not include any flag or rest, which are addressed later in the SYMBOLS step.  
 It is a key moment in the engine pipeline, because these "reliable" notes will never be called into
 question by the following steps.
 So much so that their underlying pixels will not be presented to the glyph classifier during the
@@ -99,5 +101,5 @@ be considered as a possible music symbol.
 Thus, it is efficient to manually remove text false positives at the end of this TEXT step to let
 their pixels be taken into account by the SYMBOLS step.
 
-* **PAGE** step is where the OMR engine ends on a sheet and where you can observe and correct the
+* **PAGE** step is where the OMR engine ends on a sheet and where we can observe and correct the
 final results.

@@ -5,7 +5,7 @@ parent: Main Features
 has_children: true
 nav_order: 7
 ---
-## Book Portions
+# Book Portions
 
 Handling a one-image score is just a matter of one book with one sheet in it.   
 But handling cases of dozens or hundreds of score images may require more flexible approaches:

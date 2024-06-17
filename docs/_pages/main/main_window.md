@@ -5,13 +5,13 @@ parent: Main Features
 nav_order: 1
 has_children: true
 ---
-## Main Window
+# Main Window
 
 ![](../assets/images/chula_transcribed.png)
 
 The Audiveris main window is composed of 3 panels:
 
-### Sheet
+## Sheet
 
 This is the large panel on the left side.  
 - The **Gray** tab, when available, presents the original image using gray values.
@@ -24,7 +24,7 @@ In this Data tab, the staff lines are drawn as thin lines.
 All tabs, except the Data tab, can be manually closed.
 Most can be re-opened via the `Sheet` pull-down menu.
 
-### Boards
+## Boards
 
 The right panel is a vertical set of boards.
 They provide information and editing functions.
@@ -32,7 +32,7 @@ They provide information and editing functions.
 Only basic boards are displayed by default, others are hidden.
 A right click in this column allows hiding or displaying any available board.
 
-### Events
+## Events
 
 The lower left panel is a log of the main events that occurred so far.
 

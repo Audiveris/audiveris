@@ -32,10 +32,15 @@ learning curve for any potential developer.
 
 ## Overview
 
-When questioned about Audiveris, ChatGPT answered:
-> Audiveris is an open source Optical Music Recognition (OMR) software. It is used to scan sheet music and convert it into a machine-readable format, such as MusicXML or MIDI. This allows the music to be edited, played back, and shared digitally.
+When questioned about Audiveris in December 2023, ChatGPT answered:
 
-Not that bad! But let's try to describe it on our own...
+> Audiveris is an open-source optical music recognition (OMR) software. OMR technology is designed to recognize printed music notation from scanned images or photos and convert it into a digital format that can be edited and played back. Audiveris specifically focuses on converting scanned sheet music into MusicXML format.
+
+> The software is developed in Java and is available for various operating systems, including Windows, macOS, and Linux. It can be used to digitize printed sheet music, making it easier to edit, share, and playback on digital devices.
+
+> If you're interested in using Audiveris, you can find more information, documentation, and download links on the official website or through open-source software repositories. Keep in mind that the information provided here is accurate as of my last knowledge update in January 2022, and there may have been updates or changes since then.
+
+Not that bad at all! But let's try to describe it on our own...
 
 Audiveris is an open source software, published under the
 [AGPL](https://en.wikipedia.org/wiki/GNU_Affero_General_Public_License) V3 license.

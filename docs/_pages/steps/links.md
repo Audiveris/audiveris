@@ -1,8 +1,8 @@
 ---
 layout: default
 title: LINKS step
-parent: Pipeline
-grand_parent: Main Features
+parent: Steps internals
+grand_parent: References
 nav_order: 18
 ---
-### LINKS step
+# LINKS step

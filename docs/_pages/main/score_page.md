@@ -5,7 +5,7 @@ grand_parent: Main Features
 parent: Main Entities
 nav_order: 2
 ---
-### Score of Pages
+# Score of Pages
 
 Looking at the musical content of a given sheet image, we can observe that staves are often gathered
 into systems (in which staves are played in sync), and that a given sheet image generally contains
@@ -20,7 +20,7 @@ In Audiveris, this logical containment is modeled as one instance of **Score** p
 (since "Score" is the word used by MusicXML), the score containing a sequence of one or several
 **Page** instances.
 
-#### Example
+## Example
 
 To make these concepts more concrete, let's look at the following diagram of a hypothetical book:
 ![Book vs Score](../assets/images/Book-vs-Score.png)
@@ -46,7 +46,7 @@ To summarize, in this book we have 2 scores that span over 3 sheets:
     - `Page` #2 from `Sheet` #2, followed by
     - Single `Page` #1 from `Sheet` #3
 
-#### Rules
+## Rules
 
 In the vast majority of cases, there is exactly one page per sheet.
 

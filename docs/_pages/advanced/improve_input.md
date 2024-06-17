@@ -4,7 +4,7 @@ title: Improve Input
 parent: Advanced Features
 nav_order: 3
 ---
-## Improve Input
+# Improve Input
 {: .no_toc }
 
 Sometimes the base image is of rather bad quality.
@@ -19,13 +19,13 @@ Table of contents
 {:toc}
 ---
 
-### Using Gimp
+## Using Gimp
 
 [Contribution by Baruch Hoffart]
 
 Here are some possible improvements using Gimp.
 
-#### Adjust Brightness and Contrast
+### Adjust Brightness and Contrast
 
 The simplest way is to adjust the brightness of an input image.
 Although Audiveris has a very good automatic binarization algorithm, sometimes manual adjustment
@@ -40,7 +40,7 @@ Keep the dark parts black, to get an image like this:
 
 ![](../assets/images/adjust_brightness_2.png)
 
-#### Improve Image using Filters
+### Improve Image using Filters
 
 Have a look at the following image: here we have a lot of noise in the lines and in the bars.
 The transcriptions will have problem to properly detect the bars in such a case.
@@ -66,7 +66,7 @@ Finally use an "unsharp mask" filter with standard deviation set to about 1.0 to
 
 You see that now the noise is almost completely removed.
 
-### Enlarging Low Resolution Scans
+## Enlarging Low Resolution Scans
 
 [Contribution by Ram Kromberg]
 
@@ -85,7 +85,7 @@ It is possible to improve or even entirely overcome such obstacles using super-r
 
 This document will detail an example using free, open-source software that is commonly distributed in Linux distributions. Alternatives for Macintosh and Windows will be mentioned as well.
 
-#### Software Required
+### Software Required
 
 1. _waifu2x_. For the enlargement.
 
@@ -99,7 +99,7 @@ This document will detail an example using free, open-source software that is co
 
 4. Audiveris OMR.
 
-#### Step-by-step
+### Step-by-step
 
 1. In this example we'll be using the [Icelandic national anthem](https://commons.wikimedia.org/wiki/File:Icelandic_national_anthem_sheet_music.gif) as follows:  
 ```bash
@@ -116,7 +116,7 @@ convert "is~.gif" 00.png
 waifu2x-ncnn-vulkan -s 4 -i 00.png -o O4.png
 ```
 
-#### Notes
+### Notes
 
 1. By default, _waifu2x-ncnn-vulkan_ makes use of the GPU. It is possible to force the use of the CPU with the `-g -1` flag and specify the use of more threads with the `-j` flag. e.g. 4 CPU threads: `waifu2x-ncnn-vulkan -g -1 -j 2:4:4 -s 2 -i 00.png -o 04.png`.
 Be advised even low-end GPUs will out-perform the CPU many times over.

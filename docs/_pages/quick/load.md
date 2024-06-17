@@ -4,7 +4,7 @@ title: Load
 nav_order: 2
 parent: Quick Tour
 ---
-## Load
+# Load
 
 To load an image from disk, we can use the pull-down menu {{ site.file_input }}:
 

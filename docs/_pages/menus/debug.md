@@ -5,7 +5,7 @@ grand_parent: References
 parent: Pull-down menus
 nav_order: 8
 ---
-## Debug menu
+# Debug menu
 {: .no_toc }
 
 ![](../assets/images/debug_menu.png)
@@ -25,7 +25,7 @@ Table of contents
 {:toc}
 ---
 
-### Browse Book...
+## Browse Book...
 
 ![](../assets/images/book_browser.png)
 
@@ -37,14 +37,14 @@ measures, chords, glyphs, inters, etc.
 * The right part displays the name and value of each data member of the entity currently selected
 in the tree.
 
-### Clear Log
+## Clear Log
 
 This action clears the events panel (located at bottom of main window).
 This is meant for an easier focus on the coming events.
 
 Note this does not impact the output, nor the log file.
 
-### Dump Event Services
+## Dump Event Services
 
 Dump all UI services connected to the current sheet.
 

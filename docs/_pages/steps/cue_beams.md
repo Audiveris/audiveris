@@ -1,8 +1,8 @@
 ---
 layout: default
 title: CUE_BEAMS step
-parent: Pipeline
-grand_parent: Main Features
+parent: Steps internals
+grand_parent: References
 nav_order: 12
 ---
-### CUE_BEAMS step
+# CUE_BEAMS step

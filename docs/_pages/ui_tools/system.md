@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 7
 ---
-## System Merge
+# System Merge
 {: .no_toc }
 
 In the Audiveris ``GRID`` step, detected staves are gathered into systems, based on barlines found on
@@ -23,8 +23,8 @@ detection of systems by the OMR engine.
 
 Since the 5.2 release, we can manually fix this problem.
 
-We point at the upper system portion, and via the right-click pop-up menu, navigate to `System#n ...`
-and click on "_Merge with system below_".
+We point at the upper system portion, and via the right-click {{ site.popup_system }} menu
+we select "_Merge with system below_".
 
 ![](../assets/images/system_merge.png)
 

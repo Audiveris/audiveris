@@ -4,7 +4,7 @@ title: Transcribe
 nav_order: 3
 parent: Quick Tour
 ---
-## Transcribe
+# Transcribe
 
 Transcription is the heart of OMR, the difficult process to infer high-level music information
 from low-level graphical data.

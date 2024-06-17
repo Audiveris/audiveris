@@ -4,7 +4,7 @@ title: Play
 nav_order: 5
 parent: Quick Tour
 ---
-## Play
+# Play
 
 Strictly speaking, this feature is not part of Audiveris, but rather pertains to an
 external program (a simple music sequencer or some high-level editor).  

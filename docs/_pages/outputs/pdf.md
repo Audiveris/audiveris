@@ -5,7 +5,7 @@ grand_parent: References
 parent: Outputs
 nav_order: 4
 ---
-## .pdf files
+# .pdf files
 
 Audiveris can print out a whole book or a single sheet.
 

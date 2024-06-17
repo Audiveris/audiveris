@@ -6,7 +6,7 @@ parent: UI Foundations
 nav_order: 1
 ---
 
-## Principles
+# Principles
 {: .no_toc }
 
 For Audiveris, music is something very graphical, a 2D view of music symbols

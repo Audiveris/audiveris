@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 2
 ---
-## Inter Editing
+# Inter Editing
 {: .no_toc }
 
 Since 5.2 release, any Inter -- whether it has been created by the OMR engine,
@@ -26,7 +26,7 @@ Table of contents
 {:toc}
 ---
 
-### Entering editing mode
+## Entering editing mode
 
 To start editing an Inter, we must first set it into `editing mode`:
 - This is most conveniently done by a left double-click on the Inter.
@@ -35,7 +35,7 @@ To start editing an Inter, we must first set it into `editing mode`:
 
   ![](../assets/images/interboard_edit.png)
 
-### Inter handles
+## Inter handles
 
 The Inter being edited now displays a set of one or several handles, depending on the
 Inter class.
@@ -72,7 +72,7 @@ These are just two typical examples.
 See the [Inter Editors](../ui_tools/inter_editors.md) reference section for a description
 of all available Inter editors.
 
-### Exiting editing mode
+## Exiting editing mode
 
 Finally, to complete the on-going editing, we simply press the `Enter` key or
 click on any location other than the Inter handles.

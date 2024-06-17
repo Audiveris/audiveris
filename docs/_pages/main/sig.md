@@ -5,9 +5,9 @@ grand_parent: Main Features
 parent: Main Entities
 nav_order: 5
 ---
-### Symbol Interpretation Graph
+# Symbol Interpretation Graph
 
-#### Relation
+## Relation
 
 A Relation instance formalizes a relationship between a source Inter instance and a (separate)
 target Inter instance.
@@ -47,7 +47,7 @@ clef and this key (because the vertical positions of this key are not compatible
 
 ![](../assets/images/clef_key.png)
 
-#### SIG
+## SIG
 
 A **S**ymbol **I**nterpretation **G**raph (SIG), is simply a graph with Inter instances as vertices
 and Relation instances as edges.

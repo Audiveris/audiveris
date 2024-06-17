@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 4
 ---
-## Relation Addition
+# Relation Addition
 {: .no_toc }
 
 ---
@@ -27,7 +27,7 @@ We can visually check the relations when we select an Inter.
 The name of each relation is also displayed, provided that the current zoom is high enough (>=2).
 
 
-### Mandatory vs non-mandatory relations
+## Mandatory vs non-mandatory relations
 
 Depending on the Inter class, an Inter instance may need a relation with another Inter instance.
 
@@ -64,7 +64,7 @@ An example of a non-mandatory relation is the case of a direction sentence which
 have a chord precisely above or below.  
 For such non-mandatory relations, we have to decide if we set them or not.
 
-### Linking Inters
+## Linking Inters
 
 Assuming the slur is not linked to the note head, we need to insert the relation between them.
 

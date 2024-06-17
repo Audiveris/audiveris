@@ -1,8 +1,8 @@
 ---
 layout: default
 title: TEXTS step
-parent: Pipeline
-grand_parent: Main Features
+parent: Steps internals
+grand_parent: References
 nav_order: 13
 ---
-### TEXTS step
+# TEXTS step

@@ -4,7 +4,7 @@ title: OCR languages
 nav_order: 2
 parent: Installation
 ---
-## OCR languages
+# OCR languages
 {: .no_toc }
 
 Audiveris delegates text recognition to Tesseract OCR library.
@@ -24,7 +24,7 @@ Table of contents
 {:toc}
 ---
 
-### Tesseract as a linked library
+## Tesseract as a linked library
 
 Audiveris calls Tesseract software as a linked binary _library_,
 not as a separate executable _program_.
@@ -35,7 +35,7 @@ not as a separate executable _program_.
   Audiveris will not interfere with that program.
 - However, Tesseract library will need data (language files) which must be provided separately.
 
-### Data version
+## Data version
 
 Tesseract OCR engine can operate in two different OCR modes
 -- the ``legacy`` mode and the new ``LSTM`` mode -- each with its own model.
@@ -46,7 +46,7 @@ The language files downloadable from [Tesseract tessdata] page are meant for Tes
 version 4.x and up, each language file containing both ``legacy`` and ``LSTM`` models.  
 So, these are the language data files that Audiveris requires.
 
-### Data location
+## Data location
 
 At starting time, Audiveris tries to initialize the Tesseract library with a `tessdata` folder:
   1. It first checks the location defined by the `TESSDATA_PREFIX` environment variable.
@@ -80,7 +80,7 @@ about the OCR engine version and OCR tessdata folder:
 
 ![](../assets/images/about_ocr.png)
 
-### Languages selection
+## Languages selection
 
 At runtime, you can specify which languages should be tried by the OCR software.  
 This is done via a language specification string, a plus-separated list of language names:

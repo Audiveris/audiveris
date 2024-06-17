@@ -5,7 +5,7 @@ grand_parent: References
 parent: Pull-down menus
 nav_order: 4
 ---
-## Step menu
+# Step menu
 
 ![](../assets/images/step_menu.png)
 

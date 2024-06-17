@@ -5,7 +5,7 @@ grand_parent: References
 parent: Folders
 nav_order: 1
 ---
-## Standard folders
+# Standard folders
 {: .no_toc :}
 {: .d-inline-block }
 new in 5.3
@@ -18,12 +18,12 @@ Table of contents
 {:toc}
 ---
 
-### Purpose
+## Purpose
 
 This is where, by default, Audiveris stores all score outputs, such as the `.omr` project
 files, the `.pdf` printouts, the `.mxl` MusicXML files, etc.
 
-### Historical target policy
+## Historical target policy
 
 Before 5.3, Audiveris policy was to gather all outputs of a given input file
 in a specific sub-folder, named according to the input radix, created under the base folder.
@@ -73,7 +73,7 @@ this time with CLI option ``-output /path/to/fooBar``, we would get outputs like
     ...
 ```
 
-### Updated target policy
+## Updated target policy
 
 The historical target policy is still the default policy, but additional possibilities
 are now provided by Audiveris 5.3.

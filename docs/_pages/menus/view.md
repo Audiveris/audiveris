@@ -5,7 +5,7 @@ grand_parent: References
 parent: Pull-down menus
 nav_order: 5
 ---
-## View menu
+ View menu
 {: .no_toc }
 
 ![](../assets/images/view_menu.png)
@@ -18,81 +18,86 @@ Table of contents
 {:toc}
 ---
 
-### Width Fit
+# Width fit
 
 Zoom image to window width.
 
-### Height Fit
+# Height fit
 
 Zoom image to window height.
 
-### Display invalid sheets
+# Display invalid sheets
 
 Toggle the display all sheets, even invalid ones.
 
-### Use transparency
+# Use transparency
 
 Display interpretations in transparency according to the computed probability value.
 
-### Show score Voice (F8)
+# Show jumbo inters (F7)
+
+Toggle the display of certain shapes (dots by default) with a double size
+to ease their visual checking.
+
+# Show score voices (F8)
 
 Toggle the display of notes and lyrics in colors according to the computed voices
 (only in output and mixed layer view).
 
-### Show score Errors (F9)
+# Show score errors (F9)
 
 Toggle the display of erroneous measures in pink background color.
 
-### Switch Selections (F11)
+# Switch selections (F11)
 
 Toggles the selection modes between glyph, inter and section.
 
 (needs ``SPECIFIC_VIEWS`` advanced topic)
 
-### Switch Layers (F12)
+# Switch layers (F12)
 
 Toggle between the 3 different layer views (see [Sheet display modes](../main/display_modes.md)).
 
-### Show Score Slots
+# Show score slots
 
 Display the detected rhythm analysis (only in output and mixed view).
 
-### Show Annotations
+# Show annotations
 
 Toggle the display of all system, part, measure and rhythm related annotations
 (system ID, part name, measure ID, time slot offset).
 
-### Show chord IDs
+# Show chord IDs
 
 Toggle the display of every chord ID.
 
 This is convenient to visually map chords between [measure strips](./popup.md#measure-n)
 and sheet view.
 
-### Show part names
+# Show part names
 
 Toggle the display of logical part name for every physical part.
 
-### Show staff Lines
+# Show staff Lines
 
 Toggle the display of staff lines.
 
 (needs ``SPECIFIC_ITEMS`` advanced topic)
 
-### Show staff Points
+# Show staff Points
 
 Toggle the display of staff lines defining points, the ones that can be manually edited.
 
 (needs ``SPECIFIC_ITEMS`` advanced topic)
 
 
-### Show stick Lines
+# Show stick Lines
 
 Toggle the display of the average line of the selected glyph.
 
 (needs ``SPECIFIC_ITEMS`` advanced topic)
 
-### Show Attachments
+# Show attachments
 
 Toggle the display of specific attachments.
 

@@ -5,7 +5,7 @@ parent: Specific Features
 nav_order: 7
 has_children: false
 ---
-## Tremolo
+# Tremolo
 {: .no_toc }
 {: .d-inline-block }
 new in 5.3

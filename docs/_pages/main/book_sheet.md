@@ -5,7 +5,7 @@ grand_parent: Main Features
 parent: Main Entities
 nav_order: 1
 ---
-### Book of Sheets
+# Book of Sheets
 
 An image file fed into OMR software contains one or several images.
 Typically PDF and TIFF formats support the notion of multi-image files while, for example,

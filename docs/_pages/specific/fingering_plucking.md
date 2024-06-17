@@ -5,7 +5,7 @@ parent: Specific Features
 nav_order: 8
 has_children: false
 ---
-## Fingering and Plucking
+# Fingering and Plucking
 {: .no_toc }
 {: .d-inline-block }
 completed in 5.3
@@ -26,21 +26,21 @@ Table of contents
 {:toc}
 ---
 
-### Example
+## Example
 
 Here is an example with fingering indications (in red squares)
 and plucking indications (in green circles):
 
 ![](../assets/images/fingering_plucking.png)
 
-### Detection
+## Detection
 
 The OMR engine must be explicitly told to detect these indications.
 This can be done via the processing switches in the {{ site.book_parameters }} pull-down menu:
 
 ![](../assets/images/fingering_plucking_switches.png)
 
-### Insertion 
+## Insertion 
 
 Regardless of the switches values, we can always manually assign or drag & drop these
 indications from the shape board:
@@ -52,7 +52,7 @@ indications from the shape board:
 | Fingerings | ![](../assets/images/fingering_palette.png) |
 | Pluckings | ![](../assets/images/plucking_palette.png) |
 
-### Export
+## Export
 
 These indications get exported to MusicXML and are thus visible from MuseScore for example:
 

@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 14
 ---
-## Shared Head
+# Shared Head
 {: .no_toc }
 
 ---
@@ -16,7 +16,7 @@ Table of contents
 {:toc}
 ---
 
-### Note head shared by two voices
+## Note head shared by two voices
 
 Generally a note head (filled or void -- except whole and breve notes) is connected to exactly one stem, as in the following example.
 
@@ -55,7 +55,7 @@ And if voices are colorized, the separation between head 'halves' becomes even m
 
 ![](../assets/images/shared_head_5.png)
 
-### Impact on relations
+## Impact on relations
 
 Playing with relations around note heads, such as the relation with an accidental or with an
 augmentation dot, is still possible with shared note heads.

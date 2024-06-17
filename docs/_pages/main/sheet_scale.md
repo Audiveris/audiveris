@@ -4,7 +4,7 @@ title: Sheet Scale
 parent: Main Features
 nav_order: 6
 ---
-## Sheet Scale
+# Sheet Scale
 {: .no_toc }
 
 Table of contents
@@ -13,7 +13,7 @@ Table of contents
 {:toc}
 ---
 
-### General scaling
+## General scaling
 
 The behavior of steps like GRID (staves, etc), BEAMS and STEMS depends highly on the accuracy
 of scaling data estimated during:
@@ -37,7 +37,7 @@ Here are two examples of such histograms:
     - If the sheet contains a significant population of beams, we can observe a second peak
     which corresponds to the typical beam thickness (12 pixels in this example).
 
-### Beam thickness
+## Beam thickness
 {: .d-inline-block }
 new in 5.3
 {: .label .label-yellow }
@@ -54,7 +54,7 @@ and simply make a guess on beam thickness (using say 1/2 of staff interline).
 And without a precise thickness estimate, chances are the beams will not be correctly detected
 and processed in the sheet.
 
-#### Manual beam correction
+### Manual beam correction
 
 After the SCALE step, but before the BEAMS step, we can manually modify the beam thickness value
 as computed by the OMR engine.
@@ -79,11 +79,11 @@ Initially, all rows appear in gray, and the data values, if any, are displayed o
   the modified value must be re-entered.
   - We may have to perform the correction manually for each and every sheet in the containing book.
 
-#### Upfront beam specification
+### Upfront beam specification
 
 A different approach is to provide upfront the OMR engine with a beam thickness specification.
 
-##### Interactive mode
+#### Interactive mode
 We can do this using the {{ site.book_parameters }} pull-down menu:
 
 ![](../assets/images/beam_book_spec.png)
@@ -109,7 +109,7 @@ It can be used at book and/or sheet levels.
   - It is only a *specification*, to be used by any subsequent SCALE step.  
     Hence, to be effectively applied, the SCALE step must be performed (or reperformed).
     
-##### Batch mode
+#### Batch mode
 
 When running in batch on a brand new input, we can include this beam specification in the
 command line arguments, using an option like:

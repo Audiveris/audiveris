@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 10
 ---
-## Key Signature
+# Key Signature
 {: .no_toc }
 
 A key signature cannot be built or modified incrementally by adding or removing one alteration
@@ -22,7 +22,7 @@ Table of contents
 {:toc}
 ---
 
-### Flats and Sharps
+## Flats and Sharps
 
 When dragging a "ghost" key from the shape palette, the ghost turns from dark-gray to green
 when we enter a staff and, as usual, a thin red segment is drawn from the ghost center to the staff mid line.
@@ -39,7 +39,7 @@ Note the two sharp signs are located on F and C steps respectively, and they can
 horizontally until we release the mouse.  
 Once dropped, we can still set the key into editing mode and again shift the inserted key.
 
-### Naturals
+## Naturals
 
 As of this writing, the Audiveris OMR engine can recognize all-sharp keys and all-flat keys but
 no key with natural signs inserted

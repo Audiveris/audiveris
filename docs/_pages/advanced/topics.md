@@ -4,7 +4,7 @@ title: Advanced Topics
 parent: Advanced Features
 nav_order: 2
 ---
-## Advanced Topics
+# Advanced Topics
 {: .no_toc }
 
 ---
@@ -23,17 +23,17 @@ This is done via the {{ site.tools_advanced }} pull-down menu.
 
 ![](../assets/images/advanced_topics.png)
 
-### Input Step
+## Input Step
 
 This box allows to define which step is automatically trigerred on an input file.
 
-### Default Plugin
+## Default Plugin
 
 This allows to interactively choose a new default plugin among the declared ones,
 since by default the first declared plugin is set as the default one
 (See [Plugins](./plugins.md) section).
 
-### Target output folders
+## Target output folders
 {: .d-inline-block }
 new in 5.3
 {: .label .label-yellow }
@@ -47,14 +47,14 @@ folder, created according to the input file name without its extension.
 
 For further explanation, see section on [Standard folders](../folders/standard.md).
 
-### Global font ratio
+## Global font ratio
 {: .d-inline-block }
 new in 5.3
 {: .label .label-yellow }
 
 The slider allows to select a larger font size used throughout the application views.
 
-### Locale
+## Locale
 {: .d-inline-block }
 new in 5.3
 {: .label .label-yellow }
@@ -64,7 +64,7 @@ As of this writing, available locales are:
 - **en** (English), the default
 - **fr** (French), still partially implemented...
 
-### Advanced Topics
+## Advanced Topics
 
  Each of these topics can gather several related features.
 

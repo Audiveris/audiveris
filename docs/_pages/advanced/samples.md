@@ -4,7 +4,7 @@ title: Samples
 parent: Advanced Features
 nav_order: 6
 ---
-## Samples
+# Samples
 {: .no_toc :}
 
 This chapter describes how to set up repositories of Glyph samples and how to carefully filter the
@@ -24,7 +24,7 @@ Table of contents
 1. TOC
 {:toc}
 ---
-### Initial samples
+## Initial samples
 
 There is an Audiveris Google drive located at
 [https://drive.google.com/drive/u/1/folders/0B9_F5tULPk_oeEU0a2Z1U0gwLTg?resourcekey=0-W_yyQcPj9JL9Bc2bKTAtrg](https://drive.google.com/drive/u/1/folders/0B9_F5tULPk_oeEU0a2Z1U0gwLTg?resourcekey=0-W_yyQcPj9JL9Bc2bKTAtrg)
@@ -51,7 +51,7 @@ We will then be able to augment this collection on our own.
 We can also download the `images.zip` file which is not mandatory for training, but which will
 help us see most samples within their sheet context.
 
-### Sampling a Sheet or a Book
+## Sampling a Sheet or a Book
 
 After perhaps some manual corrections, when we are really satisfied with all the glyphs recognized
 in a given sheet, we can save the sheet data as training samples.
@@ -68,7 +68,7 @@ In say the `foo` book folder, there will be:
 It is a good practice to work on one book at a time, and only merge a book repository into the
 global repository when the book data has been thoroughly verified and its samples carefully filtered.
 
-### Sample Repository
+## Sample Repository
 
 The purpose of the Sample Repository dialog is to provide a user interface to visually review some
 or all of the various SAMPLES which could be used for training the classifier.
@@ -101,7 +101,7 @@ The repository interface is organized as follows:
   * Samples selector
   * Sample context
 
-#### Sample Selection
+### Sample Selection
 
 1. Initially, all panes are empty except the `Sheets` selector which appears populated with
   sheets names.  
@@ -125,7 +125,7 @@ We can now select the shapes of interest.
   panel displays the selected sample in its sheet context.  
   This can be helpful for visual checking.
 
-#### Sample Editing
+### Sample Editing
 
 The selected sample can be:
 * **Removed** from the repository.  
@@ -135,7 +135,7 @@ The selected sample can be:
   This is done by clicking on the `Assign to` button in the Sample board or selecting the
   `Assign to` item in the sample right-click menu, and then selecting the new shape.
 
-### Merging Repositories
+## Merging Repositories
 
 When we are satisfied with a book repository we can push its content to the global repository.
 

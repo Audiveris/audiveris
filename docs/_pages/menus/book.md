@@ -5,7 +5,7 @@ grand_parent: References
 parent: Pull-down menus
 nav_order: 2
 ---
-## Book menu
+# Book menu
 {: .no_toc }
 
 ![](../assets/images/book_menu.png)
@@ -25,65 +25,72 @@ Table of contents
 {:toc}
 ---
 
-### Recent Books
+## Recent Books
 
 Open a list of recently saved books.
 After selection, the book is opened in the state it was saved.
 
-### Most recent Book
+## Most recent Book
 
 Open the book most recently closed.
 
-### Open Books
+## Open Books
 
 Open a dialog box allowing to select a book that has been saved before.
 
-### Split and Merge
+## Split and Merge
 
 Open a dialog to select and combine inputs from different sources (books, image files).
 
 See [Split and Merge](../main/split_merge.md) section.
 
-### Set Book Parameters
+## Set Book Parameters
 
 Modify parameters for transcription, at global level, book level and sheets level.
 
 See [Book parameters](../main/book_parameters.md).
 
-### Reset Book to Gray
+## Reset Book to Gray
 
 Reset all sheets of a book to the initial state, as if it were just loaded as a plain image.
 
-### Reset Book to Binary
+## Reset Book to Binary
 
 Same as `Reset Book to Gray` above, except that the initial processing of the images
 from gray-scale to B&W image is kept.
 
-### Transcribe Book
+## Transcribe Book
 
 Start the transcription of all sheets of the book.
 
 Transcription is by default performed sheet by sheet.
 During processing, the user may start editing sheets that have already been transcribed.
 
-### Rebuild Scores
+## Stop book transcription
+
+Stop the current book transcription at the next step end.
+
+Stop is achieved in a civilized manner, no data is corrupted.
+If desired, the processing can be relaunched manually.
+
+## Rebuild Scores
 
 Force the rebuilding of scores, out of the processed sheets.
 
-### Swap Book Sheets
+## Swap Book Sheets
 
 Swap to disk all the sheets of current book (except the current sheet).
 
 This is useful to save memory when working on a book with numerous sheets.
 When needed, a swapped sheet is transparently reloaded.
 
-### Select sheets
+## Select sheets
 
 Select some sheets out of the current book, and limit processing to these sheets.
 
 See [Sheets Selection](../main/sheet_selection.md) section.
 
-### Print Book
+## Print Book
 
 Save the transcribed book in PDF format, so that it can be printed or saved for further purposes.
 The name of the output file is derived from the book name.
@@ -91,11 +98,11 @@ The name of the output file is derived from the book name.
 By default, the file is saved into book folder, a (newly created) subdirectory of the base output directory.  
 But we can modify this policy.
 
-### Print Book as
+## Print Book as
 
 Same as above, except that we can define the file name and the directory where the file is saved.
 
-### Export Book
+## Export Book
 
 Export the transcribed score as a MusicXML `.mxl` file for exchange with a notation program.
 See [Outputs Formats](../main/output_formats.md).
@@ -103,29 +110,29 @@ See [Outputs Formats](../main/output_formats.md).
 By default, the file is saved into book folder, a (newly created) subdirectory of the base output directory.  
 But we can modify this policy.
 
-### Export Book as
+## Export Book as
 
 Same as above except that we can define the file name and the directory where the file is saved.
 
-### Sample Book Symbols
+## Sample Book Symbols
 
 Populate the book sample repository with samples derived from relevant inters of all book sheets.
 
 (needs `SAMPLES` topic, see [Samples section](../advanced/samples.md))  
 
-### Browse Book Repository
+## Browse Book Repository
 
 Open a window to browse, check and filter the samples of book repository.
 
 (needs `SAMPLES` topic, see [Samples section](../advanced/samples.md))
 
-### Save Book Repository
+## Save Book Repository
 
 Save book sample repository to disk into book folder.
 
 (needs `SAMPLES` topic, see [Samples section](../advanced/samples.md))
 
-### Annotate Book Symbols
+## Annotate Book Symbols
 
 Populate a Zip archive with images and symbol annotations derived from book Inter instances.
 
@@ -134,18 +141,18 @@ classifiers (Page and/or Patch).
 
 (needs `ANNOTATIONS` topic)
 
-### Save Book
+## Save Book
 
 Save the collection of all book sheets with the current state of transcription.
 
 By default, the file is saved into book folder, a (newly created) subdirectory of the base output directory.  
 But we can modify this policy.
 
-### Save Book as
+## Save Book as
 
 Same as above except that we can define the file name and the directory where the file is saved.
 
-### Close Book
+## Close Book
 
 Close the current book and releases all its resources.
 

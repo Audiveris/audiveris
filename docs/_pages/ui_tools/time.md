@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 11
 ---
-## Time Signature
+# Time Signature
 {: .no_toc }
 
 ---
@@ -15,7 +15,7 @@ Table of contents
 1. TOC
 {:toc}
 ---
-### Whole vs Pair
+## Whole vs Pair
 
 Audiveris OMR is able to handle both whole- and pair- time signatures:
 
@@ -36,7 +36,7 @@ to a pair, and at the same time recognize the "2/4" compound glyph leading to a 
 The better grade will determine which interpretation will be kept.
 In fact, the precise chosen interpretation has no impact on OMR processing.
 
-### Predefined time signatures
+## Predefined time signatures
 
 If a time signature has not been detected or has been assigned a wrong value, we can select the
 underlying glyph and assign the desired value, either via a double-click in the shape palette or
@@ -50,7 +50,7 @@ of a pair.
 Moreover, in these two cases (glyph assignment and drag & drop), please note that the choice is
 _limited to the predefined shapes_ of the palette.
 
-### Custom time signature
+## Custom time signature
 
 Since the 5.2 release, the time shape palette provides a `custom` time signature.
 This is a fully-customizable combo signature.
@@ -75,7 +75,7 @@ The only constraint is that each numerator or denominator value must stay within
 
 ![](../assets/images/time_custom_filled.png)
 
-### Location
+## Location
 
 We cannot resize a time signature, and its location is snapped on the containing staff.
 

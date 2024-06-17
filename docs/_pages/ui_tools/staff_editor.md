@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 6
 ---
-## Staff Editing
+# Staff Editing
 {: .no_toc }
 
 During the `GRID` step, the OMR engine strives to detect sequences of equally spaced,
@@ -22,8 +22,8 @@ If the engine result is not satisfactory, we can manually correct these staves v
 editing, which is provided in two different modes: `Global` mode and `Lines` mode.
 The former operates on the staff as a whole, the latter on any line separately.
 
-To enter staff editing, we right-click within a staff area, in the pop-up menu select the
-`Staff#n...` sub-menu and then select:
+To enter staff editing, we right-click within a staff area, and in the {{ site.popup_staff }}
+contextual menu we select:
 - either the `Edit staff` item to edit the staff globally,
 - or the `Edit lines` item to edit each staff line individually.
 
@@ -35,7 +35,7 @@ Table of contents
 {:toc}
 ---
 
-### Lines mode
+## Lines mode
 
 In this mode, we can modify the different lines of the staff individually.
 
@@ -76,7 +76,7 @@ The number of handles may vary from line to line, as can be seen in the picture.
 This number depends on the "wavyness" of the line detected by the engine.
 It has no negative impact on the editing capabilities.
 
-### Global mode
+## Global mode
 
 In this mode, we can move staff portions vertically and/or horizontally, and in doing so we modify
 all staff lines as a whole.

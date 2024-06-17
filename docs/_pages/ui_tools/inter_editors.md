@@ -2,10 +2,10 @@
 layout: default
 title: Inter Editors
 parent: References
-nav_order: 0
+nav_order: 2
 ---
 
-## Inter Editors
+# Inter Editors
 {: .no_toc }
 
 This reference chapter gathers the description of all Inter editors variants,
@@ -21,7 +21,7 @@ Table of contents (editors are presented in alphabetical order)
 {:toc}
 ---
 
-### Default editor
+## Default editor
 
 The default editor applies to every Inter class, for example the augmentation dot class here below,
 unless a more specific editor is defined for the Inter class at hand.
@@ -43,7 +43,7 @@ Here, we are currently located too far from the note and the relation disappears
 
 The next sections describe all specific editors, listed in alphabetical order.
 
-### Barline/Bracket editor
+## Barline/Bracket editor
 
 ![](../assets/images/barline_edited.png)
 
@@ -55,7 +55,7 @@ Aligned barlines from different staves are often connected by so-called "Connect
 
 The same editor applies to Bracket as well.
 
-### Brace editor
+## Brace editor
 
 ![](../assets/images/brace_edited.png)
 
@@ -69,14 +69,14 @@ If you want to extend or reduce the number of staves embraced by a Brace instanc
 this must be done **explicitly** by adding or removing a manual Brace.
 Please refer to [Part merge](./part.md) section for such Brace usage.
 
-### Beam editor
+## Beam editor
 
 ![](../assets/images/beam_edited.png)
 
 * Center handle moves the whole beam in any direction.
 * A side handle moves the side in any direction, **snapping** the beam side on any stem nearby.
 
-### Ending editor
+## Ending editor
 
 ![](../assets/images/ending_edited.png)
 
@@ -84,14 +84,14 @@ Please refer to [Part merge](./part.md) section for such Brace usage.
 * A side handle moves the ending side horizontally
 (together with its side leg if any)
 
-### Flag editor
+## Flag editor
 
 ![](../assets/images/flag_edited.png)
 
 The flag editor is another variation of the default editor with its single center handle,
 which here can move **only vertically** along the related stem.
 
-### Head editor
+## Head editor
 
 ![](../assets/images/head_edited.png)
 
@@ -102,7 +102,7 @@ The only difference is that the head being moved is snapped:
 * **Horizontally** to the stem nearby, if any, on left or right.
 Of course, this does not apply to WHOLE or BREVE shapes since these heads use no stem.
 
-### KeyAlter/Key editor
+## KeyAlter/Key editor
 
 ![](../assets/images/key_alter_edited.png)
 
@@ -113,17 +113,17 @@ The key alter editor allows to move **horizontally** one KeyAlter member of the 
 If the key signature is a whole manual signature (e.g. it has been dropped from the ShapePalette),
 then the editor can shift the **whole key** horizontally.
 
-### Ledger editor
+## Ledger editor
 
 ![](../assets/images/ledger_edited.png)
 
-### Multi-measure rest editor
+## Multi-measure rest editor
 
 ![](../assets/images/multiple_rest_edited.png)
 
 See details in [Multi-measure rest section](../specific/multi_rest.md#editing)
 
-### Octave shift editor
+## Octave shift editor
 
 Single-line editor:
 
@@ -135,7 +135,7 @@ Multiple-line editor:
 
 See details in [Octave Shift section](../specific/octave_shift.md#editing)
 
-### Slur editor
+## Slur editor
 ![](../assets/images/slur_edited.png)
 
 This is the most complex editor:
@@ -145,7 +145,7 @@ This is the most complex editor:
 * Control handles move their underlying control point,
 * Middle of control segment moves both control points in any direction.
 
-### Staff lines editor
+## Staff lines editor
 
 ![](../assets/images/staff_lines_edited.png)
 
@@ -153,7 +153,7 @@ All the various lines handles in staff are available for individual vertical dra
 
 See Staff Editing [Lines mode](staff_editor.md#lines-mode).
 
-### Staff global editor
+## Staff global editor
 
 ![](../assets/images/staff_edited.png)
 
@@ -166,13 +166,13 @@ Handles are located on the staff middle line but they work for all lines as a wh
 
 See Staff Editing [Global mode](staff_editor.md#global-mode).
 
-### Stem/Arpeggiato/Connector editor
+## Stem/Arpeggiato/Connector editor
 
 ![](../assets/images/stem_edited.png)
 
 The editor applies to Stem as well as Arpeggiato and Connector (of barlines or brackets)
 
-### TimeHalf/Time editor
+## TimeHalf/Time editor
 
 ![](../assets/images/time_half_edited.png)
 
@@ -186,13 +186,13 @@ If the time signature is a whole signature then is can be shifted horizontally a
 Note this applies as well to signatures handled globally, such as a manual custom signature
 or even a two-part signature (such as 2/4) if it was recognized globally.
 
-### Wedge editor
+## Wedge editor
 
 ![](../assets/images/wedge_edited.png)
 
 The handle on the lower segment allows to increase or decrease the wedge vertical spread.
 
-### Word editor
+## Word editor
 
 ![](../assets/images/word_edited.png)
 

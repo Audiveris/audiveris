@@ -5,7 +5,7 @@ grand_parent: References
 parent: Boards
 nav_order: 7
 ---
-## Basic Classifier board
+# Basic Classifier board
 
 ![](../assets/images/basic_classifier_board.png)
 

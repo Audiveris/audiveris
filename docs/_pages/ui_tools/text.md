@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 13
 ---
-## Text
+# Text
 {: .no_toc }
 
 Recognition of textual elements is delegated to the Tesseract OCR library.  
@@ -21,7 +21,7 @@ Table of contents
 1. TOC
 {:toc}
 ---
-### Recognition of text items
+## Recognition of text items
 
 It is very difficult to automatically derive the meaning from the textual items in a musical score.
 
@@ -33,7 +33,7 @@ For **plain text**, Audiveris tries to detect the text role, such as directions 
 elements like: title, composer and lyricist.
 If it fails, the role can be easily corrected manually.
 
-### TEXTS step
+## TEXTS step
 
 The `TEXTS` step runs the Tesseract OCR on the whole image and tries to assign to each textual item its
 probable content, type and role.
@@ -46,7 +46,7 @@ This engine step is influenced by three options available in the `Book parameter
 Chord names and lyrics are special items; this is the reason why their recognition must be
 explicitly selected to avoid collateral damages of the OMR engine when they are not desired.
 
-### Manual OCR
+## Manual OCR
 
 Tesseract OCR can also be launched manually on a glyph(s) selection by pressing one of two
 buttons provided in the `Physicals` family of the Shape palette:
@@ -60,7 +60,7 @@ plain text items, especially the gap between words can be much wider.
 By choosing one button or the other, the user clearly specifies the desired result type of the
 OCR operation.
 
-### Sentence vs Words
+## Sentence vs Words
 
 A Sentence Inter is an ensemble of one or several Word Inter(s):
 
@@ -94,7 +94,7 @@ Rights,
 EndingNumber,
 EndingText.
 
-### Plain Sentence
+## Plain Sentence
 
 A "plain" sentence is any sentence which is assigned a role different from Lyrics.
 
@@ -106,7 +106,7 @@ whereas the `text` button will always result in a non _lyrics_ role.
 Since the 5.2 release, in all cases, the end-user can manually modify the sentence
 role afterwards, from any role to any other role.
 
-### Chord Name
+## Chord Name
 
 A chord name is a musical symbol which names and describes the related chord.
 
@@ -137,7 +137,7 @@ or `#` characters are automatically replaced by their true alteration signs.
 For example, we can type "Bb" then press `Enter` and the chord name will be translated and
 displayed as "B♭".
 
-### Lyric Line
+## Lyric Line
 
 A lyric line is a sentence composed of lyric items.
 

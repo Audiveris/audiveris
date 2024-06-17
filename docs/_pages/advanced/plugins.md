@@ -4,7 +4,7 @@ title: Plugins
 parent: Advanced Features
 nav_order: 5
 ---
-## Plugins {#plugins}
+# Plugins {#plugins}
 {: .no_toc }
 
 Many music notation programs, if not all, can import MusicXML files as those exported by Audiveris.
@@ -26,7 +26,7 @@ Table of contents
 {:toc}
 ---
 
-### Use of Plugins
+## Use of Plugins
 
 Once plugins are correctly configured, we can call an external program by selecting the desired one
 in the pull-down `Plugins` menu:
@@ -42,7 +42,7 @@ exists and is up-to-date with the latest score modifications performed manually 
 and finally launches the proper external program,
 providing the path to the exported file as an import argument.
 
-### Plugins Configuration
+## Plugins Configuration
 
 We can define one or more plugins, by creating a single XML file, named `plugins.xml`,
 in [Audiveris configuration folder](../folders/essential.md#config-folder).

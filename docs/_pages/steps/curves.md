@@ -1,8 +1,8 @@
 ---
 layout: default
 title: CURVES step
-parent: Pipeline
-grand_parent: Main Features
+parent: Steps internals
+grand_parent: References
 nav_order: 16
 ---
-### CURVES step
+# CURVES step

@@ -257,7 +257,7 @@ into the proper location (the needed ledger line gets created automatically)
 
 ## Logical parts
 
-If we naïvely export our work to say MuseScore, we get something that starts like:
+If we naively export our work to say MuseScore, we get something that starts like:
 
 ![](./musescore_4_parts.png)
 

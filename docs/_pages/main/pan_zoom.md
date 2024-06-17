@@ -5,9 +5,9 @@ grand_parent: Main Features
 parent: Main Window
 nav_order: 2
 ---
-### Pan and Zoom {#pan-and-zoom}
+# Pan and Zoom {#pan-and-zoom}
 
-#### Moving {#moving}
+## Moving {#moving}
 
 The sheet image is usually larger than the window where the sheet is displayed.
 We can move the display over the sheet using different means:
@@ -21,7 +21,7 @@ We can move the display over the sheet using different means:
 * By pressing on one of the 4 arrow keys to move the display in related direction,
 * By pressing on one of the 4 arrow keys, while `Shift` is held down, to move pixel by pixel.
 
-#### Zoom {#zoom}
+## Zoom {#zoom}
 
 It can be adjusted in the range [1:8 to 32:1] by several means:
 

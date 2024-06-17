@@ -5,7 +5,7 @@ grand_parent: References
 parent: Boards
 nav_order: 6
 ---
-## Shape board
+# Shape board
 {: .no_toc :}
 
 --
@@ -16,7 +16,7 @@ Table of contents
 {:toc}
 ---
 
-### Top dialog: sets
+## Top dialog: sets
 ![](../assets/images/shape_board.png)
 
 The shape board displays a panel of shape sets.
@@ -27,7 +27,7 @@ In the picture above, we can see:
 - Second row: Keys, HeadsAndDot, Markers, Ornaments, Rests, Times, Digits,
   Pluckings, Romans, Physicals.
 
-### Palettes: shapes
+## Palettes: shapes
 Clicking on a shape set button replaces the global shape panel by the selected set palette,
 for example the ``HeadsAndDot`` palette which adapts to the book at hand:
 
@@ -48,6 +48,6 @@ location in sheet.
 To leave the current palette and return to the global shape set panel,
 we press the `ESCAPE` key or click on the ``up`` (&#x25B2;) button.
 
-### More recently used
+## More recently used
 The shapes most recently assigned (by whatever means) always appear at the top of shape panel,
 available for a direct reuse.

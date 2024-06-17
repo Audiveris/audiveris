@@ -6,7 +6,7 @@ parent: UI Foundations
 nav_order: 3
 ---
 
-## Inspection
+# Inspection
 {: .no_toc }
 
 In a perfectly transcribed score, all the items would be correctly recognized
@@ -26,7 +26,7 @@ Table of contents
 {:toc}
 
 ---
-### Measure background
+## Measure background
 
 A pink measure background is the most obvious sign, meant to call user attention to a measure,
 as in the following page view which displays two measures (#5P1 and #10P2) with a pink
@@ -56,7 +56,7 @@ Note that, conversely, a measure not detected as abnormal
 may still exhibit errors that the OMR engine could not reliably detect.
 We'll see examples of these cases that today only the human reader can detect and fix.
 
-### Colorized voices
+## Colorized voices
 
 ![](../assets/images/voice_color_check.png)
 
@@ -67,7 +67,7 @@ is to visually check the content of every voice.
 In the example above, voice 6 which appears in the bottom right corner of the
 measure is really suspicious (although the measure is not flagged as _abnormal_).
 
-### Chords IDs
+## Chords IDs
 
 By default, chord IDs are not displayed in sheet view because they look too invasive.
 To set them on, we use the pull-down menu {{ site.view_chords }}.
@@ -77,7 +77,7 @@ into a single chord:
 
 ![](../assets/images/voice_color_check_ids.png)
 
-### Measure strip
+## Measure strip
 
 A right-click within a measure N leads to a measure contextual menu which offers to print out
 all voices for the measure at hand.  
@@ -86,8 +86,8 @@ For example, let's focus on the measure below:
 
 ![](../assets/images/chord_id_check.png)
 
-`<pop-up> | Measure #N | Dump stack voices` prints a strip for the whole system-high measure stack.  
-`<pop-up> | Measure #N | Dump measure voices` prints a strip for just the part-high measure.
+`≡ Measure #N | Dump stack voices` prints a strip for the whole system-high measure stack.  
+`≡ Measure #N | Dump measure voices` prints a strip for just the part-high measure.
 
 The latter (limited to one part) is meant for orchestra scores, with lots of parts within each
 system, to allow to focus on one part at a time.
@@ -115,7 +115,7 @@ Moreover, Ch#3979 starts at offset 1/2, whereas on the image it starts at offset
 Here again there is nothing, from the OMR engine point of view, to flag this measure as abnormal
 -- all voices can be computed and all of them complete within the measure time limit.
 
-### Time slots
+## Time slots
 
 Time slots are not visible in ![](../assets/images/ModePhysical.png) physical mode.   
 They are displayed in ![](../assets/images/ModeCombined.png) combined and
@@ -136,11 +136,11 @@ with no chord aligned with it.
 Moreover, chord 4010 at bottom center is not aligned with any slot.
 
 To be more precise, we can investigate the content of each time slot, via a right-click on the slot:
-- `<pop-up> | Slot #3 | Dump chords` gives   
+- `≡ Slot #3 | Dump chords` gives   
 ```
 slot#3 start=  1/2 [HeadChordInter{#3979(0.794/0.794) stf:7 slot#3 off:1/2 dur:1/4},HeadChordInter{#4010(0.815/0.815) stf:9 slot#3 off:1/2 dur:1/2}]
 ```
-- `<pop-up> | Slot #3 | Dump voices` gives   
+- `≡ Slot #3 | Dump voices` gives   
 ```
 slot#3 start=  1/2 [V1 Ch#3979 s:7 Dur=  1/4, V5 Ch#4010 s:9 Dur=  1/2]
 ```

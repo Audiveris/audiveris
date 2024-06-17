@@ -4,7 +4,7 @@ title: Building from sources
 nav_order: 4
 parent: Installation
 ---
-## Building from sources (Windows, MacOS, Linux, ArchLinux)
+# Building from sources (Windows, MacOS, Linux, ArchLinux)
 {: .no_toc }
 
 {: .note }
@@ -20,7 +20,7 @@ Table of contents
 {:toc}
 ---
 
-### Dependencies
+## Dependencies
 
 * [Git][git]: version control system.
 
@@ -38,7 +38,7 @@ Please check [OCR languages](./languages.md) section.
 to handle those specific PDFs that contain vector graphics.  
 Fortunately, every known Unix-like OS distribution already contains a package for FreeType.
 
-### Download, build and run
+## Download, build and run
 To download the Audiveris project, use the following command in a directory of your choice:
 
 ```sh
@@ -87,7 +87,7 @@ gradlew.bat run
 Please note that all these commands use **gradle wrapper** (`gradlew`) which, behind the scenes,
 takes care of getting and launching the proper gradle version.
 
-### Alternative run
+## Alternative run
 
 The gradle-based run, as described above, makes sure that all your potential modifications are
 compiled before the application is launched.

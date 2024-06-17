@@ -5,7 +5,7 @@ grand_parent: Main Features
 parent: Main Window
 nav_order: 4
 ---
-### Voice Colors
+# Voice Colors
 
 By default, as described in the previous section, each score entity is displayed using a color
 determined according to the entity kind:
@@ -30,7 +30,7 @@ Within any given part, voice numbers (and thus colors) are assigned as follows:
 * Voices starting on the first staff use numbers 1 through 4,
 * Voices starting on the second staff use numbers 5 through 8.
 
-#### Shared Heads
+## Shared Heads
 
 Note that some note heads can be _shared_ between two chords.
 In the example above, this is the case in the last staff, for the starting head of each measure

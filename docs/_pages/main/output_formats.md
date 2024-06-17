@@ -4,7 +4,7 @@ title: Output Formats
 parent: Main Features
 nav_order: 8
 ---
-## Output Formats
+# Output Formats
 
 There are 3 possibilities for output of a transcribed score:
 

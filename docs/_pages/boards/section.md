@@ -5,7 +5,7 @@ grand_parent: References
 parent: Boards
 nav_order: 3
 ---
-## Section board
+# Section board
 {: .no_toc :}
 
 ![](../assets/images/section_board.png)
@@ -21,28 +21,28 @@ Table of contents
 {:toc}
 ---
 
-### Vip
+## Vip
 (input/output)  
 Flag this entity as VIP, resulting in verbose processing information.
 
-### Dump
+## Dump
 (input)  
 Dump main entity data into the log window.
 
-### Id
+## Id
 (input/output)  
 Integer ID of entity.
 
-### Weight
+## Weight
 (output)  
 Number of (black) pixels that compose the section.
 
-### X & Y
+## X & Y
 (output)  
 Coordinates of top left corner of the section:
 * For a horizontal section, this is the left side of the top run.
 * For a vertical section, this is the top side of the left run.
 
-### Width & Height
+## Width & Height
 (output)  
 Width and height of the section bounding box.

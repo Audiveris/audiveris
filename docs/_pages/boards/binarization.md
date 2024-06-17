@@ -5,31 +5,38 @@ grand_parent: References
 parent: Boards
 nav_order: 2
 ---
-## Binarization board
+# Binarization board
 {: .no_toc :}
 
-![](../assets/images/binarization_board.png)
+This board, together with the [Pixel board](./pixel.md), is meant to visualize the behavior of the binarization algorithm documented in the [BINARY step](../steps/binary.md).
 
-This board is meant to visualize the behavior of the `adaptive` binarization algorithm.
-According to the current location, it displays the context information and the resulting threshold
-on pixel level.
+The board is displayed by default in the Gray tab and on demand in the Binary tab.
+Of course, to be effective, the gray image must still be available.
 
-It is effective only when run on the initial gray image.
+- The pixel board displays the selected _location_ (x, y).
+It can also display the _gray level_ at this location when available.
+- The binarization board always displays the _threshold_ value and the resulting _binary color_.
 
----
-Table of contents
-{: .no_toc .text-delta }
+## Threshold
+The threshold value to be compared with the gray level at the selected location.
 
-1. TOC
-{:toc}
----
+## Color
+The resulting color of binarization at the selected location -- either _black_ or _white_.
+
+## Board for the Global filter
+![](../assets/images/binarization_board_global.png)
+
+For the global filter, the threshold value is constant for all pixels in the image.
+
+## Board for the Adaptive filter
+![](../assets/images/binarization_board_adaptive.png)
+
+For the adaptive filter, the threshold value is computed for each location,
+based on the mean and the standard deviation of gray values in location vicinity.
 
 ### Mean
-Average value of all pixels read in the vicinity of the selected location.
+The average value of all gray pixels read around the selected location.
 
 ### StdDev
-Standard deviation value of all pixels read in the vicinity.
+The standard deviation value of all gray pixels read around the selected location.
 
-### Threshold
-Computed threshold value based on mean and deviation in vicinity,
-to compare with pixel level at selected location.

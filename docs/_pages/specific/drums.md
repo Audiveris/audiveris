@@ -5,7 +5,7 @@ parent: Specific Features
 nav_order: 1
 has_children: false
 ---
-## Drums
+# Drums
 {: .no_toc }
 {: .d-inline-block }
 updated for 5.4
@@ -23,7 +23,7 @@ Table of contents
 {:toc}
 ---
 
-### Example
+## Example
 
 This [Wikipedia article](https://en.wikipedia.org/wiki/Percussion_notation) provides a good
 introduction to drum notation.
@@ -42,7 +42,7 @@ Note this handbook contains a [User editing session](../ui_examples/eyes/README.
 3. Though not specific to drum notation, we can frequently observe
 [multi-measure rests](./multi_rest.md) and [measure-repeat signs](./bar_repeat.md).
 
-### Mandatory processing switches
+## Mandatory processing switches
 
 To be able to transcribe the example above, we have to set two specific processing book parameters,
 available in the dialog {{ site.book_parameters }}, in the section named "Staves",
@@ -55,7 +55,7 @@ In batch mode, we can also set these switches at the command line interface leve
 
 > -option org.audiveris.omr.sheet.ProcessingSwitches.drumNotation=true
 
-### Additional switches
+## Additional switches
 
 Beside the two mandatory switches, it is worth paying attention to two other lines:
 - One is the "**Barline height**", located just above, in the "Scaling specifications".
@@ -73,7 +73,7 @@ It has no concrete impact on the example at hand, because there are other multi-
 available for the OMR engine to measure the score interline value.  
 This switch will get more important when we address the case of [Snippets](./snippets.md).
 
-### Drum set mapping
+## Drum set mapping
 
 There seems to be no universal specification for drum set mapping, only some recommendations.  
 This means that, depending on score author, the mapping can be different.
@@ -100,7 +100,7 @@ in theh user ``config`` folder.
 - To "nullify" an existing default entry, we simply specify a "``null``" value
 for its "``sound``" attribute.
 
-### Transcription
+## Transcription
 
 Among the examples used when working on drums with Brian, we can recommend the
 [Redeye Percussion](https://www.redeyepercussion.com/) site.  
@@ -148,7 +148,7 @@ It is organized as follows:
 - The last row presents the playing **signs** [^playing_signs] (open, half-open, closed) that can
 appear away from heads.
 
-## Appendix
+# Appendix
 
 Here below is the content of the ``drum-set.xml`` file provided in the Audiveris ``res``
 application folder.

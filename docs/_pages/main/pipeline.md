@@ -5,18 +5,16 @@ parent: Main Features
 nav_order: 3
 has_children: true
 ---
-## Pipeline
+# Pipeline
 {: .no_toc }
 
-Table of contents
+---
 {: .no_toc .text-delta }
-
 1. TOC
 {:toc}
-
 ---
 
-### Global Book Workflow
+## Global Book Workflow
 When working on a book, the Audiveris V5 OMR engine can process any sheet of the book independently of
 the others.
 Only the final gathering of sheets results, which comparatively is a very fast action,
@@ -39,7 +37,7 @@ To save on memory, especially during long interactive sessions, we can ask Audiv
 transparently swap all book sheets to disk (except the current sheet).
 This is done via the pull-down menu {{ site.book_swap }}.
 
-### Sheet Pipeline
+## Sheet Pipeline
 
 The processing of a given sheet by the OMR engine is done via a pipeline of some 20 steps
 applied, one after the other, on sheet OMR data.
@@ -48,7 +46,13 @@ Here below is the sheet pipeline sequence, with the main inputs and outputs of e
 
 ![](../assets/images/pipeline.png)
 
-### Driving the Pipeline
+{: .note }
+Each of these 20 steps is further detailed in dedicated pages below.
+There is no need to go through all of them in a first reading of this handbook.
+Just keep in mind that the documentation is available and is likely to help
+you understand how each of these steps works.
+
+## Driving the Pipeline
 
 A sheet step is like a mini-batch applied on the sheet data, and this is the smallest increment
 that the OMR engine can perform.
@@ -63,7 +67,10 @@ Note that selecting the pull-down menu {{ site.sheet_transcribe }} is just anoth
 the pull-down menu `Step → PAGE`.
 
 Beware that we cannot directly move the pipeline backward.
-There are two workarounds:
-* Selecting a target step that has already been performed will, after user confirmation,
-  reset the sheet data to its BINARY step, then perform all necessary steps up to the target step.
-* We can abandon the book and reload it from a previously saved version.
+There are two indirect workarounds:
+* We can select a target step that has already been performed:
+    1. we are first prompted for confirmation,
+    2. the sheet data is then reset to its initial status
+    -- the gray image if available, otherwise the binary image,
+    3. and all necessary steps are performed up to the target step.
+* We can also abandon the book and reload it from a previously saved version.

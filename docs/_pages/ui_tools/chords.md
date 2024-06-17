@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 12
 ---
-## Chords
+# Chords
 {: .no_toc }
 
 For Audiveris, a _chord_ is a container:
@@ -28,10 +28,10 @@ Table of contents
 {:toc}
 ---
 
-### Chords menu
+## Chords menu
 
 Below, we have selected two notes as indicated by the arrows: one note head and one rest,
-before opening the pop-up/Chords menu:
+before opening the {{ site.popup_chords }} contextual menu:
 
 ![](../assets/images/chords_selection.png)
 
@@ -57,11 +57,11 @@ because the list depends on the current status and configuration of the selected
 
 Next, we list all the possible items of the `Chords...` menu.
 
-### Chord
+## Chord
 
 The gathering of note heads into chords may need some user correction.
 
-#### Split
+### Split
 
 | One chord? | Two chords? |
 | --- | --- |
@@ -73,7 +73,7 @@ In that case, select this chord and use the ``Split`` command.
 
 ![](../assets/images/chord_split.png)
 
-#### Merge
+### Merge
 
 Or, just the opposite, we may want to merge these two chords into a single one.
 In that case, we select both chords and use the ``Merge`` command.
@@ -84,7 +84,7 @@ to gather whole heads into one chord.
 
 ![](../assets/images/chord_merge.png)
 
-### Voice
+## Voice
 
 A voice is defined as a sequence of chords (head chords and rest chords) in the same music part.
 [^voice_sharing]
@@ -95,7 +95,7 @@ user would expect.
 
 The purpose of these voice actions is to guide the engine in voice building.
 
-#### Next in Voice
+### Next in Voice
 
 ![](../assets/images/next_in_voice.png)
 
@@ -121,7 +121,7 @@ Also if we want, much later in the process, to cancel this task, we can always g
 to selecting the same chords and we'll be offered to **cancel** the task.   
 Cancelling this action removes the relation (and thus the related guidance).
 
-#### Same Voice
+### Same Voice
 
 `Same Voice` command is weaker than `Next in Voice` command.
 
@@ -134,7 +134,7 @@ Note that `Same Voice` (or `Next in Voice`) can be used in the context of rest c
 between beam head chords, to "push" these rests into the beam area.
 And conversely, `Separate Voice` can be used to "pull" these rests out of the beam area.
 
-#### Separate Voices
+### Separate Voices
 
 This command imposes the voice algorithm to assign the selected chords to **separate** voices.
 
@@ -143,7 +143,7 @@ Note this is not exactly the reverse of the `Next in Voice` command
 * Without any command, we let the algorithm decide with no guidance.
 * With a command (whether it's _next_, _same_ or _separate_), we explicitly guide the algorithm.
 
-#### Preferred Voice
+### Preferred Voice
 
 Whereas the `Next in Voice`/`Same Voice" and "Separate Voices" commands operate on 2 chords,
 by establishing a **dynamic** computing rule from chord A to chord B,
@@ -163,7 +163,7 @@ These are the two cases where this feature can be useful.
 But except for these very specific cases, we are advised not to use this feature.
 In particular, let's not imagine we could use it to somehow build voice sequences of chords!
 
-### Time
+## Time
 
 Assigning a chord to the proper time slot is as tricky as voice assignment.
 In fact, the time and voice algorithms are tightly coupled.
@@ -171,7 +171,7 @@ In fact, the time and voice algorithms are tightly coupled.
 When two chords are rather close horizontally, when should we consider them as part of the same
 time slot?
 
-#### Same Time Slot
+### Same Time Slot
 
 ![](../assets/images/same_slot.png)
 
@@ -184,7 +184,7 @@ Experience shows that the most efficient action is generally to grab the set of 
 that should share the same slot (a rather vertical selection **within the same part**)
 and apply the `Same Time Slot` command on the whole set.
 
-#### Separate Time Slots
+### Separate Time Slots
 
 As opposed to `Same Time Slot`, this command is used to force time separation between two
 chords that the engine has considered as adjacent.

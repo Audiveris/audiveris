@@ -6,7 +6,7 @@ parent: Book Portions
 nav_order: 3
 ---
 
-## Split and Merge
+# Split and Merge
 {: .no_toc }
 
 This feature is meant to be the Audiveris "Swiss Army Knife" to configure books, images and sheets.
@@ -19,7 +19,7 @@ Table of contents
 {:toc}
 ---
 
-### Concepts
+## Concepts
 
 The Split and Merge feature relies on the concept of *"PlayList"* that the user can define, modify,
 save/reload, and finally use to build the resulting compound book.
@@ -36,10 +36,10 @@ It can also be written from scratch via a plain text editor
 Either way, the PlayList can then be used interactively or in batch to produce a compound book
 according to the PlayList content.
 
-### Use cases
+## Use cases
 This section lists typical use cases from the end-user point of view.
 
-#### 4-hands piano sheet
+### 4-hands piano sheet
 
 The request in issue #220
 ([Support for 4 hands piano sheet](https://github.com/Audiveris/audiveris/issues/220))
@@ -61,7 +61,7 @@ The easiest way to "split" the single input file into two separate books is to o
 Then pressing the `Action` button in each dialog builds the corresponding compound books
 `DieToteninsel-primo.omr` and `DieToteninsel-secondo.omr` respectively.
 
-#### Compound book
+### Compound book
 
 The case is described in issue #129
 ([Allow to load multiple images into one book](https://github.com/Audiveris/audiveris/issues/129))
@@ -81,7 +81,7 @@ In all these cases, the engine will update the sheets where needed and process t
 dependencies (slurs, time-signatures, measure IDs) before building the resulting score(s).
 
 
-#### Sheet replacement
+### Sheet replacement
 
 We have seen that sheet addition/removal can be done at any time, regardless of the transcription
 process of any sheet.
@@ -105,13 +105,13 @@ In this example, we are using references to `.png` image files.
 We could as well prefer references to `.omr` book files, containing the same sheets perhaps
 partly transcribed.
 
-### Dialog
+## Dialog
 
 It is accessed via the {{ site.book_split }} menu item.
 
 The dialog large table, meant for the underlying PlayLists, is initially empty.
 
-#### Populating the PlayList
+### Populating the PlayList
 
 - If we have a PlayList available somewhere, we can open it via the `Open PlayList...` button
   in the upper right corner of the dialog.   
@@ -126,7 +126,7 @@ The dialog large table, meant for the underlying PlayLists, is initially empty.
 - Similarly, via the `Load files` button, we can load one or several Book or Image files and
   their corresponding excerpts will be appended at the bottom of the PlayList.
 
-#### Legend
+### Legend
 - There is one row per excerpt, composed of the container name, the sheets specification string
   and the resulting count of sheets as selected in this excerpt.
 - A container name ends with `.omr` extension to denote a Book, and with another extension
@@ -140,7 +140,7 @@ The dialog large table, meant for the underlying PlayLists, is initially empty.
   with different sheets specifications
   -- see the example of [Sheet replacement](#sheet-replacement) above.
 
-#### Editing the PlayList
+### Editing the PlayList
 
 - We have seen that the sheets specification of any excerpt can be manually edited.
 - We can add/include and remove excerpts.
@@ -151,7 +151,7 @@ The dialog large table, meant for the underlying PlayLists, is initially empty.
 
 When satisfied with the PlayList, we can save it for future reload or use it immediately as follows.
 
-#### Building the result
+### Building the result
 
 The `Action!` button launches the building of the compound book according to the PlayList
 current content.
@@ -166,7 +166,7 @@ kept separate from its original "parts".
 In other words, any further work made on this compound book will not impact the original "parts".
 And similarly, any further work made on any of the original "parts" will not impact the compound book.
 
-### PlayList format
+## PlayList format
 
 A PlayList can be created or saved as a plain XML file,
 - with `<play-list>` as its root element,
@@ -203,7 +203,7 @@ saved:
     </play-list>
 ```
 
-### CLI option
+## CLI option
 
 There is a new option available on command line interface: `-playlist <foobar.xml>` which allows
 loading an `.xml` file as a PlayList, provided that file content is compliant with the PlayList

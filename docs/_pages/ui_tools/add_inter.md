@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 1
 ---
-## Inter Addition
+# Inter Addition
 {: .no_toc }
 
 In the Audiveris data model, an Inter instance represents an interpretation, that is a candidate
@@ -30,7 +30,7 @@ Table of contents
 {:toc}
 ---
 
-### Inter from underlying Glyph
+## Inter from underlying Glyph
 
 Inter creation from a glyph is the only case where a glyph is used in Audiveris manual editing.
 
@@ -52,7 +52,7 @@ target staff:
 
 The target shape can be specified via different means, as follows.
 
-#### Via the glyph classifier
+### Via the glyph classifier
 
 ![](../assets/images/glyph_classifier.png)
 
@@ -80,21 +80,21 @@ For these two cases -- and only for them -- the glyph classifier is not precise 
 We'll have to explicitly select a more specific target shape, via the glyph pop-up menu
 or via the shape palette.
 
-#### Via the glyphs pop-up-menu
+### Via the glyphs pop-up menu
 
-Once a glyph has been selected, we use a mouse right click to access the sheet pop-up menu,
-and its `Glyphs` sub-menu.
+Once a glyph has been selected, we use a mouse right click to access
+the {{ site.popup_glyphs }} sheet contextual menu.
 
 ![](../assets/images/context_glyph.png)
 
 Then we navigate through shape sets to our precise target shape.
 
-#### Via the shape palette
+### Via the shape palette
 
 The shape palette (see next section) allows to assign a shape to the selected glyph.
 This is done by a double-click on the desired shape in the palette.
 
-### The Shape Palette
+## The Shape Palette
 
 The palette offers the ability to choose the desired shape for a selected glyph.
 
@@ -108,7 +108,7 @@ Nothing can be dragged from this catalog, we must first select a shape set:
 
 ![](../assets/images/shape_board.png)
 
-#### Entering a shape set
+### Entering a shape set
 Pressing a shape set button replaces the catalog view by a specific palette dedicated to
 the selected shape set.
 For example, pressing on the ``ClefsAndShifts`` set button gives:
@@ -122,7 +122,7 @@ Within a set, a shape can be:
 
 ![](../assets/images/drag-n-drop.png)
 
-#### Selecting target staff
+### Selecting target staff
 While we are dragging a shape, we have the freedom to hover where we like.
 The last staff we have been hovering over is selected as our current target staff.
 
@@ -140,7 +140,7 @@ it may get snapped according to staff lines, etc.
 We can drop the shape only when a staff target has been selected.
 If not, the drag & drop action is abandoned.
 
-#### Case of compound shapes
+### Case of compound shapes
 
 Note the ``HeadsAndDot`` set now contains four new shapes located at the end.
 
@@ -158,7 +158,7 @@ Once dropped, such a compound shape is replaced by two separate Inters
 We can then later edit each "part" separately, for example to modify the stem length.
 And we can add flags to the stem.
 
-#### Exiting a shape set
+### Exiting a shape set
 To leave the specific set palette and go back to the catalog view, we can:
 
 * Click on the "triangle-up" sign located on the left side of the set palette,
@@ -166,7 +166,7 @@ To leave the specific set palette and go back to the catalog view, we can:
   ![](../assets/images/family_exit.png)
 * Or press the `ESC` key on the keyboard.
 
-### Shape cache
+## Shape cache
 
 We can notice, appearing on a line above the shape palette, the list of the most recent shape
 buttons we have used so far.
@@ -179,7 +179,7 @@ containing sets.
 And if we want to add many Inters of the same shape, we can consider using the
  "Repetitive Input" mode below.
 
-### Repetitive input
+## Repetitive input
 
 If we have numerous Inters of the **same shape** to add in a row, a convenient way is to switch
 temporarily to the "_Repetitive Input_" mode.
@@ -210,7 +210,7 @@ Then we set the repetitive mode on again if so desired.
 To exit this rather specific mode, we toggle the mode
 (via the toolbar icon, the menu item or the shortcut).
 
-### Relations with other inters
+## Relations with other inters
 
 Key relation(s) with the nearby Inter(s), if any, will be updated automatically as we create
 -- or later edit -- the Inter, but only as long as the required geometrical relationships can apply
@@ -218,7 +218,7 @@ Key relation(s) with the nearby Inter(s), if any, will be updated automatically 
 
 If the relation constraints are not met, we will have to set the relation manually afterwards.
 
-### Shortcuts for inter addition
+## Shortcuts for inter addition
 
 In order to make long editing sessions easier, there are a few shortcuts to assign interpretations
 without having our hands leave the keyboard.
@@ -240,7 +240,7 @@ position, ready for further use (via double-click, drag & drop or repetitive inp
 
 ***
 
-#### Shortcuts table
+### Shortcuts table
 
 Only sets and shapes that are used rather often are supported.
 

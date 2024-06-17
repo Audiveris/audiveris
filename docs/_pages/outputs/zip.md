@@ -5,7 +5,7 @@ grand_parent: References
 parent: Outputs
 nav_order: 5
 ---
-## .zip files
+# .zip files
 {: .no_toc :}
 
 ---
@@ -16,10 +16,10 @@ Table of contents
 {:toc}
 ---
 
-### Purpose
+## Purpose
 These files are containers mainly used for training material.
 
-### Book
+## Book
 
 A book folder (let's name it "BOOK") may contain:
 
@@ -39,7 +39,7 @@ This is just an output of Audiveris 5.x, meant for the future page and patch cla
 for 6.x versions.
 It provides sheet image and symbol annotations (shape + bounding box) for each recognized inter.
 
-### Global
+## Global
 
 These files are located in the `TRAIN_FOLDER`.
 See section on [Essential folders](../folders/essential.md).

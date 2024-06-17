@@ -5,7 +5,7 @@ parent: Specific Features
 nav_order: 2
 has_children: false
 ---
-## Fonts
+# Fonts
 {: .no_toc }
 {: .d-inline-block }
 new in 5.3
@@ -19,7 +19,7 @@ Table of contents
 {:toc}
 ---
 
-### Music fonts
+## Music fonts
 
 Before 5.3 release, only one music font family was used (**Musical Symbols** font initially,
 later replaced by **Bravura** font for SMuFL compliance).
@@ -27,7 +27,7 @@ later replaced by **Bravura** font for SMuFL compliance).
 Since 5.3 release, we can tell Audiveris which music font family to use by default,
 or for a given book or sheet.
 
-#### Head symbols
+### Head symbols
 
 This choice is key for **head symbols**, since the OMR engine uses a *template matching* technique to
 detect them during the HEADS step.
@@ -53,7 +53,7 @@ especially for all the cross-like shapes.
 - Within jazz fonts, Finale Jazz and Jazz Perc differ mainly by their width, and impact
 on template matching is more visible on oval-like shapes.
 
-#### Other symbols
+### Other symbols
 
 For symbols other than head symbols, such as Clef, Flag, etc,
 recognition is not based on template matching but on a neural network.
@@ -67,7 +67,7 @@ The reason is the current network needs a glyph to work upon, and there is yet n
 a head glyph *reliably*.
 [^prototype]
 
-#### Music fonts hierarchy
+### Music fonts hierarchy
 
 Not all symbols are available in every music font family.
 
@@ -84,7 +84,7 @@ The current family hierarchy is as follows:[^musical_symbols]
     └── Musical Symbols
 ```
 
-### Text fonts
+## Text fonts
 
 Texts recognition is less sensitive to font family, compared to music symbols recognition.  
 The main reason is that Audiveris delegates texts recognition to Tesseract OCR.[^ocr_font]
@@ -99,7 +99,7 @@ Since 5.3 release, we can tell Audiveris which text font family to use among the
 Proper choice of text font family will result in a better consistency between the input image
 and its displayed transcription.
 
-### Selection of fonts families
+## Selection of fonts families
 
 In interactive mode, we can use the {{ site.book_parameters }} dialog in its ``Music font``
 and ``Text font`` fields:

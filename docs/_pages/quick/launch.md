@@ -4,7 +4,7 @@ title: Launch
 nav_order: 1
 parent: Quick Tour
 ---
-## Launch
+# Launch
 
 For the sake of simplicity, let's assume we are using Windows OS and have installed Audiveris via
 the provided Windows Installer available in the Audiveris

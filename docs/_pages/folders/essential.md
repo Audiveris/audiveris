@@ -5,7 +5,7 @@ grand_parent: References
 parent: Folders
 nav_order: 2
 ---
-## Essential folders
+# Essential folders
 {: .no_toc :}
 
 ---
@@ -16,7 +16,7 @@ Table of contents
 {:toc}
 ---
 
-### Purpose
+## Purpose
 
 This is where Audiveris stores user-specific essential parameters:
 
@@ -24,7 +24,7 @@ Under Windows notably, these are _hidden locations_ by default.
 Please do not create or modify these files, unless you are an advanced user and
 know what you are doing.
 
-### Config folder
+## Config folder
 
 Audiveris defines a `CONFIG_FOLDER` for configuration files:
 
@@ -44,7 +44,7 @@ Precise location of `CONFIG_FOLDER` depends on OS environment:
 | **Linux** (choice #2)| $HOME/.config/AudiverisLtd/audiveris |
 | **MacOS** | $HOME/Library/Application Support/AudiverisLtd/audiveris |
 
-### Train folder
+## Train folder
 
 There is a `TRAIN_FOLDER` that can be populated with user-specific training
 material and trained model to override default Audiveris model:

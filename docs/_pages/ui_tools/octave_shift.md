@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 15
 ---
-## Octave Shift
+# Octave Shift
 {: .no_toc }
 {: .d-inline-block }
 New in 5.3
@@ -19,7 +19,7 @@ Table of contents
 {:toc}
 ---
 
-### Definition
+## Definition
 
 An octave shift looks like this:
 ![](../assets/images/octave_shift.png)
@@ -44,7 +44,7 @@ to name a few ones related to ottava.
 - And how can the OMR engine determine the related staff of an octave shift?
   Using the vertical distance to the closest staff is not reliable enough.
 
-### Multi-system octave shift
+## Multi-system octave shift
 
 The example at the beginning of this page presented a rather short octave shift,
 limited in range to a portion of the physical staff just below it.
@@ -63,7 +63,7 @@ Notice also the other shift located on the lower staff of the second system, or 
 
 ![](../assets/images/octave_shift_stairs.png)
 
-### Current status
+## Current status
 
 As of this writing, automatic recognition of octave shifts by the Audiveris engine is very limited:
 - The starting glyph (`8`, `15` or `22`) could be recognized,
@@ -82,15 +82,15 @@ above for `alta`, below for `bassa`.
 4. Logical octave shifts can cross system breaks but not page breaks.   
 5. A hook is always present at the end of the last physical octave shift, and only there.
 
-### Creation
+## Creation
 
 The easiest way to create an octave shift is a drag & drop from the `ClefsAndShifts` family in the
 Shape board:
 
 ![](../assets/images/clefs_and_shifts.png)
 
-1. Drag the desired shift symbol
-2. Pay attention to hover over the target staff.    
+1. We drag the desired shift symbol
+2. We pay attention to hover over the target staff.    
    Staff information is sticky:
    - The symbol is initially displayed in gray with no hook, then in green when hovering over a staff
    - The last hovered staff becomes the current staff, and potential links to staff chords are shown
@@ -100,22 +100,22 @@ Shape board:
      | :---: | :---: |
      | an `alta` downside hook appears | a `bassa` upside hook appears |
      | ![](../assets/images/octave_shift_above.png) | ![](../assets/images/octave_shift_below.png)|
-3. Drop the symbol at the desired location (typically the center of the number box) by releasing the mouse.
+3. We drop the symbol at the desired location (typically the center of the number box) by releasing the mouse.
 
 Another way is to select a suitable glyph, which must be limited to the number part
 without any suffix:   
-1. This will trigger the glyph classifier which may recognize the shape, in which case press
-the proper button in the classifier board.   
-2. If not, manually assign the target shape via the pop-up menu or via a double-click in the
+1. This will trigger the glyph classifier which may recognize the shape,
+in which case we just press the proper button in the classifier board.   
+2. If not, we can manually assign the target shape via the pop-up menu or via a double-click in the
 `ClefsAndShifts` family of the Shape board.   
-3. Note you will be prompted for the precise target staff of the created shift.
+3. Note that we will be prompted for the precise target staff of the created shift.
 
-In both ways, what you have created is just a small octave shift.
-You can now proceed to its precise editing as described in the next section.
+In both ways, what we have created is just a small octave shift.
+We can now proceed to its precise editing as described in the next section.
 
-### Editing
+## Editing
 
-The octave shift editor provide up to 3 handles: left, middle and right:   
+The octave shift editor provides up to 3 handles: left, middle and right:   
 - All these handles can move the shift vertically between the current staff and the other staff,
   above or below, according to the shift kind alta/bassa.
 - Only the left and right handles, when present, can resize the shift line horizontally within
@@ -155,6 +155,6 @@ entity. This applies to creation, editing and removal actions.
 
 And as usual, any of these actions can be undone and redone at will.
 
-### Removal
+## Removal
 
 The manual removal of any (physical) octave shift means the removal of the whole "logical" octave shift.

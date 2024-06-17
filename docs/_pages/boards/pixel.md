@@ -5,7 +5,7 @@ grand_parent: References
 parent: Boards
 nav_order: 1
 ---
-## Pixel board
+# Pixel board
 {: .no_toc }
 
 ![](../assets/images/pixel_board.png)
@@ -21,19 +21,19 @@ Table of contents
 {:toc}
 ---
 
-### Level
+## Level
 (output)  
 Gray value, between 0 and 255, at the (x,y) location.
 
 This field is active only on the initial (gray) image.
 It becomes inactive on the binary (black & white) image.
 
-### X & Y
+## X & Y
 (input/output)  
 The abscissa and ordinate values for the selected location
 (either a single point, or the top left corner of a rectangle).
 
-### Width & Height
+## Width & Height
 (input/output)  
 The width and height values of the selected rectangle.
 If both are zero, the rectangle degenerates as a single point.

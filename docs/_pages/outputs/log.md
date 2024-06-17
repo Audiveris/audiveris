@@ -5,7 +5,7 @@ grand_parent: References
 parent: Outputs
 nav_order: 1
 ---
-## .log files
+# .log files
 {: .no_toc :}
 
 ---
@@ -16,7 +16,7 @@ Table of contents
 {:toc}
 ---
 
-### Session global log
+## Session global log
 
 All messages displayed in Audiveris events window during the same session are also written into a
 separate log file located in Audiveris log folder (see [Cached Folders](../folders/cached.md)).
@@ -32,7 +32,7 @@ The advanced user can precisely customize the logged information by manually edi
 configuration file `logback.xml` located in Audiveris config folder
 (see [Essential Folders](../folders/essential.md)).
 
-### Batch books logs
+## Batch books logs
 
 When running in batch, Audiveris can process hundreds of books in a row.
 As mentioned above, this results in one global log file, perhaps a huge one.

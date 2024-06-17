@@ -5,7 +5,7 @@ grand_parent: Main Features
 parent: Main Window
 nav_order: 3
 ---
-### Entity Colors
+# Entity Colors
 
 The sheet window uses different colors to display the entities and the kind of entity that was
 recognized:

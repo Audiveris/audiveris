@@ -5,7 +5,7 @@ grand_parent: References
 parent: Pull-down menus
 nav_order: 7
 ---
-## Plugins menu
+# Plugins menu
 
 ![](../assets/images/plugins_menu.png)
 

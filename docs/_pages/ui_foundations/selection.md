@@ -6,7 +6,7 @@ parent: UI Foundations
 nav_order: 2
 ---
 
-## Selection
+# Selection
 {: .no_toc }
 
 Table of contents
@@ -16,7 +16,7 @@ Table of contents
 {:toc}
 ---
 
-### Current location
+## Current location
 Selection is driven by the current location we are pointing at in the score image.
 
 The location point is displayed as a cross made of 2 red segments, one horizontal and one vertical.
@@ -41,9 +41,9 @@ To precisely **shift** the current location:
 * While keeping the `ALT` key pressed (`OPTION` key on MacOS), we use one of the 4 arrow keys
 to move the location (point or rectangle) one pixel at a time.
 
-### Entity selection
+## Entity selection
 
-#### Selection modes
+### Selection modes
 
 There are 3 selections modes available:
 1. ![](../assets/images/font_bitmap.png) _glyph+inter_ based (the default)
@@ -53,7 +53,7 @@ There are 3 selections modes available:
 To switch from one mode to another, we use the toggle menu item {{ site.view_selections }},
 click on the related toolbar icon or press the `F11` function key.
 
-#### Selection means
+### Selection means
 
 The mouse-based selection works as expected, pointing to glyph entities, inter entities,
 section entities, according to the current selection mode.
@@ -106,7 +106,7 @@ The images below depict:
 | --- | --- | --- |
 | ![](../assets/images/link_tuplet.png) | ![](../assets/images/link_stem_slur.png) | ![](../assets/images/link_lyrics.png) |
 
-#### Multi-selection
+### Multi-selection
 
 A left-click in an entity area selects this entity (and deselects the entity previously selected if any).
 
@@ -130,7 +130,7 @@ shows the bounding box of a compound glyph built from all selected glyphs.
 Moreover, an entity changes color when it gets selected (a glyph turns red, an inter turns to
 nearly-reverse color, a section turns white).
 
-#### Member vs Ensemble
+### Member vs Ensemble
 
 Selecting an entity by pointing at it can be ambiguous.
 
@@ -156,10 +156,10 @@ with the `To Ensemble` button enabled.
 Here, we have pressed `To Ensemble` button, and the focus is now on the head chord,
 with the "_ChordSyllable_" relation to the lyric item "Ver" below.
 
-### Container selection
+## Container selection
 
 When clicking with the right mouse button on any location of the sheet image, the sheet
-pop-up menu appears.
+contextual menu appears.
 
 This pop-up displays contextual information
 -- such as the selected glyphs, inters, etc, if any --

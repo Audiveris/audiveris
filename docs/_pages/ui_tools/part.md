@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 8
 ---
-## Part Merge
+# Part Merge
 {: .no_toc }
 
 During the ``GRID`` step, the OMR engine detects staves and assigns exactly one part per staff,

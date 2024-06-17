@@ -4,7 +4,7 @@ title: Options
 parent: Advanced Features
 nav_order: 4
 ---
-## Options {#options}
+# Options {#options}
 {: .no_toc }
 
 There is (or should be) no hard-coded constant in Audiveris code.
@@ -22,7 +22,7 @@ Table of contents
 1. TOC
 {:toc}
 ---
-### Dialog
+## Dialog
 
 The display below combines a tree of classes on the left side, and a table on the right side,
 where details of the options from the containing classes are available for display and modification.
@@ -61,7 +61,7 @@ number of pixels using the sheet interline scale (42 and 63 on this picture).
 value there.
 The new value applies immediately.
 
-### Options Lifecycle
+## Options Lifecycle
 
 The overriding mechanism is defined as follows, from lower to higher priority:
 

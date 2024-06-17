@@ -5,7 +5,7 @@ grand_parent: Main Features
 parent: Main Window
 nav_order: 1
 ---
-### Data display modes
+# Data display modes
 
 In the sheet panel we can choose between 3 display modes, that are effective in the **Data** tab:
 

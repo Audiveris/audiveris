@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 5
 ---
-## Relation Removal
+# Relation Removal
 {: .no_toc }
 
 ---
@@ -16,7 +16,7 @@ Table of contents
 {:toc}
 ---
 
-### Removing a wrong relation
+## Removing a wrong relation
 
 There is no direct way to select Relation instances.
 They can be selected only indirectly, via the selection of one of the Inter instances they link.
@@ -28,7 +28,8 @@ In the following example, a sharp sign has been linked to the wrong note head:
 To select this relation, we first select the involved sharp sign.
 This will result in the picture above.
 
-Then we use a right-click to display the context pop-up menu, hover on the `Inters...` submenu,
+Then we use a right-click to display the contextual menu {{ site.popup_inters }},
+hover on the `Inters...` submenu,
 then on the sharp item to see the `Relations:` list of relations this Inter is involved in.
 
 By clicking on the _AlterHead_ relation, we will be prompted to confirm the removal of this
@@ -45,7 +46,7 @@ configuration below:
 
 ![](../assets/images/correct_relation_after_delete.png)
 
-### Implicit relation removal
+## Implicit relation removal
 
 In the precise case above (correcting reference of accidentals), explicit removal of the
 relation was not necessary, provided the correct relation is inserted manually.

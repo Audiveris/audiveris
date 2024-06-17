@@ -5,7 +5,7 @@ grand_parent: References
 parent: Folders
 nav_order: 3
 ---
-## Cached folders
+# Cached folders
 {: .no_toc :}
 
 ---
@@ -16,13 +16,13 @@ Table of contents
 {:toc}
 ---
 
-### Purpose
+## Purpose
 
 Audiveris uses these locations for persistency of internal information.
 
 These files are **not** meant to be edited, period!
 
-### GUI folder
+## GUI folder
 
 These are opaque files used for GUI lifecycle (notably last position and size of each window)
 - mainFrame.session.xml
@@ -36,7 +36,7 @@ These are opaque files used for GUI lifecycle (notably last position and size of
 | **Linux** | ~/audiveris |
 | **MacOS** | TODO: !!! **I DON'T KNOW** !!!|
 
-### Log folder
+## Log folder
 
 Each session of Audiveris application creates in this folder a single global `dateTtime.log` file
 that covers all log events of the session.
@@ -48,7 +48,7 @@ that covers all log events of the session.
 | **Linux** (choice #2)| $HOME/.cache/AudiverisLtd/audiveris/log |
 | **MacOS** | $HOME/Library/AudiverisLtd/audiveris/log |
 
-### Temp folder
+## Temp folder
 
 It is a temporary storage for various needs, such as saving a snapshot of a score image portion.
 

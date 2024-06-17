@@ -6,7 +6,7 @@ parent: Book Portions
 nav_order: 2
 ---
 
-## Sheet Selection
+# Sheet Selection
 
 An action launched at the sheet level processes only that sheet.    
 An action launched at the book level, processes by default all the (valid) sheets of the book.

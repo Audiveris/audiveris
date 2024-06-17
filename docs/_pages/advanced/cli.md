@@ -4,7 +4,7 @@ title: Command Line Interface
 parent: Advanced Features
 nav_order: 1
 ---
-## Command Line Interface
+# Command Line Interface
 {: .no_toc }
 
 ---
@@ -15,7 +15,7 @@ Table of contents
 {:toc}
 ---
 
-### Syntax
+## Syntax
 
 Note that any argument beginning with the `@` character is considered as the name of a text file
 to be immediately expended _in situ_ (the text file is assumed to contain one argument per line).
@@ -82,30 +82,30 @@ Sheet steps are in order:
     PAGE       : Connect systems within page
 ```
 
-### Arguments
+## Arguments
 
 These are the standard arguments that are listed when the help option is used.
 They are presented here in alphabetical order.
 
-#### -batch
+### -batch
 
 Launches Audiveris without any Graphic User Interface.
 
-#### -export
+### -export
 
 Exports each book music as a MusicXML file.
 
-#### -force
+### -force
 
 Forces reprocessing even if target step has already been reached.  
 This option is effective only when a target step is specified
 (see the `-step` option) or the `-transcribe` option is present.
 
-#### -help
+### -help
 
 Displays the arguments summary as printed above, then exits.
 
-#### -option KEY=VALUE
+### -option KEY=VALUE
 
 Specifies the value of one application option,
 KEY being the qualified name of the option,
@@ -113,7 +113,7 @@ VALUE being the value to assign.
 
 This is the CLI equivalent of the GUI pull-down menu {{ site.tools_options }}.
 
-#### -output DIRNAME
+### -output DIRNAME
 
 Defines the path to the target output folder, that is the precise folder where all output files
 (``.omr``, ``.mxl``, etc) should be stored.
@@ -121,7 +121,7 @@ Defines the path to the target output folder, that is the precise folder where a
 if this option is not present, a default output folder is chosen according to the policy described
 in [Standard folders](../folders/standard.md) section.
 
-#### -playlist FILE.XML
+### -playlist FILE.XML
 
 Loads the provided `.xml` file as a playlist.
 
@@ -133,18 +133,18 @@ If in interactive mode, the loaded playlist is used only to populated and displa
 The user can then review and/or edit the playlist and potentially launch the building of
 the compound book at a desired location.
 
-#### -print
+### -print
 
 Exports each book music as a PDF file.
 
-#### -save
+### -save
 
 Saves each book OMR data to its `.omr` project file as soon as a sheet step is processed
 successfully.
 
 This option is effective only in `-batch` mode.
 
-#### -sheets N M X-Y
+### -sheets N M X-Y
 
 Specifies the IDs of sheets to process.
 
@@ -158,7 +158,7 @@ If no sheet IDs are specified, all (valid) sheets are concerned.
 
 Sheet IDs apply to all books referenced on the command line.
 
-#### -step STEPNAME
+### -step STEPNAME
 
 Specifies a sheet target step.
 
@@ -169,17 +169,17 @@ For any given sheet, if the target step has already been reached, no further pro
 However, if the `-force` option is present, this sheet will be reset to BINARY and then processed
 again to the target step.
 
-#### -transcribe
+### -transcribe
 
 Transcribes each book.
 
-#### `--`
+### `--`
 
 This argument (a double dash: "`--`") is not a real argument _per se_, but merely a delimiter
 so that each following argument in the command line is taken as an input file path
 (even if this argument begins with a `-` character).
 
-#### FILENAME
+### FILENAME
 
 Path to one input file.
 
@@ -188,11 +188,11 @@ as input / output.
 
 For any other extension, the file is considered as an image input file.
 
-### Advanced Arguments
+## Advanced Arguments
 
 These arguments are made available for the advanced user.
 
-#### -annotate
+### -annotate
 
 For each book, populates a Zip archive with images and symbol annotations derived from book Inter
 instances.
@@ -201,14 +201,14 @@ These annotations are meant to populate a dataset for training future Audiveris 
 (Page and/or Patch).
 
 
-#### -sample
+### -sample
 
 Populates each book sample repository with samples derived from the book Inter instances.
 
 A book-level repository can be later merged into the global Audiveris sample repository in order
 to prepare a training of Audiveris 5.x Glyph classifier.
 
-#### -run CLASS_NAME
+### -run CLASS_NAME
 Runs the specified Java class on each valid sheet.
 
 CLASS_NAME must be the fully qualified name of a Java class, which must extend the abstract class

@@ -5,7 +5,7 @@ parent: Specific Features
 nav_order: 9
 has_children: false
 ---
-## Tablature
+# Tablature
 {: .no_toc }
 {: .d-inline-block }
 new in 5.3
@@ -22,7 +22,7 @@ Table of contents
 {:toc}
 ---
 
-### Example
+## Example
 
 ![](../assets/images/tablature_example.png)
 
@@ -32,7 +32,7 @@ There exist also tablatures for 4-string bass guitar, represented with 4 lines.
 While a standard staff would begin with a clef (G, F or C), this tablature staff begins
 with a "TAB" indication.
 
-### Detection
+## Detection
 
 By default, tablatures are not detected.  
 To enable their detection, we have to explicitly set the processing switches
@@ -45,7 +45,7 @@ Typically a cluster of 5 lines is considered as a "standard" 5-line staff.
 
 If properly enabled, 4- or 6-line clusters are detected as "tablatures" staves.
 
-### Processing
+## Processing
 
 There is no processing *per se* by the OMR engine.
 

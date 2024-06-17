@@ -5,7 +5,7 @@ grand_parent: References
 parent: Outputs
 nav_order: 3
 ---
-## .omr files
+# .omr files
 
 A `.omr` file is Audiveris project file for a given image(s) input file (book).
 
@@ -20,7 +20,7 @@ since data can be continuously saved to (and restored from) disk while sheets ar
 
 All other Audiveris outputs derive from this project data.
 
-### File structure
+## File structure
 
 The internal project structure is specific to Audiveris software but, as opposed to commercial
 software, it is not opaque and is meant for public access, either via Audiveris API or by direct
@@ -78,7 +78,7 @@ It takes advantage of the image processing performed during the `BEAMS` step to 
 image areas (spots) where black heads are likely to be recognized.  
 This image is discarded at the end of `HEADS` step.
 
-### <a name="memory-constraint"></a>Memory constraint
+## <a name="memory-constraint"></a>Memory constraint
 
 To be able to handle books with more than a few sheets, Audiveris keeps book top data in memory,
 while sheet "details" are loaded only when they are really needed.
@@ -109,7 +109,7 @@ to from *book.xml*, and is not necessarily in memory.
 [NOTA: Just to avoid endless clashes with Java predefined `System` class, we have chosen `SystemInfo`
 as the class name to represent a music **system**]
 
-### Schemas documentation
+## Schemas documentation
 
 We wanted to make `.omr` file  as open as possible to let end-users and developers use directly
 this file for any purpose compliant with Audiveris AGPL license.
@@ -129,7 +129,7 @@ Since Audiveris 5.3, the Split & Merge feature can accept play-list definitions 
 Audiveris UI or provided as XML files created by any plain text editor.   
 Consequently, we provide an additional `.xsd` + `.html` pair, this time for a `playlist.xml` file.
 
-#### Documentation distribution
+### Documentation distribution
 
 We could not integrate the schemas documentation set into Audiveris HandBook on GitHub Pages.   
 Please tell us if we are wrong, but we could not use GitHub Pages for two reasons:
@@ -155,7 +155,7 @@ You can simply download and expand this ZIP archive locally, to get an easy acce
   The various HTML pieces use links to images stored in the `doc-files` sub-folder.
 
 
-#### Documentation generation
+### Documentation generation
 
 If, as a developer, you want to (re-)generate this documentation set on your own, please refer to
 [Building Schemas Documentation](https://github.com/Audiveris/audiveris/wiki/Schemas-Documentation)

@@ -4,7 +4,7 @@ title: Scanning
 parent: Main Features
 nav_order: 4
 ---
-## Scanning of paper scores
+# Scanning of paper scores
 
 Audiveris doesn't support direct scanning because there is still no open-source solution for
 cross-platform access to scanning devices from Java projects.

@@ -5,7 +5,7 @@ parent: Specific Features
 nav_order: 5
 has_children: false
 ---
-## Bar Repeat
+# Bar Repeat
 {: .no_toc }
 {: .d-inline-block }
 new in 5.3
@@ -21,7 +21,7 @@ Table of contents
 {:toc}
 ---
 
-### Example
+## Example
 
 ![](../assets/images/bar_repeats.png)
 
@@ -33,7 +33,7 @@ to repeat the previous two measures (#4 and #5).
 
 We could also encounter a four-bar sign, to repeat the four previous measures.
 
-### Model
+## Model
 
 Since release 5.3, Audiveris OMR engine is able to recognize both:
 - The repeat sign itself, with either 1, 2 or 4 slashes.
@@ -42,7 +42,7 @@ It should correspond to the count of slashes in the repeat sign.
 
 ![](../assets/images/bar_repeat_2.png)
 
-### Editing
+## Editing
 
 If needed, we can manually assign or drag these signs from the shape palette,
 using the three symbols available in ``Barlines`` set.
@@ -58,7 +58,7 @@ We can choose a predefined item from the ``Parts`` numbers.
 
 Or pick up the custom ``0`` item and then manually assign the desired value.
 
-### Output
+## Output
 
 The MusicXML output is correctly populated with these bar repeat signs
 and with the content of the repeated measures.

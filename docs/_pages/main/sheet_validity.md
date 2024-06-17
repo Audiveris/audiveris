@@ -5,7 +5,7 @@ grand_parent: Main Features
 parent: Book Portions
 nav_order: 1
 ---
-## Sheet Validity
+# Sheet Validity
 {: .no_toc }
 
 All images in an input file may not be score images: we can find illustration pages, blank pages, etc.
@@ -39,4 +39,6 @@ But validity is supposed to represent the real status of the sheet from the OMR 
 we should not use it to include or exclude this sheet for some processing.
 A side effect of modifying the validity status of a sheet is to nullify all its OMR data!
 
-Instead, we should use the sheet selection mechanism or the even more powerful [Split and Merge](./split_merge.md) tool.
+Instead, we should use the sheet selection mechanism or the even more powerful
+[Split and Merge](./split_merge.md) tool
+that can be accessed via the {{ site.book_split }} pull-down menu.

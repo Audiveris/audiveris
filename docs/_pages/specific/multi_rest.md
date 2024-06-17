@@ -6,7 +6,7 @@ nav_order: 6
 has_children: false
 ---
 
-## Multi-Measure Rest
+# Multi-Measure Rest
 {: .no_toc }
 {: .d-inline-block }
 new in 5.3
@@ -22,7 +22,7 @@ Table of contents
 {:toc}
 ---
 
-### Example
+## Example
 
 It is drawn as a thick horizontal line centered on staff middle line
 with serifs at both ends, completed by a time-like number drawn above the staff.
@@ -31,12 +31,12 @@ with serifs at both ends, completed by a time-like number drawn above the staff.
 
 In the example above, we have instances of multiple measure rests, on 5-line and 1-line staves.
 
-### Model
+## Model
 
 Since release 5.3, with no need for a specific processing switch, these multiple rests are detected
 together with the related measure count number.
 
-### Editing
+## Editing
 
 If not detected, we can still assign or drag a multiple rest item from the shape palette
 in its ``Rests`` set:

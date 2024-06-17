@@ -5,7 +5,7 @@ grand_parent: References
 parent: Pull-down menus
 nav_order: 9
 ---
-## Help menu
+# Help menu
 {: .no_toc }
 
 ![](../assets/images/help_menu.png)
@@ -18,19 +18,19 @@ Table of contents
 {:toc}
 ---
 
-### Handbook
+## Handbook
 
 Open this documentation (user-oriented handbook) from Audiveris program.
 
-### Wiki
+## Wiki
 
 Open Audiveris Wiki.
 
-### Web Site
+## Web Site
 
 Open Audiveris organization and contained repositories.
 
-### About
+## About
 
 Open an "à propos" dialog with information about Audiveris program and main external components
 it depends upon (Tesseract OCR, Java, OS, machine architecture).

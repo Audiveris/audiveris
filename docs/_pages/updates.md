@@ -22,22 +22,35 @@ Table of contents
 {:toc}
 ---
 
-### 5.4 (on-going)
+## 5.4 (on-going)
 
 - User Interface
+  - Past the SYMBOLS step, the manual removal of any Inter now triggers a dynamic rebuilding of glyphs,
+   as if the removed Inter had never existed.
   - Improvement and extension of default/book/sheet parameters (interline, barline)
-  - Ability to display some inters (augmentation dots by default) in jumbo mode
-  - Ability to stop current book processing at next step end
-  - Ability to clear the log window  
+  - Ability to display some inters in jumbo mode to ease a visual inspection
+  -- by default this can apply to augmentation dots.
+  - Ability to gracefully stop the current book processing at the next step end.
+  - Ability to clear the log window -- the log file remains intact.
+- Engine
+  - The recognition of fermata no longer requires separate recognitions of fermata-arc and fermata-dot.
+  - The processing of an input image with no white margin around the staves is now possible.
 - Project
+  - A Linux Flatpak package, gathering the needed libraries, proper Java environment
+    and the main Tesseract language files, is now provided on FlatHub.
   - The Windows installer pre-populates the user `config`/`tessdata` folder with the main Tesseract
-    languages
+    languages.
 - Documentation
-  - Support for a PDF version of the Audiveris Handbook
+  - Support for a PDF version of the Audiveris Handbook.
 - Java
-  - In `Audiveris.bat` and `Audiveris` start scripts, Java version is checked before being launched
+  - In `Audiveris.bat` (used by the Windows installer) and `Audiveris` start scripts, 
+    the Java version is checked before the application is launched.
+  - Support of Java 21.
+  - Upgrade to Gradle 8.5 to support Java 21.
+  - Removal of all deprecated features such as JGoodies PanelBuilder, Observer/Observable, 
+    class.newInstance(), etc.
 
-### 5.3
+## 5.3
 
 - User Interface
   - Editing of staff geometry, at individual line and global staff levels
@@ -61,7 +74,7 @@ Table of contents
 - Java
   - Support of Java 17
 
-### 5.2
+## 5.2
 
 - User Interface
    - Ability to move and resize symbols
@@ -97,7 +110,7 @@ Table of contents
    - Support of Java 11
    - Refined dependencies on Java EE, JAXB, etc away from Java 8
 
-### 5.1
+## 5.1
 
 - User Interface
   - Visual separation of shared heads
@@ -110,7 +123,7 @@ Table of contents
 - Java
    - Support of Java 8
 
-### 5.0
+## 5.0
 
 - Engine
   - Creation of `.omr` project files

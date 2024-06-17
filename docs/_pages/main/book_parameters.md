@@ -4,7 +4,7 @@ title: Book Parameters
 parent: Main Features
 nav_order: 5
 ---
-## Book Parameters
+# Book Parameters
 {: .no_toc }
 
 Table of contents
@@ -15,7 +15,7 @@ Table of contents
 
 ---
 
-### Dialog
+## Dialog
 
 The pull-down menu  {{ site.book_parameters }} opens a dialog to review and modify
 high-level processing parameters.
@@ -25,7 +25,7 @@ two sheets:
 
 ![](../assets/images/book_parameters.png)
 
-### Scopes
+## Scopes
 
 The dialog is organized in several tabs to describe Default, Book and Sheet's scopes respectively.
 In this example, the dialog provides 4 tabs, one for Default, one for Dichterliebe01 book,
@@ -50,7 +50,7 @@ To cancel a value modification, we simply un-check the box on left side.
 The line then gets disabled, changing from black to gray, and it now displays the inherited value
 in lieu of the overriding value.
 
-### Lifecycle
+## Lifecycle
 
 All modifications apply only when either the `OK` button or the `Apply` button is pressed,
 which actually commits them.
@@ -61,7 +61,7 @@ The `OK` button completes the dialog, while the `Apply` button keeps the dialog 
 
 * All the modified **book/sheets** values persist in the book `.omr` project file.
 
-### Parameters
+## Parameters
 
 * **Binarization**  (needs SPECIFIC_ITEMS advanced topic)  
   We select the kind of filter (_global_ or _adaptive_) which gives the best results for the sheet

@@ -4,7 +4,7 @@ title: Limitations
 parent: Main Features
 nav_order: 9
 ---
-## Limitations
+# Limitations
 {: .no_toc }
 
 This section presents the known cases that current Audiveris does not handle properly.
@@ -25,7 +25,7 @@ Table of contents
 
 ---
 
-### Natural signs in key signature
+## Natural signs in key signature
 
 ![](../assets/images/hybrid_key.png)
 
@@ -41,7 +41,7 @@ In this case, we will have to manually enter the correct key (without the natura
 Since 5.3, we can manually insert a natural-only key signature, a kind of "cancel key".
 See this possibility detailed in the [Naturals section](../ui_tools/key.md#naturals).
 
-### Key signature change
+## Key signature change
 
 ![](../assets/images/curtesy_key.png)
 
@@ -62,7 +62,7 @@ It is thus harmless for the OMR engine to ignore this warning.
 Apart from this courtesy case, the user may have to manually enter the missing key change on every
 staff.
 
-### Opposed Stems
+## Opposed Stems
 
 We can have two head chords with up and down stems that are located in such a way that they seem
 to be merged, as follows:
@@ -76,7 +76,7 @@ At the next reduction, this stem will be discarded, and the now isolated heads a
 
 This error can be fixed by manually inserting separate standard stems (and the related heads).
 
-### ChordName
+## ChordName
 
 Recognition of chord names can still be impeded by the presence of sharp (``♯``) or flat (``♭``) 
 characters which Tesseract OCR cannot handle correctly.
@@ -87,11 +87,11 @@ signs.
 
 See further description in the [Text Chord Name](../ui_tools/text.md#chord-name) section.
 
-### Tuplets
+## Tuplets
 
 Tuplets other than triplets and 6-tuplets are not supported, even manually.
 
-### Roman numeral
+## Roman numeral
 
 Some input files represent chords using Roman numerals.
 

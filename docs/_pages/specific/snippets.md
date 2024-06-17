@@ -5,7 +5,7 @@ parent: Specific Features
 nav_order: 0
 has_children: false
 ---
-## Snippets
+# Snippets
 {: .no_toc }
 {: .d-inline-block }
 new in 5.4
@@ -26,13 +26,13 @@ Table of contents
 {:toc}
 ---
 
-### Challenges
+## Challenges
 
 Let's have a closer look at this image (By Hyacinth, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=27409005):
 
 ![](../assets/images/Fandango_dance_pattern.png)
 
-#### Interline
+### Interline
 
 If we naively launch Audiveris on this input image, we almost immediately get this alert message:
 
@@ -62,7 +62,7 @@ For the sake of completion, here below are the black histogram and the combo his
 |The black histogram gives correct values for the typical staff line height (4 pixels) and the typical beam height (16 pixels) | ![](../assets/images/fandango_black_histogram.png) |
 |The combo histogram should give the typical interline value, but provides only erratic values | ![](../assets/images/fandango_combo_histogram.png)|
 
-#### Barline height
+### Barline height
 
 Another consequence of the lack of multi-line staves in the input image concerns the typical
 barline height that the engine should expect.
@@ -82,7 +82,7 @@ But let's consider this other example, with a 5-line staff and a 1-line staff:
 
 The typical barline height for the 1-line staff is here the same as for the 5-line staff, that is 4 interlines.
 
-### Specifications
+## Specifications
 
 Since the engine has no way to guess by itself the needed values of interline and barline height, we have to tell the engine which values to use for the image at hand.
 
@@ -109,7 +109,7 @@ We have to measure the typical height of a note head or half the typical height 
 We can do so by drawing a lasso either in the Binary tab, or in the Data tab (once the Pixel board has been opened).  
 This gives about 31 pixels for our snippet example.
 
-### Transcription
+## Transcription
 
 Once the book parameters are correctly set, the snippet gets perfectly transcribed.
 Here is the final result using the MuseScore plugin:

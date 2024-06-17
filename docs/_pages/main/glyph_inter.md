@@ -5,9 +5,9 @@ grand_parent: Main Features
 parent: Main Entities
 nav_order: 4
 ---
-### Glyph vs Inter
+# Glyph vs Inter
 
-#### Glyph
+## Glyph
 
 A **Glyph** is nothing more than a set of foreground (black) pixels
 in a sheet binary image.
@@ -21,7 +21,7 @@ or two staves: does it belong to the upper or the lower system/staff?
 
 These restrictions on Glyph don't apply to glyph interpretations (Inter).
 
-#### Inter
+## Inter
 
 An interpretation, or **Inter** for short, is precisely meant to formalize any reasonable
 interpretation of a glyph.
@@ -43,7 +43,7 @@ This grade is an interpretation _intrinsic_ grade, only based on the glyph at ha
 Later, the Inter will generally be assigned a _contextual_ grade, based on the Inter grade
 and the supporting relations with other Inter instances nearby.
 
-#### Typical display example
+## Typical display example
 
 
 |   View  |  Inter over Glyph   |

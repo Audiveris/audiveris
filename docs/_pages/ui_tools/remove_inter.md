@@ -5,7 +5,7 @@ grand_parent: User Editing
 parent: UI Tools
 nav_order: 3
 ---
-## Inter Removal
+# Inter Removal
 {: .no_toc }
 
 When one or several Inter instances have been selected, we can remove them as follows:
@@ -15,7 +15,7 @@ When one or several Inter instances have been selected, we can remove them as fo
   This applies only for the displayed Inter.  
   ![](../assets/images/deassign_button.png)
 
-*   The pop-up menu, trigerred by a right click, in its `Inters...` sub-menu, provides an item to
+*   The {{ site.popup_inters }} contextual menu provides an item to
     remove the selected Inter entities according to their containing system.
   ![](../assets/images/remove_inters.png)
 

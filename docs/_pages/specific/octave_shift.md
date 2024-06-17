@@ -5,7 +5,7 @@ parent: Specific Features
 nav_order: 4
 has_children: false
 ---
-## Octave Shift
+# Octave Shift
 {: .no_toc }
 {: .d-inline-block }
 new in 5.3
@@ -22,7 +22,7 @@ Table of contents
 {:toc}
 ---
 
-### Examples
+## Examples
 
 Here is an example of a one-line shift:
 
@@ -33,7 +33,7 @@ We can consider we have one "logical" shift composed of three "physical" shifts.
 
 ![](../assets/images/octave_shift_multiple.png)
 
-### Recognition
+## Recognition
 
 Automatic recognition of octave shifts by the OMR engine is difficult for various reasons:
 - The value is not always just a number to be found in {8, 17, 22} set.
@@ -46,7 +46,7 @@ step by the current classifier, which requires identified glyphs.
 
 ![](../assets/images/octave_shift_broken.png)
 
-### Model
+## Model
 
 In Audiveris, we have chosen to focus on a simplified model.  
 
@@ -67,9 +67,9 @@ A multi-line (logical) shift is implemented as a vertical sequence of several (p
 The OMR engine may recognize just the value portion of an octave shift, but it is then rather
 easy for the end-user to edit the line portion. 
 
-### Editing
+## Editing
 
-#### Location
+### Location
 
 First things first, we need the shift value.
 
@@ -91,7 +91,7 @@ At drop time, the last staff is kept as the related staff.
 
 ![](../assets/images/octave_shift_with_staff.png)
 
-#### Single line editing
+### Single line editing
 
 As usual, a double-click on the shift Inter opens a dedicated editor on it.
 
@@ -114,7 +114,7 @@ in the system above, the initial shift gets separated in two shifts, one for eac
 In these forced cases, the initial one-line shift has evolved to a multiple-line shift.
 And it can continue its evolution.
 
-#### Multiple line editing
+### Multiple line editing
 
 ![](../assets/images/octave_shift_multiple_edited.png)
 
@@ -129,7 +129,7 @@ The picture above represents the current status of a 3-line shift being edited:
 Forcing the first line downwards (or the last line upwards) allows to shrink the shift
 and reduce the number of lines, potentially down to a single line shift.
 
-#### End
+### End
 
 Clicking outside any handle completes the current editing.
 

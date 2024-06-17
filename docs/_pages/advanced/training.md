@@ -4,7 +4,7 @@ title: Training
 parent: Advanced Features
 nav_order: 7
 ---
-## Training {#training}
+# Training {#training}
 {: .no_toc }
 
 Audiveris has the ability to train the underlying Glyph classifier with representative samples.
@@ -32,7 +32,7 @@ Table of contents
 {:toc}
 ---
 
-### Trainer Dialog {#trainer}
+## Trainer Dialog {#trainer}
 
 This dialog is dedicated to the training of Audiveris basic classifier (a glyph classifier).
 It is launched via the pull-down menu {{ site.tools_train }} or, from the global repository,
@@ -55,7 +55,7 @@ There we can set amplitude, learningRate, momentum and maxEpochs parameters.
 
 `Stop` button allows to stop the training before the maxEpochs count has been reached.
 
-### Validation
+## Validation
 
 There are two data sets available for validation, the train set (of no major interest)
 and the test set.
