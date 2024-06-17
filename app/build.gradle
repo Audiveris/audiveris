@@ -97,6 +97,7 @@ allprojects {
 
 // Run default configuration.
 // Heap size (and other stuff) can be modified via a 'jvmLineArgs' on gradle command line
+// Application arguments can be provided via a 'cmdLineArgs' on gradle command line
 run {
     minHeapSize = '512m'
     maxHeapSize = '1g'
@@ -361,7 +362,7 @@ def depsFile = file('build/dependencies.json')
 tasks.flatpakGradleGenerator {
     description("Collect all dependencies for Flatpak")
     outputFile = depsFile
-    downloadDirectory = '../app/build/dependencies'
+    downloadDirectory = 'dependencies'
 
     outputs.file(depsFile)
     doFirst { println "app. Generating dependencies" }

@@ -17,8 +17,9 @@ plugins {
     id 'base'
 }
 
-def app     = project(':app')
-def appDir  = app.projectDir
+def app         = project(':app')
+def appDir      = app.projectDir
+def flathubDir  = new File(project.projectDir.getAbsolutePath() + "/flathub")
 
 // SHA1 computation
 // Stolen from https://gist.github.com/dagezi/9594839#file-calcsha1-gradle
@@ -37,14 +38,13 @@ task genLanguages {
     description("Generate languages sources")
 
     doLast {
-        println "Generating language sources"
-        def outputDir = layout.buildDirectory.get().asFile
-        outputDir.exists() || outputDir.mkdirs()
-        def langFile = new File(outputDir, "lang_sources.yml")
+        ///flathubDir.exists() || flathubDir.mkdirs()
+        def langFile = new File(flathubDir, "lang_sources.yml")
+        println "Generating language sources into ${langFile}"
 
-	project.delete(
-	    fileTree(langFile)
-	)
+        project.delete(
+            fileTree(langFile)
+        )
 	
         fileTree("$appDir/dev/tessdata").include('*.traineddata').each { f ->
             def relPath = relativePath(f).replace("\\","/")
@@ -72,6 +72,14 @@ task genDependencies {
     
     FileCollection sharedFiles = configurations.getByName("sharedConfiguration")
     inputs.files(sharedFiles)
+
+    doLast {
+        println "Copying dependencies.json"
+        copy {
+            from('../app/build/dependencies.json')
+            into(flathubDir)
+        }
+    }
 }
 
 // Generate the Flatpak manifest by expanding key variables
@@ -97,8 +105,24 @@ task genManifest {
                 binding.TAG = '5.4-alpha-2'
                 expand(binding)
             }
-            into('build')
+            into(flathubDir)
             rename '.template', ''
+        }
+    }
+}
+
+// Initialize flatpak/flathub content before build
+task initFlathub {
+    description("Populate flathub submodule")
+    dependsOn('genLanguages')
+    dependsOn('genDependencies')
+    dependsOn('genManifest')
+
+    doLast {
+        println "Copying resources to flathub"
+        copy {
+            from('res')
+            into(flathubDir)
         }
     }
 }
@@ -106,21 +130,22 @@ task genManifest {
 // Build flatpak on manifest
 task buildFlatpak (type: Exec) {
     description("Run flatpak-builder on manifest")
-    dependsOn('genLanguages')
-    dependsOn('genManifest')
-    dependsOn('genDependencies')
+    dependsOn('initFlathub')
+
     onlyIf { app.ext.hostOSName == "linux" }
 
     doFirst {
-        println "Running flatpak-builder in folder $projectDir"
+        println "Running flatpak-builder in folder flatpak/flathub"
     }
 
-    // flatpak-builder is run from the subproject directory
+    // flatpak-builder is run from the flathub directory
+    workingDir 'flathub'
+
     // All outputs are located under the 'build' directory for an easier cleanup
     commandLine('flatpak-builder', 
-        '--verbose', 
-        '--state-dir=build/.flatpak-builder',   // option to define the state-storing directory
+//        '--verbose', 
+//        '--state-dir=build/.flatpak-builder',   // option to define the state-storing directory
         '--force-clean',                        // option to empty the output directory
-        'build/output',                         // relative path to the output directory to write
-        'build/org.audiveris.audiveris.yml')    // relative path to the manifest file to read
+        'build',                                // relative path to the output directory to write
+        'org.audiveris.audiveris.yml')          // relative path to the manifest file to read
 }
