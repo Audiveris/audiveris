@@ -311,7 +311,7 @@ public class SymbolsLinker
                     }
                 }
 
-                case Direction -> {
+                case Direction, Tempo -> {
                     // Map direction with proper chord
                     MeasureStack stack = system.getStackAt(location);
 
@@ -363,10 +363,8 @@ public class SymbolsLinker
                     // Look for related ending
                     final Link link = sentence.lookupEndingLink(system);
 
-                    if ((link != null) && (null == sig.getRelation(
-                            link.partner,
-                            sentence,
-                            EndingSentenceRelation.class))) {
+                    if ((link != null) && (null == sig
+                            .getRelation(link.partner, sentence, EndingSentenceRelation.class))) {
                         sig.addEdge(link.partner, sentence, link.relation);
                     }
                 }
@@ -503,11 +501,11 @@ public class SymbolsLinker
                 default -> {}
 
                 case Lyrics -> sentence.getMembers().forEach(
-                        wInter -> sig.getRelations(wInter, ChordSyllableRelation.class).forEach(
-                                rel -> sig.removeEdge(rel)));
+                        wInter -> sig.getRelations(wInter, ChordSyllableRelation.class)
+                                .forEach(rel -> sig.removeEdge(rel)));
 
-                case Direction -> sig.getRelations(sentence, ChordSentenceRelation.class).forEach(
-                        rel -> sig.removeEdge(rel));
+                case Direction -> sig.getRelations(sentence, ChordSentenceRelation.class)
+                        .forEach(rel -> sig.removeEdge(rel));
 
                 case PartName -> {
                     // Look for proper part
@@ -517,12 +515,12 @@ public class SymbolsLinker
                 }
 
                 case ChordName -> sentence.getMembers().forEach(
-                        wInter -> sig.getRelations(wInter, ChordNameRelation.class).forEach(
-                                rel -> sig.removeEdge(rel)));
+                        wInter -> sig.getRelations(wInter, ChordNameRelation.class)
+                                .forEach(rel -> sig.removeEdge(rel)));
 
                 case EndingNumber, EndingText -> //
-                        sig.getRelations(sentence, EndingSentenceRelation.class).forEach(
-                                rel -> sig.removeEdge(rel));
+                        sig.getRelations(sentence, EndingSentenceRelation.class)
+                                .forEach(rel -> sig.removeEdge(rel));
 
             }
         } catch (Exception ex) {

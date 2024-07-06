@@ -48,6 +48,7 @@ import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.TempoInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.util.Navigable;
@@ -225,8 +226,9 @@ public class TextBuilder
         for (TextLine line : textLines) {
             final TextRole role = line.getRole();
             final SentenceInter sentence = (role == TextRole.Lyrics) ? LyricLineInter.create(line)
-                    : ((role == TextRole.ChordName) ? ChordNameInter.create(line)
-                            : SentenceInter.create(line));
+                    : (role == TextRole.ChordName) ? ChordNameInter.create(line)
+                            : (role == TextRole.Tempo) ? TempoInter.createValid(line)
+                                    : SentenceInter.create(line);
 
             // Related staff (can still be modified later)
             Staff staff = line.getStaff();
@@ -554,15 +556,12 @@ public class TextBuilder
 
             for (TextWord word : sortedWords) {
                 // Isolate proper word glyph from its enclosed sections
-                SortedSet<Section> wordSections = retrieveSections(
-                        word.getChars(),
-                        allSections,
-                        offset);
+                SortedSet<Section> wordSections =
+                        retrieveSections(word.getChars(), allSections, offset);
 
                 if (!wordSections.isEmpty()) {
-                    SectionCompound compound = CompoundFactory.buildCompound(
-                            wordSections,
-                            constructor);
+                    SectionCompound compound =
+                            CompoundFactory.buildCompound(wordSections, constructor);
                     Glyph rel = compound.toGlyph(null);
                     Glyph wordGlyph = glyphIndex.registerOriginal(
                             new Glyph(rel.getLeft() + dx, rel.getTop() + dy, rel.getRunTable()));
@@ -1196,8 +1195,8 @@ public class TextBuilder
                                                  Point offset)
     {
         final SortedSet<Section> wordSections = new TreeSet<>(Section.byFullAbscissa);
-        final CompoundConstructor constructor = new SectionCompound.Constructor(
-                sheet.getInterline());
+        final CompoundConstructor constructor =
+                new SectionCompound.Constructor(sheet.getInterline());
 
         final int dx = (offset != null) ? offset.x : 0;
         final int dy = (offset != null) ? offset.y : 0;
@@ -1395,12 +1394,10 @@ public class TextBuilder
             extends ConstantSet
     {
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
+        private final Constant.Boolean printWatch =
+                new Constant.Boolean(false, "Should we print out the stop watch?");
 
-        private final Scale.Fraction maxLineDy = new Scale.Fraction(
-                1.0,
-                "Max vertical gap between two line chunks");
+        private final Scale.Fraction maxLineDy =
+                new Scale.Fraction(1.0, "Max vertical gap between two line chunks");
     }
 }

@@ -158,14 +158,12 @@ public class ChordNameInter
     private static final String STEP_CLASS = "[A-G]";
 
     /** Pattern for root value. A, A# or Ab */
-    private static final String rootPat = group(ROOT_STEP, STEP_CLASS) + group(
-            ROOT_ALTER,
-            Alter.CLASS) + "?";
+    private static final String rootPat =
+            group(ROOT_STEP, STEP_CLASS) + group(ROOT_ALTER, Alter.CLASS) + "?";
 
     /** Pattern for bass value, if any. /A, /A# or /Ab */
-    private static final String bassPat = "(/" + group(BASS_STEP, STEP_CLASS) + group(
-            BASS_ALTER,
-            Alter.CLASS) + "?" + ")";
+    private static final String bassPat =
+            "(/" + group(BASS_STEP, STEP_CLASS) + group(BASS_ALTER, Alter.CLASS) + "?" + ")";
 
     /** Pattern for major indication. M, maj or DELTA */
     private static final String majPat = group(MAJ, "(M|[Mm][Aa][Jj]|" + DELTA + ")");
@@ -183,38 +181,36 @@ public class ChordNameInter
     private static final String hdimPat = group(HDIM, "\u00F8");
 
     /** Pattern for any of the indication alternatives. (except sus) */
-    private static final String modePat = "(" + majPat + "|" + minPat + "|" + augPat + "|" + dimPat
-            + "|" + hdimPat + ")";
+    private static final String modePat =
+            "(" + majPat + "|" + minPat + "|" + augPat + "|" + dimPat + "|" + hdimPat + ")";
 
     /** Pattern for (maj7) in min(maj7) = MAJOR_MINOR. */
-    private static final String parMajPat = "(\\(" + group(PMAJ7, "(M|[Mm][Aa][Jj]|" + DELTA + ")7")
-            + "\\))";
+    private static final String parMajPat =
+            "(\\(" + group(PMAJ7, "(M|[Mm][Aa][Jj]|" + DELTA + ")7") + "\\))";
 
     /** Pattern for any degree value. 5, 6, 7, 9, 11 or 13 */
     private static final String DEG_CLASS = "(5|6|7|9|11|13)";
 
     /** Pattern for a sequence of degrees. */
-    private static final String degsPat = group(
-            DEGS,
-            DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")?");
+    private static final String degsPat =
+            group(DEGS, DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")?");
 
     /** Pattern for a suspended indication. sus2 or sus4 */
     private static final String susPat = group(SUS, "([Ss][Uu][Ss][24])");
 
     /** Pattern for the whole kind value. */
-    private static final String kindPat = group(
-            KIND,
-            modePat + "?" + parMajPat + "?" + degsPat + "?" + susPat + "?");
+    private static final String kindPat =
+            group(KIND, modePat + "?" + parMajPat + "?" + degsPat + "?" + susPat + "?");
 
     /** Pattern for parenthesized degrees if any. (6), (#9), (#11b13) */
-    private static final String parPat = "(\\(" + group(
-            PARS,
-            Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*") + "\\))";
+    private static final String parPat = "(\\("
+            + group(PARS, Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*")
+            + "\\))";
 
     /** Pattern for non-parenthesized degrees if any. b5 */
-    private static final String noParPat = "(" + group(
-            NO_PARS,
-            Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*") + ")";
+    private static final String noParPat = "("
+            + group(NO_PARS, Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*")
+            + ")";
 
     /**
      * Un-compiled patterns for whole chord symbol.
@@ -227,9 +223,8 @@ public class ChordNameInter
     private static List<Pattern> patterns;
 
     /** Pattern for one degree. (in a sequence of degrees) */
-    private static final String degPat = group(DEG_ALTER, Alter.CLASS) + "?" + group(
-            DEG_VALUE,
-            DEG_CLASS);
+    private static final String degPat =
+            group(DEG_ALTER, Alter.CLASS) + "?" + group(DEG_VALUE, DEG_CLASS);
 
     /** Compiled pattern for one degree. */
     private static final Pattern degPattern = Pattern.compile(degPat);
@@ -589,7 +584,7 @@ public class ChordNameInter
      * Parse the provided string to try to extract all chord name items.
      *
      * @param value text the precise text of the chord symbol candidate
-     * @return a populated ChordItems structure if successful, null otherwise
+     * @return a populated ChordStructure if successful, null otherwise
      */
     private static ChordStructure parseChord (String value)
     {
@@ -598,16 +593,15 @@ public class ChordNameInter
 
             if (matcher.matches()) {
                 // Root
-                ChordNamePitch root = ChordNamePitch.create(
-                        getGroup(matcher, ROOT_STEP),
-                        getGroup(matcher, ROOT_ALTER));
+                ChordNamePitch root = ChordNamePitch
+                        .create(getGroup(matcher, ROOT_STEP), getGroup(matcher, ROOT_ALTER));
 
                 // Degrees
                 String degStr = getGroup(matcher, DEGS);
                 List<ChordDegree> degrees = ChordDegree.createList(degStr, null);
                 ChordDegree firstDeg = (!degrees.isEmpty()) ? degrees.get(0) : null;
-                String firstDegStr = (firstDeg != null) ? Integer.toString(degrees.get(0).value)
-                        : "";
+                String firstDegStr =
+                        (firstDeg != null) ? Integer.toString(degrees.get(0).value) : "";
 
                 // (maj7) special stuff
                 String pmaj7 = standard(matcher, PMAJ7);
@@ -616,9 +610,8 @@ public class ChordNameInter
                 ChordKind kind = ChordKind.create(matcher, firstDegStr + pmaj7);
 
                 // Bass
-                ChordNamePitch bass = ChordNamePitch.create(
-                        getGroup(matcher, BASS_STEP),
-                        getGroup(matcher, BASS_ALTER));
+                ChordNamePitch bass = ChordNamePitch
+                        .create(getGroup(matcher, BASS_STEP), getGroup(matcher, BASS_ALTER));
 
                 if ((firstDeg != null) && (kind.type != SUSPENDED_FOURTH)
                         && (kind.type != SUSPENDED_SECOND)) {
@@ -977,9 +970,9 @@ public class ChordNameInter
             }
 
             // Then check for other combinations
-            final String str = standard(matcher, MIN) + standard(matcher, MAJ) + standard(
-                    matcher,
-                    AUG) + standard(matcher, DIM) + standard(matcher, HDIM) + dominant;
+            final String str =
+                    standard(matcher, MIN) + standard(matcher, MAJ) + standard(matcher, AUG)
+                            + standard(matcher, DIM) + standard(matcher, HDIM) + dominant;
             ChordType type = typeOf(str);
 
             // Special case for Triangle sign => maj7 rather than major

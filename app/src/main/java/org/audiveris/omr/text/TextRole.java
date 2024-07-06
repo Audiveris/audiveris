@@ -31,6 +31,7 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.inter.TempoInter;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
@@ -76,7 +77,9 @@ public enum TextRole
     /** Ending number, such as "1" or "1,2". */
     EndingNumber,
     /** Ending text, when different from number. */
-    EndingText;
+    EndingText,
+    /** Tempo indication, such as "quarter = value". */
+    Tempo;
 
     private static final Constants constants = new Constants();
 
@@ -126,7 +129,7 @@ public enum TextRole
             logger.info("TextRoleInfo. guessRole for {}", line.getValue());
         }
 
-        Rectangle box = line.getBounds();
+        final Rectangle box = line.getBounds();
 
         if (box == null) {
             return null;
@@ -176,8 +179,8 @@ public enum TextRole
 
         // Right aligned with staves (and starts after staff center abscissa) ?
         int maxRightDx = scale.toPixels(constants.maxRightDx);
-        boolean rightAligned = (Math.abs(right.x - system.getRight()) <= maxRightDx)
-                && (staffMidX <= left.x);
+        boolean rightAligned =
+                (Math.abs(right.x - system.getRight()) <= maxRightDx) && (staffMidX <= left.x);
 
         // Short Sentence?
         int maxShortLength = scale.toPixels(constants.maxShortLength);
@@ -214,10 +217,14 @@ public enum TextRole
                         if (isAllChords) {
                             return ChordName;
                         } else {
-                            return Direction;
+                            final TempoInter tempo = TempoInter.createValid(line);
+                            if (tempo != null) {
+                                return Tempo;
+                            } else {
+                                return Direction;
+                            }
                         }
                     } else if (pageCentered) { // Title, Number
-
                         if (highText) {
                             return Title;
                         } else {
@@ -301,32 +308,26 @@ public enum TextRole
             extends ConstantSet
     {
 
-        private final Scale.Fraction maxRightDx = new Scale.Fraction(
-                2,
-                "Maximum horizontal distance on the right end of the staff");
+        private final Scale.Fraction maxRightDx =
+                new Scale.Fraction(2, "Maximum horizontal distance on the right end of the staff");
 
-        private final Scale.Fraction maxCenterDx = new Scale.Fraction(
-                30,
-                "Maximum horizontal distance around center of page");
+        private final Scale.Fraction maxCenterDx =
+                new Scale.Fraction(30, "Maximum horizontal distance around center of page");
 
-        private final Scale.Fraction maxShortLength = new Scale.Fraction(
-                35,
-                "Maximum length for a short sentence (no lyrics)");
+        private final Scale.Fraction maxShortLength =
+                new Scale.Fraction(35, "Maximum length for a short sentence (no lyrics)");
 
-        private final Scale.Fraction maxTinyLength = new Scale.Fraction(
-                2.5,
-                "Maximum length for a tiny sentence (no lyrics)");
+        private final Scale.Fraction maxTinyLength =
+                new Scale.Fraction(2.5, "Maximum length for a tiny sentence (no lyrics)");
 
         private final Scale.Fraction maxStaffDy = new Scale.Fraction(
                 7,
                 "Maximum distance above staff for a direction (or lyrics above staves)");
 
-        private final Scale.Fraction minStaffDy = new Scale.Fraction(
-                6,
-                "Minimum distance below staff for a copyright");
+        private final Scale.Fraction minStaffDy =
+                new Scale.Fraction(6, "Minimum distance below staff for a copyright");
 
-        private final Scale.Fraction minTitleHeight = new Scale.Fraction(
-                2,
-                "Minimum height for a title text");
+        private final Scale.Fraction minTitleHeight =
+                new Scale.Fraction(2, "Minimum height for a title text");
     }
 }

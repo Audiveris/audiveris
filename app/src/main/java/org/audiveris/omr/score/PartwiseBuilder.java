@@ -80,6 +80,7 @@ import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
+import org.audiveris.omr.sig.inter.TempoInter;
 import org.audiveris.omr.sig.inter.TremoloInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
@@ -276,12 +277,12 @@ public class PartwiseBuilder
     });
 
     /** Default page horizontal margin. */
-    private static final BigDecimal pageHorizontalMargin = new BigDecimal(
-            constants.pageHorizontalMargin.getValue());
+    private static final BigDecimal pageHorizontalMargin =
+            new BigDecimal(constants.pageHorizontalMargin.getValue());
 
     /** Default page vertical margin. */
-    private static final BigDecimal pageVerticalMargin = new BigDecimal(
-            constants.pageVerticalMargin.getValue());
+    private static final BigDecimal pageVerticalMargin =
+            new BigDecimal(constants.pageVerticalMargin.getValue());
 
     /** Maximum level number. */
     private static final int MAX_LEVEL_NUMBER = 16;
@@ -710,8 +711,8 @@ public class PartwiseBuilder
         // Browse the current list of measures backwards within current part
         List<ScorePartwise.Part.Measure> measures = current.pmPart.getMeasure();
 
-        for (ListIterator<ScorePartwise.Part.Measure> it = measures.listIterator(
-                measures.size()); it.hasPrevious();) {
+        for (ListIterator<ScorePartwise.Part.Measure> it =
+                measures.listIterator(measures.size()); it.hasPrevious();) {
             ScorePartwise.Part.Measure pmMeasure = it.previous();
 
             for (Object obj : pmMeasure.getNoteOrBackupOrForward()) {
@@ -1003,8 +1004,8 @@ public class PartwiseBuilder
                     // Insert dummy measure
                     current.pmMeasure = factory.createScorePartwisePartMeasure();
                     current.pmPart.getMeasure().add(current.pmMeasure);
-                    current.pmMeasure.setNumber(
-                            stack.getScoreId(current.pageMeasureIdOffset + num + 1));
+                    current.pmMeasure
+                            .setNumber(stack.getScoreId(current.pageMeasureIdOffset + num + 1));
                 }
             }
         }
@@ -1053,8 +1054,8 @@ public class PartwiseBuilder
         // Browse the  current list of measures backwards
         List<ScorePartwise.Part.Measure> measures = current.pmPart.getMeasure();
 
-        for (ListIterator<ScorePartwise.Part.Measure> mit = measures.listIterator(
-                measures.size()); mit.hasPrevious();) {
+        for (ListIterator<ScorePartwise.Part.Measure> mit =
+                measures.listIterator(measures.size()); mit.hasPrevious();) {
             ScorePartwise.Part.Measure pmMeasure = mit.previous();
 
             // Look backwards in measure items, checking staff
@@ -1170,8 +1171,8 @@ public class PartwiseBuilder
             final MeasureStack stack = current.measure.getStack();
             final PartBarline.Style style = partBarline.getStyle();
             final List<FermataInter> fermatas = partBarline.getFermatas(); // Top down list
-            final EndingInter ending = partBarline.getEnding(
-                    (location == RightLeftMiddle.RIGHT) ? RIGHT : LEFT);
+            final EndingInter ending =
+                    partBarline.getEnding((location == RightLeftMiddle.RIGHT) ? RIGHT : LEFT);
             final String endingValue = (ending != null) ? ending.getValue() : null;
             String endingNumber = (ending != null) ? ending.getExportedNumber() : null;
 
@@ -1196,8 +1197,8 @@ public class PartwiseBuilder
             // Specific barline on left side:
             needed |= (partBarline == current.measure.getLeftPartBarline());
             // On left side, with stuff (left repeat, left ending):
-            needed |= ((location == RightLeftMiddle.LEFT) && (stack.isRepeat(LEFT)
-                    || (ending != null)));
+            needed |= ((location == RightLeftMiddle.LEFT)
+                    && (stack.isRepeat(LEFT) || (ending != null)));
             // Specific barline on middle location:
             needed |= (location == RightLeftMiddle.MIDDLE);
             // On right side, but with stuff (right repeat, right ending, fermata) or non regular:
@@ -1278,8 +1279,8 @@ public class PartwiseBuilder
                                 }
 
                                 // Pick up last inverted fermata if any.
-                                for (ListIterator<FermataInter> it = fermatas.listIterator(
-                                        fermatas.size()); it.hasPrevious();) {
+                                for (ListIterator<FermataInter> it =
+                                        fermatas.listIterator(fermatas.size()); it.hasPrevious();) {
                                     FermataInter f = it.previous();
 
                                     if (f.getShape() == Shape.FERMATA_BELOW) {
@@ -1330,9 +1331,8 @@ public class PartwiseBuilder
                 PartBarline topPartBarline = getBarlineOnLeft(topMeasure);
 
                 if (topPartBarline != null) {
-                    StaffBarlineInter topBarline = topPartBarline.getStaffBarline(
-                            part,
-                            part.getFirstStaff());
+                    StaffBarlineInter topBarline =
+                            topPartBarline.getStaffBarline(part, part.getFirstStaff());
 
                     for (Inter marker : topBarline.getRelatedInters(MarkerBarRelation.class)) {
                         processMarker((MarkerInter) marker);
@@ -1523,9 +1523,17 @@ public class PartwiseBuilder
             // relative-x
             pmWords.setRelativeX(toTenths(location.getX() - current.note.getCenterLeft().x));
 
-            // Everything is now OK
             directionType.getWordsOrSymbol().add(pmWords);
             direction.getDirectionType().add(directionType);
+
+            // Tempo?
+            if (sentence instanceof TempoInter tempo) {
+                final Sound sound = factory.createSound();
+                sound.setTempo(new BigDecimal(tempo.getBpm()));
+                direction.setSound(sound);
+            }
+
+            // Everything is now OK
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
             logger.warn("Error visiting {} in {}", sentence, current.page, ex);
@@ -1949,28 +1957,28 @@ public class PartwiseBuilder
 
                 // Number of staves, if > 1
                 if (isScoreFirstMeasure && current.logicalPart.isMultiStaff()) {
-                    getAttributes().setStaves(
-                            new BigInteger("" + current.logicalPart.getStaffCount()));
+                    getAttributes()
+                            .setStaves(new BigInteger("" + current.logicalPart.getStaffCount()));
                 }
 
-                // Tempo?
-                if (isScoreFirstMeasure && isFirst.part && !measure.isDummy()) {
-                    Direction direction = factory.createDirection();
-                    current.pmMeasure.getNoteOrBackupOrForward().add(direction);
-                    direction.setPlacement(AboveBelow.ABOVE);
-
-                    DirectionType directionType = factory.createDirectionType();
-                    direction.getDirectionType().add(directionType);
-
-                    // Use a dummy words element
-                    FormattedTextId pmWords = factory.createFormattedTextId();
-                    directionType.getWordsOrSymbol().add(pmWords);
-                    pmWords.setValue("");
-
-                    Sound sound = factory.createSound();
-                    sound.setTempo(new BigDecimal(score.getTempoParam().getValue()));
-                    direction.setSound(sound);
-                }
+                //                // Tempo?
+                //                if (isScoreFirstMeasure && isFirst.part && !measure.isDummy()) {
+                //                    Direction direction = factory.createDirection();
+                //                    current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+                //                    direction.setPlacement(AboveBelow.ABOVE);
+                //
+                //                    DirectionType directionType = factory.createDirectionType();
+                //                    direction.getDirectionType().add(directionType);
+                //
+                //                    // Use a dummy words element
+                //                    FormattedTextId pmWords = factory.createFormattedTextId();
+                //                    directionType.getWordsOrSymbol().add(pmWords);
+                //                    pmWords.setValue("");
+                //
+                //                    Sound sound = factory.createSound();
+                //                    sound.setTempo(new BigDecimal(score.getTempoParam().getValue()));
+                //                    direction.setSound(sound);
+                //                }
 
                 // Insert KeySignature(s), if any (they may vary between staves)
                 processKeys();
@@ -2294,17 +2302,17 @@ public class PartwiseBuilder
             // Default-x (use left side of the note wrt measure)
             if (!current.measure.isDummy() && !current.repeatCopying) {
                 int noteLeft = note.getCenterLeft().x;
-                current.pmNote.setDefaultX(
-                        toTenths(noteLeft - current.measure.getAbscissa(LEFT, staff)));
+                current.pmNote
+                        .setDefaultX(toTenths(noteLeft - current.measure.getAbscissa(LEFT, staff)));
             }
 
             // Tuplet factor?
             if (chord.getTupletFactor() != null) {
                 TimeModification timeModification = factory.createTimeModification();
-                timeModification.setActualNotes(
-                        new BigInteger("" + chord.getTupletFactor().actualDen));
-                timeModification.setNormalNotes(
-                        new BigInteger("" + chord.getTupletFactor().actualNum));
+                timeModification
+                        .setActualNotes(new BigInteger("" + chord.getTupletFactor().actualDen));
+                timeModification
+                        .setNormalNotes(new BigInteger("" + chord.getTupletFactor().actualNum));
 
                 TupletInter tuplet = chord.getTuplet();
                 Rational chordDur = chord.getDurationSansDotOrTuplet();
@@ -2319,8 +2327,8 @@ public class PartwiseBuilder
                 if (isFirstInChord) {
                     List<AbstractChordInter> embraced = tuplet.getChords();
 
-                    if ((embraced.get(0) == chord) || (embraced.get(
-                            embraced.size() - 1) == chord)) {
+                    if ((embraced.get(0) == chord)
+                            || (embraced.get(embraced.size() - 1) == chord)) {
                         processTuplet(tuplet);
                     }
                 }
@@ -2373,8 +2381,8 @@ public class PartwiseBuilder
                 final MotifSign ms = new MotifSign(motif, sign);
                 final DrumSet drumSet = DrumSet.getInstance();
                 final int lineCount = staff.getLineCount();
-                final Map<Integer, Map<DrumSet.MotifSign, DrumInstrument>> staffSet = drumSet
-                        .getStaffSet(lineCount);
+                final Map<Integer, Map<DrumSet.MotifSign, DrumInstrument>> staffSet =
+                        drumSet.getStaffSet(lineCount);
                 if (staffSet == null) {
                     logger.warn("No drum set defined for staff size {}", lineCount);
                 } else {
@@ -2505,8 +2513,8 @@ public class PartwiseBuilder
                                     : AboveBelow.BELOW);
                     pmFingering.setDefaultY(yOf(fingering.getCenter(), staff));
 
-                    getTechnical().getUpBowOrDownBowOrHarmonic().add(
-                            factory.createTechnicalFingering(pmFingering));
+                    getTechnical().getUpBowOrDownBowOrHarmonic()
+                            .add(factory.createTechnicalFingering(pmFingering));
                 }
 
                 // Plucking?
@@ -2519,8 +2527,8 @@ public class PartwiseBuilder
                                     : AboveBelow.BELOW);
                     placement.setDefaultY(yOf(plucking.getCenter(), staff));
 
-                    getTechnical().getUpBowOrDownBowOrHarmonic().add(
-                            factory.createTechnicalPluck(placement));
+                    getTechnical().getUpBowOrDownBowOrHarmonic()
+                            .add(factory.createTechnicalPluck(placement));
                 }
             }
 
@@ -2782,8 +2790,8 @@ public class PartwiseBuilder
                     supports.setType(YesNo.YES);
                     supports.setAttribute(attribute);
                     supports.setValue("yes");
-                    encoding.getEncodingDateOrEncoderOrSoftware().add(
-                            factory.createEncodingSupports(supports));
+                    encoding.getEncodingDateOrEncoderOrSoftware()
+                            .add(factory.createEncodingSupports(supports));
                 }
                 // 2/ Other elements
                 for (String element : new String[]
@@ -2791,8 +2799,8 @@ public class PartwiseBuilder
                     final Supports supports = factory.createSupports();
                     supports.setElement(element);
                     supports.setType(YesNo.YES);
-                    encoding.getEncodingDateOrEncoderOrSoftware().add(
-                            factory.createEncodingSupports(supports));
+                    encoding.getEncodingDateOrEncoderOrSoftware()
+                            .add(factory.createEncodingSupports(supports));
                 }
 
                 identification.setEncoding(encoding);
@@ -3099,8 +3107,8 @@ public class PartwiseBuilder
             } else {
                 // Need to build a dummy system Part on-the-fly
                 // Based on the first usable (i.e. not tablature) part
-                final Part dummyPart = system.getFirstStandardPart().createDummyPart(
-                        current.logicalPart.getId());
+                final Part dummyPart =
+                        system.getFirstStandardPart().createDummyPart(current.logicalPart.getId());
                 current.isDrumPart = dummyPart.isDrumPart();
                 processPart(dummyPart);
             }
@@ -3381,10 +3389,10 @@ public class PartwiseBuilder
     private static boolean areEqual (Clef left,
                                      Clef right)
     {
-        return Objects.equals(left.getNumber(), right.getNumber()) && Objects.equals(
-                left.getSign(),
-                right.getSign()) && Objects.equals(left.getLine(), right.getLine()) && Objects
-                        .equals(left.getClefOctaveChange(), right.getClefOctaveChange());
+        return Objects.equals(left.getNumber(), right.getNumber())
+                && Objects.equals(left.getSign(), right.getSign())
+                && Objects.equals(left.getLine(), right.getLine())
+                && Objects.equals(left.getClefOctaveChange(), right.getClefOctaveChange());
     }
 
     //----------//
@@ -3533,19 +3541,14 @@ public class PartwiseBuilder
             extends ConstantSet
     {
 
-        private final Constant.Integer pageHorizontalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page horizontal margin");
+        private final Constant.Integer pageHorizontalMargin =
+                new Constant.Integer("tenths", 80, "Page horizontal margin");
 
-        private final Constant.Integer pageVerticalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page vertical margin");
+        private final Constant.Integer pageVerticalMargin =
+                new Constant.Integer("tenths", 80, "Page vertical margin");
 
-        private final Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
-                false,
-                "Should we avoid brackets for all tuplets");
+        private final Constant.Boolean avoidTupletBrackets =
+                new Constant.Boolean(false, "Should we avoid brackets for all tuplets");
     }
 
     //---------//
@@ -3756,8 +3759,8 @@ public class PartwiseBuilder
                     if (!isFirst.part || (staff.getIndexInPart() > 0)) {
                         try {
                             StaffLayout staffLayout = factory.createStaffLayout();
-                            staffLayout.setNumber(
-                                    new BigInteger("" + (1 + staff.getIndexInPart())));
+                            staffLayout
+                                    .setNumber(new BigInteger("" + (1 + staff.getIndexInPart())));
 
                             int staffIndexInSystem = system.getStaves().indexOf(staff);
 
