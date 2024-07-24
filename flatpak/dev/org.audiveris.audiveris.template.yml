@@ -64,10 +64,10 @@ modules:
       - echo "DEBUG Copy some needed icons"
       - install --mode=0644 -D app/res/icon-256.png /app/share/icons/hicolor/256x256/apps/org.audiveris.audiveris.png
       - install --mode=0644 -D app/res/icon-64.png /app/share/icons/hicolor/64x64/apps/org.audiveris.audiveris.png
-      - install --mode=0644 -D app/src/main/org/audiveris/omr/ui/resources/icon-48.png /app/share/icons/hicolor/48x48/apps/org.audiveris.audiveris.png
-      - install --mode=0644 -D app/src/main/org/audiveris/omr/ui/resources/icon-32.png /app/share/icons/hicolor/32x32/apps/org.audiveris.audiveris.png
-      - install --mode=0644 -D app/src/main/org/audiveris/omr/ui/resources/icon-24.png /app/share/icons/hicolor/24x24/apps/org.audiveris.audiveris.png
-      - install --mode=0644 -D app/src/main/org/audiveris/omr/ui/resources/icon-16.png /app/share/icons/hicolor/16x16/apps/org.audiveris.audiveris.png
+      - install --mode=0644 -D app/src/main/java/org/audiveris/omr/ui/resources/icon-48.png /app/share/icons/hicolor/48x48/apps/org.audiveris.audiveris.png
+      - install --mode=0644 -D app/src/main/java/org/audiveris/omr/ui/resources/icon-32.png /app/share/icons/hicolor/32x32/apps/org.audiveris.audiveris.png
+      - install --mode=0644 -D app/src/main/java/org/audiveris/omr/ui/resources/icon-24.png /app/share/icons/hicolor/24x24/apps/org.audiveris.audiveris.png
+      - install --mode=0644 -D app/src/main/java/org/audiveris/omr/ui/resources/icon-16.png /app/share/icons/hicolor/16x16/apps/org.audiveris.audiveris.png
 
       # Copy desktop and metainfo
       - echo "DEBUG Copy desktop and metainfo"
@@ -75,8 +75,8 @@ modules:
       - install --mode=0644 -D org.audiveris.audiveris.metainfo.xml /app/share/metainfo/org.audiveris.audiveris.metainfo.xml
 
       # Run Gradle build in offline mode, with a specific repository (hence the isFlatpak property)
-      - echo "DEBUG Copy Run Gradle build in offline mode"
-      - gradlew -PisFlatpak --offline :flatpak:buildFlatpak
+      - echo "DEBUG Run Gradle build in offline mode"
+      - ./gradlew -PisFlatpak --offline :flatpak:buildFlatpak
 
       # Extract lib and bin from Audiveris .tar to /app
       - echo "DEBUG Extract lib and bin from Audiveris .tar to /app"

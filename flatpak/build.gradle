@@ -33,14 +33,14 @@ def calcSha1(file)
     return md.digest().encodeHex()
 }
 
-// Generate the build/lang_sources.yml file from the content of app/dev/tessdata folder
+// Generate the flatpak/flathub/lang_sources.yml file from the content of app/dev/tessdata folder
 task genLanguages {
     description("Generate languages sources")
 
     doLast {
     	println "Copying language sources to $flathubDir"
     	copy {
-    	    from("appdir/dev/tessdata")
+    	    from("${appDir}/dev/tessdata")
     	    include '*.traineddata'
     	    into(flathubDir)
     	}
