@@ -97,8 +97,7 @@ allprojects {
 
 // Run default configuration.
 // Heap size (and other stuff) can be modified via a 'jvmLineArgs' on gradle command line
-// Application arguments can be provided via a 'cmdLineArgs' on gradle command line
-run {
+tasks.run {
     minHeapSize = '512m'
     maxHeapSize = '1g'
 
@@ -120,7 +119,7 @@ repositories {
         println "repositories. isFlatpak set"
         maven { // Only the offline repository
             name = 'Offline repository for flatpak'
-            url = '../flatpak/build/dependencies' 
+            url = '../../dependencies'                // TODO: check this!
         }
     } else {
         mavenCentral()
