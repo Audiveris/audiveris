@@ -76,7 +76,7 @@ modules:
 
       # Run Gradle build in offline mode, with a specific repository (hence the isFlatpak property)
       - echo "DEBUG Run Gradle build in offline mode"
-      - ./gradlew -PisFlatpak --offline :flatpak:buildFlatpak
+      - ./gradlew -PisFlatpak --offline distTar
 
       # Extract lib and bin from Audiveris .tar to /app
       - echo "DEBUG Extract lib and bin from Audiveris .tar to /app"
