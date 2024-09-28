@@ -80,7 +80,7 @@ modules:
 
       # Extract lib and bin from Audiveris .tar to /app
       - echo "DEBUG Extract lib and bin from Audiveris .tar to /app"
-      - tar x --directory=/app --strip-components=1 --file app/build/distributions/Audiveris-*.tar
+      - tar x --directory=/app --strip-components=1 --file app/build/distributions/*.tar
 
       # Insert TESSDATA_PREFIX in Audiveris sh file
       - echo "DEBUG Insert TESSDATA_PREFIX in Audiveris sh file"
