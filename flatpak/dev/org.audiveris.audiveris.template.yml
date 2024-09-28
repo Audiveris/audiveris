@@ -92,7 +92,7 @@ modules:
       
       # Audiveris project. We provide the tag only, not the commit value
       - type: git
-        url: https://github.com/Audiveris/audiveris
+        url: https://github.com/mwilck/audiveris
         tag: ${TAG}
 
       - type: file
