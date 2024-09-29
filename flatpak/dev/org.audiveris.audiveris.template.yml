@@ -42,15 +42,6 @@ modules:
   - name: audiveris
     buildsystem: simple
     build-commands:
-      # (Assuming these commands are run from sandbox root)
-      #
-      # A few debugging stuff to be removed ASAP
-      - echo "DEBUG ======================================================="
-      - echo "DEBUG checking the pwd"
-      - pwd
-      - ls -l
-      - echo "DEBUG ======================================================="
-      
       # We make the Gradle wrapper use our local .zip file
       # NOTA: mind the fact that expand() will reduce the backslashes in template, so double them!
       - ln --force ${GRADLE_NAME} gradle/wrapper/${GRADLE_NAME}
@@ -60,11 +51,9 @@ modules:
         gradle/wrapper/gradle-wrapper.properties
 
       # Copy the Tesseract language files
-      - echo "DEBUG Copy the Tesseract language files"
       - install --mode=0644 -D --target-directory=/app/share/tessdata *.traineddata
 
       # Copy some needed icons
-      - echo "DEBUG Copy some needed icons"
       - install --mode=0644 -D app/res/icon-256.png /app/share/icons/hicolor/256x256/apps/org.audiveris.audiveris.png
       - install --mode=0644 -D app/res/icon-64.png /app/share/icons/hicolor/64x64/apps/org.audiveris.audiveris.png
       - install --mode=0644 -D app/src/main/java/org/audiveris/omr/ui/resources/icon-48.png /app/share/icons/hicolor/48x48/apps/org.audiveris.audiveris.png
@@ -73,23 +62,17 @@ modules:
       - install --mode=0644 -D app/src/main/java/org/audiveris/omr/ui/resources/icon-16.png /app/share/icons/hicolor/16x16/apps/org.audiveris.audiveris.png
 
       # Copy desktop and metainfo
-      - echo "DEBUG Copy desktop and metainfo"
       - install --mode=0644 -D org.audiveris.audiveris.desktop /app/share/applications/org.audiveris.audiveris.desktop
       - install --mode=0644 -D org.audiveris.audiveris.metainfo.xml /app/share/metainfo/org.audiveris.audiveris.metainfo.xml
 
       # Run Gradle build in offline mode, with a specific repository (hence the isFlatpak property)
-      - echo "DEBUG Run Gradle build in offline mode"
       - ./gradlew -PisFlatpak --offline distTar
 
       # Extract lib and bin from Audiveris .tar to /app
-      - echo "DEBUG Extract lib and bin from Audiveris .tar to /app"
       - tar x --directory=/app --strip-components=1 --file app/build/distributions/*.tar
 
       # Insert TESSDATA_PREFIX in Audiveris sh file
-      - echo "DEBUG Insert TESSDATA_PREFIX in Audiveris sh file"
       - sed --in-place --file=add-tessdata-prefix.sed /app/bin/Audiveris
-      
-      - echo "DEBUG This is the end."
     sources:
       # NOTA: Paths are relative to the location of the expanded template, that is flatpak/flathub
       
