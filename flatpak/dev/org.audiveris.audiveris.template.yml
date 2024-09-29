@@ -54,7 +54,10 @@ modules:
       # We make the Gradle wrapper use our local .zip file
       # NOTA: mind the fact that expand() will reduce the backslashes in template, so double them!
       - ln --force ${GRADLE_NAME} gradle/wrapper/${GRADLE_NAME}
-      - sed --regexp-extended --in-place 's,https\\\\://services.gradle.org/distributions/,,' gradle/wrapper/gradle-wrapper.properties
+      - >-
+        sed --regexp-extended --in-place
+        's,https\\\\://services.gradle.org/distributions/,file:\\/run/build/audiveris/,'
+        gradle/wrapper/gradle-wrapper.properties
 
       # Copy the Tesseract language files
       - echo "DEBUG Copy the Tesseract language files"
