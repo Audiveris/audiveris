@@ -129,7 +129,7 @@ public class MetronomeInterTest
     @Test
     public void test_15 ()
     {
-        t("Presto (J: 160)", false); // '=' OCR'd as ':'
+        t("Presto (J: 160)", true); // '=' OCR'd as ':'
     }
 
     //----------------//
