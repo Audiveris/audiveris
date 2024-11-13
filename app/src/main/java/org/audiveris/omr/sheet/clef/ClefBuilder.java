@@ -581,7 +581,7 @@ public class ClefBuilder
                     ClefInter bestInter = bestMap.get(kind);
 
                     if ((bestInter == null) || (bestInter.getGrade() < grade)) {
-                        bestMap.put(kind, ClefInter.create(glyph, shape, grade, staff));
+                        bestMap.put(kind, ClefInter.createValid(glyph, shape, grade, staff));
                     }
                 }
             }

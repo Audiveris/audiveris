@@ -23,6 +23,7 @@ nbproject
 *.mf
 *.orig
 build/*
+app/bin/*
 dist/*
 config/run.properties
 data/args

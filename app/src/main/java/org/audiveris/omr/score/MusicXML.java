@@ -53,9 +53,9 @@ import org.audiveris.proxymusic.YesNo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
+import jakarta.xml.bind.JAXBElement;
 
-import javax.xml.bind.JAXBElement;
+import java.math.BigDecimal;
 
 /**
  * Class <code>MusicXML</code> gathers convenient methods dealing with MusicXML data

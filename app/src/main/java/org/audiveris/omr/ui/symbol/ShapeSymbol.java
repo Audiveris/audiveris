@@ -106,19 +106,20 @@ public class ShapeSymbol
             0); // m12
 
     /** A transformation to turn 1 quadrant clockwise. */
-    protected static final AffineTransform quadrantRotateOne =
-            AffineTransform.getQuadrantRotateInstance(1);
+    protected static final AffineTransform quadrantRotateOne = AffineTransform
+            .getQuadrantRotateInstance(1);
 
     /** A transformation to turn 2 quadrants clockwise. */
-    protected static final AffineTransform quadrantRotateTwo =
-            AffineTransform.getQuadrantRotateInstance(2);
+    protected static final AffineTransform quadrantRotateTwo = AffineTransform
+            .getQuadrantRotateInstance(2);
 
     /** The symbol meta data. */
     public static final DataFlavor DATA_FLAVOR = new DataFlavor(ShapeSymbol.class, "shape-symbol");
 
     /** Composite used for decoration. */
-    protected static final AlphaComposite decoComposite =
-            AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.15f);
+    protected static final AlphaComposite decoComposite = AlphaComposite.getInstance(
+            AlphaComposite.SRC_OVER,
+            0.15f);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -199,8 +200,10 @@ public class ShapeSymbol
 
         // Allocate image of proper size
         Rectangle intRect = p.rect.getBounds();
-        SymbolImage img =
-                new SymbolImage(intRect.width, intRect.height, PointUtil.rounded(p.offset));
+        SymbolImage img = new SymbolImage(
+                intRect.width,
+                intRect.height,
+                PointUtil.rounded(p.offset));
 
         // Paint the image
         Graphics2D g = (Graphics2D) img.getGraphics();
@@ -572,8 +575,7 @@ public class ShapeSymbol
     @Override
     public DataFlavor[] getTransferDataFlavors ()
     {
-        return new DataFlavor[]
-        { DATA_FLAVOR };
+        return new DataFlavor[] { DATA_FLAVOR };
     }
 
     //----------//
@@ -647,19 +649,21 @@ public class ShapeSymbol
     //-------//
     /**
      * Actual painting, to be redefined by subclasses if needed.
+     * <p>
+     * This default implementation paints only the 'params.layout' item.
      *
      * @param g         graphics context
-     * @param p         the parameters fed by getParams()
+     * @param params    the parameters fed by getParams()
      * @param location  where to paint
      * @param alignment relative position of provided location WRT symbol
      */
     protected void paint (Graphics2D g,
-                          Params p,
+                          Params params,
                           Point2D location,
                           Alignment alignment)
     {
         logger.trace("ShapeSymbol.paint {}", this);
-        OmrFont.paint(g, p.layout, location, alignment);
+        OmrFont.paint(g, params.layout, location, alignment);
     }
 
     //-----------//
@@ -729,8 +733,8 @@ public class ShapeSymbol
     @Override
     public String toString ()
     {
-        return new StringBuilder(getClass().getSimpleName()).append("{").append(internals())
-                .append("}").toString();
+        return new StringBuilder(getClass().getSimpleName()).append("{").append(internals()).append(
+                "}").toString();
     }
 
     //-------------//
@@ -756,7 +760,7 @@ public class ShapeSymbol
      * Tell the symbol that it can update its model with staff informations.
      * <p>
      * This is useful when the dragged item enters a staff, since it can adapt itself to
-     * staff informations (such as the typical beam thickness for small staff).
+     * staff information (such as the typical beam thickness for small staff).
      *
      * @param staff underlying staff
      */
@@ -775,7 +779,6 @@ public class ShapeSymbol
      */
     protected static class Params
     {
-
         /**
          * Specific offset, if any, for focus center off of area center.
          * Since user pointing location is by default taken as center of 'rect' bounds.

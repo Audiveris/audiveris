@@ -24,6 +24,8 @@ package org.audiveris.omr.ui;
 import org.audiveris.omr.ui.field.LCheckBox;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.ClassUtil;
@@ -57,28 +59,23 @@ import javax.swing.text.JTextComponent;
  * <p>
  * Each board has a standard header composed of a title, a horizontal separator and optionally a
  * dump button. The board body is handled by the subclass.
- * </p>
  * <p>
  * Any board can be (de)selected in its containing {@link BoardsPane}. This can be done
  * programmatically using {@link #setSelected(boolean)} and manually (via a right-click in the
  * BoardsPane).
- * </p>
  * <p>
- * Only selected boards can be seen in the BoardsPane display. A selected board can be made
+ * Only selected boards are displayed in the BoardsPane display. A selected board can be made
  * currently (in)visible programmatically using {@link #setVisible(boolean)}.
  * Typically, {@link org.audiveris.omr.check.CheckBoard}'s are visible only when they carry
  * glyph information.
- * </p>
  * <p>
  * By default, any board can have a related SelectionService, used for subscribe (input) and publish
  * (output). When {@link #connect} is called, the board instance is subscribed to its
  * SelectionService for a specific collection of event classes. Similarly, {@link #disconnect}
  * unsubscribes the Board instance from the same event classes.
- * </p>
  * <p>
  * This <code>Board</code> class is still an abstract class, since the onEvent() method must be
  * provided by every subclass.
- * </p>
  *
  * @author Hervé Bitteur
  */
@@ -164,6 +161,12 @@ public abstract class Board
 
     /** Board is selected? (it appears in boards pane). */
     private boolean selected;
+
+    /** Cached music font family, if any. To trigger board symbols update only when needed. */
+    protected MusicFamily cachedMusicFamily;
+
+    /** Cached text font family, if any. To trigger board symbols update only when needed. */
+    protected TextFamily cachedTextFamily;
 
     //~ Constructors -------------------------------------------------------------------------------
 

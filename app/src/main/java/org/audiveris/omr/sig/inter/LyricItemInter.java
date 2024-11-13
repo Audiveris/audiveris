@@ -111,7 +111,7 @@ public class LyricItemInter
     /**
      * Creates a new LyricItemInter object.
      *
-     * @param textWord the OCR'ed text word
+     * @param textWord the OCR'd text word
      */
     public LyricItemInter (TextWord textWord)
     {
@@ -248,7 +248,7 @@ public class LyricItemInter
      */
     private double getReferenceAbscissa ()
     {
-        final Scale scale = sig.getSystem().getSheet().getScale();
+        final Scale scale = staff.getSystem().getSheet().getScale();
         final int xShift = scale.toPixels(constants.leftShift);
 
         return getLocation().getX() + xShift;
@@ -515,7 +515,7 @@ public class LyricItemInter
         // Look for a containing lyric line
         final Point2D loc = getLocation();
         final SystemInfo system = staff.getSystem();
-        LyricLineInter line = new TextBuilder(system, true).lookupLyricLine(loc);
+        LyricLineInter line = new TextBuilder(system, Shape.LYRICS).lookupLyricLine(loc);
 
         if (line == null) {
             // Create a new lyric line

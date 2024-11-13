@@ -54,6 +54,8 @@ public interface InterVisitor
 
     void visit (BeamGroupInter inter);
 
+    void visit (BeatUnitInter inter);
+
     void visit (BraceInter inter);
 
     void visit (BracketConnectorInter inter);
@@ -75,6 +77,8 @@ public interface InterVisitor
     void visit (KeyInter inter);
 
     void visit (LedgerInter inter);
+
+    void visit (MetronomeInter inter);
 
     void visit (MultipleRestInter inter);
 

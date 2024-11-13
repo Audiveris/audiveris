@@ -342,11 +342,11 @@ public class ClefInter
         }
     }
 
-    //--------//
-    // create //
-    //--------//
+    //-------------//
+    // createValid //
+    //-------------//
     /**
-     * Create a Clef inter.
+     * Try to create a Clef inter.
      *
      * @param glyph underlying glyph
      * @param shape precise shape
@@ -354,10 +354,10 @@ public class ClefInter
      * @param staff related staff
      * @return the created instance or null if failed
      */
-    public static ClefInter create (Glyph glyph,
-                                    Shape shape,
-                                    Double grade,
-                                    Staff staff)
+    public static ClefInter createValid (Glyph glyph,
+                                         Shape shape,
+                                         Double grade,
+                                         Staff staff)
     {
         if (staff.isTablature()) {
             return null;

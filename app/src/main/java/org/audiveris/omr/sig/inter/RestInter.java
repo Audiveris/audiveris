@@ -148,7 +148,7 @@ public class RestInter
     // createValid //
     //-------------//
     /**
-     * (Try to) create a Rest inter.
+     * Try to create a Rest inter.
      * <p>
      * A rest cannot be too close abscissa-wise to a head-chord.
      *
@@ -190,8 +190,7 @@ public class RestInter
         // All head-chords in staff measure
         final int left = measure.getAbscissa(HorizontalSide.LEFT, restStaff);
         final int right = measure.getAbscissa(HorizontalSide.RIGHT, restStaff);
-        final List<Inter> measureChords = Inters.inters(systemHeadChords, (Inter inter) ->
-        {
+        final List<Inter> measureChords = Inters.inters(systemHeadChords, (Inter inter) -> {
             if (inter.getStaff() != restStaff) {
                 return false;
             }

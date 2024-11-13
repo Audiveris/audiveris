@@ -71,8 +71,7 @@ public abstract class RegexUtil
 
         try {
             result = matcher.group(name);
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) {}
 
         if (result != null) {
             return result;
@@ -94,16 +93,6 @@ public abstract class RegexUtil
     public static String group (String name,
                                 String content)
     {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("(?<");
-        sb.append(name);
-        sb.append(">");
-
-        sb.append(content);
-
-        sb.append(")");
-
-        return sb.toString();
+        return "(?<" + name + ">" + content + ")";
     }
 }

@@ -296,7 +296,7 @@ public class TupletInter
     // createValid //
     //-------------//
     /**
-     * (Try to) create a tuplet inter, checking that there is at least one (head) chord
+     * Try to create a tuplet inter, checking that there is at least one (head) chord
      * nearby.
      *
      * @param glyph        the candidate tuplet glyph

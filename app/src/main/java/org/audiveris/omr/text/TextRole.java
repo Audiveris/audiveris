@@ -31,7 +31,7 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.inter.TempoInter;
+import org.audiveris.omr.sig.inter.MetronomeInter;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
@@ -78,8 +78,8 @@ public enum TextRole
     EndingNumber,
     /** Ending text, when different from number. */
     EndingText,
-    /** Tempo indication, such as "quarter = value". */
-    Tempo;
+    /** Metronome mark, such as "quarter = value". */
+    Metronome;
 
     private static final Constants constants = new Constants();
 
@@ -103,30 +103,32 @@ public enum TextRole
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    //-----------//
-    // guessRole //
-    //-----------//
+    //-------//
+    // guess //
+    //-------//
     /**
      * Try to infer the role of this textual item.
      * <p>
      * For the time being, this is a simple algorithm based on sentence location within the sheet,
      * augmented by valid chord name, etc.
      *
-     * @param line          the sentence
-     * @param system        the containing system
-     * @param lyricsAllowed false for manual mode, forbidding lyrics
+     * @param line             the sentence
+     * @param system           the containing system
+     * @param lyricsAllowed    false for manual mode, forbidding lyrics
+     * @param metronomeAllowed false for manual mode, forbidding metronome
      * @return the role information inferred for the provided sentence glyph
      */
-    public static TextRole guessRole (TextLine line,
-                                      SystemInfo system,
-                                      boolean lyricsAllowed)
+    public static TextRole guess (TextLine line,
+                                  SystemInfo system,
+                                  boolean lyricsAllowed,
+                                  boolean metronomeAllowed)
     {
         if (line == null) {
             return null;
         }
 
         if (line.isVip()) {
-            logger.info("TextRoleInfo. guessRole for {}", line.getValue());
+            logger.info("TextRole.guess for {}", line.getValue());
         }
 
         final Rectangle box = line.getBounds();
@@ -179,8 +181,8 @@ public enum TextRole
 
         // Right aligned with staves (and starts after staff center abscissa) ?
         int maxRightDx = scale.toPixels(constants.maxRightDx);
-        boolean rightAligned =
-                (Math.abs(right.x - system.getRight()) <= maxRightDx) && (staffMidX <= left.x);
+        boolean rightAligned = (Math.abs(right.x - system.getRight()) <= maxRightDx)
+                && (staffMidX <= left.x);
 
         // Short Sentence?
         int maxShortLength = scale.toPixels(constants.maxShortLength);
@@ -199,7 +201,7 @@ public enum TextRole
 
         // Decisions ...
         switch (systemPosition) {
-            case ABOVE_STAVES: // Title, Number, Creator, Direction, ChordName, Lyrics above staff
+            case ABOVE_STAVES: // Title, Number, Creator, Direction, ChordName, Lyrics, Metronome
                 if (tinySentence) {
                     if (isAllChords) {
                         return ChordName;
@@ -210,19 +212,20 @@ public enum TextRole
 
                 if (firstSystem) {
                     if (leftOfStaves) {
-                        return CreatorLyricist;
+                        if (metronomeAllowed && MetronomeInter.isLikely(line)) {
+                            return Metronome;
+                        } else {
+                            return CreatorLyricist;
+                        }
                     } else if (rightAligned) {
                         return CreatorComposer;
+                    } else if (metronomeAllowed && MetronomeInter.isLikely(line)) {
+                        return Metronome;
                     } else if (closeToStaff) {
                         if (isAllChords) {
                             return ChordName;
                         } else {
-                            final TempoInter tempo = TempoInter.createValid(line);
-                            if (tempo != null) {
-                                return Tempo;
-                            } else {
-                                return Direction;
-                            }
+                            return Direction;
                         }
                     } else if (pageCentered) { // Title, Number
                         if (highText) {
@@ -257,6 +260,8 @@ public enum TextRole
                             logger.debug("Abnormal part name: {}", line);
                         }
                     }
+                } else if (metronomeAllowed && MetronomeInter.isLikely(line)) {
+                    return Metronome;
                 } else if (lyricsAllowed //
                         && hasVowel //
                         ///&& !isMainlyItalic //
@@ -308,26 +313,32 @@ public enum TextRole
             extends ConstantSet
     {
 
-        private final Scale.Fraction maxRightDx =
-                new Scale.Fraction(2, "Maximum horizontal distance on the right end of the staff");
+        private final Scale.Fraction maxRightDx = new Scale.Fraction(
+                2,
+                "Maximum horizontal distance on the right end of the staff");
 
-        private final Scale.Fraction maxCenterDx =
-                new Scale.Fraction(30, "Maximum horizontal distance around center of page");
+        private final Scale.Fraction maxCenterDx = new Scale.Fraction(
+                30,
+                "Maximum horizontal distance around center of page");
 
-        private final Scale.Fraction maxShortLength =
-                new Scale.Fraction(35, "Maximum length for a short sentence (no lyrics)");
+        private final Scale.Fraction maxShortLength = new Scale.Fraction(
+                35,
+                "Maximum length for a short sentence (no lyrics)");
 
-        private final Scale.Fraction maxTinyLength =
-                new Scale.Fraction(2.5, "Maximum length for a tiny sentence (no lyrics)");
+        private final Scale.Fraction maxTinyLength = new Scale.Fraction(
+                2.5,
+                "Maximum length for a tiny sentence (no lyrics)");
 
         private final Scale.Fraction maxStaffDy = new Scale.Fraction(
                 7,
                 "Maximum distance above staff for a direction (or lyrics above staves)");
 
-        private final Scale.Fraction minStaffDy =
-                new Scale.Fraction(6, "Minimum distance below staff for a copyright");
+        private final Scale.Fraction minStaffDy = new Scale.Fraction(
+                6,
+                "Minimum distance below staff for a copyright");
 
-        private final Scale.Fraction minTitleHeight =
-                new Scale.Fraction(2, "Minimum height for a title text");
+        private final Scale.Fraction minTitleHeight = new Scale.Fraction(
+                2,
+                "Minimum height for a title text");
     }
 }

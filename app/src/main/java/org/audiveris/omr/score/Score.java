@@ -29,7 +29,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,9 +128,6 @@ public class Score
     @Navigable(false)
     private Book book;
 
-    /** Handling of tempo parameter. */
-    private final Param<Integer> tempoParam;
-
     /** The specified sound volume, if any. */
     private Integer volume;
 
@@ -145,8 +141,6 @@ public class Score
      */
     public Score ()
     {
-        tempoParam = new Param<>(this);
-        tempoParam.setParent(Tempo.defaultTempo);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -725,19 +719,6 @@ public class Score
         return pageStubs;
     }
 
-    //----------------//
-    // getTempoParam //
-    //---------------//
-    /**
-     * Report the tempo parameter.
-     *
-     * @return tempo information
-     */
-    public Param<Integer> getTempoParam ()
-    {
-        return tempoParam;
-    }
-
     //-----------//
     // getVolume //
     //-----------//
@@ -998,19 +979,6 @@ public class Score
         return constants.defaultVolume.getValue();
     }
 
-    //-----------------//
-    // setDefaultTempo //
-    //-----------------//
-    /**
-     * Assign default value for Midi tempo.
-     *
-     * @param tempo the default tempo value
-     */
-    public static void setDefaultTempo (int tempo)
-    {
-        constants.defaultTempo.setValue(tempo);
-    }
-
     //------------------//
     // setDefaultVolume //
     //------------------//
@@ -1032,15 +1000,7 @@ public class Score
     private static class Constants
             extends ConstantSet
     {
-
-        private final Constant.Integer defaultTempo = new Constant.Integer(
-                "QuartersPerMn",
-                120,
-                "Default tempo, stated in number of quarters per minute");
-
-        private final Constant.Integer defaultVolume = new Constant.Integer(
-                "Volume",
-                78,
-                "Default Volume in 0..127 range");
+        private final Constant.Integer defaultVolume =
+                new Constant.Integer("Volume", 78, "Default Volume in 0..127 range");
     }
 }

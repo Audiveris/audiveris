@@ -43,6 +43,9 @@ public enum MusicFamily
             new BravuraSymbols()),
 
     /** Alternate family, some symbols missing. */
+    Leland("Leland", "Leland.otf", Bravura, new LelandSymbols()),
+
+    /** Alternate family, some symbols missing. */
     FinaleJazz("Finale Jazz", "FinaleJazz.otf", Bravura, new FinaleJazzSymbols()),
 
     /** Alternate family, for percussion symbols. */
@@ -119,6 +122,10 @@ public enum MusicFamily
             if (family.name().equalsIgnoreCase(value) || family.fontName.equalsIgnoreCase(value)) {
                 return family;
             }
+        }
+
+        if (value.equalsIgnoreCase("generic")) {
+            return MusicFamily.Bravura;
         }
 
         logger.warn("No music family for value: \"{}\"", value);

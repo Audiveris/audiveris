@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.text.OCR.LayoutMode;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
+import org.audiveris.omr.ui.symbol.TextFamily;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +100,7 @@ public abstract class OcrUtil
         final int height = image.getHeight();
         final Point origin = new Point(0, 0);
 
-        // Add some white some white margin around the image?
+        // Add some white margin around the image?
         final int margin = constants.whiteMarginAdded.getValue();
         final BufferedImage bi;
 
@@ -124,20 +125,24 @@ public abstract class OcrUtil
         final List<TextLine> lines = ocr.recognize(sheet, bi, origin, language, layoutMode, label);
 
         if (lines == null) {
-            logger.info("No OCR'ed lines");
+            logger.info("No OCR'd lines");
             return Collections.emptyList();
         }
-        
+
         Collections.sort(lines, TextLine.byOrdinate(sheet.getSkew()));
 
+        final TextFamily family = sheet.getStub().getTextFamily();
+        lines.forEach(line -> line.getWords().forEach(word -> word.adjustFontSize(family)));
+
         if (logger.isDebugEnabled()) {
-            TextLine.dump("Raw OCR'ed lines:", lines, constants.dumpWords.isSet());
+            TextLine.dump("Raw OCR'd lines:", lines, constants.dumpWords.isSet());
         }
 
         return lines;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//

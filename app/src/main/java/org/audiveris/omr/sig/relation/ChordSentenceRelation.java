@@ -23,6 +23,12 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.SentenceInter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -68,6 +74,29 @@ public class ChordSentenceRelation
         return constants.xGapMax;
     }
 
+    //---------//
+    // removed //
+    //---------//
+    /**
+     * {@inheritDoc}.
+     * <p>
+     * If the chord is being removed (and not the sentence), we try to find out a new chord
+     * to be linked with the orphan sentence.
+     *
+     * @param e the relation event.
+     */
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final AbstractChordInter chord = (AbstractChordInter) e.getEdgeSource();
+        final SentenceInter sentence = (SentenceInter) e.getEdgeTarget();
+
+        if (chord.isRemoved() && !sentence.isRemoved()) {
+            final SystemInfo system = sentence.getSig().getSystem();
+            sentence.link(system);
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------//
@@ -77,8 +106,7 @@ public class ChordSentenceRelation
             extends ConstantSet
     {
 
-        private final Scale.Fraction xGapMax = new Scale.Fraction(
-                1.0,
-                "Maximum horizontal gap between chord & sentence");
+        private final Scale.Fraction xGapMax =
+                new Scale.Fraction(1.0, "Maximum horizontal gap between chord & sentence");
     }
 }

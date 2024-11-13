@@ -158,10 +158,8 @@ public abstract class KeySymbol
         Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
 
         // Set loc to (x=left side, y=staff mid line)
-        PointUtil.add(
-                loc,
-                -p.rect.getWidth() / 2,
-                -KeyInter.getStandardPosition(fifths) * p.stepDy);
+        PointUtil
+                .add(loc, -p.rect.getWidth() / 2, -KeyInter.getStandardPosition(fifths) * p.stepDy);
 
         if (fifths == 0) {
             int pitch = KeyInter.getItemPitch(1, null);

@@ -50,6 +50,7 @@ import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.BeatUnitInter;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.BracketConnectorInter;
 import org.audiveris.omr.sig.inter.BracketInter;
@@ -62,7 +63,9 @@ import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.MetronomeInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
+import org.audiveris.omr.sig.inter.MusicWordInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -223,6 +226,10 @@ public abstract class SheetPainter
         this.withJumbos = withJumbos;
 
         clip = g.getClipBounds();
+
+        // To avoid the display being slightly clipped near a window border
+        final int margin = scale.toPixels(constants.clipMargin);
+        clip.grow(margin, margin);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -476,7 +483,7 @@ public abstract class SheetPainter
 
             // All interpretations for this system
             sigPainter.process(system.getSig());
-        } catch (ConcurrentModificationException ignored) {
+        } catch (ConcurrentModificationException ignored) { //
         } catch (Exception ex) {
             logger.warn("Cannot paint system#{}", system.getId(), ex);
         }
@@ -645,6 +652,10 @@ public abstract class SheetPainter
         private final Constant.Boolean jumboColored = new Constant.Boolean(
                 true,
                 "Should the jumbo items be colored specifically?");
+
+        private final Scale.Fraction clipMargin = new Scale.Fraction(
+                4.0,
+                "Margin added to clip bounds to avoid truncation");
     }
 
     //-----------//
@@ -1022,12 +1033,17 @@ public abstract class SheetPainter
                 return;
             }
 
-            FontRenderContext frc = g.getFontRenderContext();
-            Font font = TextFont.create(textFont, fontInfo);
-            TextLayout layout = new TextLayout(word.getValue(), font, frc);
             setColor(word);
 
-            paint(layout, word.getLocation(), BASELINE_LEFT);
+            if (word instanceof MusicWordInter) {
+                final MusicFont mf = musicFont.deriveFont((float) fontInfo.pointsize);
+                final TextLayout layout = mf.layout(word.getValue());
+                paint(layout, word.getCenter(), AREA_CENTER);
+            } else {
+                final TextFont tf = TextFont.create(textFont, fontInfo);
+                final TextLayout layout = tf.layout(word.getValue());
+                paint(layout, word.getLocation(), BASELINE_LEFT);
+            }
         }
 
         //---------//
@@ -1258,7 +1274,17 @@ public abstract class SheetPainter
             g.fill(barline.getArea());
         }
 
-        // No beam group
+        // No visit for beam group
+
+        //-------//
+        // visit //
+        //-------//
+        @Override
+        public void visit (BeatUnitInter word)
+        {
+            final FontInfo fontInfo = word.getFontInfo();
+            paintWord(word, fontInfo);
+        }
 
         //-------//
         // visit //
@@ -1478,6 +1504,19 @@ public abstract class SheetPainter
         // visit //
         //-------//
         @Override
+        public void visit (MetronomeInter inter)
+        {
+            // Painted directky only when its member words are not yet created (case of a ghost)
+            // Otherwise, the member words are painted individually
+            if (inter.getId() == 0) {
+                visit((Inter) inter);
+            }
+        }
+
+        //-------//
+        // visit //
+        //-------//
+        @Override
         public void visit (MultipleRestInter rest)
         {
             setColor(rest);
@@ -1561,12 +1600,15 @@ public abstract class SheetPainter
         @Override
         public void visit (SentenceInter sentence)
         {
-            FontInfo lineMeanFont = sentence.getMeanFont();
-            for (Inter member : sentence.getMembers()) {
-                WordInter word = (WordInter) member;
-                paintWord(word, lineMeanFont);
-                ///paintWord(word, word.getFontInfo());
-            }
+            //            final FontInfo lineMeanFont = sentence.getMeanFont();
+            //            for (Inter member : sentence.getMembers()) {
+            //                WordInter word = (WordInter) member;
+            //
+            //                if (!(word instanceof MusicWordInter)) {
+            //                    paintWord(word, lineMeanFont);
+            //                }
+            //                ///paintWord(word, word.getFontInfo());
+            //            }
         }
 
         //-------//
@@ -1682,10 +1724,10 @@ public abstract class SheetPainter
         {
             // Usually, words are displayed via their containing sentence, using sentence mean font.
             // But in the specific case of a (temporarily) orphan word, we display the word as it is.
-            if ((word.getSig() == null) || (word.getEnsemble() == null)) {
-                FontInfo fontInfo = word.getFontInfo();
-                paintWord(word, fontInfo);
-            }
+            //            if ((word.getSig() == null) || (word.getEnsemble() == null)) {
+            FontInfo fontInfo = word.getFontInfo();
+            paintWord(word, fontInfo);
+            //            }
         }
     }
 }

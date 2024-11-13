@@ -28,6 +28,7 @@ import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.symbol.OmrFont;
+import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StringUtil;
@@ -67,8 +68,7 @@ public class TextWord
     private static final Logger logger = LoggerFactory.getLogger(TextWord.class);
 
     /** Abnormal characters. */
-    private static final char[] ABNORMAL_CHARS = new char[]
-    { '\\' };
+    private static final char[] ABNORMAL_CHARS = new char[] { '\\' };
 
     /** Regexp for one-letter words. */
     private static final Pattern ONE_LETTER_WORDS = compileRegexp(constants.oneLetterWordRegexp);
@@ -114,9 +114,6 @@ public class TextWord
 
     /** Underlying glyph, if known. */
     private Glyph glyph;
-
-    /** Precise font size, lazily computed. */
-    private Float preciseFontSize;
 
     /** Has this word been adjusted?. */
     private boolean adjusted;
@@ -244,38 +241,46 @@ public class TextWord
         }
     }
 
-    //    //----------------//
-    //    // adjustFontSize //
-    //    //----------------//
-    //    /**
-    //     * Adjust font size precisely according to underlying bounds.
-    //     * WARNING: OCR bounds can be crazy, hence bounds-based font adjustment is not reliable enough
-    //     *
-    //     * @return true if OK, false if abnormal font modification
-    //     */
-    //    public boolean adjustFontSize ()
-    //    {
-    //        double size = TextFont.computeFontSize(value, fontInfo, bounds.getSize());
-    //        double ratio = size / fontInfo.pointsize;
-    //        //
-    //        //        if (ratio < constants.minFontRatio.getSourceValue() //
-    //        //                || ratio > constants.maxFontRatio.getSourceValue()) {
-    //        //            logger.debug("      abnormal font ratio {} {}", String.format("%.2f", ratio), this);
-    //        //
-    //        //            return false;
-    //        //        }
-    //        //
-    //        //        fontInfo = new FontInfo(fontInfo, (int) Math.rint(size));
-    //        //        textLine.invalidateCache();
-    //        //
-    //        return true;
-    //    }
+    //----------------//
+    // adjustFontSize //
+    //----------------//
+    /**
+     * Adjust font size precisely according to underlying bounds.
+     *
+     * @param family the text family selected for the related sheet
+     * @return true if OK, false if no font modification was performed
+     */
+    public boolean adjustFontSize (TextFamily family)
+    {
+        // Discard one-char words, they are not reliable
+        if (getLength() <= 1) {
+            return false;
+        }
+
+        final int style = (fontInfo.isBold ? Font.BOLD : 0) | (fontInfo.isItalic ? Font.ITALIC : 0);
+        final TextFont font = new TextFont(family.getFontName(), null, style, fontInfo.pointsize);
+
+        final int fontSize = font.computeSize(getValue(), getBounds().getSize());
+        final double ratio = (double) fontSize / fontInfo.pointsize;
+
+        if (ratio < constants.minFontRatio.getSourceValue() //
+                || ratio > constants.maxFontRatio.getSourceValue()) {
+            logger.info("   Abnormal font ratio {} {}", String.format("%.2f", ratio), this);
+
+            return false;
+        }
+
+        fontInfo = new FontInfo(fontInfo, fontSize);
+        textLine.invalidateCache();
+
+        return true;
+    }
 
     //---------------//
     // checkValidity //
     //---------------//
     /**
-     * Check the provided OCR'ed word (the word is not modified).
+     * Check the provided OCR'd word (the word is not modified).
      *
      * @return reason for invalidity if any, otherwise null
      */
@@ -470,28 +475,6 @@ public class TextWord
         return getValue().length();
     }
 
-    //--------------------//
-    // getPreciseFontSize //
-    //--------------------//
-    /**
-     * Report the best computed font size for this word, likely to precisely match the
-     * word bounds.
-     * <p>
-     * The size appears to be a bit larger than OCR detected side, by a factor in the range 1.1 -
-     * 1.2. TODO: To be improved, using font attributes for better font selection
-     * </p>
-     *
-     * @return the computed font size
-     */
-    public float getPreciseFontSize ()
-    {
-        if (preciseFontSize == null) {
-            preciseFontSize = TextFont.computeFontSize(getValue(), fontInfo, getBounds().getSize());
-        }
-
-        return preciseFontSize;
-    }
-
     //-------------//
     // getSubWords //
     //-------------//
@@ -647,20 +630,6 @@ public class TextWord
         }
     }
 
-    //--------------------//
-    // setPreciseFontSize //
-    //--------------------//
-    /**
-     * Assign a font size.
-     * (to enforce consistent font size across all words of the same sentence)
-     *
-     * @param preciseFontSize the enforced font size, or null
-     */
-    public void setPreciseFontSize (Float preciseFontSize)
-    {
-        this.preciseFontSize = preciseFontSize;
-    }
-
     //-------------//
     // setTextLine //
     //-------------//
@@ -722,40 +691,6 @@ public class TextWord
         }
     }
 
-    //------------------//
-    // createManualWord //
-    //------------------//
-    /**
-     * Create a TextWord instance manually, out of a given glyph and value.
-     * <p>
-     * TODO: Perhaps we could improve the baseline, according to the precise string value provided.
-     *
-     * @param sheet the related sheet
-     * @param glyph the underlying glyph
-     * @param value the provided string value
-     * @return the TextWord created
-     */
-    public static TextWord createManualWord (Sheet sheet,
-                                             Glyph glyph,
-                                             String value)
-    {
-        Rectangle box = glyph.getBounds();
-        int fontSize = (int) Math.rint(
-                TextFont.computeFontSize(value, FontInfo.DEFAULT, box.getSize()));
-        TextWord word = new TextWord(
-                sheet,
-                box,
-                value,
-                new Line2D.Double(box.x, box.y + box.height, box.x + box.width, box.y + box.height),
-                1.0, // Confidence
-                FontInfo.createDefault(fontSize),
-                null);
-
-        word.setGlyph(glyph);
-
-        return word;
-    }
-
     //---------//
     // mergeOf //
     //---------//
@@ -809,7 +744,7 @@ public class TextWord
                 "Regular expression to detect one-letter words");
 
         private final Constant.String abnormalWordRegexp = new Constant.String(
-                "^[^a-zA-Z_0-9-.,&=©\\?]+$",
+                "^[^a-zA-Z_0-9-.,&=©\\?}]+$",
                 "Regular expression to detect abnormal words");
 
         private final Constant.String tupletWordRegexp = new Constant.String(
@@ -833,7 +768,7 @@ public class TextWord
                 "Maximum ratio between ocr and glyph font sizes");
 
         private final Constant.Ratio minFontRatio = new Constant.Ratio(
-                0.5,
+                0.3,
                 "Minimum ratio between ocr and glyph font sizes");
 
         private final Scale.Fraction standardFontSize = new Scale.Fraction(

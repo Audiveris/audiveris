@@ -26,6 +26,7 @@ import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_LEFT;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
+import static org.audiveris.omr.ui.symbol.Symbols.ints;
 
 import java.awt.Graphics2D;
 import java.awt.font.TextLayout;
@@ -80,6 +81,10 @@ public class FinaleJazzSymbols
             ///case DA_CAPO -> ints(0xE046);
             case DIMINUENDO -> ints(0xE53F);
             case DOT_set -> ints(0xE044);
+            case DOTTED_HALF_NOTE_UP, METRO_DOTTED_HALF -> ints(0xE1D3, 0x0020, 0xE1E7);
+            case DOTTED_QUARTER_NOTE_UP, METRO_DOTTED_QUARTER -> ints(0xE1D5, 0x0020, 0xE1E7);
+            case DOTTED_EIGHTH_NOTE_UP, METRO_DOTTED_EIGHTH -> ints(0xE1D7, 0xE1E7);
+            case DOTTED_SIXTEENTH_NOTE_UP, METRO_DOTTED_SIXTEENTH -> ints(0xE1D9, 0xE1E7);
             //case DOUBLE_BARLINE -> ints(0xE031);
             case DOUBLE_FLAT -> ints(0xE264);
             case DOUBLE_SHARP -> ints(0xE263);
@@ -107,7 +112,9 @@ public class FinaleJazzSymbols
             case DYNAMICS_SFZ -> ints(0xE539);
             //        case DYNAMICS_SFPP -> ints(0xE538);
 
+            case EIGHTH_NOTE_UP, METRO_EIGHTH -> ints(0xE1D7);
             case EIGHTH_REST -> ints(0xE4E6);
+            case EIGHTH_set, GRACE_NOTE -> ints(0xE562);
 
             case FERMATA -> ints(0xE4C0);
             case FERMATA_BELOW -> ints(0xE4C1);
@@ -128,7 +135,6 @@ public class FinaleJazzSymbols
             case F_CLEF_8VA -> ints(0xE065);
             case F_CLEF_8VB -> ints(0xE064);
 
-            case GRACE_NOTE -> ints(0xE562);
             case GRACE_NOTE_DOWN -> ints(0xE563);
             case GRACE_NOTE_SLASH -> ints(0xE560);
             case GRACE_NOTE_SLASH_DOWN -> ints(0xE561);
@@ -138,7 +144,7 @@ public class FinaleJazzSymbols
             case G_CLEF_8VB -> ints(0xE052);
 
             case HALF_NOTE_DOWN -> ints(0xE1D4);
-            case HALF_NOTE_UP -> ints(0xE1D3);
+            case HALF_NOTE_UP, METRO_HALF -> ints(0xE1D3);
             case HALF_REST -> ints(0xE4E4);
             case HW_REST_set -> ints(0xE4E4);
 
@@ -185,7 +191,7 @@ public class FinaleJazzSymbols
             case PLAYING_CLOSED -> ints(0xE5E5); // 0xE872 ?
 
             case QUARTER_NOTE_DOWN -> ints(0xE1D6);
-            case QUARTER_NOTE_UP -> ints(0xE1D5);
+            case QUARTER_NOTE_UP, METRO_QUARTER -> ints(0xE1D5);
             case QUARTER_REST -> ints(0xE4E5);
             case QUINDICESIMA -> ints(0xE514);
 
@@ -199,6 +205,7 @@ public class FinaleJazzSymbols
 
             case SEGNO -> ints(0xE047);
             case SHARP -> ints(0xE262);
+            case SIXTEENTH_NOTE_UP, METRO_SIXTEENTH -> ints(0xE1D9);
             case STACCATISSIMO -> ints(0xE4A6);
             case STACCATO -> ints(0xE4A2);
             case STAFF_LINES -> ints(0xE014); // 0xE01A in Bravura
@@ -232,7 +239,8 @@ public class FinaleJazzSymbols
             ///case TURN_UP -> ints(0xE56A);
 
             ///case VENTIDUESIMA -> ints(0xE517);
-            case WHOLE_NOTE -> ints(0xE0A2);
+
+            case WHOLE_NOTE, METRO_WHOLE -> ints(0xE0A2);
             ///case WHOLE_NOTE_CROSS -> ints(0xE0A7);
             case WHOLE_NOTE_DIAMOND -> ints(0xE0DA);
             case WHOLE_NOTE_TRIANGLE_DOWN -> ints(0xE0C6);
@@ -262,8 +270,8 @@ public class FinaleJazzSymbols
         symbolMap.put(FLAG_3_DOWN, new FlagsDownSymbol(FLAG_3_DOWN, family(), 3));
         symbolMap.put(FLAG_4_DOWN, new FlagsDownSymbol(FLAG_4_DOWN, family(), 4));
         symbolMap.put(FLAG_5_DOWN, new FlagsDownSymbol(FLAG_5_DOWN, family(), 5));
-
     }
+
     //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------------//

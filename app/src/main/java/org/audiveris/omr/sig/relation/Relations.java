@@ -46,6 +46,7 @@ import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.MeasureRepeatInter;
+import org.audiveris.omr.sig.inter.MetronomeInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
@@ -134,6 +135,7 @@ public abstract class Relations
         map(AbstractChordInter.class, ChordPedalRelation.class, PedalInter.class);
         map(AbstractChordInter.class, ChordTupletRelation.class, TupletInter.class);
         map(AbstractChordInter.class, ChordWedgeRelation.class, WedgeInter.class);
+        map(AbstractChordInter.class, ChordSentenceRelation.class, MetronomeInter.class);
 
         map(AlterInter.class, AlterHeadRelation.class, HeadInter.class);
 
@@ -221,9 +223,7 @@ public abstract class Relations
      * @return the list of defined relation classes, perhaps empty
      */
     private static Set<Class<? extends Relation>> definedRelationsFrom (
-    // @formatter:off
-        Class<? extends Inter> sourceClass)
-    // @formatter:on
+                                                                        Class<? extends Inter> sourceClass)
     {
         Objects.requireNonNull(sourceClass, "Source class is null");
 

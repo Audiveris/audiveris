@@ -167,9 +167,8 @@ public class StaffConfig
      */
     public static String toCsvString (Collection<StaffConfig> collection)
     {
-        return new StringBuilder().append(
-                collection.stream() //
-                        .map(sc -> (sc == null) ? "null" : sc.toString()) //
-                        .collect(Collectors.joining(","))).toString();
+        return collection.stream() //
+                .map(sc -> (sc == null) ? "null" : sc.toString()) //
+                .collect(Collectors.joining(","));
     }
 }

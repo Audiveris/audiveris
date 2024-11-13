@@ -35,6 +35,7 @@ import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
+import org.audiveris.omr.sig.inter.BeatUnitInter;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.BracketConnectorInter;
 import org.audiveris.omr.sig.inter.BracketInter;
@@ -65,6 +66,7 @@ import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.MeasureRepeatInter;
+import org.audiveris.omr.sig.inter.MetronomeInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
@@ -251,6 +253,8 @@ public class SigValue
             @XmlElementRef(type = SmallFlagInter.class),
             @XmlElementRef(type = StaffBarlineInter.class),
             @XmlElementRef(type = StemInter.class),
+            @XmlElementRef(type = MetronomeInter.class),
+            @XmlElementRef(type = BeatUnitInter.class),
             @XmlElementRef(type = TimeCustomInter.class),
             @XmlElementRef(type = TimeNumberInter.class),
             @XmlElementRef(type = TimePairInter.class),
@@ -318,8 +322,8 @@ public class SigValue
     @Override
     public String toString ()
     {
-        return new StringBuilder("SigValue{").append("inters:").append(inters.size()).append(
-                " relations:").append(relations.size()).append('}').toString();
+        return new StringBuilder("SigValue{").append("inters:").append(inters.size())
+                .append(" relations:").append(relations.size()).append('}').toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

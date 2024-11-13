@@ -354,16 +354,6 @@ public class TesseractOrder
                             line);
                     logger.debug("   {}", word);
                     line.appendWord(word);
-
-                    // // Heuristic... (just to test)
-                    // boolean isDict = it.WordIsFromDictionary();
-                    // boolean isNumeric = it.WordIsNumeric();
-                    // boolean isLatin = encoder.canEncode(wordContent);
-                    // int conf = (int) Math.rint(it.Confidence(WORD));
-                    // int len = wordContent.length();
-                    // boolean isValid = isLatin
-                    //         && (conf >= 80
-                    //   || (conf >= 50 && ((isDict && len > 1) || isNumeric)));
                 }
 
                 // Char/symbol to be processed

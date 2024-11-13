@@ -181,6 +181,9 @@ public class SymbolRipper
     // y symbol
     private final LDoubleField hSym = new LDoubleField(false, "hSym", "h symbol", f);
 
+    // Advance symbol
+    private final LDoubleField aSym = new LDoubleField(false, "advance", "symbol advance", f);
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
@@ -189,30 +192,55 @@ public class SymbolRipper
     public SymbolRipper ()
     {
         // Actors
-        drawing=new Drawing();
+        drawing = new Drawing();
 
-        fontBase.setModel(new SpinnerListModel(new Integer[]{0,0xf000,0x1_d100}));SpinnerUtil.setRightAlignment(fontBase);SpinnerUtil.fixIntegerList(fontBase);
+        fontBase.setModel(new SpinnerListModel(new Integer[] { 0, 0xf000, 0x1d100 }));
+        SpinnerUtil.setRightAlignment(fontBase);
+        SpinnerUtil.fixIntegerList(fontBase);
 
-        fontName.setModel(new SpinnerListModel(GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
+        fontName.setModel(
+                new SpinnerListModel(
+                        GraphicsEnvironment.getLocalGraphicsEnvironment()
+                                .getAvailableFontFamilyNames()));
 
-        pointCode.setModel(new SpinnerNumberModel(0x1_d100,0,0x1_d1ff,1));
+        pointCode.setModel(new SpinnerNumberModel(0x1d100, 0, 0x1d1ff, 1));
 
         // Initial values
-        if(true){fontName.getSpinner().setValue("Bravura");fontBase.setValue(0); // (for Bravura)
-        pointCode.setValue(0xE0A4); // Quarter note (in Bravura)
-        }else{fontName.getSpinner().setValue("MusicalSymbols");fontBase.setValue(fontBase.getModel().getNextValue()); // (for MusicalSymbols)
-        pointCode.setValue(113); // Quarter note (in MusicalSymbols)
+        if (true) {
+            fontName.getSpinner().setValue("Bravura");
+            fontBase.setValue(0); // (for Bravura)
+            pointCode.setValue(0xE0A4); // Quarter note (in Bravura)
+        } else {
+            fontName.getSpinner().setValue("MusicalSymbols");
+            fontBase.setValue(fontBase.getModel().getNextValue()); // (for MusicalSymbols)
+            pointCode.setValue(113); // Quarter note (in MusicalSymbols)
         }
 
-        fontSize.setValue(200);width.setValue(400);height.setValue(500);xOffset.setValue(200);yOffset.setValue(300);
+        fontSize.setValue(200);
+        width.setValue(400);
+        height.setValue(500);
+        xOffset.setValue(200);
+        yOffset.setValue(300);
 
-        changeCode();defineFont();
+        changeCode();
+        defineFont();
 
         // Listeners
-        fontName.addChangeListener(paramListener);fontBase.addChangeListener(paramListener);fontSize.addChangeListener(paramListener);pointCode.addChangeListener(paramListener);hexaCode.addChangeListener(paramListener);xOffset.addChangeListener(paramListener);yOffset.addChangeListener(paramListener);width.addChangeListener(paramListener);height.addChangeListener(paramListener);
+        fontName.addChangeListener(paramListener);
+        fontBase.addChangeListener(paramListener);
+        fontSize.addChangeListener(paramListener);
+        pointCode.addChangeListener(paramListener);
+        hexaCode.addChangeListener(paramListener);
+        xOffset.addChangeListener(paramListener);
+        yOffset.addChangeListener(paramListener);
+        width.addChangeListener(paramListener);
+        height.addChangeListener(paramListener);
 
         // Global layout
-        if(!standAlone){frame=defineLayout(new JFrame("Symbol Ripper"));OmrGui.getApplication().show(frame);}
+        if (!standAlone) {
+            frame = defineLayout(new JFrame("Symbol Ripper"));
+            OmrGui.getApplication().show(frame);
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -243,6 +271,7 @@ public class SymbolRipper
         ySym.setValue(rect.getY());
         wSym.setValue(rect.getWidth());
         hSym.setValue(rect.getHeight());
+        aSym.setValue(layout.getAdvance());
 
         return img;
     }
@@ -321,7 +350,7 @@ public class SymbolRipper
     //---------------//
     private JPanel getParamPanel ()
     {
-        final FormLayout layout = Panel.makeFormLayout(13, 2, "right:", "35dlu", "45dlu");
+        final FormLayout layout = Panel.makeFormLayout(14, 2, "right:", "35dlu", "45dlu");
         FormBuilder builder = FormBuilder.create().layout(layout).panel(new Panel());
         int r = 1; // --------------------------------
         builder.addSeparator("Font").xyw(1, r, 7);
@@ -363,6 +392,10 @@ public class SymbolRipper
 
         r += 2; // --------------------------------
         builder.addSeparator("Symbol").xyw(1, r, 7);
+
+        r += 2; // --------------------------------
+        builder.addRaw(aSym.getLabel()).xy(5, r);
+        builder.addRaw(aSym.getField()).xy(7, r);
 
         r += 2; // --------------------------------
         builder.addRaw(xSym.getLabel()).xy(1, r);
@@ -466,13 +499,6 @@ public class SymbolRipper
                         yOffset.getValue());
                 g.setColor(Color.RED);
                 g2.draw(rect);
-
-                // Debug
-                TextLayout layout = new TextLayout(string, musicFont, frc);
-                logger.debug(
-                        "getAdvance(): {} getVisibleAdvance(): {}",
-                        layout.getAdvance(),
-                        layout.getVisibleAdvance());
             }
         }
     }

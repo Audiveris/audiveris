@@ -50,7 +50,7 @@ public interface OCR
     Set<String> getLanguages ();
 
     /**
-     * Report the minimum confidence for an OCR'ed item.
+     * Report the minimum confidence for an OCR'd item.
      *
      * @return minimum confidence value
      */

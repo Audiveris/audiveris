@@ -409,8 +409,7 @@ public class BookActions
                         try {
                             // TODO: Is there a more civilized way?
                             optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
-                        } catch (Exception ignored) {
-                        }
+                        } catch (Exception ignored) {}
                     }
                 }
             });
@@ -590,7 +589,7 @@ public class BookActions
     // dumpEventServices //
     //-------------------//
     /**
-     * Action to erase the dump the content of all event services
+     * Action to dump the content of all event services
      *
      * @param e the event which triggered this action
      */
@@ -1702,8 +1701,7 @@ public class BookActions
                     JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.DEFAULT_OPTION,
                     null,
-                    new Object[]
-                    { UserOpt.OK, UserOpt.Apply, UserOpt.Cancel });
+                    new Object[] { UserOpt.OK, UserOpt.Apply, UserOpt.Cancel });
             optionPane.addPropertyChangeListener(e -> {
                 if (dialog.isVisible() && (e.getSource() == optionPane) && (e.getPropertyName()
                         .equals(JOptionPane.VALUE_PROPERTY))) {
@@ -1847,8 +1845,7 @@ public class BookActions
     //--------//
     public static OmrFileFilter filter (String ext)
     {
-        return new OmrFileFilter(ext, new String[]
-        { ext });
+        return new OmrFileFilter(ext, new String[] { ext });
     }
 
     //-------------//

@@ -171,9 +171,9 @@ public class CircleModel
      * @param last   last point
      * @return the CircleModel instance if OK, null otherwise
      */
-    public static CircleModel create (Point2D first,
-                                      Point2D middle,
-                                      Point2D last)
+    public static CircleModel createValid (Point2D first,
+                                           Point2D middle,
+                                           Point2D last)
     {
         CircleModel model = new CircleModel(first, middle, last);
 

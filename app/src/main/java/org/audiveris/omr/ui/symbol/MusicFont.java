@@ -26,6 +26,9 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.TIME_ZERO;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.ui.StubsController;
+import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.param.ConstantBasedParam;
 import org.audiveris.omr.util.param.Param;
@@ -72,7 +75,7 @@ import java.util.Objects;
  * scaling.</li>
  * </ul>
  * To get properly scaled instances, use the convenient methods {@link #getBaseFont(Family,int)}
- * and {@link #getHeadFont(Family,Scale, int)}.
+ * and {@link #getHeadFont(Family,Scale,int)}.
  * </dl>
  *
  * @see <a href="https://www.smufl.org/version/">SMuFL web site</a>
@@ -94,8 +97,9 @@ public class MusicFont
     public static final int TINY_INTERLINE = (int) Math.rint(DEFAULT_INTERLINE * RATIO_TINY);
 
     /** Default music font family. */
-    public static final Param<MusicFamily> defaultMusicParam =
-            new ConstantBasedParam<>(constants.defaultMusicFamily, Param.GLOBAL_SCOPE);
+    public static final Param<MusicFamily> defaultMusicParam = new ConstantBasedParam<>(
+            constants.defaultMusicFamily,
+            Param.GLOBAL_SCOPE);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -106,9 +110,6 @@ public class MusicFont
      * So, we use here the more specific 'musicFamily' field name.
      */
     protected final MusicFamily musicFamily;
-
-    /** The related font for text. */
-    protected TextFont textFont;
 
     /** Backup font, if any. */
     protected MusicFont backupFont;
@@ -131,13 +132,13 @@ public class MusicFont
     }
 
     /**
-     * Creates a new <code>MusicFont</code> object, based on chosen family and size.
+     * Creates a new <code>MusicFont</code> object, based on the provided family and size.
      *
      * @param family chosen music font family
      * @param size   the point size of the <code>Font</code>
      */
-    protected MusicFont (MusicFamily family,
-                         int size)
+    public MusicFont (MusicFamily family,
+                      int size)
     {
         super(family.getFontName(), family.getFileName(), Font.PLAIN, size);
         musicFamily = family;
@@ -145,6 +146,16 @@ public class MusicFont
         if (musicFamily.getBackup() != null) {
             backupFont = MusicFont.getMusicFont(musicFamily.getBackup(), size);
         }
+    }
+
+    /**
+     * Creates a new <code>MusicFont</code> object, based on the provided FontInfo.
+     *
+     * @param info the font info
+     */
+    public MusicFont (FontInfo info)
+    {
+        this(MusicFamily.valueOfName(info.fontName), info.pointsize);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -186,7 +197,7 @@ public class MusicFont
     }
 
     //------------------//
-    // computePointSize //
+    // computePointSize // TODO: Could we get rid of this method?
     //------------------//
     /**
      * Using this font family, compute the point size that best matches the provided size
@@ -236,6 +247,15 @@ public class MusicFont
     public MusicFont deriveFont (float size)
     {
         return new MusicFont(super.deriveFont(size));
+    }
+
+    //------------//
+    // deriveFont //
+    //------------//
+    @Override
+    public MusicFont deriveFont (int style)
+    {
+        return new MusicFont(super.deriveFont(style));
     }
 
     //--------//
@@ -359,8 +379,8 @@ public class MusicFont
         }
 
         final int baseCode = zeroCode[0];
-        final int[] numberCodes =
-                (number >= 100) ? new int[3] : (number >= 10) ? new int[2] : new int[1];
+        final int[] numberCodes = (number >= 100) ? new int[3]
+                : (number >= 10) ? new int[2] : new int[1];
         int index = 0;
 
         if (number >= 100) {
@@ -539,6 +559,20 @@ public class MusicFont
                                                int pointSize)
     {
         return getMusicFont(family, pointSize);
+    }
+
+    //------------------//
+    // getCurrentFamily //
+    //------------------//
+    /**
+     * Report the music family used in the sheet currently displayed
+     *
+     * @return the current sheet music family, null if no sheet is displayed
+     */
+    public static MusicFamily getCurrentFamily ()
+    {
+        final SheetStub stub = StubsController.getInstance().getSelectedStub();
+        return (stub != null) ? stub.getMusicFamily() : null;
     }
 
     //-----------------------//

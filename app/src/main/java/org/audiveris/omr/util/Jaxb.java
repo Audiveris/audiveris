@@ -684,8 +684,8 @@ public abstract class Jaxb
             @Override
             public String toString ()
             {
-                return new StringBuilder("Line2DF{").append("p1:").append(p1).append(",p2:").append(
-                        p2).append('}').toString();
+                return new StringBuilder("Line2DF{").append("p1:").append(p1).append(",p2:")
+                        .append(p2).append('}').toString();
             }
         }
     }
@@ -1144,9 +1144,9 @@ public abstract class Jaxb
             @Override
             public String toString ()
             {
-                return new StringBuilder("RectangleF{").append("x:").append(x).append(",y:").append(
-                        y).append(",w:").append(width).append(",h:").append(height).append('}')
-                        .toString();
+                return new StringBuilder("RectangleF{").append("x:").append(x).append(",y:")
+                        .append(y).append(",w:").append(width).append(",h:").append(height)
+                        .append('}').toString();
             }
         }
     }

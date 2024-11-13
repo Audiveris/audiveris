@@ -158,11 +158,11 @@ public class ChordNameInter
     private static final String STEP_CLASS = "[A-G]";
 
     /** Pattern for root value. A, A# or Ab */
-    private static final String rootPat =
+    private static final String rootPat = //
             group(ROOT_STEP, STEP_CLASS) + group(ROOT_ALTER, Alter.CLASS) + "?";
 
     /** Pattern for bass value, if any. /A, /A# or /Ab */
-    private static final String bassPat =
+    private static final String bassPat = //
             "(/" + group(BASS_STEP, STEP_CLASS) + group(BASS_ALTER, Alter.CLASS) + "?" + ")";
 
     /** Pattern for major indication. M, maj or DELTA */
@@ -181,49 +181,49 @@ public class ChordNameInter
     private static final String hdimPat = group(HDIM, "\u00F8");
 
     /** Pattern for any of the indication alternatives. (except sus) */
-    private static final String modePat =
+    private static final String modePat = //
             "(" + majPat + "|" + minPat + "|" + augPat + "|" + dimPat + "|" + hdimPat + ")";
 
     /** Pattern for (maj7) in min(maj7) = MAJOR_MINOR. */
-    private static final String parMajPat =
+    private static final String parMajPat = //
             "(\\(" + group(PMAJ7, "(M|[Mm][Aa][Jj]|" + DELTA + ")7") + "\\))";
 
     /** Pattern for any degree value. 5, 6, 7, 9, 11 or 13 */
     private static final String DEG_CLASS = "(5|6|7|9|11|13)";
 
     /** Pattern for a sequence of degrees. */
-    private static final String degsPat =
+    private static final String degsPat = //
             group(DEGS, DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")?");
 
     /** Pattern for a suspended indication. sus2 or sus4 */
     private static final String susPat = group(SUS, "([Ss][Uu][Ss][24])");
 
     /** Pattern for the whole kind value. */
-    private static final String kindPat =
+    private static final String kindPat = //
             group(KIND, modePat + "?" + parMajPat + "?" + degsPat + "?" + susPat + "?");
 
     /** Pattern for parenthesized degrees if any. (6), (#9), (#11b13) */
-    private static final String parPat = "(\\("
+    private static final String parPat = "(\\(" //
             + group(PARS, Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*")
             + "\\))";
 
     /** Pattern for non-parenthesized degrees if any. b5 */
-    private static final String noParPat = "("
+    private static final String noParPat = "(" //
             + group(NO_PARS, Alter.CLASS + "?" + DEG_CLASS + "(" + Alter.CLASS + DEG_CLASS + ")*")
             + ")";
 
     /**
-     * Un-compiled patterns for whole chord symbol.
+     * Non-compiled patterns for whole chord symbol.
      * TODO: add a pattern for functions
      */
-    private static final String[] raws = new String[]
+    private static final String[] raws = new String[] //
     { rootPat + kindPat + "?" + "(" + parPat + "|" + noParPat + ")" + "?" + bassPat + "?" };
 
     /** Compiled patterns for whole chord symbol. */
     private static List<Pattern> patterns;
 
     /** Pattern for one degree. (in a sequence of degrees) */
-    private static final String degPat =
+    private static final String degPat = //
             group(DEG_ALTER, Alter.CLASS) + "?" + group(DEG_VALUE, DEG_CLASS);
 
     /** Compiled pattern for one degree. */
@@ -514,7 +514,7 @@ public class ChordNameInter
     // createValid //
     //-------------//
     /**
-     * Try to build a ChordNameInter instance from a provided TextWord.
+     * Try to create a ChordNameInter instance from a provided TextWord.
      *
      * @param textWord the provided TextWord
      * @return a populated ChordNameInter instance if successful, null otherwise
@@ -593,25 +593,27 @@ public class ChordNameInter
 
             if (matcher.matches()) {
                 // Root
-                ChordNamePitch root = ChordNamePitch
-                        .create(getGroup(matcher, ROOT_STEP), getGroup(matcher, ROOT_ALTER));
+                ChordNamePitch root = ChordNamePitch.createValid(
+                        getGroup(matcher, ROOT_STEP),
+                        getGroup(matcher, ROOT_ALTER));
 
                 // Degrees
                 String degStr = getGroup(matcher, DEGS);
                 List<ChordDegree> degrees = ChordDegree.createList(degStr, null);
                 ChordDegree firstDeg = (!degrees.isEmpty()) ? degrees.get(0) : null;
-                String firstDegStr =
-                        (firstDeg != null) ? Integer.toString(degrees.get(0).value) : "";
+                String firstDegStr = (firstDeg != null) ? Integer.toString(degrees.get(0).value)
+                        : "";
 
                 // (maj7) special stuff
                 String pmaj7 = standard(matcher, PMAJ7);
 
                 // ChordKind
-                ChordKind kind = ChordKind.create(matcher, firstDegStr + pmaj7);
+                ChordKind kind = ChordKind.createValid(matcher, firstDegStr + pmaj7);
 
                 // Bass
-                ChordNamePitch bass = ChordNamePitch
-                        .create(getGroup(matcher, BASS_STEP), getGroup(matcher, BASS_ALTER));
+                ChordNamePitch bass = ChordNamePitch.createValid(
+                        getGroup(matcher, BASS_STEP),
+                        getGroup(matcher, BASS_ALTER));
 
                 if ((firstDeg != null) && (kind.type != SUSPENDED_FOURTH)
                         && (kind.type != SUSPENDED_SECOND)) {
@@ -859,7 +861,6 @@ public class ChordNameInter
     //-----------//
     public static class ChordKind
     {
-
         /** Precise type of kind. (subset of the 33 Music XML values) */
         @XmlAttribute
         public final ChordType type;
@@ -879,6 +880,7 @@ public class ChordNameInter
         public final String text;
 
         // For JAXB
+        @SuppressWarnings("unused")
         private ChordKind ()
         {
             this.type = null;
@@ -942,15 +944,15 @@ public class ChordNameInter
         }
 
         /**
-         * Create proper ChordKind object from a provided matcher, augmented
+         * Try to create proper ChordKind object from a provided matcher, augmented
          * by dominant string if any.
          *
          * @param matcher  matcher on input string
          * @param dominant dominant information if any, empty string otherwise
          * @return ChordKind instance, or null if failed
          */
-        private static ChordKind create (Matcher matcher,
-                                         String dominant)
+        private static ChordKind createValid (Matcher matcher,
+                                              String dominant)
         {
             final String kindStr = getGroup(matcher, KIND);
             final String parStr = getGroup(matcher, PARS);
@@ -970,7 +972,7 @@ public class ChordNameInter
             }
 
             // Then check for other combinations
-            final String str =
+            final String str = //
                     standard(matcher, MIN) + standard(matcher, MAJ) + standard(matcher, AUG)
                             + standard(matcher, DIM) + standard(matcher, HDIM) + dominant;
             ChordType type = typeOf(str);
@@ -1072,7 +1074,6 @@ public class ChordNameInter
     @XmlAccessorType(XmlAccessType.NONE)
     public static class ChordNamePitch
     {
-
         /** Related step. */
         @XmlAttribute
         public final AbstractNoteInter.NoteStep step;
@@ -1113,14 +1114,14 @@ public class ChordNameInter
         }
 
         /**
-         * Create a <code>ChordNamePitch</code> object from provided step and alter strings
+         * Try to create a <code>ChordNamePitch</code> object from provided step and alter strings
          *
          * @param stepStr  provided step string
          * @param alterStr provided alteration string
          * @return ChordNamePitch instance, or null if failed
          */
-        public static ChordNamePitch create (String stepStr,
-                                             String alterStr)
+        public static ChordNamePitch createValid (String stepStr,
+                                                  String alterStr)
         {
             stepStr = stepStr.trim();
             alterStr = alterStr.trim();
@@ -1140,7 +1141,6 @@ public class ChordNameInter
     //----------------//
     private static class ChordStructure
     {
-
         public final ChordNamePitch root;
 
         public final ChordKind kind;

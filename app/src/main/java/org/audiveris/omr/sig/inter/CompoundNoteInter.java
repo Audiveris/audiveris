@@ -120,9 +120,9 @@ public class CompoundNoteInter
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //----------//
-    // getModel //
-    //----------//
+    //------------//
+    // buildModel //
+    //------------//
     /**
      * Build a poor-man model, just from staff and bounds (from glyph?).
      *
@@ -317,7 +317,6 @@ public class CompoundNoteInter
     public static class Model
             implements ObjectUIModel
     {
-
         public Rectangle2D box; // CompoundNote bounds
 
         public Rectangle2D headBox; // Head bounds

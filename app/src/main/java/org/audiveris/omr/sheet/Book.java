@@ -392,8 +392,7 @@ public class Book
             if (root != null) {
                 try {
                     root.getFileSystem().close();
-                } catch (IOException ignored) {
-                }
+                } catch (IOException ignored) {}
             }
         }
     }
@@ -1794,7 +1793,7 @@ public class Book
     {
         try {
             if (!Files.exists(path)) {
-                logger.warn("Book input {} not found", path);
+                logger.info("Book input {} not found", path);
 
                 return null;
             }
@@ -2031,8 +2030,7 @@ public class Book
                         LogUtil.start(stub);
 
                         try {
-                            if (stub.reachStep(target, force)) {
-                            } else {
+                            if (stub.reachStep(target, force)) {} else {
                                 someFailure = true;
                             }
                         } catch (StepPause ex) {
@@ -2533,8 +2531,7 @@ public class Book
             if (root != null) {
                 try {
                     root.getFileSystem().close();
-                } catch (IOException ignored) {
-                }
+                } catch (IOException ignored) {}
             }
 
             getLock().unlock();

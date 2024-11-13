@@ -35,10 +35,10 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  */
 public enum TextFamily
 {
-    /** Standard text family. */
+    /** Standard text family, without serif. */
     SansSerif("Sans Serif", null),
 
-    /** Standard text family. */
+    /** Standard text family, with serif. */
     Serif("Serif", null),
 
     /** Jazz text family. */
@@ -92,7 +92,7 @@ public enum TextFamily
             }
         }
 
-        logger.warn("No music family for value: \"{}\"", value);
+        logger.warn("No text family for value: \"{}\"", value);
         return null;
     }
 

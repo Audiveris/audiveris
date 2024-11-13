@@ -306,7 +306,7 @@ public class LyricLineInter
     /**
      * Create a <code>LyricLineInter</code> from a TextLine.
      *
-     * @param line the OCR'ed text line
+     * @param line the OCR'd text line
      * @return the LyricLine inter
      */
     public static LyricLineInter create (TextLine line)

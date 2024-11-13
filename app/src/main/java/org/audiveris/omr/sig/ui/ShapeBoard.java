@@ -233,12 +233,6 @@ public class ShapeBoard
     /** Cached list of HeadsAndDot shapes, if any. To trigger board update only when needed. */
     private List<Shape> cachedHeads;
 
-    /** Cached music font family, if any. To trigger board symbols update only when needed. */
-    private MusicFamily cachedMusicFamily;
-
-    /** Cached text font family, if any. To trigger board symbols update only when needed. */
-    private TextFamily cachedTextFamily;
-
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
@@ -418,12 +412,16 @@ public class ShapeBoard
             new HeadButtons().build(panel, filtered);
         } else if (set == ShapeSet.Barlines) {
             new ButtonsTable(8).build(panel, filtered);
+        } else if (set == ShapeSet.BeamsEtc) {
+            new ButtonsTable(6).build(panel, filtered);
         } else if (set == ShapeSet.ClefsAndShifts) {
             new ButtonsTable(5).build(panel, filtered);
         } else if (set == ShapeSet.Dynamics) {
             new ButtonsTable(6).build(panel, filtered);
         } else if (set == ShapeSet.Flags) {
             new ButtonsTable(7).build(panel, filtered);
+        } else if (set == ShapeSet.GraceAndOrnaments) {
+            new ButtonsTable(4).build(panel, filtered);
         } else if (set == ShapeSet.Rests) {
             new ButtonsTable(6).build(panel, filtered);
         } else if (set == ShapeSet.Times) {
@@ -901,9 +899,12 @@ public class ShapeBoard
         shapeMap.put("" + c + '4', Shape.QUARTER_REST);
         shapeMap.put("" + c + '8', Shape.EIGHTH_REST);
 
-        setMap.put(c = 'p', ShapeSet.Physicals);
+        setMap.put(c = 't', ShapeSet.Texts);
         shapeMap.put("" + c + 'l', Shape.LYRICS);
         shapeMap.put("" + c + 't', Shape.TEXT);
+        shapeMap.put("" + c + 'm', Shape.METRONOME);
+
+        setMap.put(c = 'p', ShapeSet.Physicals);
         shapeMap.put("" + c + 'a', Shape.SLUR_ABOVE);
         shapeMap.put("" + c + 'b', Shape.SLUR_BELOW);
         shapeMap.put("" + c + 's', Shape.STEM);

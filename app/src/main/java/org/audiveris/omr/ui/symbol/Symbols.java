@@ -23,11 +23,13 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
+import static org.audiveris.omr.ui.symbol.OmrFont.TRANSFORM_METRO;
 import static org.audiveris.omr.ui.symbol.OmrFont.TRANSFORM_SMALL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -58,6 +60,9 @@ public abstract class Symbols
     private static final Logger logger = LoggerFactory.getLogger(Symbols.class);
 
     public static final CodeRange PRIVATE_USE_AREA = new CodeRange(0xE000, 0xF8FF);
+
+    /** Code for a space character. */
+    public static final int SPACE = 0x20;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -91,7 +96,7 @@ public abstract class Symbols
      * @param shape the provided music shape
      * @return code point or null if not supported
      */
-    protected abstract int[] getCode (Shape shape);
+    public abstract int[] getCode (Shape shape);
 
     //---------------//
     // getCodeRanges //
@@ -167,6 +172,15 @@ public abstract class Symbols
                                int key)
     {
         symbolMap.put(shape, new KeyFlatSymbol(key, shape, family()));
+    }
+
+    //----------//
+    // mapMetro //
+    //----------//
+    protected void mapMetro (Shape shape,
+                             Shape root)
+    {
+        symbolMap.put(shape, new TransformedSymbol(shape, root, TRANSFORM_METRO, family()));
     }
 
     //-----------//
@@ -258,15 +272,25 @@ public abstract class Symbols
         mapSmall(SMALL_FLAG, FLAG_1);
         mapSmall(SMALL_FLAG_DOWN, FLAG_1_DOWN);
 
+        // Metronome symbols
+        mapMetro(METRO_WHOLE, WHOLE_NOTE);
+        mapMetro(METRO_HALF, HALF_NOTE_UP);
+        mapMetro(METRO_DOTTED_HALF, DOTTED_HALF_NOTE_UP);
+        mapMetro(METRO_QUARTER, QUARTER_NOTE_UP);
+        mapMetro(METRO_DOTTED_QUARTER, DOTTED_QUARTER_NOTE_UP);
+        mapMetro(METRO_EIGHTH, EIGHTH_NOTE_UP);
+        mapMetro(METRO_DOTTED_EIGHTH, DOTTED_EIGHTH_NOTE_UP);
+        mapMetro(METRO_SIXTEENTH, SIXTEENTH_NOTE_UP);
+        mapMetro(METRO_DOTTED_SIXTEENTH, DOTTED_SIXTEENTH_NOTE_UP);
+
         // Specific symbols
         symbolMap.put(BRACE, new BraceSymbol(family()));
         symbolMap.put(ENDING, new EndingSymbol(false, family()));
         symbolMap.put(ENDING_WRL, new EndingSymbol(true, family()));
 
         symbolMap.put(SMALL_FLAG_SLASH, new SlashedFlagSymbol(SMALL_FLAG_SLASH, family()));
-        symbolMap.put(
-                SMALL_FLAG_SLASH_DOWN,
-                new SlashedFlagSymbol(SMALL_FLAG_SLASH_DOWN, family()));
+        symbolMap
+                .put(SMALL_FLAG_SLASH_DOWN, new SlashedFlagSymbol(SMALL_FLAG_SLASH_DOWN, family()));
 
         symbolMap.put(FLAT, new FlatSymbol(FLAT, family()));
         symbolMap.put(DOUBLE_FLAT, new FlatSymbol(DOUBLE_FLAT, family()));
@@ -275,6 +299,8 @@ public abstract class Symbols
         symbolMap.put(HALF_NOTE_DOWN, new CompoundNoteSymbol(HALF_NOTE_DOWN, family()));
         symbolMap.put(QUARTER_NOTE_UP, new CompoundNoteSymbol(QUARTER_NOTE_UP, family()));
         symbolMap.put(QUARTER_NOTE_DOWN, new CompoundNoteSymbol(QUARTER_NOTE_DOWN, family()));
+
+        symbolMap.put(METRONOME, new MetronomeSymbol(METRO_QUARTER, family()));
 
         symbolMap.put(NON_DRAGGABLE, new NonDraggableSymbol(family()));
 
@@ -364,9 +390,37 @@ public abstract class Symbols
      * @param codes sequence of one int or more parameters
      * @return the int array
      */
-    protected static int[] ints (int... codes)
+    public static int[] ints (int... codes)
     {
         return codes;
+    }
+
+    //--------//
+    // shrink //
+    //--------//
+    /**
+     * Report an array where the space characters have been removed.
+     *
+     * @param codes the input array
+     * @return the purged array
+     */
+    public static int[] shrink (int... codes)
+    {
+        final int[] output = new int[codes.length];
+
+        int j = 0;
+        for (int i = 0; i < codes.length; i++) {
+            final int code = codes[i];
+            if (code != SPACE) {
+                output[j++] = code;
+            }
+        }
+
+        if (j == codes.length) {
+            return codes;
+        }
+
+        return Arrays.copyOf(output, j);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -394,8 +448,8 @@ public abstract class Symbols
         @Override
         public String toString ()
         {
-            return new StringBuilder().append('[').append(start).append("..").append(stop).append(
-                    ']').toString();
+            return new StringBuilder().append('[').append(start).append("..").append(stop)
+                    .append(']').toString();
         }
     }
 }

@@ -45,6 +45,7 @@ import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
+import org.audiveris.omr.sig.inter.BeatUnitInter;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.BracketInter;
 import org.audiveris.omr.sig.inter.BreathMarkInter;
@@ -69,6 +70,7 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.MeasureRepeatInter;
+import org.audiveris.omr.sig.inter.MetronomeInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
@@ -288,7 +290,7 @@ public class InterFactory
             case F_CLEF_8VB:
             case C_CLEF:
             case PERCUSSION_CLEF:
-                return ClefInter.create(glyph, shape, grade, closestStaff); // Staff is OK
+                return ClefInter.createValid(glyph, shape, grade, closestStaff); // Staff is OK
 
             // Key signatures
             case KEY_FLAT_7:
@@ -670,11 +672,10 @@ public class InterFactory
     private void handleTimes ()
     {
         // Retrieve all time inters (outside staff headers)
-        final List<Inter> systemTimes = sig.inters(new Class[]
-        {
-                TimeWholeInter.class, // Whole symbol like C or predefined 6/8
-                TimeCustomInter.class, // User modifiable combo 6/8
-                TimeNumberInter.class }); // Partial symbol like 6 or 8
+        final List<Inter> systemTimes = sig.inters(
+                new Class[] { TimeWholeInter.class, // Whole symbol like C or predefined 6/8
+                        TimeCustomInter.class, // User modifiable combo 6/8
+                        TimeNumberInter.class }); // Partial symbol like 6 or 8
 
         final List<Inter> headerTimes = new ArrayList<>();
 
@@ -825,11 +826,7 @@ public class InterFactory
             // Barlines
             case THIN_BARLINE:
             case THICK_BARLINE:
-                //            if (sheet.getStub().getLatestStep().compareTo(OmrStep.MEASURES) < 0) {
-                //                return new BarlineInter(null, shape, GRADE, null, null);
-                //            } else {
                 return new StaffBarlineInter(shape, GRADE);
-            //            }
 
             case DOUBLE_BARLINE:
             case FINAL_BARLINE:
@@ -886,6 +883,9 @@ public class InterFactory
 
             case TEXT:
                 return new WordInter(shape, GRADE);
+
+            case METRONOME:
+                return new MetronomeInter(GRADE);
 
             // Clefs
             case G_CLEF:
@@ -1090,6 +1090,18 @@ public class InterFactory
             case GRACE_NOTE_SLASH:
             case GRACE_NOTE_SLASH_DOWN:
                 return new GraceChordInter(null, shape, GRADE);
+
+            // Metronome units
+            case METRO_WHOLE:
+            case METRO_HALF:
+            case METRO_QUARTER:
+            case METRO_EIGHTH:
+            case METRO_SIXTEENTH:
+            case METRO_DOTTED_HALF:
+            case METRO_DOTTED_QUARTER:
+            case METRO_DOTTED_EIGHTH:
+            case METRO_DOTTED_SIXTEENTH:
+                return new BeatUnitInter(shape, GRADE);
 
             // Ornaments
             case TR:

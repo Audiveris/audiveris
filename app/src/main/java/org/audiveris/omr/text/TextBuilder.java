@@ -25,6 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory.CompoundConstructor;
 import org.audiveris.omr.glyph.dynamic.SectionCompound;
@@ -47,9 +48,12 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.MetronomeInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
-import org.audiveris.omr.sig.inter.TempoInter;
 import org.audiveris.omr.sig.inter.WordInter;
+import static org.audiveris.omr.text.TextRole.ChordName;
+import static org.audiveris.omr.text.TextRole.Lyrics;
+import static org.audiveris.omr.text.TextRole.Metronome;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Pair;
@@ -83,17 +87,21 @@ import java.util.TreeSet;
  * Class <code>TextBuilder</code> works at system level, providing features to check, build
  * and reorganize text items, including interacting with the OCR engine.
  * <p>
- * This builder can operate in 3 different modes:
+ * This builder can operate in 4 different modes:
  * <ol>
  * <li><b>Free mode</b>: Engine mode, text role can be any role, determined by heuristics.
  * <br>
- * <code>manualLyrics == null;</code>
+ * <code>shape == null;</code>
  * <li><b>Manual as lyrics</b>: Manual mode, for which text role is imposed as lyrics.
  * <br>
- * <code>manualLyrics == true;</code>
- * <li><b>Manual as non-lyrics</b>: Manual mode, for which text role is imposed as non lyrics.
+ * <code>shape == LYRICS</code>
+ * <li><b>Manual as metronome</b>: Manual mode, for which text role is imposed as metronome.
  * <br>
- * <code>manualLyrics == false;</code>
+ * <code>shape == METRONOME</code>
+ * <li><b>Manual as plain text</b>: Manual mode, for which text role can be anything, except lyrics
+ * and metronome.
+ * <br>
+ * <code>shape == TEXT</code>
  * </ol>
  *
  * @author Hervé Bitteur
@@ -125,8 +133,8 @@ public class TextBuilder
     /** Set of text lines. */
     private final Set<TextLine> textLines = new LinkedHashSet<>();
 
-    /** Manual mode. */
-    private final Boolean manualLyrics;
+    /** Shape specification. */
+    private final Shape shape;
 
     /** Maximum acceptable vertical shift between line chunks. */
     private final int maxLineDy;
@@ -137,31 +145,16 @@ public class TextBuilder
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new TextBuilder object in engine mode (TEXTS step).
+     * Creates a new TextBuilder object, in either engine or manual mode.
      *
      * @param system the related system
-     */
-    public TextBuilder (SystemInfo system)
-    {
-        this(system, null);
-    }
-
-    /**
-     * Creates a new TextBuilder object, in either engine or manual mode.
-     * <p>
-     * In engine mode, manualLyrics is null, leaving lines roles fully open.
-     * <p>
-     * In manual mode, the user has selected either "lyrics" (which forces lyrics mode) or "text"
-     * (which leaves the role open to anything but lyrics).
-     *
-     * @param system       the related system
-     * @param manualLyrics null for any role, true for lyrics, false for any role but lyrics
+     * @param shape  null for any role (engine) or specifically TEXT, LYRICS, METRONOME (manual)
      */
     public TextBuilder (SystemInfo system,
-                        Boolean manualLyrics)
+                        Shape shape)
     {
         this.system = system;
-        this.manualLyrics = manualLyrics;
+        this.shape = shape;
 
         sheet = system.getSheet();
         scale = sheet.getScale();
@@ -209,26 +202,25 @@ public class TextBuilder
         }
     }
 
-    //--------------//
-    // createInters //
-    //--------------//
+    //--------------------//
+    // createSystemInters //
+    //--------------------//
     /**
-     * Allocate corresponding inters based on text role.
-     * <ul>
-     * <li>For any role other than Lyrics, a plain Sentence is created for each text line.</li>
-     * <li>For Lyrics role, a specific LyricLine (sub-class of Sentence) is created.</li>
-     * </ul>
+     * Allocate corresponding inters based on the role for each text line.
      */
-    private void createInters ()
+    private void createSystemInters ()
     {
         final SIGraph sig = system.getSig();
 
         for (TextLine line : textLines) {
+            final List<WordInter> createdWords = new ArrayList<>();
             final TextRole role = line.getRole();
-            final SentenceInter sentence = (role == TextRole.Lyrics) ? LyricLineInter.create(line)
-                    : (role == TextRole.ChordName) ? ChordNameInter.create(line)
-                            : (role == TextRole.Tempo) ? TempoInter.createValid(line)
-                                    : SentenceInter.create(line);
+            final SentenceInter sentence = switch (role) {
+                case Lyrics -> LyricLineInter.create(line);
+                case ChordName -> ChordNameInter.create(line);
+                case Metronome -> MetronomeInter.create(line, system, false, createdWords);
+                default -> SentenceInter.create(line);
+            };
 
             // Related staff (can still be modified later)
             Staff staff = line.getStaff();
@@ -240,21 +232,27 @@ public class TextBuilder
             }
 
             if (staff != null) {
-                // Populate sig
-                sig.addVertex(sentence);
-
-                // Link sentence and words
+                // Create words
                 for (TextWord word : line.getWords()) {
-                    final WordInter wordInter = (role == TextRole.Lyrics) ? new LyricItemInter(word)
-                            : ((role == TextRole.ChordName) ? ChordNameInter.createValid(word)
-                                    : new WordInter(word));
+                    final WordInter w = switch (role) {
+                        case Lyrics -> new LyricItemInter(word);
+                        case ChordName -> ChordNameInter.createValid(word);
+                        case Metronome -> null; // Already performed at MetronomeInter creation
+                        default -> new WordInter(word);
+                    };
 
-                    if (wordInter != null) {
-                        wordInter.setStaff(staff);
-                        sig.addVertex(wordInter);
-                        sentence.addMember(wordInter);
+                    if (w != null) {
+                        createdWords.add(w);
                     }
                 }
+
+                // Populate sig
+                sig.addVertex(sentence);
+                createdWords.forEach(w -> {
+                    w.setStaff(sentence.getStaff());
+                    sig.addVertex(w);
+                    sentence.addMember(w);
+                });
             }
         }
     }
@@ -366,7 +364,7 @@ public class TextBuilder
     // getSections //
     //-------------//
     /**
-     * Build all the system sections that could be part of OCR'ed items.
+     * Build all the system sections that could be part of OCR'd items.
      *
      * @param buffer the pixel buffer used by OCR
      * @param lines  the text lines kept
@@ -393,12 +391,12 @@ public class TextBuilder
     // getSystemValidLines //
     //---------------------//
     /**
-     * Among the lines OCR'ed from whole sheet, select the ones that could belong to our
+     * Among the lines OCR'd from whole sheet, select the ones that could belong to our
      * system and considered as valid.
      * <p>
      * Sheet lines are deep-copied to system lines.
      *
-     * @param sheetLines sheet collection of raw OCR'ed lines
+     * @param sheetLines sheet collection of raw OCR'd lines
      * @return the relevant system lines, duly validated
      */
     private List<TextLine> getSystemValidLines (List<TextLine> sheetLines)
@@ -462,9 +460,13 @@ public class TextBuilder
     private void guessRole (TextLine line)
     {
         try {
-            TextRole role = (isManual() && manualLyrics) ? TextRole.Lyrics
-                    : TextRole.guessRole(line, system, manualLyrics == null);
-            line.setRole(role);
+            line.setRole(switch (shape) {
+                case null -> TextRole.guess(line, system, true, true); // Engine mode
+                case LYRICS -> TextRole.Lyrics;
+                case METRONOME -> TextRole.Metronome;
+                case TEXT -> TextRole.guess(line, system, false, false);
+                default -> null; // To keep the compiler happy.
+            });
         } catch (Exception ex) {
             logger.warn("Error in guessRole for {} {}", line, ex.toString(), ex);
         }
@@ -480,7 +482,7 @@ public class TextBuilder
      */
     private boolean isManual ()
     {
-        return manualLyrics != null;
+        return shape != null;
     }
 
     //-----------------//
@@ -556,12 +558,15 @@ public class TextBuilder
 
             for (TextWord word : sortedWords) {
                 // Isolate proper word glyph from its enclosed sections
-                SortedSet<Section> wordSections =
-                        retrieveSections(word.getChars(), allSections, offset);
+                SortedSet<Section> wordSections = retrieveSections(
+                        word.getChars(),
+                        allSections,
+                        offset);
 
                 if (!wordSections.isEmpty()) {
-                    SectionCompound compound =
-                            CompoundFactory.buildCompound(wordSections, constructor);
+                    SectionCompound compound = CompoundFactory.buildCompound(
+                            wordSections,
+                            constructor);
                     Glyph rel = compound.toGlyph(null);
                     Glyph wordGlyph = glyphIndex.registerOriginal(
                             new Glyph(rel.getLeft() + dx, rel.getTop() + dy, rel.getRunTable()));
@@ -707,7 +712,7 @@ public class TextBuilder
     /**
      * Gather the provided raw lines into long lines, based on their ordinate.
      *
-     * @param rawLines collection of raw OCR'ed lines
+     * @param rawLines collection of raw OCR'd lines
      * @return resulting long lines
      */
     private List<TextLine> mergeRawLines (List<TextLine> rawLines)
@@ -902,11 +907,10 @@ public class TextBuilder
     // processGlyph //
     //--------------//
     /**
-     * Retrieve the glyph lines, among the lines OCR'ed from the glyph buffer.
+     * Retrieve the glyph lines, among the lines OCR'd from the glyph buffer.
      * <p>
      * This method is called in manual mode only.
-     * Boolean 'manualLyrics' is not null and is either true for lyrics imposed or false for lyrics
-     * forbidden.
+     * The 'shape' element is not null and is LYRICS, METRONOME or TEXT
      *
      * @param buffer     the (glyph) pixel buffer
      * @param glyphLines the glyph raw OCR lines, relative to buffer origin
@@ -918,7 +922,7 @@ public class TextBuilder
                                         Point offset)
     {
         // Pre-assign text role as lyrics?
-        if (isManual() && manualLyrics) {
+        if (shape == Shape.LYRICS) {
             for (TextLine line : glyphLines) {
                 line.setRole(TextRole.Lyrics); // Here, lyrics role is certain!
             }
@@ -941,13 +945,13 @@ public class TextBuilder
     // processSystem //
     //---------------//
     /**
-     * Retrieve the system-relevant lines, among all the lines OCR'ed at sheet level.
+     * Retrieve the system-relevant lines, among all the lines OCR'd at sheet level.
      * <p>
      * We may have lines that belong to the system above and lines that belong to the system below.
      * We try to filter them out immediately.
      *
      * @param buffer     the (sheet) pixel buffer
-     * @param sheetLines the sheet raw OCR'ed lines
+     * @param sheetLines the sheet raw OCR'd lines
      */
     public void processSystem (ByteProcessor buffer,
                                List<TextLine> sheetLines)
@@ -998,7 +1002,7 @@ public class TextBuilder
         // - Sentences of Words (or of one ChordName)
         // - LyricLines of LyricItems
         watch.start("createInters");
-        createInters();
+        createSystemInters();
 
         watch.start("numberLyricLines()");
         system.numberLyricLines();
@@ -1120,6 +1124,7 @@ public class TextBuilder
      * <li>A too small inter-word gap triggers a word merge</li>
      * <li>For lyrics, a separation character triggers a word split into syllables</li>
      * </ul>
+     * If this TextBuilder operates with a null or TEXT shape, the role of each line is guessed.
      *
      * @param longLines the lines to process
      * @return the sequence of re-composed lines
@@ -1195,8 +1200,8 @@ public class TextBuilder
                                                  Point offset)
     {
         final SortedSet<Section> wordSections = new TreeSet<>(Section.byFullAbscissa);
-        final CompoundConstructor constructor =
-                new SectionCompound.Constructor(sheet.getInterline());
+        final CompoundConstructor constructor = new SectionCompound.Constructor(
+                sheet.getInterline());
 
         final int dx = (offset != null) ? offset.x : 0;
         final int dy = (offset != null) ? offset.y : 0;
@@ -1393,11 +1398,12 @@ public class TextBuilder
     private static class Constants
             extends ConstantSet
     {
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
-        private final Constant.Boolean printWatch =
-                new Constant.Boolean(false, "Should we print out the stop watch?");
-
-        private final Scale.Fraction maxLineDy =
-                new Scale.Fraction(1.0, "Max vertical gap between two line chunks");
+        private final Scale.Fraction maxLineDy = new Scale.Fraction(
+                1.0,
+                "Max vertical gap between two line chunks");
     }
 }

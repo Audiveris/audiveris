@@ -101,7 +101,7 @@ public class SampleSheet
     /** True if image is already on disk. */
     private boolean imageSaved = true;
 
-    /** Samples gathered by shape. */
+    /** Samples gathered by logical shape. */
     private final EnumMap<Shape, ArrayList<Sample>> shapeMap = new EnumMap<>(Shape.class);
 
     /** Has this sheet been modified?. */
@@ -137,7 +137,8 @@ public class SampleSheet
         this.descriptor = descriptor;
 
         for (Sample sample : value.samples) {
-            Shape shape = sample.getShape();
+            final Shape shape = sample.getShape();
+
             if (shape == null) {
                 logger.warn("Null shape sample:{} in sheet:{}", sample, descriptor.getName());
             } else {
@@ -423,8 +424,8 @@ public class SampleSheet
      */
     void privateRemoveSample (Sample sample)
     {
-        Shape shape = sample.getShape();
-        ArrayList<Sample> list = shapeMap.get(shape);
+        final Shape shape = sample.getShape();
+        final ArrayList<Sample> list = shapeMap.get(shape);
 
         if ((list == null) || !list.contains(sample)) {
             logger.warn("{} not found in {}", sample, this);
@@ -650,13 +651,17 @@ public class SampleSheet
 
             for (Sample sample : samples) {
                 final Shape shape = sample.getShape();
-                switch (shape) {
-                    case FLAG_1_UP -> modified |= sample.renameShapeAs(Shape.FLAG_1_DOWN);
-                    case FLAG_2_UP -> modified |= sample.renameShapeAs(Shape.FLAG_2_DOWN);
-                    case FLAG_3_UP -> modified |= sample.renameShapeAs(Shape.FLAG_3_DOWN);
-                    case FLAG_4_UP -> modified |= sample.renameShapeAs(Shape.FLAG_4_DOWN);
-                    case FLAG_5_UP -> modified |= sample.renameShapeAs(Shape.FLAG_5_DOWN);
-                    default -> {}
+                if (shape == null) {
+                    logger.warn("Null shape for sample: {}", sample);
+                } else {
+                    switch (shape) {
+                        case FLAG_1_UP -> modified |= sample.renameShapeAs(Shape.FLAG_1_DOWN);
+                        case FLAG_2_UP -> modified |= sample.renameShapeAs(Shape.FLAG_2_DOWN);
+                        case FLAG_3_UP -> modified |= sample.renameShapeAs(Shape.FLAG_3_DOWN);
+                        case FLAG_4_UP -> modified |= sample.renameShapeAs(Shape.FLAG_4_DOWN);
+                        case FLAG_5_UP -> modified |= sample.renameShapeAs(Shape.FLAG_5_DOWN);
+                        default -> {}
+                    }
                 }
             }
         }

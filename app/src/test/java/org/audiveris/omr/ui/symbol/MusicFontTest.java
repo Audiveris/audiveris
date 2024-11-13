@@ -147,8 +147,12 @@ public class MusicFontTest
                         g.drawString(Integer.toHexString(i), x + 10, y + 30);
 
                         // Draw info
-                        String info =
-                                String.format(frm, r.getX(), r.getY(), r.getWidth(), r.getHeight());
+                        String info = String.format(
+                                frm,
+                                r.getX(),
+                                r.getY(),
+                                r.getWidth(),
+                                r.getHeight());
                         g.setFont(infoFont);
                         g.setColor(Color.GRAY);
                         g.drawString(info, x + 5, (y + cellHeight) - 5);

@@ -99,6 +99,11 @@ public abstract class StringUtil
         return sb.toString();
     }
 
+    public static String codesOf (String s)
+    {
+        return codesOf(s, false);
+    }
+
     //---------//
     // compare //
     //---------//
@@ -150,5 +155,33 @@ public abstract class StringUtil
         }
 
         return strList;
+    }
+
+    //--------//
+    // shrink //
+    //--------//
+    /**
+     * Report a string where the space characters have been removed.
+     *
+     * @param input the input string
+     * @return the purged string
+     */
+    public static String shrink (String input)
+    {
+        final char[] output = new char[input.length()];
+
+        int j = 0;
+        for (int i = 0; i < input.length(); i++) {
+            final char c = input.charAt(i);
+            if (c != ' ') {
+                output[j++] = c;
+            }
+        }
+
+        if (j == input.length()) {
+            return input;
+        }
+
+        return new String(output, 0, j);
     }
 }

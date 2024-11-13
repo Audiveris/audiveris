@@ -21,11 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.relation.ChordNameRelation;
+import org.audiveris.omr.sig.relation.ChordSentenceRelation;
+import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.Link;
@@ -33,6 +37,13 @@ import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
+import static org.audiveris.omr.text.TextRole.ChordName;
+import static org.audiveris.omr.text.TextRole.Direction;
+import static org.audiveris.omr.text.TextRole.EndingNumber;
+import static org.audiveris.omr.text.TextRole.EndingText;
+import static org.audiveris.omr.text.TextRole.Lyrics;
+import static org.audiveris.omr.text.TextRole.Metronome;
+import static org.audiveris.omr.text.TextRole.PartName;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.WrappedBoolean;
@@ -48,6 +59,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -85,8 +97,7 @@ public class SentenceInter
 
     /** For ordering sentences by their de-skewed ordinate. */
     public static final Comparator<SentenceInter> byOrdinate = (s1,
-                                                                s2) ->
-    {
+                                                                s2) -> {
         final Skew skew = s1.getSig().getSystem().getSkew();
 
         return Double.compare(
@@ -131,7 +142,7 @@ public class SentenceInter
                           FontInfo meanFont,
                           TextRole role)
     {
-        super((Glyph) null, bounds, null, grade);
+        super(null, bounds, null, grade);
 
         this.meanFont = meanFont;
         this.role = role;
@@ -140,7 +151,7 @@ public class SentenceInter
     /**
      * Creates a new <code>SentenceInter</code> object, meant for user handling of glyph.
      *
-     * @param role  the sentence role, if known
+     * @param role  the sentence role, if known, null otherwise
      * @param grade the interpretation quality
      */
     public SentenceInter (TextRole role,
@@ -221,7 +232,7 @@ public class SentenceInter
      */
     public int getExportedFontSize ()
     {
-        return (int) Math.rint(meanFont.pointsize * TextFont.TO_POINT);
+        return (int) Math.rint(getMeanFont().pointsize * TextFont.TO_POINT);
     }
 
     //--------------//
@@ -348,30 +359,14 @@ public class SentenceInter
     // getValue //
     //----------//
     /**
-     * Report sentence text content, built out of contained words.
+     * Report the sentence text content, built out of the contained words.
      *
      * @return text content
      */
     public String getValue ()
     {
-        StringBuilder sb = null;
-
-        // Use each word value
-        for (Inter word : getMembers()) {
-            String str = ((WordInter) word).getValue();
-
-            if (sb == null) {
-                sb = new StringBuilder(str);
-            } else {
-                sb.append(" ").append(str);
-            }
-        }
-
-        if (sb == null) {
-            return "";
-        } else {
-            return sb.toString();
-        }
+        return getMembers().stream().map(w -> ((WordInter) w).getValue()) //
+                .collect(Collectors.joining(" "));
     }
 
     //-----------//
@@ -380,13 +375,10 @@ public class SentenceInter
     @Override
     protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        sb.append(' ').append((meanFont != null) ? meanFont.getMnemo() : "NO_FONT");
-
-        sb.append(' ').append((role != null) ? role : "NO_ROLE");
-
-        return sb.toString();
+        return new StringBuilder(super.internals()) //
+                .append(' ').append((meanFont != null) ? "mFont:" + meanFont.getMnemo() : "NO_FONT") //
+                .append(' ').append((role != null) ? role : "NO_ROLE") //
+                .toString();
     }
 
     //-----------------//
@@ -410,6 +402,108 @@ public class SentenceInter
         }
 
         // TODO: should we update sentence grade?
+    }
+
+    //------//
+    // link //
+    //------//
+    /**
+     * Try to link this sentence, based on its role.
+     *
+     * @param system the related system
+     */
+    public void link (SystemInfo system)
+    {
+        try {
+            if (isVip()) {
+                logger.info("VIP link {}", this);
+            }
+
+            if (role == null) {
+                logger.info("No role for {}", this);
+                return;
+            }
+
+            final Point2D location = getLocation();
+            getBounds();
+            final Scale scale = system.getSheet().getScale();
+
+            switch (role) {
+                case Lyrics -> {
+                    // Map each syllable with proper chord, in assigned staff
+                    for (Inter wInter : getMembers()) {
+                        final LyricItemInter item = (LyricItemInter) wInter;
+                        final int profile = Math.max(item.getProfile(), system.getProfile());
+                        item.mapToChord(profile);
+                    }
+                }
+
+                case Direction -> {
+                    if (!sig.hasRelation(this, ChordSentenceRelation.class)) {
+                        // Map sentence with proper chord, preferably above for a direction
+                        final MeasureStack stack = system.getStackAt(location);
+
+                        if (stack == null) {
+                            logger.info("No measure stack for {} {}", this, getValue());
+                        } else {
+                            final int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
+                            final Rectangle box = new Rectangle(bounds);
+                            box.grow(xGapMax, 0);
+
+                            final AbstractChordInter chord = stack.getEventChord(
+                                    location,
+                                    box,
+                                    true);
+
+                            if (chord != null) {
+                                sig.addEdge(chord, this, new ChordSentenceRelation());
+                            } else {
+                                logger.info("No chord near {} {}", this, getValue());
+                            }
+                        }
+                    }
+                }
+
+                case PartName -> {
+                    // Assign part name to proper part
+                    staff = system.getClosestStaff(getCenter());
+                    part = staff.getPart();
+                    part.setName(this);
+                }
+
+                case ChordName -> {
+                    // Map each word with proper chord, in assigned staff
+                    for (Inter wInter : getMembers()) {
+                        final ChordNameInter word = (ChordNameInter) wInter;
+                        final Link link = word.lookupLink(system);
+
+                        if (link == null) {
+                            logger.info("No chord below {}", word);
+                        } else {
+                            link.applyTo(wInter);
+                        }
+                    }
+                }
+
+                case EndingNumber, EndingText -> {
+                    // Look for related ending
+                    final Link link = lookupEndingLink(system);
+
+                    if ((link != null) && (null == sig.getRelation(
+                            link.partner,
+                            this,
+                            EndingSentenceRelation.class))) {
+                        sig.addEdge(link.partner, this, link.relation);
+                    }
+                }
+            }
+
+            // Roles UnknownRole, Title, Number, Creator*, Rights stand by themselves
+            // and thus need no link.
+
+        } catch (Exception ex) {
+            logger.warn("Error in link {} {}", this, ex.toString(), ex);
+        }
     }
 
     //------------------//
@@ -521,6 +615,52 @@ public class SentenceInter
         this.role = role;
     }
 
+    //--------//
+    // unlink //
+    //--------//
+    /**
+     * Unlink the sentence, according to its role, with its related entity if any.
+     *
+     * @param oldRole the role this sentence had
+     */
+    public void unlink (TextRole oldRole)
+    {
+        try {
+            if (isVip()) {
+                logger.info("VIP unlink for {}", this);
+            }
+
+            switch (oldRole) {
+                case null -> logger.info("Null old role for {}", this);
+                default -> {}
+
+                case Lyrics -> getMembers().forEach(
+                        wInter -> sig.getRelations(wInter, ChordSyllableRelation.class).forEach(
+                                rel -> sig.removeEdge(rel)));
+
+                case Direction, Metronome -> sig.getRelations(this, ChordSentenceRelation.class)
+                        .forEach(rel -> sig.removeEdge(rel));
+
+                case PartName -> {
+                    // Look for proper part
+                    staff = sig.getSystem().getClosestStaff(getCenter());
+                    part = staff.getPart();
+                    part.setName((SentenceInter) null);
+                }
+
+                case ChordName -> getMembers().forEach(
+                        wInter -> sig.getRelations(wInter, ChordNameRelation.class).forEach(
+                                rel -> sig.removeEdge(rel)));
+
+                case EndingNumber, EndingText -> //
+                        sig.getRelations(this, EndingSentenceRelation.class).forEach(
+                                rel -> sig.removeEdge(rel));
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in unlink for {} {}", this, ex.toString(), ex);
+        }
+    }
+
     //~ Static Methods -----------------------------------------------------------------------------
 
     //--------//
@@ -529,7 +669,7 @@ public class SentenceInter
     /**
      * Create a <code>SentenceInter</code> from a TextLine.
      *
-     * @param line the OCR'ed text line
+     * @param line the OCR'd text line
      * @return the sentence inter
      */
     public static SentenceInter create (TextLine line)

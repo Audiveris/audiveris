@@ -108,7 +108,7 @@ public interface Inter
 
     /**
      * Derive (ghost) inter geometry from the provided symbol, font and current mouse location
-     * (when ghost is dragged, dropped or when created with repetitive input).
+     * (when ghost is dragged, dropped or when created via repetitive input).
      *
      * @param symbol       the dropped symbol
      * @param sheet        containing sheet
@@ -470,8 +470,8 @@ public interface Inter
     boolean overlaps (Inter that);
 
     /**
-     * Prepare the manual addition of this inter, for which only staff and bounds have
-     * been set (notably, sig is not yet set).
+     * Prepare the manual addition of this inter, for which only 'staff' and 'bounds' have
+     * been set (notably, 'sig' is not yet set).
      * <p>
      * Build <b>all</b> the UI tasks to insert this inter: the addition task itself, together with
      * related tasks if any (other additions, links, ...).

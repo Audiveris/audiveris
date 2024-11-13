@@ -132,7 +132,7 @@ public abstract class Colors
     public static final Color RUBBER_RULE = new Color(255, 0, 0, 100);
 
     // Colors for physical score view
-    /** frame: barlines, brackets, clefs, markers, time signatures. */
+    /** frame: bar-lines, brackets, clefs, markers, time signatures. */
     public static final Color SCORE_FRAME = Color.BLUE;
 
     /** frame: heads, beams, flags, rests, augmentation dots. */
@@ -188,6 +188,9 @@ public abstract class Colors
 
     /** Warping points. */
     public static final Color WARP_POINT = Color.RED;
+
+    /** Background of a MusicPane. */
+    public static final Color MUSIC_PANE_BACKGROUND = new Color(255, 255, 240);
 
     //~ Constructors -------------------------------------------------------------------------------
 

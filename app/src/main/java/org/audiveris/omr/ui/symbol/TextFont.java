@@ -23,6 +23,8 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.util.param.ConstantBasedParam;
 import org.audiveris.omr.util.param.Param;
@@ -30,10 +32,7 @@ import org.audiveris.omr.util.param.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.font.GlyphVector;
-import java.awt.geom.Rectangle2D;
 
 /**
  * Class <code>TextFont</code> is meant to simplify the use of text font for pieces of text
@@ -73,7 +72,7 @@ public class TextFont
     }
 
     /**
-     * Creates a font based on OCR font information.
+     * Creates a new <code>TextFont</code> based on OCR-based font information.
      *
      * @param info OCR-based font information
      */
@@ -87,7 +86,7 @@ public class TextFont
     }
 
     /**
-     * Creates a new TextFont object of provided point size, with default font name
+     * Creates a new <code>TextFont</code> object of provided point size, with default font name
      * and plain style.
      *
      * @param size the point size of the <code>Font</code>
@@ -98,7 +97,7 @@ public class TextFont
     }
 
     /**
-     * Creates a new TextFont object.
+     * Creates a new <code>TextFont</code> object.
      *
      * @param fontName the font name. This can be a font face name or a font
      *                 family name, and may represent either a logical font or
@@ -123,77 +122,10 @@ public class TextFont
     @Override
     public TextFont deriveFont (float pointSize)
     {
-        final Font font = super.deriveFont(pointSize);
-        return new TextFont(font);
+        return new TextFont(super.deriveFont(pointSize));
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
-
-    //-----------------//
-    // computeFontSize //
-    //-----------------//
-    /**
-     * Convenient method to compute a font size using a string content and dimension.
-     *
-     * @param content  the string value
-     * @param fontInfo OCR-based font information
-     * @param dim      string dimension in pixels
-     * @return the computed font size
-     */
-    public static Float computeFontSize (String content,
-                                         FontInfo fontInfo,
-                                         Dimension dim)
-    {
-        if (content == null) {
-            return null;
-        }
-
-        Font font = new TextFont(fontInfo);
-        float fontSize = font.getSize2D();
-        GlyphVector glyphVector = font.createGlyphVector(frc, content);
-        Rectangle2D basicRect = glyphVector.getVisualBounds();
-
-        float ratio;
-        if (dim.width >= dim.height) {
-            ratio = dim.width / (float) basicRect.getWidth();
-        } else {
-            ratio = dim.height / (float) basicRect.getHeight();
-        }
-
-        // To protect against crazy OCR bounds
-        final float maxRatio = constants.maxFontResizeRatio.getValue().floatValue();
-        logger.debug("font resize ratio: {} {}", ratio, content);
-        ratio = Math.min(maxRatio, ratio);
-
-        return fontSize * ratio;
-    }
-
-    //-----------------//
-    // computeFontSize //
-    //-----------------//
-    /**
-     * Convenient method to compute a font size using a string content and width.
-     *
-     * @param content  the string value
-     * @param fontInfo OCR-based font information
-     * @param width    string width in pixels
-     * @return the computed font size
-     */
-    public static Float computeFontSize (String content,
-                                         FontInfo fontInfo,
-                                         int width)
-    {
-        if (content == null) {
-            return null;
-        }
-
-        Font font = new TextFont(fontInfo);
-        float fontSize = font.getSize2D();
-        GlyphVector glyphVector = font.createGlyphVector(frc, content);
-        Rectangle2D basicRect = glyphVector.getVisualBounds();
-
-        return fontSize * (width / (float) basicRect.getWidth());
-    }
 
     //--------//
     // create //
@@ -230,6 +162,20 @@ public class TextFont
         return getTextFont(family, pointSize);
     }
 
+    //------------------//
+    // getCurrentFamily //
+    //------------------//
+    /**
+     * Report the text family used in the sheet currently displayed.
+     *
+     * @return the current sheet text family, null if no sheet is displayed
+     */
+    public static TextFamily getCurrentFamily ()
+    {
+        final SheetStub stub = StubsController.getInstance().getSelectedStub();
+        return (stub != null) ? stub.getTextFamily() : null;
+    }
+
     //-------------//
     // getTextFont //
     //-------------//
@@ -254,7 +200,6 @@ public class TextFont
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Enum<TextFamily> defaultTextFamily = new Constant.Enum<>(
                 TextFamily.class,
                 TextFamily.SansSerif,
@@ -268,9 +213,5 @@ public class TextFont
                 "points",
                 10,
                 "Default font point size for texts");
-
-        private final Constant.Ratio maxFontResizeRatio = new Constant.Ratio(
-                1.3,
-                "Maximum font increase ratio when recomputed");
     }
 }

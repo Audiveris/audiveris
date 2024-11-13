@@ -30,11 +30,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
@@ -47,6 +51,7 @@ import java.net.URL;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Class <code>OmrFont</code> is meant to simplify the use of rendering symbols when using a
@@ -63,21 +68,28 @@ public abstract class OmrFont
 
     private static final Logger logger = LoggerFactory.getLogger(OmrFont.class);
 
-    /** Ratio to be applied for tiny symbols. */
+    /** Ratio to be applied for tiny symbols (as used in shape buttons). */
     public static final double RATIO_TINY = constants.tinyRatio.getValue();
 
     /** Ratio to be applied for small shapes. */
     public static final double RATIO_SMALL = constants.smallRatio.getValue();
 
-    /** AffineTransform for tiny displays. */
-    public static final AffineTransform TRANSFORM_TINY = AffineTransform.getScaleInstance(
-            RATIO_TINY,
-            RATIO_TINY);
+    /** Ratio to be applied for metronome shapes. */
+    public static final double RATIO_METRO = constants.metroRatio.getValue();
+
+    //    /** AffineTransform for tiny displays. */
+    //    public static final AffineTransform TRANSFORM_TINY =
+    //            AffineTransform.getScaleInstance(RATIO_TINY, RATIO_TINY);
 
     /** AffineTransform for small shapes. */
     public static final AffineTransform TRANSFORM_SMALL = AffineTransform.getScaleInstance(
             RATIO_SMALL,
             RATIO_SMALL);
+
+    /** AffineTransform for metronome shapes. */
+    public static final AffineTransform TRANSFORM_METRO = AffineTransform.getScaleInstance(
+            RATIO_METRO,
+            RATIO_METRO);
 
     /** Default color for images. */
     public static final Color defaultImageColor = Color.BLACK;
@@ -86,9 +98,9 @@ public abstract class OmrFont
     public static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
     /**
-     * Cache for all created fonts (music and text), based on name and size.
+     * Cache for all created fonts (music and text), based on name and point size.
      * <p>
-     * Only PLAIN style is cached.
+     * Only the PLAIN style is cached.
      * If a different style is desired, the caller must derive it from the cached plain one.
      */
     private static final Map<String, Map<Integer, Font>> fontCache = new HashMap<>();
@@ -117,6 +129,67 @@ public abstract class OmrFont
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-------------//
+    // computeSize //
+    //-------------//
+    /**
+     * Compute the point size so that the content would fit the target dimension.
+     *
+     * @param content the provided content string
+     * @param dim     the target dimension
+     * @return the best font size
+     */
+    public int computeSize (String content,
+                            Dimension dim)
+    {
+        Objects.requireNonNull(content, "OmrFont.computeSize. Content is null");
+        Objects.requireNonNull(content, "OmrFont.computeSize. Dimension is null");
+
+        final GlyphVector glyphVector = createGlyphVector(frc, content);
+        final Rectangle2D rect = glyphVector.getVisualBounds();
+        final float ratio = (dim.width >= dim.height) //
+                ? dim.width / (float) rect.getWidth()
+                : dim.height / (float) rect.getHeight();
+        final float s2d = getSize2D();
+        final int sz = (int) Math.rint(ratio * s2d);
+        logger.debug(
+                "OmrFont.computeSize {} f: {} dim: {} ratio: {} size: {} content: {}",
+                getFontName(),
+                s2d,
+                dim,
+                ratio,
+                sz,
+                content);
+        return sz;
+    }
+
+    //-----------------//
+    // computeLocation //
+    //-----------------//
+    /**
+     * Compute the baseline location, based on content and bounds.
+     *
+     * @param content the provided content string
+     * @param bounds  the underlying glyph bounding box
+     * @return the computed location
+     */
+    public Point computeLocation (String content,
+                                  Rectangle bounds)
+    {
+        Objects.requireNonNull(content, "OmrFont.computeLocation. Content is null");
+        Objects.requireNonNull(content, "OmrFont.computeLocation. Bounds are null");
+
+        final GlyphVector glyphVector = createGlyphVector(frc, content);
+        final Rectangle2D rect = glyphVector.getVisualBounds();
+        final double rectDy = rect.getY() / rect.getHeight();
+        final double ratio = (bounds.width >= bounds.height) //
+                ? bounds.width / rect.getWidth()
+                : bounds.height / rect.getHeight();
+        final int y = bounds.y + (int) Math.rint(rectDy * ratio);
+
+        return new Point(bounds.x, y);
+    }
 
     //----------------//
     // getLineMetrics //
@@ -154,7 +227,7 @@ public abstract class OmrFont
     public TextLayout layout (String str,
                               AffineTransform fat)
     {
-        Font font = (fat == null) ? this : this.deriveFont(fat);
+        final Font font = (fat == null) ? this : this.deriveFont(fat);
 
         return new TextLayout(str, font, frc);
     }
@@ -190,7 +263,7 @@ public abstract class OmrFont
      *
      * @param fontName font name (e.g. "Finale Jazz")
      * @param fileName file name (e.g. "FinaleJazz.otf")
-     * @param size     the desired size for this font
+     * @param size     the desired point size for this font
      * @return the cached or created font
      */
     private static Font createFont (String fontName,
@@ -246,7 +319,7 @@ public abstract class OmrFont
      * Try to retrieve the font defined by its name and size from the font cache.
      *
      * @param fontName font name (family name actually)
-     * @param size     desired font size
+     * @param size     desired font point size
      * @return the cached font or null
      */
     private static Font getCachedFont (String fontName,
@@ -312,12 +385,14 @@ public abstract class OmrFont
             // Try to derive from another size
             final Font any = getCachedFontAnySize(fontName);
 
-            if (any != null)
+            if (any != null) {
                 font = any.deriveFont((float) size);
+            }
 
-            // We need to create it
-            if (font == null)
+            if (font == null) {
+                // We need to create it
                 font = createFont(fontName, fileName, size);
+            }
         }
 
         return (style == Font.PLAIN) ? font : font.deriveFont(style);
@@ -350,7 +425,7 @@ public abstract class OmrFont
                     g,
                     (float) (location.getX() + toTextOrigin.getX()),
                     (float) (location.getY() + toTextOrigin.getY()));
-        } catch (ConcurrentModificationException ignored) {
+        } catch (ConcurrentModificationException ignored) { //
         } catch (Exception ex) {
             logger.warn("Cannot paint at " + location, ex);
         }
@@ -364,6 +439,9 @@ public abstract class OmrFont
     private static class Constants
             extends ConstantSet
     {
+        private final Constant.Ratio metroRatio = new Constant.Ratio(
+                0.5,
+                "Ratio applied to metronome note shapes");
 
         private final Constant.Ratio smallRatio = new Constant.Ratio(
                 0.67,

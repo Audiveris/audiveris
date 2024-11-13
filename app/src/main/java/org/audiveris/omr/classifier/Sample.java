@@ -50,29 +50,32 @@ public class Sample
 
     private static final Logger logger = LoggerFactory.getLogger(Sample.class);
 
-    /** For comparing Sample instances by shape. */
-    public static final Comparator<Sample> byShape = (Sample s1,
-                                                      Sample s2) -> Integer.compare(
-                                                              s1.getShape().ordinal(),
-                                                              s2.getShape().ordinal());
+    /** For comparing Sample instances by (logical) shape. */
+    public static final Comparator<Sample> byShape = (s1,
+                                                      s2) -> //
+    Integer.compare(s1.getShape().ordinal(), s2.getShape().ordinal());
+
+    /** For comparing Sample instances by physical shape. */
+    public static final Comparator<Sample> byPhysicalShape = (s1,
+                                                              s2) -> //
+    Integer.compare(
+            s1.getShape().getPhysicalShape().ordinal(),
+            s2.getShape().getPhysicalShape().ordinal());
 
     /** For comparing Sample instances by normalized width. */
-    public static final Comparator<Sample> byNormalizedWidth = (Sample s1,
-                                                                Sample s2) -> Double.compare(
-                                                                        s1.getNormalizedWidth(),
-                                                                        s2.getNormalizedWidth());
+    public static final Comparator<Sample> byNormalizedWidth = (s1,
+                                                                s2) -> //
+    Double.compare(s1.getNormalizedWidth(), s2.getNormalizedWidth());
 
     /** For comparing Sample instances by normalized height. */
-    public static final Comparator<Sample> byNormalizedHeight = (Sample s1,
-                                                                 Sample s2) -> Double.compare(
-                                                                         s1.getNormalizedHeight(),
-                                                                         s2.getNormalizedHeight());
+    public static final Comparator<Sample> byNormalizedHeight = (s1,
+                                                                 s2) -> //
+    Double.compare(s1.getNormalizedHeight(), s2.getNormalizedHeight());
 
     /** For comparing Sample instances by normalized weight. */
-    public static final Comparator<Sample> byNormalizedWeight = (Sample s1,
-                                                                 Sample s2) -> Double.compare(
-                                                                         s1.getNormalizedWeight(),
-                                                                         s2.getNormalizedWeight());
+    public static final Comparator<Sample> byNormalizedWeight = (s1,
+                                                                 s2) -> //
+    Double.compare(s1.getNormalizedWeight(), s2.getNormalizedWeight());
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -340,7 +343,7 @@ public class Sample
             return null;
         }
 
-        Shape physicalShape = shape.getPhysicalShape();
+        final Shape physicalShape = shape.getPhysicalShape();
 
         if (physicalShape.isTrainable() && (physicalShape != Shape.NOISE)) {
             return physicalShape;

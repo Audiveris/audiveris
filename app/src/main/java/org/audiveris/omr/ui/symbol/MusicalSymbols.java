@@ -118,7 +118,7 @@ public class MusicalSymbols
             ///case F_CLEF_8VA -> ints(0xE065);
             ///case F_CLEF_8VB -> ints(0xE064);
 
-            case GRACE_NOTE -> ints(0xF03B);
+            case EIGHTH_set, GRACE_NOTE, METRO_EIGHTH -> ints(0xF03B);
             case GRACE_NOTE_DOWN -> ints(0xF03A);
             case GRACE_NOTE_SLASH -> ints(0xF0C9);
             ///case GRACE_NOTE_SLASH_DOWN -> ints(0xF0C9); // Use vertical mirror of GRACE_NOTE_SLASH?

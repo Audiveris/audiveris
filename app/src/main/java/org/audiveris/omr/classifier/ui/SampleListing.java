@@ -248,8 +248,8 @@ class SampleListing
      */
     private void sortBy (Comparator<Sample> comparator)
     {
-        final Sample currentSample = (Sample) browser.getSampleController().getGlyphService()
-                .getSelectedEntity();
+        final Sample currentSample =
+                (Sample) browser.getSampleController().getGlyphService().getSelectedEntity();
         final ShapePane shapePane = getShapePane(currentSample.getShape());
         final List<Sample> samples = Collections.list(shapePane.model.elements());
         Collections.sort(samples, comparator);
@@ -279,6 +279,7 @@ class SampleListing
             }
         }
 
+        Collections.sort(allSamples, Sample.byShape);
         populateWith(allSamples);
     }
 
@@ -600,7 +601,7 @@ class SampleListing
         ShapePane (Shape shape,
                    List<Sample> samples)
         {
-            super(shape + " (" + samples.size() + ")");
+            super(fullName(shape) + " (" + samples.size() + ")");
             this.shape = shape;
             setLayout(new BorderLayout());
 
@@ -643,9 +644,8 @@ class SampleListing
             add(list, BorderLayout.CENTER);
 
             // Support for delete key
-            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                    KeyStroke.getKeyStroke("DELETE"),
-                    "RemoveAction");
+            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                    .put(KeyStroke.getKeyStroke("DELETE"), "RemoveAction");
             getActionMap().put("RemoveAction", new RemoveAction());
 
             // ShapePane popup inherited from scrollablePanel parent
@@ -655,6 +655,17 @@ class SampleListing
             // list popup inherited from ShapePane parent
             list.setInheritsPopupMenu(true);
             list.setComponentPopupMenu(null);
+        }
+
+        private static String fullName (Shape shape)
+        {
+            final Shape physical = shape.getPhysicalShape();
+
+            if (physical == shape) {
+                return shape.name();
+            }
+
+            return physical + " / " + shape;
         }
 
         public Shape getShape ()
@@ -747,8 +758,8 @@ class SampleListing
         public void actionPerformed (ActionEvent e)
         {
             // To avoid repetitive grade computing, we save grade into GradedSample entities
-            final Sample currentSample = (Sample) browser.getSampleController().getGlyphService()
-                    .getSelectedEntity();
+            final Sample currentSample =
+                    (Sample) browser.getSampleController().getGlyphService().getSelectedEntity();
             final ShapePane shapePane = getShapePane(currentSample.getShape());
             final List<GradedSample> list = new ArrayList<>();
 
@@ -756,9 +767,8 @@ class SampleListing
 
             for (Enumeration<Sample> en = shapePane.model.elements(); en.hasMoreElements();) {
                 Sample sample = en.nextElement();
-                Evaluation[] evals = classifier.getNaturalEvaluations(
-                        sample,
-                        sample.getInterline());
+                Evaluation[] evals =
+                        classifier.getNaturalEvaluations(sample, sample.getInterline());
                 double grade = evals[sample.getShape().ordinal()].grade;
                 list.add(new GradedSample(sample, grade));
             }

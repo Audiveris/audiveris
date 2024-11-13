@@ -60,11 +60,7 @@ public class EditingTask
         super(editor.getInter().getSig(), editor.getInter(), null, links, "edit");
         this.editor = editor;
 
-        if (unlinks != null) {
-            this.unlinks = new ArrayList<>(unlinks);
-        } else {
-            this.unlinks = Collections.emptySet();
-        }
+        this.unlinks = (unlinks != null) ? new ArrayList<>(unlinks) : Collections.emptySet();
     }
 
     //~ Methods ------------------------------------------------------------------------------------

@@ -280,9 +280,9 @@ public class FermataInter
             return null;
         }
 
-        final Collection<AbstractChordInter> chords =
-                (shape == Shape.FERMATA_BELOW) ? stack.getStandardChordsAbove(center, bounds)
-                        : stack.getStandardChordsBelow(center, bounds);
+        final Collection<AbstractChordInter> chords = (shape == Shape.FERMATA_BELOW) //
+                ? stack.getStandardChordsAbove(center, bounds)
+                : stack.getStandardChordsBelow(center, bounds);
 
         // Look for a suitable chord related to this fermata
         AbstractChordInter chord = AbstractChordInter.getClosestChord(chords, center);

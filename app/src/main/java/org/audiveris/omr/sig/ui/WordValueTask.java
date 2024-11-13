@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.sig.inter.WordInter;
 
 /**
- * Class <code>WordValueTask</code> handle the text value update of a word.
+ * Class <code>WordValueTask</code> handles the text value update of a word.
  *
  * @author Hervé Bitteur
  */

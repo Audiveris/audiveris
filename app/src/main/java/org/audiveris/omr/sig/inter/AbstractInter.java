@@ -435,10 +435,8 @@ public abstract class AbstractInter
         frozen = true;
 
         // Freeze members if any
-        if (this instanceof InterEnsemble) {
-            InterEnsemble ens = (InterEnsemble) this;
-
-            for (Inter member : ens.getMembers()) {
+        if (this instanceof InterEnsemble ensemble) {
+            for (Inter member : ensemble.getMembers()) {
                 member.freeze();
             }
         }
@@ -1002,7 +1000,7 @@ public abstract class AbstractInter
         sb.append(")");
 
         if (staff != null) {
-            sb.append(" stf:").append(staff.getId());
+            sb.append(" staff:").append(staff.getId());
         }
 
         if (shape != null) {
@@ -1150,9 +1148,8 @@ public abstract class AbstractInter
             }
 
             for (Inter thisMember : members) {
-                if (thisMember.overlaps(that) && that.overlaps(thisMember) && sig.noSupport(
-                        thisMember,
-                        that)) {
+                if (thisMember.overlaps(that) && that.overlaps(thisMember)
+                        && sig.noSupport(thisMember, that)) {
                     return true;
                 }
             }
@@ -1213,8 +1210,8 @@ public abstract class AbstractInter
     {
         final SystemInfo system = staff.getSystem();
 
-        return Arrays.asList(
-                new AdditionTask(system.getSig(), this, getBounds(), searchLinks(system)));
+        return Arrays
+                .asList(new AdditionTask(system.getSig(), this, getBounds(), searchLinks(system)));
     }
 
     //---------//

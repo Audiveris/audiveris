@@ -378,10 +378,9 @@ public class InterDnd
     {
         final int staffInterline = staff.getSpecificInterline();
         final MusicFamily family = sheet.getStub().getMusicFamily();
-        final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape())) ? MusicFont.getHeadFont(
-                family,
-                sheet.getScale(),
-                staffInterline) : MusicFont.getBaseFont(family, staffInterline);
+        final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape())) //
+                ? MusicFont.getHeadFont(family, sheet.getScale(), staffInterline)
+                : MusicFont.getBaseFont(family, staffInterline);
 
         return ghost.deriveFrom(symbol, sheet, font, location);
     }

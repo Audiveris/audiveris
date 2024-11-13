@@ -164,6 +164,28 @@ public abstract class GeoUtil
         return d;
     }
 
+    //---------//
+    // rounded //
+    //---------//
+    /**
+     * Report a rectangle with integer coordinates
+     *
+     * @param r provided Rectangle2D instance
+     * @return Rectangle instance
+     */
+    public static Rectangle rounded (Rectangle2D r)
+    {
+        if (r == null) {
+            return null;
+        }
+
+        return new Rectangle(
+                (int) Math.rint(r.getX()),
+                (int) Math.rint(r.getY()),
+                (int) Math.rint(r.getWidth()),
+                (int) Math.rint(r.getHeight()));
+    }
+
     //-------//
     // touch //
     //-------//

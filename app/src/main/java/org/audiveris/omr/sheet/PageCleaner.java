@@ -33,6 +33,7 @@ import org.audiveris.omr.sig.inter.AbstractNumberInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.BeatUnitInter;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.BracketConnectorInter;
 import org.audiveris.omr.sig.inter.BracketInter;
@@ -384,6 +385,12 @@ public abstract class PageCleaner
     }
 
     // No BeamGroup
+
+    @Override
+    public void visit (BeatUnitInter inter)
+    {
+        processGlyph(inter.getGlyph());
+    }
 
     @Override
     public void visit (BraceInter inter)

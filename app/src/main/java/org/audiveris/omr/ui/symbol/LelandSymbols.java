@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                   B r a v u r a S y m b o l s                                  //
+//                                    L e l a n d S y m b o l s                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2024. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -25,11 +25,11 @@ import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
 
 /**
- * Class <code>BravuraSymbols</code> is the most complete set of symbols.
+ * Class <code>LelandSymbols</code>
  *
  * @author Hervé Bitteur
  */
-public class BravuraSymbols
+public class LelandSymbols
         extends Symbols
 {
     //~ Methods ------------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ public class BravuraSymbols
     @Override
     protected MusicFamily family ()
     {
-        return MusicFamily.Bravura;
+        return MusicFamily.Leland;
     }
 
     @Override
@@ -45,20 +45,20 @@ public class BravuraSymbols
     {
         return switch (shape) {
             case ACCENT -> ints(0xE4A0);
-            case ARPEGGIATO -> ints(0xE63C);
+            //            case ARPEGGIATO -> ints(0xE63C);
             case AUGMENTATION_DOT -> ints(0xE044);
 
-            case BACK_TO_BACK_REPEAT_SIGN -> ints(0xE042);
+            //            case BACK_TO_BACK_REPEAT_SIGN -> ints(0xE042);
             case BRACE -> ints(0xE000);
             case BRACKET -> ints(0xE002);
             case BRACKET_LOWER_SERIF -> ints(0xE004);
             case BRACKET_UPPER_SERIF -> ints(0xE003);
             case BREATH_MARK -> ints(0xE4CE);
             case BREVE -> ints(0xE0A0);
-            case BREVE_CROSS -> ints(0xE0A6);
-            case BREVE_DIAMOND -> ints(0xE0D7);
-            case BREVE_TRIANGLE_DOWN -> ints(0xE0C3);
-            case BREVE_CIRCLE_X -> ints(0xE0B0);
+            //            case BREVE_CROSS -> ints(0xE0A6);
+            //            case BREVE_DIAMOND -> ints(0xE0D7);
+            //            case BREVE_TRIANGLE_DOWN -> ints(0xE0C3);
+            //            case BREVE_CIRCLE_X -> ints(0xE0B0);
             case BREVE_REST -> ints(0xE4E2);
 
             case CAESURA -> ints(0xE4D1);
@@ -68,15 +68,15 @@ public class BravuraSymbols
             case CODA -> ints(0xE048);
             case CRESCENDO -> ints(0xE53E);
 
-            case DAL_SEGNO -> ints(0xE045);
-            case DA_CAPO -> ints(0xE046);
+            //            case DAL_SEGNO -> ints(0xE045);
+            //            case DA_CAPO -> ints(0xE046);
             case DIMINUENDO -> ints(0xE53F);
             case DOT_set -> ints(0xE044);
             case DOTTED_HALF_NOTE_UP, METRO_DOTTED_HALF -> ints(0xE1D3, 0x0020, 0xE1E7);
             case DOTTED_QUARTER_NOTE_UP, METRO_DOTTED_QUARTER -> ints(0xE1D5, 0x0020, 0xE1E7);
             case DOTTED_EIGHTH_NOTE_UP, METRO_DOTTED_EIGHTH -> ints(0xE1D7, 0xE1E7);
             case DOTTED_SIXTEENTH_NOTE_UP, METRO_DOTTED_SIXTEENTH -> ints(0xE1D9, 0xE1E7);
-            case DOUBLE_BARLINE -> ints(0xE031);
+            //            case DOUBLE_BARLINE -> ints(0xE031);
             case DOUBLE_FLAT -> ints(0xE264);
             case DOUBLE_SHARP -> ints(0xE263);
             case DYNAMICS_F -> ints(0xE522);
@@ -109,7 +109,7 @@ public class BravuraSymbols
 
             case FERMATA -> ints(0xE4C0);
             case FERMATA_BELOW -> ints(0xE4C1);
-            case FINAL_BARLINE -> ints(0xE032);
+            //            case FINAL_BARLINE -> ints(0xE032);
             case FLAG_1 -> ints(0xE240);
             case FLAG_1_DOWN -> ints(0xE241);
             case FLAG_2 -> ints(0xE242);
@@ -140,31 +140,31 @@ public class BravuraSymbols
 
             case KEY_CANCEL -> ints(0xE261);
 
-            case LEDGER -> ints(0xE022);
-            case LEFT_REPEAT_SIGN -> ints(0xE040);
+            //            case LEDGER -> ints(0xE022);
+            //            case LEFT_REPEAT_SIGN -> ints(0xE040);
             case LONG_REST -> ints(0xE4E1);
 
             case MORDENT -> ints(0xE56C);
             case MORDENT_INVERTED -> ints(0xE56D); // With bar
-            case MULTIPLE_REST -> ints(0xE4EE);
-            case MULTIPLE_REST_LEFT -> ints(0xE4EF);
-            case MULTIPLE_REST_MIDDLE -> ints(0xE4F0);
-            case MULTIPLE_REST_RIGHT -> ints(0xE4F1);
+            //            case MULTIPLE_REST -> ints(0xE4EE);
+            //            case MULTIPLE_REST_LEFT -> ints(0xE4EF);
+            //            case MULTIPLE_REST_MIDDLE -> ints(0xE4F0);
+            //            case MULTIPLE_REST_RIGHT -> ints(0xE4F1);
 
             case NATURAL -> ints(0xE261);
-            case NON_DRAGGABLE -> ints(0xEA94, 0xEA93);
+            //            case NON_DRAGGABLE -> ints(0xEA94, 0xEA93);
 
             case NOTEHEAD_BLACK -> ints(0xE0A4);
             case NOTEHEAD_CROSS -> ints(0xE0A9);
             case NOTEHEAD_DIAMOND_FILLED -> ints(0xE0DB);
-            case NOTEHEAD_TRIANGLE_DOWN_FILLED -> ints(0xE0C7);
+            //            case NOTEHEAD_TRIANGLE_DOWN_FILLED -> ints(0xE0C7);
             case NOTEHEAD_CIRCLE_X -> ints(0xE0B3);
 
             case NOTEHEAD_VOID -> ints(0xE0A3);
-            case NOTEHEAD_CROSS_VOID -> ints(0xE0A8);
+            //            case NOTEHEAD_CROSS_VOID -> ints(0xE0A8);
             case NOTEHEAD_DIAMOND_VOID -> ints(0xE0D9);
-            case NOTEHEAD_TRIANGLE_DOWN_VOID -> ints(0xE0C5);
-            case NOTEHEAD_CIRCLE_X_VOID -> ints(0xE0B2);
+            //            case NOTEHEAD_TRIANGLE_DOWN_VOID -> ints(0xE0C5);
+            //            case NOTEHEAD_CIRCLE_X_VOID -> ints(0xE0B2);
 
             case ONE_16TH_REST -> ints(0xE4E7);
             case ONE_32ND_REST -> ints(0xE4E8);
@@ -176,9 +176,9 @@ public class BravuraSymbols
             case PEDAL_UP_MARK -> ints(0xE655);
             case PERCUSSION_CLEF -> ints(0xE069);
 
-            case PLAYING_OPEN -> ints(0xE7F8);
-            case PLAYING_HALF_OPEN -> ints(0xE7F7);
-            case PLAYING_CLOSED -> ints(0xE7F5);
+            //            case PLAYING_OPEN -> ints(0xE7F8);
+            //            case PLAYING_HALF_OPEN -> ints(0xE7F7);
+            //            case PLAYING_CLOSED -> ints(0xE7F5);
 
             case QUARTER_NOTE_DOWN -> ints(0xE1D6);
             case QUARTER_NOTE_UP, METRO_QUARTER -> ints(0xE1D5);
@@ -190,21 +190,21 @@ public class BravuraSymbols
             case REPEAT_ONE_BAR -> ints(0xE500);
             case REPEAT_TWO_BARS -> ints(0xE501);
             case REPEAT_FOUR_BARS -> ints(0xE502);
-            case REVERSE_FINAL_BARLINE -> ints(0xE033);
-            case RIGHT_REPEAT_SIGN -> ints(0xE041);
+            //            case REVERSE_FINAL_BARLINE -> ints(0xE033);
+            //            case RIGHT_REPEAT_SIGN -> ints(0xE041);
 
             case SEGNO -> ints(0xE047);
             case SHARP -> ints(0xE262);
             case SIXTEENTH_NOTE_UP, METRO_SIXTEENTH -> ints(0xE1D9);
             case STACCATISSIMO -> ints(0xE4A6);
             case STACCATO -> ints(0xE4A2);
-            case STAFF_LINES -> ints(0xE01A);
-            case STEM -> ints(0xE210);
+            //            case STAFF_LINES -> ints(0xE01A);
+            //            case STEM -> ints(0xE210);
             case STRONG_ACCENT -> ints(0xE4AC);
 
             case TENUTO -> ints(0xE4A4);
-            case THICK_BARLINE -> ints(0xE034);
-            case THIN_BARLINE -> ints(0xE030);
+            //            case THICK_BARLINE -> ints(0xE034);
+            //            case THIN_BARLINE -> ints(0xE030);
             case TIME_ZERO -> ints(0xE080);
             case TIME_ONE -> ints(0xE081);
             case TIME_TWO -> ints(0xE082);
@@ -231,10 +231,10 @@ public class BravuraSymbols
             case VENTIDUESIMA -> ints(0xE517);
 
             case WHOLE_NOTE, METRO_WHOLE -> ints(0xE0A2);
-            case WHOLE_NOTE_CROSS -> ints(0xE0A7);
+            //            case WHOLE_NOTE_CROSS -> ints(0xE0A7);
             case WHOLE_NOTE_DIAMOND -> ints(0xE0D8);
-            case WHOLE_NOTE_TRIANGLE_DOWN -> ints(0xE0C4);
-            case WHOLE_NOTE_CIRCLE_X -> ints(0xE0B1);
+            //            case WHOLE_NOTE_TRIANGLE_DOWN -> ints(0xE0C4);
+            //            case WHOLE_NOTE_CIRCLE_X -> ints(0xE0B1);
             case WHOLE_REST -> ints(0xE4E3);
 
             default -> null;

@@ -164,28 +164,29 @@ public class LinksStep
 
         for (UITask task : seq.getTasks()) {
             if (task instanceof InterTask interTask) {
-                Inter inter = interTask.getInter();
-                SystemInfo system = inter.getSig().getSystem();
-                Class interClass = inter.getClass();
+                final Inter inter = interTask.getInter();
 
-                if (isImpactedBy(interClass, forTexts)) {
-                    if (inter instanceof LyricItemInter item) {
+                if (isImpactedBy(inter.getClass(), forTexts)) {
+                    final SystemInfo system = inter.getSig().getSystem();
+
+                    switch (inter) {
+                    case LyricItemInter item -> {
                         if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
                             final int profile = Math.max(item.getProfile(), system.getProfile());
                             item.mapToChord(profile);
                         }
-                    } else if (inter instanceof SentenceInter sentence) {
-                        SymbolsLinker linker = new SymbolsLinker(system);
-
+                    }
+                    case SentenceInter sentence -> {
                         if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
-                            linker.linkOneSentence(sentence);
+                            sentence.link(system);
                         } else if (task instanceof SentenceRoleTask roleTask) {
-                            linker.unlinkOneSentence(
-                                    sentence,
-                                    (opKind == OpKind.UNDO) ? roleTask.getNewRole()
-                                            : roleTask.getOldRole());
-                            linker.linkOneSentence(sentence);
+                            sentence.unlink((opKind == OpKind.UNDO) //
+                                    ? roleTask.getNewRole()
+                                    : roleTask.getOldRole());
+                            sentence.link(system);
                         }
+                    }
+                    default -> {}
                     }
                 }
             }

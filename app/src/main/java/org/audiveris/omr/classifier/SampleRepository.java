@@ -265,9 +265,9 @@ public class SampleRepository
                            SampleSheet sampleSheet,
                            Double pitch)
     {
-        shape = Sample.getRecordableShape(shape);
+        final Shape physicalShape = Sample.getRecordableShape(shape);
 
-        if (shape != null) {
+        if (physicalShape != null) {
             final Sample sample = new Sample(glyph, interline, shape, pitch);
             addSample(sample, sampleSheet);
         }
@@ -480,8 +480,7 @@ public class SampleRepository
         Collections.sort(
                 allSamples,
                 (Sample s1,
-                 Sample s2) ->
-                {
+                 Sample s2) -> {
                     int comp = Integer.compare(s1.getWeight(), s2.getWeight());
 
                     if (comp != 0) {
@@ -518,7 +517,7 @@ public class SampleRepository
                 }
 
                 if ((s.getInterline() == interline) && s.getRunTable().equals(runTable)) {
-                    if (s.getShape() != sample.getShape()) {
+                    if (s.getShape().getPhysicalShape() != sample.getShape().getPhysicalShape()) {
                         logger.warn(
                                 "Conflicting shapes between {}/{} and {}/{}",
                                 getSheetName(sample),
@@ -566,8 +565,7 @@ public class SampleRepository
         Collections.sort(
                 fontSamples,
                 (Sample s1,
-                 Sample s2) ->
-                {
+                 Sample s2) -> {
                     int comp = Integer.compare(s1.getWeight(), s2.getWeight());
 
                     if (comp != 0) {
@@ -605,7 +603,7 @@ public class SampleRepository
                 }
 
                 if ((s.getInterline() == interline) && s.getRunTable().equals(runTable)) {
-                    if (s.getShape() != sample.getShape()) {
+                    if (s.getShape().getPhysicalShape() != sample.getShape().getPhysicalShape()) {
                         logger.warn(
                                 "Conflicting shapes between {}/{} and {}/{}",
                                 getSheetName(sample),
@@ -786,8 +784,7 @@ public class SampleRepository
                         }
 
                         root.getFileSystem().close();
-                    } catch (IOException ignored) {
-                    }
+                    } catch (IOException ignored) {}
                 }
 
                 if (sampleSheet == null) {
@@ -1644,7 +1641,7 @@ public class SampleRepository
      */
     public void removeSample (Sample sample)
     {
-        SampleSheet sampleSheet = getSampleSheet(sample);
+        final SampleSheet sampleSheet = getSampleSheet(sample);
 
         if (isSymbols(sampleSheet.getDescriptor().getName())) {
             logger.info("A font-based symbol cannot be removed");
@@ -1753,7 +1750,7 @@ public class SampleRepository
         // Flag redundant font-based samples as such
         checkFontSamples();
 
-        // Gather samples by shape
+        // Gather samples by physical shape
         EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<>(Shape.class);
 
         for (Sample sample : getAllSamples()) {
@@ -1762,11 +1759,11 @@ public class SampleRepository
                 continue;
             }
 
-            Shape shape = sample.getShape();
-            List<Sample> list = shapeSamples.get(shape);
+            Shape physicalShape = sample.getShape().getPhysicalShape();
+            List<Sample> list = shapeSamples.get(physicalShape);
 
             if (list == null) {
-                shapeSamples.put(shape, list = new ArrayList<>());
+                shapeSamples.put(physicalShape, list = new ArrayList<>());
             }
 
             list.add(sample);

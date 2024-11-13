@@ -48,7 +48,7 @@ import java.util.List;
  * <b>NOTA</b>: All the physical shapes <b>MUST</b> have different characteristics for the glyph
  * classifier training to work correctly.
  * The same physical shape can lead to different logical shapes according to the context.
- * Two physical shapes are in this case (their name ends with "<i>_set</i>" to make this clear):
+ * Three physical shapes are in this case (their name ends with "<i>_set</i>" to make this clear):
  * <ul>
  * <li>Physical DOT_set: only the context can disambiguate between:
  * <ul>
@@ -59,11 +59,15 @@ import java.util.List;
  * <li>a simple text dot.
  * </ul>
  * </li>
- * <li>Physical HW_REST_set: depending on the precise pitch position within the staff, it can mean
- * different logicals:
+ * <li>Physical HW_REST_set: depending on the precise pitch position within the staff, it can mean:
  * <ul>
  * <li>HALF_REST</li>
  * <li>WHOLE_REST</li>
+ * </ul>
+ * <li>Physical EIGHTH_set: depending on the context, it can mean:
+ * <ul>
+ * <li>GRACE_NOTE</li>
+ * <li>METRO_EIGHTH</li>
  * </ul>
  * </ul>
  * As far as possible, a display symbol should be generated for every shape.
@@ -91,6 +95,7 @@ public enum Shape
     //
     DOT_set("Dot set"),
     HW_REST_set("Half & Whole Rest set"),
+    EIGHTH_set("Grace & beat unit set"),
 
     //
     // Bars ---
@@ -206,10 +211,23 @@ public enum Shape
     //
     // Grace notes ---
     //
-    GRACE_NOTE("Grace Note with no slash"),
+    //GRACE_NOTE("Grace Note with no slash"), // Handled by EIGHTH_set
     GRACE_NOTE_DOWN("Grace Note down with no slash"),
-    GRACE_NOTE_SLASH("Grace Note with a Slash"),
-    GRACE_NOTE_SLASH_DOWN("Grace Note down with a Slash"),
+    GRACE_NOTE_SLASH("Grace Note with a slash"),
+    GRACE_NOTE_SLASH_DOWN("Grace Note down with a slash"),
+
+    //
+    // Notes for metronome indication ---
+    //
+    METRO_WHOLE("Metronome whole note", Colors.SCORE_PHYSICALS),
+    METRO_HALF("Metronome half note", Colors.SCORE_PHYSICALS),
+    METRO_QUARTER("Metronome quarter note", Colors.SCORE_PHYSICALS),
+    //METRO_EIGHTH("Metronome 8th note"),  // Handled by EIGHTH_set
+    METRO_SIXTEENTH("Metronome 16th note", Colors.SCORE_PHYSICALS),
+    METRO_DOTTED_HALF("Metronome dotted half note", Colors.SCORE_PHYSICALS),
+    METRO_DOTTED_QUARTER("Metronome dotted quarter note", Colors.SCORE_PHYSICALS),
+    METRO_DOTTED_EIGHTH("Metronome dotted 8th note", Colors.SCORE_PHYSICALS),
+    METRO_DOTTED_SIXTEENTH("Metronome dotted 16th note", Colors.SCORE_PHYSICALS),
 
     //
     // Articulations ---
@@ -320,6 +338,7 @@ public enum Shape
     // Miscellaneous ---
     //
     CLUTTER("Pure clutter", Colors.SHAPE_UNKNOWN),
+
     /**
      * =============================================================================================
      * End of physical shapes
@@ -327,6 +346,7 @@ public enum Shape
      * All head shapes are among them, they are recognized by template matching
      * =============================================================================================
      */
+
     TEXT("Sequence of letters & spaces"),
     CHARACTER("Any letter"),
 
@@ -342,6 +362,12 @@ public enum Shape
     //
     WHOLE_REST("Rest for a 1", HW_REST_set),
     HALF_REST("Rest for a 1/2", HW_REST_set),
+
+    //
+    // Shapes based on physical EIGHTH_set ---
+    //
+    GRACE_NOTE("Grace Note with no slash", EIGHTH_set),
+    METRO_EIGHTH("Metronome 8th note", EIGHTH_set),
 
     //
     // StemLessHeads duration 2 ---
@@ -386,12 +412,18 @@ public enum Shape
     NOTEHEAD_CIRCLE_X("Circle-x shape note head for unpitched percussion"),
 
     //
-    // Compound notes (head + stem) ---
+    // Compound notes ---
     //
+    SIXTEENTH_NOTE_UP("Filled head plus its up stem and two flags"),
+    DOTTED_SIXTEENTH_NOTE_UP("Filled head plus its up stem, two flag and dot"),
+    EIGHTH_NOTE_UP("Filled head plus its up stem and flag"),
+    DOTTED_EIGHTH_NOTE_UP("Filled head plus its up stem, flag and dot"),
     QUARTER_NOTE_UP("Filled head plus its up stem"),
     QUARTER_NOTE_DOWN("Filled head plus its down stem"),
+    DOTTED_QUARTER_NOTE_UP("Filled head plus its up stem and dot"),
     HALF_NOTE_UP("Hollow head plus its up stem"),
     HALF_NOTE_DOWN("Hollow head plus its down stem"),
+    DOTTED_HALF_NOTE_UP("Hollow head plus its up stem and dot"),
 
     //
     // Beams and slurs ---
@@ -460,6 +492,7 @@ public enum Shape
     LEDGER("Ledger"),
     SEGMENT("Wedge or ending segment"),
     LYRICS("Lyrics", Colors.SCORE_LYRICS),
+    METRONOME("Text-based notes", Colors.SCORE_PHYSICALS),
 
     //
     // Stems ---
@@ -495,16 +528,15 @@ public enum Shape
     // =============================================================================================
     // This is the end of shape enumeration
     // =============================================================================================
-    //
+
     private static final Logger logger = LoggerFactory.getLogger(Shape.class);
 
     /** Last physical shape. */
     public static final Shape LAST_PHYSICAL_SHAPE = CLUTTER;
 
     /** A comparator based on shape name. */
-    public static final Comparator<Shape> alphaComparator = (Shape o1,
-                                                             Shape o2) -> o1.name()
-                                                                     .compareTo(o2.name());
+    public static final Comparator<Shape> alphaComparator = (o1,
+                                                             o2) -> o1.name().compareTo(o2.name());
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -743,60 +775,27 @@ public enum Shape
      */
     public Rational getNoteDuration ()
     {
-        switch (this) {
-            case LONG_REST:
-                return new Rational(4, 1);
-
-            case BREVE_REST:
-            case BREVE:
-            case BREVE_SMALL:
-            case BREVE_CROSS:
-            case BREVE_DIAMOND:
-            case BREVE_TRIANGLE_DOWN, BREVE_CIRCLE_X:
-                return Rational.TWO;
-
-            case WHOLE_REST:
-            case WHOLE_NOTE:
-            case WHOLE_NOTE_SMALL:
-            case WHOLE_NOTE_CROSS:
-            case WHOLE_NOTE_DIAMOND, WHOLE_NOTE_TRIANGLE_DOWN:
-            case WHOLE_NOTE_CIRCLE_X:
-                return Rational.ONE;
-
-            case HALF_REST:
-            case NOTEHEAD_VOID:
-            case NOTEHEAD_VOID_SMALL:
-            case NOTEHEAD_CROSS_VOID, NOTEHEAD_DIAMOND_VOID:
-            case NOTEHEAD_TRIANGLE_DOWN_VOID:
-            case NOTEHEAD_CIRCLE_X_VOID:
-                return Rational.HALF;
-
-            case QUARTER_REST:
-            case NOTEHEAD_BLACK:
-            case NOTEHEAD_BLACK_SMALL:
-            case NOTEHEAD_CROSS, NOTEHEAD_DIAMOND_FILLED:
-            case NOTEHEAD_TRIANGLE_DOWN_FILLED:
-            case NOTEHEAD_CIRCLE_X:
-                return Rational.QUARTER;
-
-            case EIGHTH_REST:
-                return new Rational(1, 8);
-
-            case ONE_16TH_REST:
-                return new Rational(1, 16);
-
-            case ONE_32ND_REST:
-                return new Rational(1, 32);
-
-            case ONE_64TH_REST:
-                return new Rational(1, 64);
-
-            case ONE_128TH_REST:
-                return new Rational(1, 128);
-
-            default:
-                return null;
-        }
+        return switch (this) {
+            case LONG_REST -> new Rational(4, 1);
+            case BREVE_REST, BREVE, BREVE_SMALL, BREVE_CROSS, BREVE_DIAMOND, BREVE_TRIANGLE_DOWN, //
+                    BREVE_CIRCLE_X //
+                    -> Rational.TWO;
+            case WHOLE_REST, WHOLE_NOTE, WHOLE_NOTE_SMALL, WHOLE_NOTE_CROSS, WHOLE_NOTE_DIAMOND, //
+                    WHOLE_NOTE_TRIANGLE_DOWN, WHOLE_NOTE_CIRCLE_X //
+                    -> Rational.ONE;
+            case HALF_REST, NOTEHEAD_VOID, NOTEHEAD_VOID_SMALL, NOTEHEAD_CROSS_VOID, //
+                    NOTEHEAD_DIAMOND_VOID, NOTEHEAD_TRIANGLE_DOWN_VOID, NOTEHEAD_CIRCLE_X_VOID //
+                    -> Rational.HALF;
+            case QUARTER_REST, NOTEHEAD_BLACK, NOTEHEAD_BLACK_SMALL, NOTEHEAD_CROSS, //
+                    NOTEHEAD_DIAMOND_FILLED, NOTEHEAD_TRIANGLE_DOWN_FILLED, NOTEHEAD_CIRCLE_X //
+                    -> Rational.QUARTER;
+            case EIGHTH_REST -> new Rational(1, 8);
+            case ONE_16TH_REST -> new Rational(1, 16);
+            case ONE_32ND_REST -> new Rational(1, 32);
+            case ONE_64TH_REST -> new Rational(1, 64);
+            case ONE_128TH_REST -> new Rational(1, 128);
+            default -> null;
+        };
     }
 
     //------------------//

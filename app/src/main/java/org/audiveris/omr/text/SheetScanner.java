@@ -158,7 +158,7 @@ public class SheetScanner
     /**
      * Get a clean image of whole sheet and run OCR on it.
      *
-     * @return the list of OCR'ed lines found and filtered
+     * @return the list of OCR'd lines found and filtered
      */
     public List<TextLine> scanSheet ()
     {

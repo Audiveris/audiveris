@@ -28,6 +28,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Shape;
+import static org.audiveris.omr.glyph.Shape.LYRICS;
 import org.audiveris.omr.glyph.ui.NestView;
 import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import static org.audiveris.omr.image.PixelSource.FOREGROUND;
@@ -67,6 +68,7 @@ import org.audiveris.omr.sig.inter.InterPair;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.MetronomeInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -252,8 +254,8 @@ public class InterController
     /**
      * Special addition of glyph text.
      *
-     * @param glyph to be OCR'ed to text lines and words
-     * @param shape either TEXT or LYRICS
+     * @param glyph to be OCR'd into text lines and words
+     * @param shape not null, either TEXT, LYRICS or METRONOME
      */
     @UIThread
     private void addText (final Glyph glyph,
@@ -290,8 +292,7 @@ public class InterController
                         glyph.getId());
 
                 // Convert to absolute lines (and the underlying word glyphs)
-                final boolean lyrics = (shape == Shape.LYRICS);
-                final TextBuilder textBuilder = new TextBuilder(system, lyrics);
+                final TextBuilder textBuilder = new TextBuilder(system, shape);
                 final List<TextLine> glyphLines = textBuilder.processGlyph(
                         buffer,
                         relativeLines,
@@ -300,59 +301,65 @@ public class InterController
                 // Generate the sequence of word/line Inter additions
                 for (TextLine line : glyphLines) {
                     logger.debug("line {}", line);
+                    final TextRole role = line.getRole();
+                    final List<WordInter> wordInters = new ArrayList<>();
 
-                    TextRole role = line.getRole();
-                    Staff staff;
+                    // Allocate the sentence
+                    final SentenceInter sentence =
+                    switch (shape) {
+                        case LYRICS -> {
+                            // In lyrics role, check if we should join an existing lyric line
+                            SentenceInter s = textBuilder.lookupLyricLine(line.getLocation());
+                            yield (s != null) ? s: LyricLineInter.create(line);
+                        }
+                        case METRONOME ->  MetronomeInter.create(line, system, false, wordInters);
+                        case TEXT ->  (role == TextRole.ChordName) //
+                                ? ChordNameInter.create(line)
+                                : SentenceInter.create(line);
+                        default -> throw new IllegalArgumentException();
+                    };
 
-                    SentenceInter sentence = null;
+                    sentence.setManual(true);
+                    sentence.assignStaff(system, line.getLocation());
+                    seq.add(
+                            new AdditionTask(
+                                    sig,
+                                    sentence,
+                                    line.getBounds(),
+                                    Collections.emptySet()));
 
-                    if (lyrics) {
-                        // In lyrics role, check if we should join an existing lyric line
-                        sentence = textBuilder.lookupLyricLine(line.getLocation());
-                    }
-
+                    // Retrieve the member words (already done for METRONOME)
                     for (TextWord textWord : line.getWords()) {
                         logger.debug("word {}", textWord);
 
-                        final WordInter word = lyrics ? new LyricItemInter(textWord)
-                                : ((role == TextRole.ChordName) ? ChordNameInter.createValid(
-                                        textWord) : new WordInter(textWord));
+                        final WordInter word = switch (shape) {
+                            case LYRICS -> new LyricItemInter(textWord);
+                            case METRONOME -> null;
+                            case TEXT -> (role == TextRole.ChordName)
+                                        ? ChordNameInter.createValid(textWord) // May be null
+                                        : new WordInter(textWord);
+                            default -> throw new IllegalArgumentException();
+                        };
 
-                        if (sentence != null) {
-                            staff = sentence.getStaff();
-                            seq.add(
-                                    new AdditionTask(
-                                            sig,
-                                            word,
-                                            textWord.getBounds(),
-                                            Arrays.asList(
-                                                    new Link(sentence, new Containment(), false))));
-                        } else {
-                            sentence = lyrics ? LyricLineInter.create(line)
-                                    : ((role == TextRole.ChordName) ? ChordNameInter.create(line)
-                                            : SentenceInter.create(line));
-                            staff = sentence.assignStaff(system, line.getLocation());
-                            seq.add(
-                                    new AdditionTask(
-                                            sig,
-                                            word,
-                                            textWord.getBounds(),
-                                            Collections.emptySet()));
-                            seq.add(
-                                    new AdditionTask(
-                                            sig,
-                                            sentence,
-                                            line.getBounds(),
-                                            Arrays.asList(
-                                                    new Link(word, new Containment(), true))));
+                        if (word != null) {
+                            wordInters.add(word);
                         }
-
-                        word.setStaff(staff);
                     }
 
-                    if (sentence != null) {
-                        sentences.add(sentence);
-                    }
+                    // Add and link the member words
+                    wordInters.forEach(w -> {
+                        w.setStaff(sentence.getStaff());
+                        w.setManual(true);
+                        seq.add(
+                                new AdditionTask(
+                                        sig,
+                                        w,
+                                        w.getBounds(),
+                                        Arrays.asList(
+                                                new Link(sentence, new Containment(), false))));
+                    });
+
+                    sentences.add(sentence);
                 }
             }
 
@@ -382,7 +389,7 @@ public class InterController
     public void assignGlyph (Glyph aGlyph,
                              final Shape shape)
     {
-        if ((shape == Shape.TEXT) || (shape == Shape.LYRICS)) {
+        if ((shape == Shape.TEXT) || (shape == Shape.LYRICS) || (shape == Shape.METRONOME)) {
             addText(aGlyph, shape);
 
             return;
@@ -483,6 +490,58 @@ public class InterController
         return history.canUndo();
     }
 
+    //-----------------//
+    // changeMetronome //
+    //-----------------//
+    /**
+     * Change the value of a metronome line.
+     * <p>
+     * Brute force approach: we keep the metronome inter but change all its members.
+     *
+     * @param metro    the metronome to modify
+     * @param newWords the new metronome members
+     */
+    @UIThread
+    public void changeMetronome (MetronomeInter metro,
+                                 List<WordInter> newWords)
+    {
+        new CtrlTask(DO, "changeMetronome")
+        {
+            @Override
+            protected void build ()
+            {
+                final Staff staff = metro.getStaff();
+                final SystemInfo system = staff.getSystem();
+                final SIGraph sig = system.getSig();
+                metro.setManual(true);
+
+                final List<Inter> oldMembers = metro.getMembers();
+
+                // First, insert the new members
+                newWords.forEach(w -> {
+                    w.setManual(true);
+                    seq.add(
+                            new AdditionTask(
+                                    sig,
+                                    w,
+                                    null,
+                                    Arrays.asList(new Link(metro, new Containment(), false))));
+                });
+
+                // Second, remove all the old members
+                oldMembers.forEach(m -> seq.add(new RemovalTask(m)));
+
+                metro.invalidateCache();
+            }
+
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(metro);
+            }
+        }.execute();
+    }
+
     //--------------//
     // changeNumber //
     //--------------//
@@ -518,8 +577,9 @@ public class InterController
     /**
      * Change the role of a sentence.
      * <p>
-     * When a sentence changes its role between "plain", chordName and lyrics, each of its word
-     * may have to be converted to a WordInter, ChordNameInter of LyricItemInter.
+     * When a sentence changes its role between "plain", chordName, lyrics and metronome,
+     * each of its words may have to be converted to a WordInter, ChordNameInter, LyricItemInter or
+     * BeaUnitInter.
      * <p>
      * Plus some conversion for the sentence as well.
      *
@@ -623,6 +683,31 @@ public class InterController
                                                     link.relation));
                                 }
                             }
+                        }
+                    }
+
+                    case Metronome -> {
+                        // Convert to MetronomeInter
+                        final MetronomeInter metro = new MetronomeInter(sentence);
+                        final Staff stf = system.getStaffAtOrBelow(sentence.getCenter());
+                        metro.setStaff((stf != null) ? stf : sentence.getStaff());
+                        metro.setManual(true);
+                        seq.add(
+                                new AdditionTask(
+                                        sig,
+                                        metro,
+                                        metro.getBounds(),
+                                        metro.searchLinks(system)));
+
+                        // Migrate the members from sentence to metro
+                        final List<Inter> members = sentence.getMembers();
+
+                        // Remove former sentence (and its links to members)
+                        seq.add(new RemovalTask(sentence));
+
+                        for (Inter member : members) {
+                            member.setManual(true);
+                            seq.add(new LinkTask(sig, metro, member, new Containment()));
                         }
                     }
 

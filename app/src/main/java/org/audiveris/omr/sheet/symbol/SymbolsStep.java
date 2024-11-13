@@ -77,7 +77,7 @@ public class SymbolsStep
     {
         sheet.getSheetEditor().refresh();
 
-        // Update glyph board if needed (to see OCR'ed data)
+        // Update glyph board if needed (to see OCR'd data)
         final SelectionService service = sheet.getGlyphIndex().getEntityService();
 
         @SuppressWarnings("unchecked")

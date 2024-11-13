@@ -167,20 +167,19 @@ class TrainingPanel
      */
     private List<Sample> checkPopulation (List<Sample> samples)
     {
-        EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<>(Shape.class);
+        final EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<>(Shape.class);
 
         for (Iterator<Sample> it = samples.iterator(); it.hasNext();) {
-            Sample sample = it.next();
-            Shape shape = sample.getShape();
+            final Sample sample = it.next();
 
             try {
-                Shape physicalShape = shape.getPhysicalShape();
+                final Shape physicalShape = sample.getShape().getPhysicalShape();
 
                 if (physicalShape.isTrainable()) {
-                    List<Sample> list = shapeSamples.get(shape);
+                    List<Sample> list = shapeSamples.get(physicalShape);
 
                     if (list == null) {
-                        shapeSamples.put(shape, list = new ArrayList<>());
+                        shapeSamples.put(physicalShape, list = new ArrayList<>());
                     }
 
                     list.add(sample);
@@ -189,7 +188,7 @@ class TrainingPanel
                     it.remove();
                 }
             } catch (Exception ex) {
-                logger.warn("Removing weird shape: " + shape, ex);
+                logger.warn("Removing weird sample: " + sample, ex);
                 it.remove();
             }
         }
@@ -200,19 +199,19 @@ class TrainingPanel
         final List<Sample> newSamples = new ArrayList<>();
 
         for (int is = 0; is <= iMax; is++) {
-            Shape shape = shapes[is];
-            List<Sample> list = shapeSamples.get(shape);
+            final Shape physicalShape = shapes[is];
+            final List<Sample> list = shapeSamples.get(physicalShape);
 
             if (list == null) {
-                logger.warn("Missing shape: {}", shape);
+                logger.warn("Missing shape: {}", physicalShape);
             } else if (!list.isEmpty()) {
-                logger.info(String.format("%4d %s", list.size(), shape));
+                logger.info(String.format("%4d %s", list.size(), physicalShape));
                 final int size = list.size();
                 int togo = minCount - size;
                 newSamples.addAll(list);
 
                 // Ensure minimum sample count is reached for this shape
-                if ((togo > 0) && (shape != Shape.CLUTTER)) {
+                if ((togo > 0) && (physicalShape != Shape.CLUTTER)) {
                     Collections.shuffle(list);
 
                     do {
@@ -387,7 +386,6 @@ class TrainingPanel
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer listenerPeriod = new Constant.Integer(
                 "period",
                 50,

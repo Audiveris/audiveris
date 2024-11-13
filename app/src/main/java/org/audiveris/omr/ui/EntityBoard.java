@@ -69,8 +69,8 @@ public class EntityBoard<E extends Entity>
 
     private static final Logger logger = LoggerFactory.getLogger(EntityBoard.class);
 
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(EntityBoard.class);
+    private static final ResourceMap resources =
+            Application.getInstance().getContext().getResourceMap(EntityBoard.class);
 
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[]
@@ -241,7 +241,7 @@ public class EntityBoard<E extends Entity>
     // getFormLayout //
     //---------------//
     /**
-     * Overridable method to provide layout of the body part of the board.
+     * Override-able method to provide layout of the body part of the board.
      * (not including the top board line: title + dump button)
      *
      * @return the proper FormLayout

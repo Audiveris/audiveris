@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      R e m o v a l T a s k                                     //
+//                                        L T e x t P a n e                                       //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2024. All rights reserved.
+//  Copyright © Audiveris 2023. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -19,69 +19,79 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sig.ui;
+package org.audiveris.omr.ui.field;
 
-import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.Link;
-
-import java.util.Collection;
+import javax.swing.JTextPane;
 
 /**
- * Class <code>RemovalTask</code> removes an inter (with its relations).
+ * Class <code>LTextPane</code>
  *
  * @author Hervé Bitteur
  */
-public class RemovalTask
-        extends InterTask
+public class LTextPane
+        extends LField<JTextPane>
 {
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>RemovalTask</code> object, which saves the current inter links
-     * for potential undo.
+     * Creates a new LTextPane object.
      *
-     * @param inter the inter to remove
+     * @param editable Specifies whether this field will be editable
+     * @param label    the string to be used as label text
+     * @param tip      the related tool tip text
      */
-    public RemovalTask (Inter inter)
+    public LTextPane (boolean editable,
+                      String label,
+                      String tip)
     {
-        this(inter, null);
+        super(label, tip, new JTextPane());
+
+        JTextPane pane = getField();
+        pane.setEditable(editable);
+
+        if (!editable) {
+            pane.setFocusable(false);
+            pane.setBorder(null);
+        }
     }
 
     /**
-     * Creates a new <code>RemovalTask</code> object, with its current links.
-     * <p>
-     * Useful when inter is no longer in sig when this task is performed.
+     * Creates a new non-editable LTextPane object.
      *
-     * @param inter the inter to remove
-     * @param links the inter links to save, to be used if/when the removal is undone.
-     *              If null, use all the current relations when the inter is about to be removed.
+     * @param label the string to be used as label text
+     * @param tip   the related tool tip text
      */
-    public RemovalTask (Inter inter,
-                        Collection<Link> links)
+    public LTextPane (String label,
+                      String tip)
     {
-        super(inter.getSig(), inter, inter.getBounds(), links, "del");
+        this(false, label, tip);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    @Override
-    public void performDo ()
+    //---------//
+    // getText //
+    //---------//
+    /**
+     * Report the current content of the field
+     *
+     * @return the field content
+     */
+    public String getText ()
     {
-        if (links == null) {
-            links = inter.getLinks();
-        }
-
-        inter.remove(false);
+        return getField().getText();
     }
 
-    @Override
-    public void performUndo ()
+    //---------//
+    // setText //
+    //---------//
+    /**
+     * Modify the content of the field
+     *
+     * @param text new text to set
+     */
+    public void setText (String text)
     {
-        inter.setBounds(initialBounds);
-        sig.addVertex(inter);
-
-        for (Link link : links) {
-            link.applyTo(inter);
-        }
+        getField().setText(text);
     }
 }

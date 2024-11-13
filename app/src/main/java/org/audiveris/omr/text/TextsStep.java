@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class <code>TextsStep</code> discovers text items in a system area.
+ * Class <code>TextsStep</code> discovers text items in every system area.
  *
  * @author Hervé Bitteur
  */
@@ -110,7 +110,7 @@ public class TextsStep
         throws StepException
     {
         // Process texts at system level
-        new TextBuilder(system).processSystem(context.buffer, context.textLines);
+        new TextBuilder(system, null).processSystem(context.buffer, context.textLines);
     }
 
     //--------//
@@ -161,7 +161,7 @@ public class TextsStep
         /** The sheet buffer handed to OCR. */
         public final ByteProcessor buffer;
 
-        /** The raw text lines OCR'ed. */
+        /** The raw text lines OCR'd. */
         public final List<TextLine> textLines;
 
         /**

@@ -166,7 +166,7 @@ public class SampleBrowser
     /** Panel for sheets selection. */
     private SheetSelector sheetSelector;
 
-    /** Panel for shapes selection. */
+    /** Panel for (physical) shapes selection. */
     private ShapeSelector shapeSelector;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -459,19 +459,15 @@ public class SampleBrowser
         //        boardsPane.addBoard(
         //                new SampleEvaluationBoard(sampleController, DeepClassifier.getInstance()));
         //
-        JSplitPane centerPane = new JSplitPane(
-                VERTICAL_SPLIT,
-                sheetSelector,
-                boardsPane.getComponent());
+        JSplitPane centerPane =
+                new JSplitPane(VERTICAL_SPLIT, sheetSelector, boardsPane.getComponent());
         centerPane.setBorder(null);
         centerPane.setOneTouchExpandable(true);
         centerPane.setName("centerPane");
 
         // Right
-        JSplitPane rightPane = new JSplitPane(
-                VERTICAL_SPLIT,
-                sampleListing,
-                sampleContext.getComponent());
+        JSplitPane rightPane =
+                new JSplitPane(VERTICAL_SPLIT, sampleListing, sampleContext.getComponent());
         rightPane.setBorder(null);
         rightPane.setOneTouchExpandable(true);
         rightPane.setName("rightPane");
@@ -537,7 +533,7 @@ public class SampleBrowser
         EnumSet<Shape> shapeSet = EnumSet.noneOf(Shape.class);
 
         for (Sample sample : samples) {
-            shapeSet.add(sample.getShape());
+            shapeSet.add(sample.getShape().getPhysicalShape());
         }
 
         shapeSelector.populateWith(shapeSet);
@@ -545,7 +541,7 @@ public class SampleBrowser
 
         // Populate samples
         List<Sample> sorted = new ArrayList<>(samples);
-        Collections.sort(sorted, Sample.byShape); // Must be ordered by shape for listing
+        Collections.sort(sorted, Sample.byPhysicalShape); // Ordered by physical shape for listing
         sampleListing.populateWith(sorted);
 
         connectSelectors(true); // Re-enable standard triggers: sheets -> shapes -> samples
@@ -1028,8 +1024,7 @@ public class SampleBrowser
         @Override
         protected void evaluate (Glyph glyph)
         {
-            if (glyph instanceof Sample) {
-                final Sample sample = (Sample) glyph;
+            if (glyph instanceof Sample sample) {
                 selector.setEvals(
                         classifier.evaluate(
                                 glyph,
@@ -1045,11 +1040,13 @@ public class SampleBrowser
         }
     }
 
+    //----------//
+    // Selector //
+    //----------//
     private abstract static class Selector<E>
             extends TitledPanel
             implements ChangeListener
     {
-
         // Buttons
         protected final JButton selectAll = new JButton("Select All");
 
@@ -1243,7 +1240,7 @@ public class SampleBrowser
     // ShapeSelector //
     //---------------//
     /**
-     * Display a list of available shapes (within selected sheets) and let user make a
+     * Display a list of available physical shapes (within selected sheets) and let user make a
      * selection.
      */
     private class ShapeSelector
@@ -1282,8 +1279,8 @@ public class SampleBrowser
             {
                 super("ShapePopup");
 
-                ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(
-                        SampleBrowser.this);
+                ApplicationActionMap actionMap =
+                        OmrGui.getApplication().getContext().getActionMap(SampleBrowser.this);
                 add(new JMenuItem(actionMap.get("removeShapes")));
             }
         }
@@ -1293,7 +1290,7 @@ public class SampleBrowser
     // SheetSelector //
     //---------------//
     /**
-     * Display a list of available sheets and let user make a selection.
+     * Display a list of available sheets and let the user make a selection.
      */
     private class SheetSelector
             extends Selector<Descriptor>
@@ -1337,8 +1334,8 @@ public class SampleBrowser
             {
                 super("SheetPopup");
 
-                ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(
-                        SampleBrowser.this);
+                ApplicationActionMap actionMap =
+                        OmrGui.getApplication().getContext().getActionMap(SampleBrowser.this);
                 add(new JMenuItem(actionMap.get("removeSheets")));
                 add(new JMenuItem(actionMap.get("validateSheets")));
             }

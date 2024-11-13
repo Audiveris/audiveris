@@ -31,6 +31,8 @@ import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.text.WordScanner.OcrScanner;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
+import org.audiveris.omr.ui.symbol.OmrFont;
+import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
@@ -45,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Class <code>TextLine</code> defines a non-mutable structure to report all information on
@@ -457,10 +460,13 @@ public class TextLine
 
                 // Discard one-char words, they are not reliable
                 if (length > 1) {
+                    final FontInfo info = word.getFontInfo();
+                    final OmrFont font = new TextFont(info);
+                    final int fontSize = font.computeSize(
+                            word.getValue(),
+                            word.getBounds().getSize());
+                    sizeTotal += (fontSize * length);
                     charCount += length;
-                    sizeTotal += (word.getPreciseFontSize() * length);
-
-                    FontInfo info = word.getFontInfo();
 
                     if (info.isBold) {
                         boldCount += length;
@@ -536,24 +542,7 @@ public class TextLine
     @Override
     public String getValue ()
     {
-        StringBuilder sb = null;
-
-        // Use each word value
-        for (TextWord word : words) {
-            String str = word.getValue();
-
-            if (sb == null) {
-                sb = new StringBuilder(str);
-            } else {
-                sb.append(" ").append(str);
-            }
-        }
-
-        if (sb == null) {
-            return "";
-        } else {
-            return sb.toString();
-        }
+        return words.stream().map(w -> w.getValue()).collect(Collectors.joining(" "));
     }
 
     //---------------//
@@ -938,7 +927,7 @@ public class TextLine
     {
         return (TextLine line1,
                 TextLine line2) -> Double.compare(
-                        line1.getDskOrigin(skew).getX(),
+                        line1.getDskOrigin(skew).getX(), //
                         line2.getDskOrigin(skew).getX());
     }
 
@@ -952,7 +941,7 @@ public class TextLine
     {
         return (TextLine line1,
                 TextLine line2) -> Double.compare(
-                        line1.getDskOrigin(skew).getY(),
+                        line1.getDskOrigin(skew).getY(), //
                         line2.getDskOrigin(skew).getY());
     }
 
@@ -986,11 +975,11 @@ public class TextLine
     {
 
         private final Scale.Fraction maxFontSize = new Scale.Fraction(
-                5.0,
+                4.0,
                 "Maximum font size with respect to interline");
 
         private final Scale.Fraction minFontSize = new Scale.Fraction(
-                1.25,
+                1.0,
                 "Minimum font size with respect to interline");
 
         private final Scale.Fraction maxTitleFontSize = new Scale.Fraction(

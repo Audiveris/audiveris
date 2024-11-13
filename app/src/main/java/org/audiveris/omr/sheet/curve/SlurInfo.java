@@ -144,7 +144,7 @@ public class SlurInfo
         Point p2 = points.get(np - 1);
 
         // Choose a circle-model, otherwise a line-model
-        CircleModel rough = CircleModel.create(p0, p1, p2);
+        CircleModel rough = CircleModel.createValid(p0, p1, p2);
 
         if (rough != null) {
             return rough;

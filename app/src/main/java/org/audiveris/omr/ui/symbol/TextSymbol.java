@@ -23,8 +23,6 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
-import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.FontInfo;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
@@ -49,6 +47,8 @@ import java.awt.geom.Point2D;
 public class TextSymbol
         extends ShapeSymbol
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(TextSymbol.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -148,10 +148,9 @@ public class TextSymbol
         TextFamily theTextFamily = textFamily;
 
         if (theTextFamily == null) {
-            // Workaround to retrieve sheet text family
-            final StubsController controller = StubsController.getInstance();
-            final SheetStub stub = controller.getSelectedStub();
-            theTextFamily = (stub != null) ? stub.getTextFamily() : TextFamily.SansSerif;
+            theTextFamily = TextFont.getCurrentFamily();
+            if (theTextFamily == null)
+                theTextFamily = TextFamily.SansSerif;
         }
 
         final int fontSize = (int) Math.rint(font.getSize2D() * RATIO_TINY);
@@ -199,16 +198,17 @@ public class TextSymbol
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
-    //--------//
-    // Params //
-    //--------//
+    //----------//
+    // MyParams //
+    //----------//
     protected static class MyParams
             extends ShapeSymbol.Params
     {
-
         // offset: not used
+
         // layout: text layout
         // rect:   global image
+
         // model
         WordInter.Model model;
     }

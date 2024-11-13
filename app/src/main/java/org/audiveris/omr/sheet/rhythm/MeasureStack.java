@@ -752,22 +752,26 @@ public class MeasureStack
     /**
      * Retrieve the most suitable chord to connect the event point to.
      *
-     * @param point  the system-based location
-     * @param xRange required abscissa range, or null
+     * @param point    the system-based location
+     * @param area     required abscissa range (excluding ordinate range), or null
+     * @param tryAbove should we first lookup at the staff above the provided point
      * @return the most suitable chord, or null
      */
     public AbstractChordInter getEventChord (Point2D point,
-                                             Rectangle xRange)
+                                             Rectangle area,
+                                             boolean tryAbove)
     {
-        // First, try staff just above
-        AbstractChordInter above = getStandardChordAbove(point, xRange);
+        if (tryAbove) {
+            // First, try staff just above
+            AbstractChordInter above = getStandardChordAbove(point, area);
 
-        if (above != null) {
-            return above;
+            if (above != null) {
+                return above;
+            }
         }
 
-        // Second, try staff just below
-        return getStandardChordBelow(point, xRange);
+        // Try below
+        return getStandardChordBelow(point, area);
     }
 
     //-----------//
@@ -1186,14 +1190,14 @@ public class MeasureStack
     /**
      * Retrieve the closest chord (head or rest) within staff above.
      *
-     * @param point  the system-based location
-     * @param xRange required abscissa range, or null
+     * @param point the system-based location
+     * @param area  required abscissa range (excluding ordinate range), or null
      * @return the most suitable chord, or null
      */
     public AbstractChordInter getStandardChordAbove (Point2D point,
-                                                     Rectangle xRange)
+                                                     Rectangle area)
     {
-        Collection<AbstractChordInter> aboves = getStandardChordsAbove(point, xRange);
+        Collection<AbstractChordInter> aboves = getStandardChordsAbove(point, area);
 
         if (!aboves.isEmpty()) {
             return getClosestChord(aboves, point);
@@ -1208,14 +1212,14 @@ public class MeasureStack
     /**
      * Retrieve the closest chord (head or rest) within staff below.
      *
-     * @param point  the system-based location
-     * @param xRange required abscissa range, or null
+     * @param point the system-based location
+     * @param area  required abscissa range (excluding ordinate range), or null
      * @return the most suitable chord, or null
      */
     public AbstractChordInter getStandardChordBelow (Point2D point,
-                                                     Rectangle xRange)
+                                                     Rectangle area)
     {
-        Collection<AbstractChordInter> belows = getStandardChordsBelow(point, xRange);
+        Collection<AbstractChordInter> belows = getStandardChordsBelow(point, area);
 
         if (!belows.isEmpty()) {
             return getClosestChord(belows, point);
@@ -1250,12 +1254,12 @@ public class MeasureStack
      * Report the set of standard chords whose 'head' is located in the staff above the
      * provided point.
      *
-     * @param point  the provided point
-     * @param xRange required abscissa range, or null
+     * @param point the provided point
+     * @param area  required abscissa range (excluding ordinate range), or null
      * @return the (perhaps empty) set of chords
      */
     public Set<AbstractChordInter> getStandardChordsAbove (Point2D point,
-                                                           Rectangle xRange)
+                                                           Rectangle area)
     {
         Staff desiredStaff = getSystem().getStaffAtOrAbove(point);
         Set<AbstractChordInter> found = new LinkedHashSet<>();
@@ -1264,8 +1268,11 @@ public class MeasureStack
         if (measure != null) {
             for (AbstractChordInter chord : measure.getStandardChords()) {
                 if (chord.getBottomStaff() == desiredStaff) {
-                    if ((xRange == null) || (GeoUtil.xOverlap(chord.getBounds(), xRange) > 0)) {
-                        Point head = chord.getHeadLocation();
+                    final Rectangle chordBounds = chord.getBounds();
+                    if ((area == null) || //
+                            ((GeoUtil.xOverlap(chordBounds, area) > 0) && //
+                                    (GeoUtil.yOverlap(chordBounds, area) < 0))) {
+                        final Point head = chord.getHeadLocation();
 
                         if ((head != null) && (head.y < point.getY())) {
                             found.add(chord);
@@ -1285,22 +1292,27 @@ public class MeasureStack
      * Report the set of standard chords whose 'head' is located in the staff below the
      * provided point.
      *
-     * @param point  the provided point
-     * @param xRange required abscissa range, or null
+     * @param point the provided point
+     * @param area  required abscissa range (excluding ordinate range), or null
      * @return the (perhaps empty) collection of chords
      */
     public Set<AbstractChordInter> getStandardChordsBelow (Point2D point,
-                                                           Rectangle xRange)
+                                                           Rectangle area)
     {
-        Staff desiredStaff = getSystem().getStaffAtOrBelow(point);
-        Set<AbstractChordInter> found = new LinkedHashSet<>();
-        Measure measure = getMeasureAt(desiredStaff);
+        final Staff desiredStaff = getSystem().getStaffAtOrBelow(point);
+        final Set<AbstractChordInter> found = new LinkedHashSet<>();
+        final Measure measure = getMeasureAt(desiredStaff);
 
         if (measure != null) {
             for (AbstractChordInter chord : measure.getStandardChords()) {
                 if (chord.getTopStaff() == desiredStaff) {
-                    if ((xRange == null) || (GeoUtil.xOverlap(chord.getBounds(), xRange) > 0)) {
-                        Point head = chord.getHeadLocation();
+                    final Rectangle chordBounds = chord.getBounds();
+
+                    if ((area == null) || //
+                            ((GeoUtil.xOverlap(chordBounds, area) > 0) && (GeoUtil.yOverlap(
+                                    chordBounds,
+                                    area) < 0))) {
+                        final Point head = chord.getHeadLocation();
 
                         if ((head != null) && (head.y > point.getY())) {
                             found.add(chord);

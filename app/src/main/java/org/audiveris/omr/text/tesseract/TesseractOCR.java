@@ -75,9 +75,9 @@ public class TesseractOCR
     private static final String TESSDATA_PREFIX = "TESSDATA_PREFIX";
 
     /** Warning message when OCR folder cannot be found. */
-    private static final String ocrNotFoundMsg = "Tesseract data could not be found. "
-            + "Try setting " + TESSDATA_PREFIX + " environment variable to point to " + TESSDATA
-            + " folder.";
+    private static final String ocrNotFoundMsg =
+            "Tesseract data could not be found. " + "Try setting " + TESSDATA_PREFIX
+                    + " environment variable to point to " + TESSDATA + " folder.";
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -369,27 +369,23 @@ public class TesseractOCR
     private static class Constants
             extends ConstantSet
     {
-        private final Constant.Boolean useOCR = new Constant.Boolean(
-                true,
-                "Should we use the OCR feature?");
+        private final Constant.Boolean useOCR =
+                new Constant.Boolean(true, "Should we use the OCR feature?");
 
         private final Constant.Boolean forceSingleBlock = new Constant.Boolean(
                 false,
                 "Should we force OCR to use PSM_SINGLE_BLOCK rather than PSM_AUTO?");
 
-        private final Constant.Boolean saveImages = new Constant.Boolean(
-                false,
-                "Should we save on disk the images sent to Tesseract?");
+        private final Constant.Boolean saveImages =
+                new Constant.Boolean(false, "Should we save on disk the images sent to Tesseract?");
 
         //
         //        private final Scale.Fraction maxDashWidth = new Scale.Fraction(
         //                1.0,
         //                "Maximum width for a dash character");
         //
-        private final Constant.Double minConfidence = new Constant.Double(
-                "0..1",
-                0.65,
-                "Minimum confidence for OCR validity");
+        private final Constant.Double minConfidence =
+                new Constant.Double("0..1", 0.65, "Minimum confidence for OCR validity");
     }
 
     //---------------//

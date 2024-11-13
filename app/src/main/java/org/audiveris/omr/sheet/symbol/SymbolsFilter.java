@@ -215,30 +215,25 @@ public class SymbolsFilter
             extends ConstantSet
     {
 
-        private final Constant.Boolean displaySymbols = new Constant.Boolean(
-                false,
-                "Should we display the symbols image?");
+        private final Constant.Boolean displaySymbols =
+                new Constant.Boolean(false, "Should we display the symbols image?");
 
-        private final Constant.Boolean saveSymbolsBuffer = new Constant.Boolean(
-                false,
-                "Should we save symbols image on disk?");
+        private final Constant.Boolean saveSymbolsBuffer =
+                new Constant.Boolean(false, "Should we save symbols image on disk?");
 
-        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
-                0.5,
-                "Margin erased above & below staff header area");
+        private final Scale.Fraction staffVerticalMargin =
+                new Scale.Fraction(0.5, "Margin erased above & below staff header area");
 
         private final Constant.Integer maxSymbolLength = new Constant.Integer(
                 "letter count",
                 3,
                 "Maximum number of chars for a word to be checked as a symbol");
 
-        private final Constant.Ratio minHeadContextualGrade = new Constant.Ratio(
-                0.6,
-                "Minimum contextual grade to hide a head");
+        private final Constant.Ratio minHeadContextualGrade =
+                new Constant.Ratio(0.6, "Minimum contextual grade to hide a head");
 
-        private final Constant.Ratio minStemContextualGrade = new Constant.Ratio(
-                0.7,
-                "Minimum contextual grade to hide a stem");
+        private final Constant.Ratio minStemContextualGrade =
+                new Constant.Ratio(0.7, "Minimum contextual grade to hide a stem");
     }
 
     //----------------//
@@ -342,6 +337,11 @@ public class SymbolsFilter
                         continue;
                     }
 
+                    if (inter.isFrozen()) {
+                        strongs.add(inter);
+                        continue;
+                    }
+
                     // Check short words
                     if (inter instanceof WordInter word) {
                         if (word.getValue().length() <= maxSymbolLength) {
@@ -414,10 +414,8 @@ public class SymbolsFilter
             // Save the glyph?
             if (systemWeaks != null) {
                 // The glyph may be made of several parts, so it's safer to restart from pixels
-                List<Glyph> glyphs = GlyphFactory.buildGlyphs(
-                        glyph.getRunTable(),
-                        glyph.getTopLeft(),
-                        GlyphGroup.SYMBOL);
+                List<Glyph> glyphs = GlyphFactory
+                        .buildGlyphs(glyph.getRunTable(), glyph.getTopLeft(), GlyphGroup.SYMBOL);
                 systemWeaks.addAll(glyphs);
             }
         }
@@ -444,10 +442,8 @@ public class SymbolsFilter
             final RunTable runTable = factory.createTable(buf);
 
             // Glyphs
-            final List<Glyph> glyphs = GlyphFactory.buildGlyphs(
-                    runTable,
-                    new Point(0, 0),
-                    GlyphGroup.SYMBOL);
+            final List<Glyph> glyphs =
+                    GlyphFactory.buildGlyphs(runTable, new Point(0, 0), GlyphGroup.SYMBOL);
 
             systemWeaks.addAll(glyphs);
         }

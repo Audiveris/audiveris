@@ -89,6 +89,12 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
+    public void visit (BeatUnitInter inter)
+    {
+        visit((Inter) inter);
+    }
+
+    @Override
     public void visit (BraceInter inter)
     {
     }
@@ -146,6 +152,11 @@ public abstract class AbstractInterVisitor
 
     @Override
     public void visit (MultipleRestInter inter)
+    {
+    }
+
+    @Override
+    public void visit (MetronomeInter inter)
     {
     }
 

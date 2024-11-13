@@ -72,7 +72,7 @@ public class FontInfo
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new FontInfo object.
+     * Creates a new <code>FontInfo</code> object.
      *
      * @param isBold       True if the font is bold
      * @param isItalic     True if the font is italic
@@ -103,6 +103,22 @@ public class FontInfo
     }
 
     /**
+     * Creates a new <code>FontInfo</code> object, with only bold and italic possible attributes.
+     *
+     * @param isBold    True if the font is bold
+     * @param isItalic  True if the font is italic
+     * @param pointsize font size in points
+     * @param fontName  font name
+     */
+    public FontInfo (boolean isBold,
+                     boolean isItalic,
+                     int pointsize,
+                     String fontName)
+    {
+        this(isBold, isItalic, false, false, false, false, pointsize, fontName);
+    }
+
+    /**
      * Create a new <code>FontInfo</code> from another one and a specific point size.
      *
      * @param org       the original font info
@@ -123,7 +139,8 @@ public class FontInfo
     }
 
     /**
-     * Creates a new FontInfo object, with no attribute set, just point size and font name.
+     * Creates a new <code>FontInfo</code> object, with no attribute set,
+     * just point size and font name.
      *
      * @param pointsize font size in points
      * @param fontName  font name

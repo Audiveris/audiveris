@@ -49,7 +49,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.jgoodies.forms.builder.FormBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 
@@ -84,8 +83,7 @@ public class EvaluationBoard
     private static final Logger logger = LoggerFactory.getLogger(EvaluationBoard.class);
 
     /** Events this board is interested in */
-    private static final Class<?>[] eventsRead = new Class<?>[]
-    { EntityListEvent.class };
+    private static final Class<?>[] eventsRead = new Class<?>[] { EntityListEvent.class };
 
     /** Color for well recognized glyphs */
     private static final Color EVAL_GOOD_COLOR = new Color(100, 200, 100);
@@ -98,17 +96,17 @@ public class EvaluationBoard
     /** Underlying glyph classifier. */
     protected final Classifier classifier;
 
-    /** Related inters controller */
+    /** Related inters controller. */
     protected final InterController interController;
 
-    /** Related sheet */
+    /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
-    /** Pane for detailed info display about the glyph evaluation */
+    /** Pane for detailed info display about the glyph evaluation. */
     protected final Selector selector;
 
-    /** Do we use GlyphChecker annotations? */
+    /** Do we use GlyphChecker annotations?. */
     private boolean useAnnotations;
 
     /** True for active buttons, false for passive fields. */
@@ -163,7 +161,7 @@ public class EvaluationBoard
     //--------------//
     private void defineLayout ()
     {
-        String colSpec = Panel.makeColumns(3);
+        String colSpec = Panel.makeColumns(2, "right:", Panel.getLabelWidth(), "50dlu");
         FormLayout layout = new FormLayout(colSpec, "");
 
         int visibleButtons = Math.min(constants.visibleButtons.getValue(), selector.buttons.size());
@@ -177,13 +175,12 @@ public class EvaluationBoard
         }
 
         FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
-        CellConstraints cst = new CellConstraints();
 
         for (int i = 0; i < visibleButtons; i++) {
             int r = (2 * i) + 1; // --------------------------------
             EvalButton evb = selector.buttons.get(i);
-            builder.addRaw(evb.grade).xy(5, r);
-            builder.addRaw(isActive ? evb.button : evb.field).xyw(7, r, 5);
+            builder.addRaw(evb.grade).xy(1, r);
+            builder.addRaw(isActive ? evb.button : evb.field).xyw(3, r, 5);
         }
     }
 
@@ -219,11 +216,11 @@ public class EvaluationBoard
 
                     return;
                 }
-            } else if (glyph instanceof Sample) {
+            } else if (glyph instanceof Sample sample) {
                 selector.setEvals(
                         classifier.evaluate(
                                 glyph,
-                                ((Sample) glyph).getInterline(),
+                                sample.getInterline(),
                                 evalCount(),
                                 constants.minGrade.getValue(),
                                 useAnnotations ? EnumSet.of(Classifier.Condition.CHECKED)
@@ -283,6 +280,34 @@ public class EvaluationBoard
             if (buttonID <= selector.buttons.size()) {
                 selector.buttons.get(buttonID - 1).actionPerformed(null);
             }
+        }
+    }
+
+    //--------//
+    // update //
+    //--------//
+    @Override
+    public void update ()
+    {
+        final MusicFamily musicFamily = (sheet != null) ? sheet.getStub().getMusicFamily()
+                : MusicFont.getDefaultMusicFamily();
+
+        if (musicFamily != cachedMusicFamily) {
+            selector.buttons.forEach(b -> {
+                if ((b.button != null) && b.button.isVisible()) {
+                    final Shape shape = Shape.valueOf(b.button.getText());
+                    final ShapeSymbol symbol = shape.getDecoratedSymbol(musicFamily);
+                    b.button.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
+                }
+
+                if ((b.field != null) && b.field.isVisible()) {
+                    final Shape shape = Shape.valueOf(b.field.getText());
+                    final ShapeSymbol symbol = shape.getDecoratedSymbol(musicFamily);
+                    b.field.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
+                }
+            });
+
+            cachedMusicFamily = musicFamily;
         }
     }
 
@@ -399,19 +424,18 @@ public class EvaluationBoard
                 final String tip = (failure != null) ? failure.toString() : null;
                 final MusicFamily family = sheet != null ? sheet.getStub().getMusicFamily()
                         : MusicFont.getDefaultMusicFamily();
+                final ShapeSymbol symbol = eval.shape.getDecoratedSymbol(family);
 
                 if (isActive) {
                     button.setEnabled(enabled);
                     button.setText(text);
                     button.setToolTipText(tip);
 
-                    ShapeSymbol symbol = eval.shape.getDecoratedSymbol(family);
                     button.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
                 } else {
                     field.setText(text);
                     field.setToolTipText(tip);
 
-                    final ShapeSymbol symbol = eval.shape.getDecoratedSymbol(family);
                     field.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
                 }
 
@@ -437,7 +461,6 @@ public class EvaluationBoard
     //----------//
     protected class Selector
     {
-
         // A collection of EvalButton's
         final List<EvalButton> buttons = new ArrayList<>();
 

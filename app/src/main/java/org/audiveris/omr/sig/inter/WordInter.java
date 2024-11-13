@@ -38,6 +38,7 @@ import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.text.TextWord;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.symbol.TextSymbol;
 import org.audiveris.omr.util.Jaxb;
@@ -48,6 +49,7 @@ import org.audiveris.omr.util.Wrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
@@ -63,7 +65,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class <code>WordInter</code> represents a text word.
+ * Class <code>WordInter</code> represents a word made of text characters.
+ * <p>
+ * By default, a WordInter uses a {@link TextFont}.
+ * But the {@link BeatUnitInter} subclass uses a {@link MusicFont} instead of a TextFont.
  * <p>
  * The containing {@link SentenceInter} is linked by a {@link Containment} relation.
  *
@@ -82,11 +87,11 @@ public class WordInter
     // Persistent data
     //----------------
 
-    /** Word text content. */
+    /** Word content. */
     @XmlAttribute
-    protected String value;
+    protected volatile String value;
 
-    /** Detected font attributes. */
+    /** Font attributes. */
     @XmlAttribute(name = "font")
     @XmlJavaTypeAdapter(FontInfo.JaxbAdapter.class)
     protected FontInfo fontInfo;
@@ -99,7 +104,7 @@ public class WordInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     protected WordInter ()
     {
@@ -113,9 +118,9 @@ public class WordInter
      *
      * @param glyph    underlying glyph
      * @param bounds   bounding box
-     * @param shape    specific shape (TEXT or LYRICS)
+     * @param shape    specific shape (TEXT or LYRICS or METRONOME)
      * @param grade    quality
-     * @param value    text content
+     * @param value    the word content
      * @param fontInfo font information
      * @param location location
      */
@@ -151,7 +156,7 @@ public class WordInter
     /**
      * Creates a new <code>WordInter</code> object, with TEXT shape.
      *
-     * @param textWord the OCR'ed text word
+     * @param textWord the OCR'd text word
      */
     public WordInter (TextWord textWord)
     {
@@ -161,7 +166,7 @@ public class WordInter
     /**
      * Creates a new <code>WordInter</code> object, with provided shape.
      *
-     * @param textWord the OCR'ed text word
+     * @param textWord the OCR'd text word
      * @param shape    specific shape (TEXT or LYRICS)
      */
     public WordInter (TextWord textWord,
@@ -238,6 +243,21 @@ public class WordInter
         return true;
     }
 
+    //------------//
+    // getAdvance //
+    //------------//
+    public int getAdvance ()
+    {
+        if (value.isEmpty()) {
+            return 0;
+        }
+
+        final TextFont font = new TextFont(fontInfo);
+        final TextLayout layout = font.layout(value);
+
+        return (int) Math.rint(layout.getAdvance());
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -246,6 +266,15 @@ public class WordInter
     {
         if (bounds != null) {
             return new Rectangle(bounds);
+        }
+
+        if (value.isEmpty()) {
+            return new Rectangle(
+                    bounds = new Rectangle(
+                            (int) Math.rint(location.getX()),
+                            (int) Math.rint(location.getY()),
+                            0,
+                            0));
         }
 
         TextFont textFont = new TextFont(fontInfo);
@@ -273,12 +302,27 @@ public class WordInter
             sb.append("codes[").append(StringUtil.codesOf(value, false)).append(']');
         }
 
-        if (fontInfo != null) {
-            sb.append((sb.length() != 0) ? " " : "");
-            sb.append(fontInfo.getMnemo());
+        return sb.toString();
+    }
+
+    //--------------//
+    // getDimension //
+    //--------------//
+    public Dimension getDimension ()
+    {
+        if (bounds != null) {
+            return bounds.getSize();
         }
 
-        return sb.toString();
+        if (value.isEmpty()) {
+            return new Dimension(0, 0);
+        }
+
+        final TextFont textFont = new TextFont(fontInfo);
+        final TextLayout layout = textFont.layout(value);
+        final Rectangle2D rect = layout.getBounds();
+
+        return new Dimension((int) Math.rint(rect.getWidth()), (int) Math.rint(rect.getHeight()));
     }
 
     //-----------//
@@ -340,11 +384,10 @@ public class WordInter
     @Override
     protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internals());
-
-        sb.append(" \"").append(value).append("\"");
-
-        return sb.toString();
+        return new StringBuilder(super.internals()) //
+                .append(" \"").append(value).append("\"") //
+                .append((fontInfo != null) ? " font:" + fontInfo.getMnemo() : "") //
+                .toString();
     }
 
     //--------//
@@ -392,6 +435,14 @@ public class WordInter
         // FontInfo?
     }
 
+    //-------------//
+    // setLocation //
+    //-------------//
+    public void setLocation (Point location)
+    {
+        this.location = location;
+    }
+
     //----------//
     // setValue //
     //----------//
@@ -415,8 +466,8 @@ public class WordInter
 
                 if (sentence.getRole() == TextRole.PartName) {
                     // Update partRef name as well
-                    final Part part = sentence.getStaff().getPart();
-                    part.setName(sentence);
+                    final Part thePart = sentence.getStaff().getPart();
+                    thePart.setName(sentence);
                 }
             }
         }
@@ -493,17 +544,21 @@ public class WordInter
                     box.width += dx;
 
                     if (box.width > 0) {
-                        WordInter word = (WordInter) getInter();
-                        String value = word.getValue();
-                        int fontSize = (int) Math.rint(
-                                TextFont.computeFontSize(value, FontInfo.DEFAULT, box.width));
-                        model.fontInfo = FontInfo.createDefault(fontSize);
+                        final WordInter word = (WordInter) getInter();
+                        final String value = word.getValue();
+
+                        // Select proper text font (family and size)
+                        final TextFamily textFamily = TextFont.getCurrentFamily();
+                        TextFont textFont = new TextFont(textFamily.getFontName(), null, 0, 50);
+                        final int fontSize = textFont.computeSize(value, box.getSize());
+                        model.fontInfo = new FontInfo(fontSize, textFamily.getFontName());
+                        textFont = textFont.deriveFont((float) fontSize);
 
                         // Handles
-                        TextFont textFont = new TextFont(model.fontInfo);
-                        TextLayout layout = textFont.layout(value);
-                        Rectangle2D rect = layout.getBounds();
-                        double y = model.baseLoc.getY() + rect.getY() + (rect.getHeight() / 2);
+                        final TextLayout layout = textFont.layout(value);
+                        final Rectangle2D rect = layout.getBounds();
+                        final double y = model.baseLoc.getY() + rect.getY() //
+                                + (rect.getHeight() / 2);
                         middle.setLocation(box.x + (rect.getWidth() / 2), y);
                         right.setLocation(box.x + rect.getWidth(), y);
                     }
