@@ -27,7 +27,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.StepException;
-import org.audiveris.omr.ui.action.AdvancedTopics;
+import org.audiveris.omr.ui.action.Preferences;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +67,7 @@ public class LedgersStep
     public void displayUI (OmrStep step,
                            Sheet sheet)
     {
-        if (AdvancedTopics.Topic.DEBUG.isSet()) {
+        if (Preferences.Topic.DEBUG.isSet()) {
             // Add ledger checkboard
             new LedgersBuilder(sheet.getSystems().get(0)).addCheckBoard();
         }

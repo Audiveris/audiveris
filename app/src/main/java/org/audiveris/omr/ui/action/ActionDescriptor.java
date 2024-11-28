@@ -64,7 +64,7 @@ public class ActionDescriptor
 
     /** Containing topic for this action. */
     @XmlAttribute(name = "topic")
-    public AdvancedTopics.Topic topic;
+    public Preferences.Topic topic;
 
     /** Class of menu item to be generated for this action, default is JMenuItem. */
     @XmlAttribute(name = "item")

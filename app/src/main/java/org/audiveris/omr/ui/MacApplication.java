@@ -96,7 +96,7 @@ public class MacApplication
         logger.debug(name);
 
         switch (name) {
-            case "handlePreferences" -> GuiActions.getInstance().defineOptions(null);
+            case "handlePreferences" -> GuiActions.getInstance().defineConstants(null);
             case "handleQuit" -> GuiActions.getInstance().exit(null);
             case "handleAbout" -> GuiActions.getInstance().showAbout(null);
             case "handleOpenFile" -> {

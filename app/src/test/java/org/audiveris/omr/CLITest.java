@@ -23,18 +23,18 @@ package org.audiveris.omr;
 
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.util.Dumping;
+
+import org.kohsuke.args4j.CmdLineException;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 
-import org.kohsuke.args4j.CmdLineException;
-
 import java.util.Arrays;
 
 /**
- *
  * @author Hervé Bitteur
  */
 public class CLITest
@@ -50,16 +50,27 @@ public class CLITest
     }
 
     @Test
+    public void testConstant ()
+        throws Exception
+    {
+        System.out.println("\n+++ testConstant");
+
+        String[] args = new String[] { "-constant", "omr.toto  :  totoValue", "-constant",
+                "omr.ui.tata=tataValue", "-constant", "keyWithNoValue", "-constant",
+                "myKey : my value" };
+        CLI.Parameters params = instance.parseParameters(args);
+        new Dumping().dump(params);
+    }
+
+    @Test
     public void testOption ()
-            throws Exception
+        throws Exception
     {
         System.out.println("\n+++ testOption");
 
-        String[] args = new String[]{
-            "-option", "omr.toto  :  totoValue", "-option",
-            "omr.ui.tata=tataValue", "-option", "keyWithNoValue", "-option",
-            "myKey : my value"
-        };
+        String[] args = new String[] { "-option", "omr.toto  :  totoValue", "-option",
+                "omr.ui.tata=tataValue", "-option", "keyWithNoValue", "-option",
+                "myKey : my value" };
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
     }
@@ -80,11 +91,11 @@ public class CLITest
 
     @Test
     public void testRun ()
-            throws Exception
+        throws Exception
     {
         System.out.println("\n+++ testRun");
 
-        String[] args = new String[]{"-run", "org.audiveris.omr.step.RunClass"};
+        String[] args = new String[] { "-run", "org.audiveris.omr.step.RunClass" };
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
         assertNotNull("baratin", params.runClass);
@@ -92,11 +103,11 @@ public class CLITest
 
     @Test
     public void testRunError ()
-            throws Exception
+        throws Exception
     {
         System.out.println("\n+++ testRunError");
 
-        String[] args = new String[]{"-run", "fooBar"};
+        String[] args = new String[] { "-run", "fooBar" };
 
         try {
             instance.parseParameters(args);
@@ -111,11 +122,11 @@ public class CLITest
 
     @Test
     public void testSheets ()
-            throws Exception
+        throws Exception
     {
         System.out.println("\n+++ testSheets");
 
-        String[] args = new String[]{"-sheets", "3", "4", "6", "11 14"};
+        String[] args = new String[] { "-sheets", "3", "4", "6", "11 14" };
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
         assertEquals(Arrays.asList(3, 4, 6, 11, 14).toString(), params.getSheetIds().toString());
@@ -123,11 +134,11 @@ public class CLITest
 
     @Test
     public void testSheetsRange ()
-            throws Exception
+        throws Exception
     {
         System.out.println("\n+++ testSheetsRange");
 
-        String[] args = new String[]{"-sheets", "1", "3-6", "10"};
+        String[] args = new String[] { "-sheets", "1", "3-6", "10" };
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
         assertEquals(Arrays.asList(1, 3, 4, 5, 6, 10).toString(), params.getSheetIds().toString());
@@ -135,11 +146,11 @@ public class CLITest
 
     @Test
     public void testSheetsRange2 ()
-            throws Exception
+        throws Exception
     {
         System.out.println("\n+++ testSheetsRange2");
 
-        String[] args = new String[]{"-sheets", "1", "4 - 6", "20"};
+        String[] args = new String[] { "-sheets", "1", "4 - 6", "20" };
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
         assertEquals(Arrays.asList(1, 4, 5, 6, 20).toString(), params.getSheetIds().toString());
@@ -147,14 +158,12 @@ public class CLITest
 
     @Test
     public void testSome ()
-            throws Exception
+        throws Exception
     {
         System.out.println("\n+++ testSome");
 
-        String[] args = new String[]{
-            "-help", "-batch", "-sheets", "2 5", " 3", "-step", "PAGE",
-            "myScript.xml", "my Input.pdf"
-        };
+        String[] args = new String[] { "-help", "-batch", "-sheets", "2 5", " 3", "-step", "PAGE",
+                "myScript.xml", "my Input.pdf" };
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
         assertEquals(true, params.batchMode);
@@ -168,11 +177,11 @@ public class CLITest
 
     @Test
     public void testStep ()
-            throws Exception
+        throws Exception
     {
         System.out.println("\n+++ testStep");
 
-        String[] args = new String[]{"-step", "PAGE"};
+        String[] args = new String[] { "-step", "PAGE" };
         CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
         assertEquals(OmrStep.PAGE, params.step);
@@ -180,11 +189,11 @@ public class CLITest
 
     @Test
     public void testStepEmpty ()
-            throws Exception
+        throws Exception
     {
         System.out.println("\n+++ testStepEmpty");
 
-        String[] args = new String[]{"-step"};
+        String[] args = new String[] { "-step" };
 
         try {
             instance.parseParameters(args);
@@ -199,7 +208,7 @@ public class CLITest
 
     @Test
     public void testVoid ()
-            throws Exception
+        throws Exception
     {
         System.out.println("\n+++ testVoid");
 

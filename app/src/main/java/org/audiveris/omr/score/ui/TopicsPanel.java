@@ -26,7 +26,6 @@ import org.audiveris.omr.ui.util.Panel;
 import org.jdesktop.application.ResourceMap;
 
 import com.jgoodies.forms.builder.FormBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.util.ArrayList;
@@ -137,7 +136,6 @@ public class TopicsPanel
 
         FormLayout layout = new FormLayout(colSpec, Panel.makeRows(logicalRowCount));
         FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
-        CellConstraints cst = new CellConstraints();
         int r = 1;
 
         for (XactTopic topic : topics) {

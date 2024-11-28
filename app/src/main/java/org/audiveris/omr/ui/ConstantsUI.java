@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                         O p t i o n s                                          //
+//                                     C o n s t a n t s U I                                      //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -57,15 +57,15 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
- * Class <code>Options</code> defines the user interface to edit application constants.
+ * Class <code>ConstantsUI</code> defines the user interface to edit application constants.
  *
  * @author Hervé Bitteur
  */
-public class Options
+public class ConstantsUI
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(Options.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConstantsUI.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -211,13 +211,13 @@ public class Options
     /**
      * Creates a new Options object.
      */
-    public Options ()
+    public ConstantsUI ()
     {
         // Preload constant units
         UnitManager.getInstance().preLoadUnits();
 
         dialog = new JDialog(OMR.gui.getFrame());
-        dialog.setName("OptionsFrame"); // For SAF life cycle
+        dialog.setName("constantsFrame"); // For SAF life cycle
 
         JComponent framePane = (JComponent) dialog.getContentPane();
         framePane.setLayout(new BorderLayout());
@@ -230,27 +230,29 @@ public class Options
 
         // Dump button
         JButton dumpButton = new JButton(dumping);
-        dumpButton.setName("optionsDumpButton");
+        dumpButton.setName("constantsDumpButton");
         toolBar.add(dumpButton);
 
         // Check button
         JButton checkButton = new JButton(checking);
-        checkButton.setName("optionsCheckButton");
+        checkButton.setName("constantsCheckButton");
         toolBar.add(checkButton);
 
         // Reset button
         JButton resetButton = new JButton(resetting);
-        resetButton.setName("optionsResetButton");
+        resetButton.setName("constantsResetButton");
         toolBar.add(resetButton);
 
         // Some space
         toolBar.add(Box.createHorizontalStrut(100));
 
-        toolBar.add(new JLabel("Search:"));
+        JLabel search = new JLabel();
+        search.setName("constantsSearchLabel");
+        toolBar.add(search);
 
         // Back button
         JButton backButton = new JButton(backSearch);
-        backButton.setName("optionsBackButton");
+        backButton.setName("constantsBackButton");
         toolBar.add(backButton);
         inputMap.put(KeyStroke.getKeyStroke("shift F3"), "backSearch");
         actionMap.put("backSearch", backSearch);
@@ -258,7 +260,7 @@ public class Options
         // Search entry
         searchField = new JTextField();
         searchField.setMaximumSize(new Dimension(200, 28));
-        searchField.setName("optionsSearchField");
+        searchField.setName("constantsSearchField");
         searchField.setHorizontalAlignment(JTextField.LEFT);
         toolBar.add(searchField);
         inputMap.put(KeyStroke.getKeyStroke("ctrl F"), "find");
@@ -267,7 +269,7 @@ public class Options
 
         // Forward button
         JButton forwardButton = new JButton(forwardSearch);
-        forwardButton.setName("optionsForwardButton");
+        forwardButton.setName("constantsForwardButton");
         toolBar.add(forwardButton);
 
         // Some space, message field

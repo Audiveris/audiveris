@@ -53,7 +53,7 @@ import org.audiveris.omr.sig.ui.InterListMenu;
 import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.OmrGui;
-import org.audiveris.omr.ui.action.AdvancedTopics;
+import org.audiveris.omr.ui.action.Preferences;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.VoidTask;
@@ -118,7 +118,7 @@ public class EditorMenu
         addMenu(new InterListMenu(sheet));
         addMenu(new GlyphListMenu(sheet));
 
-        if (AdvancedTopics.Topic.SAMPLES.isSet() && SampleRepository.USE_TRIBES) {
+        if (Preferences.Topic.SAMPLES.isSet() && SampleRepository.USE_TRIBES) {
             addMenu(new TribesMenu(sheet));
         }
 
@@ -784,7 +784,7 @@ public class EditorMenu
             add(new JMenuItem(editing));
             add(new JMenuItem(lineEditing));
 
-            if (AdvancedTopics.Topic.PLOTS.isSet()) {
+            if (Preferences.Topic.PLOTS.isSet()) {
                 addSeparator();
                 add(new JMenuItem(new PlotAction()));
                 add(new JMenuItem(new PlotHeaderAction()));

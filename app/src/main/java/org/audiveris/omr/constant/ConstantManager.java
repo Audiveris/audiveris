@@ -184,7 +184,7 @@ public class ConstantManager
         CLI cli = Main.getCli();
 
         if (cli != null) {
-            Properties cliConstants = cli.getOptions();
+            Properties cliConstants = cli.getConstants();
 
             if (cliConstants != null) {
                 String cliValue = cliConstants.getProperty(qName);

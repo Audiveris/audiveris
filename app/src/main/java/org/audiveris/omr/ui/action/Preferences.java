@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                   A d v a n c e d T o p i c s                                  //
+//                                      P r e f e r e n c e s                                     //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -24,11 +24,11 @@ package org.audiveris.omr.ui.action;
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.OmrStep;
+import org.audiveris.omr.ui.action.AdvancedTopics.Constants;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.LabeledEnum;
@@ -61,18 +61,20 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class <code>AdvancedTopics</code> gathers all topics that are relevant for advanced users
- * or developers only.
+ * Class <code>Preferences</code> handles a dialog to manage user preferences.
+ * <p>
+ * This class relies on some Constants management but operates at a higher level.
  *
  * @author Hervé Bitteur
  */
-public abstract class AdvancedTopics
+public abstract class Preferences
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Constants constants = new Constants();
+    // Kept in the old AdvancedTopics class for upward compatibility with user property files
+    private static final Constants constants = new AdvancedTopics.Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(AdvancedTopics.class);
+    private static final Logger logger = LoggerFactory.getLogger(Preferences.class);
 
     /** Layout for 2 items. */
     private static final FormLayout layout2 = new FormLayout("pref,15dlu,pref", "pref");
@@ -80,18 +82,14 @@ public abstract class AdvancedTopics
     /** Layout for 3 items. */
     private static final FormLayout layout3 = new FormLayout("12dlu,1dlu,pref,10dlu,pref", "pref");
 
-    private static final FormLayout layout3_2 = new FormLayout(
-            "12dlu,1dlu,pref,10dlu,pref",
-            "pref,pref,pref");
-
     private static final ApplicationContext context = Application.getInstance().getContext();
 
-    private static final ResourceMap resource = context.getResourceMap(AdvancedTopics.class);
+    private static final ResourceMap resource = context.getResourceMap(Preferences.class);
 
     //~ Constructors -------------------------------------------------------------------------------
 
     /** Not meant to be instantiated. */
-    private AdvancedTopics ()
+    private Preferences ()
     {
     }
 
@@ -108,7 +106,7 @@ public abstract class AdvancedTopics
     private static JPanel getMessage ()
     {
         final Panel panel = new Panel();
-        panel.setName("AdvancedTopicsPanel");
+        panel.setName("Preferences");
 
         final FormLayout layout = new FormLayout(
                 "pref",
@@ -124,7 +122,7 @@ public abstract class AdvancedTopics
         builder.addRaw(new OutputsPane()).xy(1, r);
 
         r += 2;
-        builder.addRaw(new AllTopicsPane()).xy(1, r);
+        builder.addRaw(new AdvancedTopicsPane()).xy(1, r);
 
         return panel;
     }
@@ -134,22 +132,22 @@ public abstract class AdvancedTopics
     //------//
     public static void show ()
     {
-        OMR.gui.displayMessage(getMessage(), resource.getString("AdvancedTopics.title"));
+        OMR.gui.displayMessage(getMessage(), resource.getString("Preferences.title"));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
-    //---------------//
-    // AllTopicsPane //
-    //---------------//
+    //--------------------//
+    // AdvancedTopicsPane //
+    //--------------------//
     /**
      * Pane for the advanced topic switches.
      */
-    private static class AllTopicsPane
+    private static class AdvancedTopicsPane
             extends JPanel
     {
 
-        AllTopicsPane ()
+        AdvancedTopicsPane ()
         {
             final String className = getClass().getSimpleName();
             setBorder(
@@ -184,38 +182,6 @@ public abstract class AdvancedTopics
                 r += 2;
             }
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static class Constants
-            extends ConstantSet
-    {
-
-        private final Constant.Boolean useSamples = new Constant.Boolean(
-                false,
-                "Handling of samples repositories and classifier");
-
-        private final Constant.Boolean useAnnotations = new Constant.Boolean(
-                false,
-                "Production of image annotation with symbols");
-
-        private final Constant.Boolean usePlots = new Constant.Boolean(
-                false,
-                "Display of scale / stem / staves plots");
-
-        private final Constant.Boolean useSpecificViews = new Constant.Boolean(
-                false,
-                "Display of specific sheet views");
-
-        private final Constant.Boolean useSpecificItems = new Constant.Boolean(
-                false,
-                "Specific items shown in sheet view");
-
-        private final Constant.Boolean useDebug = new Constant.Boolean(
-                false,
-                "Support for debug features");
     }
 
     //-----------//

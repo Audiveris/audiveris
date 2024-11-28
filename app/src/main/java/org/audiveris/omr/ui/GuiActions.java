@@ -30,7 +30,8 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.ui.ShapeColorChooser;
 import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.Versions;
-import org.audiveris.omr.ui.action.AdvancedTopics;
+import org.audiveris.omr.text.tesseract.Languages;
+import org.audiveris.omr.ui.action.Preferences;
 import org.audiveris.omr.ui.symbol.SymbolRipper;
 import org.audiveris.omr.ui.util.CursorController;
 import org.audiveris.omr.ui.util.OmrFileFilter;
@@ -71,8 +72,8 @@ public class GuiActions
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(GuiActions.class);
 
-    /** Options UI. */
-    private static Options options;
+    /** Constants UI. */
+    private static ConstantsUI constantsUI;
 
     /** Create this action just once. */
     private static volatile AboutAction aboutAction;
@@ -120,8 +121,7 @@ public class GuiActions
                 false,
                 OMR.gui.getFrame(),
                 BookManager.getBaseFolder(),
-                new OmrFileFilter(ext, new String[]
-                { ext }));
+                new OmrFileFilter(ext, new String[] { ext }));
 
         if (repoPath == null) {
             return null;
@@ -167,20 +167,34 @@ public class GuiActions
         OMR.gui.clearLog();
     }
 
-    //---------------//
-    // defineOptions //
-    //---------------//
+    //-----------------//
+    // defineConstants //
+    //-----------------//
     /**
-     * Action that opens a window where units options (logger level,
+     * Action that opens a window where units constants (logger level,
      * constants) can be managed.
      *
      * @param e the event that triggered this action
      * @return the SAF task
      */
     @Action
-    public Task<Options, Void> defineOptions (ActionEvent e)
+    public Task<ConstantsUI, Void> defineConstants (ActionEvent e)
     {
-        return new OptionsTask();
+        return new ConstantsUITask();
+    }
+
+    //-------------------//
+    // definePreferences //
+    //-------------------//
+    /**
+     * Action that opens the dialog where the user preferences are managed.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action
+    public void definePreferences (ActionEvent e)
+    {
+        Preferences.show();
     }
 
     //-------------------//
@@ -197,18 +211,19 @@ public class GuiActions
         ShapeColorChooser.showFrame();
     }
 
-    //--------------//
-    // defineTopics //
-    //--------------//
+    //-------------------//
+    // downloadLanguages //
+    //-------------------//
     /**
-     * Action that opens the dialog where topics can be enabled/disabled.
+     * Download OCR languages from github.
      *
-     * @param e the event that triggered this action
+     * @param e the event which triggered this action
+     * @return the task to launch
      */
     @Action
-    public void defineTopics (ActionEvent e)
+    public Task downloadLanguages (ActionEvent e)
     {
-        AdvancedTopics.show();
+        return new DownloadLanguagesTask();
     }
 
     //------//
@@ -427,6 +442,26 @@ public class GuiActions
                 "URL of Audiveris manual");
     }
 
+    //-----------------------//
+    // DownloadLanguagesTask //
+    //-----------------------//
+    private static class DownloadLanguagesTask
+            extends VoidTask
+    {
+        @Override
+        protected Void doInBackground ()
+            throws Exception
+        {
+            final Languages languages = Languages.create();
+
+            if (languages != null) {
+                OmrGui.getApplication().show(languages.getComponent());
+            }
+
+            return null;
+        }
+    }
+
     //---------------//
     // LazySingleton //
     //---------------//
@@ -436,34 +471,34 @@ public class GuiActions
         static final GuiActions INSTANCE = new GuiActions();
     }
 
-    //-------------//
-    // OptionsTask //
-    //-------------//
-    private static class OptionsTask
-            extends WaitingTask<Options, Void>
+    //-----------------//
+    // ConstantsUITask //
+    //-----------------//
+    private static class ConstantsUITask
+            extends WaitingTask<ConstantsUI, Void>
     {
 
-        OptionsTask ()
+        ConstantsUITask ()
         {
-            super(OmrGui.getApplication(), resources.getString("optionTask.message"));
+            super(OmrGui.getApplication(), resources.getString("constantsTask.message"));
         }
 
         @Override
-        protected Options doInBackground ()
+        protected ConstantsUI doInBackground ()
             throws Exception
         {
-            if (options == null) {
-                options = new Options();
+            if (constantsUI == null) {
+                constantsUI = new ConstantsUI();
             }
 
-            return options;
+            return constantsUI;
         }
 
         @Override
-        protected void succeeded (Options options)
+        protected void succeeded (ConstantsUI cui)
         {
-            if (options != null) {
-                OmrGui.getApplication().show(options.getComponent());
+            if (cui != null) {
+                OmrGui.getApplication().show(cui.getComponent());
             }
         }
     }

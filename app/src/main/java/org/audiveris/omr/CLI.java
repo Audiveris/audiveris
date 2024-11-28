@@ -174,17 +174,17 @@ public class CLI
         return tasks;
     }
 
-    //------------//
-    // getOptions //
-    //------------//
+    //--------------//
+    // getConstants //
+    //--------------//
     /**
      * Report the properties set at the CLI level
      *
      * @return the CLI-defined constant values
      */
-    public Properties getOptions ()
+    public Properties getConstants ()
     {
-        return params.options;
+        return params.constants;
     }
 
     //-----------------//
@@ -281,10 +281,17 @@ public class CLI
         logger.info("CLI args: {}", Arrays.toString(args));
 
         // Bug fix if an arg is made of spaces
+        // And deprecated "-option" must be replaced by "-constant"
         trimmedArgs = new String[args.length];
 
         for (int i = 0; i < args.length; i++) {
-            trimmedArgs[i] = args[i].trim();
+            String arg = args[i].trim();
+
+            if (arg.equals("-option")) {
+                arg = "-constant";
+            }
+
+            trimmedArgs[i] = arg;
         }
 
         parser.parseArgument(trimmedArgs);
@@ -619,7 +626,6 @@ public class CLI
      */
     public static class Parameters
     {
-
         /** Help mode. */
         @Option(name = "-help", help = true, usage = "Display general help then stop")
         boolean helpMode;
@@ -661,8 +667,8 @@ public class CLI
         boolean print;
 
         /** The map of application options. */
-        @Option(name = "-option", usage = "Define an application constant", handler = PropertyOptionHandler.class)
-        Properties options;
+        @Option(name = "-constant", usage = "Define an application constant", handler = PropertyOptionHandler.class)
+        Properties constants;
 
         /** Should book file be upgraded?. */
         @Option(name = "-upgrade", usage = "Upgrade whole book file")
@@ -869,8 +875,8 @@ public class CLI
                 if (params.runClass != null) {
                     try {
                         @SuppressWarnings("unchecked")
-                        Constructor cons = params.runClass.getConstructor(new Class[]
-                        { Book.class, SortedSet.class });
+                        Constructor cons = params.runClass.getConstructor(
+                                new Class[] { Book.class, SortedSet.class });
                         RunClass instance = (RunClass) cons.newInstance(book, sheetIds);
                         instance.process();
                     } catch (IllegalAccessException | IllegalArgumentException
