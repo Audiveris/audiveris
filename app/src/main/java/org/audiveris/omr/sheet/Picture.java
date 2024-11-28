@@ -115,11 +115,11 @@ public class Picture
 
     /** Image width. */
     @XmlAttribute(name = "width")
-    private final int width;
+    private int width;
 
     /** Image height. */
     @XmlAttribute(name = "height")
-    private final int height;
+    private int height;
 
     /**
      * <b>Deprecated</b> Old map of all handled run tables.
@@ -152,13 +152,13 @@ public class Picture
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor needed for JAXB.
+     * No-argument constructor needed for JAXB.
      */
     private Picture ()
     {
-        this.sheet = null;
-        this.width = 0;
-        this.height = 0;
+        sheet = null;
+        width = 0;
+        height = 0;
         logger.debug("Picture unmarshalled by JAXB");
     }
 
@@ -534,9 +534,10 @@ public class Picture
                 SheetStub stub = sheet.getStub();
                 gray = stub.getBook().loadSheetImage(stub.getNumber());
 
-                // If file at input path no longer exists, return null
-                if (gray == null) return null;
-                
+                if (gray == null) {
+                    return null;
+                }
+
                 gray = adjustImageFormat(gray);
                 setImage(ImageKey.GRAY, gray, false);
             } catch (ImageFormatException ex) {
@@ -633,9 +634,12 @@ public class Picture
     //-----------//
     /**
      * Report the desired source.
+     * <p>
      * If the source is not yet cached, build the source and store it in cache via weak reference.
-     * Users are encouraged to check if the gray source exists (!= null) before using it. An .OMR
-     * file which contains an invalid path to the source file may cause the gray source to be null.
+     * Users are encouraged to check if the gray source exists (!= null) before using it.
+     * <p>
+     * An .OMR file which contains an invalid path to the source file may cause the gray source
+     * to be null.
      *
      * @param key the key of desired source
      * @return the source ready to use, or null if not available
@@ -965,8 +969,29 @@ public class Picture
                                 BufferedImage image,
                                 boolean modified)
     {
-        ImageHolder imageHolder = new ImageHolder(key);
+        final ImageHolder imageHolder = new ImageHolder(key);
         imageHolder.setData(image, modified);
+
+        // Reloading an image may result in a slightly different dimension
+        // The case was detected when switching from JPodRenderer loader to PdfBox loader
+        if (image.getWidth() != width || image.getHeight() != height) {
+            logger.info(
+                    "New {} image size: {}x{} vs {}x{}",
+                    key,
+                    image.getWidth(),
+                    image.getHeight(),
+                    width,
+                    height);
+
+            // Discard all sources and tables
+            images.clear();
+            tables.clear();
+
+            // Use the new dimension
+            width = image.getWidth();
+            height = image.getHeight();
+        }
+
         images.put(key, imageHolder);
     }
 

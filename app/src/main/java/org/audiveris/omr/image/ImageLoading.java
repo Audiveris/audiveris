@@ -28,6 +28,7 @@ import org.audiveris.omr.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.pdfbox.io.RandomAccessReadBufferedFile;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -155,7 +156,8 @@ public abstract class ImageLoading
         PDDocument doc = null;
 
         try {
-            doc = PDDocument.load(imgPath.toFile());
+            doc = org.apache.pdfbox.Loader.loadPDF(
+                    new RandomAccessReadBufferedFile(imgPath.toString()));
         } catch (IOException ex) {
             logger.warn("Error opening pdf file " + imgPath, ex);
         }
@@ -164,7 +166,7 @@ public abstract class ImageLoading
             return null;
         }
 
-        int imageCount = doc.getNumberOfPages();
+        final int imageCount = doc.getNumberOfPages();
 
         return new PdfboxLoader(doc, imageCount);
     }

@@ -1804,8 +1804,13 @@ public class Book
                 return null;
             }
 
-            BufferedImage img = loader.getImage(id);
-            logger.info("Loaded image {} {}x{} from {}", id, img.getWidth(), img.getHeight(), path);
+            final BufferedImage img = loader.getImage(id);
+            logger.info(
+                    "Loaded image #{} {}x{} from {}",
+                    id,
+                    img.getWidth(),
+                    img.getHeight(),
+                    path);
 
             loader.dispose();
 
