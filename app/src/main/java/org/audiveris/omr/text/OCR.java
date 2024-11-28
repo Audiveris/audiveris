@@ -26,7 +26,7 @@ import org.audiveris.omr.sheet.Sheet;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import java.util.Set;
+import java.util.SortedSet;
 
 /**
  * Interface <code>OCR</code> defines the interaction with an OCR engine.
@@ -43,11 +43,11 @@ public interface OCR
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Report the set of supported language codes
+     * Report the sorted set of supported language codes
      *
-     * @return the set of supported 3-letter codes
+     * @return the sorted set of supported 3-letter codes
      */
-    Set<String> getLanguages ();
+    SortedSet<String> getSupportedLanguages ();
 
     /**
      * Report the minimum confidence for an OCR'd item.
@@ -71,15 +71,15 @@ public interface OCR
     boolean isAvailable ();
 
     /**
-     * Launch the recognition of the provided image, whose language is specified.
+     * Launch the recognition of the provided image, with language(s) specification.
      *
-     * @param sheet        the containing sheet
-     * @param image        the provided image
-     * @param topLeft      absolute coordinates of the image top left corner, or null
-     * @param languageCode language specification or null
-     * @param layoutMode   how the image layout should be analyzed
-     * @param label        an optional label related to the image, null otherwise.
-     *                     This is meant for keeping track of the temporary image files.
+     * @param sheet      the containing sheet
+     * @param image      the provided image
+     * @param topLeft    absolute coordinates of the image top left corner, or null
+     * @param langSpec   languages specification or null
+     * @param layoutMode how the image layout should be analyzed
+     * @param label      an optional label related to the image, null otherwise.
+     *                   This is meant for keeping track of the temporary image files.
      * @return a list of TextLine instances, or null.
      *         The coordinates of any returned TextLine are absolute coordinates thanks to the
      *         topLeft parameter.
@@ -87,9 +87,17 @@ public interface OCR
     List<TextLine> recognize (Sheet sheet,
                               BufferedImage image,
                               Point topLeft,
-                              String languageCode,
+                              String langSpec,
                               LayoutMode layoutMode,
                               String label);
+
+    /**
+     * Check whether the provided language specification is supported.
+     *
+     * @param langSpec languages specification
+     * @return true if OK
+     */
+    boolean supports (String langSpec);
 
     //~ Enumerations -------------------------------------------------------------------------------
 

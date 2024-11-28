@@ -13,6 +13,7 @@ Without this configuration present, some functionality in the IDE may be limited
         <word>barlines</word>
         <word>bezier</word>
         <word>binarization</word>
+        <word>binarize</word>
         <word>binarized</word>
         <word>boolean</word>
         <word>Bézier</word>
@@ -32,6 +33,7 @@ Without this configuration present, some functionality in the IDE may be limited
         <word>runtable</word>
         <word>runtime</word>
         <word>staccatissimo</word>
+        <word>Tesseract</word>
         <word>tuplet</word>
         <word>uncomment</word>
         <word>unmarshal</word>

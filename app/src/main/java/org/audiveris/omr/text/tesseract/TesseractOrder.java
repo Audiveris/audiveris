@@ -30,6 +30,7 @@ import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.text.TextChar;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
+import static org.audiveris.omr.text.tesseract.TesseractOCR.LANGUAGE_FILE_EXT;
 
 import org.bytedeco.javacpp.BoolPointer;
 import org.bytedeco.javacpp.BytePointer;
@@ -70,7 +71,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 /**
  * Class <code>TesseractOrder</code> carries a processing order submitted to Tesseract OCR
- * program.
+ * library.
  *
  * @author Hervé Bitteur
  */
@@ -116,8 +117,8 @@ public class TesseractOrder
     /** Should we keep a disk copy of the image?. */
     private final boolean saveImage;
 
-    /** Language specification. */
-    private final String lang;
+    /** Language(s) specification. */
+    private final String langSpec;
 
     /** Desired handling of layout. */
     private final int segMode;
@@ -137,7 +138,7 @@ public class TesseractOrder
      * @param label         A debugging label (such as sheet name or glyph id)
      * @param serial        A unique id for this order instance
      * @param saveImage     True to keep a disk copy of the image
-     * @param lang          The language specification
+     * @param langSpec      The language(s) specification
      * @param segMode       The desired page segmentation mode
      * @param bufferedImage The image to process
      * @throws UnsatisfiedLinkError When bridge to C++ could not be loaded
@@ -148,7 +149,7 @@ public class TesseractOrder
                            String label,
                            int serial,
                            boolean saveImage,
-                           String lang,
+                           String langSpec,
                            int segMode,
                            BufferedImage bufferedImage)
             throws UnsatisfiedLinkError, IOException
@@ -157,7 +158,7 @@ public class TesseractOrder
         this.label = label;
         this.serial = serial;
         this.saveImage = saveImage;
-        this.lang = lang;
+        this.langSpec = langSpec;
         this.segMode = segMode;
 
         // Build a PIX from the image provided
@@ -201,7 +202,7 @@ public class TesseractOrder
     /**
      * Report the baseline of the provided OCR'd item.
      *
-     * @param it    iterator on results structure
+     * @param rit   iterator on results structure
      * @param level desired level (word)
      * @return item baseline as a Line2D or null
      */
@@ -399,15 +400,16 @@ public class TesseractOrder
                 logger.info("ocrFolder: {}", ocrFolder);
                 final File langsDir = ocrFolder.toFile();
                 for (File file : langsDir.listFiles()) {
-                    if (file.toString().endsWith(".traineddata")) {
-                        logger.info("Lang file: {}", file);
+                    if (file.toString().endsWith(LANGUAGE_FILE_EXT)) {
+                        logger.info("Lang file: {} bytes: {}", file, file.length());
                     }
                 }
             }
 
-            final int initResult = api.Init(ocrFolder.toString(), lang, OEM_TESSERACT_ONLY);
-            if (initResult != 0) {
-                logger.warn("Could not initialize Tesseract lang: {} result: {}", lang, initResult);
+            if (api.Init(ocrFolder.toString(), langSpec, OEM_TESSERACT_ONLY) != 0) {
+                logger.warn(
+                        "TesseractOrder. Could not initialize TessBaseAPI languages: {} in legacy mode",
+                        langSpec);
 
                 return finish(null);
             }

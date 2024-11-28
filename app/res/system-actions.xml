@@ -87,14 +87,15 @@
 <!--    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleLetters"       topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>-->
 <!--    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleSentences"     topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>-->
 
+    <action domain="TOOL" section="5"  class="org.audiveris.omr.ui.GuiActions"        method="downloadLanguages"/>
     <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="browseGlobalSamples"  topic="SAMPLES"/>
     <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="saveGlobalSamples"    topic="SAMPLES"/>
     <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="browseLocalSamples"   topic="SAMPLES"/>
     <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="launchTrainer"        topic="SAMPLES"/>
-<!--    <action domain="TOOL" section="20"  class="org.audiveris.omr.ui.GuiActions" method="defineShapeColors" />-->
+<!--    <action domain="TOOL" section="25"  class="org.audiveris.omr.ui.GuiActions" method="defineShapeColors" />-->
     <action domain="TOOL" section="30" class="org.audiveris.omr.ui.GuiActions"        method="showMemory" />
-    <action domain="TOOL" section="40" class="org.audiveris.omr.ui.GuiActions"        method="defineOptions" />
-    <action domain="TOOL" section="50" class="org.audiveris.omr.ui.GuiActions"        method="defineTopics" />
+    <action domain="TOOL" section="40" class="org.audiveris.omr.ui.GuiActions"        method="defineConstants" />
+    <action domain="TOOL" section="50" class="org.audiveris.omr.ui.GuiActions"        method="definePreferences" />
 
     <action domain="PLUGIN" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="invokeDefaultPlugin" button="javax.swing.JButton" />
 

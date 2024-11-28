@@ -207,6 +207,11 @@ public class Main
         // Process CLI parameters
         processCli(args);
 
+        if (!cli.isBatchMode()) {
+            // Log all events to LogPane
+            LogUtil.addGuiAppender();
+        }
+
         // Locale to be used in the whole application?
         checkLocale();
 
@@ -231,9 +236,6 @@ public class Main
 
             // Select proper fonts names and sizes
             UIUtil.adjustDefaultFonts();
-
-            // Log all events to LogPane
-            LogUtil.addGuiAppender();
 
             logger.debug("Main. Launching MainGui");
             Application.launch(MainGui.class, args);

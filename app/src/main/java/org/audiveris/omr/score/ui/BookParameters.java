@@ -525,18 +525,30 @@ public class BookParameters
         private final SpinData globalData = new SpinData(
                 resources.getString("FilterPane.globalData.text"),
                 resources.getString("FilterPane.globalData.toolTipText"),
-                new SpinnerNumberModel(0, GlobalDescriptor.MINTHRESHOLD, GlobalDescriptor.MAXTHRESHOLD, 1));
+                new SpinnerNumberModel(
+                        0,
+                        GlobalDescriptor.MINTHRESHOLD,
+                        GlobalDescriptor.MAXTHRESHOLD,
+                        1));
 
         // Data for local
         private final SpinData localDataMean = new SpinData(
                 resources.getString("FilterPane.localDataMean.text"),
                 resources.getString("FilterPane.localDataMean.toolTipText"),
-                new SpinnerNumberModel(0.5, AdaptiveDescriptor.MINMEAN, AdaptiveDescriptor.MAXMEAN, 0.1));
+                new SpinnerNumberModel(
+                        0.5,
+                        AdaptiveDescriptor.MINMEAN,
+                        AdaptiveDescriptor.MAXMEAN,
+                        0.1));
 
         private final SpinData localDataDev = new SpinData(
                 resources.getString("FilterPane.localDataDev.text"),
                 resources.getString("FilterPane.localDataDev.toolTipText"),
-                new SpinnerNumberModel(0.2, AdaptiveDescriptor.MINSTDDEV, AdaptiveDescriptor.MAXSTDDEV, 0.1));
+                new SpinnerNumberModel(
+                        0.2,
+                        AdaptiveDescriptor.MINSTDDEV,
+                        AdaptiveDescriptor.MAXSTDDEV,
+                        0.1));
 
         FilterPane ()
         {
@@ -596,8 +608,7 @@ public class BookParameters
                         localDataDev.spinner.commitEdit();
                     }
                 }
-            } catch (ParseException ignored) {
-            }
+            } catch (ParseException ignored) {}
         }
 
         @Override
@@ -731,7 +742,7 @@ public class BookParameters
         @Override
         protected void display (String spec)
         {
-            int[] indices = listModel.indicesOf(spec);
+            final int[] indices = listModel.indicesOf(spec);
 
             if ((indices.length > 0) && (indices[0] != -1)) {
                 // Scroll to first index found?
@@ -748,7 +759,7 @@ public class BookParameters
         @Override
         protected String read ()
         {
-            return listModel.specOf(langList.getSelectedValuesList());
+            return Language.specOf(langList.getSelectedValuesList());
         }
 
         @Override

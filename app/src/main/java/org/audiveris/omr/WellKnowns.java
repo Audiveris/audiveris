@@ -64,10 +64,10 @@ public abstract class WellKnowns
     /** Application company id: {@value}. */
     public static final String COMPANY_ID = ProgramId.COMPANY_ID;
 
-    /** Application name: {@value}. */
+    /** Application name (organization name on GitHub): {@value}. */
     public static final String TOOL_NAME = ProgramId.PROGRAM_NAME;
 
-    /** Application id: {@value}. */
+    /** Application id (repository name on GitHub) : {@value}. */
     public static final String TOOL_ID = ProgramId.PROGRAM_ID;
 
     /** Application reference: {@value}. */

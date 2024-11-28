@@ -85,17 +85,29 @@ public abstract class OcrUtil
      *
      * @param image      the provided image
      * @param layoutMode MULTI_BLOCK or SINGLE_BLOCK
-     * @param language   language specification
+     * @param languages  languages specification
      * @param sheet      the related sheet
      * @param label      some label meant for debugging
      * @return the raw lines of text found, with coordinates relative to image origin
      */
     public static List<TextLine> scan (BufferedImage image,
                                        LayoutMode layoutMode,
-                                       String language,
+                                       String languages,
                                        Sheet sheet,
                                        String label)
     {
+        // Make sure we can use the OCR
+        if (!ocr.isAvailable()) {
+            logger.info("No OCR available");
+            return Collections.emptyList();
+        }
+
+        // Make sure we have all the specified languages
+        if (!ocr.supports(languages)) {
+            logger.info("Missing support for '{}' language(s)", languages);
+            return Collections.emptyList();
+        }
+
         final int width = image.getWidth();
         final int height = image.getHeight();
         final Point origin = new Point(0, 0);
@@ -122,7 +134,7 @@ public abstract class OcrUtil
             bi = image;
         }
 
-        final List<TextLine> lines = ocr.recognize(sheet, bi, origin, language, layoutMode, label);
+        final List<TextLine> lines = ocr.recognize(sheet, bi, origin, languages, layoutMode, label);
 
         if (lines == null) {
             logger.info("No OCR'd lines");

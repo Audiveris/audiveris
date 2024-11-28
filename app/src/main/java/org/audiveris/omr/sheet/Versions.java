@@ -91,12 +91,6 @@ public abstract class Versions
 
     private static final Logger logger = LoggerFactory.getLogger(Versions.class);
 
-    /** GitHub organization name. */
-    public static final String AUDIVERIS_ORGANIZATION_NAME = WellKnowns.TOOL_NAME;
-
-    /** GitHub repository name. */
-    public static final String AUDIVERIS_REPOSITORY_NAME = WellKnowns.TOOL_ID;
-
     /** Version of current Audiveris software. */
     public static final Version CURRENT_SOFTWARE = new Version(WellKnowns.TOOL_REF);
 
@@ -166,6 +160,7 @@ public abstract class Versions
     //~ Constructors -------------------------------------------------------------------------------
 
     /** No instance needed for this functional class. */
+    @SuppressWarnings("unused")
     private Versions ()
     {
     }
@@ -223,14 +218,14 @@ public abstract class Versions
         try {
             GitHub github = GitHub.connectAnonymously();
 
-            GHOrganization organization = github.getOrganization(AUDIVERIS_ORGANIZATION_NAME);
+            GHOrganization organization = github.getOrganization(WellKnowns.TOOL_NAME);
             logger.debug("{}", organization);
 
-            GHRepository repository = organization.getRepository(AUDIVERIS_REPOSITORY_NAME);
+            GHRepository repository = organization.getRepository(WellKnowns.TOOL_ID);
             logger.debug("{}", repository);
 
             if (repository == null) {
-                logger.warn("Unknown repository: {}", AUDIVERIS_REPOSITORY_NAME);
+                logger.warn("Unknown repository: {}", WellKnowns.TOOL_ID);
 
                 return null;
             }

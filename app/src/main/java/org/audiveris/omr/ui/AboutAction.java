@@ -52,6 +52,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import javax.swing.ImageIcon;
@@ -77,8 +78,8 @@ public class AboutAction
     private static final Logger logger = LoggerFactory.getLogger(AboutAction.class);
 
     // Resource injection
-    private static final ResourceMap resources =
-            Application.getInstance().getContext().getResourceMap(AboutAction.class);
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(AboutAction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -101,8 +102,7 @@ public class AboutAction
             aboutBox = createAboutBox();
         }
 
-        final Object[] options =
-        { "OK", "Copy" };
+        final Object[] options = { "OK", "Copy" };
 
         final int choice = JOptionPane.showOptionDialog(
                 OMR.gui.getFrame(),
@@ -129,8 +129,9 @@ public class AboutAction
         final Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
         final StringSelection strSel = new StringSelection(str);
         clip.setContents(strSel, strSel);
-        JOptionPane
-                .showMessageDialog(OMR.gui.getFrame(), resources.getString("AboutDialog.copied"));
+        JOptionPane.showMessageDialog(
+                OMR.gui.getFrame(),
+                resources.getString("AboutDialog.copied"));
     }
 
     //----------------//
@@ -223,23 +224,24 @@ public class AboutAction
         ((JLabel) Topic.ocr.comp).setText(tesseract.identify());
 
         final Path ocrFolder = tesseract.getOcrFolder();
-        ((JLabel) Topic.ocrFolder.comp).setText(ocrFolder != null ? ocrFolder.toString() : "null");
+        final String ocr = (ocrFolder == null) ? "null"
+                : ocrFolder.toString() + (Files.isWritable(ocrFolder) ? "" : " (NOT WRITABLE)");
+        ((JLabel) Topic.ocrFolder.comp).setText(ocr);
 
         ((JLabel) Topic.javaVendor.comp).setText(System.getProperty("java.vendor"));
 
         ((JLabel) Topic.javaVersion.comp).setText(System.getProperty("java.version"));
 
         ((JLabel) Topic.javaRuntime.comp).setText(
-                System.getProperty("java.runtime.name") + " (build "
-                        + System.getProperty("java.runtime.version") + ")");
+                System.getProperty("java.runtime.name") + " (build " + System.getProperty(
+                        "java.runtime.version") + ")");
 
         ((JLabel) Topic.javaVm.comp).setText(
-                System.getProperty("java.vm.name") + " (build "
-                        + System.getProperty("java.vm.version") + ", "
-                        + System.getProperty("java.vm.info") + ")");
+                System.getProperty("java.vm.name") + " (build " + System.getProperty(
+                        "java.vm.version") + ", " + System.getProperty("java.vm.info") + ")");
 
-        ((JLabel) Topic.os.comp)
-                .setText(System.getProperty("os.name") + " " + System.getProperty("os.version"));
+        ((JLabel) Topic.os.comp).setText(
+                System.getProperty("os.name") + " " + System.getProperty("os.version"));
 
         ((JLabel) Topic.osArch.comp).setText(System.getProperty("os.arch"));
 
@@ -289,11 +291,15 @@ public class AboutAction
             extends ConstantSet
     {
 
-        private final Constant.Integer titleFontSize =
-                new Constant.Integer("Points", 14, "Font size for title in about box");
+        private final Constant.Integer titleFontSize = new Constant.Integer(
+                "Points",
+                14,
+                "Font size for title in about box");
 
-        private final Constant.Integer urlFontSize =
-                new Constant.Integer("Points", 10, "Font size for URL in about box");
+        private final Constant.Integer urlFontSize = new Constant.Integer(
+                "Points",
+                10,
+                "Font size for URL in about box");
     }
 
     //------------//
