@@ -80,7 +80,7 @@ public class RunsViewer
 
         BoardsPane boards = new BoardsPane(
                 new PixelBoard(sheet),
-                new BinarizationBoard(sheet),
+                new BinaryBoard(sheet),
                 new RunBoard(table, true));
 
         // Here we create new tab with the name of the table

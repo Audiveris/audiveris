@@ -99,7 +99,7 @@ public class AdaptiveDescriptor
 
     //~ Constructors -------------------------------------------------------------------------------
 
-    /** No-arg constructor meant for JAXB. */
+    /** No-argument constructor meant for JAXB. */
     private AdaptiveDescriptor ()
     {
         meanCoeff = 0;
@@ -128,7 +128,7 @@ public class AdaptiveDescriptor
     public boolean equals (Object obj)
     {
         if ((obj instanceof AdaptiveDescriptor) && super.equals(obj)) {
-            AdaptiveDescriptor that = (AdaptiveDescriptor) obj;
+            final AdaptiveDescriptor that = (AdaptiveDescriptor) obj;
             final double epsilon = 0.00001;
 
             return (Math.abs(this.meanCoeff - that.meanCoeff) < epsilon) && (Math.abs(

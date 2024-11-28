@@ -95,9 +95,9 @@ public abstract class Board
     // Predefined boards names with preferred display positions
     public static final Desc PIXEL = new Desc("Pixel", 100);
 
-    public static final Desc BINARIZATION = new Desc("Binarization", 150);
+    public static final Desc BINARIZATION = new Desc("Binarization filter", 125);
 
-    public static final Desc BINARIZATIONADJUST = new Desc("Adjust Binarization", 175);
+    public static final Desc BINARY = new Desc("Binary pixel", 150);
 
     public static final Desc RUN = new Desc("Run", 200);
 

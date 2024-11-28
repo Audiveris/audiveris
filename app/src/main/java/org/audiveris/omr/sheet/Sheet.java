@@ -45,8 +45,8 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
-import org.audiveris.omr.sheet.ui.BinarizationAdjustBoard;
 import org.audiveris.omr.sheet.ui.BinarizationBoard;
+import org.audiveris.omr.sheet.ui.BinaryBoard;
 import org.audiveris.omr.sheet.ui.PictureView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
@@ -153,8 +153,8 @@ public class Sheet
     public static final String INTERNALS_RADIX = "sheet#";
 
     /** Events that can be published on sheet location service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]
-    { LocationEvent.class, PixelEvent.class };
+    private static final Class<?>[] eventsAllowed = new Class<?>[] { LocationEvent.class,
+            PixelEvent.class };
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
@@ -480,8 +480,7 @@ public class Sheet
                 try {
                     os.flush();
                     os.close();
-                } catch (IOException ignored) {
-                }
+                } catch (IOException ignored) {}
             }
         }
     }
@@ -592,21 +591,20 @@ public class Sheet
                 locationService.subscribeStrongly(LocationEvent.class, picture);
 
                 // Display sheet binary
-                PictureView pictureView = new PictureView(this, tab);
-                BinarizationAdjustBoard baBoard = new BinarizationAdjustBoard(this);
+                final PictureView pictureView = new PictureView(this, tab);
+                final BinarizationBoard binarizationBoard = new BinarizationBoard(this);
 
-                if (this.getPicture().getSource(Picture.SourceKey.GRAY) != null) {
-                    baBoard.setSelected(true);
+                if (getPicture().getSource(Picture.SourceKey.GRAY) != null) {
+                    binarizationBoard.setSelected(true);
                 }
-                
+
                 assembly.addViewTab(
                         tab,
                         pictureView,
                         new BoardsPane(
-                            new PixelBoard(this), 
-                            new BinarizationBoard(this),
-                            baBoard
-                        ));
+                                new PixelBoard(this),
+                                binarizationBoard,
+                                new BinaryBoard(this)));
             } else {
                 assembly.selectViewTab(tab);
             }
@@ -633,13 +631,10 @@ public class Sheet
         locationService.subscribeStrongly(LocationEvent.class, picture);
 
         // Display sheet picture
-        final PictureView pictureView = new PictureView(this, SheetTab.GRAY_TAB);
-        final BinarizationBoard bb = new BinarizationBoard(this);
-        bb.setSelected(true);
         stub.getAssembly().addViewTab(
                 SheetTab.GRAY_TAB,
-                pictureView,
-                new BoardsPane(new PixelBoard(this), bb));
+                new PictureView(this, SheetTab.GRAY_TAB),
+                new BoardsPane(new PixelBoard(this), new BinaryBoard(this)));
     }
 
     //----------------//
