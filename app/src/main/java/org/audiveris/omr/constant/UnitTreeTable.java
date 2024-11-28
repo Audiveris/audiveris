@@ -74,8 +74,7 @@ public class UnitTreeTable
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Create a User Interface JTreeTable dedicated to the handling of
-     * unit constants.
+     * Create a User Interface JTreeTable dedicated to the handling of unit constants.
      *
      * @param model the corresponding data model
      */

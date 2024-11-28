@@ -70,7 +70,7 @@ public class LoadStep
         final Book book = stub.getBook();
         final int number = stub.getNumber();
 
-        BufferedImage image = book.loadSheetImage(number);
+        final BufferedImage image = book.loadSheetImage(number);
 
         if (image != null) {
             // Threshold on image size
@@ -107,10 +107,9 @@ public class LoadStep
     private static class Constants
             extends ConstantSet
     {
-
-        private final Constant.Integer maxPixelCount = new Constant.Integer(
-                "Pixels",
-                20_000_000,
-                "Maximum image size, specified in pixel count (0 for no check)");
+        private final Constant.Integer maxPixelCount=new Constant.Integer( //
+        "Pixels", //
+        20_000_000, //
+        "Maximum image size, specified in pixel count (0 for no check)");
     }
 }
