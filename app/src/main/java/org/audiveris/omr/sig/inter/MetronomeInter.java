@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2023. All rights reserved.
+//  Copyright © Audiveris 2024. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -31,6 +31,7 @@ import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.TEXT;
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
@@ -59,6 +60,7 @@ import org.audiveris.omr.ui.symbol.MetronomeSymbol;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Entities;
@@ -86,6 +88,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -161,8 +164,12 @@ public class MetronomeInter
 
     private static final String spacePat = "\\s*";
 
-    /** Pattern for tempo textual indication. It includes a final space. */
-    private static final String tempoPat = group(TEMPO, "[^\\(\\x{E000}-\\x{FFFF}]*\\s");
+    /**
+     * Pattern for tempo textual indication.
+     * It stops before an opening parenthesis or a beat unit code.
+     * It includes a final space.
+     */
+    private static final String tempoPat = group(TEMPO, "[^\\(" + beatUnitRegexp() + "]*\\s");
 
     /** Pattern for opening parenthesis. */
     private static final String parPatStart = group(PAR_START, "\\(");
@@ -206,16 +213,7 @@ public class MetronomeInter
 
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Required single (or minimum) value. */
-    private Integer bpm1;
-
-    /** Optional maximum value. */
-    private Integer bpm2;
-
-    /** Optional parentheses indicator. */
-    private boolean parentheses = false;
-
-    /** Related model, if any. */
+    /** Underlying model, if any. */
     private Model model;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -276,14 +274,17 @@ public class MetronomeInter
     // buildModel //
     //------------//
     /**
-     * Build the model from metronome concrete members.
+     * Build the model from metronome value and word members.
      *
      * @return the model built
      */
     private Model buildModel ()
     {
-        // Populate the model
-        final Model m = new Model();
+        final String value = super.getValue();
+        final Model m = parseValue(value, false); // Get logical informations
+
+        // Complete model with physical informations
+
         final List<Inter> members = getMembers();
         Collections.sort(members, byAbscissa); // Safer
         boolean afterBeat = false; // Have we processed the beat unit yet?
@@ -292,12 +293,7 @@ public class MetronomeInter
             final WordInter word = (WordInter) member;
             final String val = word.getValue();
 
-            if (val.contains("(") || val.contains(")")) {
-                m.parentheses = true;
-            }
-
             if (word instanceof BeatUnitInter beatUnit) {
-                m.unit = beatUnit.getShape();
                 m.unitFontSize = beatUnit.getFontInfo().pointsize;
 
                 final SheetStub stub = staff.getSystem().getSheet().getStub();
@@ -316,20 +312,12 @@ public class MetronomeInter
                 afterBeat = true;
             } else {
                 if (!afterBeat) {
-                    if (m.tempo == null) {
-                        m.tempo = val;
+                    if (m.tempoFontSize == null) {
                         m.tempoFontSize = word.getFontInfo().pointsize;
-                    } else {
-                        m.tempo += " ";
-                        m.tempo += val;
                     }
                 } else {
-                    if (m.bpmText == null) {
-                        m.bpmText = val;
+                    if (m.bpmFontSize == null) {
                         m.bpmFontSize = word.getFontInfo().pointsize;
-                    } else {
-                        m.bpmText += " ";
-                        m.bpmText += val;
                     }
                 }
             }
@@ -348,11 +336,11 @@ public class MetronomeInter
                                MusicFont font,
                                Point dropLocation)
     {
-        logger.debug("deriveFrom dropLocation:{}", dropLocation);
+        logger.trace("deriveFrom dropLocation:{}", dropLocation);
         final MetronomeSymbol metroSymbol = (MetronomeSymbol) symbol;
 
         model = metroSymbol.getModel(font, dropLocation);
-        logger.debug("deriveFrom {}", model);
+        logger.trace("deriveFrom {}", model);
 
         setBounds(model.box.getBounds());
 
@@ -407,33 +395,33 @@ public class MetronomeInter
      */
     private Integer getBpm ()
     {
-        if (bpm1 == null) {
-            parseValue(getValue(), false);
+        if (model == null) {
+            model = buildModel();
         }
 
-        if (bpm2 != null) { // Interval
-            return (bpm1 + bpm2) / 2;
+        if (model.bpm2 != null) { // Interval
+            return (model.bpm1 + model.bpm2) / 2;
         }
 
-        return bpm1; // Single value
+        return model.bpm1; // Single value
     }
 
-    //---------//
-    // getBpm1 //
-    //---------//
-    /**
-     * Report the (minimum) bpm value.
-     *
-     * @return the bpm (minimum) value
-     */
-    private Integer getBpm1 ()
-    {
-        if (bpm1 == null) {
-            parseValue(getValue(), false);
-        }
-
-        return bpm1; // Single value
-    }
+    //    //---------//
+    //    // getBpm1 //
+    //    //---------//
+    //    /**
+    //     * Report the (minimum) bpm value.
+    //     *
+    //     * @return the bpm (minimum) value
+    //     */
+    //    private Integer getBpm1 ()
+    //    {
+    //        if (model == null) {
+    //            model = buildModel();
+    //        }
+    //
+    //        return model.bpm1; // Single value
+    //    }
 
     //------------//
     // getBpmText //
@@ -543,7 +531,7 @@ public class MetronomeInter
                 sb.append(", no unit");
             if (getGroup(matcher, EQUAL).isBlank())
                 sb.append(", no '='");
-            if (bpm1 == null)
+            if (model.bpm1 == null)
                 sb.append(", no bpm");
         } else {
             final Note note = getNote();
@@ -603,11 +591,11 @@ public class MetronomeInter
      */
     public boolean hasParentheses ()
     {
-        if (bpm1 == null) {
-            parseValue(getValue(), false);
+        if (model == null) {
+            model = buildModel();
         }
 
-        return parentheses;
+        return model.parentheses;
     }
 
     //-----------//
@@ -616,37 +604,29 @@ public class MetronomeInter
     @Override
     protected String internals ()
     {
+        if (model == null) {
+            model = buildModel();
+        }
+
         final StringBuilder sb = new StringBuilder(super.internals());
+
         if (getNote() != null) {
             sb.append(" beat:").append(getNote());
         }
-        if (getBpm1() != null) {
-            sb.append(" bpm1:").append(getBpm1());
+
+        if (model.bpm1 != null) {
+            sb.append(" bpm1:").append(model.bpm1);
         }
-        if (bpm2 != null) {
-            sb.append(" bpm2:").append(bpm2);
+
+        if (model.bpm2 != null) {
+            sb.append(" bpm2:").append(model.bpm2);
         }
-        if (parentheses) {
+
+        if (model.parentheses) {
             sb.append(" parentheses");
         }
 
         return sb.toString();
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    /**
-     * Invalidate cached information. (typically following a word modification)
-     */
-    @Override
-    public void invalidateCache ()
-    {
-        super.invalidateCache();
-
-        bpm1 = null;
-        bpm2 = null;
-        parentheses = false;
     }
 
     //------//
@@ -686,10 +666,12 @@ public class MetronomeInter
     //------------//
     /**
      * Parse the provided metronome sentence value, to populate a model.
+     * <p>
+     * This method is called when the user commits a modification in the Inter board.
      *
      * @param value the whole sentence value (perhaps containing music words!)
      * @param plain true for pure text, false for text and music
-     * @return a populated model, null if failed
+     * @return a model populated with logical informations, null if failed
      */
     private Model parseValue (String value,
                               boolean plain)
@@ -718,25 +700,26 @@ public class MetronomeInter
             }
         }
 
+        // Bpm values
         m.bpmText = getGroup(matcher, BPM_TEXT).trim();
 
         // BPM1
         final String bpm1Str = getGroup(matcher, BPM1);
         try {
-            bpm1 = Integer.decode(bpm1Str);
-            logger.debug("bpm1Str: \"{}\" bpm1: {}", bpm1Str, bpm1);
+            m.bpm1 = Integer.decode(bpm1Str);
+            logger.debug("bpm1Str: \"{}\" bpm1: {}", bpm1Str, m.bpm1);
         } catch (NumberFormatException ex) {
-            logger.info("Invalid bpm in metronome line {} str: \"{}\"", value, bpm1Str);
+            logger.info("Invalid bpm in metronome portion: \"{}\"", bpm1Str);
         }
 
-        // BPM2
+        // BPM2?
         final String bpm2Str = getGroup(matcher, BPM2);
         if (!bpm2Str.isEmpty()) {
             try {
-                bpm2 = Integer.decode(bpm2Str);
-                logger.debug("bpm2Str: \"{}\" bpm2: {}", bpm2Str, bpm2);
+                m.bpm2 = Integer.decode(bpm2Str);
+                logger.debug("bpm2Str: \"{}\" bpm2: {}", bpm2Str, m.bpm2);
             } catch (NumberFormatException ex) {
-                logger.info("Invalid bpm2 in metronome line {} str: \"{}\"", value, bpm2Str);
+                logger.info("Invalid bpm2 in metronome portion: \"{}\"", bpm2Str);
             }
         }
 
@@ -833,6 +816,8 @@ public class MetronomeInter
     //----------//
     /**
      * Assign a new value and change all members accordingly.
+     * <p>
+     * This method is called when the user commits a modification in the Inter board.
      *
      * @param newValue the new value
      * @return the new member words
@@ -846,8 +831,10 @@ public class MetronomeInter
             return null;
         }
 
+        // Get logical informations
         final Model newModel = parseValue(newValue, false);
 
+        // Complete the model with physical informations
         newModel.baseCenter = model.baseCenter;
         if (newModel.baseCenter == null) {
             // No too stupid: center abscissa and baseline of middle word
@@ -872,6 +859,23 @@ public class MetronomeInter
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
+
+    //----------------//
+    // beatUnitRegexp //
+    //----------------//
+    /**
+     * Build the beat unit regexp
+     *
+     * @return the regexp string, like: "\\x{FFFF}" for each code
+     */
+    private static String beatUnitRegexp ()
+    {
+        final Symbols symbols = MusicFamily.Bravura.getSymbols();
+
+        return ShapeSet.SimpleBeatUnits.stream().map(
+                u -> "\\x{" + Integer.toHexString(symbols.getCode(u)[0]) + "}") //
+                .collect(Collectors.joining());
+    }
 
     //--------//
     // create //
@@ -1414,13 +1418,21 @@ public class MetronomeInter
     public static class Model
             implements ObjectUIModel
     {
+        // Logical informations
+
         public String tempo; // Such as "Adagio"
 
         public Shape unit; // Such as METRO_QUARTER
 
         public String bpmText; // Such as "ca. 140"
 
+        public Integer bpm1; // Single (or minimum) bpm
+
+        public Integer bpm2; // Maximum bpm
+
         public boolean parentheses; // Parentheses?
+
+        // Physical informations
 
         public Integer tempoFontSize; // Font size for tempo
 
@@ -1428,9 +1440,9 @@ public class MetronomeInter
 
         public Integer bpmFontSize; // Font size for "=" and for bpm text
 
-        public Rectangle2D box; // Metronome global bounds
-
         public Point2D baseCenter; // Unit baseline center
+
+        public Rectangle2D box; // Metronome global bounds (useful only when dragging)
 
         @Override
         public void translate (double dx,
@@ -1447,12 +1459,14 @@ public class MetronomeInter
                     .append("tempo:\"").append(tempo).append('\"') //
                     .append(" unit:").append(unit) //
                     .append(" bpmText:\"").append(bpmText).append('\"') //
+                    .append(" bpm1:").append(bpm1) //
+                    .append(" bpm2:").append(bpm2) //
                     .append(" par:").append(parentheses) //
                     .append(" tempoFS:").append(tempoFontSize) //
                     .append(" unitFS:").append(unitFontSize) //
                     .append(" bpmFS:").append(bpmFontSize) //
-                    .append(" box:").append(box) //
                     .append(" baseCenter:").append(baseCenter) //
+                    .append(" box:").append(box) //
                     .append('}').toString();
         }
     }

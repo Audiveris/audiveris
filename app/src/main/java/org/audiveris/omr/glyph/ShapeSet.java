@@ -119,16 +119,22 @@ public class ShapeSet
             TIME_TWELVE_EIGHT);
 
     /** All sorts of F clefs. */
-    public static final EnumSet<Shape> BassClefs =
-            EnumSet.of(F_CLEF, F_CLEF_SMALL, F_CLEF_8VA, F_CLEF_8VB);
+    public static final EnumSet<Shape> BassClefs = EnumSet.of(
+            F_CLEF,
+            F_CLEF_SMALL,
+            F_CLEF_8VA,
+            F_CLEF_8VB);
 
     /** All sorts of G clefs. */
-    public static final EnumSet<Shape> TrebleClefs =
-            EnumSet.of(G_CLEF, G_CLEF_SMALL, G_CLEF_8VA, G_CLEF_8VB);
+    public static final EnumSet<Shape> TrebleClefs = EnumSet.of(
+            G_CLEF,
+            G_CLEF_SMALL,
+            G_CLEF_8VA,
+            G_CLEF_8VB);
 
     /** All clefs. */
-    public static final EnumSet<Shape> Clefs =
-            EnumSet.copyOf(shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
+    public static final EnumSet<Shape> Clefs = EnumSet.copyOf(
+            shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
 
     /** Flags up. */
     public static final EnumSet<Shape> FlagsUp = EnumSet.of(FLAG_1, FLAG_2, FLAG_3, FLAG_4, FLAG_5);
@@ -137,12 +143,17 @@ public class ShapeSet
     public static final List<Shape> SmallFlagsUp = Arrays.asList(SMALL_FLAG, SMALL_FLAG_SLASH);
 
     /** Flags down. */
-    public static final EnumSet<Shape> FlagsDown =
-            EnumSet.of(FLAG_1_DOWN, FLAG_2_DOWN, FLAG_3_DOWN, FLAG_4_DOWN, FLAG_5_DOWN);
+    public static final EnumSet<Shape> FlagsDown = EnumSet.of(
+            FLAG_1_DOWN,
+            FLAG_2_DOWN,
+            FLAG_3_DOWN,
+            FLAG_4_DOWN,
+            FLAG_5_DOWN);
 
     /** Small flags down. */
-    public static final List<Shape> SmallFlagsDown =
-            Arrays.asList(SMALL_FLAG_DOWN, SMALL_FLAG_SLASH_DOWN);
+    public static final List<Shape> SmallFlagsDown = Arrays.asList(
+            SMALL_FLAG_DOWN,
+            SMALL_FLAG_SLASH_DOWN);
 
     /** All SHARP-based keys. */
     public static final EnumSet<Shape> SharpKeys = EnumSet.of(
@@ -155,35 +166,52 @@ public class ShapeSet
             KEY_SHARP_7);
 
     /** All FLAT-based keys. */
-    public static final EnumSet<Shape> FlatKeys = EnumSet
-            .of(KEY_FLAT_1, KEY_FLAT_2, KEY_FLAT_3, KEY_FLAT_4, KEY_FLAT_5, KEY_FLAT_6, KEY_FLAT_7);
+    public static final EnumSet<Shape> FlatKeys = EnumSet.of(
+            KEY_FLAT_1,
+            KEY_FLAT_2,
+            KEY_FLAT_3,
+            KEY_FLAT_4,
+            KEY_FLAT_5,
+            KEY_FLAT_6,
+            KEY_FLAT_7);
 
     /** FermataArcs. */
     public static final EnumSet<Shape> FermataArcs = EnumSet.of(FERMATA_ARC, FERMATA_ARC_BELOW);
 
     /** Core shapes for barlines. */
-    public static final EnumSet<Shape> CoreBarlines = EnumSet
-            .copyOf(Arrays.asList(THICK_BARLINE, THICK_CONNECTOR, THIN_BARLINE, THIN_CONNECTOR));
+    public static final EnumSet<Shape> CoreBarlines = EnumSet.copyOf(
+            Arrays.asList(THICK_BARLINE, THICK_CONNECTOR, THIN_BARLINE, THIN_CONNECTOR));
 
     /** Repeat bars. */
-    public static final List<Shape> RepeatBars =
-            Arrays.asList(REPEAT_ONE_BAR, REPEAT_TWO_BARS, REPEAT_FOUR_BARS);
+    public static final List<Shape> RepeatBars = Arrays.asList(
+            REPEAT_ONE_BAR,
+            REPEAT_TWO_BARS,
+            REPEAT_FOUR_BARS);
 
     /** Beams. */
-    public static final EnumSet<Shape> Beams =
-            EnumSet.copyOf(Arrays.asList(BEAM, BEAM_SMALL, BEAM_HOOK, BEAM_HOOK_SMALL));
+    public static final EnumSet<Shape> Beams = EnumSet.copyOf(
+            Arrays.asList(BEAM, BEAM_SMALL, BEAM_HOOK, BEAM_HOOK_SMALL));
 
     /** Heads with an oval shape. */
-    public static final List<Shape> HeadsOval =
-            Arrays.asList(NOTEHEAD_BLACK, NOTEHEAD_VOID, WHOLE_NOTE, BREVE);
+    public static final List<Shape> HeadsOval = Arrays.asList(
+            NOTEHEAD_BLACK,
+            NOTEHEAD_VOID,
+            WHOLE_NOTE,
+            BREVE);
 
     /** Heads with a small oval shape. */
-    public static final List<Shape> HeadsOvalSmall =
-            Arrays.asList(NOTEHEAD_BLACK_SMALL, NOTEHEAD_VOID_SMALL, WHOLE_NOTE_SMALL, BREVE_SMALL);
+    public static final List<Shape> HeadsOvalSmall = Arrays.asList(
+            NOTEHEAD_BLACK_SMALL,
+            NOTEHEAD_VOID_SMALL,
+            WHOLE_NOTE_SMALL,
+            BREVE_SMALL);
 
     /** Heads with a cross shape. */
-    public static final List<Shape> HeadsCross =
-            Arrays.asList(NOTEHEAD_CROSS, NOTEHEAD_CROSS_VOID, WHOLE_NOTE_CROSS, BREVE_CROSS);
+    public static final List<Shape> HeadsCross = Arrays.asList(
+            NOTEHEAD_CROSS,
+            NOTEHEAD_CROSS_VOID,
+            WHOLE_NOTE_CROSS,
+            BREVE_CROSS);
 
     /** Heads with a filled cross shape. */
     public static final List<Shape> HeadsCrossBlack = Arrays.asList( //
@@ -210,12 +238,18 @@ public class ShapeSet
             BREVE_TRIANGLE_DOWN);
 
     /** Heads with a circle X shape. */
-    public static final List<Shape> HeadsCircle = Arrays
-            .asList(NOTEHEAD_CIRCLE_X, NOTEHEAD_CIRCLE_X_VOID, WHOLE_NOTE_CIRCLE_X, BREVE_CIRCLE_X);
+    public static final List<Shape> HeadsCircle = Arrays.asList(
+            NOTEHEAD_CIRCLE_X,
+            NOTEHEAD_CIRCLE_X_VOID,
+            WHOLE_NOTE_CIRCLE_X,
+            BREVE_CIRCLE_X);
 
     /** All compound notes. */
-    public static final List<Shape> CompoundNotes =
-            Arrays.asList(QUARTER_NOTE_UP, QUARTER_NOTE_DOWN, HALF_NOTE_UP, HALF_NOTE_DOWN);
+    public static final List<Shape> CompoundNotes = Arrays.asList(
+            QUARTER_NOTE_UP,
+            QUARTER_NOTE_DOWN,
+            HALF_NOTE_UP,
+            HALF_NOTE_DOWN);
 
     /** All quarter heads (duration: 1/4). */
     public static final EnumSet<Shape> QuarterHeads = EnumSet.of(
@@ -310,22 +344,26 @@ public class ShapeSet
             WHOLE_NOTE_CIRCLE_X);
 
     /** Grace notes. */
-    public static final List<Shape> Graces =
-            Arrays.asList(GRACE_NOTE, GRACE_NOTE_DOWN, GRACE_NOTE_SLASH, GRACE_NOTE_SLASH_DOWN);
+    public static final List<Shape> Graces = Arrays.asList(
+            GRACE_NOTE,
+            GRACE_NOTE_DOWN,
+            GRACE_NOTE_SLASH,
+            GRACE_NOTE_SLASH_DOWN);
 
     /** Octave shifts. */
-    public static final List<Shape> OctaveShifts =
-            Arrays.asList(OTTAVA, QUINDICESIMA, VENTIDUESIMA);
+    public static final List<Shape> OctaveShifts = Arrays.asList(
+            OTTAVA,
+            QUINDICESIMA,
+            VENTIDUESIMA);
 
     /** Percussion playing techniques. */
-    public static final List<Shape> Playings =
-            Arrays.asList(PLAYING_OPEN, PLAYING_HALF_OPEN, PLAYING_CLOSED);
+    public static final List<Shape> Playings = Arrays.asList(
+            PLAYING_OPEN,
+            PLAYING_HALF_OPEN,
+            PLAYING_CLOSED);
 
     /** Tremolos. */
     public static final List<Shape> Tremolos = Arrays.asList(TREMOLO_1, TREMOLO_2, TREMOLO_3);
-
-    /** All non-draggable shapes. */
-    public static final EnumSet<Shape> Undraggables = EnumSet.of(NON_DRAGGABLE);
 
     //----------------------------------------------------------------------------------------------
     // Below are predefined instances of ShapeSet, meant mainly for UI packaging.
@@ -377,8 +415,10 @@ public class ShapeSet
                     Tremolos,
                     Arrays.asList(TUPLET_THREE, TUPLET_SIX)));
 
-    public static final ShapeSet ClefsAndShifts =
-            new ShapeSet(G_CLEF, Colors.SCORE_FRAME, shapesOf(Clefs, OctaveShifts));
+    public static final ShapeSet ClefsAndShifts = new ShapeSet(
+            G_CLEF,
+            Colors.SCORE_FRAME,
+            shapesOf(Clefs, OctaveShifts));
 
     public static final ShapeSet Dynamics = new ShapeSet(
             DYNAMICS_F,
@@ -416,8 +456,10 @@ public class ShapeSet
             Colors.SCORE_NOTES,
             shapesOf(Heads, shapesOf(AUGMENTATION_DOT), CompoundNotes, Playings));
 
-    public static final ShapeSet Markers =
-            new ShapeSet(CODA, Colors.SCORE_FRAME, shapesOf(DAL_SEGNO, DA_CAPO, SEGNO, CODA));
+    public static final ShapeSet Markers = new ShapeSet(
+            CODA,
+            Colors.SCORE_FRAME,
+            shapesOf(DAL_SEGNO, DA_CAPO, SEGNO, CODA));
 
     public static final ShapeSet GraceAndOrnaments = new ShapeSet(
             MORDENT,
@@ -488,22 +530,12 @@ public class ShapeSet
                     ROMAN_XI,
                     ROMAN_XII));
 
-    public static final ShapeSet BeatUnits = new ShapeSet(
-            METRO_EIGHTH,
-            Colors.SCORE_PHYSICALS,
-            shapesOf(
-                    METRO_WHOLE,
-                    METRO_HALF,
-                    METRO_QUARTER,
-                    METRO_EIGHTH,
-                    METRO_SIXTEENTH,
-                    METRO_DOTTED_HALF,
-                    METRO_DOTTED_QUARTER,
-                    METRO_DOTTED_EIGHTH,
-                    METRO_DOTTED_SIXTEENTH));
+    public static final ShapeSet BeatUnits;
 
-    public static final ShapeSet Texts =
-            new ShapeSet(TEXT, Colors.SCORE_PHYSICALS, shapesOf(LYRICS, TEXT, METRONOME));
+    public static final ShapeSet Texts = new ShapeSet(
+            TEXT,
+            Colors.SCORE_PHYSICALS,
+            shapesOf(LYRICS, TEXT, METRONOME));
 
     public static final ShapeSet Physicals = new ShapeSet(
             SLUR_ABOVE,
@@ -519,8 +551,9 @@ public class ShapeSet
     // =========================================================================
     //
     /** All physical shapes. Here the use of EnumSet.range is OK */
-    public static final EnumSet<Shape> allPhysicalShapes =
-            EnumSet.range(Shape.values()[0], LAST_PHYSICAL_SHAPE);
+    public static final EnumSet<Shape> allPhysicalShapes = EnumSet.range(
+            Shape.values()[0],
+            LAST_PHYSICAL_SHAPE);
 
     /** Pedals */
     public static final EnumSet<Shape> Pedals = EnumSet.of(PEDAL_MARK, PEDAL_UP_MARK);
@@ -531,7 +564,34 @@ public class ShapeSet
     /** Small Clefs */
     public static final EnumSet<Shape> SmallClefs = EnumSet.of(G_CLEF_SMALL, F_CLEF_SMALL);
 
+    /** Non-dotted beat units. */
+    public static final EnumSet<Shape> SimpleBeatUnits = EnumSet.of(
+            METRO_WHOLE,
+            METRO_HALF,
+            METRO_QUARTER,
+            METRO_EIGHTH,
+            METRO_SIXTEENTH);
+
+    /** Dotted beat units. */
+    public static final EnumSet<Shape> DottedBeatUnits = EnumSet.of(
+            METRO_DOTTED_HALF,
+            METRO_DOTTED_QUARTER,
+            METRO_DOTTED_EIGHTH,
+            METRO_DOTTED_SIXTEENTH);
+
+    /** All non-draggable shapes. */
+    public static final List<Shape> Undraggables = new ArrayList<>();
+
     static {
+        BeatUnits = new ShapeSet(
+                METRO_EIGHTH,
+                Colors.SCORE_PHYSICALS,
+                shapesOf(shapesOf(SimpleBeatUnits), shapesOf(DottedBeatUnits)));
+
+        // For the time being, beat units are not draggable
+        Undraggables.add(NON_DRAGGABLE);
+        Undraggables.addAll(BeatUnits.getShapes());
+
         // Make sure all the shape colors are defined
         ShapeSet.defineAllShapeColors();
 
@@ -1045,8 +1105,8 @@ public class ShapeSet
      */
     public static Collection<Shape> shapesOf (Collection<Shape> col)
     {
-        Collection<Shape> shapes =
-                (col instanceof List) ? new ArrayList<>() : EnumSet.noneOf(Shape.class);
+        Collection<Shape> shapes = (col instanceof List) ? new ArrayList<>()
+                : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col);
 
@@ -1066,8 +1126,8 @@ public class ShapeSet
     public static Collection<Shape> shapesOf (Collection<Shape> col1,
                                               Collection<Shape> col2)
     {
-        Collection<Shape> shapes =
-                (col1 instanceof List) ? new ArrayList<>() : EnumSet.noneOf(Shape.class);
+        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<>()
+                : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col1);
         shapes.addAll(col2);
@@ -1090,8 +1150,8 @@ public class ShapeSet
                                               Collection<Shape> col2,
                                               Collection<Shape> col3)
     {
-        Collection<Shape> shapes =
-                (col1 instanceof List) ? new ArrayList<>() : EnumSet.noneOf(Shape.class);
+        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<>()
+                : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col1);
         shapes.addAll(col2);
@@ -1117,8 +1177,8 @@ public class ShapeSet
                                               Collection<Shape> col3,
                                               Collection<Shape> col4)
     {
-        Collection<Shape> shapes =
-                (col1 instanceof List) ? new ArrayList<>() : EnumSet.noneOf(Shape.class);
+        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<>()
+                : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col1);
         shapes.addAll(col2);
@@ -1165,8 +1225,9 @@ public class ShapeSet
             extends ConstantSet
     {
 
-        private final Constant.Boolean addClutterInPhysicals =
-                new Constant.Boolean(false, "(Hidden feature)");
+        private final Constant.Boolean addClutterInPhysicals = new Constant.Boolean(
+                false,
+                "(Hidden feature)");
     }
 
     //-----------//

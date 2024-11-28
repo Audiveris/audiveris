@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2023. All rights reserved.
+//  Copyright © Audiveris 2024. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -171,14 +171,19 @@ public class MetronomeSymbol
 
             // Model
             p.model = new MetronomeInter.Model();
-            p.model.box = p.rect.getBounds2D();
             p.model.tempo = "";
             p.model.unit = note.toShape();
             p.model.bpmText = bpmString;
-            p.model.baseCenter = new Point2D.Double(noteRect.getWidth() / 2, -noteRect.getY());
-            p.model.unitFontSize = musicFont.getSize();
+
+            p.model.bpm1 = 0;
+            p.model.bpm2 = null;
+            p.model.parentheses = false;
+
             p.model.tempoFontSize = textFont.getSize();
+            p.model.unitFontSize = musicFont.getSize();
             p.model.bpmFontSize = textFont.getSize();
+            p.model.baseCenter = new Point2D.Double(noteRect.getWidth() / 2, -noteRect.getY());
+            p.model.box = p.rect.getBounds2D();
         }
 
         return p;
