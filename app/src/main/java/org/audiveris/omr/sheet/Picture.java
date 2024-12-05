@@ -530,9 +530,8 @@ public class Picture
 
         if (gray == null) {
             try {
-                // Try to reload image from book input path
-                SheetStub stub = sheet.getStub();
-                gray = stub.getBook().loadSheetImage(stub.getNumber());
+                // Try to reload image from sheet input information
+                gray = sheet.getStub().loadGrayImage();
 
                 if (gray == null) {
                     return null;

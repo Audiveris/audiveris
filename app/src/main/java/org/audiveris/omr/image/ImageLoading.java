@@ -183,6 +183,12 @@ public abstract class ImageLoading
     public static Loader getLoader (Path imgPath)
     {
         // Avoid stupid errors
+        if (imgPath == null) {
+            logger.warn("Null file path", imgPath);
+
+            return null;
+        }
+
         if (!Files.exists(imgPath)) {
             logger.warn("File {} does not exist", imgPath);
 

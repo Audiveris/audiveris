@@ -1130,9 +1130,9 @@ public class BookActions
         final Book book = StubsController.getCurrentBook();
 
         if (book != null) {
-            final Path inputPath = book.getInputPath();
+            final Path inputPath = book.getInputPath(); // Null for a compound book
 
-            if (!Files.exists(inputPath)) {
+            if ((inputPath != null) && !Files.exists(inputPath)) {
                 OMR.gui.displayWarning("Cannot find " + inputPath, "Source images not available");
                 return null;
             }

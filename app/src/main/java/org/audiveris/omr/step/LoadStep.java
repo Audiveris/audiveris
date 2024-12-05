@@ -23,7 +23,6 @@ package org.audiveris.omr.step;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SheetTab;
@@ -67,10 +66,7 @@ public class LoadStep
         throws StepException
     {
         final SheetStub stub = sheet.getStub();
-        final Book book = stub.getBook();
-        final int number = stub.getNumber();
-
-        final BufferedImage image = book.loadSheetImage(number);
+        final BufferedImage image = stub.loadGrayImage();
 
         if (image != null) {
             // Threshold on image size

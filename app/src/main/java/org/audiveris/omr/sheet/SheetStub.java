@@ -28,6 +28,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.FilterParam;
+import org.audiveris.omr.image.ImageLoading;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.Page;
@@ -1238,6 +1239,49 @@ public class SheetStub
         return !invalid;
     }
 
+    //---------------//
+    // loadGrayImage //
+    //---------------//
+    /**
+     * Actually load the image that corresponds to this sheet stub.
+     *
+     * @return the loaded sheet image
+     */
+    public synchronized BufferedImage loadGrayImage ()
+    {
+        try {
+            final SheetInput si = getSheetInput();
+
+            if (!Files.exists(si.path)) {
+                logger.info("Input {} not found", si.path);
+
+                return null;
+            }
+
+            final ImageLoading.Loader loader = ImageLoading.getLoader(si.path);
+
+            if (loader == null) {
+                return null;
+            }
+
+            final BufferedImage img = loader.getImage(si.number);
+            logger.info(
+                    "Loaded image #{} {}x{} from {}",
+                    si.number,
+                    img.getWidth(),
+                    img.getHeight(),
+                    si.path);
+
+            loader.dispose();
+
+            return img;
+        } catch (IOException ex) {
+            logger.warn("Error in SheetStub.loadGrayImage", ex);
+
+            return null;
+        }
+    }
+
     //------------------//
     // migrateOldParams //
     //------------------//
@@ -1395,7 +1439,7 @@ public class SheetStub
         doReset();
 
         try {
-            BufferedImage img = book.loadSheetImage(number);
+            BufferedImage img = loadGrayImage();
             sheet = new Sheet(this, img, true);
             logger.info("Sheet#{} reset as valid.", number);
             display();
@@ -1437,7 +1481,7 @@ public class SheetStub
     public void resetToGray ()
     {
         try {
-            final BufferedImage img = book.loadSheetImage(number);
+            final BufferedImage img = loadGrayImage();
 
             if (img != null) {
                 doReset();

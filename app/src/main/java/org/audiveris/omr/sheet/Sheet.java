@@ -1018,12 +1018,12 @@ public class Sheet
     public Picture getPicture ()
     {
         if (picture == null) {
-            BufferedImage img = getBook().loadSheetImage(stub.getNumber());
+            final BufferedImage img = stub.loadGrayImage();
 
             try {
                 setImage(img, true);
             } catch (StepException ex) {
-                logger.warn("Error setting image id {}", stub.getNumber(), ex);
+                logger.warn("Error setting image for sheet {}", stub.getNumber(), ex);
             }
         }
 

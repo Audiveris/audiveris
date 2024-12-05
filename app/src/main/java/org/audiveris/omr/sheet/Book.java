@@ -71,7 +71,6 @@ import org.audiveris.omr.util.param.StringParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -166,6 +165,7 @@ public class Book
      * <p>
      * The path was valid at book creation and recorded in the book .omr project file.
      * It may not be relevant when the same .omr file is used on another machine.
+     * NOTA: It is null for a compound book.
      */
     @XmlAttribute(name = "path")
     @XmlJavaTypeAdapter(Jaxb.PathAdapter.class)
@@ -409,8 +409,8 @@ public class Book
     // checkRadixChange //
     //------------------//
     /**
-     * If the (new) book name does not match current one, update the book radix
-     * (and the title of first displayed sheet if any).
+     * If the (new) book name does not match the current one, update the book radix
+     * (and the title of the first displayed sheet if any).
      *
      * @param bookPath new book target path
      */
@@ -554,7 +554,7 @@ public class Book
      */
     public void createStubs ()
     {
-        ImageLoading.Loader loader = ImageLoading.getLoader(path);
+        final ImageLoading.Loader loader = ImageLoading.getLoader(path);
 
         if (loader != null) {
             final int imageCount = loader.getImageCount();
@@ -1780,48 +1780,6 @@ public class Book
         return bookUpgraded;
     }
 
-    //----------------//
-    // loadSheetImage //
-    //----------------//
-    /**
-     * Actually load the image that corresponds to the specified sheet id.
-     *
-     * @param id specified sheet id
-     * @return the loaded sheet image
-     */
-    public synchronized BufferedImage loadSheetImage (int id)
-    {
-        try {
-            if (!Files.exists(path)) {
-                logger.info("Book input {} not found", path);
-
-                return null;
-            }
-
-            final ImageLoading.Loader loader = ImageLoading.getLoader(path);
-
-            if (loader == null) {
-                return null;
-            }
-
-            final BufferedImage img = loader.getImage(id);
-            logger.info(
-                    "Loaded image #{} {}x{} from {}",
-                    id,
-                    img.getWidth(),
-                    img.getHeight(),
-                    path);
-
-            loader.dispose();
-
-            return img;
-        } catch (IOException ex) {
-            logger.warn("Error in book.loadSheetImage", ex);
-
-            return null;
-        }
-    }
-
     //------------------//
     // migrateOldParams //
     //------------------//
@@ -2063,6 +2021,8 @@ public class Book
                             LogUtil.stopStub();
                         }
                     }
+
+                    logger.info("Book processed.");
                 }
 
                 return !someFailure;
