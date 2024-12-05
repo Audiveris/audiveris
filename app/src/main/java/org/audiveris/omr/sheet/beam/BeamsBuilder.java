@@ -1363,8 +1363,7 @@ public class BeamsBuilder
         Area area = system.getArea();
 
         // Check top and bottom points of the beam side
-        for (int dir : new int[]
-        { -1, +1 }) {
+        for (int dir : new int[] { -1, +1 }) {
             if (!area.contains(pt.getX(), pt.getY() + (dir * (height / 2)))) {
                 return false;
             }
@@ -2168,7 +2167,9 @@ public class BeamsBuilder
             cornerMargin = typicalHeight * constants.cornerMarginRatio.getValue();
 
             maxItemXGap = scale.toPixelsDouble(constants.maxItemXGap);
-            coreSectionWidth = scale.toPixels(constants.coreSectionWidth);
+
+            // We need at least 2 points to be able to compute the line slope
+            coreSectionWidth = Math.max(2, scale.toPixels(constants.coreSectionWidth));
         }
     }
 
