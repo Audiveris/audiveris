@@ -31,7 +31,6 @@ import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.TEXT;
-import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
@@ -56,11 +55,11 @@ import org.audiveris.omr.text.TextChar;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.text.TextWord;
+import org.audiveris.omr.ui.field.MusicPane;
 import org.audiveris.omr.ui.symbol.MetronomeSymbol;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Entities;
@@ -870,10 +869,7 @@ public class MetronomeInter
      */
     private static String beatUnitRegexp ()
     {
-        final Symbols symbols = MusicFamily.Bravura.getSymbols();
-
-        return ShapeSet.SimpleBeatUnits.stream().map(
-                u -> "\\x{" + Integer.toHexString(symbols.getCode(u)[0]) + "}") //
+        return MusicPane.musicCodes.stream().map(c -> "\\x{" + Integer.toHexString(c) + "}") //
                 .collect(Collectors.joining());
     }
 

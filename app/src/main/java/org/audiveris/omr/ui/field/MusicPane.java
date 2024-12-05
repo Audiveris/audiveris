@@ -23,8 +23,10 @@ package org.audiveris.omr.ui.field;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.symbol.TextFamily;
 
 import org.slf4j.Logger;
@@ -32,6 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JTextPane;
@@ -56,8 +60,11 @@ public class MusicPane
 
     private static final Logger logger = LoggerFactory.getLogger(MusicPane.class);
 
-    /** Minimum code point value to detect a music character. */
+    /** Minimum code point value to detect a potential music character. */
     private static final int HIGH_CODE = 0xE000;
+
+    /** Codes of supported music characters. */
+    public static final Set<Integer> musicCodes = buildMusicCodes();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -133,7 +140,7 @@ public class MusicPane
         for (int i = 0; i < length; i++) {
             final int code = str.codePointAt(i);
 
-            if (code >= HIGH_CODE) {
+            if (musicCodes.contains(code)) {
                 // Set music attributes to the current character
                 doc.setCharacterAttributes(i, 1, musicSet, true);
             }
@@ -186,6 +193,27 @@ public class MusicPane
         StyleConstants.setFontFamily(textSet, textFamily.name());
 
         adjustMusicCharacters();
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-----------------//
+    // buildMusicCodes //
+    //-----------------//
+    private static Set<Integer> buildMusicCodes ()
+    {
+        final Set<Integer> set = new HashSet<>();
+        final Symbols symbols = MusicFamily.Bravura.getSymbols();
+
+        ShapeSet.BeatUnits.getShapes().forEach(bu -> {
+            for (int c : symbols.getCode(bu)) {
+                if (c >= HIGH_CODE) {
+                    set.add(c);
+                }
+            }
+        });
+
+        return set;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
