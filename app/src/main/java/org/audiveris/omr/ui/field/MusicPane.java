@@ -205,7 +205,7 @@ public class MusicPane
         final Set<Integer> set = new HashSet<>();
         final Symbols symbols = MusicFamily.Bravura.getSymbols();
 
-        ShapeSet.BeatUnits.getShapes().forEach(bu -> {
+        ShapeSet.BeatUnits.forEach(bu -> {
             for (int c : symbols.getCode(bu)) {
                 if (c >= HIGH_CODE) {
                     set.add(c);

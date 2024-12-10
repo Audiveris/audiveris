@@ -530,8 +530,6 @@ public class ShapeSet
                     ROMAN_XI,
                     ROMAN_XII));
 
-    public static final ShapeSet BeatUnits;
-
     public static final ShapeSet Texts = new ShapeSet(
             TEXT,
             Colors.SCORE_PHYSICALS,
@@ -555,25 +553,22 @@ public class ShapeSet
             Shape.values()[0],
             LAST_PHYSICAL_SHAPE);
 
-    /** Pedals */
+    /** Pedals. */
     public static final EnumSet<Shape> Pedals = EnumSet.of(PEDAL_MARK, PEDAL_UP_MARK);
 
-    /** Tuplets */
+    /** Tuplets. */
     public static final EnumSet<Shape> Tuplets = EnumSet.of(TUPLET_THREE, TUPLET_SIX);
 
-    /** Small Clefs */
+    /** Small Clefs. */
     public static final EnumSet<Shape> SmallClefs = EnumSet.of(G_CLEF_SMALL, F_CLEF_SMALL);
 
-    /** Non-dotted beat units. */
-    public static final EnumSet<Shape> SimpleBeatUnits = EnumSet.of(
+    /** Beat units. */
+    public static final EnumSet<Shape> BeatUnits = EnumSet.of(
             METRO_WHOLE,
             METRO_HALF,
             METRO_QUARTER,
             METRO_EIGHTH,
-            METRO_SIXTEENTH);
-
-    /** Dotted beat units. */
-    public static final EnumSet<Shape> DottedBeatUnits = EnumSet.of(
+            METRO_SIXTEENTH,
             METRO_DOTTED_HALF,
             METRO_DOTTED_QUARTER,
             METRO_DOTTED_EIGHTH,
@@ -583,14 +578,7 @@ public class ShapeSet
     public static final List<Shape> Undraggables = new ArrayList<>();
 
     static {
-        BeatUnits = new ShapeSet(
-                METRO_EIGHTH,
-                Colors.SCORE_PHYSICALS,
-                shapesOf(shapesOf(SimpleBeatUnits), shapesOf(DottedBeatUnits)));
-
-        // For the time being, beat units are not draggable
         Undraggables.add(NON_DRAGGABLE);
-        Undraggables.addAll(BeatUnits.getShapes());
 
         // Make sure all the shape colors are defined
         ShapeSet.defineAllShapeColors();
