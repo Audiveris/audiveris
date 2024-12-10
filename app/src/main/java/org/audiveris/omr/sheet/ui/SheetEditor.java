@@ -1204,13 +1204,11 @@ public class SheetEditor
                     if (c >= '1' && c <= maxId) {
                         final int id = c - '0';
                         evaluationBoard.selectButton(id);
-                        return;
                     }
                 }
             } else {
                 // Second character (shape within family)
-                final String str = String.valueOf(new char[]
-                { firstChar, c });
+                final String str = String.valueOf(new char[] { firstChar, c });
                 shapeBoard.processString(str);
                 reset();
             }

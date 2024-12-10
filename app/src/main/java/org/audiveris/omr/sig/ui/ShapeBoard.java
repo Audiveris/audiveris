@@ -87,6 +87,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -947,19 +948,11 @@ public class ShapeBoard
             return "";
         }
 
-        StringBuilder sb = new StringBuilder("   (");
-
-        for (int i = 0; i < shortcut.length(); i++) {
-            if (i > 0) {
-                sb.append('-');
-            }
-
-            sb.append(shortcut.charAt(i));
-        }
-
-        sb.append(')');
-
-        return sb.toString().toUpperCase();
+        return shortcut.chars() // a stream of int values
+                .mapToObj(c -> (char) c) // map int to Character
+                .map(c -> c.toString()) //  map Character to String (needed for joining)
+                .collect(Collectors.joining("-", "   (", ")")) //
+                .toUpperCase();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

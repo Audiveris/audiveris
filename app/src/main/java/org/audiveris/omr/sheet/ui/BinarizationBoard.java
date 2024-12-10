@@ -403,7 +403,7 @@ public class BinarizationBoard
             builder.addRaw(applyToWholeBook).xyw(1, r, 4);
 
             builder.addRaw(overwriteCheckbox.getField()).xyw(5, r, 1);
-            builder.addRaw(overwriteCheckbox.getLabel()).xyw(7, r, 2);
+            builder.addRaw(overwriteCheckbox.getLabel()).xyw(7, r, 3);
         }
 
         if (noGraySource) {

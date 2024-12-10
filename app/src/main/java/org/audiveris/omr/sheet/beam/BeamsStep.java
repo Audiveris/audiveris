@@ -115,7 +115,7 @@ public class BeamsStep
     {
         new BeamsBuilder(system, context.spotLag).buildBeams();
 
-        // Detection of multiple-measure rests, since they resemble a long horizontal beam
+        // Detection of multiple-measure rests, since they look like long horizontal beams
         new MultipleRestsBuilder(system).process();
     }
 

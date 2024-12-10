@@ -362,12 +362,9 @@ public class MultipleRestsBuilder
 
         final int minLength;
 
-        final double maxAbsolutePitch;
-
         Parameters (Scale scale)
         {
             minLength = scale.toPixels(constants.minLength);
-            maxAbsolutePitch = constants.maxAbsolutePitch.getValue();
         }
     }
 }
