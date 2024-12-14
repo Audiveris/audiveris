@@ -366,7 +366,7 @@ public class Plugin
                 logger.info("{} exit value: {}", getId(), exitValue);
             }
         } catch (IOException | InterruptedException ex) {
-            logger.warn("Error launching {} {}" + this, ex.toString(), ex);
+            logger.warn("Error launching {} {}", this, ex.toString(), ex);
         }
 
         return null;
