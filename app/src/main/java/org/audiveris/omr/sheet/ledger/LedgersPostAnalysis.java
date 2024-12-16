@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.ledger;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.sheet.Scale;
@@ -112,7 +113,8 @@ public class LedgersPostAnalysis
      */
     private void collect ()
     {
-        final int maxWidth = sheet.getScale().toPixels(constants.maxIsolatedLedgerWidth);
+        // Maximum normalized width for an isolated ledger (not merged w/ left or right)
+        final double maxWRatio = constants.maxIsolatedLedgerWidth.getValue();
 
         for (Staff staff : sheet.getStaffManager().getStaves()) {
             final int il = staff.getSpecificInterline();
@@ -122,14 +124,33 @@ public class LedgersPostAnalysis
 
             for (Map.Entry<Integer, List<LedgerInter>> entry : map.entrySet()) {
                 final int key = entry.getKey();
+                final int dir = Integer.signum(key);
+                final Integer prevKey = (Math.abs(key) >= 2) ? key - dir : null;
                 logger.debug("     {}", key);
                 final List<LedgerInter> ledgers = entry.getValue();
 
                 for (LedgerInter ledger : ledgers) {
                     final Line2D median = ledger.getMedian();
                     final Point2D middle = PointUtil.middle(median);
-                    final double delta = staff.doubleDistanceTo(middle);
-                    final double dRatio = delta / (Math.abs(key) * il);
+
+                    final double delta;
+                    if (prevKey != null) {
+                        final LedgerInter prevLedger = staff.getLedgerAt(prevKey, middle.getX());
+                        if (prevLedger == null) {
+                            discard(ledger);
+                            continue;
+                        }
+
+                        delta = Math.abs(
+                                middle.getY() - LineUtil.yAtX(
+                                        prevLedger.getMedian(),
+                                        middle.getX()));
+                    } else {
+                        delta = staff.doubleDistanceTo(middle);
+                    }
+
+                    ///final double delta = staff.doubleDistanceTo(middle) / Math.abs(key);
+                    final double dRatio = delta / il;
                     final double height = ledger.getThickness();
                     final double hRatio = height / il;
                     final double width = median.getX2() - median.getX1();
@@ -154,7 +175,8 @@ public class LedgersPostAnalysis
                     }
                     popHeight.includeValue(hRatio);
 
-                    if (wRatio <= maxWidth) {
+                    // Only isolated ledgers are representative for their width
+                    if (wRatio <= maxWRatio) {
                         popWidth.includeValue(wRatio);
                     }
                 }
@@ -165,6 +187,26 @@ public class LedgersPostAnalysis
         logger.debug("deltaBelowRatio: {}", popDeltaBelow);
         logger.debug("heightRatio: {}", popHeight);
         logger.debug("widthRatio: {}", popWidth);
+    }
+
+    //---------//
+    // discard //
+    //---------//
+    /**
+     * Discard the provided ledger candidate.
+     *
+     * @param LedgerInter ledger
+     */
+    private void discard (LedgerInter ledger)
+    {
+        final SystemInfo system = ledger.getStaff().getSystem();
+        List<LedgerInter> list = discarded.get(system);
+
+        if (list == null) {
+            discarded.put(system, list = new ArrayList<>());
+        }
+
+        list.add(ledger);
     }
 
     //--------//
@@ -235,9 +277,8 @@ public class LedgersPostAnalysis
                     (info.key < 0 ? minDeltaAboveRatio : minDeltaBelowRatio) * interline);
             final int maxDelta = (int) Math.ceil(
                     (info.key < 0 ? maxDeltaAboveRatio : maxDeltaBelowRatio) * interline);
-            final String dD = (Math.abs(info.key) == 1) ? (Math.ceil(info.delta) < minDelta
-                    ? "delta"
-                    : (Math.floor(info.delta) > maxDelta ? "DELTA" : "     ")) : "     ";
+            final String dD = Math.ceil(info.delta) < minDelta ? "delta"
+                    : (Math.floor(info.delta) > maxDelta ? "DELTA" : "     ");
 
             final int minHeight = (int) Math.floor(minHeightRatio * interline);
             final int maxHeight = (int) Math.ceil(maxHeightRatio * interline);
@@ -255,14 +296,7 @@ public class LedgersPostAnalysis
                     maxHeight);
 
             if (!dD.isBlank() || !hH.isBlank()) {
-                final SystemInfo system = info.staff.getSystem();
-                List<LedgerInter> list = discarded.get(system);
-
-                if (list == null) {
-                    discarded.put(system, list = new ArrayList<>());
-                }
-
-                list.add(info.ledger);
+                discard(info.ledger);
             }
         }
     }
@@ -272,7 +306,7 @@ public class LedgersPostAnalysis
     //---------//
     public void process ()
     {
-        // Retrieve mean / sigma on ordinate deltas and heights
+        // Retrieve mean / sigma on ordinate deltas, heights and widths
         collect();
 
         // Store filtered out ledgers in discarded map
