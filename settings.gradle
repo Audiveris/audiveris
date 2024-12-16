@@ -1,6 +1,7 @@
 pluginManagement {
   repositories {
     maven { url="app/build/dependencies" }
+    maven { url="dependencies" }
     gradlePluginPortal()
   }
 }

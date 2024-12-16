@@ -119,7 +119,7 @@ repositories {
         println "repositories. isFlatpak set"
         maven { // Only the offline repository
             name = 'Offline repository for flatpak'
-            url = '../../dependencies'                // TODO: check this!
+            url = '../dependencies'                // TODO: check this!
         }
     } else {
         mavenCentral()
