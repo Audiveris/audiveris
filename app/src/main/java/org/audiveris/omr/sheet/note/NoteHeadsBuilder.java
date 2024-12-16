@@ -706,19 +706,21 @@ public class NoteHeadsBuilder
                 return false;
             }
 
-            if (inter instanceof AbstractVerticalInter) {
+            switch (inter) {
+            case AbstractVerticalInter vertical -> {
                 // We may have a stem mistaken for a thin barline or a thin connector
                 // So, check bar/connector width vs max stem width
-                AbstractVerticalInter vertical = (AbstractVerticalInter) inter;
-                int width = (int) Math.floor(vertical.getWidth());
+                final int width = (int) Math.floor(vertical.getWidth());
 
                 if (width <= scale.getMaxStem()) {
                     return false;
                 }
-            } else if (inter instanceof AbstractBeamInter) {
+            }
+            case AbstractBeamInter beam -> {
                 // Keep any beam if part of a beam group with at least one long beam
-                AbstractBeamInter beam = (AbstractBeamInter) inter;
                 return beam.getGroup().hasLongBeam(params.minBeamWidth);
+            }
+            default -> {}
             }
 
             return true;
@@ -860,8 +862,7 @@ public class NoteHeadsBuilder
         // For merged grand staff, don't look further than middle ledger (C4)
         final Part part = staff.getPart();
 
-        for (int dir : new int[]
-        { -1, 1 }) {
+        for (int dir : new int[] { -1, 1 }) {
             // Limitation to last ledger in the specific case of merged grand staff
             boolean lookFurther = true;
 
@@ -1838,7 +1839,7 @@ public class NoteHeadsBuilder
          *
          * @param scanLeft  range starting abscissa
          * @param scanRight range stopping abscissa
-         * @return an array of booleans, telling which x values are relevant
+         * @return an array of boolean 's, telling which x values are relevant
          */
         private boolean[] getRelevantBlackAbscissae (int scanLeft,
                                                      int scanRight)
@@ -2091,8 +2092,7 @@ public class NoteHeadsBuilder
             final List<Glyph> seeds = getGlyphsSlice(systemSeeds, seedsArea);
 
             // Use one anchor for each horizontal side of the stem seed
-            final Anchor[] anchors = new Anchor[]
-            { LEFT_STEM, RIGHT_STEM };
+            final Anchor[] anchors = new Anchor[] { LEFT_STEM, RIGHT_STEM };
 
             for (Glyph seed : seeds) {
                 if (seed.isVip()) {
