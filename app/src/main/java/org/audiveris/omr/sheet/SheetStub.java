@@ -988,15 +988,15 @@ public class SheetStub
                             invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
                 }
 
+                if (constants.printWatch.isSet()) {
+                    watch.print();
+                }
+
                 logger.info("Loaded {}", sheetFile);
             } catch (IOException | JAXBException ex) {
                 logger.warn("Error in loading sheet structure " + ex, ex);
                 logger.info("Trying to restart from binary");
                 resetToBinary();
-            } finally {
-                if (constants.printWatch.isSet()) {
-                    watch.print();
-                }
             }
 
             return sheet;

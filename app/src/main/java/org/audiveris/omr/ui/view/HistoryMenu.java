@@ -24,7 +24,6 @@ package org.audiveris.omr.ui.view;
 import org.audiveris.omr.sheet.ui.BookActions.LoadBookTask;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.util.AbstractHistory;
-import org.audiveris.omr.util.PathTask;
 import org.audiveris.omr.util.SheetPath;
 
 import org.jdesktop.application.ResourceMap;
@@ -55,7 +54,7 @@ public class HistoryMenu
     protected final AbstractHistory history;
 
     /** Task class launched on selected path. */
-    protected final Class<? extends PathTask> pathTaskClass;
+    protected final Class<? extends LoadBookTask> pathTaskClass;
 
     /** The concrete menu. */
     protected JMenu menu;
@@ -69,7 +68,7 @@ public class HistoryMenu
      * @param pathTaskClass the task launched to process the selected path
      */
     public HistoryMenu (AbstractHistory history,
-                        Class<? extends PathTask> pathTaskClass)
+                        Class<? extends LoadBookTask> pathTaskClass)
     {
         this.history = history;
         this.pathTaskClass = pathTaskClass;
@@ -95,10 +94,10 @@ public class HistoryMenu
                 final String str = e.getActionCommand().trim();
 
                 if (!str.isEmpty()) {
-                    final PathTask task = pathTaskClass.getDeclaredConstructor().newInstance();
+                    final LoadBookTask task = pathTaskClass.getDeclaredConstructor().newInstance();
 
                     if (pathTaskClass.isAssignableFrom(LoadBookTask.class)) {
-                        ((LoadBookTask) task).setPath(SheetPath.decode(str));
+                        task.setPath(SheetPath.decode(str));
                     } else {
                         task.setPath(Paths.get(str));
                     }

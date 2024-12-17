@@ -31,9 +31,11 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.StubEvent;
+import org.audiveris.omr.ui.util.WaitingTask;
 import org.audiveris.omr.util.OmrExecutors;
 
 import org.slf4j.Logger;
@@ -50,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 
 import javax.swing.AbstractAction;
@@ -101,8 +104,7 @@ public class StubsController
     private static final Logger logger = LoggerFactory.getLogger(StubsController.class);
 
     /** Events that can be published on sheet service. */
-    private static final Class<?>[] eventsWritten = new Class<?>[]
-    { StubEvent.class };
+    private static final Class<?>[] eventsWritten = new Class<?>[] { StubEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -271,7 +273,7 @@ public class StubsController
                 if (!stub.hasSheet()) {
                     // Stub just loaded from book file, load & display the related sheet
                     logger.debug("get & display sheet for {}", stub);
-                    sheet = stub.getSheet();
+                    sheet = loadSheet(stub);
                     markTab(stub, Colors.SHEET_OK);
                 } else {
                     logger.debug("{} already has sheet", stub);
@@ -345,16 +347,14 @@ public class StubsController
                          final boolean early)
     {
         // Since we are on Swing EDT, use asynchronous processing
-        OmrExecutors.getCachedLowExecutor().submit( () ->
-        {
+        OmrExecutors.getCachedLowExecutor().submit( () -> {
             try {
                 LogUtil.start(stub);
 
                 // Check whether we should run early steps on the sheet
                 checkStubStatus(stub, early);
 
-                SwingUtilities.invokeAndWait( () ->
-                {
+                SwingUtilities.invokeAndWait( () -> {
                     // Race condition: let's check we are working on the selected stub
                     SheetStub selected = getSelectedStub();
 
@@ -679,6 +679,29 @@ public class StubsController
         return false;
     }
 
+    //-----------//
+    // loadSheet //
+    //-----------//
+    /**
+     * Load the sheet while displaying a waiting dialog if loading takes time.
+     *
+     * @param stub the sheet stub
+     * @return the loaded sheet
+     */
+    private Sheet loadSheet (SheetStub stub)
+    {
+        try {
+            final LoadingSheetTask task = new LoadingSheetTask(stub);
+            task.execute();
+            final Sheet sheet = task.get();
+            task.finished();
+            return sheet;
+        } catch (InterruptedException | ExecutionException ex) {
+            logger.warn("Error loading sheet {}", ex.toString(), ex);
+            return null;
+        }
+    }
+
     //---------//
     // markTab //
     //---------//
@@ -725,8 +748,7 @@ public class StubsController
         // Dialog message
         final String question = "Should we upgrade and store the whole book in background?";
 
-        SwingUtilities.invokeLater( () ->
-        {
+        SwingUtilities.invokeLater( () -> {
             if (OMR.gui.displayConfirmation(question, title)) {
                 new SwingWorker<Void, Void>()
                 {
@@ -1164,6 +1186,34 @@ public class StubsController
 
         private LazySingleton ()
         {
+        }
+    }
+
+    //------------------//
+    // LoadingSheetTask //
+    //------------------//
+    private class LoadingSheetTask
+            extends WaitingTask<Sheet, Void>
+    {
+        final SheetStub stub;
+
+        LoadingSheetTask (SheetStub stub)
+        {
+            super(OmrGui.getApplication(), "Loading sheet " + stub.getId() + " ...");
+            this.stub = stub;
+        }
+
+        @Override
+        protected Sheet doInBackground ()
+            throws Exception
+        {
+            return stub.getSheet();
+        }
+
+        @Override
+        public void finished ()
+        {
+            super.finished(); // Safer
         }
     }
 

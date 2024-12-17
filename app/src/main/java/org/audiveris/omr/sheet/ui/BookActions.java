@@ -50,11 +50,11 @@ import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.util.OmrFileFilter;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.util.UserOpt;
+import org.audiveris.omr.ui.util.WaitingTask;
 import org.audiveris.omr.ui.view.HistoryMenu;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.PathListTask;
-import org.audiveris.omr.util.PathTask;
 import org.audiveris.omr.util.SheetPath;
 import org.audiveris.omr.util.SheetPathHistory;
 import org.audiveris.omr.util.VoidTask;
@@ -2237,8 +2237,10 @@ public class BookActions
      * </ol>
      */
     public static class LoadBookTask
-            extends PathTask<Book, Void>
+            extends WaitingTask<Book, Void>
     {
+        /** Underlying path. */
+        protected Path path;
 
         /** Desired sheet number, if any. */
         protected Integer sheetNumber;
@@ -2246,6 +2248,7 @@ public class BookActions
         // Constructor needed for creation of HistoryMenu
         public LoadBookTask ()
         {
+            super(OmrGui.getApplication(), "empty");
         }
 
         /**
@@ -2255,7 +2258,8 @@ public class BookActions
          */
         public LoadBookTask (Path path)
         {
-            super(path);
+            super(OmrGui.getApplication(), "Loading " + path + " ...");
+            this.path = path;
         }
 
         /**
@@ -2265,7 +2269,8 @@ public class BookActions
          */
         public LoadBookTask (SheetPath sheetPath)
         {
-            super(sheetPath.getBookPath());
+            super(OmrGui.getApplication(), "Loading " + sheetPath.getBookPath() + " ...");
+            path = sheetPath.getBookPath();
             sheetNumber = sheetPath.getSheetNumber();
         }
 
@@ -2283,6 +2288,16 @@ public class BookActions
             }
 
             return book;
+        }
+
+        /**
+         * Set the path value.
+         *
+         * @param path the path used by the task
+         */
+        public void setPath (Path path)
+        {
+            this.path = path;
         }
 
         /**
