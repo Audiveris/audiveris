@@ -27,6 +27,7 @@ import org.audiveris.omr.sig.inter.AbstractChordInter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -43,13 +44,21 @@ public class ChordsMapper
 
     private final List<AbstractChordInter> olds;
 
+    private final List<AbstractChordInter> remainingNews = new ArrayList<>();
+
+    private final List<AbstractChordInter> remainingOlds = new ArrayList<>();
+
     private final List<AbstractChordInter> extinctExplicits;
 
     private final VoiceDistance vd;
 
     private final Set<ChordPair> blackList;
 
-    private final Set<ChordPair> whiteList;
+    private final Set<ChordPair> sameList;
+
+    private final Set<ChordPair> nextList;
+
+    private final Set<ChordPair> mappedNext;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -61,21 +70,26 @@ public class ChordsMapper
      * @param extinctExplicits extinct chords but with explicit SameVoiceRelation
      * @param vd               the VoiceDistance to use
      * @param blackList        known incompatibilities
-     * @param whiteList        explicit compatibilities
+     * @param sameList         explicit compatibilities
+     * @param nextList         explicit connections
      */
     public ChordsMapper (List<AbstractChordInter> news,
                          List<AbstractChordInter> olds,
                          List<AbstractChordInter> extinctExplicits,
                          VoiceDistance vd,
                          Set<ChordPair> blackList,
-                         Set<ChordPair> whiteList)
+                         Set<ChordPair> sameList,
+                         Set<ChordPair> nextList)
     {
         this.news = news;
         this.olds = olds;
         this.extinctExplicits = extinctExplicits;
         this.vd = vd;
         this.blackList = blackList;
-        this.whiteList = whiteList;
+        this.sameList = sameList;
+        this.nextList = nextList;
+
+        mappedNext = processNext(news, olds, remainingNews, remainingOlds);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -88,23 +102,61 @@ public class ChordsMapper
     public Mapping process ()
     {
         final Mapping output = new Mapping();
-        final InjectionSolver solver = new InjectionSolver(
-                news.size(),
-                olds.size() + news.size(),
-                new MyDistance());
-        final int[] links = solver.solve();
 
-        for (int i = 0; i < links.length; i++) {
-            final AbstractChordInter ch = news.get(i);
-            final int index = links[i];
+        // Process the next in voice immediately
+        output.pairs.addAll(mappedNext);
 
-            if (index < olds.size()) {
-                AbstractChordInter act = olds.get(index);
-                output.pairs.add(new ChordPair(ch, act));
+        if (!remainingNews.isEmpty()) {
+            final InjectionSolver solver = new InjectionSolver(
+                    remainingNews.size(),
+                    remainingOlds.size() + remainingNews.size(),
+                    new MyDistance());
+            final int[] links = solver.solve();
+
+            for (int i = 0; i < links.length; i++) {
+                final AbstractChordInter ch = remainingNews.get(i);
+                final int index = links[i];
+
+                if (index < remainingOlds.size()) {
+                    AbstractChordInter act = remainingOlds.get(index);
+                    output.pairs.add(new ChordPair(ch, act));
+                }
             }
         }
 
         return output;
+    }
+
+    //-------------//
+    // processNext //
+    //-------------//
+    /**
+     * Process the potential NextInVoice cases.
+     *
+     * @param news          original rookies
+     * @param olds          original actives
+     * @param remainingNews rookies still to link
+     * @param remainingOlds actives still to link
+     * @return the pre-mapped pairs
+     */
+    private Set<ChordPair> processNext (List<AbstractChordInter> news,
+                                        List<AbstractChordInter> olds,
+                                        List<AbstractChordInter> remainingNews,
+                                        List<AbstractChordInter> remainingOlds)
+    {
+        final Set<ChordPair> mapped = new LinkedHashSet<>();
+        remainingNews.addAll(news);
+        remainingOlds.addAll(olds);
+
+        for (ChordPair pair : nextList) {
+            if (news.contains(pair.one) && olds.contains(pair.two)) {
+                mapped.add(pair);
+                remainingNews.remove(pair.one);
+                remainingOlds.remove(pair.two);
+            }
+        }
+
+        return mapped;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -117,7 +169,6 @@ public class ChordsMapper
      */
     public static class Mapping
     {
-
         /** Proposed mapping. */
         public List<ChordPair> pairs = new ArrayList<>();
 
@@ -174,14 +225,13 @@ public class ChordsMapper
     private class MyDistance
             implements InjectionSolver.Distance
     {
-
         @Override
         public int getDistance (int in,
                                 int ip,
                                 StringBuilder details)
         {
             // No link to an old chord
-            if (ip >= olds.size()) {
+            if (ip >= remainingOlds.size()) {
                 if (details != null) {
                     details.append("NO_LINK=").append(VoiceDistance.NO_LINK);
                 }
@@ -189,15 +239,15 @@ public class ChordsMapper
                 return VoiceDistance.NO_LINK;
             }
 
-            AbstractChordInter newChord = news.get(in);
-            AbstractChordInter oldChord = olds.get(ip);
+            AbstractChordInter newChord = remainingNews.get(in);
+            AbstractChordInter oldChord = remainingOlds.get(ip);
 
-            // White list
-            for (ChordPair pair : whiteList) {
+            // Same voice
+            for (ChordPair pair : sameList) {
                 if (pair.two == oldChord) {
                     if (pair.one == newChord) {
                         if (details != null) {
-                            details.append("WHITE");
+                            details.append("SAME");
                         }
 
                         return 0;

@@ -244,14 +244,14 @@ public class MeasureStack
         final Part part = inter.getPart();
 
         if (part != null) {
-            Measure measure = getMeasureAt(part);
+            final Measure measure = getMeasureAt(part);
             measure.addInter(inter);
 
-            if (inter instanceof TupletInter) {
-                stackTuplets.remove(inter);
+            if (inter instanceof TupletInter tupletInter) {
+                stackTuplets.remove(tupletInter);
             }
-        } else if (inter instanceof TupletInter) {
-            stackTuplets.add((TupletInter) inter);
+        } else if (inter instanceof TupletInter tupletInter) {
+            stackTuplets.add(tupletInter);
         } else {
             logger.debug("No part yet for {}", inter);
         }
@@ -598,10 +598,10 @@ public class MeasureStack
      */
     public List<Inter> filter (Collection<Inter> systemInters)
     {
-        List<Inter> kept = new ArrayList<>();
+        final List<Inter> kept = new ArrayList<>();
 
         for (Inter inter : systemInters) {
-            Point center = inter.getCenter();
+            final Point center = inter.getCenter();
 
             // Rough abscissa limits
             if ((center.x < left) || (center.x > right)) {
@@ -612,10 +612,10 @@ public class MeasureStack
             final Measure measure;
 
             if (staff != null) {
-                Part part = staff.getPart();
+                final Part part = staff.getPart();
                 measure = part.getMeasureAt(center);
             } else {
-                List<Staff> stavesAround = system.getStavesAround(center); // 1 or 2 staves
+                final List<Staff> stavesAround = system.getStavesAround(center); // 1 or 2 staves
                 staff = stavesAround.get(0);
                 measure = getMeasureAt(staff);
             }

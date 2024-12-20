@@ -1148,7 +1148,8 @@ public abstract class AbstractInter
             }
 
             for (Inter thisMember : members) {
-                if (thisMember.overlaps(that) && that.overlaps(thisMember)
+                if (thisMember.overlaps(that) //
+                        && that.overlaps(thisMember) //
                         && sig.noSupport(thisMember, that)) {
                     return true;
                 }
@@ -1210,8 +1211,8 @@ public abstract class AbstractInter
     {
         final SystemInfo system = staff.getSystem();
 
-        return Arrays
-                .asList(new AdditionTask(system.getSig(), this, getBounds(), searchLinks(system)));
+        return Arrays.asList(
+                new AdditionTask(system.getSig(), this, getBounds(), searchLinks(system)));
     }
 
     //---------//

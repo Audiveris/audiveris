@@ -216,10 +216,10 @@ public class RhythmsStep
 
             if (isImpactedBy(classe, forStack)) {
                 // Reprocess just the stack
-                Point center = inter.getCenter();
+                final Point center = inter.getCenter();
 
                 if (center != null) {
-                    MeasureStack stack = sig.getSystem().getStackAt(center);
+                    final MeasureStack stack = sig.getSystem().getStackAt(center);
                     impact.add(stack);
                 }
             }
@@ -326,7 +326,6 @@ public class RhythmsStep
     //--------//
     private static class Impact
     {
-
         final Set<Page> onPages = new LinkedHashSet<>();
 
         final Set<MeasureStack> onStacks = new LinkedHashSet<>();
@@ -348,8 +347,10 @@ public class RhythmsStep
         @Override
         public String toString ()
         {
-            return new StringBuilder("RhythmsImpact{").append("pages:").append(onPages).append(
-                    " stacks:").append(onStacks).append("}").toString();
+            return new StringBuilder("Rhythms.Impact{") //
+                    .append("pages:").append(onPages) //
+                    .append(" stacks:").append(onStacks) //
+                    .append("}").toString();
         }
     }
 }

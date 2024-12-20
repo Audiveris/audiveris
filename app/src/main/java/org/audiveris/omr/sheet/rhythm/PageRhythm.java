@@ -47,7 +47,7 @@ import java.util.List;
  * Class <code>PageRhythm</code> handles rhythm data on a sheet page.
  * <p>
  * Rhythm is governed by time signatures found in staff header, discovered later down the staff, or
- * even inferred from measures content.
+ * even inferred from measures content (this feature is no longer implemented).
  * <p>
  * When the RHYTHMS step is launched, we already have valid information which is no longer called
  * into question: head-chords and beams.
@@ -68,8 +68,6 @@ import java.util.List;
  * Processing is done system per system <b>sequentially</b> because of impact of potential
  * key-sig changes on the following systems. Hence, parallelism is NOT provided for this step.
  * Consistently, within a system, processing is done measure stack after measure stack.
- * <p>
- * TODO: Key signature changes are still to be implemented.
  *
  * @author Hervé Bitteur
  */
@@ -80,8 +78,8 @@ public class PageRhythm
     private static final Logger logger = LoggerFactory.getLogger(PageRhythm.class);
 
     /** Adjustable rhythm classes. (FRAT: Flag, RestChord, AugmentationDot, Tuplet) */
-    private static final Class<?>[] FRAT_CLASSES = new Class<?>[]
-    { FlagInter.class, RestChordInter.class, AugmentationDotInter.class, TupletInter.class };
+    private static final Class<?>[] FRAT_CLASSES = new Class<?>[] { //
+            FlagInter.class, RestChordInter.class, AugmentationDotInter.class, TupletInter.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -114,7 +112,7 @@ public class PageRhythm
     private void populateFRATs ()
     {
         for (SystemInfo system : page.getSystems()) {
-            List<Inter> systemFrats = system.getSig().inters(FRAT_CLASSES);
+            final List<Inter> systemFrats = system.getSig().inters(FRAT_CLASSES);
             Collections.sort(systemFrats, Inters.byAbscissa);
 
             for (MeasureStack stack : system.getStacks()) {
@@ -142,17 +140,17 @@ public class PageRhythm
         final PageRef pageRef = page.getRef();
 
         for (SystemInfo system : page.getSystems()) {
-            List<Inter> systemTimes = system.getSig().inters(AbstractTimeInter.class);
+            final List<Inter> systemTimes = system.getSig().inters(AbstractTimeInter.class);
 
             if (!systemTimes.isEmpty()) {
                 Collections.sort(systemTimes, Inters.byAbscissa);
 
                 for (MeasureStack stack : system.getStacks()) {
                     boolean found = false;
-                    List<Inter> stackTimes = stack.filter(systemTimes);
+                    final List<Inter> stackTimes = stack.filter(systemTimes);
 
                     for (Inter inter : stackTimes) {
-                        AbstractTimeInter ts = (AbstractTimeInter) inter;
+                        final AbstractTimeInter ts = (AbstractTimeInter) inter;
                         systemTimes.remove(ts);
 
                         if (ts.getTimeRational() != null) {
@@ -378,7 +376,7 @@ public class PageRhythm
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+            final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
             sb.append("{");
             sb.append("SN").append(startSN).append("-");
 

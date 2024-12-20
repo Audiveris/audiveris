@@ -132,8 +132,7 @@ public abstract class Voices
     /** Sequence of colors for voices. */
     private static final int alpha = 200;
 
-    private static final Color[] voiceColors = new Color[]
-    {
+    private static final Color[] voiceColors = new Color[] {
             /** 1 Purple */
             new Color(128, 64, 255, alpha),
             /** 2 Green */
@@ -264,7 +263,7 @@ public abstract class Voices
     // refinePage //
     //------------//
     /**
-     * Connect voices within the same logical part across all systems of a page/score?.
+     * Connect voices within the same logical part across all systems of a page/score.
      *
      * @param page the page to process
      */
@@ -276,31 +275,35 @@ public abstract class Voices
         final SlurAdapter systemSlurAdapter = (SlurInter slur) -> slur.getExtension(LEFT);
 
         final Score score = page.getScore();
-        final PageNumber pageNumber = score.getPageNumber(page);
-        final PageRef pageRef = pageNumber.getPageRef(score.getBook());
-        final SystemRef firstSystemRef = pageRef.getSystems().get(0);
+        final List<LogicalPart> logicalParts = score.getLogicalParts();
 
-        for (LogicalPart logicalPart : page.getScore().getLogicalParts()) {
-            final int logicalId = logicalPart.getId();
+        if (logicalParts != null) {
+            final PageNumber pageNumber = score.getPageNumber(page);
+            final PageRef pageRef = pageNumber.getPageRef(score.getBook());
+            final SystemRef firstSystemRef = pageRef.getSystems().get(0);
 
-            for (SystemRef systemRef : pageRef.getSystems()) {
-                for (PartRef partRef : systemRef.getParts()) {
-                    final Integer partRefLogicalId = partRef.getLogicalId();
+            for (LogicalPart logicalPart : logicalParts) {
+                final int logicalId = logicalPart.getId();
 
-                    if ((partRefLogicalId != null) && (partRefLogicalId == logicalId)) {
-                        final Part part = partRef.getRealPart();
+                for (SystemRef systemRef : pageRef.getSystems()) {
+                    for (PartRef partRef : systemRef.getParts()) {
+                        final Integer partRefLogicalId = partRef.getLogicalId();
 
-                        if (systemRef != firstSystemRef) {
-                            // Check tied voices from previous system
-                            final Measure firstMeasure = part.getFirstMeasure();
+                        if ((partRefLogicalId != null) && (partRefLogicalId == logicalId)) {
+                            final Part part = partRef.getRealPart();
 
-                            // A part may have no measure (case of tablature, ignored today)
-                            if (firstMeasure != null) {
-                                for (Voice voice : firstMeasure.getVoices()) {
-                                    Integer tiedId = getTiedId(voice, systemSlurAdapter);
+                            if (systemRef != firstSystemRef) {
+                                // Check tied voices from previous system
+                                final Measure firstMeasure = part.getFirstMeasure();
 
-                                    if ((tiedId != null) && (voice.getId() != tiedId)) {
-                                        part.swapVoiceId(voice.getId(), tiedId);
+                                // A part may have no measure (case of tablature, ignored today)
+                                if (firstMeasure != null) {
+                                    for (Voice voice : firstMeasure.getVoices()) {
+                                        Integer tiedId = getTiedId(voice, systemSlurAdapter);
+
+                                        if ((tiedId != null) && (voice.getId() != tiedId)) {
+                                            part.swapVoiceId(voice.getId(), tiedId);
+                                        }
                                     }
                                 }
                             }

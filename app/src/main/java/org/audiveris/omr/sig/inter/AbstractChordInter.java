@@ -521,7 +521,7 @@ public abstract class AbstractChordInter
      * The duration is assumed to be the same for all notes of this chord, otherwise the chord must
      * be split.
      * <p>
-     * Nota: this value is not cached, but computed on every call.
+     * NOTA: this value is not cached, but computed on every call.
      *
      * @return the chord duration, with beam/flag but without dot and tuplet
      * @see #getDurationSansTuplet
@@ -575,7 +575,7 @@ public abstract class AbstractChordInter
      * The duration is assumed to be the same for all notes of this chord, otherwise the chord must
      * be split.
      * <p>
-     * Nota: this value is not cached, but computed on every call.
+     * NOTA: this value is not cached, but computed on every call.
      *
      * @return the intrinsic chord duration (no tuplet)
      * @see #getDurationSansDotOrTuplet
@@ -588,8 +588,8 @@ public abstract class AbstractChordInter
 
         if ((sansDot != null) && !notes.isEmpty()) {
             // All note heads are assumed to be the same within one chord
-            Inter note = notes.get(0);
-            Shape noteShape = note.getShape();
+            final Inter note = notes.get(0);
+            final Shape noteShape = note.getShape();
 
             if (!sig.getSystem().isMeasureRestShape(noteShape)) {
                 // Apply dotaugmentation

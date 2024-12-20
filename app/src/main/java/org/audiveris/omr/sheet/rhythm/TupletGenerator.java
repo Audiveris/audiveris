@@ -35,6 +35,7 @@ import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.util.Entities;
@@ -53,7 +54,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class <code>TupletGenerator</code> check each voice of a measure for suitable implicit
+ * Class <code>TupletGenerator</code> checks each voice of a measure for suitable implicit
  * tuplet signs.
  * <p>
  * We have to choose the type (3 or 6) for all inserted tuplet instances and their locations.
@@ -126,7 +127,7 @@ public class TupletGenerator
         List<AbstractChordInter> currentGroup = null;
 
         for (AbstractChordInter ch : voice.getChords()) {
-            Rational time = ch.getTimeOffset();
+            final Rational time = ch.getTimeOffset();
 
             if (time.compareTo(nextTime) >= 0) {
                 nextTime = nextTime.plus(rawDuration);
@@ -156,7 +157,7 @@ public class TupletGenerator
             BeamGroupInter beamGroup = null;
 
             for (AbstractChordInter ch : group) {
-                BeamGroupInter bg = ch.getBeamGroup();
+                final BeamGroupInter bg = ch.getBeamGroup();
 
                 if (bg != null) {
                     if (beamGroup == null) {
@@ -181,14 +182,14 @@ public class TupletGenerator
     {
         logger.info("{}", measure);
 
-        List<Voice> voices = new ArrayList<>(measure.getVoices());
+        final List<Voice> voices = new ArrayList<>(measure.getVoices());
         Collections.sort(voices, Voices.byId);
 
         for (Voice voice : voices) {
             Rational end = null;
 
             for (AbstractChordInter ch : voice.getChords()) {
-                Rational chDur = ch.getDuration();
+                final Rational chDur = ch.getDuration();
                 end = (end == null) ? chDur : end.plus(chDur);
             }
 
@@ -225,10 +226,8 @@ public class TupletGenerator
                 continue;
             }
 
-            final AbstractChordInter lastChord = chords.get(chords.size() - 1);
-
             // Compute total voice duration, ignoring tuplets if any
-            // So, we cannot simply use lastChord end time
+            // So, we cannot simply use last chord end time
             final Rational stop = voice.getDurationSansTuplet();
             final Rational ratio = stop.divides(expected);
 
@@ -279,11 +278,11 @@ public class TupletGenerator
             groups = buildGroups(voice, ONE_OVER_FOUR);
         }
 
-        List<TupletInter> created = new ArrayList<>();
+        final List<TupletInter> created = new ArrayList<>();
 
         // Process each beat group
         for (List<AbstractChordInter> group : groups) {
-            List<AbstractChordInter> extGroup = new ArrayList<>();
+            final List<AbstractChordInter> extGroup = new ArrayList<>();
             created.addAll(generateTuplets(group, extGroup));
         }
 
@@ -296,6 +295,8 @@ public class TupletGenerator
     /**
      * Generate one implicit tuplet for the provided group of chords.
      * <p>
+     * If the chords are already linked to a tuplet, this existing tuplet is returned.
+     * <p>
      * We use the approximate number of notes in the provided beat group to choose between
      * TUPLET_THREE and TUPLET_SIX for tuplet shape.
      * <p>
@@ -307,6 +308,15 @@ public class TupletGenerator
      */
     public TupletInter generateOneTuplet (List<AbstractChordInter> group)
     {
+        final SIGraph sig = system.getSig();
+
+        // Existing tuplet?
+        for (AbstractChordInter ch : group) {
+            for (Relation rel : sig.getRelations(ch, ChordTupletRelation.class)) {
+                return (TupletInter) sig.getOppositeInter(ch, rel);
+            }
+        }
+
         // Simplistic approach
         final int size = group.size();
         final int nb = (int) Math.rint(size / 3.0);
@@ -318,7 +328,6 @@ public class TupletGenerator
         // Precise tuplet bounds, above or below group
         tuplet.setBounds(inferTupletBounds(group, shape));
 
-        final SIGraph sig = system.getSig();
         sig.addVertex(tuplet);
         tuplet.setAbnormal(false);
         measure.addInter(tuplet);
@@ -335,7 +344,7 @@ public class TupletGenerator
     // generateTuplets //
     //-----------------//
     /**
-     * Generate one or several implicit tuplets for the provided group of chords.
+     * Generate one or several implicit tuplet 's for the provided group of chords.
      * <p>
      * If the provided group of chords contains more than one beam group, it is split in 2.
      *
@@ -350,7 +359,7 @@ public class TupletGenerator
 
         // Extend to beam group?
         for (AbstractChordInter chord : group) {
-            BeamGroupInter bg = chord.getBeamGroup();
+            final BeamGroupInter bg = chord.getBeamGroup();
 
             if (bg != null) {
                 for (AbstractChordInter c : bg.getChords()) {
