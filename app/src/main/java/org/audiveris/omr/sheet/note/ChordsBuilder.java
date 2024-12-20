@@ -21,9 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.note;
 
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
-import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.ProcessingSwitch;
@@ -55,6 +54,8 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -80,12 +81,13 @@ public class ChordsBuilder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(ChordsBuilder.class);
 
     /** To sort head-stem relations left to right. */
     private static final Comparator<Relation> byHeadSide = (Relation o1,
-                                                            Relation o2) ->
-    {
+                                                            Relation o2) -> {
         final HorizontalSide s1 = ((HeadStemRelation) o1).getHeadSide();
         final HorizontalSide s2 = ((HeadStemRelation) o2).getHeadSide();
 
@@ -126,19 +128,19 @@ public class ChordsBuilder
     {
         for (Part part : system.getParts()) {
             // Stem-based chords defined so far in part
-            List<HeadChordInter> stemChords = new ArrayList<>();
+            final List<HeadChordInter> stemChords = new ArrayList<>();
 
             for (Staff staff : part.getStaves()) {
                 // Heads in staff
-                List<Inter> heads = sig.inters(staff, HeadInter.class);
+                final List<Inter> heads = sig.inters(staff, HeadInter.class);
                 Collections.sort(heads, Inters.byCenterAbscissa);
                 logger.debug("Staff#{} heads:{}", staff.getId(), heads.size());
 
                 // Isolated heads (instances of WholeInter or SmallWholeInter) found so far in staff
-                List<HeadInter> wholeHeads = new ArrayList<>();
+                final List<HeadInter> wholeHeads = new ArrayList<>();
 
                 for (Inter inter : heads) {
-                    HeadInter head = (HeadInter) inter;
+                    final HeadInter head = (HeadInter) inter;
 
                     if (!connectHead(head, staff, stemChords)) {
                         wholeHeads.add(head);
@@ -347,6 +349,7 @@ public class ChordsBuilder
     {
         final ProcessingSwitches switches = system.getSheet().getStub().getProcessingSwitches();
         final boolean multiWhole = switches.getValue(ProcessingSwitch.multiWholeHeadChords);
+        final int maxDeltaPitch = constants.maxDeltaPitch.getValue();
 
         Collections.sort(wholeHeads, Inters.byCenterOrdinate);
 
@@ -371,7 +374,7 @@ public class ChordsBuilder
                 for (HeadInter h2 : wholeHeads.subList(i + 1, iBreak)) {
                     final int p2 = (int) Math.rint(h2.getPitch());
 
-                    if (p2 > (p1 + 2)) {
+                    if (p2 > (p1 + maxDeltaPitch)) {
                         break; // Vertical gap is too large, this is the end for current chord
                     }
 
@@ -537,5 +540,19 @@ public class ChordsBuilder
 
         // Delete stem from sig
         poorStem.remove();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Integer maxDeltaPitch = new Constant.Integer(
+                "pitch",
+                7,
+                "Maximum delta pitch between two wholes in the same chord");
     }
 }
