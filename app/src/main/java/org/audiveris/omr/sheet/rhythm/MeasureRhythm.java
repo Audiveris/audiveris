@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.rhythm;
 
 import org.audiveris.omr.math.Rational;
 import static org.audiveris.omr.math.Rational.THREE_OVER_TWO;
+import static org.audiveris.omr.math.Rational.TWO_OVER_THREE;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Scale;
@@ -43,7 +44,6 @@ import org.audiveris.omr.sig.relation.BeamRestRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.util.Entities;
 
@@ -343,9 +343,9 @@ public class MeasureRhythm
                         final Rational ratio = actualDur.divides(normalDur);
 
                         if (Rational.THREE_OVER_TWO.equals(ratio)) {
-                            logger.info("{} last tuplet portion for {}", measure, voice);
+                            logger.info("{} Last tuplet portion for {}", measure, voice);
                         } else {
-                            logger.info("{} no last tuplet portion for {}", measure, voice);
+                            logger.info("{} No last tuplet portion for {}", measure, voice);
                             apply = false;
                         }
                     }
@@ -479,20 +479,20 @@ public class MeasureRhythm
             narrowSlotsRetriever = new SlotsRetriever(measure, false); // Narrow
 
             final List<MeasureSlot> narrowSlots = narrowSlotsRetriever.buildSlots();
-            if (logger.isDebugEnabled()) {
+            if (logger.isTraceEnabled()) {
                 dumpSlots("narrowSlots", narrowSlots);
             }
 
             // Retrieve wide slots
             final SlotsRetriever wideSlotsRetriever = new SlotsRetriever(measure, true); // Wide
             final List<MeasureSlot> wideSlots = wideSlotsRetriever.buildSlots();
-            if (logger.isDebugEnabled()) {
+            if (logger.isTraceEnabled()) {
                 dumpSlots("wideSlots", wideSlots);
             }
 
             // Merge narrow into wide compounds
             slots.addAll(buildCompoundSlots(narrowSlots, wideSlots));
-            if (logger.isDebugEnabled()) {
+            if (logger.isTraceEnabled()) {
                 dumpSlots("compoundSlots", slots);
             }
 
@@ -589,6 +589,9 @@ public class MeasureRhythm
      * Detect which additional voices got extinct before the provided slot.
      * <p>
      * They can't be involved in mapping of the following slots.
+     * <p>
+     * A voice cannot be flagged as extinct if one of its chords has a NextInVoice
+     * relation with a chord located later that the current slot in the same measure.
      *
      * @param slot the provided slot
      */
@@ -600,6 +603,7 @@ public class MeasureRhythm
             return;
         }
 
+        VoiceLoop:
         for (Voice voice : measure.getVoices()) {
             if (!voice.isMeasureRest() && !extinctVoices.contains(voice)) {
                 final AbstractChordInter lastChord = voice.getLastChord();
@@ -608,14 +612,26 @@ public class MeasureRhythm
                     final Rational end = lastChord.getEndTime();
 
                     if (end.compareTo(firstTime) < 0) {
+                        // Lookup following NextInVoice chord(s) within the current measure
+                        AbstractChordInter next = lastChord.getNextChordInVoiceSequence();
+
+                        while ((next != null) && (next.getMeasure() == measure)) {
+                            if (slot.compareTo(next.getSlot()) <= 0) {
+                                continue VoiceLoop;
+                            }
+
+                            next = next.getNextChordInVoiceSequence();
+                        }
+
                         if (lastChord.isVip() || logger.isDebugEnabled()) {
                             logger.info(
-                                    "{} VIP {} {} extinct at {} before slot#{}",
+                                    "{} {} {} extinct at {} before slot#{} at {}",
                                     measure,
                                     voice,
                                     Inters.ids(voice.getChords()),
                                     end,
-                                    slot.getId());
+                                    slot.getId(),
+                                    firstTime);
                         }
 
                         extinctVoices.add(voice);
@@ -662,6 +678,10 @@ public class MeasureRhythm
         final int iBreak = ((stopChord != null) && chords.contains(stopChord)) ? chords.indexOf(
                 stopChord) : chords.size();
         final List<AbstractChordInter> group = chords.subList(iFirst, iBreak);
+
+        if (group.isEmpty()) {
+            return;
+        }
 
         // Generate implicit tuplets for the group
         final List<AbstractChordInter> extGroup = new ArrayList<>();
@@ -743,9 +763,6 @@ public class MeasureRhythm
         // Known voice incompabilities
         private final Set<ChordPair> blackList;
 
-        // Explicit same voice links
-        private final Set<ChordPair> sameList;
-
         // Explicit next in voice links
         private final Set<ChordPair> nextList;
 
@@ -758,7 +775,6 @@ public class MeasureRhythm
             rookies = new ArrayList<>(slot.getChords());
 
             blackList = buildSet(SeparateVoiceRelation.class);
-            sameList = buildSet(SameVoiceRelation.class);
             nextList = buildSet((NextInVoiceRelation.class));
         }
 
@@ -1013,6 +1029,7 @@ public class MeasureRhythm
         public void dumpRookieMap (List<AbstractChordInter> actives)
         {
             StringBuilder sb = new StringBuilder();
+            sb.append("Slot #" + slot.getId() + " rookieMap:");
 
             for (AbstractChordInter right : rookies) {
                 sb.append("\nTo ").append(right).append(":");
@@ -1252,7 +1269,6 @@ public class MeasureRhythm
                         extinctExplicits,
                         voiceDistance,
                         blackList,
-                        sameList,
                         nextList).process();
 
                 if (mapping.pairs.isEmpty()) {
@@ -1270,14 +1286,14 @@ public class MeasureRhythm
                         for (ChordPair pair : mapping.pairsOf(narrowChords)) {
                             final AbstractChordInter ch = pair.one;
                             final AbstractChordInter act = pair.two;
-                            final Rational end = act.getEndTime();
+                            final Rational actEnd = act.getEndTime();
 
-                            if (end == null) {
+                            if (actEnd == null) {
                                 return; // Computing cannot continue
                             }
 
                             if (measureDuration != null) {
-                                final Rational chEnd = end.plus(ch.getDuration());
+                                final Rational chEnd = actEnd.plus(ch.getDuration());
                                 if (chEnd.compareTo(measureDuration) > 0) {
                                     logger.debug("Too late ending for {} plus {}", act, ch);
                                     blackList.add(pair);
@@ -1287,13 +1303,13 @@ public class MeasureRhythm
                                 }
                             }
 
-                            if (!end.equals(slotTime)) {
-                                logger.debug("{} slotTime:{} end:{}", slot, slotTime, end);
+                            if (!actEnd.equals(slotTime)) {
+                                logger.debug("{} slotTime:{} end:{}", slot, slotTime, actEnd);
 
                                 if (implicitTuplets) {
                                     // Check delta ratio since previous synchro (w/ slot time)
                                     for (AbstractChordInter setCh : setChords) {
-                                        Rational ratio = deltaRatio(setCh, slotTime, act, end);
+                                        Rational ratio = deltaRatio(setCh, slotTime, act, actEnd);
                                         logger.debug("ratio {} at {}", ratio, ch);
 
                                         if (THREE_OVER_TWO.equals(ratio)) {
@@ -1304,6 +1320,11 @@ public class MeasureRhythm
                                                     setChords,
                                                     lastSync);
                                             rectifyVoice(setCh, null, lastSync);
+                                        } else if (TWO_OVER_THREE.equals(ratio)) {
+                                            //TODO: check also there is no tuplet yet
+                                            Rational lastSync = lastSynchro(act, setCh);
+                                            logger.debug("Tuplet3 for {} since {}", act, lastSync);
+                                            rectifyVoice(act, null, lastSync);
                                         } else {
                                             // Discard
                                             if (blackList.contains(pair)) {
@@ -1461,8 +1482,8 @@ public class MeasureRhythm
                 if (!extinctVoices.contains(voice)) {
                     actives.add(lastChord);
                 } else {
-                    // Check for extinct voice chord with an explicit same voice relation to a rookie
-                    for (ChordPair p : sameList) {
+                    // Check for extinct voice chord with an explicit next voice relation to a rookie
+                    for (ChordPair p : nextList) {
                         if ((p.two == lastChord) && (rookies.contains(p.one))) {
                             actives.add(lastChord);
                             extinctExplicits.add(p.two);

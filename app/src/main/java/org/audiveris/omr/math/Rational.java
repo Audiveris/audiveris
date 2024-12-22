@@ -44,8 +44,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "rational")
-@XmlType(propOrder =
-{ "num", "den" })
+@XmlType(propOrder = { "num", "den" })
 public class Rational
         extends Number
         implements Comparable<Rational>
@@ -63,6 +62,9 @@ public class Rational
 
     /** 1/2 rational instance. */
     public static final Rational HALF = new Rational(1, 2);
+
+    /** 2/3 rational value. */
+    public static final Rational TWO_OVER_THREE = new Rational(2, 3);
 
     /** 1 rational instance. */
     public static final Rational ONE = new Rational(1, 1);

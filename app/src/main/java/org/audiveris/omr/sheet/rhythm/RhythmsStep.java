@@ -56,7 +56,6 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
-import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.sig.ui.AdditionTask;
@@ -136,7 +135,6 @@ public class RhythmsStep
         forStack.add(HeadStemRelation.class);
         forStack.add(NextInVoiceRelation.class);
         forStack.add(SameTimeRelation.class);
-        forStack.add(SameVoiceRelation.class);
         forStack.add(SeparateTimeRelation.class);
         forStack.add(SeparateVoiceRelation.class);
     }

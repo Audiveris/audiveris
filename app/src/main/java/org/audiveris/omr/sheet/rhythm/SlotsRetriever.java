@@ -45,7 +45,6 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
-import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 
@@ -277,8 +276,7 @@ public class SlotsRetriever
         rels.addAll(sig.getAllEdges(ch2, ch1));
 
         for (Relation rel : rels) {
-            if ((rel instanceof SeparateTimeRelation) || (rel instanceof NextInVoiceRelation)
-                    || (rel instanceof SameVoiceRelation)) {
+            if ((rel instanceof SeparateTimeRelation) || (rel instanceof NextInVoiceRelation)) {
                 return true;
             }
         }
@@ -876,14 +874,14 @@ public class SlotsRetriever
     //----------------------//
     /**
      * A pair of chords may be linked by an explicit SeparateTimeRelation
-     * (or SameVoiceRelation).
+     * or NextInVoiceRelation.
      */
     private void inspectSeparateSlots ()
     {
         final SIGraph sig = measure.getStack().getSystem().getSig();
         final MeasureStack stack = measure.getStack();
 
-        for (Relation same : sig.relations(SeparateTimeRelation.class, SameVoiceRelation.class)) {
+        for (Relation same : sig.relations(SeparateTimeRelation.class, NextInVoiceRelation.class)) {
             final AbstractChordInter ch1 = (AbstractChordInter) sig.getEdgeSource(same);
             final AbstractChordInter ch2 = (AbstractChordInter) sig.getEdgeTarget(same);
 

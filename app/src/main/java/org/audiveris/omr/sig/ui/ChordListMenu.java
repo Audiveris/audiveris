@@ -39,7 +39,6 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
-import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.sig.ui.InterController.SourceTargetRelation;
@@ -403,7 +402,6 @@ public class ChordListMenu
         final AbstractChordInter left = srcCenter.x <= tgtCenter.x ? src : tgt;
         final AbstractChordInter right = srcCenter.x > tgtCenter.x ? src : tgt;
 
-        Relation same = null;
         Relation nextInVoice = null;
         Relation separate = null;
 
@@ -412,9 +410,7 @@ public class ChordListMenu
         rels.addAll(sig.getAllEdges(tgt, src));
 
         for (Relation rel : rels) {
-            if (rel instanceof SameVoiceRelation) {
-                same = rel;
-            } else if (rel instanceof NextInVoiceRelation) {
+            if (rel instanceof NextInVoiceRelation) {
                 nextInVoice = rel;
             } else if (rel instanceof SeparateVoiceRelation) {
                 separate = rel;
@@ -442,29 +438,8 @@ public class ChordListMenu
                     listener);
         }
 
-        if (same == null) {
-            if (separate == null) {
-                addItem(
-                        new RelationAdditionItem(
-                                "Same Voice",
-                                "The two chords share the same voice",
-                                src,
-                                tgt,
-                                new SameVoiceRelation()),
-                        listener);
-            }
-        } else {
-            addItem(
-                    new RelationRemovalItem(
-                            "cancel Same Voice",
-                            "Cancel use of same voice",
-                            sig,
-                            same),
-                    listener);
-        }
-
         if (separate == null) {
-            if ((same == null) && (nextInVoice == null)) {
+            if (nextInVoice == null) {
                 addItem(
                         new RelationAdditionItem(
                                 "Separate Voices",
@@ -1082,7 +1057,7 @@ public class ChordListMenu
             add(noneItem);
 
             // ID items
-            for (int id : chord.getMeasure().inferVoiceKind(chord).ids()) {
+            for (int id = 1; id <= Voices.getColorCount(); id++) {
                 final JMenuItem item = new JRadioButtonMenuItem("" + id);
                 item.setOpaque(true);
                 item.setBackground(new Color(Voices.colorOf(id).getRGB()));

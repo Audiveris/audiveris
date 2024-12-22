@@ -145,8 +145,9 @@ public abstract class VoiceDistance
                                 StringBuilder details)
         {
             // Different assigned voices?
-            if ((right.getVoice() != null) && (left.getVoice() != null) && (right.getVoice() != left
-                    .getVoice())) {
+            if ((right.getVoice() != null) //
+                && (left.getVoice() != null) //
+                && (right.getVoice() != left.getVoice())) {
                 return INCOMPATIBLE;
             }
 

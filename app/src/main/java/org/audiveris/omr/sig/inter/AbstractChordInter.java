@@ -140,7 +140,7 @@ public abstract class AbstractChordInter
      */
     protected AbstractChordInter (Double grade)
     {
-        super((Glyph) null, null, null, grade);
+        super(null, null, null, grade);
     }
 
     /**

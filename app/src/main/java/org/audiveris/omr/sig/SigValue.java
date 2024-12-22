@@ -143,7 +143,6 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
-import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
@@ -193,8 +192,8 @@ public class SigValue
      */
     @SuppressWarnings("deprecation")
     @XmlElementWrapper(name = "inters")
-    @XmlElementRefs(
-    {
+    @XmlElementRefs({
+    // @formatter:off
             @XmlElementRef(type = AlterInter.class),
             @XmlElementRef(type = AugmentationDotInter.class),
             @XmlElementRef(type = ArpeggiatoInter.class),
@@ -264,6 +263,7 @@ public class SigValue
             @XmlElementRef(type = VerticalSerifInter.class),
             @XmlElementRef(type = WedgeInter.class),
             @XmlElementRef(type = WordInter.class) })
+    // @formatter:on
     private final ArrayList<AbstractInter> inters = new ArrayList<>();
 
     /** Sig edges: relations between inters. */
@@ -322,8 +322,10 @@ public class SigValue
     @Override
     public String toString ()
     {
-        return new StringBuilder("SigValue{").append("inters:").append(inters.size())
-                .append(" relations:").append(relations.size()).append('}').toString();
+        return new StringBuilder("SigValue{") //
+                .append("inters:").append(inters.size()) //
+                .append(" relations:").append(relations.size()) //
+                .append('}').toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -402,8 +404,7 @@ public class SigValue
          * <p>
          * Here we list alphabetically all CONCRETE relation types. No abstract!
          */
-        @XmlElementRefs(
-        {
+        @XmlElementRefs({ //
                 @XmlElementRef(type = AlterHeadRelation.class),
                 @XmlElementRef(type = AugmentationRelation.class),
                 @XmlElementRef(type = BarConnectionRelation.class),
@@ -450,7 +451,6 @@ public class SigValue
                 @XmlElementRef(type = RepeatDotBarRelation.class),
                 @XmlElementRef(type = RepeatDotPairRelation.class),
                 @XmlElementRef(type = SameTimeRelation.class),
-                @XmlElementRef(type = SameVoiceRelation.class),
                 @XmlElementRef(type = SeparateTimeRelation.class),
                 @XmlElementRef(type = SeparateVoiceRelation.class),
                 @XmlElementRef(type = MeasureRepeatCountRelation.class),
@@ -487,15 +487,11 @@ public class SigValue
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("RelationValue{");
-
-            sb.append("src:").append(sourceId);
-            sb.append(" tgt:").append(targetId);
-            sb.append(" rel:").append(relation);
-
-            sb.append('}');
-
-            return sb.toString();
+            return new StringBuilder("RelationValue{") //
+                    .append("src:").append(sourceId) //
+                    .append(" tgt:").append(targetId) //
+                    .append(" rel:").append(relation) //
+                    .append('}').toString();
         }
     }
 }

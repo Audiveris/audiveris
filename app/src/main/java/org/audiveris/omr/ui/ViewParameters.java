@@ -909,7 +909,6 @@ public class ViewParameters
     //---------------//
     private static class LazySingleton
     {
-
         static final ViewParameters INSTANCE = new ViewParameters();
     }
 

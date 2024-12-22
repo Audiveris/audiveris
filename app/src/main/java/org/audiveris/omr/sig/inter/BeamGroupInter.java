@@ -195,8 +195,9 @@ public class BeamGroupInter
                         && (GeoUtil.xOverlap(beam.getBounds(), chordBox) > 0)) {
                     // Check vertical gap
                     int lineY = (int) Math.rint(LineUtil.yAtX(beam.getMedian(), tail.x));
-                    int yOverlap = Math.min(lineY, chordBox.y + chordBox.height)
-                            - Math.max(lineY, chordBox.y);
+                    int yOverlap = Math.min(lineY, chordBox.y + chordBox.height) - Math.max(
+                            lineY,
+                            chordBox.y);
 
                     if (yOverlap < 0) {
                         questionableBeams.add(beam);
@@ -280,12 +281,13 @@ public class BeamGroupInter
     public void detectInterleavedRests ()
     {
         final List<AbstractChordInter> headChords = getChords();
-        final Set<RestChordInter> blackRests =
-                getLinkedRests(headChords, false, SeparateVoiceRelation.class);
+        final Set<RestChordInter> blackRests = getLinkedRests(
+                headChords,
+                false,
+                SeparateVoiceRelation.class);
         final Set<RestChordInter> whiteRests = getLinkedRests(
                 headChords,
                 true,
-                SameVoiceRelation.class,
                 NextInVoiceRelation.class);
         whiteRests.removeAll(blackRests); // Safer
 
@@ -793,12 +795,12 @@ public class BeamGroupInter
 
             polygon.addPoint(upHead.x, upHead.y);
 
-            final Point upMedian = PointUtil
-                    .rounded(LineUtil.intersection(median, new Line2D.Double(upHead, upTail)));
+            final Point upMedian = PointUtil.rounded(
+                    LineUtil.intersection(median, new Line2D.Double(upHead, upTail)));
             polygon.addPoint(upMedian.x, upMedian.y);
 
-            final Point downMedian = PointUtil
-                    .rounded(LineUtil.intersection(median, new Line2D.Double(downHead, downTail)));
+            final Point downMedian = PointUtil.rounded(
+                    LineUtil.intersection(median, new Line2D.Double(downHead, downTail)));
             polygon.addPoint(downMedian.x, downMedian.y);
 
             polygon.addPoint(downMedian.x, downMedian.y - (upMedian.y - upHead.y));
@@ -1369,8 +1371,9 @@ public class BeamGroupInter
                 10,
                 "Maximum number of loops allowed for splitting beam groups");
 
-        private final Scale.Fraction maxChordDy =
-                new Scale.Fraction(0.5, "Maximum vertical gap between a chord and a beam");
+        private final Scale.Fraction maxChordDy = new Scale.Fraction(
+                0.5,
+                "Maximum vertical gap between a chord and a beam");
 
         private final Scale.Fraction minXOverlap = new Scale.Fraction(
                 0.7,
@@ -1564,8 +1567,9 @@ public class BeamGroupInter
                         // Start of alien side
                         logger.debug("Alien start");
 
-                        for (AbstractBeamInter ab : pivotBeams
-                                .subList(ib, pivotChord.getBeams().size())) {
+                        for (AbstractBeamInter ab : pivotBeams.subList(
+                                ib,
+                                pivotChord.getBeams().size())) {
                             if (!alienBeams.contains(ab)) {
                                 ab.switchToGroup(alienGroup);
                             }
@@ -1584,8 +1588,8 @@ public class BeamGroupInter
             final StemInter rootStem = chord.getStem();
 
             // Ordinate of head side of stem
-            final int yStart = (int) Math
-                    .rint(((stemDir > 0) ? rootStem.getTop() : rootStem.getBottom()).getY() - 1);
+            final int yStart = (int) Math.rint(
+                    ((stemDir > 0) ? rootStem.getTop() : rootStem.getBottom()).getY() - 1);
 
             return rootStem.extractSubStem(yStart, yStop);
         }
@@ -1739,8 +1743,8 @@ public class BeamGroupInter
 
             // Create and populate the new (alien) group
             sig.addVertex(alienGroup = new BeamGroupInter());
-            siblings.subList(alienIdx, siblings.size())
-                    .forEach(beam -> beam.switchToGroup(alienGroup));
+            siblings.subList(alienIdx, siblings.size()).forEach(
+                    beam -> beam.switchToGroup(alienGroup));
 
             // Remove the beam-stem relations across the two groups
             final Set<StemInter> lowerStems = lowerBeam.getConcreteStems();

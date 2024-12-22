@@ -54,8 +54,6 @@ public class ChordsMapper
 
     private final Set<ChordPair> blackList;
 
-    private final Set<ChordPair> sameList;
-
     private final Set<ChordPair> nextList;
 
     private final Set<ChordPair> mappedNext;
@@ -70,7 +68,6 @@ public class ChordsMapper
      * @param extinctExplicits extinct chords but with explicit SameVoiceRelation
      * @param vd               the VoiceDistance to use
      * @param blackList        known incompatibilities
-     * @param sameList         explicit compatibilities
      * @param nextList         explicit connections
      */
     public ChordsMapper (List<AbstractChordInter> news,
@@ -78,7 +75,6 @@ public class ChordsMapper
                          List<AbstractChordInter> extinctExplicits,
                          VoiceDistance vd,
                          Set<ChordPair> blackList,
-                         Set<ChordPair> sameList,
                          Set<ChordPair> nextList)
     {
         this.news = news;
@@ -86,7 +82,6 @@ public class ChordsMapper
         this.extinctExplicits = extinctExplicits;
         this.vd = vd;
         this.blackList = blackList;
-        this.sameList = sameList;
         this.nextList = nextList;
 
         mappedNext = processNext(news, olds, remainingNews, remainingOlds);
@@ -242,12 +237,12 @@ public class ChordsMapper
             AbstractChordInter newChord = remainingNews.get(in);
             AbstractChordInter oldChord = remainingOlds.get(ip);
 
-            // Same voice
-            for (ChordPair pair : sameList) {
+            // Next list
+            for (ChordPair pair : nextList) {
                 if (pair.two == oldChord) {
                     if (pair.one == newChord) {
                         if (details != null) {
-                            details.append("SAME");
+                            details.append("NEXT");
                         }
 
                         return 0;

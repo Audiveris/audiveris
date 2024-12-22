@@ -59,7 +59,6 @@ import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
-import org.audiveris.omr.sig.relation.SameVoiceRelation;
 import org.audiveris.omr.sig.relation.SeparateTimeRelation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
@@ -146,7 +145,6 @@ public class PageStep
         forVoices.add(AugmentationRelation.class);
         forVoices.add(NextInVoiceRelation.class);
         forVoices.add(SameTimeRelation.class);
-        forVoices.add(SameVoiceRelation.class);
         forVoices.add(SeparateTimeRelation.class);
         forVoices.add(SeparateVoiceRelation.class);
         forVoices.add(DoubleDotRelation.class);

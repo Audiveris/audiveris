@@ -238,6 +238,8 @@ public class EditorMenu
         /** Selected measure. */
         private Measure measure;
 
+        private final DumpStackAction stackAction = new DumpStackAction();
+
         private final RhythmAction rhythmAction = new RhythmAction();
 
         private final MergeAction mergeAction = new MergeAction();
@@ -245,7 +247,7 @@ public class EditorMenu
         MeasureMenu ()
         {
             super("Measure");
-            add(new JMenuItem(new DumpStackAction()));
+            add(new JMenuItem(stackAction));
             add(new JMenuItem(new DumpMeasureAction()));
             add(new JMenuItem(rhythmAction));
             add(new JMenuItem(mergeAction));
@@ -268,6 +270,7 @@ public class EditorMenu
                 setText("Measure #" + stack.getPageId());
             }
 
+            stackAction.update();
             rhythmAction.update();
             mergeAction.update();
         }
@@ -293,7 +296,7 @@ public class EditorMenu
         }
 
         /**
-         * Dump the current measure.
+         * Dump the current measure stack.
          */
         private class DumpStackAction
                 extends AbstractAction
@@ -309,6 +312,11 @@ public class EditorMenu
             public void actionPerformed (ActionEvent e)
             {
                 stack.printVoices("\n", null);
+            }
+
+            private void update ()
+            {
+                setEnabled((stack != null) && (stack.getMeasures().size() > 1));
             }
         }
 
@@ -477,14 +485,16 @@ public class EditorMenu
             final Point center = GeoUtil.center(rect);
             final SystemInfo system = getCurrentSystem(center);
 
-            if (system == null)
+            if (system == null) {
                 return;
+            }
 
             final List<Staff> staves = system.getStavesAround(center); // 1 or 2 staves
             part = staves.get(0).getPart();
 
-            if ((staves.size() > 1) && (staves.get(1).getPart() != part))
+            if ((staves.size() > 1) && (staves.get(1).getPart() != part)) {
                 return;
+            }
 
             if (system.getPage().getScore() == null) {
                 return;

@@ -1076,7 +1076,9 @@ public class Voice
         /** Started in second staff, or chord with downward stem in merged grand staff. */
         LOW,
         /** Started in third staff. */
-        INFRA;
+        INFRA,
+        /** High and Low values. */
+        HIGH_AND_LOW;
 
         /**
          * Offset in voice ID, according to voice family.
