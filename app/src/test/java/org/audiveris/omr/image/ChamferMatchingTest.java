@@ -40,7 +40,6 @@ import java.util.List;
  */
 public class ChamferMatchingTest
 {
-
     private static final String[] imageRows = new String[]
     {
             "                                    ",

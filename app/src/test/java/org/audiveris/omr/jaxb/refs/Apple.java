@@ -33,7 +33,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Apple
         extends Fruit
 {
-
     @XmlAttribute
     final String name;
 

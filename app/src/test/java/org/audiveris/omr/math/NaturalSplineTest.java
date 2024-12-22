@@ -15,7 +15,6 @@ import org.junit.Test;
 public class NaturalSplineTest
         extends BaseTestCase
 {
-
     /**
      * Creates a new NaturalSplineTest object.
      */

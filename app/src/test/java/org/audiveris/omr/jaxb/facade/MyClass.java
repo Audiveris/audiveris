@@ -46,7 +46,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 public class MyClass
 {
-
     @XmlAttribute
     public final String name;
 

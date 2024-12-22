@@ -40,7 +40,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class MyAbstractEntity
         implements MyEntity
 {
-
     /** Identity for debugging. */
     @XmlID
     @XmlAttribute(name = "id")

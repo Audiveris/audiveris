@@ -35,7 +35,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class MyCompound
 {
-
     @XmlIDREF
     MyGlyph topGlyph;
 

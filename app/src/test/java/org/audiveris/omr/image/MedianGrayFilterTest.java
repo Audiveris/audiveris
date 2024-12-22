@@ -37,7 +37,6 @@ import java.awt.image.WritableRaster;
  */
 public class MedianGrayFilterTest
 {
-
     final int width = 10;
 
     final int height = 4;

@@ -35,7 +35,6 @@ import org.junit.Test;
  */
 public class WatershedGrayLevelTest
 {
-
     /**
      * Creates a new WatershedGrayLevelTest object.
      */

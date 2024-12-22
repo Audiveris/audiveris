@@ -23,7 +23,6 @@ import javax.imageio.stream.ImageOutputStream;
  */
 public class TiffSplit
 {
-
     private TiffSplit ()
     {
     }

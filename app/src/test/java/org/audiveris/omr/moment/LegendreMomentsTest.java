@@ -17,7 +17,6 @@ import org.junit.*;
 public class LegendreMomentsTest
         extends MomentsExtractorTest<LegendreMoments>
 {
-
     /**
      * Creates a new LegendreMomentsTest object.
      */

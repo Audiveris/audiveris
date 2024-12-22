@@ -19,7 +19,6 @@ import java.nio.file.Paths;
 public class ExportPatternTest
         extends BaseTestCase
 {
-
     /**
      * Creates a new <code>ExportPatternTest</code> object.
      */

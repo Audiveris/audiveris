@@ -35,7 +35,6 @@ import org.junit.Test;
  */
 public class ChamferDistanceTest
 {
-
     /**
      * Creates a new ChamferDistanceTest object.
      */

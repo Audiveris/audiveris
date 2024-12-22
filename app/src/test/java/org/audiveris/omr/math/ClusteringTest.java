@@ -10,7 +10,6 @@ import org.junit.Test;
  */
 public class ClusteringTest
 {
-
     static java.util.Random random = new java.util.Random(111);
 
     /**

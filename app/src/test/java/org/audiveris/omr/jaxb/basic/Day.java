@@ -32,7 +32,6 @@ import javax.xml.bind.annotation.*;
  */
 public class Day
 {
-
     @XmlAttribute
     public Weekday label;
 

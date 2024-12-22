@@ -47,7 +47,6 @@ import javax.xml.stream.XMLStreamException;
 public class TestFacade
         extends BaseTestCase
 {
-
     private JAXBContext jaxbContext;
 
     private final File dir = new File("data/temp/test-facade");

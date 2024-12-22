@@ -12,7 +12,6 @@ import org.junit.Test;
  */
 public class StopWatchTest
 {
-
     StopWatch instance = new StopWatch("Utility Watch");
 
     int j;

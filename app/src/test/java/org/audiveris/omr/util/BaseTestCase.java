@@ -32,7 +32,6 @@ import junit.framework.*;
 public class BaseTestCase
         extends TestCase
 {
-
     /**
      * Creates a new BaseTestCase object.
      */

@@ -34,7 +34,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 public class MyGlyph
         extends MyAbstractEntity
 {
-
     @XmlAttribute
     private final String name;
 

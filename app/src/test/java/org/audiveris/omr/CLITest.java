@@ -39,7 +39,6 @@ import java.util.Arrays;
  */
 public class CLITest
 {
-
     private final CLI instance = new CLI("AudiverisTest");
 
     /**

@@ -32,7 +32,6 @@ import javax.imageio.ImageIO;
 @Ignore
 public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
 {
-
     Map<Shape, D> descriptors = new EnumMap<Shape, D>(Shape.class);
 
     File temp = new File("data/temp");
@@ -196,7 +195,6 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
     //----------//
     private class Relation
     {
-
         final Shape from;
 
         final Shape to;
@@ -223,7 +221,6 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
     //----------------//
     private class ShapeRelations
     {
-
         final Shape shape;
 
         final List<Relation> relations; // Sorted

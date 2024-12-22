@@ -46,7 +46,6 @@ import javax.xml.stream.XMLStreamException;
 public class RunTableBindingTest
         extends BaseTestCase
 {
-
     private static final File dir = new File("data/temp");
 
     private static final Dimension dim = new Dimension(10, 5);

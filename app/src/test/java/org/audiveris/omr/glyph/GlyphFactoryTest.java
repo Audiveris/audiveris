@@ -20,7 +20,6 @@ import java.awt.Dimension;
  */
 public class GlyphFactoryTest
 {
-
     private static final Dimension dim = new Dimension(15, 10);
 
     /**

@@ -34,7 +34,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 public class MySymbol
         extends MyAbstractEntity
 {
-
     @XmlAttribute
     private final int weight;
 

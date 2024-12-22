@@ -41,7 +41,6 @@ import javax.xml.bind.annotation.*;
 @XmlRootElement
 public class Waiter
 {
-
     /** A simple id */
     @XmlAttribute
     public int id;

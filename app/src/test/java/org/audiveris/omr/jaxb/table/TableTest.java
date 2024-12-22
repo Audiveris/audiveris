@@ -45,7 +45,6 @@ import javax.xml.stream.XMLStreamException;
 public class TableTest
         extends BaseTestCase
 {
-
     private JAXBContext jaxbContext;
 
     private final File dir = new File("data/temp/table");

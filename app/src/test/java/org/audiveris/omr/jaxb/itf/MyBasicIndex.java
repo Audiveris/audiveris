@@ -44,7 +44,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement
 public class MyBasicIndex<E extends MyEntity>
 {
-
     /** Index name. */
     @XmlAttribute
     protected final String name;
@@ -123,7 +122,6 @@ public class MyBasicIndex<E extends MyEntity>
      */
     private static class Snap<E extends MyAbstractEntity>
     {
-
         @XmlElements({
             @XmlElement(name = "glyph", type = MyGlyph.class),
             @XmlElement(name = "symbol", type = MySymbol.class)
@@ -140,7 +138,6 @@ public class MyBasicIndex<E extends MyEntity>
     private static class HashMapAdapter<E extends MyAbstractEntity>
             extends XmlAdapter<Snap<E>, ConcurrentHashMap<Integer, E>>
     {
-
         @Override
         public Snap<E> marshal (ConcurrentHashMap<Integer, E> map)
                 throws Exception

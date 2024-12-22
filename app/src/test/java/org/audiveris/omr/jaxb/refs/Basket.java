@@ -35,7 +35,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "basket")
 public class Basket
 {
-
     //    @XmlElementWrapper(name = "apples")
     //    @XmlElement(name = "apple")
     @XmlList

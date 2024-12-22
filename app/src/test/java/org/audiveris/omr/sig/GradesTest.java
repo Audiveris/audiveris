@@ -13,7 +13,6 @@ import org.junit.Test;
  */
 public class GradesTest
 {
-
     /**
      * Creates a new GradesTest object.
      */

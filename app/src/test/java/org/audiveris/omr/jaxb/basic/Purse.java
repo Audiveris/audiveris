@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Purse
 {
-
     @XmlElement(name = "tip")
     public double[] tips = new double[]{1.0, 2.345, 4.5};
 

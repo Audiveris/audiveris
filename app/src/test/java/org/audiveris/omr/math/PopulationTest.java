@@ -33,7 +33,6 @@ import org.junit.Test;
 public class PopulationTest
         extends BaseTestCase
 {
-
     //-----------//
     // testEmpty //
     //-----------//

@@ -35,7 +35,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class Store
 {
-
     // Containment to define all IDs
     @XmlElementWrapper(name = "fruits")
     @XmlElementRef

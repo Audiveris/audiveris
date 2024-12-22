@@ -33,7 +33,6 @@ import java.awt.geom.Path2D;
  */
 public class MaskTest
 {
-
     private static final Mask instance = createInstance();
 
     /**

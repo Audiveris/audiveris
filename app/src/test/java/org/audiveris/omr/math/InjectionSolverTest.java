@@ -30,7 +30,6 @@ import junit.framework.*;
 public class InjectionSolverTest
         extends TestCase
 {
-
     /**
      * Creates a new InjectionSolverTest object.
      *
@@ -69,7 +68,6 @@ public class InjectionSolverTest
     public static class MyDistance
             implements InjectionSolver.Distance
     {
-
         public MyDistance ()
         {
         }

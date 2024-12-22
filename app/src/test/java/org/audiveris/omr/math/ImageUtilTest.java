@@ -12,7 +12,6 @@ import org.junit.Test;
  */
 public class ImageUtilTest
 {
-
     /**
      * Test of dump method, of class TableUtil.
      */

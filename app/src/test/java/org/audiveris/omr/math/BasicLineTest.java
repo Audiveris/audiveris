@@ -31,7 +31,6 @@ import org.audiveris.omr.util.BaseTestCase;
 public class BasicLineTest
         extends BaseTestCase
 {
-
     protected static final double[] xx = new double[]
     { 1d, 2d, 3d, 4d, 5d };
 

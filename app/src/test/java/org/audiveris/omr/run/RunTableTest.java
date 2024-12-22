@@ -39,7 +39,6 @@ import java.util.function.Predicate;
  */
 public class RunTableTest
 {
-
     private static final Dimension dim = new Dimension(10, 5);
 
     /**

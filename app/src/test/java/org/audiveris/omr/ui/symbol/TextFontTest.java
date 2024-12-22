@@ -45,7 +45,6 @@ import java.io.FileOutputStream;
  */
 public class TextFontTest
 {
-
     final int itemsPerLine = 8;
 
     final int linesPerPage = 8;

@@ -37,7 +37,6 @@ import javax.xml.bind.annotation.XmlValue;
 @XmlRootElement(name = "run-table")
 public class Table
 {
-
     /** Width of the table. */
     @XmlAttribute
     private final int width;
@@ -96,7 +95,6 @@ public class Table
     @XmlRootElement(name = "runs")
     public static class RunSequence
     {
-
         @XmlValue
         public short[] vector;
 

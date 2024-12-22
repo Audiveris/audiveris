@@ -36,7 +36,6 @@ import static java.lang.Math.*;
 public class BasicLineCheck
         extends BaseTestCase
 {
-
     public static void checkDistanceOf (BasicLine l)
     {
         print(l);

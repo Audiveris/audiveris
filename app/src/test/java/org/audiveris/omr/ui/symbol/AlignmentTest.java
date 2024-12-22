@@ -41,7 +41,6 @@ import java.util.Map.Entry;
  */
 public class AlignmentTest
 {
-
     /** Map Alignment -> Point */
     Map<Alignment, Point> points = new HashMap<Alignment, Point>();
 

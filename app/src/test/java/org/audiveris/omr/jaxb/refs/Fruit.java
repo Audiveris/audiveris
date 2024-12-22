@@ -33,7 +33,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "fruit")
 public abstract class Fruit
 {
-
     @XmlID
     @XmlAttribute
     final String id;

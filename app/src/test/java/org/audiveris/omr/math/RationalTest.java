@@ -30,7 +30,6 @@ import org.junit.Test;
  */
 public class RationalTest
 {
-
     /**
      * Creates a new RationalTest object.
      */

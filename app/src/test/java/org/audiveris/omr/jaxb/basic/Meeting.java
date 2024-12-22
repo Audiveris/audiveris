@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlAttribute;
  */
 public class Meeting
 {
-
     @XmlAttribute
     public int start;
 

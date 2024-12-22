@@ -18,7 +18,6 @@ import org.junit.*;
 public class ARTExtractorTest
         extends MomentsExtractorTest<ARTMoments>
 {
-
     /**
      * Creates a new ARTExtractorTest object.
      */

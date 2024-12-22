@@ -38,7 +38,6 @@ import java.util.List;
  */
 public class BrokenLineTest
 {
-
     private Point p0 = new Point(1, 5);
 
     private Point p1 = new Point(10, 5);

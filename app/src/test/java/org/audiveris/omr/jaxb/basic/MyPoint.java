@@ -33,7 +33,6 @@ import javax.xml.bind.annotation.*;
 @XmlRootElement(name = "point")
 public class MyPoint
 {
-
     private Point p;
 
     /** Creates a new instance of MyPoint */

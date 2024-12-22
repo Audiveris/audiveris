@@ -33,7 +33,6 @@ import static org.junit.Assert.*;
  */
 public class PoorManAlgebraTest
 {
-
     private static final Logger logger = LoggerFactory.getLogger(PoorManAlgebraTest.class);
 
     private static final double eps = 0.0001;

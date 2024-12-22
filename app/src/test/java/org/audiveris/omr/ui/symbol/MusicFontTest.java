@@ -47,7 +47,6 @@ import java.io.FileOutputStream;
  */
 public class MusicFontTest
 {
-
     final int itemsPerLine = 8;
 
     final int linesPerPage = 8;

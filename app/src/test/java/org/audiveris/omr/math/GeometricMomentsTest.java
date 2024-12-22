@@ -36,7 +36,6 @@ import org.junit.Test;
 public class GeometricMomentsTest
         extends BaseTestCase
 {
-
     private static final int[] xx = new int[]{1, 2, 3, 4, 5};
 
     private static final int[] yy = new int[]{4, 5, 24, 9, 0};

@@ -42,7 +42,6 @@ import java.util.TreeSet;
  */
 public class HistogramTest
 {
-
     private Set<Integer> keySet;
 
     private Set<Integer> valueSet;

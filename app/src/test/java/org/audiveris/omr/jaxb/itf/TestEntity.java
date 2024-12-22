@@ -45,7 +45,6 @@ import javax.xml.stream.XMLStreamException;
 public class TestEntity
         extends BaseTestCase
 {
-
     private JAXBContext jaxbContext;
 
     private final File dir = new File("data/temp/test-itf");

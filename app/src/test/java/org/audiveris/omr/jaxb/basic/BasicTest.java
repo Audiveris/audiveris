@@ -42,7 +42,6 @@ import javax.xml.stream.XMLStreamException;
 public class BasicTest
         extends BaseTestCase
 {
-
     public static void main (String... args)
             throws JAXBException,
                    FileNotFoundException,
