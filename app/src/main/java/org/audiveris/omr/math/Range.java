@@ -66,7 +66,7 @@ public class Range
 
     //~ Constructors -------------------------------------------------------------------------------
 
-    /** No-arg constructor meant for JAXB. */
+    /** No-argument constructor meant for JAXB. */
     private Range ()
     {
         this.min = 0;

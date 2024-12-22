@@ -60,7 +60,7 @@ public abstract class AbstractPauseInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     protected AbstractPauseInter ()
     {

@@ -76,7 +76,7 @@ public abstract class AbstractPitchedInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     protected AbstractPitchedInter ()
     {

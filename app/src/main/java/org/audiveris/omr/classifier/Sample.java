@@ -107,7 +107,7 @@ public class Sample
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor needed for JAXB unmarshalling.
+     * No-argument constructor needed for JAXB unmarshalling.
      */
     private Sample ()
     {

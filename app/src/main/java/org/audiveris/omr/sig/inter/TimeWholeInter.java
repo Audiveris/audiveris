@@ -54,7 +54,7 @@ public class TimeWholeInter
     private static final Logger logger = LoggerFactory.getLogger(TimeWholeInter.class);
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     private TimeWholeInter ()
     {

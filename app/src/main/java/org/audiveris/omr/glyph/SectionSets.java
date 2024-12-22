@@ -65,7 +65,7 @@ public class SectionSets
 
     //~ Constructors -------------------------------------------------------------------------------
 
-    // No-arg constructor needed by JAXB
+    // No-argument constructor needed by JAXB
     private SectionSets ()
     {
     }

@@ -135,7 +135,7 @@ public class Glyph
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     private Glyph ()
     {
@@ -159,7 +159,7 @@ public class Glyph
         this.top = top;
 
         ///Objects.requireNonNull(runTable, "Glyph created with null runTable");
-        // NOTA: We must accept null RunTable for the Sample no-arg constructor
+        // NOTA: We must accept null RunTable for the Sample No-argument constructor
         this.runTable = runTable;
     }
 

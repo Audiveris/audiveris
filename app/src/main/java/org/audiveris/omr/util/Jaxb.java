@@ -337,7 +337,7 @@ public abstract class Jaxb
             @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
             public double y2;
 
-            /** No-arg constructor needed for JAXB. */
+            /** No-argument constructor needed for JAXB. */
             @SuppressWarnings("unused")
             private CubicFacade ()
             {
@@ -640,7 +640,7 @@ public abstract class Jaxb
             @XmlElement
             public Point2DFacade p2;
 
-            /** No-arg constructor needed for JAXB. */
+            /** No-argument constructor needed for JAXB. */
             @SuppressWarnings("unused")
             private Line2DFacade ()
             {
@@ -817,7 +817,7 @@ public abstract class Jaxb
         @XmlJavaTypeAdapter(type = double.class, value = Double1Adapter.class)
         public double y;
 
-        /** No-arg constructor needed for JAXB. */
+        /** No-argument constructor needed for JAXB. */
         @SuppressWarnings("unused")
         private Point2DFacade ()
         {
@@ -1002,7 +1002,7 @@ public abstract class Jaxb
             public double height;
 
             /**
-             * No-arg constructor needed for JAXB.
+             * No-argument constructor needed for JAXB.
              */
             @SuppressWarnings("unused")
             private Rectangle2DFacade ()
@@ -1092,7 +1092,7 @@ public abstract class Jaxb
             public int height;
 
             /**
-             * No-arg constructor needed for JAXB.
+             * No-argument constructor needed for JAXB.
              */
             @SuppressWarnings("unused")
             private RectangleFacade ()

@@ -271,7 +271,7 @@ public class Measure
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     @SuppressWarnings("unused")
     private Measure ()

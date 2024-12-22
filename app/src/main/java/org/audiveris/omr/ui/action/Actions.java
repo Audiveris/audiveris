@@ -68,7 +68,7 @@ public class Actions
 
     //~ Constructors -------------------------------------------------------------------------------
 
-    /** No-arg constructor meant for JAXB. */
+    /** No-argument constructor meant for JAXB. */
     private Actions ()
     {
     }

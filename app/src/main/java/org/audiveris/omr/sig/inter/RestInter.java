@@ -68,7 +68,7 @@ public class RestInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB (and dummy measure).
+     * No-argument constructor meant for JAXB (and dummy measure).
      */
     protected RestInter ()
     {

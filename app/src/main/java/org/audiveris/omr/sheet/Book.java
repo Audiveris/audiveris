@@ -309,7 +309,7 @@ public class Book
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor needed by JAXB.
+     * No-argument constructor needed by JAXB.
      */
     @SuppressWarnings("unused")
     private Book ()

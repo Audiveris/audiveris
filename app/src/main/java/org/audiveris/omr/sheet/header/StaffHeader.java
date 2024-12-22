@@ -101,7 +101,7 @@ public class StaffHeader
     public Range timeRange;
 
     /**
-     * No-arg constructor needed for JAXB.
+     * No-argument constructor needed for JAXB.
      */
     private StaffHeader ()
     {

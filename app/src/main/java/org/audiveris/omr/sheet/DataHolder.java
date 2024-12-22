@@ -83,7 +83,7 @@ public abstract class DataHolder<T>
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor needed for JAXB.
+     * No-argument constructor needed for JAXB.
      */
     protected DataHolder ()
     {

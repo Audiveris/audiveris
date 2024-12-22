@@ -60,7 +60,7 @@ public class GlobalDescriptor
     @XmlAttribute(name = "threshold")
     public final int threshold;
 
-    /** No-arg constructor meant for JAXB. */
+    /** No-argument constructor meant for JAXB. */
     private GlobalDescriptor ()
     {
         threshold = 0;

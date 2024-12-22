@@ -93,7 +93,7 @@ public class AlterInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor needed for JAXB.
+     * No-argument constructor needed for JAXB.
      */
     private AlterInter ()
     {

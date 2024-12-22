@@ -171,7 +171,7 @@ public class OctaveShiftInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor needed by JAXB.
+     * No-argument constructor needed by JAXB.
      */
     @SuppressWarnings("unchecked")
     private OctaveShiftInter ()

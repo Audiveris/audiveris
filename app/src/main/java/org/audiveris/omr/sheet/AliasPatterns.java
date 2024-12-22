@@ -191,7 +191,7 @@ public class AliasPatterns
         @XmlElement(name = "pattern")
         private List<String> list = new ArrayList<>();
 
-        /** No-arg constructor meant for JAXB. */
+        /** No-argument constructor meant for JAXB. */
         private Strings ()
         {
         }

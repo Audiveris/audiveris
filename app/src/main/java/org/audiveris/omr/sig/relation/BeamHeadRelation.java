@@ -66,7 +66,7 @@ public class BeamHeadRelation
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     private BeamHeadRelation ()
     {

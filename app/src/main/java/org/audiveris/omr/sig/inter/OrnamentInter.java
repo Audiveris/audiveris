@@ -58,7 +58,7 @@ public class OrnamentInter
     private static final Logger logger = LoggerFactory.getLogger(OrnamentInter.class);
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     protected OrnamentInter ()
     {

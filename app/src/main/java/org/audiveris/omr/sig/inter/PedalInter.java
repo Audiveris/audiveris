@@ -49,7 +49,7 @@ public class PedalInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     private PedalInter ()
     {

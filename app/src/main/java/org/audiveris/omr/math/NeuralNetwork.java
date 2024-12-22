@@ -116,7 +116,7 @@ public class NeuralNetwork
 
     //~ Constructors -------------------------------------------------------------------------------
 
-    /** Private no-arg constructor meant for the JAXB compiler only. */
+    /** Private No-argument constructor meant for the JAXB compiler only. */
     private NeuralNetwork ()
     {
         inputSize = -1;

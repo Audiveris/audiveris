@@ -84,7 +84,7 @@ public class ClefInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor needed for JAXB.
+     * No-argument constructor needed for JAXB.
      */
     private ClefInter ()
     {

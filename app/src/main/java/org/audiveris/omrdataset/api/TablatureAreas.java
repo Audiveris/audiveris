@@ -73,7 +73,7 @@ public class TablatureAreas
 
     //~ Constructors -------------------------------------------------------------------------------
 
-    /** No-arg constructor needed by JAXB. */
+    /** No-argument constructor needed by JAXB. */
     private TablatureAreas ()
     {
     }

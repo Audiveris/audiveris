@@ -93,7 +93,7 @@ public class SIGraph
     private SigValue sigValue;
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     private SIGraph ()
     {

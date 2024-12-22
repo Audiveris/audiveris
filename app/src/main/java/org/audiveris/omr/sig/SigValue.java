@@ -274,7 +274,7 @@ public class SigValue
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     public SigValue ()
     {
@@ -460,7 +460,7 @@ public class SigValue
         public Relation relation;
 
         /**
-         * No-arg constructor meant for JAXB.
+         * No-argument constructor meant for JAXB.
          */
         private RelationValue ()
         {

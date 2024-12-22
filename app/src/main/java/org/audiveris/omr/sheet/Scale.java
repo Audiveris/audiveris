@@ -929,7 +929,7 @@ public class Scale
         private final Boolean extra;
 
         /**
-         * No-arg constructor needed for JAXB.
+         * No-argument constructor needed for JAXB.
          */
         private BeamScale ()
         {
@@ -1019,7 +1019,7 @@ public class Scale
         final double heightStd;
 
         /**
-         * No-arg constructor needed for JAXB.
+         * No-argument constructor needed for JAXB.
          */
         private BlackHeadScale ()
         {
@@ -1528,7 +1528,7 @@ public class Scale
         private final int max;
 
         /**
-         * No-arg constructor needed for JAXB.
+         * No-argument constructor needed for JAXB.
          */
         private StemScale ()
         {

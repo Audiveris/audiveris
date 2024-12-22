@@ -82,7 +82,7 @@ public class SymbolInfo
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor needed for JAXB.
+     * No-argument constructor needed for JAXB.
      */
     private SymbolInfo ()
     {

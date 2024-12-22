@@ -145,7 +145,7 @@ public class HeadInter
 
     //~ Constructors -------------------------------------------------------------------------------
 
-    /** No-arg constructor needed by JAXB. */
+    /** No-argument constructor needed by JAXB. */
     protected HeadInter ()
     {
     }

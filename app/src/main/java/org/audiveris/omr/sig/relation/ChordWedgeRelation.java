@@ -56,7 +56,7 @@ public class ChordWedgeRelation
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB and user allocation.
+     * No-argument constructor meant for JAXB and user allocation.
      */
     public ChordWedgeRelation ()
     {

@@ -394,7 +394,7 @@ public class PluginsManager
         @XmlElementRef
         private List<Plugin> list = new ArrayList<>();
 
-        /** No-arg constructor meant for JAXB. */
+        /** No-argument constructor meant for JAXB. */
         private PluginsHolder ()
         {
         }

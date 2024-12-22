@@ -125,7 +125,7 @@ public final class StaffBarlineInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor needed for JAXB.
+     * No-argument constructor needed for JAXB.
      */
     private StaffBarlineInter ()
     {

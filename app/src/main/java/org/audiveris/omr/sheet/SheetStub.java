@@ -240,7 +240,7 @@ public class SheetStub
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     private SheetStub ()
     {
@@ -1760,7 +1760,7 @@ public class SheetStub
         @XmlElement(name = "number")
         public final int number;
 
-        /** No-arg constructor needed for JAXB. */
+        /** No-argument constructor needed for JAXB. */
         private SheetInput ()
         {
             path = null;

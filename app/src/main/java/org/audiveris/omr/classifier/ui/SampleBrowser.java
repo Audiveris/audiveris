@@ -172,7 +172,7 @@ public class SampleBrowser
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor, used when in stand-alone.
+     * No-argument constructor, used when in stand-alone.
      */
     public SampleBrowser ()
     {

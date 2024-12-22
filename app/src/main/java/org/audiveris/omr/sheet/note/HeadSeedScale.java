@@ -245,7 +245,7 @@ public class HeadSeedScale
         @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
         public final Double dx;
 
-        // No-arg constructor needed by JAXB
+        // No-argument constructor needed by JAXB
         @SuppressWarnings("unused")
         private HeadSeed ()
         {

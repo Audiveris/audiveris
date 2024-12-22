@@ -45,7 +45,7 @@ public class CaesuraInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     private CaesuraInter ()
     {

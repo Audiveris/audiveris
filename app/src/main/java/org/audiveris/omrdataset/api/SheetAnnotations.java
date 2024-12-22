@@ -301,7 +301,7 @@ public class SheetAnnotations
         @XmlJavaTypeAdapter(Jaxb.RectangleAdapter.class)
         public final ArrayList<Rectangle> excludedAreas = new ArrayList<>();
 
-        // No-arg constructor needed by JAXB
+        // No-argument constructor needed by JAXB
         private SheetInfo ()
         {
             this.imageFileName = null;

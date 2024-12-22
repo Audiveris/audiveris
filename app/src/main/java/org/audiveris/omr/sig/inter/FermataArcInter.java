@@ -44,7 +44,7 @@ public class FermataArcInter
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-argument constructor meant for JAXB.
      */
     @SuppressWarnings("unused")
     private FermataArcInter ()

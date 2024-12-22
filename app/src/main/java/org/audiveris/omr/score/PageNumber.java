@@ -73,7 +73,7 @@ public class PageNumber
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * No-arg constructor needed for JAXB.
+     * No-argument constructor needed for JAXB.
      */
     private PageNumber ()
     {

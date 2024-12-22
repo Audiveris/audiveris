@@ -98,7 +98,7 @@ public class GeometricMoments
     // GeometricMoments //
     //------------------//
     /**
-     * No-arg constructor, needed for XML binder.
+     * No-argument constructor, needed for XML binder.
      */
     public GeometricMoments ()
     {
