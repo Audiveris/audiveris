@@ -282,6 +282,10 @@ public class MetronomeInter
         final String value = super.getValue();
         final Model m = parseValue(value, false); // Get logical informations
 
+        if (m == null) {
+            return null;
+        }
+
         // Complete model with physical informations
 
         final List<Inter> members = getMembers();
@@ -526,11 +530,11 @@ public class MetronomeInter
 
         if (!matcher.matches()) {
             sb.append("INVALID");
-            if (model.unit == null)
+            if (model == null || model.unit == null)
                 sb.append(", no unit");
             if (getGroup(matcher, EQUAL).isBlank())
                 sb.append(", no '='");
-            if (model.bpm1 == null)
+            if (model == null || model.bpm1 == null)
                 sb.append(", no bpm");
         } else {
             final Note note = getNote();
@@ -834,7 +838,10 @@ public class MetronomeInter
         final Model newModel = parseValue(newValue, false);
 
         // Complete the model with physical informations
-        newModel.baseCenter = model.baseCenter;
+        if (model != null) {
+            newModel.baseCenter = model.baseCenter;
+        }
+
         if (newModel.baseCenter == null) {
             // No too stupid: center abscissa and baseline of middle word
             final List<Inter> words = getMembers();
@@ -849,9 +856,14 @@ public class MetronomeInter
         }
 
         final int mfs = meanFont.pointsize;
-        newModel.tempoFontSize = (model.tempoFontSize != null) ? model.tempoFontSize : mfs;
-        newModel.unitFontSize = (model.unitFontSize != null) ? model.unitFontSize : mfs;
-        newModel.bpmFontSize = (model.bpmFontSize != null) ? model.bpmFontSize : mfs;
+        if (model != null) {
+            newModel.tempoFontSize = (model.tempoFontSize != null) ? model.tempoFontSize : mfs;
+            newModel.unitFontSize = (model.unitFontSize != null) ? model.unitFontSize : mfs;
+            newModel.bpmFontSize = (model.bpmFontSize != null) ? model.bpmFontSize : mfs;
+        } else {
+            newModel.tempoFontSize = newModel.unitFontSize = newModel.bpmFontSize = mfs;
+        }
+
         logger.debug("newModel: {}", newModel);
 
         return buildNewWords(newModel, staff.getSystem());
