@@ -57,7 +57,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class AbstractHorizontalInter
         extends AbstractInter
 {
-
     //~ Instance fields ----------------------------------------------------------------------------
 
     // Persistent data

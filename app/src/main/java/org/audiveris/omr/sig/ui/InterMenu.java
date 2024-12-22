@@ -168,7 +168,6 @@ public class InterMenu
     private static class DeassignAction
             extends AbstractAction
     {
-
         /** Originating inter. */
         private final Inter inter;
 
@@ -198,7 +197,6 @@ public class InterMenu
     private static class EditAction
             extends AbstractAction
     {
-
         /** Originating inter. */
         private final Inter inter;
 
@@ -228,7 +226,6 @@ public class InterMenu
     private static class MenuToEnsembleAction
             extends AbstractAction
     {
-
         /** Target ensemble. */
         private final Inter ensemble;
 
@@ -253,7 +250,6 @@ public class InterMenu
     private class RelationListener
             extends AbstractMouseListener
     {
-
         @Override
         public void mouseEntered (MouseEvent e)
         {
@@ -270,7 +266,6 @@ public class InterMenu
             extends JMenu
             implements ActionListener
     {
-
         private final Inter inter;
 
         private final Relation relation;
@@ -320,7 +315,6 @@ public class InterMenu
     private static class ShapeSelectionAction
             extends AbstractAction
     {
-
         /** Originating inter. */
         private final Inter inter;
 

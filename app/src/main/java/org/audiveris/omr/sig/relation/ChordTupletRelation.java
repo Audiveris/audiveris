@@ -145,7 +145,6 @@ public class ChordTupletRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio tupletThreeSupportCoeff = new Constant.Ratio(
                 2 * 0.33,
                 "Supporting coeff for tuplet 3");

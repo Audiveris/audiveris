@@ -414,7 +414,6 @@ public class ActionManager
     //---------------//
     private static class LazySingleton
     {
-
         static final ActionManager INSTANCE = new ActionManager();
     }
 }

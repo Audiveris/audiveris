@@ -605,7 +605,6 @@ public class Histogram<K extends Number>
     public static class DoublePeak
             extends Peak<Double>
     {
-
         private DoublePeak (double first,
                             double best,
                             double second)
@@ -622,7 +621,6 @@ public class Histogram<K extends Number>
      */
     public static interface HistoEntry<K extends Number>
     {
-
         /**
          * Report the x value for highest count in bucket
          *
@@ -649,7 +647,6 @@ public class Histogram<K extends Number>
     public static class MaxEntry<K extends Number>
             implements HistoEntry<K>
     {
-
         /** Key at local maximum. */
         private K key;
 
@@ -728,7 +725,6 @@ public class Histogram<K extends Number>
      */
     public static class Peak<K extends Number>
     {
-
         /** Key at beginning of range. */
         public final K first;
 
@@ -776,7 +772,6 @@ public class Histogram<K extends Number>
     public static class PeakEntry<K extends Number>
             implements HistoEntry<K>
     {
-
         /** The peak data */
         private final Peak<K> key;
 

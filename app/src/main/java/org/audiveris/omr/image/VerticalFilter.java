@@ -111,7 +111,6 @@ public class VerticalFilter
     private class MyTile
             extends Tile
     {
-
         MyTile (boolean squared)
         {
             super(2 + (2 * HALF_WINDOW_SIZE), source.getHeight(), squared);

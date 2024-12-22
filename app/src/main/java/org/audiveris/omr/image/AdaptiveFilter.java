@@ -225,7 +225,6 @@ public abstract class AdaptiveFilter
     public static class AdaptiveContext
             extends Context
     {
-
         /** Mean pixel value in the neighborhood. */
         public final double mean;
 
@@ -255,7 +254,6 @@ public abstract class AdaptiveFilter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer halfWindowSize = new Constant.Integer(
                 "Pixels",
                 18,
@@ -270,7 +268,6 @@ public abstract class AdaptiveFilter
      */
     protected class Tile
     {
-
         /** Width of the tile circular buffer. */
         protected final int TILE_WIDTH;
 

@@ -264,7 +264,6 @@ public class LedgersFilter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean displayLedgers = new Constant.Boolean(
                 false,
                 "Should we display the view on ledgers?");

@@ -387,7 +387,6 @@ public class Trainer
     private static class TitledPanel
             extends Panel
     {
-
         TitledPanel (String title)
         {
             setBorder(

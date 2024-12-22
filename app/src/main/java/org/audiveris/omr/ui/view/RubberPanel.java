@@ -822,7 +822,6 @@ public class RubberPanel
     private static class Constants
             extends ConstantSet
     {
-
         private final PixelCount focusMargin = new PixelCount(20, "Margin visible around a focus");
     }
 
@@ -835,7 +834,6 @@ public class RubberPanel
     protected class TranslateAction
             extends AbstractAction
     {
-
         /** Translation on abscissa axis. */
         protected final int dx;
 
@@ -866,7 +864,6 @@ public class RubberPanel
     protected class ZoomAction
             extends AbstractAction
     {
-
         /** Zoom increment. */
         protected final int val;
 

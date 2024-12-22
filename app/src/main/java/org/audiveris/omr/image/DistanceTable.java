@@ -65,7 +65,6 @@ public interface DistanceTable
     public abstract class Abstract
             implements DistanceTable
     {
-
         protected final int normalizer;
 
         public Abstract (int normalizer)
@@ -194,7 +193,6 @@ public interface DistanceTable
     public static class Integer
             extends Abstract
     {
-
         private final Table.Integer table;
 
         public Integer (int width,
@@ -243,7 +241,6 @@ public interface DistanceTable
     public static class Short
             extends Abstract
     {
-
         private final Table.Short table;
 
         public Short (int width,

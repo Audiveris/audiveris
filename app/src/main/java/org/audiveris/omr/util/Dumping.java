@@ -172,7 +172,6 @@ public class Dumping
     public static class PackageRelevance
             implements Relevance
     {
-
         /** Collection of root packages, to filter non-relevant classes. */
         protected final Set<Package> rootPackages = new LinkedHashSet<>();
 
@@ -241,7 +240,6 @@ public class Dumping
      */
     public static interface Relevance
     {
-
         /**
          * Predicate to determine if a given class is worth being printed.
          *

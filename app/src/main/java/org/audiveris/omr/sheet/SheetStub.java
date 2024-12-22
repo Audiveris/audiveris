@@ -1733,7 +1733,6 @@ public class SheetStub
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch");
@@ -1748,7 +1747,6 @@ public class SheetStub
     @XmlAccessorType(XmlAccessType.NONE)
     public static class SheetInput
     {
-
         /**
          * This is the path to the image file this sheet was created from.
          */

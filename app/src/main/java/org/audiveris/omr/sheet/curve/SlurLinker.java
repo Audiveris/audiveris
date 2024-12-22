@@ -631,7 +631,6 @@ public class SlurLinker
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction coverageHExt = new Scale.Fraction(
                 2.0, // Was 1.25, now extended to cope with possible aug. dot between head and slur
                 "Length of extension for horizontal slur coverage");
@@ -695,7 +694,6 @@ public class SlurLinker
      */
     private static class Parameters
     {
-
         final int coverageHExt;
 
         final int coverageVExt;

@@ -44,7 +44,6 @@ import java.util.List;
  */
 public class SheetCounter
 {
-
     //~ Static Methods -----------------------------------------------------------------------------
 
     /**
@@ -107,7 +106,6 @@ public class SheetCounter
      */
     public static class Parameters
     {
-
         /** Final arguments, with optional "--" separator. */
         @Argument
         @Option(name = "--", handler = StopOptionHandler.class)

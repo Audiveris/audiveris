@@ -347,7 +347,6 @@ public class EvaluationBoard
     private static class Constants
             extends ConstantSet
     {
-
         private final Evaluation.Grade minGrade = new Evaluation.Grade(
                 0.0,
                 "Threshold on displayable grade");
@@ -364,7 +363,6 @@ public class EvaluationBoard
     private class EvalButton
             implements ActionListener
     {
-
         // Shape button or text field. Only one of them will be created and used
         final JButton button;
 

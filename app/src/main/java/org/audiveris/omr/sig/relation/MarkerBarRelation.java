@@ -77,7 +77,6 @@ public class MarkerBarRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio markerSupportCoeff = new Constant.Ratio(
                 3,
                 "Supporting coeff for (source) marker");

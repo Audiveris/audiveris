@@ -130,7 +130,6 @@ public class PictureView
     private class RunTableView
             extends RubberPanel
     {
-
         //-----------------//
         // contextSelected //
         //-----------------//

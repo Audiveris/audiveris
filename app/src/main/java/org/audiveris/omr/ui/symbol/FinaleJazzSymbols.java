@@ -283,7 +283,6 @@ public class FinaleJazzSymbols
     public class FlagsDownSymbol
             extends FlagsSymbol
     {
-
         /**
          * Creates a new FlagsDownSymbol object.
          *
@@ -323,7 +322,6 @@ public class FinaleJazzSymbols
     private static class FlagsSymbol
             extends ShapeSymbol
     {
-
         /** Delta ordinate as ratio of flag2 height. */
         protected static final double dyF2Ratio = 0.55;
 
@@ -397,7 +395,6 @@ public class FinaleJazzSymbols
         protected static class MyParams
                 extends ShapeSymbol.Params
         {
-
             TextLayout flag1;
 
             Rectangle2D rect1;

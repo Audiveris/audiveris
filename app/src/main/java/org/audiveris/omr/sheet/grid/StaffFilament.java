@@ -394,7 +394,6 @@ public class StaffFilament
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction segmentLength = new Scale.Fraction(
                 4.0,
                 "Typical length between filament curve intermediate points");
@@ -421,7 +420,6 @@ public class StaffFilament
      */
     private static class Filler
     {
-
         final int x; // Preferred abscissa for point insertion
 
         final int pos; // Relative position within fils collection
@@ -502,7 +500,6 @@ public class StaffFilament
         /** Convey a point together with its relative cluster position.. */
         private static class Neighbor
         {
-
             final int pos;
 
             final Point2D point;
@@ -525,7 +522,6 @@ public class StaffFilament
     private static class VirtualPoint
             extends Point2D.Double
     {
-
         VirtualPoint (double x,
                       double y)
         {

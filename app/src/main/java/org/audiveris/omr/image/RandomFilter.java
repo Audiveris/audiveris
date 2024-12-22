@@ -80,7 +80,6 @@ public class RandomFilter
     private class MyTile
             extends Tile
     {
-
         MyTile (boolean squared)
         {
             // Allocate a tile as big as the source

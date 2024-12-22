@@ -156,7 +156,6 @@ public class ButtonTabComponent
             extends JButton
             implements ActionListener
     {
-
         TabButton ()
         {
             final int size = 13; // Button side length

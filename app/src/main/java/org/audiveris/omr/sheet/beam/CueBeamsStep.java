@@ -119,7 +119,6 @@ public class CueBeamsStep
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean displayCueBeamSpots = new Constant.Boolean(
                 false,
                 "Should we display the cue beam Spots view?");
@@ -133,7 +132,6 @@ public class CueBeamsStep
      */
     protected static class Context
     {
-
         /** Lag of spot sections. */
         public final Lag spotLag;
 

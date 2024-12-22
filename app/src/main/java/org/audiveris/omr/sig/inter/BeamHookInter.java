@@ -236,7 +236,6 @@ public class BeamHookInter
     private static class Constants
             extends ConstantSet
     {
-
         Scale.Fraction xMargin = new Scale.Fraction(0.5, "Width of lookup area for stem");
 
         @SuppressWarnings("unused")

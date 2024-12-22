@@ -660,7 +660,6 @@ public class HiLoPeakFinder
      */
     private static class DerPeak
     {
-
         /** x at beginning of range. */
         public final int min;
 
@@ -692,7 +691,6 @@ public class HiLoPeakFinder
      */
     public static class Quorum
     {
-
         /**
          * Quorum minimum value.
          */

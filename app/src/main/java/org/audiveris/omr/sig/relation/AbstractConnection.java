@@ -218,7 +218,6 @@ public abstract class AbstractConnection
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio xInWeight = new Constant.Ratio(
                 1,
                 "Relative impact weight for xInGap");
@@ -241,7 +240,6 @@ public abstract class AbstractConnection
     public static class InImpacts
             extends SupportImpacts
     {
-
         private static final String[] NAMES = new String[]
         { "xInGap", "yGap" };
 
@@ -275,7 +273,6 @@ public abstract class AbstractConnection
     public static class OutImpacts
             extends SupportImpacts
     {
-
         private static final String[] NAMES = new String[]
         { "xOutGap", "yGap" };
 

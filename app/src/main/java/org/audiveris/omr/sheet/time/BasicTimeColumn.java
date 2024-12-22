@@ -70,7 +70,6 @@ public class BasicTimeColumn
 
         class Item
         {
-
             final Inter time;
 
             final double xOffset;
@@ -85,7 +84,6 @@ public class BasicTimeColumn
 
         class Line
         {
-
             List<Item> items = new ArrayList<>();
 
             Double meanOffset = null;

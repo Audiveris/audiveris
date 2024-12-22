@@ -514,7 +514,6 @@ public abstract class Voices
      */
     private static interface SlurAdapter
     {
-
         /**
          * Report the initial (that is: before) partnering slur.
          *

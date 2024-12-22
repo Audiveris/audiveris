@@ -392,7 +392,6 @@ public class StaffLine
     public static class JaxbAdapter
             extends XmlAdapter<StaffLine, LineInfo>
     {
-
         @Override
         public StaffLine marshal (LineInfo lineInfo)
             throws Exception

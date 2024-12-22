@@ -126,7 +126,6 @@ public class HeadsStep
      */
     protected static class Context
     {
-
         /** Table of distances. */
         public final DistanceTable distanceTable;
 

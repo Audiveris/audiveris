@@ -481,7 +481,6 @@ public class BasicIndex<E extends Entity>
     public static class IndexAdapter<E extends AbstractEntity>
             extends XmlAdapter<BasicIndex<E>, EntityIndex<E>>
     {
-
         @Override
         public BasicIndex<E> marshal (EntityIndex<E> itf)
             throws Exception
@@ -508,7 +507,6 @@ public class BasicIndex<E extends Entity>
      */
     private static class IndexValue<E extends AbstractEntity>
     {
-
         @XmlElementRefs(
         { @XmlElementRef(type = Glyph.class), @XmlElementRef(type = ShapeSymbol.class) })
         ArrayList<E> list; // Flat list of entities (each with its embedded id)
@@ -526,7 +524,6 @@ public class BasicIndex<E extends Entity>
     private static class MapAdapter<E extends AbstractEntity>
             extends XmlAdapter<IndexValue<E>, ConcurrentSkipListMap<Integer, E>>
     {
-
         @Override
         public IndexValue<E> marshal (ConcurrentSkipListMap<Integer, E> map)
             throws Exception

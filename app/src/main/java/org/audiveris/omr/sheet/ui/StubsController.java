@@ -1131,7 +1131,6 @@ public class StubsController
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Enum<OmrStep> earlyStep = new Constant.Enum<>(
                 OmrStep.class,
                 OmrStep.BINARY,
@@ -1148,7 +1147,6 @@ public class StubsController
     private class CtrlEndAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -1166,7 +1164,6 @@ public class StubsController
     private class CtrlHomeAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -1181,7 +1178,6 @@ public class StubsController
     //---------------//
     private static class LazySingleton
     {
-
         static final StubsController INSTANCE = new StubsController();
 
         private LazySingleton ()
@@ -1223,7 +1219,6 @@ public class StubsController
     private class PageDownAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -1241,7 +1236,6 @@ public class StubsController
     private class PageUpAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {

@@ -528,7 +528,6 @@ public class AlterInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction flatTypicalHeight = new Scale.Fraction(
                 2.7,
                 "Typical flat height");
@@ -545,7 +544,6 @@ public class AlterInter
     public static class Model
             implements ObjectUIModel
     {
-
         public Rectangle2D box; // Alter box
 
         @Override
@@ -564,7 +562,6 @@ public class AlterInter
      */
     protected static class Pitches
     {
-
         /** Rounded to integer value. */
         public final double pitch;
 

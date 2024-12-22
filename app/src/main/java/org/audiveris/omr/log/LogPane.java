@@ -206,7 +206,6 @@ public class LogPane
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer fontSize = new Constant.Integer(
                 "Points",
                 10,

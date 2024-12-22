@@ -215,7 +215,6 @@ public class NestView
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean showSentenceBaseline = new Constant.Boolean(
                 true,
                 "Should we show sentence baseline (vs inter-word gaps)?");

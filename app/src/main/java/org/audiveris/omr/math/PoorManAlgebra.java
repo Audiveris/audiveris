@@ -64,7 +64,6 @@ public abstract class PoorManAlgebra
     //---------//
     public static class DataSet
     {
-
         private final INDArray features;
 
         private final INDArray labels;
@@ -97,7 +96,6 @@ public abstract class PoorManAlgebra
     //----------//
     public static interface INDArray
     {
-
         /**
          * in place addition of two NDArrays
          *
@@ -176,7 +174,6 @@ public abstract class PoorManAlgebra
     private static class Matrix
             implements INDArray
     {
-
         private final double[][] data;
 
         Matrix (double[][] data)
@@ -341,7 +338,6 @@ public abstract class PoorManAlgebra
     //------//
     public static class Nd4j
     {
-
         public static final double EPS_THRESHOLD = 1e-5;
 
         private Nd4j ()
@@ -415,7 +411,6 @@ public abstract class PoorManAlgebra
     private static class Scalar
             implements INDArray
     {
-
         private double data;
 
         Scalar (double data)
@@ -496,7 +491,6 @@ public abstract class PoorManAlgebra
     private static class Vector
             implements INDArray
     {
-
         private final double[] data;
 
         // Meant for JAXB

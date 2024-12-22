@@ -561,7 +561,6 @@ public class SectionCompound
     public static class Constructor
             implements CompoundFactory.CompoundConstructor
     {
-
         private final int interline;
 
         /**

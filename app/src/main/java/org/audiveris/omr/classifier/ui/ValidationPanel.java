@@ -369,7 +369,6 @@ public class ValidationPanel
     private class FalsePositiveAction
             extends AbstractAction
     {
-
         FalsePositiveAction ()
         {
             super("View");
@@ -389,7 +388,6 @@ public class ValidationPanel
     private class ValidateAction
             extends AbstractAction
     {
-
         ValidateAction ()
         {
             super("Test");
@@ -426,7 +424,6 @@ public class ValidationPanel
     private class WeakNegativeAction
             extends AbstractAction
     {
-
         WeakNegativeAction ()
         {
             super("View");
@@ -446,7 +443,6 @@ public class ValidationPanel
     private class WeakPositiveAction
             extends AbstractAction
     {
-
         WeakPositiveAction ()
         {
             super("View");

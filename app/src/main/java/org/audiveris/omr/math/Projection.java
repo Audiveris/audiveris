@@ -94,7 +94,6 @@ public interface Projection
     public abstract class Abstract
             implements Projection
     {
-
         /** First point on projection axis. */
         protected final int start;
 
@@ -152,7 +151,6 @@ public interface Projection
     public static class Integer
             extends Abstract
     {
-
         private final int[] data;
 
         /**
@@ -197,7 +195,6 @@ public interface Projection
     public static class Short
             extends Abstract
     {
-
         private final short[] data;
 
         /**

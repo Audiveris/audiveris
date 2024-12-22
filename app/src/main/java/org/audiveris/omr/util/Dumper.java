@@ -350,7 +350,6 @@ public class Dumper
     public static class Column
             extends Dumper
     {
-
         private static final String MEMBER_GAP = "   ";
 
         private static final String INDENT_GAP = ".  ";
@@ -417,7 +416,6 @@ public class Dumper
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer fontSize = new Constant.Integer(
                 "Points",
                 9,
@@ -438,7 +436,6 @@ public class Dumper
     public static class Html
             extends Dumper
     {
-
         /**
          * Create an Html object.
          *
@@ -510,7 +507,6 @@ public class Dumper
     public static class Row
             extends Dumper
     {
-
         /**
          * Create a Row object.
          *

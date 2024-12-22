@@ -886,7 +886,6 @@ public class Scale
     public static class AreaFraction
             extends Constant.Double
     {
-
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later.
          *
@@ -916,7 +915,6 @@ public class Scale
     @XmlAccessorType(XmlAccessType.NONE)
     public static class BeamScale
     {
-
         /** This is the most frequent beam thickness value. */
         @XmlAttribute(name = "main-thickness")
         private final int main;
@@ -1000,7 +998,6 @@ public class Scale
     @XmlAccessorType(XmlAccessType.NONE)
     public static class BlackHeadScale
     {
-
         /** Mean value for black head width. */
         @XmlAttribute(name = "mean-width")
         @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
@@ -1126,7 +1123,6 @@ public class Scale
     public static class Fraction
             extends Constant.Double
     {
-
         /**
          * Fraction with value 0.
          */
@@ -1175,7 +1171,6 @@ public class Scale
     public static class InterlineScale
             extends Range
     {
-
         /** Meant for JAXB. */
         protected InterlineScale ()
         {
@@ -1345,7 +1340,6 @@ public class Scale
     public static class LineFraction
             extends Constant.Double
     {
-
         // Meant for JAXB
         private LineFraction ()
         {
@@ -1375,7 +1369,6 @@ public class Scale
     public static class LineScale
             extends Range
     {
-
         /** Meant for JAXB. */
         protected LineScale ()
         {
@@ -1449,7 +1442,6 @@ public class Scale
     @XmlAccessorType(XmlAccessType.NONE)
     public static class MusicFontScale
     {
-
         /** This is the name of the music font. */
         @XmlAttribute(name = "name")
         final String name;
@@ -1527,7 +1519,6 @@ public class Scale
     @XmlAccessorType(XmlAccessType.NONE)
     public static class StemScale
     {
-
         /** Most frequent stem thickness. */
         @XmlAttribute(name = "main-thickness")
         private final int main;

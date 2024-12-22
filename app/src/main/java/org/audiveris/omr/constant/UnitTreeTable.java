@@ -337,7 +337,6 @@ public class UnitTreeTable
     private static class PixelRenderer
             extends DefaultTableCellRenderer
     {
-
         @Override
         public Component getTableCellRendererComponent (JTable table,
                                                         Object value,
@@ -361,7 +360,6 @@ public class UnitTreeTable
     private static class ValueRenderer
             extends DefaultTableCellRenderer
     {
-
         @Override
         public Component getTableCellRendererComponent (JTable table,
                                                         Object value,

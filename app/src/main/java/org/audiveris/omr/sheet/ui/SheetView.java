@@ -340,7 +340,6 @@ public class SheetView
     private static class BoardsScrollPane
             extends JScrollPane
     {
-
         public BoardsScrollPane ()
         {
             this.setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER);

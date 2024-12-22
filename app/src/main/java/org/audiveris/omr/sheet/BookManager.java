@@ -687,7 +687,6 @@ public class BookManager
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean useOpus = new Constant.Boolean(
                 false,
                 "Should we use Opus notion for export (rather than separate files)?");
@@ -739,7 +738,6 @@ public class BookManager
     //---------------//
     private static class LazySingleton
     {
-
         static final BookManager INSTANCE = new BookManager();
     }
 }

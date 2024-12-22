@@ -867,7 +867,6 @@ public class Rubber
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean showCross = new Constant.Boolean(
                 true,
                 "Should we show just a cross for rubber (or whole lines)");

@@ -754,7 +754,6 @@ public class SplitAndMerge
     private class BuildCompoundTask
             extends PathTask<Void, Void>
     {
-
         /**
          * Creates a new <code> BuildCompoundTask</code>, with the target book path.
          *
@@ -788,7 +787,6 @@ public class SplitAndMerge
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.String lastFolder = new Constant.String(
                 "",
                 "Latest folder used for playlist or compound");
@@ -803,7 +801,6 @@ public class SplitAndMerge
     private class DropFilesTask
             extends LoadFilesTask
     {
-
         /** Target row in table. */
         private int row;
 
@@ -832,7 +829,6 @@ public class SplitAndMerge
     private class LoadFilesTask
             extends BookActions.LoadFilesTask
     {
-
         public LoadFilesTask (Collection<? extends Path> paths)
         {
             super(paths);
@@ -866,7 +862,6 @@ public class SplitAndMerge
     private class MyTableModel
             extends AbstractTableModel
     {
-
         private final String[] columnNames =
         {
                 resources.getString("headerBook"),
@@ -1008,7 +1003,6 @@ public class SplitAndMerge
     private class MyTransferHandler
             extends FileDropHandler
     {
-
         @Override
         public boolean importData (TransferHandler.TransferSupport support)
         {
@@ -1047,7 +1041,6 @@ public class SplitAndMerge
     private class OpenPlayListTask
             extends PathTask<PlayList, Void>
     {
-
         public OpenPlayListTask (Path targetPath)
         {
             super(targetPath);
@@ -1112,7 +1105,6 @@ public class SplitAndMerge
     private class SavePlayListTask
             extends PathTask<Void, Void>
     {
-
         public SavePlayListTask (Path targetPath)
         {
             super(targetPath);
@@ -1142,7 +1134,6 @@ public class SplitAndMerge
     private class SpecRenderer
             extends DefaultTableCellRenderer
     {
-
         @Override
         public Component getTableCellRendererComponent (JTable table,
                                                         Object value,

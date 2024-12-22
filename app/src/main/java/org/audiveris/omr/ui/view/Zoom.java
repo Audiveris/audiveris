@@ -482,7 +482,6 @@ public class Zoom
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean continuousSliderReading = new Constant.Boolean(
                 true,
                 "Should we allow continuous reading of the zoom slider");

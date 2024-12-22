@@ -231,7 +231,6 @@ public class RestInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double suspiciousPitchPosition = new Constant.Double(
                 "PitchPosition",
                 2.0,

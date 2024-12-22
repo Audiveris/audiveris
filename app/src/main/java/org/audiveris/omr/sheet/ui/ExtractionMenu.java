@@ -122,7 +122,6 @@ public class ExtractionMenu
             extends AbstractAction
             implements LocationDependent
     {
-
         /** Clamped area. */
         private Rectangle area;
 
@@ -172,7 +171,6 @@ public class ExtractionMenu
     private class WholeAction
             extends AbstractAction
     {
-
         WholeAction ()
         {
             putValue(NAME, "Whole sheet");

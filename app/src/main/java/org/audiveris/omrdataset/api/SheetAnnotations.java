@@ -290,7 +290,6 @@ public class SheetAnnotations
     //-----------//
     public static class SheetInfo
     {
-
         @XmlElement(name = "Image")
         public final String imageFileName;
 

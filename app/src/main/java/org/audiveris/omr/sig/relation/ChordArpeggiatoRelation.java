@@ -133,7 +133,6 @@ public class ChordArpeggiatoRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio arpeggiatoSupportCoeff = new Constant.Ratio(
                 0.5,
                 "Supporting coeff for (source) arpeggiato");

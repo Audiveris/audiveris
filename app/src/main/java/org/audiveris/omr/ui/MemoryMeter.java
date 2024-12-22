@@ -242,7 +242,6 @@ public class MemoryMeter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer samplingPeriod = new Constant.Integer(
                 "MilliSeconds",
                 2_000,

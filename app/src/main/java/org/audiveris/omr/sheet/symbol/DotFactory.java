@@ -668,7 +668,6 @@ public class DotFactory
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction minDyFromLine = new Scale.Fraction(
                 0.3,
                 "Minimum vertical distance between dot center and staff line/ledger");
@@ -682,7 +681,6 @@ public class DotFactory
      */
     private abstract static class Dot
     {
-
         /**
          * Sorting dots by left abscissa.
          */
@@ -713,7 +711,6 @@ public class DotFactory
     private static class GlyphDot
             extends Dot
     {
-
         private final Glyph glyph; // Underlying glyph
 
         private final Evaluation eval; // Evaluation result

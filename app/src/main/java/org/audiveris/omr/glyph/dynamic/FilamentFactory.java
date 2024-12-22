@@ -1046,7 +1046,6 @@ public class FilamentFactory<F extends Filament>
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -1127,7 +1126,6 @@ public class FilamentFactory<F extends Filament>
      */
     private class Parameters
     {
-
         /** Maximum thickness for filaments */
         public int maxThickness;
 

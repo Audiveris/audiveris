@@ -204,7 +204,6 @@ public class DistancesBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean displayTemplates = new Constant.Boolean(
                 false,
                 "Should we display the templates tab?");
@@ -216,7 +215,6 @@ public class DistancesBuilder
     private static class ImagePainter
             implements Painter
     {
-
         final Graphics2D g;
 
         public ImagePainter (BufferedImage img)
@@ -244,7 +242,6 @@ public class DistancesBuilder
     //---------//
     private static interface Painter
     {
-
         void paintGlyph (Glyph glyph);
 
         void paintPixel (int x,
@@ -257,7 +254,6 @@ public class DistancesBuilder
     private static class TablePainter
             implements Painter
     {
-
         final DistanceTable table;
 
         public TablePainter (DistanceTable table)

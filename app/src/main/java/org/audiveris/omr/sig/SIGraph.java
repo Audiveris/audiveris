@@ -463,7 +463,6 @@ public class SIGraph
 
         class ClosureBuilder
         {
-
             public void browse (Inter seed)
             {
                 for (Relation r : getRelations(seed, relationClasses)) {
@@ -1488,7 +1487,6 @@ public class SIGraph
      */
     private static class Sequence
     {
-
         // The sequence of interpretations statuses
         // This line is parallel to the list of inters considered
         int[] line;
@@ -1514,7 +1512,6 @@ public class SIGraph
     private static class ShapePredicate
             implements Predicate<Inter>
     {
-
         private final Shape shape;
 
         ShapePredicate (Shape shape)
@@ -1535,7 +1532,6 @@ public class SIGraph
     private static class ShapesPredicate
             implements Predicate<Inter>
     {
-
         private final Collection<Shape> shapes;
 
         ShapesPredicate (Collection<Shape> shapes)
@@ -1556,7 +1552,6 @@ public class SIGraph
     private static class StaffClassPredicate
             implements Predicate<Inter>
     {
-
         private final Staff staff;
 
         private final Class classe;

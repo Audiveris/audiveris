@@ -162,7 +162,6 @@ public class FilamentIndex
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.String vipFilaments = new Constant.String(
                 "",
                 "(Debug) Comma-separated values of VIP filaments IDs");
@@ -175,7 +174,6 @@ public class FilamentIndex
     private static class FilamentService
             extends EntityService<Filament>
     {
-
         FilamentService (FilamentIndex index,
                          Sheet sheet)
         {

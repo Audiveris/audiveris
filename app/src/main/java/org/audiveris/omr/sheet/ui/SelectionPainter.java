@@ -153,7 +153,6 @@ public class SelectionPainter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio minZoomForLinkNames = new Constant.Ratio(
                 2.0,
                 "Minimum zoom value to display link names");
@@ -165,7 +164,6 @@ public class SelectionPainter
     private class SelectionSigPainter
             extends SigPainter
     {
-
         @Override
         protected void setColor (Inter inter)
         {

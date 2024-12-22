@@ -193,7 +193,6 @@ public class MeasureCountInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double maxAbsolutePitch = new Constant.Double(
                 "pitch",
                 10,

@@ -112,7 +112,6 @@ public class ClefKeyRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio clefSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for (source) clef coeff in support formula");

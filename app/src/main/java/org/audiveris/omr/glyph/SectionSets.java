@@ -224,7 +224,6 @@ public class SectionSets
      */
     private static class SectionDesc
     {
-
         // Annotation to get all ids, space-separated, in one single element:
         //@XmlList
         // Annotation to avoid any wrapper:
@@ -272,7 +271,6 @@ public class SectionSets
      */
     private static class SectionDescSet
     {
-
         //        // Annotation to get all ids, space-separated, in one single element:
         //        @XmlList
         //        // Annotation to avoid any wrapper:

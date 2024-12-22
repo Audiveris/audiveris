@@ -332,7 +332,6 @@ public class SymbolInfo
     public static class OmrShapeAdapter
             extends XmlAdapter<String, OmrShape>
     {
-
         @Override
         public String marshal (OmrShape shape)
             throws Exception

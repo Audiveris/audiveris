@@ -1038,7 +1038,6 @@ public abstract class CurvesBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction gapMaxLength = new Scale.Fraction(
                 0.25,
                 "Maximum acceptable length for true gap");
@@ -1082,7 +1081,6 @@ public abstract class CurvesBuilder
     //-----------//
     private class Extension
     {
-
         /** Curve quality. */
         private Double grade;
 
@@ -1136,7 +1134,6 @@ public abstract class CurvesBuilder
      */
     private static class Parameters
     {
-
         final double gapMaxLength;
 
         final double gapBoxLength;

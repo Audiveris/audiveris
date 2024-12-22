@@ -116,7 +116,6 @@ public class HeadPlayingRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio playingTargetCoeff = new Constant.Ratio(
                 0.5,
                 "Supporting coeff for (target) playing");

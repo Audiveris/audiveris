@@ -269,7 +269,6 @@ public class BlackHeadSizer
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction closingDiameter = new Scale.Fraction(
                 0.9,
                 "Closing diameter for black head spot");
@@ -333,7 +332,6 @@ public class BlackHeadSizer
      */
     private static class Parameters
     {
-
         final int minWidth;
 
         final int maxWidth;

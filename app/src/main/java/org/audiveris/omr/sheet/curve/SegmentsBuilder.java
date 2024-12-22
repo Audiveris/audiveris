@@ -361,7 +361,6 @@ public class SegmentsBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
                 1.25,
                 "Minimum arc length for starting a wedge build");
@@ -400,7 +399,6 @@ public class SegmentsBuilder
      */
     private static class Parameters
     {
-
         final int arcMinSeedLength;
 
         final double maxWedgeSlope;

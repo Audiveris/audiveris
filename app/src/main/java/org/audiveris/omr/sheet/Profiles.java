@@ -81,7 +81,6 @@ public abstract class Profiles
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Enum<InputQuality> defaultQuality = new Constant.Enum<>(
                 InputQuality.class,
                 InputQuality.Standard,

@@ -1365,7 +1365,6 @@ public class BeamGroupInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer maxSplitLoops = new Constant.Integer(
                 "loops",
                 10,
@@ -1408,7 +1407,6 @@ public class BeamGroupInter
     //-------------//
     private class NearestBeam
     {
-
         public final BeamInter beam;
 
         public final double dist;
@@ -1430,7 +1428,6 @@ public class BeamGroupInter
      */
     private abstract class Splitter
     {
-
         /** The new alien group. */
         protected BeamGroupInter alienGroup;
 
@@ -1445,7 +1442,6 @@ public class BeamGroupInter
     private class SplitterOnChord
             extends Splitter
     {
-
         /** Chord detected as belonging to a (new) alien group. */
         private final AbstractChordInter alienChord;
 
@@ -1718,7 +1714,6 @@ public class BeamGroupInter
     private class SplitterOnSpace
             extends Splitter
     {
-
         final List<AbstractBeamInter> siblings;
 
         final int alienIdx;

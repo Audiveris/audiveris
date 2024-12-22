@@ -379,7 +379,6 @@ public class CLI
     private class BookTask
             extends ProcessingTask
     {
-
         BookTask (Path path)
         {
             super(path);
@@ -407,7 +406,6 @@ public class CLI
     public static class ClassOptionHandler
             extends OptionHandler<Properties>
     {
-
         /**
          * Create a ClassOptionHandler object.
          *
@@ -457,7 +455,6 @@ public class CLI
     public abstract static class CliTask
             implements Callable<Void>
     {
-
         /** Source file path. */
         public final Path path;
 
@@ -535,7 +532,6 @@ public class CLI
     private class InputTask
             extends ProcessingTask
     {
-
         InputTask (Path path)
         {
             super(path);
@@ -575,7 +571,6 @@ public class CLI
     public static class IntArrayOptionHandler
             extends OptionHandler<Integer>
     {
-
         /**
          * Create an IntArrayOptionHandler object.
          *
@@ -732,7 +727,6 @@ public class CLI
     private static class PlayListTask
             extends CliTask
     {
-
         public PlayListTask (Path path)
         {
             super(path);
@@ -787,7 +781,6 @@ public class CLI
     private abstract class ProcessingTask
             extends CliTask
     {
-
         ProcessingTask (Path path)
         {
             super(path);
@@ -947,7 +940,6 @@ public class CLI
     public static class PropertyOptionHandler
             extends OptionHandler<Properties>
     {
-
         /**
          * Create a PropertyOptionHandler.
          *
@@ -1006,7 +998,6 @@ public class CLI
     private static class SamplesTask
             extends CliTask
     {
-
         SamplesTask (Path path)
         {
             super(path);

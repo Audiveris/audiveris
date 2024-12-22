@@ -313,7 +313,6 @@ public class HeadStemsCleaner
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction yGapTiny = new Scale.Fraction(
                 0.2, // 0.1,
                 "Maximum vertical tiny gap between stem & head");

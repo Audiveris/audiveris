@@ -324,7 +324,6 @@ public class SampleRepository
      */
     private void buildSymbols ()
     {
-
         // Music symbols
         final EnumSet<Shape> textShapes = EnumSet.noneOf(Shape.class);
         textShapes.addAll(ShapeSet.Digits.getShapes());
@@ -1980,7 +1979,6 @@ public class SampleRepository
     public static class AdditionEvent
             extends ChangeEvent
     {
-
         /** The sample added. */
         public final Sample sample;
 
@@ -2004,7 +2002,6 @@ public class SampleRepository
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -2029,7 +2026,6 @@ public class SampleRepository
      */
     public static interface LoadListener
     {
-
         /**
          * Called whenever a new sample sheet has been loaded.
          *
@@ -2054,7 +2050,6 @@ public class SampleRepository
     public static class RemovalEvent
             extends ChangeEvent
     {
-
         /** The removed sample. */
         public final Sample sample;
 
@@ -2081,7 +2076,6 @@ public class SampleRepository
     private class RepositoryExitListener
             implements Application.ExitListener
     {
-
         RepositoryExitListener ()
         {
         }
@@ -2125,7 +2119,6 @@ public class SampleRepository
     public static class SheetRemovalEvent
             extends ChangeEvent
     {
-
         /** Descriptor of the removed sheet. */
         public final Descriptor descriptor;
 

@@ -151,7 +151,6 @@ public enum MusicFamily
         public static class JaxbAdapter
                 extends XmlAdapter<MusicFamily, MyParam>
         {
-
             @Override
             public MusicFamily marshal (MyParam fp)
                 throws Exception

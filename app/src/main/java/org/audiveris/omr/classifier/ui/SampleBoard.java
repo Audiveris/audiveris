@@ -283,7 +283,6 @@ public class SampleBoard
     private static class Constants
             extends ConstantSet
     {
-
         private final PixelCount shapeIconHeight = new PixelCount(
                 70,
                 "Exact pixel height for the shape icon field");

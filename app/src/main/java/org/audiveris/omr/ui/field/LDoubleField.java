@@ -185,7 +185,6 @@ public class LDoubleField
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
             throws BadLocationException {
-
             Document doc = fb.getDocument();
             StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
             sb.insert(offset, string);
@@ -199,7 +198,6 @@ public class LDoubleField
         @Override
         public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
           throws BadLocationException {
-
             Document doc = fb.getDocument();
             StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
             sb.replace(offset, offset + length, text);
@@ -211,7 +209,6 @@ public class LDoubleField
         }
 
         private boolean test(String text) {
-
             try {
                 Double.parseDouble(text);
                 return true;

@@ -638,7 +638,6 @@ public class Slot
     public static class CompoundSlot
             extends MeasureSlot
     {
-
         /** The narrow slots that compose this compound. */
         private final List<MeasureSlot> members;
 
@@ -679,7 +678,6 @@ public class Slot
     public static class MeasureSlot
             extends Slot
     {
-
         /** The containing measure. */
         @Navigable(false)
         protected Measure measure;

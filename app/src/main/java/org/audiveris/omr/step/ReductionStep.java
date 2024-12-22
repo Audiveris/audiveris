@@ -172,7 +172,6 @@ public class ReductionStep
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean refineStemHeadEnd = new Constant.Boolean(
                 true,
                 "Should we refine every stem head end at terminating head anchor?");

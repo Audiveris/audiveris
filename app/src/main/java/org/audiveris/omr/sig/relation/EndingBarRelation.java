@@ -236,7 +236,6 @@ public class EndingBarRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio endingSupportCoeff = new Constant.Ratio(
                 3,
                 "Supporting coeff for (source) ending");

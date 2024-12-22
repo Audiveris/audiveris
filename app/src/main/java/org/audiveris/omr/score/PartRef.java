@@ -100,7 +100,6 @@ public class PartRef
     @SuppressWarnings(value = "unused")
     private PartRef ()
     {
-
     }
 
     /**

@@ -540,7 +540,6 @@ public abstract class AbstractClassifier<M extends Object>
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -558,7 +557,6 @@ public abstract class AbstractClassifier<M extends Object>
      */
     protected static class Norms
     {
-
         /** Features means. */
         final INDArray means;
 

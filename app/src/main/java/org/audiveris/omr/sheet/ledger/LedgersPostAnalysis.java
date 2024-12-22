@@ -335,7 +335,6 @@ public class LedgersPostAnalysis
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxIsolatedLedgerWidth = new Scale.Fraction(
                 3,
                 "Reasonable maximum width for an isolated ledger");
@@ -369,7 +368,6 @@ public class LedgersPostAnalysis
      */
     private static class Info
     {
-
         public static Comparator<Info> byId = (Info o1,
                                                Info o2) -> Integer.compare(
                                                        o1.ledger.getId(),

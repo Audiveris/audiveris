@@ -169,7 +169,6 @@ public class BarConnection
     public static class Impacts
             extends GradeImpacts
     {
-
         private static final String[] NAMES = new String[]
         { "align", "dWidth", "gap", "white" };
 

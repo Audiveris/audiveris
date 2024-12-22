@@ -601,7 +601,6 @@ public class MainGui
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
                 true,
                 "Should we preload costly packages in the background?");
@@ -616,7 +615,6 @@ public class MainGui
     private static class GuiExitListener
             implements ExitListener
     {
-
         GuiExitListener ()
         {
         }

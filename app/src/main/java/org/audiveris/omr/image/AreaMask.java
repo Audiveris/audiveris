@@ -108,7 +108,6 @@ public class AreaMask
     //-----------------//
     public static interface AreaMaskAdapter
     {
-
         /**
          * Method called on each mask relevant point.
          *
@@ -127,7 +126,6 @@ public class AreaMask
     private static class ForeCounter
             implements AreaMaskAdapter
     {
-
         private final ByteProcessor filter;
 
         private final int filterWidth;

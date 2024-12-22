@@ -591,7 +591,6 @@ public abstract class PageCleaner
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio enlargementRatio =
                 new Constant.Ratio(1.1, "Size augmentation to use with eraser music font");
 

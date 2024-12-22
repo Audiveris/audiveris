@@ -40,7 +40,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordGraceRelation
         extends AbstractConnection
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
@@ -109,7 +108,6 @@ public class ChordGraceRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio graceCoeff = new Constant.Ratio(
                 0.5,
                 "Supporting coeff for (target) grace");

@@ -712,7 +712,6 @@ public class HeadStemRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio headSupportCoeff =
                 new Constant.Ratio(4, "Value for (source) head coeff in support formula");
 

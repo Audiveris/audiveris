@@ -222,7 +222,6 @@ public class SlurHeadRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio slurSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for (source) slur coeff in support formula");

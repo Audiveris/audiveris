@@ -120,7 +120,6 @@ public class StemSymbol
     protected static class MyParams
             extends Params
     {
-
         // offset: if decorated, offset of symbol center vs decorated image center
         // layout: stem layout
         // rect:   global image (head + stem if decorated, stem if not)

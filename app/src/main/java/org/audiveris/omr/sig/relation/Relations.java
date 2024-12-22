@@ -410,7 +410,6 @@ public abstract class Relations
     public static class RelationClassPredicate
             implements Predicate<Relation>
     {
-
         private final Class[] classes;
 
         /**

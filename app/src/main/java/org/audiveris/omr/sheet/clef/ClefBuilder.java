@@ -540,7 +540,6 @@ public class ClefBuilder
     private class ClefAdapter
             extends GlyphCluster.AbstractAdapter
     {
-
         /** Best inter per clef kind. */
         private final Map<ClefKind, ClefInter> bestMap;
 
@@ -610,7 +609,6 @@ public class ClefBuilder
      */
     public static class Column
     {
-
         private final SystemInfo system;
 
         /** Map of clef builders. (one per staff) */
@@ -685,7 +683,6 @@ public class ClefBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxClefEnd = new Scale.Fraction(
                 4.5,
                 "Maximum x distance from measure start to end of clef");
@@ -742,7 +739,6 @@ public class ClefBuilder
     //------------//
     private static class Parameters
     {
-
         final int maxPartCount;
 
         final int maxEvalRank;

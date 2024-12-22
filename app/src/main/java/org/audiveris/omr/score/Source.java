@@ -356,7 +356,6 @@ public class Source
      */
     public static class SheetSystems
     {
-
         /** Sequence of systems processed, starting from 1. */
         private final List<Integer> systems = new ArrayList<>();
 

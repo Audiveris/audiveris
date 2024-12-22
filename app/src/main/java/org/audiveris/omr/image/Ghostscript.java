@@ -226,7 +226,6 @@ public class Ghostscript
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double minVersion = new Constant.Double(
                 "version",
                 9.06,

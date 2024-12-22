@@ -401,7 +401,6 @@ public class DynamicsInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxDy = new Scale.Fraction(
                 7,
                 "Maximum vertical distance between dynamics center and related chord/staff");

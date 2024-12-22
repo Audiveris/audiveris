@@ -468,7 +468,6 @@ public class KeyColumn
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxSliceDist = new Scale.Fraction(
                 0.5,
                 "Maximum abscissa distance to theoretical slice");
@@ -479,7 +478,6 @@ public class KeyColumn
     //------------//
     private static class Parameters
     {
-
         final int maxSliceDist;
 
         Parameters (Scale scale)

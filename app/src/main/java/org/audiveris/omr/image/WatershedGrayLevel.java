@@ -333,7 +333,6 @@ public class WatershedGrayLevel
      */
     private static class Pixel
     {
-
         int x;
 
         int y;

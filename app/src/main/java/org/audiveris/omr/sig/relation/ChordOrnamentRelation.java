@@ -114,7 +114,6 @@ public class ChordOrnamentRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio ornamentTargetCoeff = new Constant.Ratio(
                 0.5,
                 "Supporting coeff for (target) ornament");

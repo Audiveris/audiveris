@@ -165,7 +165,6 @@ public class Mask
     //-------------//
     public static interface MaskAdapter
     {
-
         /**
          * Method called on each mask relevant point.
          *

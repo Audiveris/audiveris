@@ -479,7 +479,6 @@ public class Rational
     public static class JaxbAdapter
             extends XmlAdapter<String, Rational>
     {
-
         @Override
         public String marshal (Rational val)
             throws Exception

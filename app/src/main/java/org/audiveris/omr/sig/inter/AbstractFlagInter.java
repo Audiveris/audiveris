@@ -420,7 +420,6 @@ public abstract class AbstractFlagInter
     private static class Editor
             extends InterEditor
     {
-
         // Original data
         private final Rectangle originalBounds;
 

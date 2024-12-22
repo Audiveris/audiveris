@@ -107,7 +107,6 @@ public class BarConnectionRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio barSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for source/target (bar) coeff in support formula");

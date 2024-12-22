@@ -1049,7 +1049,6 @@ public abstract class AbstractBeamInter
     private static class Editor
             extends InterEditor
     {
-
         // Data
         private final Model originalModel;
 
@@ -1231,7 +1230,6 @@ public abstract class AbstractBeamInter
     public static class Impacts
             extends GradeImpacts
     {
-
         private static final String[] NAMES = new String[]
         { "wdth", "minH", "maxH", "core", "belt", "jit" };
 
@@ -1268,7 +1266,6 @@ public abstract class AbstractBeamInter
     public static class Model
             implements ObjectUIModel
     {
-
         // Left point of median line
         public Point2D p1;
 

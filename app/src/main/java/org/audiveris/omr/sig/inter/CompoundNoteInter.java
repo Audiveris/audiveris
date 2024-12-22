@@ -78,7 +78,6 @@ import java.util.List;
 public class CompoundNoteInter
         extends AbstractInter
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CompoundNoteInter.class);

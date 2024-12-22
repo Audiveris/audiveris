@@ -907,7 +907,6 @@ public abstract class UIUtil
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio minGlobalFontRatio = new Constant.Ratio(
                 1.0,
                 "Minimum value for global font ratio");

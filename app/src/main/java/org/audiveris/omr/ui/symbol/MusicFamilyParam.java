@@ -45,7 +45,6 @@ public class MusicFamilyParam
     public static class JaxbAdapter
             extends XmlAdapter<MusicFamily, MusicFamilyParam>
     {
-
         @Override
         public MusicFamily marshal (MusicFamilyParam fp)
             throws Exception

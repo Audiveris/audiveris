@@ -261,7 +261,6 @@ public abstract class AbstractPitchedInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double areaPitchOffset_FLAT = new Constant.Double(
                 "pitch",
                 1.2,

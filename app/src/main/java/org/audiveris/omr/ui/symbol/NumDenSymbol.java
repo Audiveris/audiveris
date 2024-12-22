@@ -116,7 +116,6 @@ public class NumDenSymbol
     protected static class MyParams
             extends Params
     {
-
         double dy;
 
         TextLayout numLayout;

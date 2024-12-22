@@ -169,7 +169,6 @@ public class ChordArticulationRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio articulationSupportCoeff = new Constant.Ratio(
                 2.5,
                 "Supporting coeff for (target) articulation");

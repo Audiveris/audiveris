@@ -273,7 +273,6 @@ public class WedgesBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction closedMaxDx = new Scale.Fraction(
                 0.2,
                 "Maximum abscissa gap between segments ends on closed side");
@@ -312,7 +311,6 @@ public class WedgesBuilder
      */
     private static class Parameters
     {
-
         final int closedMaxDx;
 
         final int closedMaxDy;

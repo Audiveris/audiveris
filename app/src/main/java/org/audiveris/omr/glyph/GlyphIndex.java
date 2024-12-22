@@ -500,7 +500,6 @@ public class GlyphIndex
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.String vipGlyphs = new Constant.String(
                 "",
                 "(Debug) Comma-separated values of VIP glyphs IDs");
@@ -515,7 +514,6 @@ public class GlyphIndex
     private static class SkippingIterator
             implements Iterator<Glyph>
     {
-
         private final Iterator<WeakGlyph> weakIt; // Underlying iterator on all weak references
 
         private Glyph nextGlyph = null; // Concrete glyph to be returned by next()
@@ -572,7 +570,6 @@ public class GlyphIndex
     private static class WeakGlyphIndex
             extends BasicIndex<WeakGlyph>
     {
-
         @Override
         public void insert (WeakGlyph weak)
         {

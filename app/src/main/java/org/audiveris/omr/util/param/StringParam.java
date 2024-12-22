@@ -46,7 +46,6 @@ public class StringParam
     public static class JaxbAdapter
             extends XmlAdapter<String, StringParam>
     {
-
         @Override
         public String marshal (StringParam param)
             throws Exception

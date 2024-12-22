@@ -1382,7 +1382,6 @@ public class ClustersRetriever
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction samplingDx = new Scale.Fraction(
                 1,
                 "Typical delta X between two vertical samplings");
@@ -1449,7 +1448,6 @@ public class ClustersRetriever
      */
     private static class FilY
     {
-
         public static final Comparator<FilY> byOrdinate = (f1,
                                                            f2) -> Double.compare(f1.y, f2.y);
 
@@ -1480,7 +1478,6 @@ public class ClustersRetriever
      */
     private static class Parameters
     {
-
         final int samplingDx;
 
         final int maxExpandDx;

@@ -206,7 +206,6 @@ public class OctaveShiftSymbol
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double defaultThickness = new Constant.Double(
                 "pixels",
                 2.0,
@@ -227,7 +226,6 @@ public class OctaveShiftSymbol
     protected static class MyParams
             extends ShapeSymbol.Params
     {
-
         // offset: used
         // layout: used for value symbol
         // rect:   bounds of global image composed of value + line only (no hook)

@@ -473,7 +473,6 @@ public abstract class AbstractTimeInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.String optionalTimes = new Constant.String(
                 "6/4, 7/8",
                 "Optional time sigs");

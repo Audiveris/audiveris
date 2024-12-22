@@ -855,7 +855,6 @@ public class ShapeChecker
      */
     private abstract class Checker
     {
-
         /** Unique name for this check. */
         public final String name;
 
@@ -924,7 +923,6 @@ public class ShapeChecker
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean applySpecificCheck = new Constant.Boolean(
                 true,
                 "Should we apply specific checks on shape candidates?");
@@ -988,7 +986,6 @@ public class ShapeChecker
     //---------------//
     private static class LazySingleton
     {
-
         static final ShapeChecker INSTANCE = new ShapeChecker();
     }
 }

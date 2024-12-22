@@ -373,7 +373,6 @@ public abstract class TimeBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer maxEvalRank = new Constant.Integer(
                 "none",
                 3,
@@ -439,7 +438,6 @@ public abstract class TimeBuilder
      */
     protected static class Parameters
     {
-
         final int maxEvalRank;
 
         // Sheet scale dependent

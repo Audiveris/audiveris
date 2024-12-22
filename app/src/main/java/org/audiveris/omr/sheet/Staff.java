@@ -2284,7 +2284,6 @@ public class Staff
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction definingPointSize = new Scale.Fraction(
                 0.05,
                 "Display width of a defining point");
@@ -2299,7 +2298,6 @@ public class Staff
      */
     protected static class LedgersEntry
     {
-
         /**
          * Index of the ledger line, with respect to the staff.
          */
@@ -2354,7 +2352,6 @@ public class Staff
     public static class StaffHolder
             extends Staff
     {
-
         /** Predefined place holders. */
         private static ConcurrentHashMap<Integer, StaffHolder> holders = new ConcurrentHashMap<>();
 

@@ -421,7 +421,6 @@ public class CheckPanel<C>
     private class ParamAction
             extends AbstractAction
     {
-
         /**
          * Method run whenever user presses Return/Enter in one of
          * the parameter fields

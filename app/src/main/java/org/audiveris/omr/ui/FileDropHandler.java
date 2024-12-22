@@ -136,7 +136,6 @@ public class FileDropHandler
     private static class DropSamplesTask
             extends PathTask<Void, Void>
     {
-
         DropSamplesTask (Path path)
         {
             super(path);

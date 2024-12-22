@@ -91,7 +91,6 @@ public class SheetGradedPainter
     private class GradedSigPainter
             extends SigPainter
     {
-
         //----------//
         // setColor //
         //----------//

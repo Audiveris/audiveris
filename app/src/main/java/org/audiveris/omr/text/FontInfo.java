@@ -270,7 +270,6 @@ public class FontInfo
     public static class JaxbAdapter
             extends XmlAdapter<String, FontInfo>
     {
-
         @Override
         public String marshal (FontInfo info)
             throws Exception

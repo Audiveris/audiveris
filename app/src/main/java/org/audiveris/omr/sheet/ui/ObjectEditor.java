@@ -390,7 +390,6 @@ public abstract class ObjectEditor
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio handleMaxZoom = new Constant.Ratio(
                 2.0,
                 "Maximum effective zoom on handle");
@@ -424,7 +423,6 @@ public abstract class ObjectEditor
      */
     public static abstract class Handle
     {
-
         /** Handle center point. */
         protected final Point2D center;
 

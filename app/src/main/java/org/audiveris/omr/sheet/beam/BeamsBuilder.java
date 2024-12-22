@@ -1636,7 +1636,6 @@ public class BeamsBuilder
     private static class Constants
             extends ConstantSet
     {
-
         // Item parameters (for beam/hook)
         //----------------
         private final Scale.Fraction minBeamWidthLow = new Scale.Fraction(
@@ -1790,7 +1789,6 @@ public class BeamsBuilder
      */
     private class CueAggregate
     {
-
         /** Unique Id. (in page) */
         private String id = "";
 
@@ -2181,7 +2179,6 @@ public class BeamsBuilder
      */
     private static class Parameters
     {
-
         final int maxSideBeamDx;
 
         final int minBeamsGapX;

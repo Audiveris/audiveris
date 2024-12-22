@@ -862,7 +862,6 @@ public class ViewParameters
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean annotationPainting = new Constant.Boolean(
                 true,
                 "Should the annotations be painted");

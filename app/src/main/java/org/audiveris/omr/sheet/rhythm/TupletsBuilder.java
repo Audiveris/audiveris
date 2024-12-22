@@ -347,7 +347,6 @@ public class TupletsBuilder
     private static class ByEuclidean
             implements Comparator<AbstractChordInter>
     {
-
         /** The location of the tuplet sign */
         private final Point signPoint;
 
@@ -373,7 +372,6 @@ public class TupletsBuilder
     //-----------------//
     private static class TupletCollector
     {
-
         /** Underlying sign. */
         private final TupletInter tuplet;
 

@@ -1070,7 +1070,6 @@ public class Voice
      */
     public static enum VoiceKind
     {
-
         /** Started in first staff, or chord with upward stem in merged grand staff. */
         HIGH,
         /** Started in second staff, or chord with downward stem in merged grand staff. */

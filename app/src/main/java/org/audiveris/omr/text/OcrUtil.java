@@ -161,7 +161,6 @@ public abstract class OcrUtil
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer whiteMarginAdded = new Constant.Integer(
                 "pixels",
                 10,

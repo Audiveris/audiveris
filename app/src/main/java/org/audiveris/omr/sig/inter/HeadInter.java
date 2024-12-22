@@ -1347,7 +1347,6 @@ public class HeadInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
                 0.5,
                 "Horizontal shrink ratio to apply when checking note overlap");
@@ -1384,7 +1383,6 @@ public class HeadInter
     private static class Editor
             extends InterEditor
     {
-
         // Original data
         private final Rectangle originalBounds;
 
@@ -1454,7 +1452,6 @@ public class HeadInter
     public static class Impacts
             extends GradeImpacts
     {
-
         private static final String[] NAMES = new String[]
         { "dist" };
 
@@ -1477,7 +1474,6 @@ public class HeadInter
     public static class Tracker
             extends InterTracker
     {
-
         public Tracker (Inter inter,
                         Sheet sheet)
         {

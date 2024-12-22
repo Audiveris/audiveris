@@ -186,7 +186,6 @@ public class TimeNumberInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double minAbsolutePitch = new Constant.Double(
                 "pitch",
                 1.0,

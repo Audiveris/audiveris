@@ -685,7 +685,6 @@ public class KeyBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.String vipStaves = new Constant.String(
                 "",
                 "(Debug) Comma-separated values of VIP staff IDs");
@@ -837,7 +836,6 @@ public class KeyBuilder
     //------------//
     private static class Parameters
     {
-
         final double minGainRatio;
 
         final double minBlackRatio;
@@ -976,7 +974,6 @@ public class KeyBuilder
      */
     class ShapeBuilder
     {
-
         /** Shape used for key signature. */
         private final Shape keyShape;
 

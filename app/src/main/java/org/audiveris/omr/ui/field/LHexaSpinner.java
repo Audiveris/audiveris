@@ -61,7 +61,6 @@ public class LHexaSpinner
     private static class HexaEditor
             extends JSpinner.NumberEditor
     {
-
         HexaEditor (JSpinner spinner)
         {
             super(spinner);
@@ -85,7 +84,6 @@ public class LHexaSpinner
     private static class HexaFormatter
             extends DefaultFormatter
     {
-
         @Override
         public Object stringToValue (String string)
             throws ParseException
@@ -125,7 +123,6 @@ public class LHexaSpinner
     private static class HexaFormatterFactory
             extends DefaultFormatterFactory
     {
-
         HexaFormatterFactory ()
         {
             super(new HexaFormatter());

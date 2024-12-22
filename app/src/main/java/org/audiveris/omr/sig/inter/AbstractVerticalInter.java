@@ -356,7 +356,6 @@ public abstract class AbstractVerticalInter
     protected static class Editor
             extends InterEditor
     {
-
         private final Model originalModel;
 
         private final Model model;
@@ -474,7 +473,6 @@ public abstract class AbstractVerticalInter
     public static class Model
             implements ObjectUIModel
     {
-
         // Upper point of median line
         public Point2D p1;
 

@@ -230,7 +230,6 @@ public class MultipleRestInter
     private static class Editor
             extends InterEditor
     {
-
         private final Model originalModel;
 
         private final Model model;
@@ -327,7 +326,6 @@ public class MultipleRestInter
     public static class Model
             implements ObjectUIModel
     {
-
         // Left point of median line
         public final Point2D p1;
 

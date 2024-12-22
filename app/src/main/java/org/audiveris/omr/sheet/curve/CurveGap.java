@@ -192,7 +192,6 @@ public abstract class CurveGap
     public static class Horizontal
             extends CurveGap
     {
-
         /**
          * Creates a new CurveGap.Horizontal object.
          *
@@ -238,7 +237,6 @@ public abstract class CurveGap
     public static class Vertical
             extends CurveGap
     {
-
         /**
          * Creates a new CurveGap.Vertical object.
          *

@@ -315,7 +315,6 @@ class SelectionPanel
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer maxShapeSampleCount = new Constant.Integer(
                 "samples",
                 150,
@@ -330,7 +329,6 @@ class SelectionPanel
     private class ParamAction
             extends AbstractAction
     {
-
         // Purpose is just to read and remember the data from the various input fields.
         // Triggered when user presses Enter in one of these fields.
         @Override
@@ -344,7 +342,6 @@ class SelectionPanel
     private class SelectAction
             extends AbstractAction
     {
-
         SelectAction ()
         {
             super("Select");
@@ -367,7 +364,6 @@ class SelectionPanel
     private class StoreAction
             extends AbstractAction
     {
-
         StoreAction ()
         {
             super("Store");

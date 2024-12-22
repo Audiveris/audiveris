@@ -221,7 +221,6 @@ public abstract class Support
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio minGrade = new Constant.Ratio(
                 0.1,
                 "Minimum support relation grade");

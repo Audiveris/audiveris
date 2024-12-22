@@ -638,7 +638,6 @@ public class LyricItemInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxItemDx = new Scale.Fraction(
                 3,
                 "Maximum horizontal distance between a note and its lyric item");

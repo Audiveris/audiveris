@@ -130,7 +130,6 @@ public abstract class Jaxb
                                 JAXBContext jaxbContext)
         throws IOException, JAXBException, XMLStreamException
     {
-
         try (OutputStream os = Files.newOutputStream(path, CREATE);) {
             Marshaller m = jaxbContext.createMarshaller();
             XMLStreamWriter writer = new CustomXMLStreamWriter(
@@ -192,7 +191,6 @@ public abstract class Jaxb
     public static class AtomicIntegerAdapter
             extends XmlAdapter<Integer, AtomicInteger>
     {
-
         @Override
         public Integer marshal (AtomicInteger atomic)
             throws Exception
@@ -218,7 +216,6 @@ public abstract class Jaxb
     public static class BooleanPositiveAdapter
             extends XmlAdapter<Boolean, Boolean>
     {
-
         @Override
         public Boolean marshal (Boolean b)
             throws Exception
@@ -251,7 +248,6 @@ public abstract class Jaxb
     public static class CubicAdapter
             extends XmlAdapter<CubicAdapter.CubicFacade, CubicCurve2D>
     {
-
         @Override
         public CubicFacade marshal (CubicCurve2D curve)
             throws Exception
@@ -285,7 +281,6 @@ public abstract class Jaxb
         @XmlRootElement(name = "cubic")
         private static class CubicFacade
         {
-
             /**
              * Abscissa of the start point of the cubic curve segment.
              */
@@ -382,7 +377,6 @@ public abstract class Jaxb
     public static class DimensionAdapter
             extends XmlAdapter<DimensionAdapter.DimensionFacade, Dimension>
     {
-
         @Override
         public DimensionFacade marshal (Dimension dim)
             throws Exception
@@ -412,7 +406,6 @@ public abstract class Jaxb
         @XmlRootElement(name = "dimension")
         private static class DimensionFacade
         {
-
             /** The width dimension. */
             @XmlAttribute(name = "w")
             public int width;
@@ -456,7 +449,6 @@ public abstract class Jaxb
     public static class Double1Adapter
             extends XmlAdapter<String, Double>
     {
-
         private static final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
 
         static {
@@ -496,7 +488,6 @@ public abstract class Jaxb
     public static class Double3Adapter
             extends XmlAdapter<String, Double>
     {
-
         private static final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
 
         static {
@@ -536,7 +527,6 @@ public abstract class Jaxb
     public static class Double5Adapter
             extends XmlAdapter<String, Double>
     {
-
         private static final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
 
         static {
@@ -577,7 +567,6 @@ public abstract class Jaxb
     public static class IntegerPositiveAdapter
             extends XmlAdapter<String, Integer>
     {
-
         @Override
         public String marshal (Integer i)
             throws Exception
@@ -610,7 +599,6 @@ public abstract class Jaxb
     public static class Line2DAdapter
             extends XmlAdapter<Line2DAdapter.Line2DFacade, Line2D>
     {
-
         @Override
         public Line2DFacade marshal (Line2D line)
             throws Exception
@@ -640,7 +628,6 @@ public abstract class Jaxb
         @XmlRootElement(name = "line2d")
         private static class Line2DFacade
         {
-
             /**
              * Start point of line.
              */
@@ -699,7 +686,6 @@ public abstract class Jaxb
     public static class MarshalLogger
             extends Marshaller.Listener
     {
-
         @Override
         public void afterMarshal (Object source)
         {
@@ -722,7 +708,6 @@ public abstract class Jaxb
     public static class OmrSchemaOutputResolver
             extends SchemaOutputResolver
     {
-
         /** Output file name. */
         private final String outputFileName;
 
@@ -752,7 +737,6 @@ public abstract class Jaxb
     public static class PathAdapter
             extends XmlAdapter<String, Path>
     {
-
         @Override
         public String marshal (Path path)
             throws Exception
@@ -784,7 +768,6 @@ public abstract class Jaxb
     public static class Point2DAdapter
             extends XmlAdapter<Point2DFacade, Point2D>
     {
-
         @Override
         public Point2DFacade marshal (Point2D point)
             throws Exception
@@ -820,7 +803,6 @@ public abstract class Jaxb
     @XmlRootElement(name = "point2d")
     private static class Point2DFacade
     {
-
         /**
          * Abscissa value.
          */
@@ -874,7 +856,6 @@ public abstract class Jaxb
     public static class PointAdapter
             extends XmlAdapter<PointAdapter.PointFacade, Point>
     {
-
         @Override
         public PointFacade marshal (Point point)
             throws Exception
@@ -904,7 +885,6 @@ public abstract class Jaxb
         @XmlRootElement(name = "point")
         private static class PointFacade
         {
-
             /**
              * Point abscissa.
              */
@@ -962,7 +942,6 @@ public abstract class Jaxb
     public static class Rectangle2DAdapter
             extends XmlAdapter<Rectangle2DAdapter.Rectangle2DFacade, Rectangle2D>
     {
-
         @Override
         public Rectangle2DFacade marshal (Rectangle2D rect)
             throws Exception
@@ -994,7 +973,6 @@ public abstract class Jaxb
         @XmlRootElement(name = "rectangle2d")
         private static class Rectangle2DFacade
         {
-
             /**
              * Abscissa of upper-left corner of rectangle.
              */
@@ -1060,7 +1038,6 @@ public abstract class Jaxb
     public static class RectangleAdapter
             extends XmlAdapter<RectangleAdapter.RectangleFacade, Rectangle>
     {
-
         @Override
         public RectangleFacade marshal (Rectangle rect)
             throws Exception
@@ -1090,7 +1067,6 @@ public abstract class Jaxb
         @XmlRootElement(name = "rectangle")
         private static class RectangleFacade
         {
-
             /**
              * Abscissa of upper-left corner of rectangle.
              */
@@ -1160,7 +1136,6 @@ public abstract class Jaxb
     public static class StringIntegerAdapter
             extends XmlAdapter<String, Integer>
     {
-
         @Override
         public String marshal (Integer i)
             throws Exception
@@ -1193,7 +1168,6 @@ public abstract class Jaxb
     public static class UnmarshalLogger
             extends Unmarshaller.Listener
     {
-
         @Override
         public void afterUnmarshal (Object target,
                                     Object parent)

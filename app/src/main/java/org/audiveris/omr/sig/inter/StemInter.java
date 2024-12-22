@@ -1008,7 +1008,6 @@ public class StemInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double defaultThickness = new Constant.Double(
                 "pixels",
                 3.0,
@@ -1042,7 +1041,6 @@ public class StemInter
     private static class Editor
             extends AbstractVerticalInter.Editor
     {
-
         public Editor (StemInter stem)
         {
             super(stem, true /* full */);

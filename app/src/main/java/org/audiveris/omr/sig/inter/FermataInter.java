@@ -396,7 +396,6 @@ public class FermataInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxFermataDy = new Scale.Fraction(
                 2.5,
                 "Maximum vertical distance between fermata center and related chord/staff/barline");

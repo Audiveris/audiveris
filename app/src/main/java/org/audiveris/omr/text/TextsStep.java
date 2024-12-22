@@ -157,7 +157,6 @@ public class TextsStep
      */
     protected static class Context
     {
-
         /** The sheet buffer handed to OCR. */
         public final ByteProcessor buffer;
 

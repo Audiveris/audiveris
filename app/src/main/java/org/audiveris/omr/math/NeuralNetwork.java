@@ -750,7 +750,6 @@ public class NeuralNetwork
      */
     public static class Backup
     {
-
         private double[][] hiddenWeights;
 
         private double[][] outputWeights;
@@ -769,7 +768,6 @@ public class NeuralNetwork
     //-------------//
     private static class StringArray
     {
-
         @XmlValue
         String[] strings;
 

@@ -146,7 +146,6 @@ public abstract class Preferences
     private static class AdvancedTopicsPane
             extends JPanel
     {
-
         AdvancedTopicsPane ()
         {
             final String className = getClass().getSimpleName();
@@ -194,7 +193,6 @@ public abstract class Preferences
             extends Panel
             implements ActionListener
     {
-
         // ComboBox for desired step
         private final JComboBox<OmrStep> stepBox;
 
@@ -235,7 +233,6 @@ public abstract class Preferences
             extends Panel
             implements ActionListener
     {
-
         private static final List<Locale> locales = Main.getSupportedLocales();
 
         // ComboBox for supported locales
@@ -278,7 +275,6 @@ public abstract class Preferences
             extends Panel
             implements ActionListener
     {
-
         final JCheckBox box;
 
         final JLabel name;
@@ -354,7 +350,6 @@ public abstract class Preferences
             extends Panel
             implements ActionListener
     {
-
         // ComboBox for registered plugins
         private final JComboBox<String> pluginBox;
 
@@ -396,7 +391,6 @@ public abstract class Preferences
             extends Panel
             implements ChangeListener
     {
-
         private final int defaultSize = UIUtil.getDefaultFontSize();
 
         private final double min = UIUtil.getMinGlobalFontRatio();
@@ -495,7 +489,6 @@ public abstract class Preferences
     private static class SiblingPane
             extends OutputPane
     {
-
         final SeparatePane separatePane;
 
         SiblingPane (SeparatePane separatePane)
@@ -566,7 +559,6 @@ public abstract class Preferences
             extends Panel
             implements ActionListener
     {
-
         // Handled topic
         private final Topic topic;
 

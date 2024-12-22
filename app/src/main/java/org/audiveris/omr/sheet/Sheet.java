@@ -1673,7 +1673,6 @@ public class Sheet
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean useMarshalLogger = new Constant.Boolean(
                 false,
                 "Should we log every sheet marshalling?");
@@ -1692,7 +1691,6 @@ public class Sheet
      */
     private static class GlyphList
     {
-
         @XmlElement(name = "glyph")
         public ArrayList<Glyph> glyphs;
 
@@ -1726,7 +1724,6 @@ public class Sheet
     private static class GlyphListAdapter
             extends XmlAdapter<GlyphList, ArrayList<Glyph>>
     {
-
         @Override
         public GlyphList marshal (ArrayList<Glyph> glyphs)
             throws Exception

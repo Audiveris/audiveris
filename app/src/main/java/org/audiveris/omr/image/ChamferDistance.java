@@ -115,7 +115,6 @@ public interface ChamferDistance
     public abstract class Abstract
             implements ChamferDistance
     {
-
         /** The local distance mask to apply. */
         private final int[][] chamfer;
 
@@ -346,7 +345,6 @@ public interface ChamferDistance
     public class Integer
             extends Abstract
     {
-
         @Override
         protected DistanceTable allocateOutput (int width,
                                                 int height,
@@ -365,7 +363,6 @@ public interface ChamferDistance
     public class Short
             extends Abstract
     {
-
         @Override
         protected DistanceTable allocateOutput (int width,
                                                 int height,

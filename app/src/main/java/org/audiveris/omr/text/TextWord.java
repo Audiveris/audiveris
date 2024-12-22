@@ -733,7 +733,6 @@ public class TextWord
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double lowConfidence = new Constant.Double(
                 "0..1",
                 0.30,

@@ -56,7 +56,6 @@ public class TransformedSymbol
                               AffineTransform at,
                               MusicFamily family)
     {
-
         super(shape, family);
         this.root = root;
         this.at = at;

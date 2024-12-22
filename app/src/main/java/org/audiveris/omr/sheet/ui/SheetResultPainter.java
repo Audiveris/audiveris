@@ -350,7 +350,6 @@ public class SheetResultPainter
      */
     private void processParts (SystemInfo system)
     {
-
         final int partDx = constants.partDx.getValue();
         final int partDy = constants.partDy.getValue();
 
@@ -496,7 +495,6 @@ public class SheetResultPainter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer annotationDx = new Constant.Integer(
                 "pixels",
                 15,
@@ -528,7 +526,6 @@ public class SheetResultPainter
     public static class PdfResultPainter
             implements SimpleSheetPainter
     {
-
         @Override
         public void paint (Sheet sheet,
                            Graphics2D g)
@@ -543,7 +540,6 @@ public class SheetResultPainter
     private class ResultSigPainter
             extends SigPainter
     {
-
         @Override
         protected void setColor (Inter inter)
         {

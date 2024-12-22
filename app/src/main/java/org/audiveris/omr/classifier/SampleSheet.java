@@ -611,7 +611,6 @@ public class SampleSheet
     @XmlRootElement(name = "samples")
     private static class SampleList
     {
-
         // Persistent data
         //----------------
         /** Used only to include sheet-name within the written file. */

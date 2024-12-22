@@ -212,7 +212,6 @@ public class StaffHeader
      */
     public static class Range
     {
-
         /** Was the item successfully retrieved?. */
         public boolean valid;
 

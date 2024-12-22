@@ -50,7 +50,6 @@ public class FilterParam
     public static class JaxbAdapter
             extends XmlAdapter<JaxbAdapter.FilterDescriptorValue, FilterParam>
     {
-
         @Override
         public FilterDescriptorValue marshal (FilterParam fp)
             throws Exception
@@ -94,7 +93,6 @@ public class FilterParam
          */
         protected static class FilterDescriptorValue
         {
-
             @XmlElementRefs(
             {
                     @XmlElementRef(type = GlobalDescriptor.class),

@@ -214,7 +214,6 @@ public class SymbolsFilter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean displaySymbols =
                 new Constant.Boolean(false, "Should we display the symbols image?");
 

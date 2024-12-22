@@ -566,7 +566,6 @@ public abstract class Board
      */
     public static class Desc
     {
-
         /** Default name for this board. */
         public final String name;
 
@@ -590,7 +589,6 @@ public abstract class Board
     private static class Header
             extends Panel
     {
-
         /** Output: Count of entities, if any. */
         private final JLabel count;
 

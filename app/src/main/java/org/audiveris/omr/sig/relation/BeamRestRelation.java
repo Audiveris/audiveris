@@ -218,7 +218,6 @@ public class BeamRestRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 1.0,
                 "Maximum horizontal overlap between rest & beam");

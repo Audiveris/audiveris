@@ -1587,7 +1587,6 @@ public class StaffProjector
     private static class Blank
             implements Comparable<Blank>
     {
-
         /** First abscissa in region. */
         private final int start;
 
@@ -1652,7 +1651,6 @@ public class StaffProjector
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction staffAbscissaMargin = new Scale.Fraction(
                 15,
                 "Abscissa margin for checks around staff");
@@ -1738,7 +1736,6 @@ public class StaffProjector
     //------------//
     private class Parameters
     {
-
         final int chunkWidth;
 
         final int staffAbscissaMargin;
@@ -1834,7 +1831,6 @@ public class StaffProjector
      */
     private static class PeakSide
     {
-
         /** Precise side abscissa. */
         final int abscissa;
 

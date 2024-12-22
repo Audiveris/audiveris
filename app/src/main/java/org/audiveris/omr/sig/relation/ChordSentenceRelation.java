@@ -105,7 +105,6 @@ public class ChordSentenceRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction xGapMax =
                 new Scale.Fraction(1.0, "Maximum horizontal gap between chord & sentence");
     }

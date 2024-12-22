@@ -635,7 +635,6 @@ public class EndingInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double defaultThickness = new Constant.Double(
                 "pixels",
                 2.0,
@@ -658,7 +657,6 @@ public class EndingInter
     private static class Editor
             extends InterEditor
     {
-
         private final Model originalModel = new Model();
 
         private final Model model = new Model();
@@ -847,7 +845,6 @@ public class EndingInter
     public static class Impacts
             extends GradeImpacts
     {
-
         private static final String[] NAMES = new String[]
         { "straight", "slope", "length" };
 
@@ -871,7 +868,6 @@ public class EndingInter
     public static class Model
             implements ObjectUIModel
     {
-
         public Point2D topLeft;
 
         public Point2D topRight;

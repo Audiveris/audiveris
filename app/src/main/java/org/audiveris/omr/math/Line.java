@@ -183,7 +183,6 @@ public interface Line
     static class NonInvertibleLineException
             extends RuntimeException
     {
-
         NonInvertibleLineException (String message)
         {
             super(message);
@@ -196,7 +195,6 @@ public interface Line
     static class UndefinedLineException
             extends RuntimeException
     {
-
         UndefinedLineException (String message)
         {
             super(message);

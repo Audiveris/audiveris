@@ -241,7 +241,6 @@ public class BookBrowser
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean hideEmptyDummies = new Constant.Boolean(
                 false,
                 "Should we hide empty dummy containers");
@@ -258,7 +257,6 @@ public class BookBrowser
     private class Model
             implements TreeModel
     {
-
         private final List<TreeModelListener> listeners = new ArrayList<>();
 
         private final Book book;
@@ -562,7 +560,6 @@ public class BookBrowser
     //-----------------//
     private static class NamedCollection
     {
-
         private final String name;
 
         private final Collection<?> collection;
@@ -586,7 +583,6 @@ public class BookBrowser
     //-----------//
     private static class NamedData
     {
-
         private final String name;
 
         private final Object data;
@@ -621,7 +617,6 @@ public class BookBrowser
     private class SelectionListener
             implements TreeSelectionListener
     {
-
         @Override
         public void valueChanged (TreeSelectionEvent e)
         {

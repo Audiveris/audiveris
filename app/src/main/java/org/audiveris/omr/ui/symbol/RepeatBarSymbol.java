@@ -105,7 +105,6 @@ public class RepeatBarSymbol
     protected static class MyParams
             extends Params
     {
-
         // offset not used
         // layout for repeat symbol
         // rect for (repeat + barline) bounds

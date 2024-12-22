@@ -605,7 +605,6 @@ public abstract class SheetPainter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer basicFontSize = new Constant.Integer(
                 "points",
                 30,
@@ -703,7 +702,6 @@ public abstract class SheetPainter
     protected abstract class SigPainter
             extends AbstractInterVisitor
     {
-
         /** Any shape, jumbo size. */
         protected MusicFont musicFontJumbo;
 
@@ -821,7 +819,6 @@ public abstract class SheetPainter
         private MusicFont getMusicFont (boolean isHead,
                                         Staff staff)
         {
-
             return getMusicFont(isHead, (staff != null) ? staff.isSmall() : false);
         }
 

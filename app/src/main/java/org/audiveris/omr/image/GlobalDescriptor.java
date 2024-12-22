@@ -195,7 +195,6 @@ public class GlobalDescriptor
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer defaultThreshold = new Constant.Integer(
                 "GrayLevel",
                 140,

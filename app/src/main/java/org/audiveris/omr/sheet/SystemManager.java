@@ -908,7 +908,6 @@ public class SystemManager
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction minIndentation = new Scale.Fraction(
                 2.0,
                 "Minimum shift to detect a system indentation");

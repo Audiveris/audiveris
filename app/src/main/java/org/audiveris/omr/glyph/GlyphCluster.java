@@ -241,7 +241,6 @@ public class GlyphCluster
     public abstract static class AbstractAdapter
             implements GlyphAdapter
     {
-
         /** For debug only */
         public int trials = 0;
 
@@ -319,7 +318,6 @@ public class GlyphCluster
      */
     public static interface GlyphAdapter
     {
-
         /**
          * Evaluate a provided glyph and create all acceptable inter instances.
          *

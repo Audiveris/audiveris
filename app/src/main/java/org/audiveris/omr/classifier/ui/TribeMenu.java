@@ -199,7 +199,6 @@ public class TribeMenu
     private class SelectMenu
             extends JMenu
     {
-
         SelectMenu ()
         {
             super("Set as Best");

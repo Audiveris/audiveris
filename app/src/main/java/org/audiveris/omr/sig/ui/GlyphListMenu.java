@@ -115,7 +115,6 @@ public class GlyphListMenu
     private class GlyphListener
             extends AbstractMouseListener
     {
-
         @Override
         public void mouseEntered (MouseEvent e)
         {

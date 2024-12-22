@@ -433,7 +433,6 @@ public abstract class Symbols
      */
     public static class CodeRange
     {
-
         final int start;
 
         final int stop;

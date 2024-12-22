@@ -601,7 +601,6 @@ public class StickFactory
     //------------//
     private static class Parameters
     {
-
         public final int maxStickThickness;
 
         public final int minCoreSectionLength;

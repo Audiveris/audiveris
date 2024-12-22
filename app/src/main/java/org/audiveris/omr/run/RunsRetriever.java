@@ -219,7 +219,6 @@ public class RunsRetriever
     public static interface RunAdapter
             extends Concurrency
     {
-
         /**
          * Called at end of position.
          *

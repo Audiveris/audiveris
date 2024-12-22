@@ -116,7 +116,6 @@ public class MixGlyphDescriptor
      */
     private static class LabelsHolder
     {
-
         /** Index -> Label */
         public static final String[] labels = new String[LENGTH];
 

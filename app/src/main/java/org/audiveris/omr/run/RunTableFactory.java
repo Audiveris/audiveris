@@ -129,7 +129,6 @@ public class RunTableFactory
      */
     public static interface Filter
     {
-
         /**
          * Perform the filter on the provided run candidate.
          *
@@ -152,7 +151,6 @@ public class RunTableFactory
     private class HorizontalAdapter
             extends MyAdapter
     {
-
         HorizontalAdapter (ByteProcessor source,
                            RunTable table,
                            Point tableOffset)
@@ -194,7 +192,6 @@ public class RunTableFactory
     public static class LengthFilter
             implements Filter
     {
-
         private final int minLength;
 
         /**
@@ -222,7 +219,6 @@ public class RunTableFactory
     private abstract class MyAdapter
             implements RunsRetriever.RunAdapter
     {
-
         /** The source to read runs of pixels from. */
         protected final ByteProcessor source;
 
@@ -301,7 +297,6 @@ public class RunTableFactory
     private class VerticalAdapter
             extends MyAdapter
     {
-
         VerticalAdapter (ByteProcessor source,
                          RunTable table,
                          Point tableOffset)

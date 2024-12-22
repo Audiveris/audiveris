@@ -710,7 +710,6 @@ public class MusicFont
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Enum<MusicFamily> defaultMusicFamily = new Constant.Enum<>(
                 MusicFamily.class,
                 MusicFamily.Bravura,

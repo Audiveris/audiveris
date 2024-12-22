@@ -169,7 +169,6 @@ public class CompoundFactory
      */
     public interface CompoundConstructor
     {
-
         /**
          * Actual creation of compound instance.
          *

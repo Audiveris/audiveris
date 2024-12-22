@@ -103,7 +103,6 @@ public abstract class Grades
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio intrinsicRatio = new Constant.Ratio(
                 0.8,
                 "Reduction ratio applied on any intrinsic grade");

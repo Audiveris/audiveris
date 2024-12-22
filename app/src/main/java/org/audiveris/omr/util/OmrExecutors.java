@@ -199,7 +199,6 @@ public class OmrExecutors
     private static class CachedLows
             extends Pool
     {
-
         @Override
         protected ExecutorService createPool ()
         {
@@ -219,7 +218,6 @@ public class OmrExecutors
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printEnvironment = new Constant.Boolean(
                 false,
                 "Should we print out current environment?");
@@ -240,7 +238,6 @@ public class OmrExecutors
     private static class Default
             extends Param<Boolean>
     {
-
         public Default ()
         {
             super(GLOBAL_SCOPE);
@@ -288,7 +285,6 @@ public class OmrExecutors
     private static class Factory
             implements ThreadFactory
     {
-
         private final ThreadGroup group;
 
         private final String threadPrefix;
@@ -340,7 +336,6 @@ public class OmrExecutors
     private static class Highs
             extends Pool
     {
-
         @Override
         protected ExecutorService createPool ()
         {
@@ -363,7 +358,6 @@ public class OmrExecutors
     private static class Lows
             extends Pool
     {
-
         @Override
         protected ExecutorService createPool ()
         {
@@ -384,7 +378,6 @@ public class OmrExecutors
     //------//
     private abstract static class Pool
     {
-
         /** The underlying pool of threads. */
         protected ExecutorService pool;
 

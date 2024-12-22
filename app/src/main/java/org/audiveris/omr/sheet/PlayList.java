@@ -298,7 +298,6 @@ public class PlayList
      */
     public static PlayList load (Path sourcePath)
     {
-
         try {
             logger.info("Loading playlist {}", sourcePath);
 
@@ -328,7 +327,6 @@ public class PlayList
     public static class BookExcerpt
             extends PlayList.Excerpt
     {
-
         /** Containing book. */
         public final Book book;
 
@@ -413,7 +411,6 @@ public class PlayList
     @XmlAccessorType(XmlAccessType.NONE)
     public static class Excerpt
     {
-
         /**
          * This mandatory element is the path to the container file (book or image).
          * <ul>

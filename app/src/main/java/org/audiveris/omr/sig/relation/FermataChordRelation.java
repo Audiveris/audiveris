@@ -86,7 +86,6 @@ public class FermataChordRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(
                 5,
                 "Supporting coeff for (source) fermata");

@@ -475,7 +475,6 @@ public abstract class Constant<E>
     public static class Angle
             extends Constant.Double
     {
-
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -498,7 +497,6 @@ public abstract class Constant<E>
     public static class Boolean
             extends Constant<java.lang.Boolean>
     {
-
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -538,7 +536,6 @@ public abstract class Constant<E>
     public static class Color
             extends Constant<java.awt.Color>
     {
-
         /**
          * Normal constructor, with a String type for default value
          *
@@ -607,7 +604,6 @@ public abstract class Constant<E>
     public static class Date
             extends Constant<java.util.Date>
     {
-
         private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
                 "dd-MMM-yyyy",
                 Locale.US);
@@ -674,7 +670,6 @@ public abstract class Constant<E>
     public static class Double
             extends Constant<java.lang.Double>
     {
-
         public static final Double ZERO = new Double("none", 0, "Zero");
 
         public static final Double HALF = new Double("none", 0.5, "Half");
@@ -722,7 +717,6 @@ public abstract class Constant<E>
     public static class Enum<E extends java.lang.Enum<E>>
             extends Constant<E>
     {
-
         private final Class<E> classe;
 
         /**
@@ -768,7 +762,6 @@ public abstract class Constant<E>
     public static class Integer
             extends Constant<java.lang.Integer>
     {
-
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -799,7 +792,6 @@ public abstract class Constant<E>
     public static class Ratio
             extends Constant.Double
     {
-
         public static final Ratio ZERO = new Ratio(0, "zero");
 
         public static final Ratio ONE = new Ratio(1, "one");
@@ -831,7 +823,6 @@ public abstract class Constant<E>
     public static class String
             extends Constant<java.lang.String>
     {
-
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -876,7 +867,6 @@ public abstract class Constant<E>
      */
     private static class Tuple<E>
     {
-
         /** Current string Value. */
         final java.lang.String currentString;
 

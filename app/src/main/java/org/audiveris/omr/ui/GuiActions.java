@@ -411,7 +411,6 @@ public class GuiActions
     private static class CheckUpdateTask
             extends VoidTask
     {
-
         @Override
         protected Void doInBackground ()
             throws Exception
@@ -428,7 +427,6 @@ public class GuiActions
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.String webSiteUrl = new Constant.String(
                 "http://www.audiveris.org",
                 "URL of Audiveris home page");
@@ -467,7 +465,6 @@ public class GuiActions
     //---------------//
     private static class LazySingleton
     {
-
         static final GuiActions INSTANCE = new GuiActions();
     }
 
@@ -477,7 +474,6 @@ public class GuiActions
     private static class ConstantsUITask
             extends WaitingTask<ConstantsUI, Void>
     {
-
         ConstantsUITask ()
         {
             super(OmrGui.getApplication(), resources.getString("constantsTask.message"));

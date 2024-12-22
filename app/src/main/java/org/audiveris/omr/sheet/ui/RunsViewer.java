@@ -99,7 +99,6 @@ public class RunsViewer
     private class MyRunsTableView
             extends RunTableView
     {
-
         MyRunsTableView (String name,
                          RunTable table)
         {

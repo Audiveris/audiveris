@@ -789,7 +789,6 @@ public class ChordListMenu
     private static class ChordListener
             extends AbstractMouseListener
     {
-
         @Override
         public void mouseEntered (MouseEvent e)
         {
@@ -805,7 +804,6 @@ public class ChordListMenu
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxStemDxForMerge = new Scale.Fraction(
                 0.3,
                 "Maximum abscissa shift between chords stems for a merge");
@@ -829,7 +827,6 @@ public class ChordListMenu
     private class MergeAction
             extends AbstractAction
     {
-
         private final List<HeadChordInter> chords;
 
         private final boolean withStem;
@@ -861,7 +858,6 @@ public class ChordListMenu
     private class MultipleRelationAdditionItem
             extends JMenuItem
     {
-
         public MultipleRelationAdditionItem (String label,
                                              String tip,
                                              final List<AbstractChordInter> chords,
@@ -908,7 +904,6 @@ public class ChordListMenu
     private class RelationAdditionItem
             extends JMenuItem
     {
-
         public RelationAdditionItem (String label,
                                      String tip,
                                      final AbstractChordInter source,
@@ -943,7 +938,6 @@ public class ChordListMenu
     private class RelationRemovalItem
             extends JMenuItem
     {
-
         public RelationRemovalItem (String label,
                                     String tip,
                                     final SIGraph sig,
@@ -974,7 +968,6 @@ public class ChordListMenu
     private class SelectionListener
             extends AbstractMouseListener
     {
-
         private final List<AbstractChordInter> chords;
 
         public SelectionListener (List<AbstractChordInter> chords)
@@ -1007,7 +1000,6 @@ public class ChordListMenu
     private class SplitAction
             extends AbstractAction
     {
-
         private final HeadChordInter chord;
 
         SplitAction (HeadChordInter chord)
@@ -1036,7 +1028,6 @@ public class ChordListMenu
             extends JMenu
             implements ActionListener
     {
-
         private final AbstractChordInter chord; // Chord involved
 
         private final Integer chordPrefId; // Chord preferred voice id, if any

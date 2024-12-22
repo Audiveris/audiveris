@@ -395,7 +395,6 @@ class TrainingPanel
     private class ParamAction
             extends AbstractAction
     {
-
         // Purpose is just to read and remember the data from the various input fields.
         // Triggered when user presses Enter in one of these fields.
         @Override
@@ -409,7 +408,6 @@ class TrainingPanel
     protected class ResetAction
             extends AbstractAction
     {
-
         ResetAction ()
         {
             super("Reset");
@@ -431,7 +429,6 @@ class TrainingPanel
     protected class StopAction
             extends AbstractAction
     {
-
         StopAction ()
         {
             super("Stop");
@@ -448,7 +445,6 @@ class TrainingPanel
     protected class TrainAction
             extends AbstractAction
     {
-
         TrainAction ()
         {
             super("Train");
@@ -461,7 +457,6 @@ class TrainingPanel
             class Worker
                     extends Thread
             {
-
                 @Override
                 public void run ()
                 {

@@ -253,7 +253,6 @@ public class BeamSymbol
     protected static class MyParams
             extends Params
     {
-
         // layout for just quarter layout
         // rect for global image
         //

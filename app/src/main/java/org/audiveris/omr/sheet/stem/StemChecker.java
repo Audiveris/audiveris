@@ -263,7 +263,6 @@ public class StemChecker
     private class BlackCheck
             extends Check<StickContext>
     {
-
         protected BlackCheck (int profile)
         {
             super(
@@ -292,7 +291,6 @@ public class StemChecker
     private class BlackRatioCheck
             extends Check<StickContext>
     {
-
         protected BlackRatioCheck (int profile)
         {
             super(
@@ -324,7 +322,6 @@ public class StemChecker
     private class CleanCheck
             extends Check<StickContext>
     {
-
         protected CleanCheck (int profile)
         {
             super(
@@ -478,7 +475,6 @@ public class StemChecker
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction beltMarginDx = new Scale.Fraction(
                 0.15,
                 "Horizontal belt margin checked around stem");
@@ -589,7 +585,6 @@ public class StemChecker
     private class GapCheck
             extends Check<StickContext>
     {
-
         protected GapCheck (int profile)
         {
             super(
@@ -618,7 +613,6 @@ public class StemChecker
     private class LengthCheck
             extends Check<StickContext>
     {
-
         protected LengthCheck (int profile)
         {
             super(
@@ -653,7 +647,6 @@ public class StemChecker
     private class SeedCheckSuite
             extends CheckSuite<StickContext>
     {
-
         /**
          * Create a new suite using specified profile level.
          *
@@ -695,7 +688,6 @@ public class StemChecker
     private class SlopeCheck
             extends Check<StickContext>
     {
-
         protected SlopeCheck (int profile)
         {
             super(
@@ -727,7 +719,6 @@ public class StemChecker
     //--------------//
     private static class StickContext
     {
-
         /** The stick being checked. */
         public final NearLine stick;
 
@@ -761,7 +752,6 @@ public class StemChecker
     private class StraightCheck
             extends Check<StickContext>
     {
-
         protected StraightCheck (int profile)
         {
             super(
@@ -790,7 +780,6 @@ public class StemChecker
     private static class VertCheckBoard
             extends CheckBoard<StickContext>
     {
-
         private final Sheet sheet;
 
         VertCheckBoard (Sheet sheet,

@@ -948,7 +948,6 @@ public class TemplateFactory
      */
     public class Catalog
     {
-
         /** Selected music font family. */
         final MusicFamily family;
 
@@ -1008,7 +1007,6 @@ public class TemplateFactory
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean prePopulateKeyPoints = new Constant.Boolean(
                 false,
                 "Should we populate keyPoints at template creation?");

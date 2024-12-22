@@ -244,7 +244,6 @@ public class HeadSeedTally
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean dumpTally = new Constant.Boolean(
                 false,
                 "Should we print out a dump of seed-head tally?");

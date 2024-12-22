@@ -241,7 +241,6 @@ public class VerticalsBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio minSideRatio = new Constant.Ratio(
                 0.4,
                 "Minimum ratio of filament length to be actually enlarged");

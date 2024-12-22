@@ -190,7 +190,6 @@ public class SheetScanner
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -221,7 +220,6 @@ public class SheetScanner
     private static class TextsCleaner
             extends PageCleaner
     {
-
         /** Scale-dependent parameters. */
         private final Parameters params;
 
@@ -352,7 +350,6 @@ public class SheetScanner
         //------------//
         private static class Parameters
         {
-
             final int hMargin;
 
             final int vMargin;

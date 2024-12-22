@@ -197,7 +197,6 @@ public class SampleController
     public class AssignAction
             extends AbstractAction
     {
-
         /** Popup used by assign button in SampleBoard. */
         public JPopupMenu popup = new JPopupMenu();
 

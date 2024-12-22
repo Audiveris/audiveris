@@ -169,7 +169,6 @@ public class BasicAttachmentHolder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean keyPainting = new Constant.Boolean(
                 true,
                 "Should the attachment key be painted?");

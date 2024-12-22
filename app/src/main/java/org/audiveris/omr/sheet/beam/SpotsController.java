@@ -134,7 +134,6 @@ public class SpotsController
     private class SpotsView
             extends NestView
     {
-
         SpotsView (GlyphIndex glyphIndex)
         {
             super(glyphIndex.getEntityService(), Arrays.asList(spotLag), sheet);

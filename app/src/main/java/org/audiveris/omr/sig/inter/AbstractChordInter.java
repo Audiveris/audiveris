@@ -1392,7 +1392,6 @@ public abstract class AbstractChordInter
      */
     public void setVoice (Voice voice)
     {
-
         if (this.voice != voice) {
             if (isVip()) {
                 logger.info("VIP {} setVoice from {} to {}", this, this.voice, voice);

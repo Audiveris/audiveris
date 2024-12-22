@@ -144,7 +144,6 @@ public class OmrUIDefaults
     //---------------//
     private static class LazySingleton
     {
-
         static final OmrUIDefaults INSTANCE = new OmrUIDefaults();
     }
 }

@@ -225,7 +225,6 @@ public class HeadSeedScale
      */
     private static class HeadSeed
     {
-
         /** Shape of note head. */
         @XmlAttribute(name = "shape")
         public final Shape shape;

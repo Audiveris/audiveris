@@ -205,7 +205,6 @@ public class AnnotationsBuilder
      */
     private class SystemAnnotator
     {
-
         /** Related system. */
         private final SystemInfo system;
 

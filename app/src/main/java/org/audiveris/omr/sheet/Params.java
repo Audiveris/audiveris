@@ -99,7 +99,6 @@ public abstract class Params<P>
 
     protected Params ()
     {
-
     }
 
     //~ Methods ------------------------------------------------------------------------------------

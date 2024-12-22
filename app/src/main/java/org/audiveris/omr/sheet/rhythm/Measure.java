@@ -312,7 +312,6 @@ public class Measure
         class FakeChord
                 extends RestChordInter
         {
-
             List<Inter> members;
 
             @Override
@@ -337,7 +336,6 @@ public class Measure
         class FakeRest
                 extends RestInter
         {
-
             FakeChord chord;
 
             FakeRest (Staff staff,

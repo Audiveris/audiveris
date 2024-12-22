@@ -171,7 +171,6 @@ public class TestStep
     //--------//
     private static interface Holder
     {
-
         public static final PrintWriter writer = getPrintWriter(getTestFile());
     }
 }

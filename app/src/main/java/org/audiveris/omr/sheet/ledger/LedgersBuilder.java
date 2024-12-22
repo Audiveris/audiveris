@@ -699,7 +699,6 @@ public class LedgersBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -792,7 +791,6 @@ public class LedgersBuilder
     private static class LedgerCheckBoard
             extends CheckBoard<StickContext>
     {
-
         private final Sheet sheet;
 
         LedgerCheckBoard (Sheet sheet)
@@ -861,7 +859,6 @@ public class LedgersBuilder
     private class LedgerSuite
             extends CheckSuite<StickContext>
     {
-
         /**
          * Staff 'specific' interline scale.
          * NOTA: we also can use 'largeScale' and 'scale' where applicable.
@@ -888,7 +885,6 @@ public class LedgersBuilder
         private class ConvexityCheck
                 extends Check<StickContext>
         {
-
             ConvexityCheck ()
             {
                 super(
@@ -941,7 +937,6 @@ public class LedgersBuilder
         private class LeftPitchCheck
                 extends Check<StickContext>
         {
-
             protected LeftPitchCheck ()
             {
                 super(
@@ -967,7 +962,6 @@ public class LedgersBuilder
         private class MaxThicknessCheck
                 extends Check<StickContext>
         {
-
             protected MaxThicknessCheck ()
             {
                 super(
@@ -992,7 +986,6 @@ public class LedgersBuilder
         private class MinLengthCheck
                 extends Check<StickContext>
         {
-
             protected MinLengthCheck ()
             {
                 super(
@@ -1017,7 +1010,6 @@ public class LedgersBuilder
         private class MinThicknessCheck
                 extends Check<StickContext>
         {
-
             protected MinThicknessCheck ()
             {
                 super(
@@ -1042,7 +1034,6 @@ public class LedgersBuilder
         private class RightPitchCheck
                 extends Check<StickContext>
         {
-
             protected RightPitchCheck ()
             {
                 super(
@@ -1068,7 +1059,6 @@ public class LedgersBuilder
         private class StraightCheck
                 extends Check<StickContext>
         {
-
             protected StraightCheck ()
             {
                 super(
@@ -1095,7 +1085,6 @@ public class LedgersBuilder
     //--------------//
     private static class StickContext
     {
-
         /** The stick being checked. */
         final StraightFilament stick;
 
@@ -1124,7 +1113,6 @@ public class LedgersBuilder
      */
     private class Suites
     {
-
         final Map<Integer, LedgerSuite> map = new HashMap<>();
 
         Suites (Scale sheetScale)

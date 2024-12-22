@@ -456,7 +456,6 @@ public class ScaleBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer minInterline = new Constant.Integer(
                 "Pixels",
                 11,
@@ -527,7 +526,6 @@ public class ScaleBuilder
      */
     private class HistoKeeper
     {
-
         // Upper bounds for run lengths (assuming sheet height >= staff height)
         final int maxBlack;
 

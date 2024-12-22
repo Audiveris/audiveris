@@ -312,7 +312,6 @@ public enum TextRole
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxRightDx = new Scale.Fraction(
                 2,
                 "Maximum horizontal distance on the right end of the staff");

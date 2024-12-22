@@ -490,7 +490,6 @@ public class HeadLinker
     public class SLinker
             extends StemLinker
     {
-
         /** Head side considered for stem. */
         @Navigable(false)
         private final HorizontalSide hSide;
@@ -654,7 +653,6 @@ public class HeadLinker
         public class CLinker
                 extends StemHalfLinker
         {
-
             /** Vertical side from head to beam/tail. */
             @Navigable(false)
             private final VerticalSide vSide;
@@ -850,7 +848,6 @@ public class HeadLinker
                 logger.debug("{} {}", this, stumpGlyph);
 
                 if (standsOut(stumpGlyph)) {
-
                     if (StemBuilder.saveConnections() && head.isVip()) {
                         StemBuilder.saveConnection(this, stumpGlyph, null);
                     }

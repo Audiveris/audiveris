@@ -789,7 +789,6 @@ public class BeamLinker
     public class BLinker
             extends StemLinker
     {
-
         /** To ease debugging. */
         private final int id;
 
@@ -1022,7 +1021,6 @@ public class BeamLinker
         class VLinker
                 extends StemHalfLinker
         {
-
             /** Vertical side from beam to stems/heads. */
             @Navigable(false)
             private final VerticalSide vSide;

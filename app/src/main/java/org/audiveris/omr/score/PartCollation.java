@@ -450,7 +450,6 @@ public class PartCollation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.String pianoStaffConfig = new Constant.String(
                 "5,5",
                 "Typical staff configuration for the piano part");

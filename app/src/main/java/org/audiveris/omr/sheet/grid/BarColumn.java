@@ -338,7 +338,6 @@ public class BarColumn
     public static class Chain
             extends TreeSet<StaffPeak>
     {
-
         /** To sort by (de-skewed) abscissa. */
         public static final Comparator<Chain> byAbscissa = (c1,
                                                             c2) -> Double.compare(

@@ -124,7 +124,6 @@ public interface OCR
     static class UnavailableOcrException
             extends RuntimeException
     {
-
         /**
          * Create a UnavailableOcrException.
          *

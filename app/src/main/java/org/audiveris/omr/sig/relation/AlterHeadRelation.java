@@ -183,7 +183,6 @@ public class AlterHeadRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio AccidentalCoeff = new Constant.Ratio(
                 3,
                 "Supporting coeff for (source) accidental");

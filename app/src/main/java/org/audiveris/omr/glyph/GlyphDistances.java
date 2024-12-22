@@ -151,7 +151,6 @@ public class GlyphDistances
     private static class Distances
             extends ChamferDistance.Short
     {
-
         public DistanceTable compute (Glyph glyph,
                                       Rectangle box)
         {

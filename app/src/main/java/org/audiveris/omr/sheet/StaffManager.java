@@ -726,7 +726,6 @@ public class StaffManager
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean showStaffLines = new Constant.Boolean(
                 true,
                 "Should we show the staff lines on all views?");

@@ -160,7 +160,6 @@ public class TemplateSymbol
     protected static class MyParams
             extends Params
     {
-
         Rectangle2D rawRect; // Precise font-based bounds of symbol inside template image
     }
 }

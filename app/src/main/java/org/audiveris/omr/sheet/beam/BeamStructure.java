@@ -882,7 +882,6 @@ public class BeamStructure
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double maxSectionSlopeGap = new Constant.Double(
                 "tangent",
                 0.3, // 0.2,
@@ -901,7 +900,6 @@ public class BeamStructure
      */
     private static class SectionBorder
     {
-
         // Sort by increasing ordinate offset WRT glyph reference line
         static Comparator<SectionBorder> byOrdinateOffset = (SectionBorder o1,
                                                              SectionBorder o2) -> Double.compare(

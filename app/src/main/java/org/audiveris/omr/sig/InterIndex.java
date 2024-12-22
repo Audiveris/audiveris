@@ -117,7 +117,6 @@ public class InterIndex
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.String vipInters = new Constant.String(
                 "",
                 "(Debug) Comma-separated values of VIP inters IDs");

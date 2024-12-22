@@ -422,7 +422,6 @@ public class Panel
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.String buttonWidth = new Constant.String(
                 "45dlu",
                 "Width of a standard button");

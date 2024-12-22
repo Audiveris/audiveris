@@ -2572,7 +2572,6 @@ public class BarsRetriever
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -2710,7 +2709,6 @@ public class BarsRetriever
     //------------//
     private static class Parameters
     {
-
         final int largeSystemStaffCount;
 
         final double minNormedDeltaWidth;

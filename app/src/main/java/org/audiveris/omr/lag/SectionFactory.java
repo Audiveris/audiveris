@@ -236,7 +236,6 @@ public class SectionFactory
      */
     private class Build
     {
-
         /** Counter to set dynamicsection ids when no lag is used. */
         private int localId;
 

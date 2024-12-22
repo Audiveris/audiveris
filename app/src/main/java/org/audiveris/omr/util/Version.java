@@ -300,7 +300,6 @@ public class Version
     public static class UpgradeVersion
             extends Version
     {
-
         public UpgradeVersion (String value)
         {
             super(value);

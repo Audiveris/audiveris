@@ -84,7 +84,6 @@ public class BinaryStep
     public void doit (Sheet sheet)
         throws StepException
     {
-
         // Run filtering process
         runBinarizationFilter(sheet);
 
@@ -176,7 +175,6 @@ public class BinaryStep
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");

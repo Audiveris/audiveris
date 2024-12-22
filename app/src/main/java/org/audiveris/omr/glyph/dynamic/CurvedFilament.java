@@ -532,7 +532,6 @@ public class CurvedFilament
     public static class Constructor
             implements CompoundFactory.CompoundConstructor
     {
-
         private final int interline;
 
         private final int segmentLength;

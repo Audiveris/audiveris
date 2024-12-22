@@ -257,7 +257,6 @@ public abstract class AreaUtil
      */
     public static class CoreData
     {
-
         /** Total area length. (height for vertical, width for horizontal) */
         public final int length;
 

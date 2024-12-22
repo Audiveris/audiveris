@@ -1086,7 +1086,6 @@ public class InterController
     @UIThread
     public void editInter (final InterEditor editor)
     {
-
         new CtrlTask(DO, "editInter")
         {
             @Override
@@ -1109,7 +1108,6 @@ public class InterController
     @UIThread
     public void editObject (final ObjectEditor editor)
     {
-
         new CtrlTask(DO, "editObject")
         {
             @Override
@@ -2411,7 +2409,6 @@ public class InterController
     private class RemoveAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -2437,7 +2434,6 @@ public class InterController
      */
     public static class SourceTargetRelation
     {
-
         public final Inter source;
 
         public final Inter target;

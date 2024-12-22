@@ -121,7 +121,6 @@ public class RepeatDotPairRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio dotSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for source/target (dot) coeff in support formula");

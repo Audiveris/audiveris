@@ -335,7 +335,6 @@ public class LagManager
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxVerticalRunShift = new Scale.Fraction(
                 0.05,
                 "Max shift between two runs of vertical sections");

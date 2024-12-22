@@ -529,7 +529,6 @@ public class SheetEditor
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean selectPixelBoard = new Constant.Boolean(
                 false,
                 "Should we select Pixel board by default?");
@@ -569,7 +568,6 @@ public class SheetEditor
     private final class EditorView
             extends NestView
     {
-
         /** Currently highlighted slot, if any. */
         private Slot highlightedSlot;
 
@@ -1135,7 +1133,6 @@ public class SheetEditor
         private class EditTranslateAction
                 extends TranslateAction
         {
-
             public EditTranslateAction (int dx,
                                         int dy)
             {
@@ -1160,7 +1157,6 @@ public class SheetEditor
         private class EndInterEditingAction
                 extends AbstractAction
         {
-
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -1181,7 +1177,6 @@ public class SheetEditor
     public class SheetKeyListener
             extends KeyAdapter
     {
-
         /** First character typed, if any. */
         Character firstChar = null;
 

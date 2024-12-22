@@ -128,7 +128,6 @@ public class StepMenu
     private class MyMenuListener
             extends AbstractMenuListener
     {
-
         @Override
         public void menuSelected (MenuEvent e)
         {
@@ -155,7 +154,6 @@ public class StepMenu
     private static class StepAction
             extends AbstractAction
     {
-
         // The related step
         OmrStep step;
 
@@ -259,7 +257,6 @@ public class StepMenu
     private static class StepItem
             extends JCheckBoxMenuItem
     {
-
         StepItem (OmrStep step)
         {
             super(new StepAction(step));

@@ -283,7 +283,6 @@ public abstract class Filament
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction probeWidth = new Scale.Fraction(
                 0.5,
                 "Width of probing window to retrieve filament ordinate");

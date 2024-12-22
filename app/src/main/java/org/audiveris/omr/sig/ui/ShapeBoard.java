@@ -965,7 +965,6 @@ public class ShapeBoard
      */
     public class ButtonsTable
     {
-
         protected final int cols;
 
         protected final Panel table = new Panel();
@@ -1058,7 +1057,6 @@ public class ShapeBoard
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer maxHistoryLength = new Constant.Integer(
                 "shapes",
                 8,
@@ -1080,7 +1078,6 @@ public class ShapeBoard
     private class HeadButtons
             extends ButtonsTable
     {
-
         public HeadButtons ()
         {
             super(5); // Room for 5 columns (1 motif, 4 durations)
@@ -1214,7 +1211,6 @@ public class ShapeBoard
     private class MyDropAdapter
             extends GhostDropAdapter<Shape>
     {
-
         public MyDropAdapter ()
         {
             super(ShapeBoard.this.glassPane, null);
@@ -1278,7 +1274,6 @@ public class ShapeBoard
     private class MyDropListener
             extends AbstractGhostDropListener<Shape>
     {
-
         public MyDropListener ()
         {
             // Target will be any view of sheet assembly
@@ -1329,7 +1324,6 @@ public class ShapeBoard
     private class MyMotionAdapter
             extends GhostMotionAdapter
     {
-
         // Optimization: remember the latest component on target
         private WeakReference<Component> prevComponent;
 
@@ -1436,7 +1430,6 @@ public class ShapeBoard
     public class ShapeButton
             extends JButton
     {
-
         // Symbol to be passed to DnD, standard size, perhaps decorated
         private ShapeSymbol decoSymbol;
 
@@ -1492,7 +1485,6 @@ public class ShapeBoard
      */
     private class ShapeHistory
     {
-
         /** Shapes recently used, ordered from most to less recent. */
         private final List<Shape> shapes = new ArrayList<>();
 

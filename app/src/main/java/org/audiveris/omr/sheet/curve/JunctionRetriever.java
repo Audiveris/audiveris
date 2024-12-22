@@ -233,7 +233,6 @@ public class JunctionRetriever
      */
     private static class Vicinity
     {
-
         int verts; // Number of neighbors vertically connected
 
         int horis; // Number of neighbors horizontally connected

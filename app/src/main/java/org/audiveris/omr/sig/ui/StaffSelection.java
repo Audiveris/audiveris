@@ -120,7 +120,6 @@ public class StaffSelection
     //---------------//
     private static class LazySingleton
     {
-
         static final StaffSelection INSTANCE = new StaffSelection();
     }
 }

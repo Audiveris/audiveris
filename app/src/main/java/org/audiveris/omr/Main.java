@@ -426,7 +426,6 @@ public class Main
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean showEnvironment = new Constant.Boolean(
                 true,
                 "Should we show environment?");

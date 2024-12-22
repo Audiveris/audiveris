@@ -41,7 +41,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Navigable
 {
-
     /**
      * @return whether the annotated field can be navigated
      */

@@ -290,7 +290,6 @@ public class AboutAction
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer titleFontSize = new Constant.Integer(
                 "Points",
                 14,
@@ -308,7 +307,6 @@ public class AboutAction
     private static class ImagePanel
             extends JPanel
     {
-
         private Image img;
 
         ImagePanel (Image img)

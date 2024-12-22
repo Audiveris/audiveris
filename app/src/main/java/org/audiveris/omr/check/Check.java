@@ -329,7 +329,6 @@ public abstract class Check<C>
     public static class Grade
             extends Constant.Double
     {
-
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *

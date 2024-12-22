@@ -1179,7 +1179,6 @@ public final class StaffBarlineInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxStaffBarlineShift = new Scale.Fraction(
                 1.0,
                 "Maximum deskewed abscissa difference within a column");

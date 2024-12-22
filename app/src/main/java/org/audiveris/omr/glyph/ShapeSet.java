@@ -1212,7 +1212,6 @@ public class ShapeSet
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean addClutterInPhysicals = new Constant.Boolean(
                 false,
                 "(Hidden feature)");
@@ -1237,7 +1236,6 @@ public class ShapeSet
     /** Build the set map in a lazy way */
     private static class Sets
     {
-
         static final Map<String, ShapeSet> map = new HashMap<>();
 
         static final List<ShapeSet> setList = new ArrayList<>();

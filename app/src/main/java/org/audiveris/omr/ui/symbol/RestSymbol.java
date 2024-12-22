@@ -158,7 +158,6 @@ public class RestSymbol
     protected static class MyParams
             extends Params
     {
-
         // offset: if decorated, offset of symbol center vs decorated image center
         // layout: rest layout
         // rect:   global image (=lines if decorated, rest if not)

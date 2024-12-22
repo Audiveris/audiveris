@@ -41,7 +41,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class HeadPluckingRelation
         extends AbstractConnection
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
@@ -145,7 +144,6 @@ public class HeadPluckingRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio pluckingTargetCoeff = new Constant.Ratio(
                 2.0,
                 "Supporting coeff for (target) plucking");

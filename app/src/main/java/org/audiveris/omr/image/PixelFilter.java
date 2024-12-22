@@ -73,7 +73,6 @@ public interface PixelFilter
      */
     class Context
     {
-
         /** Threshold used on pixel value. */
         public final double threshold;
 

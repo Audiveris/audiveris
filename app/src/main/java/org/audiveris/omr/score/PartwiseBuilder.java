@@ -3476,7 +3476,6 @@ public class PartwiseBuilder
      */
     private class ClefIterators
     {
-
         /** Containing measure. */
         private final Measure measure;
 
@@ -3566,7 +3565,6 @@ public class PartwiseBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer pageHorizontalMargin = new Constant.Integer(
                 "tenths",
                 80,
@@ -3588,7 +3586,6 @@ public class PartwiseBuilder
     /** Keep references of all current entities. */
     private static class Current
     {
-
         // Score dependent
         Work pmWork;
 
@@ -3673,7 +3670,6 @@ public class PartwiseBuilder
     /** Composite flag to help drive processing of any entity. */
     private static class IsFirst
     {
-
         /** We are writing the first part of the score */
         boolean part;
 
@@ -3719,7 +3715,6 @@ public class PartwiseBuilder
      */
     private class MeasurePrint
     {
-
         private final Measure measure;
 
         private final Print pmPrint;

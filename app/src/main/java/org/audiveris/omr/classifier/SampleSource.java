@@ -54,7 +54,6 @@ public interface SampleSource
     static class ConstantSource
             implements SampleSource
     {
-
         /** The underlying collection of samples. */
         private final List<Sample> samples;
 

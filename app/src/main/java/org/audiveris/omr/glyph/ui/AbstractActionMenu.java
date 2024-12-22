@@ -169,7 +169,6 @@ public abstract class AbstractActionMenu
     protected abstract static class DynAction
             extends AbstractAction
     {
-
         /** Semantic tag */
         protected final int tag;
 

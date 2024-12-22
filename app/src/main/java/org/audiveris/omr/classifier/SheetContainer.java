@@ -421,7 +421,6 @@ public class SheetContainer
     @XmlAccessorType(XmlAccessType.FIELD)
     public static class ContainerValue
     {
-
         /** The collection of sheet descriptors. */
         @XmlElement(name = "sheet")
         private final List<Descriptor> descriptors = new ArrayList<>();
@@ -455,7 +454,6 @@ public class SheetContainer
     public static class Descriptor
             implements Comparable<Descriptor>
     {
-
         /** Short unique sheet name. */
         @XmlAttribute(name = "name")
         private String name;
@@ -636,7 +634,6 @@ public class SheetContainer
     public static class HashMapAdapter
             extends XmlAdapter<ContainerValue, HashMap<Integer, List<Descriptor>>>
     {
-
         @Override
         public ContainerValue marshal (HashMap<Integer, List<Descriptor>> map)
             throws Exception

@@ -208,7 +208,6 @@ public class AugmentationRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio dotSupportCoeff = new Constant.Ratio(
                 3,
                 "Supporting coeff for (source) dot");

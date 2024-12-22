@@ -698,7 +698,6 @@ public class SheetAssembly
      */
     public static class ScrollValues
     {
-
         final DefaultBoundedRangeModel hori; // Model for horizontal scrollbar
 
         final DefaultBoundedRangeModel vert; // Model for vertical scrollbar
@@ -751,7 +750,6 @@ public class SheetAssembly
     private class ViewsPane
             extends ClosableTabbedPane
     {
-
         @Override
         public boolean tabAboutToClose (int tabIndex)
         {

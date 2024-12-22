@@ -189,7 +189,6 @@ public class StepMonitor
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer divisions = new Constant.Integer(
                 "divisions",
                 1000,
@@ -210,7 +209,6 @@ public class StepMonitor
     private static class MyJProgressBar
             extends JProgressBar
     {
-
         @Override
         public void paintComponent (Graphics g)
         {

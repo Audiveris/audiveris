@@ -317,7 +317,6 @@ public class DrumSet
      */
     public static class DrumInstrument
     {
-
         /** Note head motif. */
         public final HeadMotif headMotif;
 
@@ -508,7 +507,6 @@ public class DrumSet
     //---------------//
     private static class LazySingleton
     {
-
         static final DrumSet INSTANCE = new DrumSet();
 
         private LazySingleton ()
@@ -525,7 +523,6 @@ public class DrumSet
     private static class MotifAdapter
             extends XmlAdapter<String, HeadMotif>
     {
-
         @Override
         public String marshal (HeadMotif motif)
             throws Exception
@@ -608,7 +605,6 @@ public class DrumSet
     private static class PitchAdapter
             extends XmlAdapter<String, Integer>
     {
-
         @Override
         public String marshal (Integer i)
             throws Exception
@@ -648,7 +644,6 @@ public class DrumSet
     private static class SoundAdapter
             extends XmlAdapter<String, DrumSound>
     {
-
         @Override
         public String marshal (DrumSound sound)
             throws Exception

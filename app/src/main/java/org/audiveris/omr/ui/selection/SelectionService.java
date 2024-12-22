@@ -278,7 +278,6 @@ public class SelectionService
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean checkPublishedEvents = new Constant.Boolean(
                 true,
                 "(debug) Should we check published events?");

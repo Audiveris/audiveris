@@ -373,7 +373,6 @@ public class HeaderBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxHeaderWidth = new Scale.Fraction(
                 15.0,
                 "Maximum header width (from measure start to end of key-sig or time-sig)");

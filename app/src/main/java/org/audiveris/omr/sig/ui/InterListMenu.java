@@ -211,7 +211,6 @@ public class InterListMenu
     private static class InterListener
             extends AbstractMouseListener
     {
-
         @Override
         public void mouseEntered (MouseEvent e)
         {

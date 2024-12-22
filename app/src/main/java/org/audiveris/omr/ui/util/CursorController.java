@@ -189,7 +189,6 @@ public class CursorController
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer delay = new Constant.Integer(
                 "ms",
                 500,

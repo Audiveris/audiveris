@@ -97,7 +97,6 @@ public abstract class ConnectionTask
     public static class ConnectTask
             extends ConnectionTask
     {
-
         public ConnectTask (Inter one,
                             Inter two,
                             Kind kind)
@@ -142,7 +141,6 @@ public abstract class ConnectionTask
     public static class DisconnectTask
             extends ConnectionTask
     {
-
         public DisconnectTask (Inter one,
                                Inter two,
                                Kind kind)

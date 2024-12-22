@@ -432,7 +432,6 @@ public class SpotsBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean displayBeamSpots = new Constant.Boolean(
                 false,
                 "Should we display the beam Spots view?");

@@ -1175,7 +1175,6 @@ public class NoteHeadsBuilder
      */
     private static class Aggregate
     {
-
         Point2D point;
 
         List<HeadInter> matches = new ArrayList<>();
@@ -1222,7 +1221,6 @@ public class NoteHeadsBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean dumpTemplateNotes = new Constant.Boolean(
                 false,
                 "Should we dump the template notes for standard and drum staves?");
@@ -1293,7 +1291,6 @@ public class NoteHeadsBuilder
     private class LedgerAdapter
             extends LineAdapter
     {
-
         private final Point2D left;
 
         private final Point2D right;
@@ -1355,7 +1352,6 @@ public class NoteHeadsBuilder
      */
     private abstract static class LineAdapter
     {
-
         private final Staff staff;
 
         private final String prefix;
@@ -1409,7 +1405,6 @@ public class NoteHeadsBuilder
      */
     private static class Parameters
     {
-
         final double maxDistanceLow;
 
         final double reallyBadDistance;
@@ -1451,7 +1446,6 @@ public class NoteHeadsBuilder
      */
     private static class Perf
     {
-
         int bars;
 
         int overlaps;
@@ -1480,7 +1474,6 @@ public class NoteHeadsBuilder
      */
     private class Scanner
     {
-
         private final int interline;
 
         private final LineAdapter line;
@@ -2201,7 +2194,6 @@ public class NoteHeadsBuilder
     private class StaffLineAdapter
             extends LineAdapter
     {
-
         private final LineInfo line;
 
         StaffLineAdapter (Staff staff,

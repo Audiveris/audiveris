@@ -250,7 +250,6 @@ public class TimeRational
     public static class JaxbAdapter
             extends XmlAdapter<String, TimeRational>
     {
-
         @Override
         public String marshal (TimeRational val)
             throws Exception

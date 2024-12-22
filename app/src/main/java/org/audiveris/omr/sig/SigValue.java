@@ -339,7 +339,6 @@ public class SigValue
     public static class JaxbAdapter
             extends XmlAdapter<SigValue, SIGraph>
     {
-
         /**
          * Generate a SigValue out of the existing SIG.
          *
@@ -390,7 +389,6 @@ public class SigValue
      */
     private static class RelationValue
     {
-
         /** Inter ID for the relation source. */
         @XmlAttribute(name = "source")
         public int sourceId;

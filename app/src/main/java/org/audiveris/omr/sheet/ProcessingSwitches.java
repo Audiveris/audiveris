@@ -356,7 +356,6 @@ public class ProcessingSwitches
          */
         public static class ProcessingEntries
         {
-
             @XmlElement(name = "switch")
             List<ProcessingEntry> entries = new ArrayList<>();
         }
@@ -367,7 +366,6 @@ public class ProcessingSwitches
          */
         public static class ProcessingEntry
         {
-
             /** The processing switch. */
             @XmlAttribute(name = "key")
             public ProcessingSwitch key;

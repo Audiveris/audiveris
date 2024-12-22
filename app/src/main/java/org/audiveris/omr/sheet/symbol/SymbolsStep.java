@@ -144,7 +144,6 @@ public class SymbolsStep
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -158,7 +157,6 @@ public class SymbolsStep
      */
     protected static class Context
     {
-
         /** Map of optional (weak) glyphs per system. */
         public final Map<SystemInfo, List<Glyph>> optionalsMap = new TreeMap<>();
     }

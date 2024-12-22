@@ -442,7 +442,6 @@ public class MeasuresBuilder
     private class Column
             implements Comparable<Column>
     {
-
         /** In theory, we should have exactly one group per staff. */
         final Map<Staff, Group> groups = new TreeMap<>(Staff.byId);
 
@@ -632,7 +631,6 @@ public class MeasuresBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction minStandardWidth = new Scale.Fraction(
                 4.0,
                 "Minimum measure width for not being a courtesy measure");
@@ -648,7 +646,6 @@ public class MeasuresBuilder
             extends ArrayList<BarlineInter>
             implements Comparable<Group>
     {
-
         /** (Skewed) group center. */
         final Point2D center;
 

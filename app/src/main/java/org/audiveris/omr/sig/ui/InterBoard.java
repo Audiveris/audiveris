@@ -628,7 +628,6 @@ public class InterBoard
     private class BoardToEnsembleAction
             extends AbstractAction
     {
-
         public BoardToEnsembleAction ()
         {
             super(resources.getString("ToEnsembleAction.text"));
@@ -654,7 +653,6 @@ public class InterBoard
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.String fontForAlterations = new Constant.String(
                 "Lucida Sans Unicode",
                 "Name of font able to display alteration signs");
@@ -674,7 +672,6 @@ public class InterBoard
     private class DeassignAction
             extends AbstractAction
     {
-
         public DeassignAction ()
         {
             super(resources.getString("deassign.Action.text"));

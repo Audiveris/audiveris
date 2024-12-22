@@ -1411,7 +1411,6 @@ public class PeakGraph
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -1470,7 +1469,6 @@ public class PeakGraph
     //------------//
     private static class Parameters
     {
-
         final double maxAlignmentSlope;
 
         final int maxAlignmentDeltaWidth;

@@ -46,7 +46,6 @@ public class InputQualityParam
     public static class JaxbAdapter
             extends XmlAdapter<InputQuality, InputQualityParam>
     {
-
         @Override
         public InputQuality marshal (InputQualityParam iqp)
             throws Exception

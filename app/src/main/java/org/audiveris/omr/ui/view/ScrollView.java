@@ -330,7 +330,6 @@ public class ScrollView
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer unitIncrement = new Constant.Integer(
                 "Pixels",
                 20,
@@ -340,7 +339,6 @@ public class ScrollView
     private class DownAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -352,7 +350,6 @@ public class ScrollView
     private class LeftAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -364,7 +361,6 @@ public class ScrollView
     private class RightAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -376,7 +372,6 @@ public class ScrollView
     private class ShiftDownAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -388,7 +383,6 @@ public class ScrollView
     private class ShiftLeftAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -400,7 +394,6 @@ public class ScrollView
     private class ShiftRightAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -412,7 +405,6 @@ public class ScrollView
     private class ShiftUpAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -424,7 +416,6 @@ public class ScrollView
     private class UpAction
             extends AbstractAction
     {
-
         @Override
         public void actionPerformed (ActionEvent e)
         {

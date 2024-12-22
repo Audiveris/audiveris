@@ -41,7 +41,6 @@ import java.awt.geom.Rectangle2D;
 public class TremoloSymbol
         extends DecorableSymbol
 {
-
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
@@ -119,7 +118,6 @@ public class TremoloSymbol
     protected static class MyParams
             extends Params
     {
-
         // offset: if decorated, offset of symbol center vs decorated image center: null
         // layout: tremolo layout
         // rect:   global image (tremolo + stem if decorated, tremolo alone if not)

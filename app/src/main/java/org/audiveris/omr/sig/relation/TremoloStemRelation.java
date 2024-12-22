@@ -158,7 +158,6 @@ public class TremoloStemRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0,
                 "Maximum vertical gap between stem & tremolo");

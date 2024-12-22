@@ -513,7 +513,6 @@ public class BookParameters
     private static class FilterPane
             extends XactPane<FilterDescriptor>
     {
-
         /** ComboBox for filter kind */
         private final JComboBox<FilterKind> kindCombo = new JComboBox<>(FilterKind.values());
 
@@ -694,7 +693,6 @@ public class BookParameters
             extends XactPane<String>
             implements ListSelectionListener
     {
-
         /** List for choosing elements of language specification. */
         private final JList<String> langList;
 

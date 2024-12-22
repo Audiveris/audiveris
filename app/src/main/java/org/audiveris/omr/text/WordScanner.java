@@ -243,7 +243,6 @@ public abstract class WordScanner
     public static class ManualScanner
             extends WordScanner
     {
-
         /** Ratio of number of TextChar instances / content length. */
         private final double ratio;
 
@@ -286,7 +285,6 @@ public abstract class WordScanner
     public static class OcrScanner
             extends WordScanner
     {
-
         /**
          * Creates a new OcrScanner object.
          *

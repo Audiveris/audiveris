@@ -162,7 +162,6 @@ public class RepeatDotBarRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio repeatDotSupportCoeff = new Constant.Ratio(
                 5,
                 "Supporting coeff for (source) repeat dot");

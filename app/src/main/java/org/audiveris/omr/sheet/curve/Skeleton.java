@@ -495,7 +495,6 @@ public class Skeleton
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean saveSkeleton = new Constant.Boolean(
                 false,
                 "Should we save skeleton images on disk?");
@@ -536,7 +535,6 @@ public class Skeleton
     private static class CurvesCleaner
             extends PageCleaner
     {
-
         /**
          * Creates a new CurvesEraser object.
          *

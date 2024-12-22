@@ -1745,7 +1745,6 @@ public class RunTable
     private class Itr
             implements Iterator<Run>
     {
-
         /** The index of sequence being iterated upon. */
         private final int index;
 
@@ -1903,7 +1902,6 @@ public class RunTable
     @XmlRootElement(name = "runs")
     static class RunSequence
     {
-
         /**
          * This array of integers represents the lengths of aligned runs,
          * one after the other, alternating foreground and background colors.

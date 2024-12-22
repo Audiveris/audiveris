@@ -262,7 +262,6 @@ public class SheetScaling
     private class ScalingParam
             extends Param<Integer>
     {
-
         public final Item key;
 
         ScalingParam (Item key)

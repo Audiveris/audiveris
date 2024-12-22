@@ -729,7 +729,6 @@ public class BookActions
     //------------------------//
     private boolean hasValidSelectedSheets (Book book)
     {
-
         final List<SheetStub> stubs = book.getValidSelectedStubs();
 
         if (stubs.isEmpty()) {
@@ -2074,7 +2073,6 @@ public class BookActions
     private static class CloseBookTask
             extends VoidTask
     {
-
         final SheetStub stub;
 
         /**
@@ -2112,7 +2110,6 @@ public class BookActions
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.String validImageExtensions = new Constant.String(
                 ".bmp .gif .jpg .jpeg .png .tiff .tif .pdf",
                 "Valid image file extensions, whitespace-separated");
@@ -2136,7 +2133,6 @@ public class BookActions
     private static class ExportBookTask
             extends VoidTask
     {
-
         final Book book;
 
         /**
@@ -2178,7 +2174,6 @@ public class BookActions
     private static class ExportSheetTask
             extends VoidTask
     {
-
         final Sheet sheet;
 
         final Path sheetExportPath;
@@ -2216,7 +2211,6 @@ public class BookActions
     //---------------//
     private static class LazySingleton
     {
-
         static final BookActions INSTANCE = new BookActions();
 
         private LazySingleton ()
@@ -2337,7 +2331,6 @@ public class BookActions
     public static class LoadFilesTask
             extends PathListTask<List<Book>, Void>
     {
-
         public LoadFilesTask (Collection<? extends Path> paths)
         {
             super(paths);
@@ -2414,7 +2407,6 @@ public class BookActions
     public static class LoadImageTask
             extends LoadBookTask
     {
-
         // Constructor needed for creation of HistoryMenu
         public LoadImageTask ()
         {
@@ -2474,7 +2466,6 @@ public class BookActions
     public static class PrintBookTask
             extends VoidTask
     {
-
         final Book book;
 
         final Path bookPrintPath;
@@ -2510,7 +2501,6 @@ public class BookActions
     public static class PrintSheetTask
             extends VoidTask
     {
-
         final Sheet sheet;
 
         final Path sheetPrintPath;
@@ -2545,7 +2535,6 @@ public class BookActions
     private static class PromptOnClosingUnsaved
             extends Param<Boolean>
     {
-
         public PromptOnClosingUnsaved ()
         {
             super(GLOBAL_SCOPE);
@@ -2596,7 +2585,6 @@ public class BookActions
     private class ResetBookTask
             extends VoidTask
     {
-
         final Book book;
 
         final OmrStep step;
@@ -2612,7 +2600,6 @@ public class BookActions
         protected Void doInBackground ()
             throws Exception
         {
-
             book.resetTo(step);
             setBookTranscribable(true);
             setBookModifiedOrUpgraded(true);
@@ -2627,7 +2614,6 @@ public class BookActions
     private static class SampleBookTask
             extends VoidTask
     {
-
         final Book book;
 
         SampleBookTask (Book book)
@@ -2658,7 +2644,6 @@ public class BookActions
     public static class SampleSheetTask
             extends VoidTask
     {
-
         final Sheet sheet;
 
         public SampleSheetTask (Sheet sheet)
@@ -2689,7 +2674,6 @@ public class BookActions
     private static class StoreBookTask
             extends VoidTask
     {
-
         final Book book;
 
         final Path bookPath;
@@ -2735,7 +2719,6 @@ public class BookActions
     private static class TranscribeBookTask
             extends VoidTask
     {
-
         private final SheetStub stub;
 
         private final Book book;
@@ -2784,7 +2767,6 @@ public class BookActions
     private static class TranscribeSheetTask
             extends VoidTask
     {
-
         private final Sheet sheet;
 
         TranscribeSheetTask (Sheet sheet)
@@ -2815,7 +2797,6 @@ public class BookActions
     private static class UpgradeBookTask
             extends VoidTask
     {
-
         private final Book book;
 
         UpgradeBookTask (Book book)

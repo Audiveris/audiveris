@@ -219,7 +219,6 @@ public class BinarizationBoard
         if (e.getSource() == applyButton) {
             applyAndRunFilter();
         } else if (e.getSource() == applyToWholeBook) {
-
             // Optionally erase every sheet's specific binarization setting
             if (overwriteCheckbox.getField().isSelected()) {
                 sheet.getStub().getBook().getStubs().forEach( (stub) -> {
@@ -234,9 +233,7 @@ public class BinarizationBoard
             runBinarizationFilter(sheet);
 
         } else if (e.getSource() == resetButton) {
-
             if (isMultiSheetBook) {
-
                 FilterDescriptor resetFilterDesc = sheet.getStub().getBook().getBinarizationParam()
                         .getValue();
                 initializeInputValues(resetFilterDesc);
@@ -244,7 +241,6 @@ public class BinarizationBoard
                 sheet.getStub().getBinarizationFilterParam().setSpecific(null);
 
             } else {
-
                 FilterDescriptor resetFilterDesc = switch (FilterDescriptor.getDefaultKind()) {
                     case GLOBAL -> GlobalDescriptor.getDefault();
                     case ADAPTIVE -> AdaptiveDescriptor.getDefault();
@@ -293,7 +289,6 @@ public class BinarizationBoard
     private void applyFilterSettings (FilterParam filterParam)
     {
         if (adaptiveFilterRadioButton.getField().isSelected()) {
-
             double mean = adaptiveMeanValue.getValue();
             double stdDev = adaptiveStdDevValue.getValue();
 
@@ -314,7 +309,6 @@ public class BinarizationBoard
             filterParam.setSpecific(new AdaptiveDescriptor(mean, stdDev));
 
         } else if (globalFilterRadioButton.getField().isSelected()) {
-
             int threshold = globalThresholdValue.getValue();
 
             if (threshold < GlobalDescriptor.MINTHRESHOLD
@@ -397,7 +391,6 @@ public class BinarizationBoard
         builder.addRaw(resetButton).xyw(7, r, 4);
 
         if (isMultiSheetBook) {
-
             r += 2; // ----------------------------
 
             builder.addRaw(applyToWholeBook).xyw(1, r, 4);
@@ -453,7 +446,6 @@ public class BinarizationBoard
     private void initializeInputValues (FilterDescriptor desc)
     {
         if (desc instanceof AdaptiveDescriptor ad) {
-
             adaptiveMeanValue.setValue(ad.meanCoeff);
             adaptiveStdDevValue.setValue(ad.stdDevCoeff);
             adaptiveFilterRadioButton.getField().setSelected(true);
@@ -463,7 +455,6 @@ public class BinarizationBoard
             showAdaptiveFilterInput();
 
         } else if (desc instanceof GlobalDescriptor gd) {
-
             globalThresholdValue.setValue(gd.threshold);
             globalFilterRadioButton.getField().setSelected(true);
 
@@ -591,12 +582,10 @@ public class BinarizationBoard
         @Override
         public void insertUpdate (DocumentEvent e)
         {
-
             boolean currentlyValid = inputIsInRange(field, MIN, MAX);
 
             // If there has been a change in validity
             if (wasValid != currentlyValid) {
-
                 if (currentlyValid) {
                     field.getField().setBackground(Color.WHITE);
                 } else {

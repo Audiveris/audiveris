@@ -215,7 +215,6 @@ public class EditorMenu
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxEndShift = new Scale.Fraction(
                 1.0,
                 "Maximum deskewed abscissa difference between measure end");
@@ -231,7 +230,6 @@ public class EditorMenu
     private class MeasureMenu
             extends LocationDependentMenu
     {
-
         /** Selected stack. */
         private MeasureStack stack;
 
@@ -281,7 +279,6 @@ public class EditorMenu
         private class DumpMeasureAction
                 extends AbstractAction
         {
-
             DumpMeasureAction ()
             {
                 putValue(NAME, "Dump measure voices");
@@ -301,7 +298,6 @@ public class EditorMenu
         private class DumpStackAction
                 extends AbstractAction
         {
-
             DumpStackAction ()
             {
                 putValue(NAME, "Dump stack voices");
@@ -326,7 +322,6 @@ public class EditorMenu
         private class MergeAction
                 extends AbstractAction
         {
-
             MergeAction ()
             {
                 putValue(NAME, "Merge on right");
@@ -368,7 +363,6 @@ public class EditorMenu
         private class RhythmAction
                 extends AbstractAction
         {
-
             RhythmAction ()
             {
                 putValue(NAME, "Reprocess rhythm");
@@ -399,7 +393,6 @@ public class EditorMenu
     private class PageMenu
             extends LocationDependentMenu
     {
-
         /** Selected page. */
         private Page page;
 
@@ -437,7 +430,6 @@ public class EditorMenu
         private class RhythmAction
                 extends AbstractAction
         {
-
             RhythmAction ()
             {
                 putValue(NAME, "Reprocess rhythm");
@@ -699,7 +691,6 @@ public class EditorMenu
     private class SlotMenu
             extends LocationDependentMenu
     {
-
         /** Selected slot. */
         private Slot slot;
 
@@ -734,7 +725,6 @@ public class EditorMenu
         private class DumpSlotChordsAction
                 extends AbstractAction
         {
-
             DumpSlotChordsAction ()
             {
                 putValue(NAME, "Dump chords");
@@ -754,7 +744,6 @@ public class EditorMenu
         private class DumpVoicesAction
                 extends AbstractAction
         {
-
             DumpVoicesAction ()
             {
                 putValue(NAME, "Dump voices");
@@ -775,7 +764,6 @@ public class EditorMenu
     private class StaffMenu
             extends LocationDependentMenu
     {
-
         private Staff staff;
 
         private StaffEditingAction editing = new StaffEditingAction();
@@ -828,7 +816,6 @@ public class EditorMenu
         private class LineEditingAction
                 extends AbstractAction
         {
-
             LineEditingAction ()
             {
                 putValue(NAME, "Edit lines");
@@ -848,7 +835,6 @@ public class EditorMenu
         private class PlotAction
                 extends AbstractAction
         {
-
             PlotAction ()
             {
                 putValue(NAME, "Staff projection");
@@ -872,7 +858,6 @@ public class EditorMenu
         private class PlotHeaderAction
                 extends AbstractAction
         {
-
             PlotHeaderAction ()
             {
                 putValue(NAME, "Header projection");
@@ -904,7 +889,6 @@ public class EditorMenu
         private class StaffEditingAction
                 extends AbstractAction
         {
-
             StaffEditingAction ()
             {
                 putValue(NAME, "Edit staff");
@@ -925,7 +909,6 @@ public class EditorMenu
     private class SystemMenu
             extends LocationDependentMenu
     {
-
         /** Selected system. */
         private SystemInfo system;
 
@@ -963,7 +946,6 @@ public class EditorMenu
         private class MergeAction
                 extends AbstractAction
         {
-
             MergeAction ()
             {
                 putValue(NAME, "Merge with system below");

@@ -417,7 +417,6 @@ public class PageStep
     //--------//
     private static class Impact
     {
-
         boolean onParts = false;
 
         boolean onSlurs = false;

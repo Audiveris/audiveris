@@ -227,7 +227,6 @@ public abstract class ImageLoading
     private abstract static class AbstractLoader
             implements Loader
     {
-
         /** Count of images available in input file. */
         protected final int imageCount;
 
@@ -261,7 +260,6 @@ public abstract class ImageLoading
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer pdfResolution = new Constant.Integer(
                 "DPI",
                 300,
@@ -274,7 +272,6 @@ public abstract class ImageLoading
     private static class ImageIOLoader
             extends AbstractLoader
     {
-
         private final ImageReader reader;
 
         ImageIOLoader (ImageReader reader,
@@ -308,7 +305,6 @@ public abstract class ImageLoading
     private static class PdfboxLoader
             extends AbstractLoader
     {
-
         private final PDDocument doc;
 
         PdfboxLoader (PDDocument doc,
@@ -360,7 +356,6 @@ public abstract class ImageLoading
      */
     public static interface Loader
     {
-
         /**
          * Release any loader resources.
          */

@@ -391,7 +391,6 @@ public class ChordSplitter
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction minSubStemLength = new Scale.Fraction(
                 2.5,
                 "Minimum sub-stem length for a tie split");
@@ -407,7 +406,6 @@ public class ChordSplitter
             extends TreeSet<HeadInter>
             implements Comparable<Partition>
     {
-
         Partition ()
         {
             super(HeadChordInter.headComparator);

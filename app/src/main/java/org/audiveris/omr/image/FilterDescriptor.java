@@ -144,7 +144,6 @@ public abstract class FilterDescriptor
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Enum<FilterKind> defaultKind = new Constant.Enum<>(
                 FilterKind.class,
                 FilterKind.ADAPTIVE,
@@ -157,7 +156,6 @@ public abstract class FilterDescriptor
     private static class Default
             extends Param<FilterDescriptor>
     {
-
         public Default ()
         {
             super(Param.GLOBAL_SCOPE);

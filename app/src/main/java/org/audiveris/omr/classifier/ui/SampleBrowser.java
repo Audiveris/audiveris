@@ -984,7 +984,6 @@ public class SampleBrowser
     private class ClosingAdapter
             extends WindowAdapter
     {
-
         @Override
         public void windowClosing (WindowEvent e)
         {
@@ -1014,7 +1013,6 @@ public class SampleBrowser
     private static class SampleEvaluationBoard
             extends EvaluationBoard
     {
-
         SampleEvaluationBoard (SampleController controller,
                                Classifier classifier)
         {
@@ -1197,7 +1195,6 @@ public class SampleBrowser
             extends JLabel
             implements ListCellRenderer<Shape>
     {
-
         ShapeRenderer ()
         {
             setOpaque(true);
@@ -1246,7 +1243,6 @@ public class SampleBrowser
     private class ShapeSelector
             extends Selector<Shape>
     {
-
         ShapeSelector ()
         {
             super("Shapes");
@@ -1274,7 +1270,6 @@ public class SampleBrowser
         private class ShapePopup
                 extends JPopupMenu
         {
-
             ShapePopup ()
             {
                 super("ShapePopup");
@@ -1295,7 +1290,6 @@ public class SampleBrowser
     private class SheetSelector
             extends Selector<Descriptor>
     {
-
         SheetSelector ()
         {
             super("Sheets");
@@ -1329,7 +1323,6 @@ public class SampleBrowser
         private class SheetPopup
                 extends JPopupMenu
         {
-
             SheetPopup ()
             {
                 super("SheetPopup");
@@ -1351,7 +1344,6 @@ public class SampleBrowser
     static class TitledPanel
             extends Panel
     {
-
         TitledPanel (String title)
         {
             setBorder(
@@ -1377,7 +1369,6 @@ public class SampleBrowser
     public abstract static class Waiter
             extends WaitingTask<SampleBrowser, Void>
     {
-
         /**
          * Create the waiter, and launch proper browser.
          *

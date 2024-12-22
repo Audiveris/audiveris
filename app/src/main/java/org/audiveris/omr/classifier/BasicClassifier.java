@@ -478,7 +478,6 @@ public class BasicClassifier
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -502,7 +501,6 @@ public class BasicClassifier
     //---------------//
     private static class LazySingleton
     {
-
         static final BasicClassifier INSTANCE = new BasicClassifier();
     }
 
@@ -516,7 +514,6 @@ public class BasicClassifier
     @XmlRootElement(name = "vector")
     private static class MyVector
     {
-
         @XmlElement(name = "value")
         public double[] data;
 

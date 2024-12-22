@@ -413,7 +413,6 @@ public abstract class Versions
     private abstract static class AbstractPanel
             extends Panel
     {
-
         protected final String title;
 
         protected LLabel status = new LLabel(JLabel.LEFT);
@@ -492,7 +491,6 @@ public abstract class Versions
         private class ParamAction
                 extends AbstractAction
         {
-
             /**
              * Method run when user presses Return/Enter in one of the parameter fields
              *
@@ -527,7 +525,6 @@ public abstract class Versions
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Enum<Frequency> releaseCheckFrequency = new Constant.Enum<>(
                 Frequency.class,
                 Frequency.Weekly,
@@ -558,7 +555,6 @@ public abstract class Versions
     private static class NegativePanel
             extends AbstractPanel
     {
-
         NegativePanel (GHRelease release)
         {
             super(getResources().getString("Negative.title"), release);
@@ -583,7 +579,6 @@ public abstract class Versions
     private static class PositivePanel
             extends AbstractPanel
     {
-
         private final LLabel published = new LLabel(null, null, JLabel.LEFT);
 
         private final JLabel urlLabel = new JLabel();

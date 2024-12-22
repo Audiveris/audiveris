@@ -131,7 +131,6 @@ public class StubsSelection
      */
     public boolean getSheetsSpec ()
     {
-
         // Simple case, where user will not be prompted
         final List<SheetStub> validStubs = book.getValidStubs();
 

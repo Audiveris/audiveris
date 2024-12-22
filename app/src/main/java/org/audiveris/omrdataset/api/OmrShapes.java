@@ -324,7 +324,6 @@ public abstract class OmrShapes
      */
     public static class NumDen
     {
-
         public final int num;
 
         public final int den;

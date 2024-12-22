@@ -639,7 +639,6 @@ public class LogicalPartsEditor
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer maxMidi = new Constant.Integer(
                 "id",
                 128,
@@ -712,7 +711,6 @@ public class LogicalPartsEditor
     private class MyTableModel
             extends AbstractTableModel
     {
-
         private final List<LogicalPart> logicals = new ArrayList<>(); // Underlying data
 
         public void add (int row,

@@ -175,7 +175,6 @@ public class AliasPatterns
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean useAliasPatterns = new Constant.Boolean(
                 true,
                 "Should we apply alias patterns on input names?");
@@ -188,7 +187,6 @@ public class AliasPatterns
     @XmlRootElement(name = "alias-patterns")
     private static class Strings
     {
-
         /** List of patterns on input names. */
         @XmlElement(name = "pattern")
         private List<String> list = new ArrayList<>();

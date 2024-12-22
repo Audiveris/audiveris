@@ -178,7 +178,6 @@ public class ShapeColorChooser
     private abstract class Pane
             extends JPanel
     {
-
         public JLabel banner = new JLabel("", JLabel.CENTER);
 
         public JPopupMenu menu = new JPopupMenu();
@@ -206,7 +205,6 @@ public class ShapeColorChooser
     private class RangesPane
             extends Pane
     {
-
         public ShapeSet current;
 
         private SelectAction select = new SelectAction();
@@ -284,7 +282,6 @@ public class ShapeColorChooser
         private class PasteAction
                 extends AbstractAction
         {
-
             public PasteAction ()
             {
                 super("Paste");
@@ -306,7 +303,6 @@ public class ShapeColorChooser
         private class SelectAction
                 extends AbstractAction
         {
-
             public SelectAction ()
             {
                 super("Select");
@@ -327,7 +323,6 @@ public class ShapeColorChooser
     private class ShapesPane
             extends Pane
     {
-
         public Shape current;
 
         private ActionListener selectionListener = new ActionListener()
@@ -459,7 +454,6 @@ public class ShapeColorChooser
         private class CopyAction
                 extends AbstractAction
         {
-
             public CopyAction ()
             {
                 super("Copy");
@@ -475,7 +469,6 @@ public class ShapeColorChooser
         private class CutAction
                 extends AbstractAction
         {
-
             public CutAction ()
             {
                 super("Cut");
@@ -497,7 +490,6 @@ public class ShapeColorChooser
         private class PasteAction
                 extends AbstractAction
         {
-
             public PasteAction ()
             {
                 super("Paste");
@@ -519,7 +511,6 @@ public class ShapeColorChooser
         private class SelectAction
                 extends AbstractAction
         {
-
             public SelectAction ()
             {
                 super("Select");

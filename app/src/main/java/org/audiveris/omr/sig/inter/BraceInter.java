@@ -307,7 +307,6 @@ public class BraceInter
     private static class Editor
             extends InterEditor
     {
-
         private final Model originalModel;
 
         private final Model model;
@@ -412,7 +411,6 @@ public class BraceInter
     public static class Model
             implements ObjectUIModel
     {
-
         // Upper middle point
         public final Point2D p1;
 

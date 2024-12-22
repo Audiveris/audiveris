@@ -390,7 +390,6 @@ public class WedgeInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction stackAbscissaMargin = new Scale.Fraction(
                 1.0,
                 "Margin beyond stack abscissa limits");
@@ -422,7 +421,6 @@ public class WedgeInter
     private static class Editor
             extends InterEditor
     {
-
         private final Model originalModel;
 
         private final Model model;
@@ -582,7 +580,6 @@ public class WedgeInter
     public static class Impacts
             extends GradeImpacts
     {
-
         private static final String[] NAMES = new String[]
         { "s1", "s2", "closedDy", "openDy", "openBias", "width" };
 
@@ -612,7 +609,6 @@ public class WedgeInter
     public static class Model
             implements ObjectUIModel
     {
-
         public final Point2D top1;
 
         public final Point2D top2;

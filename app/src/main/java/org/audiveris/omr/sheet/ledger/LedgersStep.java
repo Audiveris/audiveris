@@ -134,7 +134,6 @@ public class LedgersStep
      */
     public static class Context
     {
-
         /**
          * Ledger candidate sections per system.
          */

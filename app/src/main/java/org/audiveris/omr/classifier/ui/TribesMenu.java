@@ -113,7 +113,6 @@ public class TribesMenu
     private class GlyphListener
             extends AbstractMouseListener
     {
-
         @Override
         public void mouseEntered (MouseEvent e)
         {

@@ -403,7 +403,6 @@ public abstract class TimeColumn
     private static final class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxDxOffset = new Scale.Fraction(
                 2,
                 "Maximum abscissa shift between deskewed time items in a column");

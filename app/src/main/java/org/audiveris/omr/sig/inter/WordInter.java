@@ -490,7 +490,6 @@ public class WordInter
     private static class Editor
             extends InterEditor
     {
-
         private final Model originalModel;
 
         private final Model model;
@@ -599,7 +598,6 @@ public class WordInter
     public static class Model
             implements ObjectUIModel
     {
-
         public final String value;
 
         public final Point2D baseLoc;

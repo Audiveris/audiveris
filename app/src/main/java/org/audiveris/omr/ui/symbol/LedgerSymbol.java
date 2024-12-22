@@ -123,7 +123,6 @@ public class LedgerSymbol
     protected static class MyParams
             extends ShapeSymbol.Params
     {
-
         // offset: not used
         // layout: ledger
         // rect:   global image (ledger + head?)

@@ -466,7 +466,6 @@ public class SymbolRipper
     private class Drawing
             extends Panel
     {
-
         @Override
         public void paintComponent (Graphics g)
         {

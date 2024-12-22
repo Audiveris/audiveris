@@ -1093,7 +1093,6 @@ public class SlursBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio similarRadiusRatio = new Constant.Ratio(
                 0.25,
                 "Maximum difference ratio between radius of similar circles");
@@ -1204,7 +1203,6 @@ public class SlursBuilder
      */
     private static class Parameters
     {
-
         final double similarRadiusRatio;
 
         final int tangentLength;

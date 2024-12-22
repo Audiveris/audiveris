@@ -281,7 +281,6 @@ public class CrossDetector
     private static class Constants
             extends ConstantSet
     {
-
         private final Evaluation.Grade minGradeDiff = new Evaluation.Grade(
                 0.1,
                 "Minimum difference in ctx-grade to be relevant");

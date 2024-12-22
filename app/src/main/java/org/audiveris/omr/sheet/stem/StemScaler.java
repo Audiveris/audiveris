@@ -249,7 +249,6 @@ public class StemScaler
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print the StopWatch on stem computation?");
@@ -291,7 +290,6 @@ public class StemScaler
      */
     private class HistoKeeper
     {
-
         private final IntegerFunction function;
 
         private final HiLoPeakFinder peakFinder;
@@ -344,7 +342,6 @@ public class StemScaler
     private static class StemsCleaner
             extends PageCleaner
     {
-
         StemsCleaner (ByteProcessor buffer,
                       Graphics2D g,
                       Sheet sheet)

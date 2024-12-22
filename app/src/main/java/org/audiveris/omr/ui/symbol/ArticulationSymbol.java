@@ -137,7 +137,6 @@ public class ArticulationSymbol
     protected static class MyParams
             extends Params
     {
-
         // offset: if decorated, offset of symbol center vs decorated image center
         // layout: articulation layout
         // rect:   global image (= head + artic if decorated, artic if not)

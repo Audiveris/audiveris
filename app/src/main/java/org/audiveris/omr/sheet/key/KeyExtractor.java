@@ -553,7 +553,6 @@ public class KeyExtractor
     private abstract class AbstractKeyAdapter
             extends GlyphCluster.AbstractAdapter
     {
-
         /** Relevant peaks. */
         protected final List<KeyPeak> peaks;
 
@@ -673,7 +672,6 @@ public class KeyExtractor
      */
     public static class Candidate
     {
-
         /** To sort according to decreasing grade. */
         public static final Comparator<Candidate> byReverseGrade = (Candidate c1,
                                                                     Candidate c2) -> //
@@ -725,7 +723,6 @@ public class KeyExtractor
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer maxPartCount = new Constant.Integer(
                 "Glyphs",
                 8,
@@ -774,7 +771,6 @@ public class KeyExtractor
     private class MultipleAdapter
             extends AbstractKeyAdapter
     {
-
         final KeyRoi roi;
 
         final List<Candidate> candidates = new ArrayList<>();
@@ -812,7 +808,6 @@ public class KeyExtractor
     //------------//
     private static class Parameters
     {
-
         final int maxPartCount;
 
         final int maxEvalRank;
@@ -866,7 +861,6 @@ public class KeyExtractor
     private class SingleAdapter
             extends AbstractKeyAdapter
     {
-
         /** Related slice. */
         private final KeySlice slice;
 

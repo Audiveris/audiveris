@@ -135,7 +135,6 @@ public class SeparableToolBar
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer separatorWidth = new Constant.Integer(
                 "Pixels",
                 15,

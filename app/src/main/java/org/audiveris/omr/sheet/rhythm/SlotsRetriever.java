@@ -999,7 +999,6 @@ public class SlotsRetriever
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxSlotDxHigh = new Scale.Fraction(
                 1.1, // Was 1.0, too strict for manual addition of heads on other stem side
                 "High maximum horizontal delta between a slot and a chord");
@@ -1033,7 +1032,6 @@ public class SlotsRetriever
      */
     protected static class Edge
     {
-
         Rel rel; // Relationship carried by the concrete edge
 
         /**
@@ -1050,7 +1048,6 @@ public class SlotsRetriever
     //------------//
     private static class Parameters
     {
-
         private final int maxSlotDxHigh;
 
         private final int maxSlotDxLow;

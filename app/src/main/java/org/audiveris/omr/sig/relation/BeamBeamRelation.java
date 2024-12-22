@@ -100,7 +100,6 @@ public class BeamBeamRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio beamSupportCoeff = new Constant.Ratio(
                 3,
                 "Value for (source or target) beam coeff in beam-beam support formula");

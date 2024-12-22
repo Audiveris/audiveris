@@ -146,7 +146,6 @@ public class SampleMenu
     private class AssignMenu
             extends JMenu
     {
-
         private final ActionListener listener = (ActionEvent e) -> {
             final JMenuItem source = (JMenuItem) e.getSource();
             final Shape shape = Shape.valueOf(source.getText());
@@ -180,7 +179,6 @@ public class SampleMenu
     private class SelectMenu
             extends JMenu
     {
-
         SelectMenu ()
         {
             super("Select sample");

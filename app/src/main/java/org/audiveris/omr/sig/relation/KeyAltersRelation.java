@@ -95,7 +95,6 @@ public class KeyAltersRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio sourceSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for (source) alter coeff in support formula");

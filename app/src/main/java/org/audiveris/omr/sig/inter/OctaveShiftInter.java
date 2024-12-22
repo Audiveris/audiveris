@@ -916,7 +916,6 @@ public class OctaveShiftInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction minGapFromStaff = new Scale.Fraction(
                 2.0,
                 "Minimum vertical gap from upper or lower staff");
@@ -953,7 +952,6 @@ public class OctaveShiftInter
     private static class Editor
             extends InterEditor
     {
-
         private final List<OctaveShiftInter> seq; // Current sequence of physical shifts
 
         private final List<OctaveShiftInter> originalSeq;// Original sequence of physical shifts
@@ -1325,7 +1323,6 @@ public class OctaveShiftInter
         private class LeftHandle
                 extends OsHandle
         {
-
             public LeftHandle (OctaveShiftInter os,
                                Point2D center)
             {
@@ -1444,7 +1441,6 @@ public class OctaveShiftInter
         private class MiddleHandle
                 extends OsHandle
         {
-
             public MiddleHandle (OctaveShiftInter os,
                                  Point2D center)
             {
@@ -1493,7 +1489,6 @@ public class OctaveShiftInter
         private class MiniEditor
                 extends InterEditor
         {
-
             public MiniEditor (OctaveShiftInter os)
             {
                 super(os);
@@ -1526,7 +1521,6 @@ public class OctaveShiftInter
         private abstract class OsHandle
                 extends Handle
         {
-
             protected final OctaveShiftInter os; // Underlying OS instance
 
             protected final Model model; // Model for OS
@@ -1556,7 +1550,6 @@ public class OctaveShiftInter
         private class RightHandle
                 extends OsHandle
         {
-
             public RightHandle (OctaveShiftInter os,
                                 Point2D center)
             {
@@ -1672,7 +1665,6 @@ public class OctaveShiftInter
          */
         private static class Triplet
         {
-
             LeftHandle left;
 
             MiddleHandle middle;
@@ -1696,7 +1688,6 @@ public class OctaveShiftInter
     public static class Model
             implements ObjectUIModel
     {
-
         // OTTAVA, QUINDICESIMA or VENTIDUESIMA
         public Shape shape;
 

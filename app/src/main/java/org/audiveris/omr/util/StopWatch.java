@@ -169,7 +169,6 @@ public class StopWatch
     //------//
     private static class Task
     {
-
         /** Label for this task. */
         private final String label;
 

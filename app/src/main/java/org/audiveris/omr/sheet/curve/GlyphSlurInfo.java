@@ -125,7 +125,6 @@ public class GlyphSlurInfo
      */
     private static class KeyPointsBuilder
     {
-
         private final Glyph glyph;
 
         private final RunTable rt;

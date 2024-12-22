@@ -188,7 +188,6 @@ public class TremoloInter
      */
     private Double getSnapAbscissa ()
     {
-
         if (staff == null) {
             return null;
         }
@@ -719,7 +718,6 @@ public class TremoloInter
     public static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction width = new Scale.Fraction(1.35, "Typical tremolo width");
 
         private final Scale.Fraction widthMargin = new Scale.Fraction(
@@ -744,7 +742,6 @@ public class TremoloInter
     private static class Editor
             extends InterEditor
     {
-
         // Original data
         private final Rectangle originalBounds;
 

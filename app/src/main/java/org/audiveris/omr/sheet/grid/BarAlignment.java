@@ -265,7 +265,6 @@ public class BarAlignment
     public static class Impacts
             extends GradeImpacts
     {
-
         private static final String[] NAMES = new String[]
         { "align", "dWidth" };
 

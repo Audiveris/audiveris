@@ -1195,7 +1195,6 @@ public class StemsRetriever
      */
     static class Parameters
     {
-
         final double slopeMargin;
 
         final double maxBarOverlap;

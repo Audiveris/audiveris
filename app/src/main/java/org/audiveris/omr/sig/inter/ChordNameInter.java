@@ -472,7 +472,6 @@ public class ChordNameInter
     @Override
     public void setValue (String value)
     {
-
         final ChordStructure cs = parseChord(value);
 
         if (cs != null) {
@@ -690,7 +689,6 @@ public class ChordNameInter
     //-------//
     public static class Alter
     {
-
         /** Alter class. */
         private static final String CLASS = "[" + FLAT + "b" + SHARP + "#" + "]";
 
@@ -736,7 +734,6 @@ public class ChordNameInter
     //-------------//
     public static class ChordDegree
     {
-
         //
         /** nth value of the degree, wrt the chord root. */
         @XmlAttribute

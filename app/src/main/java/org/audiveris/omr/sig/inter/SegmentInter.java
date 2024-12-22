@@ -87,7 +87,6 @@ public class SegmentInter
     public static class Impacts
             extends GradeImpacts
     {
-
         private static final String[] NAMES = new String[]
         { "dist" };
 

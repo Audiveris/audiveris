@@ -110,7 +110,6 @@ public abstract class StemItem
     public static class GapItem
             extends StemItem
     {
-
         /**
          * Create a <code>GapItem</code> object;
          *
@@ -160,7 +159,6 @@ public abstract class StemItem
     public static class GlyphItem
             extends StemItem
     {
-
         /**
          * Create a <code>GlyphItem</code> object.
          *
@@ -205,7 +203,6 @@ public abstract class StemItem
     public static class HalfLinkerItem
             extends LinkerItem
     {
-
         public HalfLinkerItem (StemHalfLinker linker,
                                int contrib)
         {
@@ -222,7 +219,6 @@ public abstract class StemItem
     public static class LinkerItem
             extends StemItem
     {
-
         /**
          * Related (head or beam) linker.
          * This can be:

@@ -144,7 +144,6 @@ public class HeadFingeringRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio fingeringTargetCoeff = new Constant.Ratio(
                 2.0,
                 "Supporting coeff for (target) fingering");

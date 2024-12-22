@@ -538,7 +538,6 @@ public class HeaderTimeBuilder
     private class HalfAdapter
             extends TimeAdapter
     {
-
         /** Which half is being searched. (NUM or DEN) */
         private final TimeKind half;
 
@@ -598,7 +597,6 @@ public class HeaderTimeBuilder
     //-------//
     private static class Space
     {
-
         /** Left abscissa. */
         protected final int start;
 
@@ -629,7 +627,6 @@ public class HeaderTimeBuilder
     private abstract class TimeAdapter
             extends GlyphCluster.AbstractAdapter
     {
-
         /** Best inter per time shape. */
         public Map<Shape, Inter> bestMap = new EnumMap<>(Shape.class);
 
@@ -674,7 +671,6 @@ public class HeaderTimeBuilder
     private class WholeAdapter
             extends TimeAdapter
     {
-
         public WholeAdapter (List<Glyph> parts)
         {
             super(parts);

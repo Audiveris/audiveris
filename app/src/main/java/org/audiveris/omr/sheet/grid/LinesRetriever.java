@@ -1537,7 +1537,6 @@ public class LinesRetriever
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio topRatioForSlope = new Constant.Ratio(
                 0.1,
                 "Percentage of top filaments used to retrieve global slope");
@@ -1664,7 +1663,6 @@ public class LinesRetriever
      */
     private static class Parameters
     {
-
         /** Minimum run length for horizontal lag */
         final int minRunLength;
 

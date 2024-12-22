@@ -420,7 +420,6 @@ public class GlyphFactory
      */
     private static class Sequence
     {
-
         final int iSeq; // Index in runTable
 
         final List<MarkedRun> runs = new ArrayList<>(); // Sequence of glyph marked runs

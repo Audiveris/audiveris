@@ -262,7 +262,6 @@ public class AdaptiveDescriptor
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio meanCoeff = new Constant.Ratio(
                 0.7,
                 "Threshold formula coefficient for mean pixel value");

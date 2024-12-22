@@ -291,7 +291,6 @@ public class ConstantManager
     //----------------//
     private class AbstractHolder
     {
-
         /** Related file. */
         protected final Path path;
 
@@ -383,7 +382,6 @@ public class ConstantManager
     private class UserHolder
             extends AbstractHolder
     {
-
         public UserHolder (Path path)
         {
             super(path);

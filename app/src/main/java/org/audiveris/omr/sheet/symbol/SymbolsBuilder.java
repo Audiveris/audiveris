@@ -388,7 +388,6 @@ public class SymbolsBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -436,7 +435,6 @@ public class SymbolsBuilder
      */
     private static class Parameters
     {
-
         final double maxGap;
 
         final int maxSymbolWidth;
@@ -470,7 +468,6 @@ public class SymbolsBuilder
     private class SymbolAdapter
             extends GlyphCluster.AbstractAdapter
     {
-
         private final Scale scale = sheet.getScale();
 
         SymbolAdapter (SimpleGraph<Glyph, GlyphLink> graph)

@@ -94,7 +94,6 @@ public class GeoGlyphDescriptor
      */
     private static class LabelsHolder
     {
-
         /** Index -> Label */
         public static final String[] labels = new String[LENGTH];
 

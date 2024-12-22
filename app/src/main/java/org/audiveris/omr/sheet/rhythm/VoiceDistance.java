@@ -108,7 +108,6 @@ public abstract class VoiceDistance
     public static class Merged
             extends VoiceDistance
     {
-
         private static final int NOT_A_REST = 5;
 
         private static final int NEW_IN_STAFF = 2;
@@ -206,7 +205,6 @@ public abstract class VoiceDistance
     public static class Separated
             extends VoiceDistance
     {
-
         private static final int NOT_A_REST = 5;
 
         private static final int NEW_IN_STAFF = 10;

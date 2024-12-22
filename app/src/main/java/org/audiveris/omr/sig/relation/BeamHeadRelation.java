@@ -159,7 +159,6 @@ public class BeamHeadRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
                 0.75,
                 "Supporting coeff for (target) head");

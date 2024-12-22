@@ -464,7 +464,6 @@ public class Template
      */
     public List<PixelDistance> getKeyPoints ()
     {
-
         if (keyPoints == null) {
             keyPoints = TemplateFactory.retrieveKeyPoints(shape, family, pointSize);
         }
@@ -726,7 +725,6 @@ public class Template
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio backWeight = new Constant.Ratio(
                 1.0,
                 "Weight assigned to template exterior background pixels");

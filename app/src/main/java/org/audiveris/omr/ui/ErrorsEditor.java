@@ -279,7 +279,6 @@ public class ErrorsEditor
     private class MyListener
             implements ListSelectionListener
     {
-
         @Override
         public void valueChanged (ListSelectionEvent e)
         {
@@ -340,7 +339,6 @@ public class ErrorsEditor
     private static class Record
             implements Comparable<Record>
     {
-
         final OmrStep step;
 
         //

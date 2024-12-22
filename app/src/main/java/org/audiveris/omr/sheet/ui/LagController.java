@@ -114,7 +114,6 @@ public class LagController
     private class LagView
             extends NestView
     {
-
         LagView (GlyphIndex glyphIndex)
         {
             super(glyphIndex.getEntityService(), Arrays.asList(lag), sheet);

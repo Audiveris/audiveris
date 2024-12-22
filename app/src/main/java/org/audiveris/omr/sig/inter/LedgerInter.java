@@ -485,7 +485,6 @@ public class LedgerInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double defaultThickness = new Constant.Double(
                 "Pixels",
                 3.0,
@@ -512,7 +511,6 @@ public class LedgerInter
     private static class Editor
             extends InterEditor
     {
-
         private final Model originalModel;
 
         private final Model model;
@@ -609,7 +607,6 @@ public class LedgerInter
     public static class Model
             implements ObjectUIModel
     {
-
         // Left point of median line
         public final Point2D p1;
 

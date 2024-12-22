@@ -547,7 +547,6 @@ public class LogicalPart
     private static class Constants
             extends ConstantSet
     {
-
         // Default Part names
         private final Constant.String defaultSingleStaffPartName = new Constant.String(
                 "Voice",

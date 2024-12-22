@@ -171,7 +171,6 @@ public class TremoloWholeRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 2.0,
                 "Maximum vertical gap between whole head & tremolo");

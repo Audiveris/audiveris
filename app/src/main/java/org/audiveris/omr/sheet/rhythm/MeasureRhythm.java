@@ -753,7 +753,6 @@ public class MeasureRhythm
      */
     private class SlotMapper
     {
-
         // The compound slot to process
         private final CompoundSlot slot;
 

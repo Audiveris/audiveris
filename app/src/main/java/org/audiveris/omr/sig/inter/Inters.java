@@ -613,7 +613,6 @@ public abstract class Inters
     public static class ClassesPredicate
             implements Predicate<Inter>
     {
-
         private final Class[] classes;
 
         /**
@@ -650,7 +649,6 @@ public abstract class Inters
     public static class ClassPredicate
             implements Predicate<Inter>
     {
-
         private final Class classe;
 
         /**

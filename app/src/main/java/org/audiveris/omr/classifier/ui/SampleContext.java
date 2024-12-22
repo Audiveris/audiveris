@@ -143,7 +143,6 @@ public class SampleContext
     private class ContextView
             extends RubberPanel
     {
-
         /** Current sample, if any. */
         private Sample sample;
 

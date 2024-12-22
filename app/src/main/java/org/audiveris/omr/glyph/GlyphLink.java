@@ -37,7 +37,6 @@ public interface GlyphLink
     public static class Nearby
             implements GlyphLink
     {
-
         /** Measured distance between the two glyph instances. */
         private final double distance;
 

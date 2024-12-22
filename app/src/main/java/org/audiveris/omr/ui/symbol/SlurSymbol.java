@@ -123,7 +123,6 @@ public class SlurSymbol
     protected static class MyParams
             extends ShapeSymbol.Params
     {
-
         // offset: used
         // layout: not used
         // rect:   global image

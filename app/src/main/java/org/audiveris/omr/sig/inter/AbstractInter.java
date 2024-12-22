@@ -1687,7 +1687,6 @@ public abstract class AbstractInter
     public static class JaxbAdapter
             extends XmlAdapter<AbstractInter, Inter>
     {
-
         @Override
         public AbstractInter marshal (Inter inter)
             throws Exception

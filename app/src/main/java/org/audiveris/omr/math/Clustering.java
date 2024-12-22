@@ -121,7 +121,6 @@ public class Clustering
     public static class Gaussian
             implements Law
     {
-
         private double mean = 0;
 
         private double sigma = 0;
@@ -206,7 +205,6 @@ public class Clustering
      */
     public static interface Law
     {
-
         /**
          * improve law parameters
          *

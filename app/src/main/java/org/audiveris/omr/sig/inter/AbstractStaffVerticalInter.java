@@ -130,7 +130,6 @@ public abstract class AbstractStaffVerticalInter
     public static class Impacts
             extends GradeImpacts
     {
-
         private static final String[] NAMES = new String[]
         { "core", "gap", "start", "stop", "left", "right" };
 

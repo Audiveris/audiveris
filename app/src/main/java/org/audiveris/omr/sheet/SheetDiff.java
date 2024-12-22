@@ -386,7 +386,6 @@ public class SheetDiff
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -428,7 +427,6 @@ public class SheetDiff
             extends ImageView
             implements PropertyChangeListener
     {
-
         DiffView (ByteProcessor filtered)
         {
             super(filtered.getBufferedImage());

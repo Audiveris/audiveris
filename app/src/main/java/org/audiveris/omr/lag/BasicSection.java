@@ -1033,7 +1033,6 @@ public class BasicSection
     public static class JaxbAdapter
             extends XmlAdapter<BasicSection, Section>
     {
-
         @Override
         public BasicSection marshal (Section s)
         {

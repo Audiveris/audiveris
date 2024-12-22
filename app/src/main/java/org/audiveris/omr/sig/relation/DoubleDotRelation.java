@@ -163,7 +163,6 @@ public class DoubleDotRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio secondDotSupportCoeff = new Constant.Ratio(
                 5,
                 "Supporting coeff for (source) second dot");

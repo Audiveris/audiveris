@@ -125,7 +125,6 @@ public interface Table
     public abstract class Abstract
             implements Table
     {
-
         /** Width of the whole data. */
         protected final int width;
 
@@ -268,7 +267,6 @@ public interface Table
     public static class Integer
             extends Abstract
     {
-
         /** Underlying array. */
         private final int[] data;
 
@@ -380,7 +378,6 @@ public interface Table
     public static class Short
             extends Abstract
     {
-
         /** Underlying array. */
         private final short[] data;
 
@@ -492,7 +489,6 @@ public interface Table
     public static class UnsignedByte
             extends Abstract
     {
-
         /** Underlying array. */
         protected final byte[] data;
 

@@ -241,7 +241,6 @@ public class ClumpPruner
      */
     private class ClumpLinker
     {
-
         private final SystemInfo system;
 
         private final SIGraph sig;
@@ -459,7 +458,6 @@ public class ClumpPruner
      */
     private static class SlurEntry
     {
-
         public static Comparator<SlurEntry> byWeightedDist = (SlurEntry s1,
                                                               SlurEntry s2) -> Double.compare(
                                                                       s1.weightedDist(),

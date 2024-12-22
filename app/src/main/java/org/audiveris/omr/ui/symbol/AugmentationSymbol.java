@@ -124,7 +124,6 @@ public class AugmentationSymbol
     protected static class MyParams
             extends ShapeSymbol.Params
     {
-
         // offset: if decorated, offset of symbol center vs decorated image center
         // layout: dot layout
         // rect:   global image (= head + dot if decorated, dot if not)

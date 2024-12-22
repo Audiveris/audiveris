@@ -91,7 +91,6 @@ public class FixedWidthIcon
     private static final class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer iconWidth = new Constant.Integer(
                 "pixels",
                 30,

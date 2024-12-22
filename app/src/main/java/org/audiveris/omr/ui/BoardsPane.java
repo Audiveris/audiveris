@@ -395,7 +395,6 @@ public class BoardsPane
             extends MouseAdapter
             implements ItemListener
     {
-
         /**
          * Triggered from popup menu.
          *

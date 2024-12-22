@@ -306,7 +306,6 @@ public class StraightFilament
     public static class Constructor
             implements CompoundFactory.CompoundConstructor
     {
-
         private final int interline;
 
         /**

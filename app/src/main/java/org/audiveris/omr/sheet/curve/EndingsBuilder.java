@@ -591,7 +591,6 @@ public class EndingsBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio minMeasureRatio = new Constant.Ratio(
                 0.8,
                 "Minimum ending length as ratio of related measure length");
@@ -656,7 +655,6 @@ public class EndingsBuilder
      */
     private static class Parameters
     {
-
         final int minLengthLow;
 
         final int minLengthHigh;

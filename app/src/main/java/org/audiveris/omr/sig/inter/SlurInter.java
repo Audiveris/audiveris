@@ -1122,7 +1122,6 @@ public class SlurInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxDeltaY = new Scale.Fraction(
                 4,
                 "Maximum vertical difference in interlines between connecting slurs");
@@ -1157,7 +1156,6 @@ public class SlurInter
     private static class Editor
             extends InterEditor
     {
-
         private final Model originalModel;
 
         private final Model model;
@@ -1333,7 +1331,6 @@ public class SlurInter
     public static class Impacts
             extends GradeImpacts
     {
-
         private static final String[] NAMES = new String[]
         { "dist", "angle", "width", "height", "vert" };
 
@@ -1361,7 +1358,6 @@ public class SlurInter
     public static class Model
             implements ObjectUIModel
     {
-
         public final Point2D p1;
 
         public final Point2D c1;

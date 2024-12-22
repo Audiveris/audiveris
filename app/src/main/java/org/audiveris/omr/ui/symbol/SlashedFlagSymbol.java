@@ -110,7 +110,6 @@ public class SlashedFlagSymbol
     protected static class MyParams
             extends Params
     {
-
         Stroke stroke;
     }
 }

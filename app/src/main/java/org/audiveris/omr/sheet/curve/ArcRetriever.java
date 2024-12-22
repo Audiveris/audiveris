@@ -628,7 +628,6 @@ public class ArcRetriever
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double maxAlpha = new Constant.Double(
                 "degree",
                 4.0,

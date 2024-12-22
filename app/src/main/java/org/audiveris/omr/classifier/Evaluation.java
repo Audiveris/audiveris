@@ -119,7 +119,6 @@ public class Evaluation
      */
     public static class Failure
     {
-
         /** The name of the test that failed. */
         public final String test;
 
@@ -149,7 +148,6 @@ public class Evaluation
     public static class Grade
             extends Constant.Double
     {
-
         /**
          * Specific constructor, where unit &amp; name are assigned later.
          *

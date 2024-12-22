@@ -192,7 +192,6 @@ public abstract class KeySymbol
     protected static class MyParams
             extends Params
     {
-
         double stepDy; // Dy from one step to the other
 
         double itemDx; // Dx from one item to the other

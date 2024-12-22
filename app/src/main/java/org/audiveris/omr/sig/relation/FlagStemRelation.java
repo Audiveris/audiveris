@@ -196,7 +196,6 @@ public class FlagStemRelation
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Ratio flagSupportCoeff = new Constant.Ratio(
                 3,
                 "Value for source (flag) coeff in support formula");

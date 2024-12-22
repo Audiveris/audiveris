@@ -449,7 +449,6 @@ public class BrokenLine
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer colinearDistance = new Constant.Integer(
                 "Pixels",
                 2,

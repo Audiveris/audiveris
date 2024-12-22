@@ -293,7 +293,6 @@ public class Curves
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Boolean displayCurves = new Constant.Boolean(
                 false,
                 "Should we display the view on curves?");
@@ -321,7 +320,6 @@ public class Curves
     private class CurveView
             extends ImageView
     {
-
         CurveView (BufferedImage image)
         {
             super(image);

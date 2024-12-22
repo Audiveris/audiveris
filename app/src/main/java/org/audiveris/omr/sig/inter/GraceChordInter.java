@@ -389,7 +389,6 @@ public class GraceChordInter
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction sideDx = new Scale.Fraction(
                 1.5,
                 "Typical horizontal distance between grace head center & target center");
@@ -405,7 +404,6 @@ public class GraceChordInter
     public static class HiddenHeadInter
             extends HeadInter
     {
-
         @Override
         public void accept (InterVisitor visitor)
         {
@@ -429,7 +427,6 @@ public class GraceChordInter
     public static class HiddenStemInter
             extends StemInter
     {
-
         @Override
         public void accept (InterVisitor visitor)
         {

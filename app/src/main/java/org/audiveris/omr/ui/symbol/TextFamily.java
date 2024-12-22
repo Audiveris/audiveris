@@ -115,7 +115,6 @@ public enum TextFamily
         public static class JaxbAdapter
                 extends XmlAdapter<TextFamily, MyParam>
         {
-
             @Override
             public TextFamily marshal (MyParam fp)
                 throws Exception

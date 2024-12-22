@@ -179,7 +179,6 @@ public class JTreeTable
     protected final class ListToTreeSelectionModelWrapper
             extends DefaultTreeSelectionModel
     {
-
         /**
          * Set to true when we are updating the ListSelectionModel.
          */
@@ -280,7 +279,6 @@ public class JTreeTable
         class ListSelectionHandler
                 implements ListSelectionListener
         {
-
             @Override
             public void valueChanged (ListSelectionEvent e)
             {
@@ -301,7 +299,6 @@ public class JTreeTable
             extends AbstractCellEditor
             implements TableCellEditor
     {
-
         @Override
         public Component getTableCellEditorComponent (JTable table,
                                                       Object value,
@@ -368,7 +365,6 @@ public class JTreeTable
             extends JTree
             implements TableCellRenderer
     {
-
         /**
          * Last table/tree row asked to renderer.
          */

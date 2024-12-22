@@ -340,7 +340,6 @@ public class MultipleRestsBuilder
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Double maxAbsolutePitch = new Constant.Double(
                 "pitch",
                 0.2,
@@ -359,7 +358,6 @@ public class MultipleRestsBuilder
      */
     private static class Parameters
     {
-
         final int minLength;
 
         Parameters (Scale scale)

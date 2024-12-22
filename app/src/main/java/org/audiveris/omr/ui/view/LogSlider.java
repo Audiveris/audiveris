@@ -207,7 +207,6 @@ public class LogSlider
     private static class Constants
             extends ConstantSet
     {
-
         private final Constant.Integer resolution = new Constant.Integer(
                 "Values",
                 480,

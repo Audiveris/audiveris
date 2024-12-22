@@ -103,7 +103,6 @@ public class DocCheck
 
                         try (BufferedReader reader = new BufferedReader(
                                 new FileReader(file.toString()))) {
-
                             String line = reader.readLine();
                             int lnb = 0;
 

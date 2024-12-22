@@ -291,7 +291,6 @@ class SampleListing
             extends MouseInputAdapter
             implements ListSelectionListener
     {
-
         boolean alt; // True if Alt key is pressed down
 
         /**
@@ -410,7 +409,6 @@ class SampleListing
     private class SamplePopup
             extends JPopupMenu
     {
-
         SamplePopup ()
         {
             super("SamplePopup");
@@ -440,7 +438,6 @@ class SampleListing
             extends JPanel
             implements ListCellRenderer<Sample>
     {
-
         /** The sample being rendered. */
         private Sample sample;
 
@@ -504,7 +501,6 @@ class SampleListing
             extends JPanel
             implements Scrollable
     {
-
         @Override
         public Dimension getPreferredScrollableViewportSize ()
         {
@@ -584,7 +580,6 @@ class SampleListing
     private class ShapePane
             extends SampleBrowser.TitledPanel
     {
-
         private final Shape shape;
 
         private final DefaultListModel<Sample> model = new DefaultListModel<>();
@@ -726,7 +721,6 @@ class SampleListing
         private class RemoveAction
                 extends AbstractAction
         {
-
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -745,7 +739,6 @@ class SampleListing
     private class SortByGradeAction
             extends AbstractAction
     {
-
         final Classifier classifier = ShapeClassifier.getInstance();
 
         SortByGradeAction ()
@@ -792,7 +785,6 @@ class SampleListing
     private class SortByHeightAction
             extends AbstractAction
     {
-
         SortByHeightAction ()
         {
             super("Height");
@@ -812,7 +804,6 @@ class SampleListing
     private class SortByWeightAction
             extends AbstractAction
     {
-
         SortByWeightAction ()
         {
             super("Weight");
@@ -832,7 +823,6 @@ class SampleListing
     private class SortByWidthAction
             extends AbstractAction
     {
-
         SortByWidthAction ()
         {
             super("Width");

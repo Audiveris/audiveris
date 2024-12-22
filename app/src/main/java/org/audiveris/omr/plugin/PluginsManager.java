@@ -284,7 +284,6 @@ public class PluginsManager
     private static class Constants
             extends ConstantSet
     {
-
         Constant.String defaultPlugin = new Constant.String("", "Name of default plugin");
     }
 
@@ -294,7 +293,6 @@ public class PluginsManager
     private static class Default
             extends Param<String>
     {
-
         public Default ()
         {
             super(GLOBAL_SCOPE);
@@ -342,7 +340,6 @@ public class PluginsManager
     //---------------//
     private static class LazySingleton
     {
-
         static final PluginsManager INSTANCE = new PluginsManager();
     }
 
@@ -358,7 +355,6 @@ public class PluginsManager
     private class MyMenuListener
             extends AbstractMenuListener
     {
-
         @Override
         public void menuSelected (MenuEvent e)
         {
@@ -394,7 +390,6 @@ public class PluginsManager
     @XmlRootElement(name = "plugins")
     private static class PluginsHolder
     {
-
         /** List of plugins. */
         @XmlElementRef
         private List<Plugin> list = new ArrayList<>();

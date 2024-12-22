@@ -405,7 +405,6 @@ public class Plugin
     private class PluginTask
             extends VoidTask
     {
-
         private final Book book;
 
         PluginTask (Book book)

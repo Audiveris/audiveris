@@ -2199,7 +2199,6 @@ public class SigReducer
     private class AdapterForFoundations
             extends ReductionAdapter
     {
-
         @Override
         public int checkConsistencies ()
         {
@@ -2262,7 +2261,6 @@ public class SigReducer
     private class AdapterForLinks
             extends ReductionAdapter
     {
-
         @Override
         public int checkConsistencies ()
         {
@@ -2325,7 +2323,6 @@ public class SigReducer
     private static class Constants
             extends ConstantSet
     {
-
         private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
                 3,
                 "Maximum width for slur around tuplet");
@@ -2344,7 +2341,6 @@ public class SigReducer
     //------------------//
     private abstract static class ReductionAdapter
     {
-
         Set<Inter> deleted = new LinkedHashSet<>();
 
         Set<Inter> reduced = new LinkedHashSet<>();
