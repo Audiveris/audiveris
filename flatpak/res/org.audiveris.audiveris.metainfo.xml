@@ -35,37 +35,75 @@
   <url type="contact">https://github.com/Audiveris/audiveris/discussions</url>
   <screenshots>
     <screenshot type="default">
-      <image>https://upload.wikimedia.org/wikipedia/commons/d/d8/Audiveris_5.2.png</image>
-      <caption>Audiveris 5.2 editor with scanned sheet music</caption>
+      <image>https://github.com/Audiveris/docs/blob/master/images/Dichterliebe01.png</image>
+      <caption>Audiveris 5.4 editor on Dichterliebe</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/Audiveris/docs/blob/master/images/Moonlight-metronome.png</image>
+      <caption>Audiveris 5.4, with metronome and implicit tuplets</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/Audiveris/docs/blob/master/images/Test_Percussion.png</image>
+      <caption>Audiveris 5.4, with drum notation</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/Audiveris/docs/blob/master/images/About.png</image>
+      <caption>Audiveris 5.4, the about dialog</caption>
     </screenshot>
     <screenshot>
       <image>https://upload.wikimedia.org/wikipedia/commons/e/e9/Audiveris_5.2_screenshot.png</image>
-      <caption>Audiveris 5.2 editor with scanned sheet music, larger view</caption>
+      <caption>Audiveris 5.2, with specific locale</caption>
     </screenshot>
   </screenshots>
   <launchable type="desktop-id">org.audiveris.audiveris.desktop</launchable>
   <developer_name>Hervé Bitteur et al.</developer_name>
   <releases>
-    <release version="5.4-alpha" date="2023-11-21" urgency="low"
+    <release version="5.4" date="2024-12-25" urgency="low"
 	     type="stable">
       <description>
-	<ul>
-	  <li>
-	    Improvement and extension of default/book/sheet parameters (interline, barline)
-	  </li>
-	  <li>
-	    Ability to display some inters (augmentation dots by default) in jumbo mode
-	  </li>
-	  <li>
-	    Ability to stop current book processing at next step end
-	  </li>
-	  <li>
-	    Ability to clear the log window
-	  </li>
-	  <li>
-	    Support for a PDF version of the Audiveris Handbook
-	  </li>
-	</ul>
+        <ul>
+            <li>User Interface
+                <ul>
+                    <li>New feature to handle the local collection of OCR languages and download additional ones on demand from the GitHub Tesseract site.</li>
+                    <li>Creation of the Binarization adjustment board to dynamically adjust the binarization filters and settings. Contributed by <a href="https://github.com/mgporter">Michael Porter</a>.</li>
+                    <li>Past the SYMBOLS step, the manual removal of any Inter now triggers a dynamic rebuilding of glyphs, as if the removed Inter had never existed.</li>
+                    <li>Improvement and extension of default/book/sheet parameters (interline, barline)</li>
+                    <li>Ability to display some inters in jumbo mode to ease a visual inspection – by default this can apply to augmentation dots.</li>
+                    <li>Ability to gracefully stop the current book processing at the next step end.</li>
+                    <li>Ability to clear the log window – the log file remains intact.</li>
+                    <li>Waiting message for long loading of book or sheet.</li>
+                </ul>
+            </li>
+            <li>Engine
+                <ul>
+                    <li>Support for metronome mark.</li>
+                    <li>The recognition of fermata no longer requires separate recognitions of fermata-arc and fermata-dot.</li>
+                    <li>The processing of an input image with no white margin around the staves is now possible.</li>
+                </ul>
+            </li>
+            <li>Project
+                <ul>
+                    <li>A Linux Flatpak installer, gathering the needed libraries including proper Java environment, is provided on FlatHub. Contributed by <a href="https://github.com/mwilck">Martin Wilck</a> and <a href="https://github.com/jwharm">Jan-Willem Harmannij</a>.</li>
+                    <li>Both Linux and Windows installers pre-populate the user config/tessdata folder with the eng Tesseract language.</li>
+                    <li>For licence reasons, JPodRenderer had to be replaced by Apache PDFBox to load PDF images.</li>
+                </ul>
+            </li>
+            <li>Documentation
+                <ul>
+                    <li>Global handbook restructuring.</li>
+                    <li>Support for a PDF version of handbook.</li>
+                    <li>Re-reading of the whole documentation. Contributed by <a href="https://github.com/brian-math">Brian Boe</a>, native American-English speaker!</li>
+                </ul>
+            </li>
+            <li>Java
+                <ul>
+                    <li>In Audiveris.bat (used by the Windows installer) and Audiveris start scripts, the Java version is checked before the application is launched.</li>
+                    <li>Support of Java 21.</li>
+                    <li>Upgrade to Gradle 8.5 to support Java 21.</li>
+                    <li>Removal of all deprecated features such as JGoodies PanelBuilder, Observer/Observable, class.newInstance(), etc.</li>
+                </ul>
+            </li>
+        </ul>
       </description>
     </release>
     <release version="5.3.1" date="2023-07-04" urgency="low"
@@ -73,11 +111,7 @@
       <description>
 	<p>
 	  Drums, Fonts and Parts (bis).
-	  This release had to be quickly published to fix a bug on small void
-	  head templates in 5.3.0 release.
-	  Setting the "Small Heads" processing switch led to lots of false
-	  positives
-	  during HEADS step, due to corrupted templates built for small void heads.
+	  A bug fix on small void head templates in 5.3.0 release.
 	</p>
       </description>
     </release>
