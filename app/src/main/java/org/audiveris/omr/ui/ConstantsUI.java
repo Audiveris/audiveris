@@ -217,7 +217,7 @@ public class ConstantsUI
         UnitManager.getInstance().preLoadUnits();
 
         dialog = new JDialog(OMR.gui.getFrame());
-        dialog.setName("constantsFrame"); // For SAF life cycle
+        dialog.setName("ConstantsFrame"); // For SAF life cycle
 
         JComponent framePane = (JComponent) dialog.getContentPane();
         framePane.setLayout(new BorderLayout());
