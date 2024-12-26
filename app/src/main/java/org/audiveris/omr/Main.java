@@ -400,6 +400,10 @@ public class Main
      */
     private static void showEnvironment ()
     {
+        for (String var : new String[] { "FLATPAK_ID", "FLATPAK_REF", "FLATPAK_SANDBOX_DIR",
+                "XDG_SESSION_TYPE" }) {
+            logger.info("{} env: {} prop: {}", var, System.getenv(var), System.getProperty(var));
+        }
         if (constants.showEnvironment.isSet()) {
             logger.info(
                     """
