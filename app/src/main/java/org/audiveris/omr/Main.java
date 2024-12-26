@@ -44,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -400,10 +402,12 @@ public class Main
      */
     private static void showEnvironment ()
     {
-        for (String var : new String[] { "FLATPAK_ID", "FLATPAK_REF", "FLATPAK_SANDBOX_DIR",
-                "XDG_SESSION_TYPE" }) {
-            logger.info("{} env: {} prop: {}", var, System.getenv(var), System.getProperty(var));
+        if (constants.showAllEnvironmentVariables.isSet()) {
+            final Map<String, String> map = System.getenv();
+            final TreeSet<String> keys = new TreeSet<>(map.keySet());
+            keys.forEach(k -> logger.info("{} : {}", k, map.get(k)));
         }
+
         if (constants.showEnvironment.isSet()) {
             logger.info(
                     """
@@ -433,6 +437,10 @@ public class Main
         private final Constant.Boolean showEnvironment = new Constant.Boolean(
                 true,
                 "Should we show environment?");
+
+        private final Constant.Boolean showAllEnvironmentVariables = new Constant.Boolean(
+                true,
+                "Should we show all environment variables?");
 
         private final Constant.String locale = new Constant.String(
                 "en",
