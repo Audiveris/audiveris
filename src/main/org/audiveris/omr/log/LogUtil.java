@@ -243,7 +243,7 @@ public abstract class LogUtil
 
             if (configUri.toString().startsWith("jar:")) {
                 // Make a temporary copy off .jar archive
-                File tmpFile = File.createTempFile("logback-", ".xml");
+                File tmpFile = Files.createTempFile("logback-", ".xml").toFile();
                 tmpFile.deleteOnExit();
 
                 try (InputStream is = configUri.toURL().openStream()) {
