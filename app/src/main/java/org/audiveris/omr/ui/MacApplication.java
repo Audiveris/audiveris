@@ -230,9 +230,8 @@ public class MacApplication
             setDockImage.invoke(application, icon);
 
             return true;
-        } catch (NoSuchMethodException | InstantiationException |
-                 ClassNotFoundException | IllegalAccessException |
-                 InvocationTargetException | MalformedURLException ex) {
+        } catch (NoSuchMethodException | InstantiationException | ClassNotFoundException
+                | IllegalAccessException | InvocationTargetException | MalformedURLException ex) {
             logger.warn("Unable to setup Mac OS X dock icon", ex);
             return false;
         }
@@ -247,9 +246,8 @@ public class MacApplication
     static private Object app;
 
     static Object getMacAppInstance ()
-        throws NoSuchMethodException, InstantiationException,
-               ClassNotFoundException, IllegalAccessException,
-               InvocationTargetException
+        throws NoSuchMethodException, InstantiationException, ClassNotFoundException,
+        IllegalAccessException, InvocationTargetException
     {
         if (app == null) {
             app = getMacAppClass().getDeclaredConstructor().newInstance();
