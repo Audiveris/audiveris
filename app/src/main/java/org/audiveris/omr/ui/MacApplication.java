@@ -203,7 +203,26 @@ public class MacApplication
             Method addListener = appClass.getMethod("addApplicationListener", listenerClass);
             addListener.invoke(app, listenerProxy);
 
-            // display audiveris icon in the dock instead of default java one
+            return true;
+        } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
+                | InstantiationException | NoSuchMethodException | SecurityException
+                | InvocationTargetException ex) {
+            logger.warn("Unable to setup Mac OS X menu integration", ex);
+
+            return false;
+        }
+    }
+
+    public static boolean setupMacDockIcon ()
+    {
+        if (!WellKnowns.MAC_OS_X) {
+            return false;
+        }
+
+        try {
+            Class<?> appClass = getMacAppClass();
+            Object app = getMacAppInstance();
+
             Method getApplication = appClass.getMethod("getApplication");
             Object application = getApplication.invoke(app);
 
@@ -214,18 +233,10 @@ public class MacApplication
             setDockImage.invoke(application, icon);
 
             return true;
-        } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
-                | InstantiationException | NoSuchMethodException | SecurityException
-                | InvocationTargetException | MalformedURLException ex) {
-            logger.warn("Unable to setup Mac OS X GUI integration", ex);
-
-            return false;
-        }
-    }
-
-    public static boolean setupMacMenus ()
-    {
-        if (!WellKnowns.MAC_OS_X) {
+        } catch (NoSuchMethodException | InstantiationException |
+                 ClassNotFoundException | IllegalAccessException |
+                 InvocationTargetException | MalformedURLException ex) {
+            logger.warn("Unable to setup Mac OS X dock icon", ex);
             return false;
         }
     }
