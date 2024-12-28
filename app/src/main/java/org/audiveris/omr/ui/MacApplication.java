@@ -177,8 +177,8 @@ public class MacApplication
 
         try {
             //The class used to register hooks
-            Class<?> appClass = Class.forName("com.apple.eawt.Application");
-            Object app = appClass.getDeclaredConstructor().newInstance();
+            Class<?> appClass = getMacAppClass();
+            Object app = getMacAppInstance();
 
             //Enable the about menu item and the preferences menu item
             for (String methodName : new String[]
@@ -221,5 +221,31 @@ public class MacApplication
 
             return false;
         }
+    }
+
+    public static boolean setupMacMenus ()
+    {
+        if (!WellKnowns.MAC_OS_X) {
+            return false;
+        }
+    }
+
+    static Class<?> getMacAppClass ()
+        throws ClassNotFoundException
+    {
+        return Class.forName("com.apple.eawt.Application");
+    }
+
+    static private Object app;
+
+    static Object getMacAppInstance ()
+        throws NoSuchMethodException, InstantiationException,
+               ClassNotFoundException, IllegalAccessException,
+               InvocationTargetException
+    {
+        if (app == null) {
+            app = getMacAppClass().getDeclaredConstructor().newInstance();
+        }
+        return app;
     }
 }
