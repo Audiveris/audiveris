@@ -78,7 +78,7 @@ application {
     mainClass.set("$project.ext.mainClass")
     
     // Needed to circumvent the limitations brought by Java 9 and above (the JigSaw cuts)
-    applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED"]
+    applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED", "--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"]
 }
 
 // Perhaps no longer needed?
