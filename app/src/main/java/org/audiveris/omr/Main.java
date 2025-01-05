@@ -439,7 +439,7 @@ public class Main
                 "Should we show environment?");
 
         private final Constant.Boolean showAllEnvironmentVariables = new Constant.Boolean(
-                true,
+                false,
                 "Should we show all environment variables?");
 
         private final Constant.String locale = new Constant.String(
