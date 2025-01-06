@@ -202,7 +202,7 @@ public class PluginsManager
                     }
                 }
 
-                logger.info("Loaded plugins from {}", pluginsPath);
+                logger.info("Plugins loaded from {}", pluginsPath);
 
                 return pluginsHolder.list; // Normal exit
             } catch (JAXBException ex) {
