@@ -444,19 +444,27 @@ public class GuiActions
     // DownloadLanguagesTask //
     //-----------------------//
     private static class DownloadLanguagesTask
-            extends VoidTask
+            extends WaitingTask<Languages.DownloadDialog, Void>
     {
+        DownloadLanguagesTask ()
+        {
+            super(OmrGui.getApplication(), resources.getString("downloadLanguagesTask.message"));
+        }
+
         @Override
-        protected Void doInBackground ()
+        protected Languages.DownloadDialog doInBackground ()
             throws Exception
         {
-            final Languages languages = Languages.create();
+            ///final Languages.DownloadDialog dialog = Languages.getInstance().buildDialog();
+            return Languages.getInstance().buildDialog();
+        }
 
-            if (languages != null) {
-                OmrGui.getApplication().show(languages.getComponent());
+        @Override
+        protected void succeeded (Languages.DownloadDialog dialog)
+        {
+            if (dialog != null) {
+                OmrGui.getApplication().show(dialog.getComponent());
             }
-
-            return null;
         }
     }
 

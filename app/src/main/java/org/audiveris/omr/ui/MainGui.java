@@ -43,6 +43,7 @@ import org.audiveris.omr.step.ui.StepMenu;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.text.OCR;
 import org.audiveris.omr.text.OcrUtil;
+import org.audiveris.omr.text.tesseract.Languages;
 import org.audiveris.omr.ui.action.ActionManager;
 import org.audiveris.omr.ui.action.Actions;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -467,8 +468,7 @@ public class MainGui
             }
 
             final SheetStub stub = stubEvent.getData();
-            SwingUtilities.invokeLater( () ->
-            {
+            SwingUtilities.invokeLater( () -> {
                 final StringBuilder sb = new StringBuilder();
 
                 if (stub != null) {
@@ -546,6 +546,9 @@ public class MainGui
 
         // Perhaps time to check for a new release?
         Versions.considerPolling();
+
+        // Check OCR languages
+        Languages.getInstance().checkSupport();
 
         // Launch inputs, books & scripts
         for (Callable<Void> task : Main.getCli().getCliTasks()) {

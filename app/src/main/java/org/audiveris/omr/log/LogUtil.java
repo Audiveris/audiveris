@@ -218,10 +218,10 @@ public abstract class LogUtil
 
                 return;
             } else {
-                initMessage("LogUtil. File " + configPath + " does not exist.");
+                // initMessage("LogUtil. File " + configPath + " does not exist.");
             }
         } else {
-            initMessage("LogUtil. Property " + LOGBACK_LOGGING_KEY + " not defined, skipped.");
+            // initMessage("LogUtil. Property " + LOGBACK_LOGGING_KEY + " not defined, skipped.");
         }
 
         // 2/ Look for well-known location (user Audiveris config folder)
@@ -233,7 +233,7 @@ public abstract class LogUtil
 
             return;
         } else {
-            initMessage("LogUtil. No " + configPath + ", skipped.");
+            // initMessage("LogUtil. No " + configPath + ", skipped.");
         }
 
         // 3/ Look for suitable file within 'res' folder or resource
@@ -261,7 +261,7 @@ public abstract class LogUtil
 
                 return;
             } else {
-                initMessage("LogUtil. No " + localPath + ", skipped.");
+                // initMessage("LogUtil. No " + localPath + ", skipped.");
             }
         } catch (IOException ex) {
             ex.printStackTrace();
