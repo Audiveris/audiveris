@@ -130,8 +130,8 @@ public class SigReducer
     private static final Logger logger = LoggerFactory.getLogger(SigReducer.class);
 
     /** Inter classes for which overlap detection is (currently) disabled. */
-    private static final Class<?>[] disabledClasses = new Class<?>[]
-    { BeamGroupInter.class, LedgerInter.class, SentenceInter.class, WedgeInter.class };
+    private static final Class<?>[] disabledClasses = new Class<?>[] { BeamGroupInter.class,
+            LedgerInter.class, SentenceInter.class, WedgeInter.class };
 
     /** Predicate for non-disabled overlap. */
     private static final Predicate<Inter> overlapPredicate = (Inter inter) -> {
@@ -150,16 +150,15 @@ public class SigReducer
      * Inter classes that can overlap with a beam.
      * NOTA: Barlines are no longer allowed to overlap with a beam
      */
-    private static final Class<?>[] beamCompClasses = new Class<?>[]
-    { AbstractBeamInter.class };
+    private static final Class<?>[] beamCompClasses = new Class<?>[] { AbstractBeamInter.class };
 
     /** Inter classes that can overlap with a slur. */
-    private static final Class<?>[] slurCompClasses = new Class<?>[]
-    { AbstractFlagInter.class, AlterInter.class, BarlineInter.class, StaffBarlineInter.class };
+    private static final Class<?>[] slurCompClasses = new Class<?>[] { AbstractFlagInter.class,
+            AlterInter.class, BarlineInter.class, StaffBarlineInter.class };
 
     /** Inter classes that can overlap with a stem. */
-    private static final Class<?>[] stemCompClasses = new Class<?>[]
-    { SlurInter.class, WedgeInter.class };
+    private static final Class<?>[] stemCompClasses = new Class<?>[] { SlurInter.class,
+            WedgeInter.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -431,7 +430,7 @@ public class SigReducer
     //                Set<StemInter> set = entry.getValue();
     //
     //                if (set.size() > 1) {
-    //                    //////////////////////////////////////////////////HB sig.insertExclusions(set, Exclusion.ExclusionCause.OVERLAP);
+    //                    //HB sig.insertExclusions(set, Exclusion.ExclusionCause.OVERLAP);
     //                    //TODO:
     //                    // Instead of stem exclusion, we should disconnect head from some of these stems
     //                    // Either all the stems above or all the stems below
@@ -608,8 +607,7 @@ public class SigReducer
         for (Inter inter : beams) {
             final BeamInter beam = (BeamInter) inter;
 
-            for (BeamPortion portion : new BeamPortion[]
-            { BeamPortion.LEFT, BeamPortion.RIGHT }) {
+            for (BeamPortion portion : new BeamPortion[] { BeamPortion.LEFT, BeamPortion.RIGHT }) {
                 if (beam.getStemOn(portion) == null) {
                     if (beam.isVip()) {
                         logger.info("VIP deleting {} lacking stem on {}", beam, portion);

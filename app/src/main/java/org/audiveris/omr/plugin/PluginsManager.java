@@ -209,7 +209,7 @@ public class PluginsManager
                 logger.warn("Error loading {}", pluginsPath, ex);
             }
         } else {
-            logger.info("No {} file found", pluginsPath);
+            logger.debug("No {} file found", pluginsPath);
         }
 
         return Collections.emptyList();
