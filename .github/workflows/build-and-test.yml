@@ -11,7 +11,8 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     env:
-      TESSDATA_PREFIX: /home/runner/work/audiveris/audiveris/tessdata
+      # TESSDATA_PREFIX: /home/runner/work/audiveris/audiveris/tessdata
+      TESSDATA_PREFIX: /home/runner/.config/AudiverisLtd/audiveris/tessdata
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
