@@ -275,6 +275,19 @@ public abstract class Filament
         return constants.probeWidth;
     }
 
+    //-------------------//
+    // getProbeMinWeight //
+    //-------------------//
+    /**
+     * Report the minimum weight in the window used to determine filament position
+     *
+     * @return the scale-independent probe minimum weight
+     */
+    public static Scale.Fraction getProbeMinWeight ()
+    {
+        return constants.probeMinWeight;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------//
@@ -286,5 +299,9 @@ public abstract class Filament
         private final Scale.Fraction probeWidth = new Scale.Fraction(
                 0.5,
                 "Width of probing window to retrieve filament ordinate");
+
+        private final Scale.Fraction probeMinWeight = new Scale.Fraction(
+                0.2,
+                "Minimum weight in probing window to validate filament ordinate");
     }
 }
