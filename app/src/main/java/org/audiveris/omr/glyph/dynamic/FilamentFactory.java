@@ -1088,7 +1088,7 @@ public class FilamentFactory<F extends Filament>
                 "Minimum length for a section to be considered as core");
 
         private final Scale.Fraction maxOverlapDeltaPos = new Scale.Fraction(
-                0.4, // Was 0.5 which led to half notes bowing the underlying staff line
+                0.25, // Was 0.5 which led to half notes bowing the underlying staff line
                 "Maximum delta position between two overlapping filaments");
 
         private final Scale.Fraction maxCoordGap = new Scale.Fraction(

@@ -60,7 +60,7 @@ public class CurvedFilament
     /** Typical length between points. */
     protected final int segmentLength;
 
-    /** Absolute defining points (including start &amp; stop points). */
+    /** Absolute defining points (including start and stop points). */
     protected List<Point2D> points;
 
     /** Curved line across all defining points. */
@@ -88,37 +88,49 @@ public class CurvedFilament
     //-------------//
     /**
      * Compute cached data: curve, startPoint, stopPoint, slope.
+     * <p>
      * Curve goes from startPoint to stopPoint through intermediate points rather regularly spaced.
+     * <p>
+     * At each intermediate location, a probe is used to compute the centroid of contained pixels,
+     * and then define the intermediate point.
+     * Since the line expected thickness varies with the filament at hand, we must be rather
+     * conservative regarding the minimum probe weight.
+     * We thus use a simple fraction of the probe width.
      */
     @Override
     public void computeLine ()
     {
         try {
-            /** Width of window to retrieve pixels */
-            int probeWidth = InterlineScale.toPixels(interline, Filament.getProbeWidth());
+            // Width and minWeight of window to retrieve pixels
+            final int probeWidth = InterlineScale.toPixels(interline, Filament.getProbeWidth());
+            final int minWeight = Math.max(
+                    1,
+                    InterlineScale.toPixels(interline, Filament.getProbeMinWeight()));
 
             // We need a rough orientation right now
-            Orientation orientation = getRoughOrientation();
-            Point2D orientedStart = (startPoint == null) ? null : orientation.oriented(startPoint);
-            Point2D orientedStop = (stopPoint == null) ? null : orientation.oriented(stopPoint);
-            Rectangle oBounds = orientation.oriented(getBounds());
-            double oStart = (orientedStart != null) ? orientedStart.getX() : oBounds.x;
-            double oStop = (orientedStop != null) ? orientedStop.getX()
+            final Orientation orientation = getRoughOrientation();
+            final Point2D orientedStart = (startPoint == null) ? null
+                    : orientation.oriented(startPoint);
+            final Point2D orientedStop = (stopPoint == null) ? null
+                    : orientation.oriented(stopPoint);
+            final Rectangle oBounds = orientation.oriented(getBounds());
+            final double oStart = (orientedStart != null) ? orientedStart.getX() : oBounds.x;
+            final double oStop = (orientedStop != null) ? orientedStop.getX()
                     : (oBounds.x + (oBounds.width - 1));
-            double length = oStop - oStart + 1;
+            final double length = oStop - oStart + 1;
 
-            Rectangle oProbe = new Rectangle(oBounds);
+            final Rectangle oProbe = new Rectangle(oBounds);
             oProbe.x = (int) Math.ceil(oStart);
             oProbe.width = probeWidth;
 
             // Determine the number of segments and their precise length
-            int segCount = (int) Math.rint(length / segmentLength);
-            double segLength = length / segCount;
-            List<Point2D> newPoints = new ArrayList<>(segCount + 1);
+            final int segCount = (int) Math.rint(length / segmentLength);
+            final double segLength = length / segCount;
+            final List<Point2D> newPoints = new ArrayList<>(segCount + 1);
 
-            // First point
+            // First point (minimum weight: 1)
             if (startPoint == null) {
-                Point2D p = orientation.oriented(getCentroid(orientation.absolute(oProbe)));
+                final Point2D p = orientation.oriented(getCentroid(orientation.absolute(oProbe)));
                 startPoint = orientation.absolute(new Point2D.Double(oStart, p.getY()));
             }
 
@@ -128,19 +140,20 @@ public class CurvedFilament
             for (int i = 1; i < segCount; i++) {
                 oProbe.x = (int) Math.rint(oStart + (i * segLength));
 
-                Point2D pt = getCentroid(orientation.absolute(oProbe));
+                // Here we can impose a true minimum weight
+                final Point2D pt = getCentroid(orientation.absolute(oProbe), minWeight);
 
-                // If, unfortunately, we are in a filament hole, just skip it
+                // If, unfortunately, we are in a filament "hole", we can just skip it
                 if (pt != null) {
                     newPoints.add(pt);
                 }
             }
 
-            // Last point
+            // Last point (minimum weight: 1)
             if (stopPoint == null) {
                 oProbe.x = (int) Math.floor(oStop - oProbe.width + 1);
 
-                Point2D p = orientation.oriented(getCentroid(orientation.absolute(oProbe)));
+                final Point2D p = orientation.oriented(getCentroid(orientation.absolute(oProbe)));
                 stopPoint = orientation.absolute(new Point2D.Double(oStop, p.getY()));
             }
 

@@ -76,9 +76,10 @@ public class StaffFilament
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new LineFilament object.
-     * Nota: this constructor is needed for FilamentFactory which calls this
-     * kind of constructor via a newInstance() method.
+     * Creates a new <code>StaffFilament</code> object.
+     * <p>
+     * NOTA: this constructor is needed for {@link FilamentFactory} which calls this kind of
+     * constructor via a newInstance() method.
      *
      * @param interline scaling data
      */
