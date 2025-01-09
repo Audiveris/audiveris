@@ -61,48 +61,51 @@
     <release version="5.4" date="2024-12-25" urgency="low"
 	     type="stable">
       <description>
+        <p>
+           User Interface
+        </p>
         <ul>
-            <li>User Interface
-                <ul>
-                    <li>New feature to handle the local collection of OCR languages and download additional ones on demand from the GitHub Tesseract site.</li>
-                    <li>Creation of the Binarization adjustment board to dynamically adjust the binarization filters and settings. Contributed by <a href="https://github.com/mgporter">Michael Porter</a>.</li>
-                    <li>Past the SYMBOLS step, the manual removal of any Inter now triggers a dynamic rebuilding of glyphs, as if the removed Inter had never existed.</li>
-                    <li>Improvement and extension of default/book/sheet parameters (interline, barline)</li>
-                    <li>Ability to display some inters in jumbo mode to ease a visual inspection – by default this can apply to augmentation dots.</li>
-                    <li>Ability to gracefully stop the current book processing at the next step end.</li>
-                    <li>Ability to clear the log window – the log file remains intact.</li>
-                    <li>Waiting message for long loading of book or sheet.</li>
-                </ul>
-            </li>
-            <li>Engine
-                <ul>
-                    <li>Support for metronome mark.</li>
-                    <li>The recognition of fermata no longer requires separate recognitions of fermata-arc and fermata-dot.</li>
-                    <li>The processing of an input image with no white margin around the staves is now possible.</li>
-                </ul>
-            </li>
-            <li>Project
-                <ul>
-                    <li>A Linux Flatpak installer, gathering the needed libraries including proper Java environment, is provided on FlatHub. Contributed by <a href="https://github.com/mwilck">Martin Wilck</a> and <a href="https://github.com/jwharm">Jan-Willem Harmannij</a>.</li>
-                    <li>Both Linux and Windows installers pre-populate the user config/tessdata folder with the eng Tesseract language.</li>
-                    <li>For licence reasons, JPodRenderer had to be replaced by Apache PDFBox to load PDF images.</li>
-                </ul>
-            </li>
-            <li>Documentation
-                <ul>
-                    <li>Global handbook restructuring.</li>
-                    <li>Support for a PDF version of handbook.</li>
-                    <li>Re-reading of the whole documentation. Contributed by <a href="https://github.com/brian-math">Brian Boe</a>, native American-English speaker!</li>
-                </ul>
-            </li>
-            <li>Java
-                <ul>
-                    <li>In Audiveris.bat (used by the Windows installer) and Audiveris start scripts, the Java version is checked before the application is launched.</li>
-                    <li>Support of Java 21.</li>
-                    <li>Upgrade to Gradle 8.5 to support Java 21.</li>
-                    <li>Removal of all deprecated features such as JGoodies PanelBuilder, Observer/Observable, class.newInstance(), etc.</li>
-                </ul>
-            </li>
+            <li>New feature to handle the local collection of OCR languages and download additional ones on demand from the GitHub Tesseract site.</li>
+            <li>Creation of the Binarization adjustment board to dynamically adjust the binarization filters and settings.</li>
+            <li>Past the SYMBOLS step, the manual removal of any Inter now triggers a dynamic rebuilding of glyphs, as if the removed Inter had never existed.</li>
+            <li>Improvement and extension of default/book/sheet parameters (interline, barline)</li>
+            <li>Ability to display some inters in jumbo mode to ease a visual inspection – by default this can apply to augmentation dots.</li>
+            <li>Ability to gracefully stop the current book processing at the next step end.</li>
+            <li>Ability to clear the log window – the log file remains intact.</li>
+            <li>Waiting message for long loading of book or sheet.</li>
+        </ul>
+        <p>
+            Engine
+        </p>
+        <ul>
+            <li>Support for metronome mark.</li>
+            <li>The recognition of fermata no longer requires separate recognitions of fermata-arc and fermata-dot.</li>
+            <li>The processing of an input image with no white margin around the staves is now possible.</li>
+        </ul>
+        <p>
+            Project
+        </p>
+        <ul>
+            <li>A Linux Flatpak installer, gathering the needed libraries including proper Java environment, is provided on FlatHub.</li>
+            <li>Both Linux and Windows installers pre-populate the user config/tessdata folder with the eng Tesseract language.</li>
+            <li>For licence reasons, JPodRenderer had to be replaced by Apache PDFBox to load PDF images.</li>
+        </ul>
+        <p>
+            Documentation
+        </p>
+        <ul>
+            <li>Global handbook restructuring.</li>
+            <li>Support for a PDF version of handbook.</li>
+            <li>Re-reading of the whole documentation.</li>
+        </ul>
+        <p>
+            Java
+        </p>
+        <ul>
+            <li>In Audiveris.bat (used by the Windows installer) and Audiveris start scripts, the Java version is checked before the application is launched.</li>
+            <li>Support of Java 21.</li>
+            <li>Upgrade to Gradle 8.5 to support Java 21.</li>
+            <li>Removal of all deprecated features such as JGoodies PanelBuilder, Observer/Observable, class.newInstance(), etc.</li>
         </ul>
       </description>
     </release>
@@ -150,6 +153,7 @@
 	</p>
 	<p>
 	  This is a bug fix release:
+        </p>
 	  <ol>
 	    <li>
 	      Fixed incompatibility between dummy-rests created on-the-fly at
@@ -160,13 +164,13 @@
 	      or assignment
 	    </li>
 	  </ol>
-	</p>
       </description>
     </release>
     <release version="5.2.4" date="2021-09-15" urgency="medium" type="stable">
       <description>
 	<p>
 	  Time slot alignment
+        </p>
 	  <ul>
 	    <li>
 	      Better handling of vertical alignment within a time slot
@@ -175,7 +179,6 @@
 	      Several minor bug fixes
 	    </li>
 	  </ul>
-	</p>
       </description>
     </release>
     <release version="5.2.3" date="2021-08-05" urgency="medium" type="stable"/>
