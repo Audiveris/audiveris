@@ -29,9 +29,6 @@ finish-args:
   # Needs to save files locally
   - --filesystem=xdg-documents
   - --filesystem=xdg-pictures
-  - --filesystem=xdg-cache
-  - --filesystem=xdg-config
-  - --filesystem=xdg-data
   - --env=PATH=/app/bin:/app/jre/bin:/usr/bin
   - --env=JAVA_HOME=/app/jre
   # Calling abort() on malloc-check doesn't fly with OpenJDK
