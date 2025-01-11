@@ -87,7 +87,7 @@
         </p>
         <ul>
             <li>A Linux Flatpak installer, gathering the needed libraries including proper Java environment, is provided on FlatHub.</li>
-            <li>Both Linux and Windows installers pre-populate the user config/tessdata folder with the eng Tesseract language.</li>
+            <li>The Windows installer pre-populates the user config/tessdata folder with the eng Tesseract language.</li>
             <li>For licence reasons, JPodRenderer had to be replaced by Apache PDFBox to load PDF images.</li>
         </ul>
         <p>
