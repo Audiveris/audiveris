@@ -12,7 +12,7 @@
 //      - windows-installer : The installer for Windows OS
 //
 // Sub-modules:
-//      - dev/flathub       : The Linux flatpak
+//      - flatpak           : The Linux flatpak
 //
 //--------------------------------------------------------------------------------------------------
 
@@ -20,7 +20,7 @@ plugins {
     id 'application'
 
     // Needed to retrieve all dependencies for flatpak
-    id 'io.github.jwharm.flatpak-gradle-generator' version '1.1.0'
+    id 'io.github.jwharm.flatpak-gradle-generator' version '1.2.0'
 }
 
 // Name of host OS
@@ -41,6 +41,15 @@ ext.hostOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86", "x86
 ext.hostOS       = "${project.ext.hostOSName}-${project.ext.hostOSArch}"
 println "hostOS: ${project.ext.hostOS}"
 
+// Architecture of target OS
+if (project.hasProperty('targetOS')) {
+    println "property targetOS: " + project.property('targetOS')
+    ext.targetOS = project.property('targetOS')
+} else {
+    ext.targetOS = ext.hostOS
+}
+println "targetOS: ${project.ext.targetOS}"
+
 // Handling of Java version
 ext.theMinJavaVersion = project.property('theMinJavaVersion')
 println "theMinJavaVersion: $theMinJavaVersion"
@@ -56,6 +65,7 @@ ext.jcppVersion     = '1.5.9'
 ext.leptVersion     = '1.83.0'
 ext.tessVersion     = '5.3.1'
 
+// No longer needed, but kept for potential future use (like batch integration test)
 ext.tessdataTag     = project.property('theTessdataTag')
 println "theTessdataTag: $tessdataTag"
 
@@ -68,7 +78,7 @@ ext.companyId       = "${programName}Ltd"
 // Name of Java main class. 
 // The caller may have set the property on the gradle command line via a -PmainClass=foobar
 if (project.hasProperty('mainClass')) {
-    println "property mainClass:" + project.property('mainClass')
+    println "property mainClass: " + project.property('mainClass')
     ext.mainClass = project.property('mainClass')
 } else {
     ext.mainClass = ext.programName
@@ -191,8 +201,8 @@ dependencies {
     )
 
     runtimeOnly(
-        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.hostOS}"],
-        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.hostOS}"]
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
     )
 
     testImplementation(
@@ -202,7 +212,7 @@ dependencies {
 }
 
 // Trick for Linux to include 'arm64' architecture in addition to 'x86_64'
-if (hostOS == "linux-x86_64") {
+if (targetOS == "linux-x86_64") {
     dependencies {
         runtimeOnly(
             [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "linux-arm64"],
