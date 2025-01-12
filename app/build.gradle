@@ -58,7 +58,11 @@ java {
     sourceCompatibility = JavaLanguageVersion.of(theMinJavaVersion)
 }
 
-project.version = '5.4-alpha'
+// Central location for application version and (flatpak) tag
+project.version = '5.4-beta'
+ext.tag         = '5.4-beta'
+println "version: ${project.version}"
+println "tag:     ${project.ext.tag}"
 
 // Central location for the specific versions of tesseract dependencies
 ext.jcppVersion     = '1.5.9'

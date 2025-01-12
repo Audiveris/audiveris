@@ -51,7 +51,7 @@ task genDependencies {
     inputs.files(sharedFiles)
 
     doLast {
-        println "Copying dependencies.json"
+        println "flatpak. Copying dependencies.json"
         copy {
             from('../app/build/dependencies.json')
             into(flathubDir)
@@ -71,7 +71,7 @@ task genManifest {
     description("Generate manifest from template")
 
     doLast {
-        println "Generating Flatpak manifest"
+        println "flatpak. Generating manifest"
         copy {
             from('dev/org.audiveris.audiveris.template.yml') {
                 def binding = [:]
@@ -79,7 +79,7 @@ task genManifest {
                 binding.GRADLE_URL = "$gradleUrl"
                 binding.GRADLE_NAME = "$gradleName"
                 binding.GRADLE_SHA256 = wrapperProps.getProperty("distributionSha256Sum")
-                binding.TAG = '5.4-alpha-hb1'
+                binding.TAG = "$app.ext.tag"
                 expand(binding)
             }
             into(flathubDir)
@@ -95,7 +95,7 @@ task initFlathub {
     dependsOn('genManifest')
 
     doLast {
-        println "Copying resources to flathub"
+        println "flatpak. Copying resources to flathub"
         copy {
             from('res')
             into(flathubDir)
