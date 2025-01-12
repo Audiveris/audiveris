@@ -27,6 +27,7 @@ import static org.audiveris.omr.text.Language.getSupportedLanguages;
 import static org.audiveris.omr.text.tesseract.TesseractOCR.LANGUAGE_FILE_EXT;
 import org.audiveris.omr.ui.GuiActions;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.ui.util.UserOpt;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -247,9 +248,25 @@ public class Languages
             framePane.setLayout(new BorderLayout());
 
             final JPanel panel = defineLayout(remoteCodes);
-            framePane.add(new JScrollPane(panel), BorderLayout.WEST);
+
+            final JOptionPane optionPane = new JOptionPane(
+                    new JScrollPane(panel),
+                    JOptionPane.PLAIN_MESSAGE,
+                    JOptionPane.DEFAULT_OPTION,
+                    null,
+                    new Object[] { UserOpt.OK });
+            optionPane.addPropertyChangeListener(e -> {
+                final Object choice = optionPane.getValue();
+                if (choice == UserOpt.Cancel || choice == UserOpt.OK) {
+                    dialog.setVisible(false);
+                    dialog.dispose();
+                }
+            });
 
             resources.injectComponents(dialog);
+
+            dialog.setContentPane(optionPane);
+            dialog.pack();
         }
 
         private JPanel defineLayout (List<String> remoteCodes)
