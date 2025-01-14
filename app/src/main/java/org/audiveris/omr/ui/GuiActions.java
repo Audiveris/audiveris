@@ -211,21 +211,6 @@ public class GuiActions
         ShapeColorChooser.showFrame();
     }
 
-    //-------------------//
-    // downloadLanguages //
-    //-------------------//
-    /**
-     * Download OCR languages from github.
-     *
-     * @param e the event which triggered this action
-     * @return the task to launch
-     */
-    @Action
-    public Task downloadLanguages (ActionEvent e)
-    {
-        return new DownloadLanguagesTask();
-    }
-
     //------//
     // exit //
     //------//
@@ -238,6 +223,21 @@ public class GuiActions
     public void exit (ActionEvent e)
     {
         OmrGui.getApplication().exit();
+    }
+
+    //------------------//
+    // installLanguages //
+    //------------------//
+    /**
+     * Install OCR languages from github.
+     *
+     * @param e the event which triggered this action
+     * @return the SAF task
+     */
+    @Action
+    public InstallLanguagesTask installLanguages (ActionEvent e)
+    {
+        return new InstallLanguagesTask();
     }
 
     //--------------------//
@@ -440,31 +440,23 @@ public class GuiActions
                 "URL of Audiveris manual");
     }
 
-    //-----------------------//
-    // DownloadLanguagesTask //
-    //-----------------------//
-    private static class DownloadLanguagesTask
-            extends WaitingTask<Languages.DownloadDialog, Void>
+    //----------------------//
+    // InstallLanguagesTask //
+    //----------------------//
+    public static class InstallLanguagesTask
+            extends VoidTask
     {
-        DownloadLanguagesTask ()
-        {
-            super(OmrGui.getApplication(), resources.getString("downloadLanguagesTask.message"));
-        }
-
         @Override
-        protected Languages.DownloadDialog doInBackground ()
+        protected Void doInBackground ()
             throws Exception
         {
-            ///final Languages.DownloadDialog dialog = Languages.getInstance().buildDialog();
-            return Languages.getInstance().buildDialog();
-        }
+            final Languages.Selector dld = Languages.getInstance().getSelector();
 
-        @Override
-        protected void succeeded (Languages.DownloadDialog dialog)
-        {
-            if (dialog != null) {
-                OmrGui.getApplication().show(dialog.getComponent());
+            if (dld != null) {
+                OmrGui.getApplication().show(dld.getComponent());
             }
+
+            return null;
         }
     }
 

@@ -26,12 +26,12 @@ import static org.audiveris.omr.text.Language.DEFINED_LANGUAGES;
 import static org.audiveris.omr.text.Language.getSupportedLanguages;
 import static org.audiveris.omr.text.tesseract.TesseractOCR.LANGUAGE_FILE_EXT;
 import org.audiveris.omr.ui.GuiActions;
+import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.util.Panel;
-import org.audiveris.omr.ui.util.UserOpt;
+import org.audiveris.omr.ui.util.WaitingTask;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
-import org.jdesktop.application.Task;
 
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
@@ -44,11 +44,13 @@ import org.slf4j.LoggerFactory;
 import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
-import java.awt.BorderLayout;
+import static java.awt.Component.CENTER_ALIGNMENT;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -61,6 +63,8 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -70,11 +74,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 
 /**
- * Class <code>Languages</code> defines the user dialogues to check and download all possible
- * Tesseract languages files.
+ * Class <code>Languages</code> defines the user dialogues to check and install languages files.
  *
  * @author Hervé Bitteur
  */
@@ -92,7 +94,14 @@ public class Languages
 
     //~ Instance fields ----------------------------------------------------------------------------
 
+    /** Component resources. */
     private final ResourceMap resources;
+
+    /** Remote data (languages, codes). */
+    private RemoteData remoteData;
+
+    /** The user interface to browse, select and install languages. */
+    private Selector selector;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -106,58 +115,20 @@ public class Languages
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //-------------//
-    // buildDialog //
-    //-------------//
+    //---------------//
+    // buildSelector //
+    //---------------//
     /**
-     * Build the download dialog, based on the languages remotely available on Github
-     * Tesseract site.
+     * Build the languages selector, based on the data remotely available.
      *
-     * @return
+     * @return the selector newly built
      */
-    public DownloadDialog buildDialog ()
+    private Selector buildSelector ()
     {
-        try {
-            // Retrieve the list of language codes available on the GitHub/Tesseract site.
-            final GitHub github = GitHub.connectAnonymously();
+        getRemoteData();
 
-            final GHOrganization organization = github.getOrganization(GITHUB_ORGANIZATION);
-            logger.debug("{}", organization);
-
-            final GHRepository repository = organization.getRepository(GITHUB_REPOSITORY);
-            logger.debug("{}", repository);
-
-            if (repository == null) {
-                logger.warn("Unknown repository: {}", GITHUB_REPOSITORY);
-                return null;
-            }
-
-            // Retrieve the remote codes
-            final List<GHContent> remoteContent = repository.getDirectoryContent("");
-            final List<String> codes = new ArrayList<>();
-
-            for (GHContent c : remoteContent) {
-                final String fileName = c.getName();
-
-                if (c.isFile() && fileName.endsWith(LANGUAGE_FILE_EXT)) {
-                    codes.add(fileName.replace(LANGUAGE_FILE_EXT, ""));
-                    logger.debug("code: {} size: {}", fileName, c.getSize());
-                }
-            }
-
-            logger.info("Languages available on Tesseract site: {}", codes.size());
-
-            if (!codes.isEmpty()) {
-                return new DownloadDialog(remoteContent, codes);
-            }
-        } catch (IOException ex) {
-            logger.warn("Error getting remote languages.\n   {}", ex.getMessage());
-
-            if (ex.getCause() != null) {
-                logger.warn("   Cause: {}", ex.getCause().toString());
-            }
-
-            logger.warn("   Please make sure you have access to Internet.");
+        if ((remoteData != null) && !remoteData.codes.isEmpty()) {
+            return new Selector();
         }
 
         return null;
@@ -167,21 +138,21 @@ public class Languages
     // checkSupport //
     //--------------//
     /**
-     * Check the current set of supported languages and prompt the user to download some
+     * Check the current set of installed languages and prompt the user to install some
      * if the set is empty.
      */
     public void checkSupport ()
     {
-        final SortedSet<String> supported = TesseractOCR.getInstance().getSupportedLanguages();
-        if (!supported.isEmpty()) {
+        final SortedSet<String> installed = TesseractOCR.getInstance().getSupportedLanguages();
+        if (!installed.isEmpty()) {
             logger.info(
-                    "Supported OCR languages: {}",
-                    supported.stream().collect(Collectors.joining(",")));
+                    "Installed OCR languages: {}",
+                    installed.stream().collect(Collectors.joining(",")));
         } else {
             // Prompt user
-            final String download = resources.getString("Check.download");
+            final String install = resources.getString("Check.install");
             final String later = resources.getString("Check.later");
-            final Object[] options = { download, later };
+            final Object[] options = { install, later };
             final String message = resources.getString("Check.message");
 
             final int choice = JOptionPane.showOptionDialog(
@@ -195,11 +166,92 @@ public class Languages
                     options[0]);
 
             if (choice == 0) {
-                // Download
-                final Task task = GuiActions.getInstance().downloadLanguages(null);
-                SwingUtilities.invokeLater( () -> task.execute());
+                GuiActions.getInstance().installLanguages(null).execute();
             }
         }
+    }
+
+    //--------------------//
+    // downloadRemoteData //
+    //--------------------//
+    /**
+     * Download the collection of languages names and codes available on Github Tesseract site.
+     */
+    private void downloadRemoteData ()
+    {
+        try {
+            // Retrieve the list of language codes available on the GitHub/Tesseract site.
+            final GitHub github = GitHub.connectAnonymously();
+
+            final GHOrganization organization = github.getOrganization(GITHUB_ORGANIZATION);
+            logger.debug("{}", organization);
+
+            final GHRepository repository = organization.getRepository(GITHUB_REPOSITORY);
+            logger.debug("{}", repository);
+
+            if (repository == null) {
+                logger.warn("Unknown repository: {}", GITHUB_REPOSITORY);
+                return;
+            }
+
+            // Retrieve the remote content and codes
+            remoteData = new RemoteData();
+            remoteData.content = repository.getDirectoryContent("");
+            remoteData.codes = new ArrayList<>();
+
+            for (GHContent c : remoteData.content) {
+                final String fileName = c.getName();
+
+                if (c.isFile() && fileName.endsWith(LANGUAGE_FILE_EXT)) {
+                    remoteData.codes.add(fileName.replace(LANGUAGE_FILE_EXT, ""));
+                    logger.debug("code: {} size: {}", fileName, c.getSize());
+                }
+            }
+
+            logger.info("Languages available on Tesseract site: {}", remoteData.codes.size());
+        } catch (IOException ex) {
+            logger.warn("Error getting remote languages.\n   {}", ex.getMessage());
+
+            if (ex.getCause() != null) {
+                logger.warn("   Cause: {}", ex.getCause().toString());
+            }
+
+            logger.warn("   Please make sure you have access to Internet.");
+        }
+    }
+
+    //---------------//
+    // getRemoteData //
+    //---------------//
+    /**
+     * Return the collection of languages remotely available on Github Tesseract site.
+     *
+     * @return the RemoteData or null
+     */
+    private RemoteData getRemoteData ()
+    {
+        if (remoteData == null) {
+            new DownloadRemoteTask().run();
+        }
+
+        return remoteData;
+    }
+
+    //-------------//
+    // getSelector //
+    //-------------//
+    /**
+     * Report the UI dialog to browse, select and install OCR languages.
+     *
+     * @return the selector
+     */
+    public Selector getSelector ()
+    {
+        if (selector == null) {
+            selector = buildSelector();
+        }
+
+        return selector;
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
@@ -218,72 +270,164 @@ public class Languages
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
-    //----------------//
-    // DownloadDialog //
-    //----------------//
-    public class DownloadDialog
+    //--------------------//
+    // DownloadRemoteTask //
+    //--------------------//
+    /**
+     * Task to download the lists of languages names and codes from Tesseract GitHub site.
+     */
+    private class DownloadRemoteTask
+            extends WaitingTask<Languages.RemoteData, Void>
     {
-        /** Content of the GitHub Tesseract repository to interact with. */
-        private final List<GHContent> remoteContent;
+        DownloadRemoteTask ()
+        {
+            super(OmrGui.getApplication(), resources.getString("downloadTask.message"));
+        }
 
-        /** The dialog to browse and download. */
+        @Override
+        protected Languages.RemoteData doInBackground ()
+            throws Exception
+        {
+            downloadRemoteData();
+            return remoteData;
+        }
+    }
+
+    //------------//
+    // RemoteData //
+    //------------//
+    /**
+     * The collection of names and codes remotely available on Github Tesseract site.
+     */
+    public static class RemoteData
+    {
+        /** List of languages files names. */
+        public List<GHContent> content;
+
+        /** List of 3-letter codes. */
+        public List<String> codes;
+    }
+
+    //-----------------//
+    // ScrollablePanel //
+    //-----------------//
+    private static class ScrollablePanel
+            extends JPanel
+            implements Scrollable
+    {
+        @Override
+        public Dimension getPreferredScrollableViewportSize ()
+        {
+            return getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableBlockIncrement (Rectangle visibleRect,
+                                                int orientation,
+                                                int direction)
+        {
+            return (orientation == SwingConstants.HORIZONTAL) //
+                    ? visibleRect.width
+                    : visibleRect.height;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight ()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth ()
+        {
+            return true;
+        }
+
+        @Override
+        public int getScrollableUnitIncrement (Rectangle visibleRect,
+                                               int orientation,
+                                               int direction)
+        {
+            return 40; // Minimum cell height. TODO: Could be improved.
+        }
+    }
+
+    //----------//
+    // Selector //
+    //----------//
+    /**
+     * The UI to browse, select and install languages.
+     */
+    public class Selector
+            implements ActionListener
+    {
         private final JDialog dialog;
 
-        /**
-         * Creates a new <code>DownloadDialog</code> object.
-         *
-         * @param remoteContent the list of Github languages
-         * @param remoteCodes   the parallel list of codes
-         */
-        public DownloadDialog (List<GHContent> remoteContent,
-                               List<String> remoteCodes)
-        {
-            this.remoteContent = remoteContent;
+        private final String boxTip = resources.getString("box.shortDescription");
 
-            dialog = new JDialog(OMR.gui.getFrame());
+        /**
+         * Creates a new <code>Selector</code> object.
+         */
+        public Selector ()
+        {
+            dialog = new JDialog(OMR.gui.getFrame(), true); // True for a modal dialog
             dialog.setName("LanguagesFrame"); // For SAF life cycle
             dialog.setPreferredSize(new Dimension(340, 600));
 
             final JComponent framePane = (JComponent) dialog.getContentPane();
-            framePane.setLayout(new BorderLayout());
+            framePane.setLayout(new BoxLayout(framePane, BoxLayout.Y_AXIS));
 
-            final JPanel panel = defineLayout(remoteCodes);
+            framePane.add(new JScrollPane(defineLayout()));
 
-            final JOptionPane optionPane = new JOptionPane(
-                    new JScrollPane(panel),
-                    JOptionPane.PLAIN_MESSAGE,
-                    JOptionPane.DEFAULT_OPTION,
-                    null,
-                    new Object[] { UserOpt.OK });
-            optionPane.addPropertyChangeListener(e -> {
-                final Object choice = optionPane.getValue();
-                if (choice == UserOpt.Cancel || choice == UserOpt.OK) {
-                    dialog.setVisible(false);
-                    dialog.dispose();
+            // Closing (via close button)
+            JButton button = new JButton();
+            button.setName("closeButton");
+            button.setAlignmentX(CENTER_ALIGNMENT);
+            button.addActionListener(this);
+            framePane.add(button);
+
+            // Closing (via close window)
+            dialog.addWindowListener(new WindowAdapter()
+            {
+                @Override
+                public void windowClosing (WindowEvent e)
+                {
+                    closeDialog();
                 }
             });
 
             resources.injectComponents(dialog);
-
-            dialog.setContentPane(optionPane);
             dialog.pack();
         }
 
-        private JPanel defineLayout (List<String> remoteCodes)
+        @Override
+        public void actionPerformed (ActionEvent e)
         {
+            closeDialog();
+        }
+
+        private void closeDialog ()
+        {
+            dialog.setVisible(false);
+            dialog.dispose();
+        }
+
+        private JPanel defineLayout ()
+        {
+            final List<String> codes = remoteData.codes;
             final ScrollablePanel panel = new ScrollablePanel();
 
             // JGoodies columns:           code        checkbox        fullName
             final String colSpec = "right:50dlu,5dlu,center:10dlu,5dlu,left:200dlu";
             final int perLine = 19;
-            final int height = remoteCodes.size() * perLine;
+            final int height = codes.size() * perLine;
             panel.setPreferredSize(new Dimension(320, height));
 
-            final FormLayout layout = new FormLayout(colSpec, Panel.makeRows(remoteCodes.size()));
+            final FormLayout layout = new FormLayout(colSpec, Panel.makeRows(codes.size()));
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(panel);
             int r = 1;
 
-            for (String name : remoteCodes) {
+            for (String name : codes) {
                 final LangLine line = new LangLine(name);
                 line.label.setHorizontalAlignment(SwingConstants.LEFT);
                 builder.addRaw(line.label).xy(1, r);
@@ -296,11 +440,11 @@ public class Languages
         }
 
         /**
-         * Download the data file for the provided language code.
+         * Install the data file for the provided language code.
          *
-         * @param code the desired language code
+         * @param code the language code
          */
-        private void download (String code)
+        private void install (String code)
         {
             try {
                 final Path ocrFolder = TesseractOCR.getInstance().getOcrFolder();
@@ -313,7 +457,7 @@ public class Languages
 
                 final String fileName = code + LANGUAGE_FILE_EXT;
 
-                for (GHContent c : remoteContent) {
+                for (GHContent c : remoteData.content) {
                     if (c.isFile() && c.getName().equals(fileName)) {
                         final URI uri = new URI(c.getDownloadUrl());
                         final Path targetPath = ocrFolder.resolve(fileName);
@@ -321,7 +465,7 @@ public class Languages
 
                         try (InputStream is = uri.toURL().openStream()) {
                             final long size = Files.copy(is, targetPath, REPLACE_EXISTING);
-                            logger.info("Downloaded file: {} size: {}", fileName, size);
+                            logger.info("Installed file: {} size: {}", fileName, size);
 
                             // Update the current collection of supported codes
                             getSupportedLanguages().addCode(code);
@@ -368,6 +512,7 @@ public class Languages
 
                 if (fn != null) {
                     box = new JCheckBox();
+                    box.setToolTipText(boxTip);
                     fullName = new JLabel(fn);
 
                     label.setEnabled(true);
@@ -397,54 +542,10 @@ public class Languages
                     if (getSupportedLanguages().contains(code)) {
                         logger.info("No need to re-download '{}'", code);
                     } else {
-                        download(code);
+                        install(code);
                     }
                 }
             }
-        }
-    }
-
-    //-----------------//
-    // ScrollablePanel //
-    //-----------------//
-    private static class ScrollablePanel
-            extends JPanel
-            implements Scrollable
-    {
-        @Override
-        public Dimension getPreferredScrollableViewportSize ()
-        {
-            return getPreferredSize();
-        }
-
-        @Override
-        public int getScrollableBlockIncrement (Rectangle visibleRect,
-                                                int orientation,
-                                                int direction)
-        {
-            return (orientation == SwingConstants.HORIZONTAL) //
-                    ? visibleRect.width
-                    : visibleRect.height;
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportHeight ()
-        {
-            return false;
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportWidth ()
-        {
-            return true;
-        }
-
-        @Override
-        public int getScrollableUnitIncrement (Rectangle visibleRect,
-                                               int orientation,
-                                               int direction)
-        {
-            return 40; // Minimum cell height. TODO: Could be improved.
         }
     }
 }
