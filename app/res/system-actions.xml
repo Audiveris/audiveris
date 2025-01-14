@@ -87,7 +87,7 @@
 <!--    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleLetters"       topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>-->
 <!--    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleSentences"     topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>-->
 
-    <action domain="TOOL" section="5"  class="org.audiveris.omr.ui.GuiActions"        method="downloadLanguages"/>
+    <action domain="TOOL" section="5"  class="org.audiveris.omr.ui.GuiActions"        method="installLanguages"/>
     <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="browseGlobalSamples"  topic="SAMPLES"/>
     <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="saveGlobalSamples"    topic="SAMPLES"/>
     <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="browseLocalSamples"   topic="SAMPLES"/>

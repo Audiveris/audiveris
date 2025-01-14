@@ -141,26 +141,6 @@ public class TesseractOCR
             }
         }
 
-        //        // Second, scan OS typical TESSDATA locations, beginning by user Audiveris config folder
-        //        if (WellKnowns.WINDOWS) {
-        //            return scanOcrLocations(
-        //                    WellKnowns.CONFIG_FOLDER.toString(),
-        //                    Paths.get(System.getenv("ProgramFiles")).resolve("tesseract-ocr").toString(),
-        //                    Paths.get(System.getenv("ProgramFiles(x86)")).resolve("tesseract-ocr")
-        //                            .toString());
-        //        } else if (WellKnowns.LINUX) {
-        //            return scanOcrLocations(
-        //                    WellKnowns.CONFIG_FOLDER.toString(),
-        //                    "/usr/share/tesseract-ocr", // Debian, Ubuntu and derivatives
-        //                    "/usr/share", // OpenSUSE
-        //                    "/usr/share/tesseract");// Fedora
-        //        } else if (WellKnowns.MAC_OS_X) {
-        //            return scanOcrLocations(
-        //                    WellKnowns.CONFIG_FOLDER.toString(),
-        //                    "/opt/local/share", // Macports
-        //                    "/usr/local/opt/tesseract/share"); // Homebrew
-        //        }
-
         logger.warn(ocrNotFoundMsg);
 
         return null;
