@@ -95,23 +95,13 @@ public class Languages
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Component resources. */
-    private final ResourceMap resources;
+    private ResourceMap resources;
 
     /** Remote data (languages, codes). */
     private RemoteData remoteData;
 
     /** The user interface to browse, select and install languages. */
     private Selector selector;
-
-    //~ Constructors -------------------------------------------------------------------------------
-
-    /**
-     * Creates a new <code>Languages</code> object.
-     */
-    public Languages ()
-    {
-        resources = Application.getInstance().getContext().getResourceMap(getClass());
-    }
 
     //~ Methods ------------------------------------------------------------------------------------
 
@@ -148,17 +138,19 @@ public class Languages
             logger.info(
                     "Installed OCR languages: {}",
                     installed.stream().collect(Collectors.joining(",")));
+        } else if (OMR.gui == null) {
+            logger.warn("*** No installed OCR languages ***");
         } else {
             // Prompt user
-            final String install = resources.getString("Check.install");
-            final String later = resources.getString("Check.later");
+            final String install = getResources().getString("Check.install");
+            final String later = getResources().getString("Check.later");
             final Object[] options = { install, later };
-            final String message = resources.getString("Check.message");
+            final String message = getResources().getString("Check.message");
 
             final int choice = JOptionPane.showOptionDialog(
                     OMR.gui.getFrame(),
                     message,
-                    resources.getString("Check.title"),
+                    getResources().getString("Check.title"),
                     JOptionPane.DEFAULT_OPTION,
                     JOptionPane.WARNING_MESSAGE,
                     null,
@@ -237,6 +229,18 @@ public class Languages
         return remoteData;
     }
 
+    //--------------//
+    // getResources //
+    //--------------//
+    private ResourceMap getResources ()
+    {
+        if (resources == null) {
+            resources = Application.getInstance().getContext().getResourceMap(getClass());
+        }
+
+        return resources;
+    }
+
     //-------------//
     // getSelector //
     //-------------//
@@ -281,7 +285,7 @@ public class Languages
     {
         DownloadRemoteTask ()
         {
-            super(OmrGui.getApplication(), resources.getString("downloadTask.message"));
+            super(OmrGui.getApplication(), getResources().getString("downloadTask.message"));
         }
 
         @Override
@@ -363,7 +367,7 @@ public class Languages
     {
         private final JDialog dialog;
 
-        private final String boxTip = resources.getString("box.shortDescription");
+        private final String boxTip = getResources().getString("box.shortDescription");
 
         /**
          * Creates a new <code>Selector</code> object.
@@ -379,9 +383,9 @@ public class Languages
 
             framePane.add(new JScrollPane(defineLayout()));
 
-            // Closing (via close button)
+            // Closing (via exit button)
             JButton button = new JButton();
-            button.setName("closeButton");
+            button.setName("exitButton");
             button.setAlignmentX(CENTER_ALIGNMENT);
             button.addActionListener(this);
             framePane.add(button);
@@ -396,7 +400,7 @@ public class Languages
                 }
             });
 
-            resources.injectComponents(dialog);
+            getResources().injectComponents(dialog);
             dialog.pack();
         }
 

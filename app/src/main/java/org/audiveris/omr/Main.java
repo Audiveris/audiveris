@@ -28,6 +28,7 @@ import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.BookManager;
+import org.audiveris.omr.text.tesseract.Languages;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.MainGui;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -248,6 +249,9 @@ public class Main
             // Perhaps time to check for a new release?
             // Fix for issue #562: Disable this check when running in batch mode.
             ///Versions.considerPolling();
+
+            // Check OCR languages
+            Languages.getInstance().checkSupport();
 
             // Check MusicFont is loaded
             MusicFont.checkMusicFont();
