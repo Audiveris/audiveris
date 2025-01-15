@@ -96,7 +96,7 @@ public class MacApplication
         logger.debug(name);
 
         switch (name) {
-            case "handlePreferences" -> GuiActions.getInstance().defineConstants(null);
+            case "handlePreferences" -> GuiActions.getInstance().definePreferences(null);
             case "handleQuit" -> GuiActions.getInstance().exit(null);
             case "handleAbout" -> GuiActions.getInstance().showAbout(null);
             case "handleOpenFile" -> {
@@ -127,8 +127,7 @@ public class MacApplication
                     if ((eventClass != null) && eventClass.isAssignableFrom(arg.getClass())) {
                         return arg;
                     }
-                } catch (Exception e) {
-                }
+                } catch (Exception e) {}
             }
         }
 
@@ -158,8 +157,7 @@ public class MacApplication
             Method handled = eventClass.getMethod("setHandled", boolean.class);
             handled.invoke(event, true);
         } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
-                | SecurityException | InvocationTargetException e) {
-        }
+                | SecurityException | InvocationTargetException e) {}
     }
 
     /**
@@ -181,8 +179,8 @@ public class MacApplication
             Object app = getMacAppInstance();
 
             //Enable the about menu item and the preferences menu item
-            for (String methodName : new String[]
-            { "setEnabledAboutMenu", "setEnabledPreferencesMenu" }) {
+            for (String methodName : new String[] { "setEnabledAboutMenu",
+                    "setEnabledPreferencesMenu" }) {
                 Method method = appClass.getMethod(methodName, boolean.class);
                 method.invoke(app, true);
             }
@@ -195,8 +193,7 @@ public class MacApplication
             //providing an instance of this class as a callback for any method invocation
             Object listenerProxy = Proxy.newProxyInstance(
                     MacApplication.class.getClassLoader(),
-                    new Class<?>[]
-                    { listenerClass },
+                    new Class<?>[] { listenerClass },
                     new MacApplication());
 
             //Add the generated class as a hook
