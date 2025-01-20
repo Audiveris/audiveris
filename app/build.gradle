@@ -129,11 +129,6 @@ repositories {
             url = 'https://repository.jboss.org/nexus/content/repositories/thirdparty-releases'
         }
 
-        maven { // Required for JAI Core 1.1.3
-            name = 'SpringSource Enterprise Bundle Repository - External Bundle Releases'
-            url = 'https://repository.springsource.com/maven/bundles/external'
-        }
-
         mavenLocal()
 
         ///flatDir(dirs: 'dev/externals') // for libraries not in any other repository
