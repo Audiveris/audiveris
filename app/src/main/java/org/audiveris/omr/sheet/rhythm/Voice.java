@@ -32,6 +32,7 @@ import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -293,6 +294,28 @@ public class Voice
         }
     }
 
+    //---------------//
+    // getChordAfter //
+    //---------------//
+    /**
+     * Retrieve within this voice the first chord, if any, after the provided chord.
+     *
+     * @param chord the provided chord
+     * @return the chord just after if any
+     */
+    public AbstractChordInter getChordAfter (AbstractChordInter chord)
+    {
+        if (chords != null) {
+            final int chordIndex = chords.indexOf(chord);
+
+            if (chordIndex < chords.size() - 1) {
+                return chords.get(chordIndex + 1);
+            }
+        }
+
+        return null;
+    }
+
     //----------------//
     // getChordBefore //
     //----------------//
@@ -302,7 +325,7 @@ public class Voice
      * @param chord the provided chord
      * @return the chord just before if any
      */
-    AbstractChordInter getChordBefore (AbstractChordInter chord)
+    public AbstractChordInter getChordBefore (AbstractChordInter chord)
     {
         if (chords != null) {
             final int chordIndex = chords.indexOf(chord);
@@ -618,6 +641,24 @@ public class Voice
         }
 
         return null;
+    }
+
+    //------------------------//
+    // getLastChordWithTuplet //
+    //------------------------//
+    public AbstractChordInter getLastChordWithTuplet ()
+    {
+        AbstractChordInter last = null;
+
+        if (chords != null) {
+            for (AbstractChordInter ch : chords) {
+                if (ch.getSig().hasRelation(ch, ChordTupletRelation.class)) {
+                    last = ch;
+                }
+            }
+        }
+
+        return last;
     }
 
     //------------//

@@ -41,7 +41,6 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.BeamRestRelation;
-import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
@@ -312,28 +311,21 @@ public class MeasureRhythm
 
         for (Voice voice : getVoicesWithImplicit()) {
             final List<AbstractChordInter> chords = voice.getChords();
-            final int size = chords.size();
+            final AbstractChordInter lastChordWithTuplet = voice.getLastChordWithTuplet();
 
-            // Retrieve index of last chord involved in tuplet relation
-            int indexLast = -1;
-
-            for (int i = 0; i < size; i++) {
-                AbstractChordInter ch = chords.get(i);
-
-                if (sig.hasRelation(ch, ChordTupletRelation.class)) {
-                    indexLast = i;
-                }
+            if (lastChordWithTuplet == null) {
+                continue;
             }
 
-            if ((indexLast != -1) && (indexLast < (size - 1))) {
-                final int index = indexLast + 1;
-                final AbstractChordInter first = chords.get(index);
+            final AbstractChordInter first = voice.getChordAfter(lastChordWithTuplet);
+
+            if (first != null) {
                 final Rational start = first.getTimeOffset();
                 boolean apply = true;
 
                 if (expectedDur != null) {
                     // Check excess ratio
-                    final Rational stop = chords.get(size - 1).getEndTime();
+                    final Rational stop = voice.getLastChord().getEndTime();
                     final Rational actualDur = stop.minus(start);
                     final Rational normalDur = expectedDur.minus(start);
 
@@ -525,9 +517,9 @@ public class MeasureRhythm
 
             if (implicitTuplets && (pass < 2) //
                     && (measure.getStack().getExpectedDuration() != null)) {
-                // Check implicit tuplets on whole measure
-                List<TupletInter> oldImplicits = getImplicitTuplets();
-                List<TupletInter> newImplicits = tupletGenerator.findImplicitTuplets();
+                // Check implicit tuplets on entire measure
+                final List<TupletInter> oldImplicits = getImplicitTuplets();
+                final List<TupletInter> newImplicits = tupletGenerator.findImplicitTuplets();
 
                 if (!newImplicits.isEmpty()) {
                     // Let's go to pass #2 with the new implicits generated on measure-long voices
@@ -724,22 +716,6 @@ public class MeasureRhythm
     {
         for (TupletInter tuplet : tuplets) {
             removeTuplet(tuplet);
-        }
-    }
-
-    //--------------//
-    // setFirstSlot //
-    //--------------//
-    /**
-     * Assign time ZERO to all chords of first slot, and push time information to
-     * following grouped chords (via beam or tie) if any.
-     */
-    private void setFirstSlot ()
-    {
-        Slot firstSlot = slots.get(0);
-
-        for (AbstractChordInter ch : firstSlot.getChords()) {
-            ch.setAndPushTime(Rational.ZERO);
         }
     }
 
@@ -987,12 +963,12 @@ public class MeasureRhythm
         // deltaRatio //
         //------------//
         /**
-         * Report the delta ratio of the provided two time values
+         * Report the delta ratio of the provided two time values, larger then smaller.
          *
          * @param ch1     chord related to first time value
-         * @param target1 first time value
+         * @param target1 first time value (the larger)
          * @param ch2     chord related to second time value
-         * @param target2 second time value
+         * @param target2 second time value (the smaller)
          * @return the time delta ratio since last common slot
          */
         private Rational deltaRatio (AbstractChordInter ch1,
@@ -1027,16 +1003,17 @@ public class MeasureRhythm
          */
         public void dumpRookieMap (List<AbstractChordInter> actives)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Slot #" + slot.getId() + " rookieMap:");
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Slot #").append(slot.getId()).append(" rookieMap:");
 
             for (AbstractChordInter right : rookies) {
                 sb.append("\nTo ").append(right).append(":");
 
                 for (AbstractChordInter left : actives) {
-                    StringBuilder details = new StringBuilder();
-                    int dist = voiceDistance.getDistance(left, right, details);
-                    String time = (left.getTimeOffset() != null) ? left.getEndTime().toString()
+                    final StringBuilder details = new StringBuilder();
+                    final int dist = voiceDistance.getDistance(left, right, details);
+                    final String time = (left.getTimeOffset() != null) //
+                            ? left.getEndTime().toString()
                             : "NT";
                     sb.append(String.format("%n%5d %4s from %s %s", dist, time, left, details));
                 }
@@ -1154,7 +1131,7 @@ public class MeasureRhythm
         //-------------//
         /**
          * Given two chords (with different time values) in separate voices, look back
-         * in these voices for the last common time value.
+         * in these voices for the last common time value, without tuplet.
          *
          * @param ch1 chord in a voice
          * @param ch2 chord in a different voice
@@ -1170,6 +1147,10 @@ public class MeasureRhythm
             commons.retainAll(l2);
 
             if (commons.isEmpty()) {
+                if (!l1.isEmpty()) {
+                    return l1.get(0);
+                }
+
                 return null;
             }
 
@@ -1192,7 +1173,6 @@ public class MeasureRhythm
                 } else if (times.size() > 1) {
                     // Time problem detected in a narrow slot
                     // Some data is wrong (recognition problem or implicit tuplet)
-                    //TODO: check if some tuplet factor could explain the difference
                     logger.info("{} Time inconsistency in {}", measure, times);
                     ok &= analyzeTimes(times);
                 }
@@ -1228,7 +1208,7 @@ public class MeasureRhythm
          * <p>
          * The principle is to assume that all chords in a given narrow slot share the same time.
          * However, we may not know this slot time initially.
-         * The slot time is initially known only it it's the slot #1 in measure or if it contains at
+         * The slot time is initially known only if it's the slot #1 in measure or if it contains at
          * least one chord grouped (via beam or tie) to a chord in a previous slot.
          * <p>
          * Otherwise, the slot time has to be determined by the slot chords themselves, using the
@@ -1236,7 +1216,7 @@ public class MeasureRhythm
          * If all chords don't agree, we select the largest time value. TODO: check this!
          * <p>
          * For any chord in slot which does not fit with the slot time, we reject its voice mapping
-         * and new voice mappings can be tempted.
+         * and new voice mappings can be tried.
          * <p>
          * If no suitable mapping can be found, the chord is left over.
          * (These chords left over will end up creating new voices).
@@ -1312,15 +1292,16 @@ public class MeasureRhythm
                                         logger.debug("ratio {} at {}", ratio, ch);
 
                                         if (THREE_OVER_TWO.equals(ratio)) {
-                                            //TODO: check also there is no tuplet yet
-                                            Rational lastSync = lastSynchro(act, setCh);
+                                            Rational lastSync = lastSynchro(setCh, act);
                                             logger.debug(
                                                     "Tuplet2 for {} since {}",
                                                     setChords,
                                                     lastSync);
-                                            rectifyVoice(setCh, null, lastSync);
+                                            rectifyVoice(
+                                                    setCh,
+                                                    mapping.ref(setCh).getVoice(),
+                                                    lastSync);
                                         } else if (TWO_OVER_THREE.equals(ratio)) {
-                                            //TODO: check also there is no tuplet yet
                                             Rational lastSync = lastSynchro(act, setCh);
                                             logger.debug("Tuplet3 for {} since {}", act, lastSync);
                                             rectifyVoice(act, null, lastSync);
@@ -1464,6 +1445,7 @@ public class MeasureRhythm
          */
         private List<AbstractChordInter> retrieveActives (List<AbstractChordInter> extinctExplicits)
         {
+            final Rational measureDuration = measure.getStack().getExpectedDuration();
             final List<AbstractChordInter> actives = new ArrayList<>();
 
             for (Voice voice : measure.getVoices()) {
@@ -1472,6 +1454,23 @@ public class MeasureRhythm
                 }
 
                 final AbstractChordInter lastChord = voice.getLastChord();
+
+                // Make sure there is some time left after lastChord end
+                if (measureDuration != null) {
+                    final Rational lastChordEnd = lastChord.getEndTime();
+
+                    if ((lastChordEnd != null) && lastChordEnd.compareTo(measureDuration) >= 0) {
+                        if (!implicitTuplets) {
+                            continue;
+                        } else {
+                            // Consider the current count of chords in voice
+                            final int chordNb = voice.getChords().size();
+                            if (chordNb == 1) {
+                                continue;
+                            }
+                        }
+                    }
+                }
 
                 // Make sure voice lastChord slot precedes this slot
                 if (lastChord.getSlot().compareTo(slot) > 0) {
@@ -1501,7 +1500,7 @@ public class MeasureRhythm
         //------------//
         /**
          * Report the history of time values in the voice the provided chord is set to
-         * (or mapped to).
+         * (or mapped to), without a tuplet.
          *
          * @param chord the provided chord
          * @return voice history until this chord
@@ -1526,7 +1525,7 @@ public class MeasureRhythm
                 for (AbstractChordInter ch : voice.getChords()) {
                     final Rational time = ch.getTimeOffset();
 
-                    if (time != null) {
+                    if (time != null && !ch.hasTuplet()) {
                         list.add(time);
                     }
 

@@ -40,10 +40,6 @@ public class ChordsMapper
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    private final List<AbstractChordInter> news;
-
-    private final List<AbstractChordInter> olds;
-
     private final List<AbstractChordInter> remainingNews = new ArrayList<>();
 
     private final List<AbstractChordInter> remainingOlds = new ArrayList<>();
@@ -77,8 +73,6 @@ public class ChordsMapper
                          Set<ChordPair> blackList,
                          Set<ChordPair> nextList)
     {
-        this.news = news;
-        this.olds = olds;
         this.extinctExplicits = extinctExplicits;
         this.vd = vd;
         this.blackList = blackList;

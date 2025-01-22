@@ -402,18 +402,19 @@ public class ChordListMenu
         final AbstractChordInter left = srcCenter.x <= tgtCenter.x ? src : tgt;
         final AbstractChordInter right = srcCenter.x > tgtCenter.x ? src : tgt;
 
-        Relation nextInVoice = null;
-        Relation separate = null;
+        Relation nextInVoice = null; // Existing NIV relation, if any between left & right
+        Relation separate = null; // Existing SEP relation, if any between left & right
+        {
+            final LinkedHashSet<Relation> rels = new LinkedHashSet<>();
+            rels.addAll(sig.getAllEdges(src, tgt));
+            rels.addAll(sig.getAllEdges(tgt, src));
 
-        final LinkedHashSet<Relation> rels = new LinkedHashSet<>();
-        rels.addAll(sig.getAllEdges(src, tgt));
-        rels.addAll(sig.getAllEdges(tgt, src));
-
-        for (Relation rel : rels) {
-            if (rel instanceof NextInVoiceRelation) {
-                nextInVoice = rel;
-            } else if (rel instanceof SeparateVoiceRelation) {
-                separate = rel;
+            for (Relation rel : rels) {
+                if (rel instanceof NextInVoiceRelation) {
+                    nextInVoice = rel;
+                } else if (rel instanceof SeparateVoiceRelation) {
+                    separate = rel;
+                }
             }
         }
 
@@ -431,7 +432,7 @@ public class ChordListMenu
         } else {
             addItem(
                     new RelationRemovalItem(
-                            "cancel Next in Voice",
+                            "Cancel Next in Voice",
                             "Cancel use of next in voice",
                             sig,
                             nextInVoice),
@@ -452,7 +453,7 @@ public class ChordListMenu
         } else {
             addItem(
                     new RelationRemovalItem(
-                            "cancel Separate Voices",
+                            "Cancel Separate Voices",
                             "Cancel use of separate voices",
                             sig,
                             separate),

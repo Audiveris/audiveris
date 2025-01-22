@@ -26,7 +26,9 @@ import org.audiveris.omr.sig.inter.AbstractChordInter;
 import java.util.Objects;
 
 /**
- * Class <code>ChordPair</code> defines a pair of chords.
+ * Class <code>ChordPair</code> defines an oriented pair of chords, used to formalize a mapping
+ * from chord 'one' (the rookie) back to a previous chord 'two' (the active),
+ * likely to belong to the same voice.
  *
  * @author Hervé Bitteur
  */

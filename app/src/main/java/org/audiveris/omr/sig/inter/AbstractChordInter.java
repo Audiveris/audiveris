@@ -1004,6 +1004,23 @@ public abstract class AbstractChordInter
     }
 
     //-----------//
+    // hasTuplet //
+    //-----------//
+    /**
+     * Report whether this chord is modified by a tuplet
+     *
+     * @return true if so
+     */
+    public boolean hasTuplet ()
+    {
+        if (sig != null) {
+            return sig.hasRelation(this, ChordTupletRelation.class);
+        }
+
+        return false;
+    }
+
+    //-----------//
     // internals //
     //-----------//
     @Override
