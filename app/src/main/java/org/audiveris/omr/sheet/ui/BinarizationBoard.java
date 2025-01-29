@@ -70,6 +70,9 @@ import javax.swing.event.DocumentListener;
  * Class <code>BinarizationBoard</code> allows users to
  * adjust binarization filters and settings to operate on the gray image.
  * <p>
+ * To avoid useless loading of GRAY image, the evaluation of 'noGraySource' boolean is
+ * differred until the board is actually selected.
+ * <p>
  * This class was renamed from BinarizationAdjustBoard and has replaced
  * the former BinarizationBoard now renamed BinaryBoard.
  *
@@ -132,8 +135,10 @@ public class BinarizationBoard
     /** Reference to the last filter used on this board. */
     private FilterDescriptor previousFilter;
 
-    /** Equal to false if this sheet has no gray source image to binarize. */
-    private final boolean noGraySource;
+    /**
+     * Initially null, then equal to false if this sheet has no gray source image to binarize.
+     */
+    private Boolean noGraySource;
 
     /** Label for when no gray source image is present. */
     private final JLabel noGraySourceLabel = new JLabel("No gray image available for binarization");
@@ -150,13 +155,12 @@ public class BinarizationBoard
      */
     public BinarizationBoard (Sheet sheet)
     {
-        super(Board.BINARIZATION, sheet.getLocationService(), null, true, false, false, false);
+        super(Board.BINARIZATION, sheet.getLocationService(), null, false, false, false, false);
 
         this.sheet = sheet;
 
         isMultiSheetBook = sheet.getStub().getBook().isMultiSheet();
         previousFilter = sheet.getStub().getBook().getBinarizationParam().getSpecific();
-        noGraySource = sheet.getPicture().getSource(SourceKey.GRAY) == null;
 
         applyButton.setToolTipText("Apply the filter & settings on the sheet gray image");
         applyButton.addActionListener(this);
@@ -334,6 +338,16 @@ public class BinarizationBoard
     @Override
     public void connect ()
     {
+        if (noGraySource == null) {
+            noGraySource = sheet.getPicture().getSource(SourceKey.GRAY) == null;
+
+            if (noGraySource) {
+                disableBoard(getBody());
+                noGraySourceLabel.setVisible(true);
+                noGraySourceLabel.setEnabled(true);
+            }
+        }
+
         if (noGraySource)
             return;
 
@@ -357,11 +371,10 @@ public class BinarizationBoard
 
         int r = 1; // -----------------------------
 
-        // Add a message if no gray source if available
-        if (noGraySource) {
-            builder.addRaw(noGraySourceLabel).xyw(2, r, 8);
-            r += 2;
-        }
+        // Place holder: Room for a message if no gray source if available
+        noGraySourceLabel.setVisible(false);
+        builder.addRaw(noGraySourceLabel).xyw(2, r, 8);
+        r += 2;
 
         builder.addRaw(adaptiveFilterRadioButton.getField()).xy(1, r);
         builder.addRaw(adaptiveFilterRadioButton.getLabel()).xyw(3, r, 6);
@@ -397,11 +410,6 @@ public class BinarizationBoard
 
             builder.addRaw(overwriteCheckbox.getField()).xyw(5, r, 1);
             builder.addRaw(overwriteCheckbox.getLabel()).xyw(7, r, 3);
-        }
-
-        if (noGraySource) {
-            disableBoard(getBody());
-            noGraySourceLabel.setEnabled(true);
         }
     }
 
@@ -445,23 +453,27 @@ public class BinarizationBoard
      */
     private void initializeInputValues (FilterDescriptor desc)
     {
-        if (desc instanceof AdaptiveDescriptor ad) {
-            adaptiveMeanValue.setValue(ad.meanCoeff);
-            adaptiveStdDevValue.setValue(ad.stdDevCoeff);
-            adaptiveFilterRadioButton.getField().setSelected(true);
+        switch (desc) {
+            case AdaptiveDescriptor ad -> {
+                adaptiveMeanValue.setValue(ad.meanCoeff);
+                adaptiveStdDevValue.setValue(ad.stdDevCoeff);
+                adaptiveFilterRadioButton.getField().setSelected(true);
 
-            globalThresholdValue.setValue(GlobalDescriptor.getDefaultThreshold());
+                globalThresholdValue.setValue(GlobalDescriptor.getDefaultThreshold());
 
-            showAdaptiveFilterInput();
+                showAdaptiveFilterInput();
 
-        } else if (desc instanceof GlobalDescriptor gd) {
-            globalThresholdValue.setValue(gd.threshold);
-            globalFilterRadioButton.getField().setSelected(true);
+            }
+            case GlobalDescriptor gd -> {
+                globalThresholdValue.setValue(gd.threshold);
+                globalFilterRadioButton.getField().setSelected(true);
 
-            adaptiveMeanValue.setValue(AdaptiveDescriptor.getDefaultMeanCoeff());
-            adaptiveStdDevValue.setValue(AdaptiveDescriptor.getDefaultStdDevCoeff());
+                adaptiveMeanValue.setValue(AdaptiveDescriptor.getDefaultMeanCoeff());
+                adaptiveStdDevValue.setValue(AdaptiveDescriptor.getDefaultStdDevCoeff());
 
-            showGlobalFilterInput();
+                showGlobalFilterInput();
+            }
+            default -> {}
         }
     }
 

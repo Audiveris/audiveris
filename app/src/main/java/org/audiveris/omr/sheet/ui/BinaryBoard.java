@@ -113,7 +113,7 @@ public class BinaryBoard
      */
     public BinaryBoard (Sheet sheet)
     {
-        super(Board.BINARY, sheet.getLocationService(), eventClasses, true, false, false, false);
+        super(Board.BINARY, sheet.getLocationService(), eventClasses, false, false, false, false);
 
         this.sheet = sheet;
 
@@ -210,23 +210,23 @@ public class BinaryBoard
         Double thresholdValue = null;
 
         switch (filter) {
-        case AdaptiveFilter adpFilter -> {
-            final PixelFilter.Context context = adpFilter.getContext(rect.x, rect.y);
+            case AdaptiveFilter adpFilter -> {
+                final PixelFilter.Context context = adpFilter.getContext(rect.x, rect.y);
 
-            if (context != null) {
-                if (context instanceof AdaptiveContext ctx) {
-                    mean.setValue(ctx.mean);
-                    stdDev.setValue(ctx.standardDeviation);
-                } else {
-                    mean.setText("");
-                    stdDev.setText("");
+                if (context != null) {
+                    if (context instanceof AdaptiveContext ctx) {
+                        mean.setValue(ctx.mean);
+                        stdDev.setValue(ctx.standardDeviation);
+                    } else {
+                        mean.setText("");
+                        stdDev.setText("");
+                    }
+
+                    thresholdValue = context.threshold;
                 }
-
-                thresholdValue = context.threshold;
             }
-        }
-        case GlobalFilter gblFilter -> thresholdValue = Double.valueOf(gblFilter.threshold);
-        default -> {}
+            case GlobalFilter gblFilter -> thresholdValue = Double.valueOf(gblFilter.threshold);
+            default -> {}
         }
 
         if (thresholdValue == null) {
@@ -235,8 +235,8 @@ public class BinaryBoard
 
         threshold.setValue(thresholdValue);
         final boolean isBlack = level <= thresholdValue;
-        color.setText(isBlack? "black" : "white");
-        color.getField().setBackground(isBlack? Color.BLACK : Color.WHITE);
+        color.setText(isBlack ? "black" : "white");
+        color.getField().setBackground(isBlack ? Color.BLACK : Color.WHITE);
     }
 
     //---------//

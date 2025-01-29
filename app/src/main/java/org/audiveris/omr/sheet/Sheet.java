@@ -594,7 +594,7 @@ public class Sheet
                 final PictureView pictureView = new PictureView(this, tab);
                 final BinarizationBoard binarizationBoard = new BinarizationBoard(this);
 
-                if (getPicture().getSource(Picture.SourceKey.GRAY) != null) {
+                if (getPicture().hasImageReady(Picture.ImageKey.GRAY)) {
                     binarizationBoard.setSelected(true);
                 }
 
