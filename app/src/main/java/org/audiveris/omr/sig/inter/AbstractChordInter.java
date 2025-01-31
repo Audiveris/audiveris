@@ -1207,7 +1207,7 @@ public abstract class AbstractChordInter
         if (group != null) {
             AbstractChordInter prevChord = null;
 
-            // Reminder: group.getChords() report head-chords plus interleaved rest-chords if any
+            // Reminder: group.getChords() reports head-chords plus interleaved rest-chords if any
             for (AbstractChordInter chord : group.getChords()) {
                 if (prevChord != null) {
                     try {
@@ -1429,7 +1429,7 @@ public abstract class AbstractChordInter
             }
 
             // Extend to the following tied chord(s?) as well
-            List<AbstractChordInter> tied = getFollowingTiedChords();
+            final List<AbstractChordInter> tied = getFollowingTiedChords();
 
             for (AbstractChordInter chord : tied) {
                 // Make sure the tied chords belong to the same measure

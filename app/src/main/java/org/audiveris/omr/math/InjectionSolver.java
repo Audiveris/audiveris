@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.math;
 
+import org.audiveris.omr.util.WrappedInteger;
+
 import java.util.Arrays;
 
 /**
@@ -28,8 +30,10 @@ import java.util.Arrays;
  * (called domain) into another collection of elements (called range, or co-domain).
  * <p>
  * It finds a mapping that minimizes the global mapping distance, given the individual distance for
- * each domain/range elements pair. This implementation is based on a brute-force approach and thus
- * should be used with small sizes only.
+ * each domain/range elements pair.
+ * <p>
+ * NOTA: This implementation is based on a brute-force approach and thus should be used with small
+ * sizes only.
  *
  * @author Hervé Bitteur
  */
@@ -109,9 +113,10 @@ public class InjectionSolver
      *
      * @param id   index of provided domain item
      * @param cost current configuration cost
+     * @return the final cost
      */
-    private void inspect (final int id,
-                          final int cost)
+    private int inspect (final int id,
+                         final int cost)
     {
         //        System.out.println("inspect id=" + id + " cost=" + cost);
         for (int ir = 0; ir < rangeSize; ir++) {
@@ -135,6 +140,8 @@ public class InjectionSolver
                 free[ir] = true;
             }
         }
+
+        return bestCost;
     }
 
     //-------//
@@ -143,13 +150,14 @@ public class InjectionSolver
     /**
      * Report (one of) the mapping(s) for which the global distance is minimum.
      *
+     * @param bestCost (output) the best cost found
      * @return an array parallel to the domain collection, which for each (domain) element gives the
      *         mapped range element
      */
-    public int[] solve ()
+    public int[] solve (WrappedInteger bestCost)
     {
         Arrays.fill(free, true);
-        inspect(0, 0);
+        bestCost.value = inspect(0, 0);
 
         return bestConfig;
     }

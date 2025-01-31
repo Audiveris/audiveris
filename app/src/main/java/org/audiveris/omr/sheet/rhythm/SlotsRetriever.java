@@ -116,7 +116,7 @@ public class SlotsRetriever
     private final Parameters params;
 
     /** Inter-chord relationships for the current measure. */
-    private SimpleDirectedGraph<AbstractChordInter, Edge> graph = new SimpleDirectedGraph<>(
+    private final SimpleDirectedGraph<AbstractChordInter, Edge> graph = new SimpleDirectedGraph<>(
             Edge.class);
 
     /** Comparator based on inter-chord relationships, then on timeOffset when known. */
@@ -293,7 +293,7 @@ public class SlotsRetriever
     private void buildChordRelationships ()
     {
         // Sort measure standard chords by abscissa
-        List<AbstractChordInter> stdChords = new ArrayList<>(measure.getStandardChords());
+        final List<AbstractChordInter> stdChords = new ArrayList<>(measure.getStandardChords());
         purgeMeasureRestChords(stdChords);
         Collections.sort(stdChords, Inters.byCenterAbscissa);
 
@@ -352,15 +352,15 @@ public class SlotsRetriever
         NextSlot:
         while (iStart < chordCount) {
             for (int i = iStart + 1; i < chordCount; i++) {
-                AbstractChordInter c2 = candidateChords.get(i);
+                final AbstractChordInter c2 = candidateChords.get(i);
 
                 // Make sure c2 is compatible with ALL slot chords so far
                 for (AbstractChordInter c1 : candidateChords.subList(iStart, i)) {
-                    Rel rel = getRel(c1, c2);
+                    final Rel rel = getRel(c1, c2);
 
                     if ((rel != Rel.EQUAL) && (rel != Rel.CLOSE)) {
                         // New slot starting here, register previous one
-                        MeasureSlot slot = new MeasureSlot(
+                        final MeasureSlot slot = new MeasureSlot(
                                 ++slotCount,
                                 measure,
                                 candidateChords.subList(iStart, i));
@@ -373,7 +373,7 @@ public class SlotsRetriever
             }
 
             // Register last slot
-            MeasureSlot slot = new MeasureSlot(
+            final MeasureSlot slot = new MeasureSlot(
                     ++slotCount,
                     measure,
                     candidateChords.subList(iStart, chordCount));

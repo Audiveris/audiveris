@@ -26,6 +26,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
+import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,7 @@ public abstract class VoiceDistance
     private static final Logger logger = LoggerFactory.getLogger(VoiceDistance.class);
 
     /** Threshold for no voice link. */
-    public static final int NO_LINK = 40;
+    public static final int NO_LINK = 60;
 
     public static final int INCOMPATIBLE = 10_000; // Forbidden
 
@@ -108,7 +109,7 @@ public abstract class VoiceDistance
     public static class Merged
             extends VoiceDistance
     {
-        private static final int NOT_A_REST = 5;
+        private static final int NOT_A_REST = 4; //5;
 
         private static final int NEW_IN_STAFF = 2;
 
@@ -143,6 +144,15 @@ public abstract class VoiceDistance
                                 AbstractChordInter right,
                                 StringBuilder details)
         {
+            // Next in Voice relation?
+            if (left.getSig().getRelation(left, right, NextInVoiceRelation.class) != null) {
+                if (details != null) {
+                    details.append("NextInVoice");
+                }
+
+                return 0;
+            }
+
             // Different assigned voices?
             if ((right.getVoice() != null) //
                 && (left.getVoice() != null) //
@@ -205,7 +215,7 @@ public abstract class VoiceDistance
     public static class Separated
             extends VoiceDistance
     {
-        private static final int NOT_A_REST = 5;
+        private static final int NOT_A_REST = 4;  //5;
 
         private static final int NEW_IN_STAFF = 10;
 
@@ -240,6 +250,15 @@ public abstract class VoiceDistance
                                 AbstractChordInter right,
                                 StringBuilder details)
         {
+            // Next in Voice relation?
+            if (left.getSig().getRelation(left, right, NextInVoiceRelation.class) != null) {
+                if (details != null) {
+                    details.append("NextInVoice");
+                }
+
+                return 0;
+            }
+
             final Voice leftVoice = left.getVoice();
             final Voice rightVoice = right.getVoice();
 
@@ -247,6 +266,7 @@ public abstract class VoiceDistance
             if ((rightVoice != null) && (leftVoice != null) && (rightVoice != leftVoice)) {
                 return INCOMPATIBLE;
             }
+
 
             // Different staves? (beware: some chords embrace two staves, hence we use topStaff)
             int dStaff = 0;

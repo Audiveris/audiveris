@@ -36,17 +36,21 @@ public class ChordPair
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    public final AbstractChordInter one;
+    public final AbstractChordInter rookie;
 
-    public final AbstractChordInter two;
+    public final AbstractChordInter active;
+
+    public Integer cost;
 
     //~ Constructors -------------------------------------------------------------------------------
 
-    public ChordPair (AbstractChordInter one,
-                      AbstractChordInter two)
+    public ChordPair (AbstractChordInter rookie,
+                      AbstractChordInter active,
+                      Integer cost)
     {
-        this.one = one;
-        this.two = two;
+        this.rookie = rookie;
+        this.active = active;
+        this.cost = cost;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -60,15 +64,15 @@ public class ChordPair
 
         final ChordPair that = (ChordPair) obj;
 
-        return (one == that.one) && (two == that.two);
+        return (rookie == that.rookie) && (active == that.active);
     }
 
     @Override
     public int hashCode ()
     {
         int hash = 3;
-        hash = (79 * hash) + Objects.hashCode(this.one);
-        hash = (79 * hash) + Objects.hashCode(this.two);
+        hash = (79 * hash) + Objects.hashCode(this.rookie);
+        hash = (79 * hash) + Objects.hashCode(this.active);
 
         return hash;
     }
@@ -76,6 +80,7 @@ public class ChordPair
     @Override
     public String toString ()
     {
-        return "ChordPair{ch#" + one.getId() + ",ch#" + two.getId() + "}";
+        return ((cost != null) ? cost : "") + (active != null ? "#" + active.getId() : " null")
+                + "--#" + rookie.getId();
     }
 }

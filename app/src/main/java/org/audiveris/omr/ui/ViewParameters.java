@@ -126,17 +126,11 @@ public class ViewParameters
     /** Action for switching entity selection. (Must be lazily computed) */
     private ApplicationAction selectionAction;
 
-    /** Chord Ids painting is chosen to be not persistent. */
-    private boolean chordIdsPainting = false;
-
     /** Part names painting is chosen to be not persistent. */
     private boolean partNamePainting = false;
 
     /** Jumbo painting is chosen to be not persistent. */
     private boolean jumboPainting = false;
-
-    /** Voice painting is chosen to be not persistent. */
-    private boolean voicePainting = false;
 
     /** Error painting is chosen to be not persistent. */
     private boolean errorPainting = true;
@@ -206,7 +200,7 @@ public class ViewParameters
     //--------------------//
     public boolean isChordIdsPainting ()
     {
-        return chordIdsPainting;
+        return constants.chordIdsPainting.getValue();
     }
 
     //-----------------//
@@ -342,7 +336,7 @@ public class ViewParameters
     //-----------------//
     public boolean isVoicePainting ()
     {
-        return voicePainting;
+        return constants.voicePainting.getValue();
     }
 
     //-----------------------//
@@ -370,8 +364,8 @@ public class ViewParameters
     //---------------------//
     public void setChordIdsPainting (boolean value)
     {
-        boolean oldValue = chordIdsPainting;
-        chordIdsPainting = value;
+        boolean oldValue = constants.chordIdsPainting.getValue();
+        constants.chordIdsPainting.setValue(value);
         firePropertyChange(CHORD_IDS_PAINTING, oldValue, value);
     }
 
@@ -540,8 +534,8 @@ public class ViewParameters
     //------------------//
     public void setVoicePainting (boolean value)
     {
-        boolean oldValue = voicePainting;
-        voicePainting = value;
+        boolean oldValue = constants.voicePainting.getValue();
+        constants.voicePainting.setValue(value);
         firePropertyChange(VOICE_PAINTING, oldValue, value);
     }
 
@@ -866,6 +860,10 @@ public class ViewParameters
                 true,
                 "Should the annotations be painted");
 
+        private final Constant.Boolean chordIdsPainting = new Constant.Boolean(
+                false,
+                "Should the chords IDs be painted");
+
         private final Constant.Boolean slotPainting = new Constant.Boolean(
                 true,
                 "Should the slots be painted");
@@ -901,6 +899,10 @@ public class ViewParameters
         private final Constant.Boolean translucentPainting = new Constant.Boolean(
                 true,
                 "Should the inters be painted with grade-based translucency");
+
+        private final Constant.Boolean voicePainting = new Constant.Boolean(
+                false,
+                "Should the voices be painted with different colors");
     }
 
     //---------------//

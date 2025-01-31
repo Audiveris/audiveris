@@ -464,8 +464,10 @@ public class Measure
             boolean upgraded = false;
 
             // Clefs, keys, timeSigs to fill measure
-            List<Inter> measureInters = filter(sig.inters(new Class[]
-            { ClefInter.class, KeyInter.class, AbstractTimeInter.class }));
+            List<Inter> measureInters = filter(
+                    sig.inters(
+                            new Class[] { ClefInter.class, KeyInter.class,
+                                    AbstractTimeInter.class }));
 
             for (Inter inter : measureInters) {
                 addInter(inter);
@@ -2257,7 +2259,9 @@ public class Measure
         }
 
         if (part != null) {
-            sb.append("P").append(part.getId());
+            if ((stack != null) && (stack.getMeasures().size() > 1)) {
+                sb.append("P").append(part.getId());
+            }
         } else {
             sb.append("-NOPART-");
         }

@@ -262,89 +262,107 @@ public class PageStep
     {
         logger.debug("PAGE impact {} {}", opKind, seq);
 
-        final SIGraph sig = seq.getSig();
-
         // First, determine what will be impacted
+        final SIGraph sig = seq.getSig();
         final Map<Page, Impact> map = new LinkedHashMap<>();
 
         for (UITask task : seq.getTasks()) {
-            if (task instanceof InterTask interTask) {
-                final Inter inter = interTask.getInter();
-                final Page page = inter.getSig().getSystem().getPage();
-                final Impact impact = getImpact(map, page);
-                final Class classe = inter.getClass();
+            switch (task) {
+                case InterTask interTask -> {
+                    final Inter inter = interTask.getInter();
+                    final Page page = inter.getSig().getSystem().getPage();
+                    final Impact impact = getImpact(map, page);
+                    final Class classe = inter.getClass();
 
-                if (isImpactedBy(classe, forParts)) {
-                    if (inter instanceof SentenceInter sentenceInter) {
-                        if (sentenceInter.getRole() == TextRole.PartName) {
-                            impact.onParts = true;
+                    if (isImpactedBy(classe, forParts)) {
+                        switch (inter) {
+                            case SentenceInter sentenceInter -> {
+                                if (sentenceInter.getRole() == TextRole.PartName) {
+                                    impact.onParts = true;
+                                }
+                            }
+
+                            case WordInter wordInter -> {
+                                final SentenceInter sentence = (SentenceInter) wordInter
+                                        .getEnsemble();
+                                if (sentence != null && sentence.getRole() == TextRole.PartName) {
+                                    impact.onParts = true;
+                                }
+                            }
+
+                            default -> impact.onParts = true;
                         }
-                    } else if (inter instanceof WordInter wordInter) {
-                        final SentenceInter sentence = (SentenceInter) wordInter.getEnsemble();
-                        if (sentence != null && sentence.getRole() == TextRole.PartName) {
-                            impact.onParts = true;
-                        }
-                    } else {
-                        impact.onParts = true;
+                    }
+
+                    if (isImpactedBy(classe, forSlurs)) {
+                        impact.onSlurs = true;
+                    }
+
+                    if (isImpactedBy(classe, forLyrics)) {
+                        impact.onLyrics = true;
+                    }
+
+                    if (isImpactedBy(classe, forVoices)) {
+                        impact.onVoices = true;
+                        impact.onMeasures = true; // Since measure specials can depend on voices
+                    }
+
+                    if (isImpactedBy(classe, forMeasures)) {
+                        impact.onMeasures = true;
                     }
                 }
 
-                if (isImpactedBy(classe, forSlurs)) {
-                    impact.onSlurs = true;
+                case StackTask stackTask -> {
+                    final MeasureStack stack = stackTask.getStack();
+                    final Class classe = stack.getClass();
+                    final Page page = stack.getSystem().getPage();
+                    final Impact impact = getImpact(map, page);
+
+                    if (isImpactedBy(classe, forVoices)) {
+                        impact.onVoices = true;
+                    }
                 }
 
-                if (isImpactedBy(classe, forLyrics)) {
-                    impact.onLyrics = true;
-                }
-
-                if (isImpactedBy(classe, forVoices)) {
-                    impact.onVoices = true;
-                    impact.onMeasures = true; // Since measure specials can depend on voices
-                }
-
-                if (isImpactedBy(classe, forMeasures)) {
+                case PageTask pageTask -> {
+                    final Page page = pageTask.getPage();
+                    final Impact impact = getImpact(map, page);
+                    impact.onParts = true; // Safer
                     impact.onMeasures = true;
-                }
-            } else if (task instanceof StackTask stackTask) {
-                final MeasureStack stack = stackTask.getStack();
-                final Class classe = stack.getClass();
-                final Page page = stack.getSystem().getPage();
-                final Impact impact = getImpact(map, page);
-
-                if (isImpactedBy(classe, forVoices)) {
-                    impact.onVoices = true;
-                }
-            } else if (task instanceof PageTask pageTask) {
-                final Page page = pageTask.getPage();
-                final Impact impact = getImpact(map, page);
-                impact.onParts = true; // Safer
-                impact.onMeasures = true;
-                impact.onSlurs = true;
-                impact.onVoices = true;
-            } else if (task instanceof SystemMergeTask systemMergeTask) {
-                final Page page = systemMergeTask.getSystem().getPage();
-                final Impact impact = getImpact(map, page);
-                impact.onParts = true;
-                impact.onMeasures = true;
-                impact.onVoices = true;
-            } else if (task instanceof RelationTask relationTask) {
-                final Page page = sig.getSystem().getPage();
-                final Impact impact = getImpact(map, page);
-                final Relation relation = relationTask.getRelation();
-                final Class classe = relation.getClass();
-
-                if (isImpactedBy(classe, forVoices)) {
+                    impact.onSlurs = true;
                     impact.onVoices = true;
                 }
 
-                if (isImpactedBy(classe, forSlurs)) {
+                case SystemMergeTask systemMergeTask -> {
+                    final Page page = systemMergeTask.getSystem().getPage();
+                    final Impact impact = getImpact(map, page);
+                    impact.onParts = true;
+                    impact.onMeasures = true;
+                    impact.onVoices = true;
+                }
+
+                case RelationTask relationTask -> {
+                    final Page page = sig.getSystem().getPage();
+                    final Impact impact = getImpact(map, page);
+                    final Relation relation = relationTask.getRelation();
+                    final Class classe = relation.getClass();
+
+                    if (isImpactedBy(classe, forVoices)) {
+                        impact.onVoices = true;
+                    }
+
+                    if (isImpactedBy(classe, forSlurs)) {
+                        impact.onSlurs = true;
+                    }
+                }
+
+                case ConnectionTask connectionTask -> {
+                    final Page page = connectionTask.getPage();
+                    final Impact impact = getImpact(map, page);
+                    impact.onVoices = true;
                     impact.onSlurs = true;
                 }
-            } else if (task instanceof ConnectionTask connectionTask) {
-                final Page page = connectionTask.getPage();
-                final Impact impact = getImpact(map, page);
-                impact.onVoices = true;
-                impact.onSlurs = true;
+
+                default -> {}
             }
         }
 
@@ -387,7 +405,7 @@ public class PageStep
     {
         for (SystemInfo system : page.getSystems()) {
             for (Inter inter : system.getSig().inters(LyricLineInter.class)) {
-                LyricLineInter line = (LyricLineInter) inter;
+                final LyricLineInter line = (LyricLineInter) inter;
                 line.refineLyricSyllables();
             }
         }
@@ -447,15 +465,13 @@ public class PageStep
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("PageImpact{");
-            sb.append("parts:").append(onParts);
-            sb.append(" slurs:").append(onSlurs);
-            sb.append(" lyrics:").append(onLyrics);
-            sb.append(" voices:").append(onVoices);
-            sb.append(" measures:").append(onMeasures);
-            sb.append("}");
-
-            return sb.toString();
+            return new StringBuilder("PageImpact{") //
+                    .append("parts:").append(onParts) //
+                    .append(" slurs:").append(onSlurs) //
+                    .append(" lyrics:").append(onLyrics) //
+                    .append(" voices:").append(onVoices) //
+                    .append(" measures:").append(onMeasures) //
+                    .append("}").toString();
         }
     }
 }

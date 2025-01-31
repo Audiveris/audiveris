@@ -1045,15 +1045,15 @@ public class Voice
             sb.append("|").append(voiceDur);
         }
 
-        MeasureStack stack = getMeasure().getStack();
-
-        if (!stack.isImplicit() && !stack.isFirstHalf()) {
-            TimeRational ts = getInferredTimeSignature();
-
-            if (ts != null) {
-                sb.append(" (ts:").append(ts).append(")");
-            }
-        }
+        //        MeasureStack stack = getMeasure().getStack();
+        //
+        //        if (!stack.isImplicit() && !stack.isFirstHalf()) {
+        //            TimeRational ts = getInferredTimeSignature();
+        //
+        //            if (ts != null) {
+        //                sb.append(" (ts:").append(ts).append(")");
+        //            }
+        //        }
 
         return sb.toString();
     }

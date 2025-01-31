@@ -21,10 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.math;
 
+import org.audiveris.omr.util.WrappedInteger;
+
 import junit.framework.*;
 
 /**
- *
  * @author Hervé Bitteur
  */
 public class InjectionSolverTest
@@ -49,19 +50,23 @@ public class InjectionSolverTest
 
         InjectionSolver instance = new InjectionSolver(3, 3, new MyDistance());
 
-        int[] expResult = new int[]{0, 1, 2};
-        int[] result = instance.solve();
+        final WrappedInteger bestCost = new WrappedInteger(null);
+        int[] expResult = new int[] { 0, 1, 2 };
+        int[] result = instance.solve(bestCost);
 
-        //assertEquals(expResult, result);
+        assertTrue(result.length == expResult.length);
+        for (int i = 0; i < expResult.length; i++) {
+            assertTrue(result[i] == expResult[i]);
+        }
     }
 
     protected void setUp ()
-            throws Exception
+        throws Exception
     {
     }
 
     protected void tearDown ()
-            throws Exception
+        throws Exception
     {
     }
 

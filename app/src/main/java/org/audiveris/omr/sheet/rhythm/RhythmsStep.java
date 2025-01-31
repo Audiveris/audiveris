@@ -244,53 +244,63 @@ public class RhythmsStep
         final Impact impact = new Impact();
 
         for (UITask task : seq.getTasks()) {
-            if (task instanceof InterTask interTask) {
-                Inter inter = interTask.getInter();
-                Class classe = inter.getClass();
+            switch (task) {
+                case InterTask interTask -> {
+                    final Inter inter = interTask.getInter();
+                    final Class classe = inter.getClass();
 
-                if (isImpactedBy(classe, forPage)) {
-                    // Reprocess the whole page
-                    impact.add(inter.getSig().getSystem().getPage());
-                } else if (isImpactedBy(classe, forStack)) {
-                    // Reprocess just the stack
-                    Point center = inter.getCenter();
+                    if (isImpactedBy(classe, forPage)) {
+                        // Reprocess the whole page
+                        impact.add(inter.getSig().getSystem().getPage());
+                    } else if (isImpactedBy(classe, forStack)) {
+                        // Reprocess just the stack
+                        final Point center = inter.getCenter();
 
-                    if (center != null) {
-                        MeasureStack stack = sig.getSystem().getStackAt(center);
-                        impact.add(stack);
+                        if (center != null) {
+                            final MeasureStack stack = sig.getSystem().getStackAt(center);
+                            impact.add(stack);
 
-                        if (inter instanceof BarlineInter || inter instanceof StaffBarlineInter) {
-                            if ((task instanceof RemovalTask && (opKind == OpKind.UNDO))
-                                    || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
-                                // Add next stack as well
-                                impact.add(stack.getNextSibling());
+                            if (inter instanceof BarlineInter
+                                    || inter instanceof StaffBarlineInter) {
+                                if ((task instanceof RemovalTask && (opKind == OpKind.UNDO))
+                                        || (task instanceof AdditionTask
+                                                && (opKind != OpKind.UNDO))) {
+                                    // Add next stack as well
+                                    impact.add(stack.getNextSibling());
+                                }
                             }
                         }
                     }
                 }
-            } else if (task instanceof StackTask stackTask) {
-                // Reprocess the stack
-                MeasureStack stack = stackTask.getStack();
-                Class classe = stack.getClass();
 
-                if (isImpactedBy(classe, forStack)) {
-                    impact.add(stack);
-                }
-            } else if (task instanceof PageTask pageTask) {
-                // Reprocess the page
-                impact.add(pageTask.getPage());
-            } else if (task instanceof SystemMergeTask systemMergeTask) {
-                // Reprocess the system page
-                impact.add(systemMergeTask.getSystem().getPage());
-            } else if (task instanceof RelationTask relationTask) {
-                Relation relation = relationTask.getRelation();
-                Class classe = relation.getClass();
+                case StackTask stackTask -> {
+                    // Reprocess the stack
+                    final MeasureStack stack = stackTask.getStack();
+                    final Class classe = stack.getClass();
 
-                if (isImpactedBy(classe, forStack)) {
-                    SystemInfo system = sig.getSystem();
-                    impact.add(system.getStackAt(relationTask.getSource().getCenter()));
-                    impact.add(system.getStackAt(relationTask.getTarget().getCenter()));
+                    if (isImpactedBy(classe, forStack)) {
+                        impact.add(stack);
+                    }
                 }
+
+                case PageTask pageTask -> // Reprocess the page
+                        impact.add(pageTask.getPage());
+
+                case SystemMergeTask systemMergeTask -> // Reprocess the system page
+                        impact.add(systemMergeTask.getSystem().getPage());
+
+                case RelationTask relationTask -> {
+                    final Relation relation = relationTask.getRelation();
+                    final Class classe = relation.getClass();
+
+                    if (isImpactedBy(classe, forStack)) {
+                        final SystemInfo system = sig.getSystem();
+                        impact.add(system.getStackAt(relationTask.getSource().getCenter()));
+                        impact.add(system.getStackAt(relationTask.getTarget().getCenter()));
+                    }
+                }
+
+                default -> {}
             }
         }
 

@@ -205,6 +205,8 @@ public class TupletGenerator
      * duration (without any implicit tuplet) which is exactly 3/2 times the measure
      * expected duration.
      * <p>
+     * NOTA: this works only if ALL chords in voice should get a tuplet!
+     * <p>
      * Then force tuplet injection to each such voice
      *
      * @return the collection of tuplet signs created, perhaps empty
@@ -237,7 +239,7 @@ public class TupletGenerator
                 }
 
                 created.addAll(forceTuplets(voice));
-                logger.info("{} {} rechecked with implicit tuplets", measure, voice);
+                logger.debug("{} {} rechecked with implicit tuplets", measure, voice);
             }
         }
 
