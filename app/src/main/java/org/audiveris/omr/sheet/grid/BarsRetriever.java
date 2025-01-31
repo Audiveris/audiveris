@@ -1250,27 +1250,36 @@ public class BarsRetriever
                 StaffPeak[] startPeaks = startColumn.getPeaks();
 
                 for (StaffPeak peak : startPeaks) {
-                    Staff staff = peak.getStaff();
-                    int xLeft = staff.getAbscissa(LEFT); // Based on long line chunks only
+                    final Staff staff = peak.getStaff();
 
-                    // Check column is not too far right into staff
-                    if ((peak.getStart() - xLeft) > params.maxLinesLeftToStartBar) {
-                        if (peak.isVip() || logger.isDebugEnabled()) {
-                            logger.info("start {} too far inside staff#{}", peak, staff.getId());
+                    if (!staff.isOneLineStaff()) {
+                        int xLeft = staff.getAbscissa(LEFT); // Based on long line chunks only
+
+                        // Check column is not too far right into staff
+                        if ((peak.getStart() - xLeft) > params.maxLinesLeftToStartBar) {
+                            if (peak.isVip() || logger.isDebugEnabled()) {
+                                logger.info(
+                                        "start {} too far inside staff#{}",
+                                        peak,
+                                        staff.getId());
+                            }
+
+                            continue SystemLoop;
                         }
 
-                        continue SystemLoop;
-                    }
+                        // Check column is not too far left of lines (using projection)
+                        StaffProjector projector = projectorOf(staff);
 
-                    // Check column is not too far left of lines (using projection)
-                    StaffProjector projector = projectorOf(staff);
+                        if (projector.hasStandardBlank(peak.getStop(), xLeft)) {
+                            if (peak.isVip() || logger.isDebugEnabled()) {
+                                logger.info(
+                                        "start {} too far ahead of staff#{}",
+                                        peak,
+                                        staff.getId());
+                            }
 
-                    if (projector.hasStandardBlank(peak.getStop(), xLeft)) {
-                        if (peak.isVip() || logger.isDebugEnabled()) {
-                            logger.info("start {} too far ahead of staff#{}", peak, staff.getId());
+                            continue SystemLoop;
                         }
-
-                        continue SystemLoop;
                     }
                 }
 

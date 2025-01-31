@@ -866,7 +866,6 @@ public class StaffProjector
                             derivativeThreshold,
                             0));
         }
-        logger.debug("Staff#{} peaks:{}", staff.getId(), peaks);
     }
 
     //------------------//
@@ -1718,10 +1717,6 @@ public class StaffProjector
                 0.15,
                 "Abscissa with (>=1) on bar peak side where chunk is measured");
 
-        private final Constant.Boolean useOneLineHalfMode = new Constant.Boolean(
-                true,
-                "Should we use a 'halfMode' for first peak of 1-line staves");
-
         private final Constant.Ratio minWhiteRatioBeyondVerticalSerif = new Constant.Ratio(
                 0.3,
                 "Minimum white ratio above and below a multiple rest vertical serif");
@@ -1806,7 +1801,9 @@ public class StaffProjector
                 gapThreshold = specific.toPixels(constants.gapThreshold);
             }
 
-            useOneLineHalfMode = constants.useOneLineHalfMode.isSet();
+            final BarlineHeight barlineHeight = sheet.getStub().getBarlineHeight();
+            useOneLineHalfMode = (barlineHeight == BarlineHeight.oneThenTwo)
+                    || (barlineHeight == BarlineHeight.twoThenFour);
         }
     }
 

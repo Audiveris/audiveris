@@ -242,6 +242,7 @@ public class LinesRetriever
 
             // Determine rough abscissa values for left & right sides
             // Rather than extrema, we use median values
+            // WARNING: this is not reliable for a 1-line staff!
             final List<Double> lefts = new ArrayList<>();
             final List<Double> rights = new ArrayList<>();
             for (StaffFilament line : lines) {
@@ -1025,7 +1026,7 @@ public class LinesRetriever
         // Purge all too short clusters
         final List<LineCluster> shortClusters = allClusters.stream() //
                 .filter(cl -> cl.getBounds().width < params.minStaffLength) //
-                .peek(cl -> logger.info("Too short {} at {}", cl, cl.getBounds())) //
+                .peek(cl -> logger.debug("Too short {} at {}", cl, cl.getBounds())) //
                 .collect(Collectors.toList());
         allClusters.removeAll(shortClusters);
 

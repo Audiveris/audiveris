@@ -1039,13 +1039,16 @@ public class PeakGraph
                 // Check it is not located too far on right after staff left abscissa
                 // TODO: What if very first connection is missing but we have more on right?
                 // Answer: check connection on staff right side as a second chance...
-                final int xOffset = p2.getStart() - p2.getStaff().getAbscissa(LEFT);
+                // For 1-line staff, the left abscissa is not reliable at all
+                if (!p2.getStaff().isOneLineStaff()) {
+                    final int xOffset = p2.getStart() - p2.getStaff().getAbscissa(LEFT);
 
-                if (xOffset > params.maxFirstConnectionXOffset) {
-                    if ((p2 == projectorOf(p2.getStaff()).getLastPeak()) || !areRightConnected(
-                            p1.getStaff(),
-                            p2.getStaff())) {
-                        continue;
+                    if (xOffset > params.maxFirstConnectionXOffset) {
+                        if ((p2 == projectorOf(p2.getStaff()).getLastPeak()) || !areRightConnected(
+                                p1.getStaff(),
+                                p2.getStaff())) {
+                            continue;
+                        }
                     }
                 }
             }
@@ -1345,8 +1348,7 @@ public class PeakGraph
         final Staff staff = peak.getStaff();
         final StaffProjector projector = projectorOf(staff);
 
-        for (StaffPeak p : new StaffPeak[]
-        { p1, p2 }) {
+        for (StaffPeak p : new StaffPeak[] { p1, p2 }) {
             p.computeDeskewedCenter(sheet.getSkew());
             projector.insertPeak(p, peak);
             findAlignmentsAndConnectionsOf(p);
