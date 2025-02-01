@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -48,12 +50,15 @@ public abstract class VoiceDistance
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(VoiceDistance.class);
 
-    /** Threshold for no voice link. */
-    public static final int NO_LINK = 60;
+    public static final int NO_LINK = constants.noLink.getValue();
 
-    public static final int INCOMPATIBLE = 10_000; // Forbidden
+    public static final int INCOMPATIBLE = constants.incompatible.getValue();
+
+    private static final int NOT_A_REST = constants.notARest.getValue();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -87,6 +92,68 @@ public abstract class VoiceDistance
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Integer noLink = new Constant.Integer(
+                "penalty",
+                60,
+                "Penalty for no voice link");
+
+        private final Constant.Integer incompatible = new Constant.Integer(
+                "penalty",
+                10000,
+                "Penalty for a forbidden link");
+
+        private final Constant.Integer notARest = new Constant.Integer(
+                "penalty",
+                4,
+                "Penalty for a non-rest chord");
+
+        private final Constant.Integer mergedNewInStaff = new Constant.Integer(
+                "penalty",
+                2,
+                "Merged. Penalty for a chord new in staff");
+
+        private final Constant.Integer separatedNewInStaff = new Constant.Integer(
+                "penalty",
+                10,
+                "Separated. Penalty for a chord new in staff");
+
+        private final Constant.Integer mergedStaffDiff = new Constant.Integer(
+                "penalty",
+                2,
+                "Merged. Penalty for chords from different staves");
+
+        private final Constant.Integer separatedStaffDiff = new Constant.Integer(
+                "penalty",
+                20,
+                "Separated. Penalty for chords from different staves");
+
+        private final Constant.Integer mergedStemDiffOne = new Constant.Integer(
+                "penalty",
+                10,
+                "Merged. Penalty for chord with a stem and chord without stem");
+
+        private final Constant.Integer separatedStemDiffOne = new Constant.Integer(
+                "penalty",
+                10,
+                "Separated. Penalty for chord with a stem and chord without stem");
+
+        private final Constant.Integer mergedStemDiffTwo = new Constant.Integer(
+                "penalty",
+                2,
+                "Merged. Penalty for chords with opposite stems");
+
+        private final Constant.Integer separatedStemDiffTwo = new Constant.Integer(
+                "penalty",
+                6,
+                "Separated. Penalty for chords with opposite stems");
+    }
+
     //--------//
     // Merged //
     //--------//
@@ -109,15 +176,13 @@ public abstract class VoiceDistance
     public static class Merged
             extends VoiceDistance
     {
-        private static final int NOT_A_REST = 4; //5;
+        private static final int NEW_IN_STAFF = constants.mergedNewInStaff.getValue();
 
-        private static final int NEW_IN_STAFF = 2;
+        private static final int STAFF_DIFF = constants.mergedStaffDiff.getValue();
 
-        private static final int STAFF_DIFF = 2;
+        private static final int STEM_1_DIFF = constants.mergedStemDiffOne.getValue();
 
-        private static final int STEM_1_DIFF = 10;
-
-        private static final int STEM_2_DIFF = 100;
+        private static final int STEM_2_DIFF = constants.mergedStemDiffTwo.getValue();
 
         public Merged (Scale scale)
         {
@@ -155,8 +220,8 @@ public abstract class VoiceDistance
 
             // Different assigned voices?
             if ((right.getVoice() != null) //
-                && (left.getVoice() != null) //
-                && (right.getVoice() != left.getVoice())) {
+                    && (left.getVoice() != null) //
+                    && (right.getVoice() != left.getVoice())) {
                 return INCOMPATIBLE;
             }
 
@@ -215,15 +280,13 @@ public abstract class VoiceDistance
     public static class Separated
             extends VoiceDistance
     {
-        private static final int NOT_A_REST = 4;  //5;
+        private static final int NEW_IN_STAFF = constants.separatedNewInStaff.getValue();
 
-        private static final int NEW_IN_STAFF = 10;
+        private static final int STAFF_DIFF = constants.separatedStaffDiff.getValue();
 
-        private static final int STAFF_DIFF = 20;
+        private static final int STEM_1_DIFF = constants.separatedStemDiffOne.getValue();
 
-        private static final int STEM_1_DIFF = 2; //3;
-
-        private static final int STEM_2_DIFF = 6;
+        private static final int STEM_2_DIFF = constants.separatedStemDiffTwo.getValue();
 
         public Separated (Scale scale)
         {
@@ -266,7 +329,6 @@ public abstract class VoiceDistance
             if ((rightVoice != null) && (leftVoice != null) && (rightVoice != leftVoice)) {
                 return INCOMPATIBLE;
             }
-
 
             // Different staves? (beware: some chords embrace two staves, hence we use topStaff)
             int dStaff = 0;
