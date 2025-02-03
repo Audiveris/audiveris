@@ -52,8 +52,6 @@ public enum ProcessingSwitch
     drumNotation(ProcessingSwitches.constants.drumNotation),
     sixStringTablatures(ProcessingSwitches.constants.sixStringTablatures),
 
-    keepGrayImages(ProcessingSwitches.constants.keepGrayImages),
-    indentations(ProcessingSwitches.constants.indentations),
     smallHeads(ProcessingSwitches.constants.smallHeads),
     smallBeams(ProcessingSwitches.constants.smallBeams),
     crossHeads(ProcessingSwitches.constants.crossHeads),
@@ -63,12 +61,13 @@ public enum ProcessingSwitch
     pluckings(ProcessingSwitches.constants.pluckings),
     partialWholeRests(ProcessingSwitches.constants.partialWholeRests),
     multiWholeHeadChords(ProcessingSwitches.constants.multiWholeHeadChords),
-
     chordNames(ProcessingSwitches.constants.chordNames),
     lyrics(ProcessingSwitches.constants.lyrics),
     lyricsAboveStaff(ProcessingSwitches.constants.lyricsAboveStaff),
-
     articulations(ProcessingSwitches.constants.articulations),
+
+    keepGrayImages(ProcessingSwitches.constants.keepGrayImages),
+    indentations(ProcessingSwitches.constants.indentations),
     bothSharedHeadDots(ProcessingSwitches.constants.bothSharedHeadDots),
     implicitTuplets(ProcessingSwitches.constants.implicitTuplets),
 
@@ -93,7 +92,14 @@ public enum ProcessingSwitch
             sixStringTablatures);
 
     /**
-     * The standard (non-staff) switches.
+     * The item switches.
+     */
+    public static EnumSet<ProcessingSwitch> itemSwitches = EnumSet.range( //
+            smallHeads,
+            articulations);
+
+    /**
+     * The processing switches.
      */
     public static EnumSet<ProcessingSwitch> standardSwitches = EnumSet.range(
             keepGrayImages,

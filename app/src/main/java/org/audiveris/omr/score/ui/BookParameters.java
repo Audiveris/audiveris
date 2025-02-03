@@ -317,6 +317,15 @@ public class BookParameters
             }
         }
 
+        { // Items
+            final XactTopic topic = new XactTopic(Topic.Items.name());
+            topics.add(topic);
+
+            for (ProcessingSwitch key : ProcessingSwitch.itemSwitches) {
+                topic.add(switchMap.get(key));
+            }
+        }
+
         { // Processing
             final XactTopic topic = new XactTopic(Topic.Processing.name());
             topics.add(topic);
@@ -920,6 +929,7 @@ public class BookParameters
         Binarization,
         Scaling,
         Staves,
+        Items,
         Processing;
     }
 
