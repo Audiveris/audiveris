@@ -1,5 +1,5 @@
 ![](https://github.com/Audiveris/docs/blob/master/images/SplashLogo.png)
-Logo by [Katka](https://www.facebook.com/katkastreetart/)
+Logo crafted by [Katka](https://www.facebook.com/katkastreetart/)
 
 # Audiveris - Open-source Optical Music Recognition
 
@@ -23,10 +23,10 @@ via the manual editing of a few music symbols.
 
 ## Key characteristics
 
-* Good recognition efficiency on real-world quality scores (as those seen on [IMSLP][imslp] site)
+* Good recognition efficiency on real-world quality scores (as those seen on the [IMSLP][imslp] site)
 * Effective support for large scores (with up to hundreds of pages)
 * Convenient user-oriented interface to detect and correct most OMR errors
-* Available on Windows, Linux and MacOS
+* Available on Windows, Linux and macOS
 * Open source
 
 The core of engine music information (OMR data) is fully documented and made publicly available,
@@ -43,28 +43,28 @@ on the dedicated [Audiveris Releases][releases] page.
 The goal of a release is to provide significant improvements, well tested and integrated,
 resulting in a software as easy as possible to install and use:
 - for **Windows**, an installer is provided on [Github][releases];  
-The installer comes with pre-installed Tesseract OCR languages ``deu``, ``eng``, ``fra`` and ``ita``.  
+The installer comes with the pre-installed Tesseract OCR language ``eng``.  
 But **it requires Java version 17** or higher to be available in your environment.
-If no suitable Java version is found at runtime, a prompt will ask you install it.
+If no suitable Java version is found at runtime, a prompt will remind you to install it.
 - for **Linux**, a flatpak package is provided on
 [Flathub](https://flathub.org/apps/org.audiveris.audiveris);  
-The package comes with pre-installed Tesseract OCR languages ``deu``, ``eng``, ``fra`` and ``ita``.  
+The package comes with the pre-installed Tesseract OCR language ``eng``.  
 The needed Java environment is included in its packaging, therefore no Java installation is needed. 
-- for **MacOS**, unfortunately, we have nothing similar yet [^macos]
+- for **macOS**, unfortunately, we have nothing similar yet [^macos]
 -- for now, you have to build from sources as described in the following section on
 [Development versions](#development-versions).
 
-See details in the related [handbook section][installation].
+See details in the handbook [installation section][installation].
 
 ## Development versions
 
 The Audiveris project is developed on GitHub, the site you are reading.  
-Any one can download, build and run this software. 
+Any one can clone, build and run this software. 
 The needed tools are ``git``, ``gradle`` and a Java Development Kit (``jdk``),
-as described in this [handbook section][sources].
+as described in the handbook [sources section][sources].
 
-There are two main branches in Audiveris project:
-- the ``master`` branch is GitHub default branch;
+There are two main branches in the Audiveris project:
+- the ``master`` branch is the GitHub default branch;
 we use it for releases, and only for them;  
 To build from this branch, you will need a ``jdk`` for Java version **17** or higher.
 - the ``development`` branch is the one where all developments continuously take place;
@@ -75,7 +75,7 @@ See details in the [Wiki article][workflow] dedicated to the chosen development 
 
 ## Further Information
 
-Users and Developers are advised to read Audiveris [User Handbook][handbook],
+Users and developers are advised to read the Audiveris [User Handbook][handbook],
 and the more general [Wiki][audiveris-wiki] set of articles.
 
 [^macos]: If you wish to give a hand, you are more than welcome!

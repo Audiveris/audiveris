@@ -1,0 +1,165 @@
+.
+├── assets
+│   └── images
+│       └── ....png
+├── explanation
+│   ├── README.md
+│   └── steps
+│       ├── README.md
+│       ├── beams.md
+│       ├── binary.md
+│       ├── chords.md
+│       ├── cue_beams.md
+│       ├── curves.md
+│       ├── grid.md
+│       ├── headers.md
+│       ├── heads.md
+│       ├── ledgers.md
+│       ├── links.md
+│       ├── load.md
+│       ├── measures.md
+│       ├── page.md
+│       ├── reduction.md
+│       ├── rhythms.md
+│       ├── scale.md
+│       ├── stem_seeds.md
+│       ├── stems.md
+│       ├── symbols.md
+│       └── texts.md
+├── guides
+│   ├── README.md
+│   ├── advanced
+│   │   ├── README.md
+│   │   ├── constants.md
+│   │   ├── improve_input.md
+│   │   ├── plugins.md
+│   │   ├── preferences.md
+│   │   ├── samples.md
+│   │   └── training.md
+│   ├── main
+│   │   ├── README.md
+│   │   ├── book_parameters.md
+│   │   ├── book_portions
+│   │   │   ├── README.md
+│   │   │   ├── sheet_selection.md
+│   │   │   ├── sheet_validity.md
+│   │   │   └── split_merge.md
+│   │   ├── cli.md
+│   │   ├── languages.md
+│   │   ├── pipeline.md
+│   │   ├── scanning.md
+│   │   └── sheet_scale.md
+│   ├── specific
+│   │   ├── README.md
+│   │   ├── bar_repeat.md
+│   │   ├── drums.md
+│   │   ├── fingering_plucking.md
+│   │   ├── fonts.md
+│   │   ├── logical_parts.md
+│   │   ├── metronome.md
+│   │   ├── multi_rest.md
+│   │   ├── octave_shift.md
+│   │   ├── snippets.md
+│   │   ├── tablature.md
+│   │   └── tremolo.md
+│   └── ui
+│       ├── README.md
+│       ├── ui_examples
+│       │   ├── README.md
+│       │   ├── eyes
+│       │   │   ├── README.md
+│       │   │   └── ....png
+│       │   └── trinitas
+│       │       ├── README.md
+│       │       └── ....png
+│       ├── ui_foundations
+│       │   ├── README.md
+│       │   ├── inspection.md
+│       │   ├── principles.md
+│       │   └── selection.md
+│       └── ui_tools
+│           ├── README.md
+│           ├── add_inter.md
+│           ├── add_relation.md
+│           ├── chords.md
+│           ├── edit_inter.md
+│           ├── key.md
+│           ├── measure.md
+│           ├── octave_shift.md
+│           ├── part.md
+│           ├── remove_inter.md
+│           ├── remove_relation.md
+│           ├── shared_head.md
+│           ├── staff_editing.md
+│           ├── system.md
+│           ├── text.md
+│           ├── time.md
+│           └── tips.md
+├── handbook.md
+├── reference
+│   ├── README.md
+│   ├── boards
+│   │   ├── README.md
+│   │   ├── binarization.md
+│   │   ├── binary.md
+│   │   ├── classifier.md
+│   │   ├── glyph.md
+│   │   ├── inter.md
+│   │   ├── pixel.md
+│   │   ├── section.md
+│   │   └── shape.md
+│   ├── editors.md
+│   ├── folders
+│   │   ├── README.md
+│   │   ├── cached.md
+│   │   ├── essential.md
+│   │   └── standard.md
+│   ├── limitations.md
+│   ├── menus
+│   │   ├── README.md
+│   │   ├── book.md
+│   │   ├── debug.md
+│   │   ├── file.md
+│   │   ├── help.md
+│   │   ├── plugins.md
+│   │   ├── popup.md
+│   │   ├── sheet.md
+│   │   ├── step.md
+│   │   ├── tools.md
+│   │   └── view.md
+│   ├── outputs
+│   │   ├── README.md
+│   │   ├── log.md
+│   │   ├── mxl.md
+│   │   ├── omr.md
+│   │   ├── pdf.md
+│   │   └── zip.md
+│   └── updates.md
+└── tutorials
+    ├── README.md
+    ├── install
+    │   ├── README.md
+    │   ├── binaries.md
+    │   ├── java.md
+    │   └── sources.md
+    ├── main_concepts
+    │   ├── README.md
+    │   ├── book_score.md
+    │   ├── glyph_inter.md
+    │   ├── run_section.md
+    │   └── sig.md
+    ├── main_window
+    │   ├── README.md
+    │   ├── display_modes.md
+    │   ├── entity_colors.md
+    │   ├── pan_zoom.md
+    │   └── voice_colors.md
+    └── quick
+        ├── README.md
+        ├── export.md
+        ├── launch.md
+        ├── load.md
+        ├── play.md
+        └── transcribe.md
+
+25 directories, 605 files

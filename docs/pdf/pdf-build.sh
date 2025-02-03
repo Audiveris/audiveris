@@ -9,7 +9,7 @@
 # found at https://gist.github.com/hamoid
 #---------------------------------------------------------------------------------------------------
 #
-# This bash file has been tested on Windows/Cygwin. It should also run on Linux and MacOS.
+# This bash file has been tested on Windows/Cygwin. It should also run on Linux and macOS.
 # It uses standard utilities: curl, grep, head, perl, sed, tail, echo, cat
 #
 # It also uses the "prince" software which is assumed to be found on PATH.

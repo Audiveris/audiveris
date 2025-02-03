@@ -31,7 +31,9 @@ url: "https://audiveris.github.io" # the base hostname & protocol for your site,
 #twitter_username: jekyllrb
 github_username:  hbitteur
 
-show_excerpts: false # set to false to remove excerpts on the homepage
+github: [metadata]
+
+show_excerpts: true # set to false to remove excerpts on the homepage
 
 include: ['_pages']
 permalink: /:title/
@@ -40,7 +42,7 @@ permalink: /:title/
 #theme: minima
 #theme: just-the-docs
 #remote_theme: pmarsceill/just-the-docs
-remote_theme: just-the-docs/just-the-docs
+remote_theme: just-the-docs/just-the-docs@v0.10.0
 
 
 plugins:
@@ -66,6 +68,9 @@ search_enabled: true
 # Set the search token separator for hyphenated-word search:
 search_tokenizer_separator: /[\s/]+/
 
+# TODO
+search_button: true
+
 # Enable or disable heading anchors
 heading_anchors: true
 
@@ -74,12 +79,15 @@ aux_links:
   "Audiveris organization on GitHub":
     - "https://github.com/Audiveris"
 
+# navigation sidebar
+nav_enabled: true
+
 # Back to top link
 back_to_top: true
 back_to_top_text: "Back to top"
 
 # Footer content appears at the bottom of every page's main content
-footer_content: "Copyright &copy; Audiveris 2024. Distributed under <a href=\"http://www.gnu.org/licenses\">Affero General Public License</a>."
+footer_content: "Copyright &copy; Audiveris 2024. Distributed under the <a href=\"http://www.gnu.org/licenses\">Affero General Public License</a>."
 
 # Color scheme currently only supports "dark" or nil (default)
 color_scheme: nil
@@ -126,73 +134,74 @@ callouts:
 # ---------------------------------
 
 # Latest Audiveris version
-audiveris_version: 5.3
-
-# Latest Audiveris release
-audiveris_release: 5.3.1
+audiveris_version: 5.4
 
 # Needed Java version
-java_version: 17
-
-# Tesseract version
-tesseract_version: 5.3.1
+java_version: 21
 
 # File menu paths
-file_input:         <a href="/audiveris/_pages/menus/file/#input"><code>File → Input</code></a>
+file_input:           <a href="/audiveris/_pages/reference/menus/file/#input"><code>File → Input</code></a>
 
 # Book menu paths
-book_split:         <a href="/audiveris/_pages/menus/book/#split-and-merge"><code>Book → Split and merge</code></a>
-book_parameters:    <a href="/audiveris/_pages/menus/book/#set-book-parameters"><code>Book → Set book parameters</code></a>
-book_transcribe:    <a href="/audiveris/_pages/menus/book/#transcrive-book"><code>Book → Transcribe book</code></a>
-book_swap:          <a href="/audiveris/_pages/menus/book/#swap-book-sheets"><code>Book → Swap book sheets</code></a>
-book_select:        <a href="/audiveris/_pages/menus/book/#select-sheets"><code>Book → Select sheets</code></a>
-book_export:        <a href="/audiveris/_pages/menus/book/#export-book"><code>Book → Export book</code></a>
-book_stop:          <a href="/audiveris/_pages/menus/book/#stop-book-transcription"><code>Book → Stop book transcription</code></a>
-book_save:          <a href="/audiveris/_pages/menus/book/#save-book"><code>Book → Save book</code></a>
-book_close:         <a href="/audiveris/_pages/menus/book/#close-book"><code>Book → Close book</code></a>
+book_split:           <a href="/audiveris/_pages/reference/menus/book/#split-and-merge"><code>Book → Split and merge</code></a>
+book_parameters:      <a href="/audiveris/_pages/reference/menus/book/#set-book-parameters"><code>Book → Set book parameters</code></a>
+book_transcribe:      <a href="/audiveris/_pages/reference/menus/book/#transcrive-book"><code>Book → Transcribe book</code></a>
+book_swap:            <a href="/audiveris/_pages/reference/menus/book/#swap-book-sheets"><code>Book → Swap book sheets</code></a>
+book_select:          <a href="/audiveris/_pages/reference/menus/book/#select-sheets"><code>Book → Select sheets</code></a>
+book_print:           <a href="/audiveris/_pages/reference/menus/book/#print-book"><code>Book → Print book</code></a>
+book_print_as:        <a href="/audiveris/_pages/reference/menus/book/#print-book-as"><code>Book → Print book as</code></a>
+book_export:          <a href="/audiveris/_pages/reference/menus/book/#export-book"><code>Book → Export book</code></a>
+book_export_as:       <a href="/audiveris/_pages/reference/menus/book/#export-book-as"><code>Book → Export book as</code></a>
+book_sample:          <a href="/audiveris/_pages/reference/menus/book/#sample-book-symbols"><code>Book → Sample book symbols</code></a>
+book_stop:            <a href="/audiveris/_pages/reference/menus/book/#stop-book-transcription"><code>Book → Stop book transcription</code></a>
+book_save:            <a href="/audiveris/_pages/reference/menus/book/#save-book"><code>Book → Save book</code></a>
+book_save_as:         <a href="/audiveris/_pages/reference/menus/book/#save-book-as"><code>Book → Save book as</code></a>
+book_close:           <a href="/audiveris/_pages/reference/menus/book/#close-book"><code>Book → Close book</code></a>
 
 # Sheet menu paths
-sheet_repetitive:   <a href="/audiveris/_pages/menus/sheet/#toggle-repetitive-input"><code>Sheet → Toggle repetitive input</code></a>
-sheet_transcribe:   <a href="/audiveris/_pages/menus/sheet/#transcribe-sheet"><code>Sheet → Transcribe sheet</code></a>
-sheet_status:       <a href="/audiveris/_pages/menus/sheet/#current-status"><code>Sheet → Current status</code></a>
-sheet_scaling:      <a href="/audiveris/_pages/menus/sheet/#set-scaling-data"><code>Sheet → Set scaling data</code></a>
-sheet_scale_plots:  <a href="/audiveris/_pages/menus/sheet/#display-scale-plots"><code>Sheet → Display scale plots</code></a>
-sheet_staves_plots: <a href="/audiveris/_pages/menus/sheet/#display-staves-plots"><code>Sheet → Display staves plots</code></a>
-sheet_stem_plot:    <a href="/audiveris/_pages/menus/sheet/#display-stem-plot"><code>Sheet → Display stem plot</code></a>
-sheet_binary:       <a href="/audiveris/_pages/menus/sheet/#display-binary"><code>Sheet → Display binary</code></a>
-sheet_nostaff:      <a href="/audiveris/_pages/menus/sheet/#display-nostaff"><code>Sheet → Display no-staff</code></a>
+sheet_repetitive:     <a href="/audiveris/_pages/reference/menus/sheet/#toggle-repetitive-input"><code>Sheet → Toggle repetitive input</code></a>
+sheet_transcribe:     <a href="/audiveris/_pages/reference/menus/sheet/#transcribe-sheet"><code>Sheet → Transcribe sheet</code></a>
+sheet_status:         <a href="/audiveris/_pages/reference/menus/sheet/#current-status"><code>Sheet → Current status</code></a>
+sheet_scaling:        <a href="/audiveris/_pages/reference/menus/sheet/#set-scaling-data"><code>Sheet → Set scaling data</code></a>
+sheet_scale_plots:    <a href="/audiveris/_pages/reference/menus/sheet/#display-scale-plots"><code>Sheet → Display scale plots</code></a>
+sheet_staves_plots:   <a href="/audiveris/_pages/reference/menus/sheet/#display-staves-plots"><code>Sheet → Display staves plots</code></a>
+sheet_stem_plot:      <a href="/audiveris/_pages/reference/menus/sheet/#display-stem-plot"><code>Sheet → Display stem plot</code></a>
+sheet_binary:         <a href="/audiveris/_pages/reference/menus/sheet/#display-binary"><code>Sheet → Display binary</code></a>
+sheet_nostaff:        <a href="/audiveris/_pages/reference/menus/sheet/#display-nostaff"><code>Sheet → Display no-staff</code></a>
+sheet_sample:         <a href="/audiveris/_pages/reference/menus/sheet/#sample-sheet-symbols"><code>Sheet → Sample sheet symbols</code></a>
 
 # View menu paths
-view_jumbos:        <a href="/audiveris/_pages/menus/view/#show-jumbo-inters-f7"><code>View → Show jumbo inters</code></a>
-view_voices:        <a href="/audiveris/_pages/menus/view/#show-score-voices-f8"><code>View → Show score voices</code></a>
-view_errors:        <a href="/audiveris/_pages/menus/view/#show-score-errors-f9"><code>View → Show score errors</code></a>
-view_selections:    <a href="/audiveris/_pages/menus/view/#switch-selections-f11"><code>View → Switch selections</code></a>
-view_layers:        <a href="/audiveris/_pages/menus/view/#switch-layers-f12"><code>View → Switch layers</code></a>
-view_slots:         <a href="/audiveris/_pages/menus/view/#show-score-slots"><code>View → Show score slots</code></a>
-view_annotations:   <a href="/audiveris/_pages/menus/view/#show-annotations"><code>View → Show annotations</code></a>
-view_chords:        <a href="/audiveris/_pages/menus/view/#show-chord-ids"><code>View → Show chord IDs</code></a>
-view_parts:         <a href="/audiveris/_pages/menus/view/#show-part-names"><code>View → Show part names</code></a>
+view_jumbos:          <a href="/audiveris/_pages/reference/menus/view/#show-jumbo-inters-f7"><code>View → Show jumbo inters</code></a>
+view_voices:          <a href="/audiveris/_pages/reference/menus/view/#show-score-voices-f8"><code>View → Show score voices</code></a>
+view_errors:          <a href="/audiveris/_pages/reference/menus/view/#show-score-errors-f9"><code>View → Show score errors</code></a>
+view_selections:      <a href="/audiveris/_pages/reference/menus/view/#switch-selections-f11"><code>View → Switch selections</code></a>
+view_layers:          <a href="/audiveris/_pages/reference/menus/view/#switch-layers-f12"><code>View → Switch layers</code></a>
+view_slots:           <a href="/audiveris/_pages/reference/menus/view/#show-score-slots"><code>View → Show score slots</code></a>
+view_annotations:     <a href="/audiveris/_pages/reference/menus/view/#show-annotations"><code>View → Show annotations</code></a>
+view_chords:          <a href="/audiveris/_pages/reference/menus/view/#show-chord-ids"><code>View → Show chord IDs</code></a>
+view_parts:           <a href="/audiveris/_pages/reference/menus/view/#show-part-names"><code>View → Show part names</code></a>
 
 # Tools menu paths
-tools_train:        <a href="/audiveris/_pages/menus/tools/#train-classifier"><code>Tools → Train classifier</code></a>
-tools_memory:       <a href="/audiveris/_pages/menus/tools/#memory"><code>Tools → Memory</code></a>
-tools_options:      <a href="/audiveris/_pages/menus/tools/#options"><code>Tools → Options</code></a>
-tools_advanced:     <a href="/audiveris/_pages/menus/tools/#advanced-topics"><code>Tools → Advanced topics</code></a>
+tools_languages:      <a href="/audiveris/_pages/reference/menus/tools/#languages"><code>Tools → Languages</code></a>
+tools_train:          <a href="/audiveris/_pages/reference/menus/tools/#train-classifier"><code>Tools → Train classifier</code></a>
+tools_memory:         <a href="/audiveris/_pages/reference/menus/tools/#memory"><code>Tools → Memory</code></a>
+tools_constants:      <a href="/audiveris/_pages/reference/menus/tools/#constants"><code>Tools → Constants</code></a>
+tools_preferences:    <a href="/audiveris/_pages/reference/menus/tools/#preferences"><code>Tools → Preferences</code></a>
 
 # Help menu paths
-help_handbook:      <a href="/audiveris/_pages/menus/help/#handbook"><code>Help → Handbook</code></a>
-help_updates:       <a href="/audiveris/_pages/menus/help/#check-for-updates"><code>Help → Check for updates</code></a>
-help_about:         <a href="/audiveris/_pages/menus/help/#about"><code>Help → About</code></a>
+help_handbook:        <a href="/audiveris/_pages/reference/menus/help/#handbook"><code>Help → Handbook</code></a>
+help_updates:         <a href="/audiveris/_pages/reference/menus/help/#check-for-updates"><code>Help → Check for updates</code></a>
+help_about:           <a href="/audiveris/_pages/reference/menus/help/#about"><code>Help → About</code></a>
 
 # Popup menu paths
-popup_chords:       <a href="/audiveris/_pages/menus/popup/#chords"><code>≡ Chords</code></a>
-popup_inters:       <a href="/audiveris/_pages/menus/popup/#inters"><code>≡ Inters</code></a>
-popup_glyphs:       <a href="/audiveris/_pages/menus/popup/#glyphs"><code>≡ Glyphs</code></a>
-popup_slot:         <a href="/audiveris/_pages/menus/popup/#slot-n-offset"><code>≡ Slot N°</code></a>
-popup_measure:      <a href="/audiveris/_pages/menus/popup/#measure-n"><code>≡ Measure N°</code></a>
-popup_staff:        <a href="/audiveris/_pages/menus/popup/#staff-n"><code>≡ Staff N°</code></a>
-popup_part:         <a href="/audiveris/_pages/menus/popup/#part-n"><code>≡ Part N°</code></a>
-popup_system:       <a href="/audiveris/_pages/menus/popup/#system-n"><code>≡ System N°</code></a>
-popup_page:         <a href="/audiveris/_pages/menus/popup/#page-n"><code>≡ Page N°</code></a>
-popup_score:        <a href="/audiveris/_pages/menus/popup/#score-n"><code>≡ Score N°</code></a>
-popup_extraction:   <a href="/audiveris/_pages/menus/popup/#extraction"><code>≡ Extraction</code></a>
+popup_chords:         <a href="/audiveris/_pages/reference/menus/popup/#chords"><code>≡ Chords</code></a>
+popup_inters:         <a href="/audiveris/_pages/reference/menus/popup/#inters"><code>≡ Inters</code></a>
+popup_glyphs:         <a href="/audiveris/_pages/reference/menus/popup/#glyphs"><code>≡ Glyphs</code></a>
+popup_slot:           <a href="/audiveris/_pages/reference/menus/popup/#slot-n-offset"><code>≡ Slot N°</code></a>
+popup_measure:        <a href="/audiveris/_pages/reference/menus/popup/#measure-n"><code>≡ Measure N°</code></a>
+popup_staff:          <a href="/audiveris/_pages/reference/menus/popup/#staff-n"><code>≡ Staff N°</code></a>
+popup_part:           <a href="/audiveris/_pages/reference/menus/popup/#part-n"><code>≡ Part N°</code></a>
+popup_system:         <a href="/audiveris/_pages/reference/menus/popup/#system-n"><code>≡ System N°</code></a>
+popup_page:           <a href="/audiveris/_pages/reference/menus/popup/#page-n"><code>≡ Page N°</code></a>
+popup_score:          <a href="/audiveris/_pages/reference/menus/popup/#score-n"><code>≡ Score N°</code></a>
+popup_extraction:     <a href="/audiveris/_pages/reference/menus/popup/#extraction"><code>≡ Extraction</code></a>
