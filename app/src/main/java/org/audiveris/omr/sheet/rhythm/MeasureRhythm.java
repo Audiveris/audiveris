@@ -254,6 +254,33 @@ public class MeasureRhythm
         logger.info("{}", sb);
     }
 
+    //------------//
+    // finalCheck //
+    //------------//
+    /**
+     * Run a final check on the measure.
+     *
+     * @return true if ok
+     */
+    private boolean finalCheck ()
+    {
+        boolean ok = true;
+
+        // Check if every measure chord has a voice and a time offset
+        for (AbstractChordInter ch : measure.getStandardChords()) {
+            ok &= (ch.getVoice() != null);
+            ok &= (ch.getTimeOffset() != null);
+        }
+
+        // Check measure duration for every voice
+        if (measure.getStack().getExpectedDuration() != null) {
+            measure.checkDuration();
+            ok &= !measure.isAbnormal();
+        }
+
+        return ok;
+    }
+
     //--------------------//
     // getImplicitTuplets //
     //--------------------//
@@ -512,13 +539,10 @@ public class MeasureRhythm
         clearInterleavedRests();
         detectInterleavedRests();
 
-        boolean ok = true;
-
         // Second pass can be used only when implicit tuplets option is enabled
         for (int pass = 1;; pass++) {
             logger.debug("\n{} pass {}", measure, pass);
             measure.resetRhythm();
-            ok = true;
 
             // Retrieve narrow slots
             slots.clear();
@@ -546,13 +570,13 @@ public class MeasureRhythm
             processStartingChords();
 
             if (slots.isEmpty()) {
-                return ok;
+                break;
             }
 
             // Slots list may be shrunk dynamically
             for (int i = 0; i < slots.size(); i++) {
                 final CompoundSlot slot = slots.get(i);
-                ok &= new SlotMapper(slot).mapChords();
+                new SlotMapper(slot).mapChords();
 
                 if (slots.contains(slot)) {
                     purgeExtinctVoices(slot);
@@ -584,11 +608,7 @@ public class MeasureRhythm
             break;
         }
 
-        if (measure.getStack().getExpectedDuration() != null) {
-            measure.checkDuration();
-        }
-
-        return ok;
+        return finalCheck();
     }
 
     //-----------------------//
