@@ -169,6 +169,7 @@ dependencies {
         [group: 'net.imagej', name: 'ij', version: '1.53j'],
         [group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.3'],
         [group: 'org.apache.pdfbox', name: 'pdfbox-io', version: '3.0.3'],
+        [group: 'org.apache.pdfbox', name: 'jbig2-imageio', version: '3.0.3'],
         [group: 'org.audiveris', name: 'proxymusic', version: '4.0.3'],
         [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.5.1'],
         [group: 'org.jfree', name: 'jfreechart', version: '1.5.3'],
