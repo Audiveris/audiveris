@@ -119,8 +119,6 @@ task buildFlatpak (type: Exec) {
 
     // All outputs are located under the 'build' directory for an easier cleanup
     commandLine('flatpak-builder', 
-//        '--verbose', 
-//        '--state-dir=build/.flatpak-builder',   // option to define the state-storing directory
         '--force-clean',                        // option to empty the output directory
         'build',                                // relative path to the output directory to write
         'org.audiveris.audiveris.yml')          // relative path to the manifest file to read

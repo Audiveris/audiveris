@@ -44,13 +44,6 @@ Here is the first image of a total of 5:
 | :---: | :---: |
 | Sheet#1 | ![](./sheet1.png) |
 
-{: .note }
-> Loading any image of this PDF file generates a dozen messages like:
-> "*Unknown string command in glyph p of font QPTMAY+CMR10*"
->
-> These messages can be safely ignored. They are emitted by the PDFBox library
-> and would be fixed in the upcoming new version of the library.
-
 ## Book parameters
 
 The input score has a "common cut" time signature (2/2),

@@ -1,184 +1,169 @@
+# Flatpak and Flathub
 
-# New structure for the Audiveris project
+This directory contains material for creating a flatpak package
+and optionally uploading it to the [audiveris flathub
+repository](https://github.com/flathub/org.audiveris.Audiveris).
 
-This is a preliminary documentation on how the Audiveris project is now structured.
-It has evolved from a aingle project to a tree of subprojects for better modularity.
+This documentation strongly derives from the initial documentation entitled
+"Flatpak generation and Flathub submission" and located in the former `dev/flatpak/README.md` file.
 
-## Motivations and actions
+The main updates relate to:
+- The [new structuring of Audiveris project](../project-structure.md) in four sub-projects
+named app, flatpak, schemas, windows-installer.
+- The use of Gradle tasks and plugins to replace *ad-hoc* scripts.
+- The unique definition of key parameters in a single location
 
-- Divide the old monolith project into more modular sub-projects, each with a well-defined objective.
-- Prohibit any duplication of information (such as the required Java version) to avoid inconsistencies.
-- Use high-level standard tools (such as Gradle predefined tasks or the flatpakGradleGenerator plugin)
-rather than having to develop and maintain *ad hoc* procedures.
+## The flathub submodule
 
-## Subprojects
+The audiveris git tree now contains a submodule for the flathub code
+under `flatpak/flathub`. To initialize this submodule, run
+``` sh
+$ git submodule init
+$ git submodule update
+```
 
-Below is a simplified tree view, focused on the main files.
-<pre>
-.
-├── app
-│   ├── build.gradle
-│   ├── build
-│   │   └── ... dependencies.json
-│   ├── dev
-│   │   ├── icons
-│   │   │   └── ... // many .png icon images
-│   │   ├── scripts
-│   │   │   ├── custom-unixStartScript.txt
-│   │   │   └── custom-windowsStartScript.txt
-│   │   └── tessdata
-│   │       └── eng.traineddata
-│   └── src
-│       └── ... // a whole tree of main and test .java files
-├── dev // this folder could be removed
-│   ├── flathub // the old Git submodule
-│   │   └── ...
-│   ├── flatpak // no longer used
-│   │   ├── ...
-│   │   ├── README.md // To be merged with flatpak/README.md
-│   │   ├── languages.sh
-│   │   └── create-flatpak-dependencies.py
-│   └── icon-50.gif
-├── flatpak
-│   ├── README.md // this file!
-│   ├── build.gradle
-│   ├── dev
-│   │   └── org.audiveris.audiveris.template.yml    // Template for flatpak-builder manifest
-│   ├── res                                         // Resources to be copied to flathub
-│   │   ├── org.audiveris.audiveris.desktop
-│   │   └── org.audiveris.audiveris.metainfo.xml
-│   └── flathub // new Git submodule. To be populated by initFlathub task as follows:
-│       ├── dependencies.json                       // Dependencies manifest generated from app subproject
-│       ├── org.audiveris.audiveris.desktop         // Copied from flatpak/res
-│       ├── org.audiveris.audiveris.metainfo.xml    // Copied from flatpak/res
-│       └── org.audiveris.audiveris.yml             // Global manifest for flatpak-builder, from dev template
-├── gradle
-│   └── wrapper
-│       ├── gradle-wrapper.jar
-│       └── gradle-wrapper.properties
-├── gradle.properties
-├── schemas
-│   ├── build.gradle
-│   └── ... // material for generating the schema-based documentation
-├── settings.gradle
-└── windows-installer
-    ├── build.gradle
-    └── ... // material for generating the Windows installer
-</pre>
+By tracking this as a git submodule rather than keeping the code
+directly in the audiveris git tree, it is possible to push directly
+to the flathub repository when a new version must be created.
 
-We can find:
-- The sub-projects folders, each with its own ``build.gradle`` pilot file: 
-    - **``app``**: the application (which was formerly located at root level)
-    - **``schemas``**: the generation of schema-based documentation
-    - **``windows-installer``**: the generation of Windows installer
-    - **``flatpak``**: the generation of Linux installer
-- The global Gradle components:
-    - ``gradle-wrapper.properties``: definition of the desired gradle version
-    - ``gradle.properties``: definition of the main variables
-    - ``settings.properties``: definition of project structure
-- The former **``dev``** folder is considered for removal, once its content has been dispatched to the relevant sub-projects.
+The ***target*** contents of the flathub directory are as follows:
 
-## Definition sources
+* The [flatpak manifest](https://manpages.debian.org/testing/flatpak-builder/flatpak-manifest.5.en.html), 
+  `org.audiveris.audiveris.yml`,
+* The [appstream meta data](https://freedesktop.org/software/appstream/docs/chap-Metadata.html), 
+  `org.audiveris.audiveris.metainfo.xml`,
+* A linux XDG desktop file, `org.audiveris.audiveris.desktop`,
+* Optionally, a `flathub.json` file with flathub build instructions,
+* A list of Java dependencies to download from Maven and other repositories,
+  the `dependencies.json` file.
 
-| Information | Source file path | Variable | Example Value|
-| :---        | :--- | :---     | :---    |
-| Gradle | gradle/wrapper/wrapper.properties | ``distributionUrl`` | https\://services.gradle.org/distributions/gradle-8.7-all.zip |
-| Gradle Sha | gradle/wrapper/wrapper.properties | ``distributionSha256Sum`` | 194717442575a6f96e1c1befa2c30e9a4fc90f701d7aee33eb879b79e7ff05c0 |
-| Java version | gradle.properties |  ``theMinJavaVersion`` | 21 |
-| Tesseract langs version  | gradle.properties| ``theTessdataTag`` | 4.1.0 |
-| Chosen Xslt processor | gradle.properties | ``theXsltTransformer`` | XsltProc |
+Note: These are ***target*** files in the flatpak/flathub folder,
+none of them is intended to be written or modified directly.
+Instead, they are generated by Gradle tasks as described in the following sections.
 
+## Information sources
+
+The global Gradle components are defined in these files:
+- `gradle-wrapper.properties`: definition of the desired gradle version
+- `gradle.properties`: definition of the main variables
+- `settings.properties`: definition of project structure
+
+Below are the unique locations, relative to the project root, where the Audiveris key parameters are kept.
+
+| Information | Source file path | Variable | Example Value |
+| :---        | :---             | :---     | :---          |
+| Audiveris version   | app/build.gradle | project(':app').version | 5.4    |
+| Audiveris tag       | app/build.gradle | project(':app').ext.tag | 5.4    |
+| Gradle | gradle/wrapper/gradle-wrapper.properties | `distributionUrl` | https\://services.gradle.org/distributions/gradle-8.7-all.zip |
+| Gradle Sha | gradle/wrapper/gradle-wrapper.properties | `distributionSha256Sum` | 194717442575a6f96e1c1befa2c30e9a4fc90f701d7aee33eb879b79e7ff05c0 |
+| Java version | gradle.properties |  `theMinJavaVersion` | 21 |
+| Tesseract langs version  | gradle.properties| `theTessdataTag` | 4.1.0 |
+| Chosen Xslt processor | gradle.properties | `theXsltTransformer` | XsltProc |
+
+These informations are maintained for the whole Audiveris project, not only for Flatpak.
+
+Regarding the specific case of a new Flatpak version, here are the potential informations to update:
+- app/`build.gradle` for the Audiveris `version` and `tag`.
+- `gradle.properties` for `theMinJavaVersion`.
+- gradle/wrapper/`gradle-wrapper.properties` may need to be adjusted to support the required Java version.  
+If so, we must update both  `distributionUrl` and `distributionSha256Sum` properties.
+- flatpak/res/`org.audiveris.audiveris.metainfo.xml` to include the new release description using html tags.
+
+Note: the Audiveris tag, for example `5.4`, is essential for the flatpak builder to retrieve
+a precise commit of the Audiveris project.
+Fortunately, it is a symbolic value: we can keep the same tag name (like 5.4)
+while making the tag point to a more recent commit:
+
+To delete and re-create locally:
+```sh
+# delete
+$ git tag -d my_tag
+
+# (re-)create
+$ git tag my_tag
+```
+
+To push remotely
+```sh
+$ git push --force origin my_tag
+```
 
 ## Building flatpak
 
-The generation of Flatpak components is trigged by the following command,
+The generation of Flatpak components is triggered by this command,
 entered from the Audiveris root folder:
 ``` sh
 $ ./gradlew -q :flatpak:buildFlatpak
 ```
 
-This means to launch the task ``buildFlatpak`` within the sub-project ``flatpak``.
-Perhaps ``buildFlatpak`` should be better named ``build``, but for the time being this prevents any unwanted build.
+This means to launch the task `buildFlatpak` within the sub-project `flatpak`.
+Perhaps `buildFlatpak` should be better named `build`, but for the time being this prevents any unwanted build.
 
 This task does two things:
-1. First, the ``initFlathub`` task is run to populate the flatpak/flathub folder
-    1. The ``genDependencies`` task makes sure that Audiveris Java classes (``:app:classes``) have been compiled
-    and then run the ``:app:flatpakGradleGenerator`` plugin to generate the app/build/``dependencies.json`` file
+1. First, the `initFlathub` task is run to populate the flatpak/flathub folder
+    1. The `genDependencies` task makes sure that Audiveris Java classes (`:app:classes`) have been compiled
+    and then run the `:app:flatpakGradleGenerator` plugin to generate the app/build/`dependencies.json` file
     which is then copied to the flatpak/flathub folder.
-    2. The ``genManifest`` task builds the flatpak/flathub/``org.audiveris.audiveris.yml`` manifest by expanding
-    the template flatpak/dev/``org.audiveris.audiveris.template.yml`` file with the variables
-    read in gradle/wrapper/``wrapper.properties`` and ``gradle.properties``.      
-2. Second, and only if the host OS name is "linux", it launches ``flatpak-builder`` as follows:
+    2. The `genManifest` task builds the flatpak/flathub/`org.audiveris.audiveris.yml` manifest by expanding
+    the template flatpak/dev/`org.audiveris.audiveris.template.yml` file with the variables
+    read in gradle/wrapper/`wrapper.properties` and `gradle.properties`.
+    3. The content of the flatpak/`res` folder, that is the files `org.audiveris.audiveris.metainfo.xml` 
+    and `org.audiveris.audiveris.desktop`, is copied to the flatpak/flathub folder.
+2. Second, and only if the host OS name is "linux", it launches `flatpak-builder` as follows:
 ``` sh
     commandLine('flatpak-builder', 
-        '--verbose',                            // option to set verbosity level
         '--force-clean',                        // option to empty the output directory
         'build',                                // relative path to the output directory to write
         'org.audiveris.audiveris.yml')          // relative path to the manifest file to read
 ```
 
-### The application tag
+This building of flatpak would be best run on a Linux environment.
 
-IMPORTANT: the application tag, for example `5.4`, used by the `genManifest` task,
-is essential for the flatpak builder to retrieve the precise commit of the Audiveris project.
-
-This tag is today hard-coded in flatpak/``build.gradle`` file, within the `genManifest` task.  
-Fortunately, we can always manually modify (delete + add) a tag on GitHub.
-
-This means that we don't have to modify the hard-coded value, because by *moving* the tag
-we can simply make it point to the most recent commit.
-
-### Partial build
-
-If we want to just populate the `flatpak/flathub` folder,
-instead of calling the `:flatpak:buildFlatpak` task (which can run only on Linux),
-we can directly call the `:flatpak:initFlathub` sub-task which can run on any OS,
-to retrieve the dependencies and generate the manifest:.
-
-```sh
-$ ./gradlew -q :flatpak:initFlathub
-
-hostOS: windows-x86_64
-targetOS: windows-x86_64
-theMinJavaVersion: 21
-theTessdataTag: 4.1.0
-theXsltTransformer: XsltProc
-programBuild: ca3933a3e
-app. Generating dependencies
-app. Dependencies generated
-Copying dependencies.json
-Generating Flatpak manifest
-Copying resources to flathub
+NOTA: To make 'flatpak-builder' work correctly in my VirtualBox/Ubuntu environment,
+I had first to allow git to copy repositories locally using the "file" protocol:
+``` sh
+$ git config --global protocol.file.allow always
 ```
 
-The dependencies are retrieved according to a targetOS which is by default set to the hostOS.  
-But we can define a specific targetOS via the Gradle property `targetOS`.
+## Building in parts (still a work in progress...)
 
-This allows to generate the flathub Linux content, from a Windows host for example:
+The previous section (Building flatpak) describes the most convenient approach,
+provided that we can use a Linux environment.
 
+If not, we can split the building in two parts:
+- First part, under any OS including Windows, someone can generate
+the content of flatpak/flathub folder, commit the submodule and push.  
 ```sh
-# First, remove the previous dependencies.json file in the `app` sub-project
-rm  app/build/dependencies.json
-
-# Then generate the new material
+# Run just the 'initFlathub' task
+# NOTA: The targetOS must be explicitly set if it is different from the hosting OS
 $ ./gradlew -q -PtargetOS=linux-x86_64 :flatpak:initFlathub
 
-hostOS: windows-x86_64
-property targetOS: linux-x86_64
-targetOS: linux-x86_64
-theMinJavaVersion: 21
-theTessdataTag: 4.1.0
-theXsltTransformer: XsltProc
-programBuild: ca3933a3e
-app. Generating dependencies
-app. Dependencies generated
-Copying dependencies.json
-Generating Flatpak manifest
-Copying resources to flathub
+# Commit and push the content of flatpak/flathub
+$ git add flatpak/flathub
+$ git commit -m "updated flatpak submodule" -- flatpak/flathub
+$ git push
 ```
+- Second part, under Linux, someone else can pull, build and submit to flathub.  
+XXX TO BE REVIEWED XXX
+```sh
+# Retrieve flatpak/flathub content
+$ git pull
 
+# Build
+$ flatpak-builder --force-clean build org.audiveris.audiveris.yml
 
+# Or these commands to build and run with a local repository 
 
+# To export directly to the local $HOME/testrepo
+$ flatpak-builder --force-clean --repo=$HOME/testrepo build org.audiveris.audiveris
+$ flatpak remote-add --no-gpg-verify --user testrepo file://$HOME/testrepo
 
+# To list audiveris in the local repo
+$ flatpak remote-ls testrepo
 
+# To start audiveris
+$ flatpak run org.audiveris.audiveris
 
+# Submit to flathub
+$ ???
+```

@@ -73,14 +73,17 @@
             <li>Ability to gracefully stop the current book processing at the next step end.</li>
             <li>Ability to clear the log window – the log file remains intact.</li>
             <li>Waiting message for long loading of book or sheet.</li>
+            <li>New Preferences dialog with new policy for the selection of output folder.</li>
         </ul>
         <p>
             Engine
         </p>
         <ul>
+            <li>Improved handling of implicit tuplets.</li>
             <li>Support for metronome mark.</li>
             <li>The recognition of fermata no longer requires separate recognitions of fermata-arc and fermata-dot.</li>
             <li>The processing of an input image with no white margin around the staves is now possible.</li>
+            <li>Staff lines are now less impacted by isolated chunks.</li>
         </ul>
         <p>
             Project
