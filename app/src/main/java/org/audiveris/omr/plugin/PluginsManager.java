@@ -202,14 +202,14 @@ public class PluginsManager
                     }
                 }
 
-                logger.info("Loaded plugins from {}", pluginsPath);
+                logger.info("Plugins loaded from {}", pluginsPath);
 
                 return pluginsHolder.list; // Normal exit
             } catch (JAXBException ex) {
                 logger.warn("Error loading {}", pluginsPath, ex);
             }
         } else {
-            logger.info("No {} file found", pluginsPath);
+            logger.debug("No {} file found", pluginsPath);
         }
 
         return Collections.emptyList();

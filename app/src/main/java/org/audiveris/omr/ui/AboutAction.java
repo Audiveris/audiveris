@@ -25,6 +25,7 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.util.BrowserLinkListener;
 import org.audiveris.omr.ui.util.Panel;
@@ -223,10 +224,22 @@ public class AboutAction
         final TesseractOCR tesseract = TesseractOCR.getInstance();
         ((JLabel) Topic.ocr.comp).setText(tesseract.identify());
 
+        final StringBuilder ocr = new StringBuilder();
         final Path ocrFolder = tesseract.getOcrFolder();
-        final String ocr = (ocrFolder == null) ? "null"
-                : ocrFolder.toString() + (Files.isWritable(ocrFolder) ? "" : " (NOT WRITABLE)");
-        ((JLabel) Topic.ocrFolder.comp).setText(ocr);
+        if (ocrFolder == null) {
+            ocr.append("null");
+        } else {
+            ocr.append(ocrFolder);
+
+            if (Language.getSupportedLanguages().getSize() == 0) {
+                ocr.append(" (EMPTY)");
+            }
+
+            if (!Files.isWritable(ocrFolder)) {
+                ocr.append(" (NOT WRITABLE)");
+            }
+        }
+        ((JLabel) Topic.ocrFolder.comp).setText(ocr.toString());
 
         ((JLabel) Topic.javaVendor.comp).setText(System.getProperty("java.vendor"));
 
@@ -262,20 +275,20 @@ public class AboutAction
 
         for (Component comp : aboutBox.getComponents()) {
             switch (comp) {
-            case JLabel label -> {
-                final String text = label.getText();
-                sb.append(text);
-                sb.append(text.endsWith(":") ? " " : WellKnowns.LINE_SEPARATOR);
-            }
-            case JEditorPane pane -> {
-                if (pane == Topic.home.comp) {
-                    sb.append(resources.getString("Application.homepage"));
-                } else if (pane == Topic.project.comp) {
-                    sb.append(resources.getString("Application.projectpage"));
+                case JLabel label -> {
+                    final String text = label.getText();
+                    sb.append(text);
+                    sb.append(text.endsWith(":") ? " " : WellKnowns.LINE_SEPARATOR);
                 }
-                sb.append(WellKnowns.LINE_SEPARATOR);
-            }
-            default -> {}
+                case JEditorPane pane -> {
+                    if (pane == Topic.home.comp) {
+                        sb.append(resources.getString("Application.homepage"));
+                    } else if (pane == Topic.project.comp) {
+                        sb.append(resources.getString("Application.projectpage"));
+                    }
+                    sb.append(WellKnowns.LINE_SEPARATOR);
+                }
+                default -> {}
             }
         }
 

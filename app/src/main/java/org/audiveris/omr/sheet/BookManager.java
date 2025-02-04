@@ -455,7 +455,7 @@ public class BookManager
      *
      * @return the output base folder string
      */
-    public static String getBaseFolderString ()
+    private static String getBaseFolderString ()
     {
         return constants.baseFolder.getValue().trim();
     }
@@ -618,6 +618,22 @@ public class BookManager
         return getInstance().books.size() > 1;
     }
 
+    //---------------//
+    // setBaseFolder //
+    //---------------//
+    /**
+     * Set the base for output folders.
+     * <p>
+     * This is meant for interactive setting, overriding a potential cliOutput.
+     *
+     * @param dir the output base folder
+     */
+    public static void setBaseFolder (Path dir)
+    {
+        Main.getCli().nullifyOutputFolder();
+        constants.baseFolder.setValue(dir.toString());
+    }
+
     //----------------//
     // useCompression //
     //----------------//
@@ -696,11 +712,11 @@ public class BookManager
                 "Should we compress the MusicXML output?");
 
         private final Constant.Boolean useSeparateBookFolders = new Constant.Boolean(
-                true,
+                false,
                 "Should we use a separate folder for each book?");
 
         private final Constant.Boolean useInputBookFolder = new Constant.Boolean(
-                false,
+                true,
                 "Should we store book outputs next to book input?");
 
         private final Constant.String baseFolder = new Constant.String(

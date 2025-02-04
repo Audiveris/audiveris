@@ -1753,7 +1753,7 @@ public class BookActions
         //        if (constants.promptParameters.getValue()) {
         //            return applyUserSettings(sheet);
         //        } else {
-        //            return true; /////////////////////////////////////////////////////////////////////////////////////////////
+        //            return true;
         //            ///return fillParametersWithDefaults(sheet.getBook());
         //        }
         return true;
@@ -1774,7 +1774,7 @@ public class BookActions
         //        if (constants.promptParameters.getValue()) {
         //            return applyUserSettings(sheet);
         //        } else {
-        //            return true; /////////////////////////////////////////////////////////////////////////////////////////////
+        //            return true;
         //            ///return fillParametersWithDefaults(sheet.getBook());
         //        }
         return true;
@@ -2242,7 +2242,7 @@ public class BookActions
         // Constructor needed for creation of HistoryMenu
         public LoadBookTask ()
         {
-            super(OmrGui.getApplication(), "empty");
+            super(OmrGui.getApplication(), "Loading");
         }
 
         /**

@@ -114,8 +114,7 @@ public class Panel
     // paintComponent //
     //----------------//
     /**
-     * This method is redefined to give a chance to draw the cell boundaries
-     * if so desired.
+     * This method is redefined to give a chance to draw the cell boundaries if so desired.
      *
      * @param g the graphic context
      */

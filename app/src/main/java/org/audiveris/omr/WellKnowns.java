@@ -70,6 +70,9 @@ public abstract class WellKnowns
     /** Application id (repository name on GitHub) : {@value}. */
     public static final String TOOL_ID = ProgramId.PROGRAM_ID;
 
+    /** Flatpak id (org.audiveris.audiveris or null). */
+    public static final String FLATPAK_ID = System.getenv("FLATPAK_ID");
+
     /** Application reference: {@value}. */
     public static final String TOOL_REF = ProgramId.PROGRAM_VERSION;
 
@@ -88,6 +91,9 @@ public abstract class WellKnowns
 
     /** Are we using a Linux OS?. */
     public static final boolean LINUX = OS_NAME.startsWith("linux");
+
+    /** Are we using Flatpak (Linux)?. */
+    public static final boolean FLATPAK = FLATPAK_ID != null;
 
     /** Are we using a Mac OS?. */
     public static final boolean MAC_OS_X = OS_NAME.startsWith("mac os x");
@@ -318,7 +324,8 @@ public abstract class WellKnowns
         final String xdg = System.getenv(xdgProperty(kind));
 
         if (xdg != null) {
-            final Path audiverisPath = Paths.get(xdg + TOOL_PREFIX);
+            // Specific case for Flatpak
+            final Path audiverisPath = Paths.get(FLATPAK ? xdg : xdg + TOOL_PREFIX);
 
             return switch (kind) {
                 case DATA -> audiverisPath;

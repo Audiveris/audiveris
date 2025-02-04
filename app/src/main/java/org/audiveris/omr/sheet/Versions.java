@@ -79,7 +79,9 @@ import javax.swing.JTextPane;
  * than the current software.
  * <p>
  * The poll can be manual (via interactive GuiActions) or automatic according to a chosen polling
- * period in batch or interactive modes.
+ * period.
+ * <p>
+ * NOTA: Poll is now restricted to interactive mode, to avoid too many connections on Github site.
  *
  * @author Hervé Bitteur
  */

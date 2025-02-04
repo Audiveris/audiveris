@@ -517,8 +517,7 @@ public class BarsRetriever
             Collections.sort(
                     compounds,
                     (SectionCompound g1,
-                     SectionCompound g2) ->
-                    {
+                     SectionCompound g2) -> {
                         double d1 = PointUtil.length(GeoUtil.vectorOf(g1.getCentroid(), vertex));
                         double d2 = PointUtil.length(GeoUtil.vectorOf(g2.getCentroid(), vertex));
 

@@ -192,13 +192,12 @@ public abstract class UIUtil
                 UIUtil.class);
 
         // OptionPane texts
-        final String[] keys = new String[]
-        {
-                "OptionPane.inputDialogTitle",
-                "OptionPane.messageDialogTitle",
-                "OptionPane.titleText",
-                "OptionPane.cancelButtonText",
-                "OptionPane.noButtonText",
+        final String[] keys = new String[] { //
+                "OptionPane.inputDialogTitle", //
+                "OptionPane.messageDialogTitle", //
+                "OptionPane.titleText", //
+                "OptionPane.cancelButtonText", //
+                "OptionPane.noButtonText", //
                 "OptionPane.yesButtonText" };
 
         for (String key : keys) {
@@ -244,18 +243,18 @@ public abstract class UIUtil
     /**
      * Let the user select a directory.
      *
+     * @param save     true for a SAVE dialog, false for a LOAD dialog
      * @param parent   the parent component for the dialog
      * @param startDir the starting directory
      * @param title    specific dialog title if any, null otherwise
      * @return the chosen directory, or null
      */
-    public static File directoryChooser (Component parent,
+    public static File directoryChooser (boolean save,
+                                         Component parent,
                                          File startDir,
                                          String title)
     {
-        //        String oldMacProperty = System.getProperty("apple.awt.fileDialogForDirectories", "false");
-        //        System.setProperty("apple.awt.fileDialogForDirectories", "true");
-        OmrFileFilter filter = new OmrFileFilter("Directories", new String[] {})
+        final OmrFileFilter filter = new OmrFileFilter("Directories", new String[] {})
         {
             @Override
             public boolean accept (File f)
@@ -264,32 +263,71 @@ public abstract class UIUtil
             }
         };
 
-        final JFileChooser fc = new JFileChooser();
-        fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES); // FILES needed if dir doesn't exist
-        fc.addChoosableFileFilter(filter); // To display directories list
-        fc.setFileFilter(filter); // To display this list by default
-        ///fc.setAcceptAllFileFilterUsed(false); // Don't display the AllFiles list
+        File dir = null;
 
-        if (title != null) {
-            fc.setDialogTitle(title);
-        }
+        if (WellKnowns.MAC_OS_X) {
+            if ((parent == null) && (org.audiveris.omr.OMR.gui != null)) {
+                parent = org.audiveris.omr.OMR.gui.getFrame();
+            }
 
-        ///
-        if (startDir != null) {
-            // Pre-select the proposed directory
-            File parentDir = startDir.getParentFile();
-            fc.setCurrentDirectory(parentDir);
-            fc.setSelectedFile(startDir);
-        }
+            Component parentFrame = parent;
 
-        final int result = fc.showSaveDialog(parent);
+            if (parentFrame != null) {
+                while (parentFrame.getParent() != null) {
+                    parentFrame = parentFrame.getParent();
+                }
+            }
 
-        //        System.setProperty("apple.awt.fileDialogForDirectories", oldMacProperty);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            return fc.getSelectedFile();
+            try {
+                final FileDialog fd = new FileDialog((Frame) parentFrame);
+
+                if (startDir != null) {
+                    fd.setDirectory(startDir.getPath());
+                }
+
+                fd.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
+                fd.setFilenameFilter(filter);
+
+                if (title == null) {
+                    title = save ? "Saving: " : "Loading: ";
+                    title += filter.getDescription();
+                }
+
+                fd.setTitle(title);
+                fd.setVisible(true);
+
+                final String dirName = fd.getDirectory();
+
+                if (dirName != null) {
+                    dir = new File(dirName);
+                }
+            } catch (ClassCastException e) {
+                logger.warn("no ancestor is Frame");
+            }
         } else {
-            return null;
+            final JFileChooser fc = new JFileChooser();
+            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+            // Pre-select the directory
+            if (startDir != null) {
+                fc.setCurrentDirectory(startDir);
+            }
+
+            fc.addChoosableFileFilter(filter);
+            fc.setFileFilter(filter);
+
+            if (title != null) {
+                fc.setDialogTitle(title);
+            }
+
+            int result = save ? fc.showSaveDialog(parent) : fc.showOpenDialog(parent);
+
+            if (result == JFileChooser.APPROVE_OPTION) {
+                dir = fc.getSelectedFile();
+            }
         }
+
+        return dir;
     }
 
     //---------------//
@@ -792,8 +830,7 @@ public abstract class UIUtil
                 BasicStroke.CAP_SQUARE,
                 BasicStroke.JOIN_MITER,
                 10.0f,
-                new float[]
-                { 6.0f / (float) ratio },
+                new float[] { 6.0f / (float) ratio },
                 0.0f);
         g2.setStroke(stroke);
 

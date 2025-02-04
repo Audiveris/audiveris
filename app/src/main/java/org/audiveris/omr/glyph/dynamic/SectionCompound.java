@@ -245,13 +245,32 @@ public class SectionCompound
      */
     public Point2D getCentroid (Rectangle roi)
     {
-        Barycenter barycenter = new Barycenter();
+        return getCentroid(roi, 1);
+    }
+
+    //-------------//
+    // getCentroid //
+    //-------------//
+    /**
+     * Report the validated glyph absolute centroid (mass center) of all pixels found in the
+     * provided absolute ROI if any.
+     *
+     * @param roi       the region of interest, if null all symbol pixels are considered
+     * @param minWeight minimum weight in region of interest to validate the centroid
+     * @return the absolute mass center point
+     */
+    public Point2D getCentroid (Rectangle roi,
+                                int minWeight)
+    {
+        final Barycenter barycenter = new Barycenter();
 
         for (Section section : getMembers()) {
             section.cumulate(barycenter, roi);
         }
 
-        if (barycenter.getWeight() != 0) {
+        final double w = barycenter.getWeight();
+
+        if (w >= minWeight) {
             return new Point2D.Double(barycenter.getX(), barycenter.getY());
         } else {
             return null;

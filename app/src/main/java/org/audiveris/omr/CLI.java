@@ -368,6 +368,17 @@ public class CLI
         logger.info(buf.toString());
     }
 
+    //---------------------//
+    // nullifyOutputFolder //
+    //---------------------//
+    /**
+     * Nullify the output folder on the CLI.
+     */
+    public void nullifyOutputFolder ()
+    {
+        params.outputFolder = null;
+    }
+
     //~ Inner classes ------------------------------------------------------------------------------
 
     //----------//
