@@ -32,7 +32,7 @@ This box allows to define which step is automatically trigerred on an input file
 
 This allows to interactively choose a new default plugin among the declared ones,
 since by default the first declared plugin is set as the default one
-(See the [Plugins](./plugins.md) section).
+(See the [Plugins](../advanced/plugins.md) section).
 
 ## Output folder
 

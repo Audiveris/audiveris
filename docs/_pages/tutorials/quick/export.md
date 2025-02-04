@@ -47,7 +47,7 @@ From our "chula" example, this command produces a file named `chula.mxl`
 
 Starting with the 5.4 release, the default policy is to put any output file next to the input file.
 
-This default policy can be changed via the [Preferences](../../guides/advanced/preferences.md) dialog.
+This default policy can be changed via the [Preferences](../../guides/main/preferences.md) dialog.
 
 We can also use the "`Save book as`" or the "`Export book as`" menu items to choose a specific output location and name.
 

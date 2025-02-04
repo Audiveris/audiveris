@@ -115,7 +115,7 @@ Pressing a shape set button replaces the catalog view by a specific palette dedi
 the selected shape set.
 For example, pressing on the ``ClefsAndShifts`` set button gives:
 
-![](../../../assets/images/ClefsAndShifts_shapes.png)
+![](../../../assets/images/ClefsAndShifts_palette.png)
 
 Within a set, a shape can be:
 

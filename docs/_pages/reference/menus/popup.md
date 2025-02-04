@@ -16,7 +16,7 @@ It displays _contextual_ information and actions that depend on the sheet latest
 the current location in sheet view and the selected items if any.
 
 Some of its content also depends on user-selected
-[Advanced Topics](../../guides/advanced/preferences.md#advanced-topics) in the preference dialog..
+[Advanced Topics](../../guides/main/preferences.md#advanced-topics) in the Preferences dialog.
 
 ---
 Table of contents

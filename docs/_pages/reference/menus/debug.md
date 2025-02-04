@@ -14,7 +14,7 @@ This menu makes a few debug actions conveniently available.
 {: .highlight }
 The casual user can safely ignore this menu.
 To make it visible, you must have beforehand selected the `DEBUG` topic in the
-[Advanced Topics](../../guides/advanced/preferences.md#advanced-topics) preferences dialog.
+[Advanced Topics](../../guides/main/preferences.md#advanced-topics) of the Preferences dialog.
 
 ---
 Table of contents
