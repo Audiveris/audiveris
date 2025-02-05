@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Audiveris
+GenericName=Optical Music Recognition (OMR)
+Exec=Audiveris
+Type=Application
+Icon=org.audiveris.audiveris
+Comment=Convert sheet music to XML
+Comment[en]=Convert sheet music to XML
+Categories=Music;Scanning;AudioVideo
+Keywords=lilypond;editor;sheet music;java

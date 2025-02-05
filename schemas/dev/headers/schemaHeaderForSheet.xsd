@@ -1,11 +1,9 @@
     <xs:annotation>
       <xs:documentation>
-        <![CDATA[This is the documentation for the schema rooted at <b><code>Sheet</code></b> class.
+        <![CDATA[This documentation describes any <b><code>sheet#N.xml</code></b> file within an Audiveris <code>.omr</code> project file.
 <ul>
-<li>It describes any <b><code>sheet#N.xml</code></b> file within an Audiveris <code>.omr</code> project file.
-<li><a href="Sheet.xsd"><b>Sheet.xsd</b></a> file contains the annotated schema verbatim.
-<li>This documentation describes all schema elements in alphabetical order.
-<li>For your convenience, you can start directly by the root <b><a href="#type_sheet">Sheet</a></b> complex type.
+<li>The <b><a href="#type_sheet">Sheet</a></b> class is the root of the schema.
+<li>The <a href="Sheet.xsd"><b>Sheet.xsd</b></a> file contains the annotated raw schema.
 </ul>
 <p>
 The diagram below presents <code>Book</code> and <code>Sheet</code> simplified structures.

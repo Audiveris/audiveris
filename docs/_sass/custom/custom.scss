@@ -1,7 +1,7 @@
 h1,
 .text-alpha {
-  @include fs-8;
-  font-weight: 600;
+  @include fs-9;
+  font-weight: 300;
 }
 
 h2,
@@ -21,6 +21,13 @@ h4,
   @include fs-5;
   font-weight: 600;
   text-transform: none;
+}
+
+h5,
+.text-epsilon {
+  @include fs-4;
+  font-weight: 400;
+  text-transform: uppercase;
 }
 
 /* Reference to a footnote */

@@ -1,0 +1,4 @@
+[submodule "flatpak/flathub"]
+	path = flatpak/flathub
+	url = https://github.com/flathub/org.audiveris.Audiveris
+	branch = flatpak-gradle-generator

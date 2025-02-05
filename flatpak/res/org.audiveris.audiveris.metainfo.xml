@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.audiveris.audiveris</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0</project_license>
+  <name>Audiveris</name>
+  <summary>Optical Music Recognition (OMR) Application</summary>
+  <description>
+    <p>
+      An Optical Music Recognition (OMR) application, featuring
+      an OMR engine coupled with a dedicated editor.
+    </p>
+    <p>
+      It recognizes music from digitized images and converts it into
+      computer-readable symbolic format. This enables further music processing
+      by any external notation editor, most notably: digital playback,
+      transposition and arrangement.
+    </p>
+    <p>
+      Audiveris provides outputs in two main digital formats: its OMR format
+      and standard MusicXML format. It has a graphical user
+      interface focused on quick verification and manual
+      correction of the OMR outputs. Other music editors, such as MuseScore,
+      Finale, or Lilypond, can be used on Audiveris MusicXML output.
+    </p>
+  </description>
+  <categories>
+    <category>Music</category>
+    <category>Scanning</category>
+    <category>AudioVideo</category>
+  </categories>
+  <url type="homepage">https://audiveris.github.io/audiveris/</url>
+  <url type="bugtracker">https://github.com/Audiveris/audiveris/issues</url>
+  <url type="help">https://audiveris.github.io/audiveris/_pages/handbook/</url>
+  <url type="contact">https://github.com/Audiveris/audiveris/discussions</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://github.com/Audiveris/docs/blob/master/images/Dichterliebe01.png</image>
+      <caption>Audiveris 5.4 editor on Dichterliebe</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/Audiveris/docs/blob/master/images/Moonlight-metronome.png</image>
+      <caption>Audiveris 5.4, with metronome and implicit tuplets</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/Audiveris/docs/blob/master/images/Test_Percussion.png</image>
+      <caption>Audiveris 5.4, with drum notation</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/Audiveris/docs/blob/master/images/About.png</image>
+      <caption>Audiveris 5.4, the about dialog</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://upload.wikimedia.org/wikipedia/commons/e/e9/Audiveris_5.2_screenshot.png</image>
+      <caption>Audiveris 5.2, with specific locale</caption>
+    </screenshot>
+  </screenshots>
+  <launchable type="desktop-id">org.audiveris.audiveris.desktop</launchable>
+  <developer_name>Hervé Bitteur et al.</developer_name>
+  <releases>
+    <release version="5.4" date="2024-12-25" urgency="low"
+	     type="stable">
+      <description>
+        <p>
+           User Interface
+        </p>
+        <ul>
+            <li>New feature to handle the local collection of OCR languages and download additional ones on demand from the GitHub Tesseract site.</li>
+            <li>Creation of the Binarization adjustment board to dynamically adjust the binarization filters and settings.</li>
+            <li>Past the SYMBOLS step, the manual removal of any Inter now triggers a dynamic rebuilding of glyphs, as if the removed Inter had never existed.</li>
+            <li>Improvement and extension of default/book/sheet parameters (interline, barline)</li>
+            <li>Ability to display some inters in jumbo mode to ease a visual inspection – by default this can apply to augmentation dots.</li>
+            <li>Ability to gracefully stop the current book processing at the next step end.</li>
+            <li>Ability to clear the log window – the log file remains intact.</li>
+            <li>Waiting message for long loading of book or sheet.</li>
+            <li>New Preferences dialog with new policy for the selection of output folder.</li>
+        </ul>
+        <p>
+            Engine
+        </p>
+        <ul>
+            <li>Improved handling of implicit tuplets.</li>
+            <li>Support for metronome mark.</li>
+            <li>The recognition of fermata no longer requires separate recognitions of fermata-arc and fermata-dot.</li>
+            <li>The processing of an input image with no white margin around the staves is now possible.</li>
+            <li>Staff lines are now less impacted by isolated chunks.</li>
+        </ul>
+        <p>
+            Project
+        </p>
+        <ul>
+            <li>A Linux Flatpak installer, gathering the needed libraries including proper Java environment, is provided on FlatHub.</li>
+            <li>The Windows installer pre-populates the user config/tessdata folder with the eng Tesseract language.</li>
+            <li>For licence reasons, JPodRenderer had to be replaced by Apache PDFBox to load PDF images.</li>
+        </ul>
+        <p>
+            Documentation
+        </p>
+        <ul>
+            <li>Global handbook restructuring.</li>
+            <li>Support for a PDF version of handbook.</li>
+            <li>Re-reading of the whole documentation.</li>
+        </ul>
+        <p>
+            Java
+        </p>
+        <ul>
+            <li>In Audiveris.bat (used by the Windows installer) and Audiveris start scripts, the Java version is checked before the application is launched.</li>
+            <li>Support of Java 21.</li>
+            <li>Upgrade to Gradle 8.5 to support Java 21.</li>
+            <li>Removal of all deprecated features such as JGoodies PanelBuilder, Observer/Observable, class.newInstance(), etc.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="5.3.1" date="2023-07-04" urgency="low"
+	     type="stable">
+      <description>
+	<p>
+	  Drums, Fonts and Parts (bis).
+	  A bug fix on small void head templates in 5.3.0 release.
+	</p>
+      </description>
+    </release>
+    <release version="5.3.0" date="2023-06-28" urgency="low"
+	     type="stable">
+      <description>
+	<p>
+	  Drums, Fonts and Parts. Major features:
+	</p>
+	<ul>
+	  <li>
+	    Long-awaited support of drums unpitched notation
+	  </li>
+	  <li>
+	    Support for various music and text font families
+	  </li>
+	  <li>
+	    User management of logical parts
+	  </li>
+	  <li>
+	    User edition of staff geometry
+	  </li>
+	  <li>
+	    Support for multi-measure rests, measure repeats, octave shifts, fingering, plucking, etc.
+	  </li>
+	  <li>
+	    Use of Java 17, Tesseract 5.x, MusicXML 4.0
+	  </li>
+	</ul>
+      </description>
+    </release>
+    <release version="5.2.5" date="2022-01-18" urgency="medium" type="stable">
+      <description>
+	<p>
+	  Dummy rests vs interleaved rests
+	</p>
+	<p>
+	  This is a bug fix release:
+        </p>
+	  <ol>
+	    <li>
+	      Fixed incompatibility between dummy-rests created on-the-fly at
+	      export time and potential related beams
+	    </li>
+	    <li>
+	      Fixed user prompt on staff selection, not applicable to brace drop
+	      or assignment
+	    </li>
+	  </ol>
+      </description>
+    </release>
+    <release version="5.2.4" date="2021-09-15" urgency="medium" type="stable">
+      <description>
+	<p>
+	  Time slot alignment
+        </p>
+	  <ul>
+	    <li>
+	      Better handling of vertical alignment within a time slot
+	    </li>
+	    <li>
+	      Several minor bug fixes
+	    </li>
+	  </ul>
+      </description>
+    </release>
+    <release version="5.2.3" date="2021-08-05" urgency="medium" type="stable"/>
+    <release version="5.2.2" date="2021-07-09" urgency="medium" type="stable"/>
+    <release version="5.2.1" date="2021-06-04" urgency="medium" type="stable"/>
+    <release version="5.1.0" date="2018-12-13" urgency="medium" type="stable"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

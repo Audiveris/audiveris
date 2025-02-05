@@ -108,7 +108,7 @@
     xmlns:ppp="http://titanium.dstc.edu.au/xml/xs3p"
     version="1.0"
     exclude-result-prefixes="xsd ppp html">
-
+    
 <!--     <xsl:character-map name="esc-map">
         <xsl:output-character character="&lt;" string="&lt;"/>
         <xsl:output-character character="&gt;" string="&gt;"/>
@@ -134,29 +134,24 @@
     <!-- Title of HTML document. -->
     <xsl:param name="title"></xsl:param>
 
-    <!-- If 'true', sorts the top-level schema components by type,
-    then name. Otherwise, displays the components by the order that
-    they appear in the schema. -->
+    <!-- If 'true', sorts the top-level schema components by type, then name.
+    Otherwise, displays the components by the order that they appear in the schema. -->
     <xsl:param name="sortByComponent">true</xsl:param>
 
-    <!-- If 'true', prints all super-types in the
-    type hierarchy box.
-    Otherwise, prints the parent type only in the
-    type hierarchy box. -->
+    <!-- If 'true', prints all super-types in the type hierarchy box.
+    Otherwise, prints the parent type only in the type hierarchy box. -->
     <xsl:param name="printAllSuperTypes">true</xsl:param>
 
-    <!-- If 'true', prints all sub-types in the
-    type hierarchy box.
-    Otherwise, prints the direct sub-types only in the
-    type hierarchy box. -->
+    <!-- If 'true', prints all sub-types in the type hierarchy box.
+    Otherwise, prints the direct sub-types only in the type hierarchy box. -->
     <xsl:param name="printAllSubTypes">true</xsl:param>
 
     <!-- If 'true', prints out the Glossary section. -->
-    <xsl:param name="printGlossary">true</xsl:param>
+    <xsl:param name="printGlossary">false</xsl:param>
 
     <!-- If 'true', prints prefix matching namespace of schema
     components in XML Instance Representation tables. -->
-    <xsl:param name="printNSPrefixes">true</xsl:param>
+    <xsl:param name="printNSPrefixes">false</xsl:param>
 
     <!-- If 'true', searches 'included' schemas for schema components
     when generating links and XML Instance Representation tables. -->
@@ -168,15 +163,15 @@
 
     <!-- Width percentage reserved for XML Instance Representation.
     If 0, no width is reserved and instead doc popups are used. -->
-    <xsl:param name="xmlDocWidth">0</xsl:param>
+    <xsl:param name="xmlDocWidth">60</xsl:param>
 
     <!-- If 'true', link directly to the relevant type element
     in XML Instance Representation tables. -->
-    <xsl:param name="useTypeShortcut">false</xsl:param>
+    <xsl:param name="useTypeShortcut">true</xsl:param>
 
     <!-- If 'true', support markdown
     If 'false, assume html tags. -->
-    <xsl:param name="useMarkdown">true</xsl:param>
+    <xsl:param name="useMarkdown">false</xsl:param>
     
     <!-- If 'true', insert some BINGO markers in the html output. -->
     <xsl:param name="debug">false</xsl:param>
@@ -318,10 +313,6 @@
             <xsl:text>xmlDocWidth= </xsl:text>
             <xsl:value-of select="$xmlDocWidth"/>
         </xsl:message>
-<!--        <xsl:message>
-            <xsl:text>xmlStyle= </xsl:text>
-            <xsl:value-of select="$xmlStyle"/>
-        </xsl:message>-->
         <xsl:message>
             <xsl:text>docStyle= </xsl:text>
             <xsl:value-of select="$docStyle"/>
@@ -347,7 +338,9 @@
                 </title>
 
                 <!-- Set content type -->
-                <meta charset="UTF-8"/>
+                <!-- HB: Problem of closing tag -->
+                <!-- <meta charset="UTF-8"/>-->
+                <xsl:text disable-output-escaping="yes">&lt;meta charset="UTF-8"/&gt;&#xa;        </xsl:text>
 
                 <!-- Set base URL to use in working out relative paths -->
                 <xsl:if test="$baseURL != ''">
@@ -359,10 +352,14 @@
                 </xsl:if>
 
                 <!-- CSS included here, JS at end of body. -->
-                <link href="{$bootstrapURL}/css/bootstrap.min.css" rel="stylesheet" charset="UTF-8"/>
-
+                <!-- HB: Problem of closing tag -->
+                <!-- <link href="{$bootstrapURL}/css/bootstrap.min.css" rel="stylesheet" charset="UTF-8"/>-->
+                <xsl:text disable-output-escaping="yes">&lt;link href="</xsl:text>
+                <xsl:value-of select="$bootstrapURL"/>                
+                <xsl:text disable-output-escaping="yes">/css/bootstrap.min.css" rel="stylesheet"/&gt;</xsl:text>
+                
                 <!-- Set CSS styles -->
-                <style type="text/css">
+                <style>
                     <xsl:choose>
                         <!-- Use external CSS stylesheet -->
                         <xsl:when test="$externalCSSURL != ''">
@@ -379,7 +376,7 @@
                     </xsl:choose>
                 </style>
 
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.3.2/markdown-it.min.js" type="text/javascript" charset="UTF-8"></script>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.3.2/markdown-it.min.js"/>
             </head>
             <body data-spy="scroll" data-target=".xs3p-sidebar" data-offset="65">
 
@@ -389,13 +386,13 @@
                             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                                 <span class="sr-only">Toggle navigation</span>
                                 <span class="icon-bar">
-                                    <xsl:text> </xsl:text>
+                                    <xsl:text>&#160;</xsl:text>
                                 </span>
                                 <span class="icon-bar">
-                                    <xsl:text> </xsl:text>
+                                    <xsl:text>&#160;</xsl:text>
                                 </span>
                                 <span class="icon-bar">
-                                    <xsl:text> </xsl:text>
+                                    <xsl:text>&#160;</xsl:text>
                                 </span>
                             </button>
                             <a class="navbar-brand xs3p-navbar-title">
@@ -631,7 +628,7 @@
                     </tbody>
                 </table>
             </xsl:with-param>
-            <xsl:with-param name="isOpened">true</xsl:with-param>
+            <xsl:with-param name="isOpened">false</xsl:with-param>
             <xsl:with-param name="omitPanelContainer">true</xsl:with-param>
         </xsl:call-template>
     </xsl:template>
@@ -816,7 +813,7 @@
         <div style="text-align: right; clear: both;">
             <a href="#top" title="Go to top of page">
                 <span class="glyphicon glyphicon-chevron-up">
-                    <xsl:text> </xsl:text>
+                    <xsl:text>&#160;</xsl:text>
                 </span>
             </a>
         </div>
@@ -882,13 +879,16 @@ pre {
     background-color: #EEE;
     border-radius: 10px;
 }
+
 .xs3p-navbar-title {
     color: #FFF !important;
     font-weight: bold;
 }
+
 .xs3p-in-panel-table {
     margin-bottom: 0px;
 }
+
 .xs3p-sidebar {
     position: static;
 }
@@ -897,32 +897,38 @@ pre {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
-    ///background: #F0FFF0;
-    ///border: 1px solid #afa;
-    margin: 0px;
-    padding: 0px;
+    margin: 5px 0px;
 }
 
 .xs3p-xml-part {			<!-- HB: Left part for XML -->
-    word-break: normal;
-    white-space: pre-wrap;
-    ///border: 1px solid #aaf;
+<!--    word-break: normal;-->
+    white-space: normal;
+<!--    align-items: center;-->
+    margin: 0px;
+    padding: 0px;
+    background: #FFFFFF;
 }
 
 .xs3p-doc-part {			<!-- HB: Right part for DOC -->
-    margin-bottom: 10px;
-    padding: 5px;
-    border-radius: 4px;
+    margin: 0px;
+    padding: 10px;
+    padding-bottom: 0px;
     word-break: break-word;
     white-space: normal;
-    background: #FFFFFA;
-    border: 1px solid #FFCCCC
+    background: #FFFFF0;
+    border: 1px solid #FFCCCC;
+    border-radius: 6px;
 }
 
 .xs3p-collapse-button {
     font-size: 8pt;
 }
+
+.panel-body {
+    margin: 15px;
+    padding: 0px;
+}
+
 .panel-heading .xs3p-panel-title:after {
     font-family: 'Glyphicons Halflings';
     content: "\e114";
@@ -965,7 +971,7 @@ pre {
     max-width: 400px;
 }
 
-// Syntax highlighting
+<!-- Syntax highlighting -->
 .codehilite .err {color: #FFF; background-color: #D2322D; font-weight: bold;} /* Error */
 .codehilite .c   {color: #999;}
 .codehilite .cs  {color: #999; font-style: italic;}
@@ -1230,7 +1236,7 @@ pre {
                 <a id="{concat($TERM_PREFIX, $code)}">
                     <xsl:value-of select="$term"/>
                 </a>
-                <xsl:text> </xsl:text>
+                <xsl:text>&#160;</xsl:text>
             </span>
             <xsl:copy-of select="$description"/>
             <xsl:if test="$link != ''">
@@ -1310,7 +1316,7 @@ pre {
                         </tbody>
                     </table>
                 </xsl:with-param>
-                <xsl:with-param name="isOpened">true</xsl:with-param>
+                <xsl:with-param name="isOpened">false</xsl:with-param>
                 <xsl:with-param name="omitPanelContainer">true</xsl:with-param>
             </xsl:call-template>
         </xsl:if>
@@ -1378,7 +1384,7 @@ pre {
                     </tbody>
                 </table>
             </xsl:with-param>
-            <xsl:with-param name="isOpened">true</xsl:with-param>
+            <xsl:with-param name="isOpened">false</xsl:with-param>
             <xsl:with-param name="omitPanelContainer">true</xsl:with-param>
         </xsl:call-template>
     </xsl:template>
@@ -1445,7 +1451,7 @@ pre {
                     </tbody>
                 </table>
             </xsl:with-param>
-            <xsl:with-param name="isOpened">true</xsl:with-param>
+            <xsl:with-param name="isOpened">false</xsl:with-param>
             <xsl:with-param name="omitPanelContainer">true</xsl:with-param>
         </xsl:call-template>
     </xsl:template>
@@ -1878,6 +1884,7 @@ pre {
     element in the Properties table.
     -->
     <xsl:template match="xsd:appinfo | xsd:documentation" mode="properties">
+<!--                <xsl:if test="$debug='true'"><xsl:text>DDD-1 </xsl:text></xsl:if>-->
         <!-- Print out children using XML pretty printer templates -->
         <xsl:choose>
             <xsl:when test="local-name(.)='appinfo'">
@@ -1966,7 +1973,7 @@ pre {
                     </tbody>
                 </table>
             </xsl:with-param>
-            <xsl:with-param name="isOpened">true</xsl:with-param>
+            <xsl:with-param name="isOpened">false</xsl:with-param>
             <xsl:with-param name="omitPanelContainer">true</xsl:with-param>
         </xsl:call-template>
         <!-- Annotation -->
@@ -1981,6 +1988,7 @@ pre {
             <xsl:with-param name="styleClass">sample</xsl:with-param>
             <xsl:with-param name="caption">Documentation</xsl:with-param>
             <xsl:with-param name="contents">
+                <xsl:if test="$debug='true'"><xsl:text>BINGO-PA1 </xsl:text></xsl:if>
                 <xsl:call-template name="PrintAnnotation">
                     <xsl:with-param name="component" select="."/>
                 </xsl:call-template>
@@ -2018,7 +2026,7 @@ pre {
                     </tbody>
                 </table>
             </xsl:with-param>
-            <xsl:with-param name="isOpened">true</xsl:with-param>
+            <xsl:with-param name="isOpened">false</xsl:with-param>
             <xsl:with-param name="omitPanelContainer">true</xsl:with-param>
         </xsl:call-template>
         <!-- Annotation -->
@@ -2033,6 +2041,7 @@ pre {
             <xsl:with-param name="styleClass">sample</xsl:with-param>
             <xsl:with-param name="caption">Documentation</xsl:with-param>
             <xsl:with-param name="contents">
+                <xsl:if test="$debug='true'"><xsl:text>BINGO-PA2 </xsl:text></xsl:if>
                 <xsl:call-template name="PrintAnnotation">
                     <xsl:with-param name="component" select="."/>
                 </xsl:call-template>
@@ -2140,7 +2149,7 @@ pre {
                     </tbody>
                 </table>
             </xsl:with-param>
-            <xsl:with-param name="isOpened">true</xsl:with-param>
+            <xsl:with-param name="isOpened">false</xsl:with-param>
             <xsl:with-param name="omitPanelContainer">true</xsl:with-param>
         </xsl:call-template>
         <!-- Annotation -->
@@ -2155,6 +2164,7 @@ pre {
             <xsl:with-param name="styleClass">sample</xsl:with-param>
             <xsl:with-param name="caption">Documentation</xsl:with-param>
             <xsl:with-param name="contents">
+                <xsl:if test="$debug='true'"><xsl:text>BINGO-PA3 </xsl:text></xsl:if>
                 <xsl:call-template name="PrintAnnotation">
                     <xsl:with-param name="component" select="."/>
                 </xsl:call-template>
@@ -2316,7 +2326,7 @@ pre {
                     </tbody>
                 </table>
             </xsl:with-param>
-            <xsl:with-param name="isOpened">true</xsl:with-param>
+            <xsl:with-param name="isOpened">false</xsl:with-param>
             <xsl:with-param name="omitPanelContainer">true</xsl:with-param>
         </xsl:call-template>
         <!-- Annotation -->
@@ -2331,6 +2341,7 @@ pre {
             <xsl:with-param name="styleClass">sample</xsl:with-param>
             <xsl:with-param name="caption">Documentation</xsl:with-param>
             <xsl:with-param name="contents">
+                <xsl:if test="$debug='true'"><xsl:text>BINGO-PA4 </xsl:text></xsl:if>
                 <xsl:call-template name="PrintAnnotation">
                     <xsl:with-param name="component" select="."/>
                 </xsl:call-template>
@@ -2384,7 +2395,7 @@ pre {
                     </tbody>
                 </table>
             </xsl:with-param>
-            <xsl:with-param name="isOpened">true</xsl:with-param>
+            <xsl:with-param name="isOpened">false</xsl:with-param>
             <xsl:with-param name="omitPanelContainer">true</xsl:with-param>
         </xsl:call-template>
         <!-- Annotation -->
@@ -2399,6 +2410,7 @@ pre {
             <xsl:with-param name="styleClass">sample</xsl:with-param>
             <xsl:with-param name="caption">Documentation</xsl:with-param>
             <xsl:with-param name="contents">
+                <xsl:if test="$debug='true'"><xsl:text>BINGO-PA5 </xsl:text></xsl:if>
                 <xsl:call-template name="PrintAnnotation">
                     <xsl:with-param name="component" select="."/>
                 </xsl:call-template>
@@ -2562,7 +2574,7 @@ pre {
                     </tbody>
                 </table>
             </xsl:with-param>
-            <xsl:with-param name="isOpened">true</xsl:with-param>
+            <xsl:with-param name="isOpened">false</xsl:with-param>
             <xsl:with-param name="omitPanelContainer">true</xsl:with-param>
         </xsl:call-template>
         <!-- Annotation -->
@@ -2577,6 +2589,7 @@ pre {
             <xsl:with-param name="styleClass">sample</xsl:with-param>
             <xsl:with-param name="caption">Documentation</xsl:with-param>
             <xsl:with-param name="contents">
+                <xsl:if test="$debug='true'"><xsl:text>BINGO-PA6 </xsl:text></xsl:if>
                 <xsl:call-template name="PrintAnnotation">
                     <xsl:with-param name="component" select="."/>
                 </xsl:call-template>
@@ -2651,7 +2664,7 @@ pre {
                     </tbody>
                 </table>
             </xsl:with-param>
-            <xsl:with-param name="isOpened">true</xsl:with-param>
+            <xsl:with-param name="isOpened">false</xsl:with-param>
             <xsl:with-param name="omitPanelContainer">true</xsl:with-param>
         </xsl:call-template>
         <!-- Annotation -->
@@ -2666,6 +2679,7 @@ pre {
             <xsl:with-param name="styleClass">sample</xsl:with-param>
             <xsl:with-param name="caption">Documentation</xsl:with-param>
             <xsl:with-param name="contents">
+                <xsl:if test="$debug='true'"><xsl:text>BINGO-PA7 </xsl:text></xsl:if>
                 <xsl:call-template name="PrintAnnotation">
                     <xsl:with-param name="component" select="."/>
                 </xsl:call-template>
@@ -2704,7 +2718,7 @@ pre {
                                 <xsl:call-template name="GetComponentDescription">
                                     <xsl:with-param name="component" select="."/>
                                 </xsl:call-template>
-                                <xsl:text> </xsl:text>
+                                <xsl:text>&#160;</xsl:text>
                                 <xsl:choose>
                                     <xsl:when test="./@name">
                                         <xsl:value-of select="./@name"/>
@@ -2718,6 +2732,7 @@ pre {
                             </h4>
                         </div>
                         <div class="modal-body">
+                            <xsl:if test="$debug='true'"><xsl:text>MODAL-BODY </xsl:text></xsl:if>
                             <xsl:call-template name="PrintAnnotation">
                                 <xsl:with-param name="component" select="."/>
                                 <xsl:with-param name="hidden" select="'true'"/>
@@ -2762,12 +2777,14 @@ pre {
                                     Linked documentation: <xsl:value-of select="./@source"/>
                                 </xsl:if>
                             </div>
+                            <xsl:if test="$debug='true'"><xsl:text>BINGO-Z1 </xsl:text></xsl:if>
                             <div class="xs3p-doc" id="{generate-id(.)}{$suffix}-doc">
-                                <xsl:text> </xsl:text>
+                                <xsl:text>&#160;</xsl:text>
                             </div>
                         </div>
                     </xsl:when>
                     <xsl:otherwise>
+                        <xsl:if test="$debug='true'"><xsl:text>BINGO-Z2 </xsl:text></xsl:if>
                         <div class="xs3p-doc">
                             <xsl:value-of select="text()" disable-output-escaping="yes"/>
                         </div>
@@ -3066,8 +3083,7 @@ pre {
     <xsl:template name="SampleInstanceTable">
         <xsl:param name="component"/>
 
-        <!-- Not applicable for simple type definitions and notation
-        declarations -->
+        <!-- Not applicable for simple type definitions and notation declarations -->
         <xsl:if test="local-name($component)!='simpleType' and local-name($component)!='notation'">
             <xsl:variable name="componentID">
                 <xsl:call-template name="GetComponentID">
@@ -3127,7 +3143,7 @@ pre {
                             <xsl:with-param name="term">All</xsl:with-param>
                         </xsl:call-template>
                         <!-- Min/max occurs information-->
-                        <xsl:text> </xsl:text>
+                        <xsl:text>&#160;</xsl:text>
                         <xsl:call-template name="PrintOccurs">
                             <xsl:with-param name="component" select="."/>
                         </xsl:call-template>
@@ -3243,83 +3259,83 @@ pre {
                 <div class="xs3p-xml-line">
                     <div class="xs3p-xml-part">
                         <xsl:if test="$debug='true'"><xsl:text>BINGO-C </xsl:text></xsl:if>
-                        <xsl:call-template name="Repeat">
-                            <xsl:with-param name="content">
-                                <xsl:text> </xsl:text>
-                            </xsl:with-param>
-                            <xsl:with-param name="count" select="$margin"/>
-                        </xsl:call-template>
-
-                        <span class="na">
-                            <!-- TODO: port to re-design
-                            <xsl:choose>
-                                <xsl:when test="$isNewField!='false'">
-                                    <xsl:attribute name="class">newFields</xsl:attribute>
-                                </xsl:when>
-                                <xsl:when test="$isInherited!='false'">
-                                    <xsl:attribute name="class">inherited</xsl:attribute>
-                                </xsl:when>
-                            </xsl:choose>-->
-
-                            <!--<xsl:text> </xsl:text>-->
-                            <xsl:variable name="prefix">
-                                <xsl:call-template name="GetAttributePrefix">
-                                    <xsl:with-param name="attribute" select="."/>
-                                </xsl:call-template>
-                            </xsl:variable>
-                            <xsl:call-template name="PrintNSPrefix">
-                                <xsl:with-param name="prefix" select="$prefix"/>
-                                <xsl:with-param name="schemaLoc" select="$schemaLoc"/>
+                            <xsl:call-template name="Repeat">
+                                <xsl:with-param name="content">
+                                    <xsl:text>&#160;</xsl:text>
+                                </xsl:with-param>
+                                <xsl:with-param name="count" select="$margin"/>
                             </xsl:call-template>
-                            <xsl:value-of select="@name"/>
-                            <xsl:text>=</xsl:text>
-                        </span>
-                        <span class="s">
-                            <xsl:text>"</xsl:text>
 
-                            <xsl:choose>
-                                <!-- Fixed value is provided -->
-                                <xsl:when test="@fixed">
-                                    <span class="fixed">
-                                        <xsl:value-of select="@fixed"/>
-                                    </span>
-                                </xsl:when>
-                                <!-- Type reference is provided -->
-                                <xsl:when test="@type">
-                                    <xsl:call-template name="PrintTypeRef">
-                                        <xsl:with-param name="ref" select="@type"/>
-                                        <xsl:with-param name="schemaLoc" select="$schemaLoc"/>
+                            <span class="na">
+                                <!-- TODO: port to re-design
+                                <xsl:choose>
+                                    <xsl:when test="$isNewField!='false'">
+                                        <xsl:attribute name="class">newFields</xsl:attribute>
+                                    </xsl:when>
+                                    <xsl:when test="$isInherited!='false'">
+                                        <xsl:attribute name="class">inherited</xsl:attribute>
+                                    </xsl:when>
+                                </xsl:choose>-->
+
+                                <!--<xsl:text>&#160;</xsl:text>-->
+                                <xsl:variable name="prefix">
+                                    <xsl:call-template name="GetAttributePrefix">
+                                        <xsl:with-param name="attribute" select="."/>
                                     </xsl:call-template>
-                                </xsl:when>
-                                <!-- Local type definition is provided -->
-                                <xsl:when test="xsd:simpleType">
-                                    <xsl:apply-templates select="xsd:simpleType" mode="sample">
-                                        <xsl:with-param name="schemaLoc" select="$schemaLoc"/>
-                                    </xsl:apply-templates>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <span class="type">anySimpleType</span>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                            <xsl:text>"</xsl:text>
-                        </span>
+                                </xsl:variable>
+                                <xsl:call-template name="PrintNSPrefix">
+                                    <xsl:with-param name="prefix" select="$prefix"/>
+                                    <xsl:with-param name="schemaLoc" select="$schemaLoc"/>
+                                </xsl:call-template>
+                                <xsl:value-of select="@name"/>
+                                <xsl:text>=</xsl:text>
+                            </span>
+                            <span class="s">
+                                <xsl:text>"</xsl:text>
 
-                        <!-- Don't print occurrence info and documentation
-                        for global attributes. -->
-                        <xsl:if test="local-name(..)!='schema'">
-                            <!-- Occurrence info-->
-                            <xsl:text> </xsl:text>
-                            <xsl:call-template name="PrintOccurs">
-                                <xsl:with-param name="component" select="."/>
-                            </xsl:call-template>
-                            <!-- Documentation (popup) -->
-                            <xsl:if test="$xmlDocWidth=0">
-                                <xsl:apply-templates select="." mode="hiddendoc"/>
-                                <xsl:call-template name="PrintSampleDocumentation">
+                                <xsl:choose>
+                                    <!-- Fixed value is provided -->
+                                    <xsl:when test="@fixed">
+                                        <span class="fixed">
+                                            <xsl:value-of select="@fixed"/>
+                                        </span>
+                                    </xsl:when>
+                                    <!-- Type reference is provided -->
+                                    <xsl:when test="@type">
+                                        <xsl:call-template name="PrintTypeRef">
+                                            <xsl:with-param name="ref" select="@type"/>
+                                            <xsl:with-param name="schemaLoc" select="$schemaLoc"/>
+                                        </xsl:call-template>
+                                    </xsl:when>
+                                    <!-- Local type definition is provided -->
+                                    <xsl:when test="xsd:simpleType">
+                                        <xsl:apply-templates select="xsd:simpleType" mode="sample">
+                                            <xsl:with-param name="schemaLoc" select="$schemaLoc"/>
+                                        </xsl:apply-templates>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <span class="type">anySimpleType</span>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                                <xsl:text>"</xsl:text>
+                            </span>
+
+                            <!-- Don't print occurrence info and documentation
+                            for global attributes. -->
+                            <xsl:if test="local-name(..)!='schema'">
+                                <!-- Occurrence info-->
+                                <xsl:text>&#160;</xsl:text>
+                                <xsl:call-template name="PrintOccurs">
                                     <xsl:with-param name="component" select="."/>
                                 </xsl:call-template>
+                                <!-- Documentation (popup) -->
+                                <xsl:if test="$xmlDocWidth=0">
+                                    <xsl:apply-templates select="." mode="hiddendoc"/>
+                                    <xsl:call-template name="PrintSampleDocumentation">
+                                        <xsl:with-param name="component" select="."/>
+                                    </xsl:call-template>
+                                </xsl:if>
                             </xsl:if>
-                        </xsl:if>
                     </div>
 
                     <!-- Documentation (inline) -->
@@ -3402,7 +3418,7 @@ pre {
                         <xsl:if test="$debug='true'"><xsl:text>BINGO-D </xsl:text></xsl:if>
                         <xsl:call-template name="Repeat">
                             <xsl:with-param name="content">
-                                <xsl:text> </xsl:text>
+                                <xsl:text>&#160;</xsl:text>
                             </xsl:with-param>
                             <xsl:with-param name="count" select="$margin"/>
                         </xsl:call-template>
@@ -3421,7 +3437,7 @@ pre {
                                 <span class="fixed">
                                     <xsl:value-of select="@fixed"/>
                                 </span>
-                                <xsl:text> </xsl:text>
+                                <xsl:text>&#160;</xsl:text>
                             </xsl:if>
                             <xsl:text>" </xsl:text>
                             <!-- Print occurs info-->
@@ -3638,30 +3654,30 @@ pre {
             <div class="xs3p-xml-line">
                 <div class="xs3p-xml-part">
                     <xsl:if test="$debug='true'"><xsl:text>BINGO-F </xsl:text></xsl:if>
-                    <xsl:call-template name="Repeat">
-                        <xsl:with-param name="content">
-                            <xsl:text> </xsl:text>
-                        </xsl:with-param>
-                        <xsl:with-param name="count" select="$margin"/>
-                    </xsl:call-template>
-                    <span class="group">
-                        <xsl:text>Start </xsl:text>
-                        <xsl:call-template name="PrintGlossaryTermRef">
-                            <xsl:with-param name="code">Choice</xsl:with-param>
-                            <xsl:with-param name="term">Choice</xsl:with-param>
-                        </xsl:call-template>
-                        <!-- Min/max occurrence -->
-                        <xsl:text> </xsl:text>
-                        <xsl:call-template name="PrintOccurs">
-                            <xsl:with-param name="component" select="."/>
-                        </xsl:call-template>
-                        <!-- Documentation (popup) -->
-                        <xsl:if test="$xmlDocWidth=0">
-                            <xsl:call-template name="PrintSampleDocumentation">
-                                <xsl:with-param name="component" select="."/>
+                            <xsl:call-template name="Repeat">
+                                <xsl:with-param name="content">
+                                    <xsl:text>&#160;</xsl:text>
+                                </xsl:with-param>
+                                <xsl:with-param name="count" select="$margin"/>
                             </xsl:call-template>
-                        </xsl:if>
-                    </span>
+                            <span class="group">
+                                <xsl:text>Start </xsl:text>
+                                <xsl:call-template name="PrintGlossaryTermRef">
+                                    <xsl:with-param name="code">Choice</xsl:with-param>
+                                    <xsl:with-param name="term">Choice</xsl:with-param>
+                                </xsl:call-template>
+                                <!-- Min/max occurrence -->
+                                <xsl:text>&#160;</xsl:text>
+                                <xsl:call-template name="PrintOccurs">
+                                    <xsl:with-param name="component" select="."/>
+                                </xsl:call-template>
+                                <!-- Documentation (popup) -->
+                                <xsl:if test="$xmlDocWidth=0">
+                                    <xsl:call-template name="PrintSampleDocumentation">
+                                        <xsl:with-param name="component" select="."/>
+                                    </xsl:call-template>
+                                </xsl:if>
+                            </span>
                 </div>
                 <!-- Documentation (inline) -->
                 <xsl:if test="$xmlDocWidth!=0">
@@ -3685,15 +3701,15 @@ pre {
             <div class="xs3p-xml-line">
                 <div class="xs3p-xml-part">
                     <xsl:if test="$debug='true'"><xsl:text>BINGO-G </xsl:text></xsl:if>
-                    <xsl:call-template name="Repeat">
-                        <xsl:with-param name="content">
-                            <xsl:text> </xsl:text>
-                        </xsl:with-param>
-                        <xsl:with-param name="count" select="$margin"/>
-                    </xsl:call-template>
-                    <span class="group">
-                        <xsl:text>End Choice</xsl:text>
-                    </span>
+                        <xsl:call-template name="Repeat">
+                            <xsl:with-param name="content">
+                                <xsl:text>&#160;</xsl:text>
+                            </xsl:with-param>
+                            <xsl:with-param name="count" select="$margin"/>
+                        </xsl:call-template>
+                        <span class="group">
+                            <xsl:text>End Choice</xsl:text>
+                        </span>
                 </div>
             </div>
         </xsl:if>
@@ -3960,7 +3976,7 @@ pre {
                         <xsl:if test="$debug='true'"><xsl:text>BINGO-H </xsl:text></xsl:if>
                         <xsl:call-template name="Repeat">
                             <xsl:with-param name="content">
-                                <xsl:text> </xsl:text>
+                                <xsl:text>&#160;</xsl:text>
                             </xsl:with-param>
                             <xsl:with-param name="count" select="$margin"/>
                         </xsl:call-template>
@@ -3968,7 +3984,7 @@ pre {
                             <xsl:text>Circular model group reference: </xsl:text>
                             <xsl:copy-of select="$grpLink"/>
                             <!-- Occurrence info -->
-                            <xsl:text> </xsl:text>
+                            <xsl:text>&#160;</xsl:text>
                             <xsl:copy-of select="$occursInfo"/>
                             <!-- Documentation (popup) -->
                             <xsl:if test="$xmlDocWidth=0">
@@ -4005,7 +4021,7 @@ pre {
                                     <xsl:text>Model group reference (not shown): </xsl:text>
                                     <xsl:copy-of select="$grpLink"/>
                                     <!-- Occurrence info -->
-                                    <xsl:text> </xsl:text>
+                                    <xsl:text>&#160;</xsl:text>
                                     <xsl:copy-of select="$occursInfo"/>
                                     <!-- Documentation (popup) -->
                                     <xsl:if test="$xmlDocWidth=0">
@@ -4105,7 +4121,7 @@ pre {
                         <xsl:if test="$debug='true'"><xsl:text>BINGO-J </xsl:text></xsl:if>
                         <xsl:call-template name="Repeat">
                             <xsl:with-param name="content">
-                                <xsl:text> </xsl:text>
+                                <xsl:text>&#160;</xsl:text>
                             </xsl:with-param>
                             <xsl:with-param name="count" select="$margin"/>
                         </xsl:call-template>
@@ -4116,7 +4132,7 @@ pre {
                                 <xsl:with-param name="term">Sequence</xsl:with-param>
                             </xsl:call-template>
 
-                            <xsl:text> </xsl:text>
+                            <xsl:text>&#160;</xsl:text>
                             <xsl:copy-of select="$occursInfo"/>
                             <!-- Documentation (popup) -->
                             <xsl:if test="$xmlDocWidth=0">
@@ -4161,7 +4177,7 @@ pre {
                         <xsl:if test="$debug='true'"><xsl:text>BINGO-K </xsl:text></xsl:if>
                         <xsl:call-template name="Repeat">
                             <xsl:with-param name="content">
-                                <xsl:text> </xsl:text>
+                                <xsl:text>&#160;</xsl:text>
                             </xsl:with-param>
                             <xsl:with-param name="count" select="$margin"/>
                         </xsl:call-template>
@@ -4229,9 +4245,10 @@ pre {
 
         <div class="xs3p-xml-line">
             <div class="xs3p-xml-part">
+                <xsl:if test="$debug='true'"><xsl:text>BINGO-K2 </xsl:text></xsl:if>
                 <xsl:call-template name="Repeat">
                     <xsl:with-param name="content">
-                        <xsl:text> </xsl:text>
+                        <xsl:text>&#160;</xsl:text>
                     </xsl:with-param>
                     <xsl:with-param name="count" select="$margin"/>
                 </xsl:call-template>
@@ -4240,7 +4257,7 @@ pre {
 
                     <xsl:call-template name="Repeat">
                         <xsl:with-param name="content">
-                            <xsl:text> </xsl:text>
+                            <xsl:text>&#160;</xsl:text>
                         </xsl:with-param>
                         <xsl:with-param name="count" select="number($margin) + number($ATTR_INDENT)"/>
                     </xsl:call-template>
@@ -4286,7 +4303,7 @@ pre {
 
                     <xsl:call-template name="Repeat">
                         <xsl:with-param name="content">
-                            <xsl:text> </xsl:text>
+                            <xsl:text>&#160;</xsl:text>
                         </xsl:with-param>
                         <xsl:with-param name="count" select="number($margin) + number($ATTR_INDENT)"/>
                     </xsl:call-template>
@@ -4298,7 +4315,7 @@ pre {
 
                     <xsl:call-template name="Repeat">
                         <xsl:with-param name="content">
-                            <xsl:text> </xsl:text>
+                            <xsl:text>&#160;</xsl:text>
                         </xsl:with-param>
                         <xsl:with-param name="count" select="number($margin) + number($ATTR_INDENT)"/>
                     </xsl:call-template>
@@ -4316,7 +4333,7 @@ pre {
                     <xsl:if test="local-name(.)='keyref'">
                         <xsl:call-template name="Repeat">
                             <xsl:with-param name="content">
-                                <xsl:text> </xsl:text>
+                                <xsl:text>&#160;</xsl:text>
                             </xsl:with-param>
                             <xsl:with-param name="count" select="number($margin) + number($ATTR_INDENT)"/>
                         </xsl:call-template>
@@ -4330,7 +4347,7 @@ pre {
 
                     <xsl:call-template name="Repeat">
                         <xsl:with-param name="content">
-                            <xsl:text> </xsl:text>
+                            <xsl:text>&#160;</xsl:text>
                         </xsl:with-param>
                         <xsl:with-param name="count" select="$margin"/>
                     </xsl:call-template>
@@ -4369,16 +4386,17 @@ pre {
                         </xsl:for-each>
                     </xsl:variable>
 
-                    <xsl:text> </xsl:text>
+                    <xsl:text>&#160;</xsl:text>
                     <button title="Show documentation for {$component/@name}" class="btn btn-link btn-doc" data-toggle="modal" data-target="#{$documentation}-popup">
                         <span class="glyphicon glyphicon-info-sign">
-                            <xsl:text> </xsl:text>
+                            <xsl:text>&#160;</xsl:text>
                         </span>
                     </button>
                 </xsl:when>
                 <xsl:otherwise>
                     <!-- Each doc element is put in a dedicated div -->
-                    <xsl:for-each select="$component/xsd:annotation/xsd:documentation">
+                    <xsl:for-each select="$component/xsd:annotation/xsd:documentation">                        
+                        <xsl:if test="$debug='true'"><xsl:text>BINGO-Z </xsl:text></xsl:if>
                         <div class="xs3p-doc-part">
                             <xsl:attribute name="style">
                                 <xsl:value-of select="$docStyle"/>
@@ -4475,7 +4493,7 @@ pre {
 
                     <xsl:call-template name="Repeat">
                         <xsl:with-param name="content">
-                            <xsl:text> </xsl:text>
+                            <xsl:text>&#160;</xsl:text>
                         </xsl:with-param>
                         <xsl:with-param name="count" select="$margin"/>
                     </xsl:call-template>
@@ -4483,7 +4501,7 @@ pre {
                         <xsl:text>Start Group: </xsl:text>
                         <xsl:copy-of select="$grpLink"/>
                         <!-- Occurrence info -->
-                        <xsl:text> </xsl:text>
+                        <xsl:text>&#160;</xsl:text>
                         <xsl:copy-of select="$occursInfo"/>
                         <!-- Documentation (popup) -->
                         <xsl:if test="$xmlDocWidth=0">
@@ -4529,7 +4547,7 @@ pre {
                     <xsl:if test="$debug='true'"><xsl:text>BINGO-M </xsl:text></xsl:if>
                     <xsl:call-template name="Repeat">
                         <xsl:with-param name="content">
-                            <xsl:text> </xsl:text>
+                            <xsl:text>&#160;</xsl:text>
                         </xsl:with-param>
                         <xsl:with-param name="count" select="$margin"/>
                     </xsl:call-template>
@@ -4634,13 +4652,13 @@ pre {
         </xsl:choose>-->
 
         <div class="xs3p-xml-line">
-            <div class="xs3p-xml-part">
+            <div class="xs3p-xml-part">              
                 <xsl:if test="$debug='true'"><xsl:text>BINGO-N </xsl:text></xsl:if>
 
                 <!-- Indentation -->
                 <xsl:call-template name="Repeat">
                     <xsl:with-param name="content">
-                        <xsl:text> </xsl:text>
+                        <xsl:text>&#160;</xsl:text>
                     </xsl:with-param>
                     <xsl:with-param name="count" select="$margin"/>
                 </xsl:call-template>
@@ -4653,7 +4671,7 @@ pre {
                 </span>
 
                 <!-- Contents -->
-                <xsl:text> </xsl:text>
+                <xsl:text>&#160;</xsl:text>
                 <xsl:choose>
                     <!-- Fixed value is provided -->
                     <xsl:when test="$element/@fixed">
@@ -4683,7 +4701,7 @@ pre {
                         <xsl:text>...</xsl:text>
                     </xsl:otherwise>
                 </xsl:choose>
-                <xsl:text> </xsl:text>
+                <xsl:text>&#160;</xsl:text>
 
                 <!-- Identity Constraints -->
                 <xsl:if test="$element/xsd:unique or $element/xsd:key or $element/xsd:keyref">
@@ -4694,7 +4712,7 @@ pre {
                     </xsl:apply-templates>
                     <xsl:call-template name="Repeat">
                         <xsl:with-param name="content">
-                            <xsl:text> </xsl:text>
+                            <xsl:text>&#160;</xsl:text>
                         </xsl:with-param>
                         <xsl:with-param name="count" select="$margin"/>
                     </xsl:call-template>
@@ -4709,7 +4727,7 @@ pre {
 
                 <xsl:if test="local-name($element/..)!='schema'">
                     <!-- Min/max occurs information -->
-                    <xsl:text> </xsl:text>
+                    <xsl:text>&#160;</xsl:text>
                     <xsl:call-template name="PrintOccurs">
                         <xsl:with-param name="component" select="$element"/>
                     </xsl:call-template>
@@ -4761,7 +4779,8 @@ pre {
         <xsl:param name="schemaLoc">this</xsl:param>
         <xsl:param name="typeList"/>
         <xsl:param name="parentGroups"/>
-
+        
+        <xsl:if test="$debug='true'"><xsl:text>BINGO-PSCE </xsl:text></xsl:if>
         <xsl:choose>
             <!-- Circular type hierarchy -->
             <xsl:when test="$type/@name and contains($typeList, concat('*', $type/@name, '+'))"/>
@@ -4864,7 +4883,7 @@ pre {
                         <!-- Indentation -->
                         <xsl:call-template name="Repeat">
                             <xsl:with-param name="content">
-                                <xsl:text> </xsl:text>
+                                <xsl:text>&#160;</xsl:text>
                             </xsl:with-param>
                             <xsl:with-param name="count" select="$margin"/>
                         </xsl:call-template>
@@ -4891,7 +4910,7 @@ pre {
 
                             <xsl:if test="$element and local-name($element/..)!='schema'">
                                 <!-- Occurrence info -->
-                                <xsl:text> </xsl:text>
+                                <xsl:text>&#160;</xsl:text>
                                 <xsl:call-template name="PrintOccurs">
                                     <xsl:with-param name="component" select="$element"/>
                                 </xsl:call-template>
@@ -4907,6 +4926,7 @@ pre {
                     </div>
                     <!-- Documentation (inline) -->
                     <xsl:if test="normalize-space($attributes)='' and $element and local-name($element/..)!='schema' and $xmlDocWidth!=0">
+                        <xsl:if test="$debug='true'"><xsl:text>ZZZ </xsl:text></xsl:if>
                         <xsl:call-template name="PrintSampleDocumentation">
                             <xsl:with-param name="component" select="$element"/>
                         </xsl:call-template>
@@ -4925,25 +4945,25 @@ pre {
                         <div class="xs3p-xml-line">
                             <div class="xs3p-xml-part">
                                 <xsl:if test="$debug='true'"><xsl:text>BINGO-P </xsl:text></xsl:if>
-                                <!-- Close start tag -->
-                                <span class="nt">
-                                    <xsl:text>/> </xsl:text>
-                                </span>
+                                    <!-- Close start tag -->
+                                    <span class="nt">
+                                        <xsl:text>/>&#160;</xsl:text>
+                                    </span>
 
-                                <xsl:if test="$element and local-name($element/..)!='schema'">
-                                    <!-- Occurrence info -->
-                                    <xsl:text> </xsl:text>
-                                    <xsl:call-template name="PrintOccurs">
-                                        <xsl:with-param name="component" select="$element"/>
-                                    </xsl:call-template>
-
-                                    <!-- Documentation (popup) -->
-                                    <xsl:if test="$xmlDocWidth=0">
-                                        <xsl:call-template name="PrintSampleDocumentation">
+                                    <xsl:if test="$element and local-name($element/..)!='schema'">
+                                        <!-- Occurrence info -->
+                                        <xsl:text>&#160;</xsl:text>
+                                        <xsl:call-template name="PrintOccurs">
                                             <xsl:with-param name="component" select="$element"/>
                                         </xsl:call-template>
+
+                                        <!-- Documentation (popup) -->
+                                        <xsl:if test="$xmlDocWidth=0">
+                                            <xsl:call-template name="PrintSampleDocumentation">
+                                                <xsl:with-param name="component" select="$element"/>
+                                            </xsl:call-template>
+                                        </xsl:if>
                                     </xsl:if>
-                                </xsl:if>
                             </div>
                             <!-- Documentation (inline) -->
                             <xsl:if test="$xmlDocWidth!=0 and $element and local-name($element/..)!='schema'">
@@ -4956,12 +4976,12 @@ pre {
                     <xsl:otherwise>
                         <xsl:if test="normalize-space($attributes)!=''">
                             <div class="xs3p-xml-line">
-                                <div class="xs3p-xml-part">
+                                <div class="xs3p-xml-part">             
                                     <xsl:if test="$debug='true'"><xsl:text>BINGO-Q </xsl:text></xsl:if>
-                                    <!-- Close start tag -->
-                                    <span class="nt">
-                                        <xsl:text>></xsl:text>
-                                    </span>
+                                        <!-- Close start tag -->
+                                        <span class="nt">
+                                            <xsl:text>></xsl:text>
+                                        </span>
                                 </div>
                             </div>
                         </xsl:if>
@@ -5005,7 +5025,7 @@ pre {
                         <xsl:if test="$mixed='true'">
                             <xsl:call-template name="Repeat">
                                 <xsl:with-param name="content">
-                                    <xsl:text> </xsl:text>
+                                    <xsl:text>&#160;</xsl:text>
                                 </xsl:with-param>
                                 <xsl:with-param name="count" select="number($margin) + number($ELEM_INDENT)"/>
                             </xsl:call-template>
@@ -5014,24 +5034,24 @@ pre {
                             </span>
                         </xsl:if>
 
-                        <!-- Element Content -->
+                        <!-- Element Content HB: HERE IT IS! -->
                         <xsl:copy-of select="$content"/>
 
                         <!-- End Tag -->
                         <div class="xs3p-xml-line">
                             <div class="xs3p-xml-part">
-                                <xsl:if test="$debug='true'"><xsl:text>BINGO-S </xsl:text></xsl:if>
-                                <xsl:call-template name="Repeat">
-                                    <xsl:with-param name="content">
-                                        <xsl:text> </xsl:text>
-                                    </xsl:with-param>
-                                    <xsl:with-param name="count" select="$margin"/>
-                                </xsl:call-template>
-                                <span class="nt">
-                                    <xsl:text>&lt;/</xsl:text>
-                                    <xsl:copy-of select="$tag"/>
-                                    <xsl:text>></xsl:text>
-                                </span>
+                                <xsl:if test="$debug='true'"><xsl:text>BINGO-R </xsl:text></xsl:if>
+                                    <xsl:call-template name="Repeat">
+                                        <xsl:with-param name="content">
+                                            <xsl:text>&#160;</xsl:text>
+                                        </xsl:with-param>
+                                        <xsl:with-param name="count" select="$margin"/>
+                                    </xsl:call-template>
+                                    <span class="nt">
+                                        <xsl:text>&lt;/</xsl:text>
+                                        <xsl:copy-of select="$tag"/>
+                                        <xsl:text>></xsl:text>
+                                    </span>
                             </div>
                         </div>
                     </xsl:otherwise>
@@ -5147,7 +5167,7 @@ pre {
                     <xsl:with-param name="isNewField" select="$isNewField"/>
                     <xsl:with-param name="margin" select="$margin"/>
                     <xsl:with-param name="schemaLoc" select="$schemaLoc"/>
-                    <xsl:with-param name="typeList" select="concat($typeList, '*', $type/@name, '+')"/>
+<!--                    <xsl:with-param name="typeList" select="concat($typeList, '*', $type/@name, '+')"/>-->
                 </xsl:call-template>
             </xsl:when>
             <!-- Ignore base types that are simple types -->
@@ -5427,7 +5447,7 @@ pre {
 
         <!--<xsl:if test="$addBR='true'"><br/></xsl:if>-->
 <!--        <div class="xs3p-xml-line">  Safer 
-        <xsl:if test="$debug='true'"><xsl:text>BINGO-T </xsl:text></xsl:if>-->
+-->        <xsl:if test="$debug='true'"><xsl:text>BINGO-T </xsl:text></xsl:if>
         <xsl:choose>
             <!-- Circular type hierarchy -->
             <xsl:when test="$type/@name and contains($typeList, concat('*', $type/@name, '+'))"/>
@@ -5454,7 +5474,7 @@ pre {
                     <xsl:when test="normalize-space($defLoc)='' or normalize-space($defLoc)='none' or normalize-space($defLoc)='xml' or normalize-space($defLoc)='xsd'">
                         <xsl:call-template name="Repeat">
                             <xsl:with-param name="content">
-                                <xsl:text> </xsl:text>
+                                <xsl:text>&#160;</xsl:text>
                             </xsl:with-param>
                             <xsl:with-param name="count" select="$margin"/>
                         </xsl:call-template>
@@ -5512,7 +5532,7 @@ pre {
                     <xsl:when test="contains($typeList, concat('*', $baseTypeName, '+'))">
                         <xsl:call-template name="Repeat">
                             <xsl:with-param name="content">
-                                <xsl:text> </xsl:text>
+                                <xsl:text>&#160;</xsl:text>
                             </xsl:with-param>
                             <xsl:with-param name="count" select="$margin"/>
                         </xsl:call-template>
@@ -5564,7 +5584,7 @@ pre {
                             <xsl:when test="normalize-space($defLoc)='' or normalize-space($defLoc)='none' or normalize-space($defLoc)='xml' or normalize-space($defLoc)='xsd'">
                                 <xsl:call-template name="Repeat">
                                     <xsl:with-param name="content">
-                                        <xsl:text> </xsl:text>
+                                        <xsl:text>&#160;</xsl:text>
                                     </xsl:with-param>
                                     <xsl:with-param name="count" select="$margin"/>
                                 </xsl:call-template>
@@ -5632,11 +5652,11 @@ pre {
             <xsl:when test="$type/xsd:simpleContent/xsd:restriction">
                 <!-- Print out simple type constraints-->
                 <span style="margin-left: {$margin}em">
-                    <xsl:text> </xsl:text>
+                    <xsl:text>&#160;</xsl:text>
                     <xsl:apply-templates select="$type/xsd:simpleContent" mode="sample">
                         <xsl:with-param name="schemaLoc" select="$schemaLoc"/>
                     </xsl:apply-templates>
-                    <xsl:text> </xsl:text>
+                    <xsl:text>&#160;</xsl:text>
                 </span>
                 <br/>
             </xsl:when>
@@ -5645,11 +5665,11 @@ pre {
                 <!-- Print out base type name -->
                 <xsl:call-template name="Repeat">
                     <xsl:with-param name="content">
-                        <xsl:text> </xsl:text>
+                        <xsl:text>&#160;</xsl:text>
                     </xsl:with-param>
                     <xsl:with-param name="count" select="$margin"/>
                 </xsl:call-template>
-                <xsl:text> </xsl:text>
+                <xsl:text>&#160;</xsl:text>
                 <xsl:call-template name="PrintTypeRef">
                     <xsl:with-param name="ref" select="$type/xsd:simpleContent/xsd:extension/@base"/>
                     <xsl:with-param name="schemaLoc" select="$schemaLoc"/>
@@ -5944,7 +5964,7 @@ pre {
             <xsl:with-param name="contents">
                 <xsl:apply-templates select="$component" mode="schemaComponent"/>
             </xsl:with-param>
-            <xsl:with-param name="isOpened">false</xsl:with-param>
+            <xsl:with-param name="isOpened">true</xsl:with-param>
         </xsl:call-template>
     </xsl:template>
 
@@ -6449,7 +6469,7 @@ pre {
         <!-- Start Tag -->
         <xsl:call-template name="Repeat">
             <xsl:with-param name="content">
-                <xsl:text> </xsl:text>
+                <xsl:text>&#160;</xsl:text>
             </xsl:with-param>
             <xsl:with-param name="count" select="$margin"/>
         </xsl:call-template>
@@ -6469,7 +6489,7 @@ pre {
                     </xsl:apply-templates>
                     <xsl:call-template name="Repeat">
                         <xsl:with-param name="content">
-                            <xsl:text> </xsl:text>
+                            <xsl:text>&#160;</xsl:text>
                         </xsl:with-param>
                         <xsl:with-param name="count" select="$margin"/>
                     </xsl:call-template>
@@ -6506,13 +6526,13 @@ pre {
                 </span>
                 <xsl:text>&#xa;</xsl:text>
 
-                <!-- Content -->
+                <!-- Content (recursively) -->
                 <xsl:copy-of select="$content"/>
 
                 <!-- End Tag -->
                 <xsl:call-template name="Repeat">
                     <xsl:with-param name="content">
-                        <xsl:text> </xsl:text>
+                        <xsl:text>&#160;</xsl:text>
                     </xsl:with-param>
                     <xsl:with-param name="count" select="$margin"/>
                 </xsl:call-template>
@@ -6549,7 +6569,7 @@ pre {
         <xsl:param name="attrName"/>
         <xsl:param name="attrValue"/>
 
-        <xsl:text> </xsl:text>
+        <xsl:text>&#160;</xsl:text>
         <span class="na">
             <xsl:value-of select="$attrName"/>
             <xsl:text>=</xsl:text>
@@ -6678,7 +6698,7 @@ pre {
         <xsl:value-of select="local-name($element)"/>
         <!-- Attributes -->
         <xsl:for-each select="$element/@*">
-            <xsl:text> </xsl:text>
+            <xsl:text>&#160;</xsl:text>
             <xsl:value-of select="name(.)"/>
             <xsl:text>="</xsl:text>
             <xsl:value-of select="."/>
@@ -7126,9 +7146,9 @@ pre {
                     <xsl:value-of select="$name"/>
                     <xsl:text>" </xsl:text>
                     <xsl:value-of select="$compType"/>
-                    <xsl:text> </xsl:text>
+                    <xsl:text>&#160;</xsl:text>
                     <xsl:value-of select="$noun"/>
-                    <xsl:text> </xsl:text>
+                    <xsl:text>&#160;</xsl:text>
                     <xsl:value-of select="$errMsg"/>
                 </xsl:when>
                 <!-- There exists a link to the schema component's
@@ -7138,7 +7158,7 @@ pre {
                     <xsl:value-of select="$name"/>
                     <xsl:text>" </xsl:text>
                     <xsl:value-of select="$compType"/>
-                    <xsl:text> </xsl:text>
+                    <xsl:text>&#160;</xsl:text>
                     <xsl:value-of select="$noun"/>
                     <!-- External link -->
                     <xsl:if test="normalize-space($baseURI)!=''">
@@ -7238,8 +7258,7 @@ pre {
             <xsl:call-template name="GetThisPrefix"/>
         </xsl:variable>
 
-        <!-- Get file location of the schema component that is
-        being referenced. -->
+        <!-- Get file location of the schema component that is being referenced. -->
         <xsl:variable name="compLoc">
             <xsl:call-template name="FindComponent">
                 <xsl:with-param name="ref" select="$ref"/>
@@ -7295,8 +7314,7 @@ pre {
     </xsl:template>
 
 
-    <!-- ******** Templates for Finding Components in Different
-    Schema documents ******** -->
+    <!-- ******** Templates for Finding Components in Different Schema documents ******** -->
 
     <!-- Special key words: xml, xsd, this, none -->
     <xsl:template name="FindComponent">
@@ -7367,8 +7385,8 @@ pre {
         <xsl:param name="schemaFileLoc"/>
         <xsl:param name="schemasSearched"/>
 
-        <!-- Don't examine this schema if we've already
-        searched it. Prevents infinite recursion.
+        <!-- Don't examine this schema if we've already  searched it.
+        Prevents infinite recursion.
         Also check if schema actually exists. -->
         <xsl:if test="$schema and not(contains($schemasSearched, concat('*', $schemaFileLoc, '+')))">
             <!-- Find out if the component is in this schema -->
@@ -7471,13 +7489,12 @@ pre {
         <xsl:param name="index">1</xsl:param>
 
         <xsl:if test="count($schema/xsd:include) &gt;= number($index)">
-            <!-- Get the 'schemaLocation' attribute of the 'include'
-            element in this schema at position, 'index'. -->
+            <!-- Get the 'schemaLocation' attribute of the 'include' element in this schema
+            at position 'index'. -->
             <xsl:variable name="schemaLoc" select="$schema/xsd:include[position()=$index]/@schemaLocation"/>
 
             <xsl:variable name="thisResult">
-                <!-- Search for the component in the current
-                included schema. -->
+                <!-- Search for the component in the current included schema. -->
                 <xsl:call-template name="FindComponentInSchema">
                     <xsl:with-param name="name" select="$name"/>
                     <xsl:with-param name="compType" select="$compType"/>
@@ -7515,13 +7532,12 @@ pre {
         <xsl:param name="index">1</xsl:param>
 
         <xsl:if test="count($schema/xsd:redefine) &gt;= number($index)">
-            <!-- Get the 'schemaLocation' attribute of the 'redefine'
-            element in this schema at position, 'index'. -->
+            <!-- Get the 'schemaLocation' attribute of the 'redefine' element in this schema
+            at position 'index'. -->
             <xsl:variable name="schemaLoc" select="$schema/xsd:redefine[position()=$index]/@schemaLocation"/>
 
             <xsl:variable name="thisResult">
-                <!-- Search for the component in the current
-                redefined schema. -->
+                <!-- Search for the component in the current redefined schema. -->
                 <xsl:call-template name="FindComponentInSchema">
                     <xsl:with-param name="name" select="$name"/>
                     <xsl:with-param name="compType" select="$compType"/>
@@ -7560,19 +7576,17 @@ pre {
         <xsl:param name="index">1</xsl:param>
 
         <xsl:if test="count($schema/xsd:import) &gt;= number($index)">
-            <!-- Get the 'namespace' attribute of the 'import'
-            element in this schema at position, 'index'. -->
+            <!-- Get the 'namespace' attribute of the 'import' element in this schema
+            at position 'index'. -->
             <xsl:variable name="schemaNS" select="$schema/xsd:import[position()=$index]/@namespace"/>
             <!-- Get the 'schemaLocation' attribute. -->
             <xsl:variable name="schemaLoc" select="$schema/xsd:import[position()=$index]/@schemaLocation"/>
 
             <xsl:variable name="thisResult">
-                <!-- Check that the imported schema has the matching
-                namespace as the component that we're looking
-                for. -->
+                <!-- Check that the imported schema has the matching namespace
+                as the component that we're looking for. -->
                 <xsl:if test="normalize-space($compNS)=normalize-space($schemaNS)">
-                    <!-- Search for the component in the current
-                    imported schema. -->
+                    <!-- Search for the component in the current imported schema. -->
                     <xsl:call-template name="FindComponentInSchema">
                         <xsl:with-param name="name" select="$name"/>
                         <xsl:with-param name="compType" select="$compType"/>
@@ -7608,9 +7622,8 @@ pre {
     <!-- ******** General Utility Templates ******** -->
 
     <!--
-    Creates a box that can be opened and closed, such
-    that the contents can be hidden away until a button
-    is pressed.
+    Creates a box that can be opened and closed, such that the contents can be hidden away
+    until a button is pressed.
     Param(s):
            id (String) required
              Unique ID of the 'div' box
@@ -7674,7 +7687,7 @@ pre {
                             <span class="pull-right xs3p-panel-help">
                                 <button type="button" class="btn btn-doc" data-container="body" data-toggle="popover" data-placement="left" data-html="true" data-content="{$help}">
                                     <span class="glyphicon glyphicon-question-sign">
-                                        <xsl:text> </xsl:text>
+                                        <xsl:text>&#160;</xsl:text>
                                     </span>
                                 </button>
                             </span>
@@ -7686,7 +7699,7 @@ pre {
                 <xsl:choose>
                     <xsl:when test="normalize-space(translate($omitPanelContainer,'TRUE','true'))='true'">
                         <div id="{$id}-{$anchor}-collapse" class="{$panelContentClass}">
-                            <xsl:copy-of select="$contents"/>
+                             <xsl:copy-of select="$contents"/>
                         </div>
                     </xsl:when>
                     <xsl:otherwise>
@@ -7697,12 +7710,20 @@ pre {
                                         No documentation provided.
                                     </xsl:when>
                                     <xsl:when test="normalize-space(translate($containsCode,'TRUE','true'))='true'">
-                                        <pre class="codehilite">
-                                            <xsl:copy-of select="$contents"/>
-                                        </pre>
+                                        <!-- This impacts XML Instance Representation. -->
+                                        <xsl:if test="$debug='true'"><xsl:text> PANEL-BODY-1 </xsl:text></xsl:if>
+                                        <!-- HB: We cannot use a <pre> tag directly, because JAXP
+                                        would insert a long leading space.
+                                        So, we build the <pre> tag as follows: -->
+                                        <xsl:text disable-output-escaping="yes">&lt;pre</xsl:text>
+                                        class="codehilite"<xsl:text disable-output-escaping="yes">&gt;</xsl:text>
+                                        <xsl:copy-of select="$contents"/>
+                                        <xsl:text disable-output-escaping="yes">&lt;/pre></xsl:text>
                                     </xsl:when>
                                     <xsl:otherwise>
-                                        <xsl:copy-of select="$contents"/>
+                                        <!-- This impacts Documentation -->
+                                        <xsl:if test="$debug='true'"><xsl:text> PANEL-BODY-2 </xsl:text></xsl:if>
+                                        <xsl:value-of select="$contents" disable-output-escaping="yes"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
                             </div>
@@ -7714,8 +7735,7 @@ pre {
     </xsl:template>
 
     <!--
-    Returns the namespace of an attribute
-    declaration or reference.
+    Returns the namespace of an attribute declaration or reference.
     Param(s):
            attribute (Node) required
                Attribute declaration or reference
@@ -7739,8 +7759,7 @@ pre {
     </xsl:template>
 
     <!--
-    Returns the description that can be used in
-    headers for a schema component.
+    Returns the description that can be used in headers for a schema component.
     Param(s):
            component (Node) required
                Schema component
@@ -7791,9 +7810,8 @@ pre {
     </xsl:template>
 
     <!--
-    Returns the unique identifier for a top-level schema
-    component. Returns the string "schema" if the 'component'
-    is the root schema element.
+    Returns the unique identifier for a top-level schema component.
+    Returns the string "schema" if the 'component' is the root schema element.
     Param(s):
            component (Node) required
                Schema component
@@ -7817,8 +7835,7 @@ pre {
     </xsl:template>
 
     <!--
-    Returns the prefix to add in front of a schema component
-    name when generating anchor names.
+    Returns the prefix to add in front of a schema component name when generating anchor names.
     Param(s):
            component (Node) required
                Schema component
@@ -7863,8 +7880,7 @@ pre {
     </xsl:template>
 
     <!--
-    Returns a glossary term reference for the
-    schema component type, if applicable.
+    Returns a glossary term reference for the schema component type, if applicable.
     Param(s):
            component (Node) required
                Schema component
@@ -8001,12 +8017,10 @@ pre {
     </xsl:template>
 
     <!--
-    Returns the schema documentation file location for a
-    given URI for a schema, done by looking up the file
-    specified in 'linksFile' variable.
-    It'll throw a fatal error if a value for 'linksFile' was
-    provided and the documentation file for 'uri' could not be
-    found.
+    Returns the schema documentation file location for a given URI for a schema,
+    done by looking up the file specified in 'linksFile' variable.
+    It'll throw a fatal error if a value for 'linksFile' was provided
+    and the documentation file for 'uri' could not be found.
     Param(s):
            uri (String) required
              Location of schema file
@@ -8049,8 +8063,7 @@ pre {
     </xsl:template>
 
     <!--
-    Prints out a link to the namespace of a prefix,
-    and tacks on a colon in the end.
+    Prints out a link to the namespace of a prefix, and tacks on a colon in the end.
     Param(s):
            prefix (String) required
                Namespace prefix
@@ -8174,8 +8187,7 @@ pre {
     </xsl:template>
 
     <!--
-    Translates occurrence of '#all' in 'block' value
-    of element declarations.
+    Translates occurrence of '#all' in 'block' value of element declarations.
     Param(s):
            EBV (String) required
                Value
@@ -8194,9 +8206,8 @@ pre {
     </xsl:template>
 
     <!--
-    Translates occurrence of '#all' in 'final' value
-    of element declarations, and 'block' and 'final' values
-    in complex type definitions.
+    Translates occurrence of '#all' in 'final' value of element declarations,
+    and 'block' and 'final' values in complex type definitions.
     Param(s):
            EBV (String) required
                Value
@@ -8215,8 +8226,7 @@ pre {
     </xsl:template>
 
     <!--
-    Translates occurrence of '#all' in 'final' value
-    of simple type definitions.
+    Translates occurrence of '#all' in 'final' value of simple type definitions.
     Param(s):
            EBV (String) required
                Value
@@ -8257,10 +8267,9 @@ pre {
 
     <!--
     Print out a link to the documentation of schema document.
-    For this happen, the 'linksFile' variable must be provided,
-    it must point to an actual file, and in that file, there
-    must be a mapping from the schema file location to the
-    schema documentation file location.
+    For this happen, the 'linksFile' variable must be provided, it must point to an actual file,
+    and in that file, there must be a mapping from the schema file location
+    to the schema documentation file location.
     Param(s):
            uri (String) required
              Location of schema file
@@ -8287,8 +8296,7 @@ pre {
     </xsl:template>
 
     <!--
-    Tokenises a whitespace-separated list of values, and
-    displays them appropriately.
+    Tokenises a whitespace-separated list of values, and displays them appropriately.
     Param(s):
            value (String) required
              Whitespace-separated list
@@ -8361,8 +8369,7 @@ pre {
     </xsl:template>
 
     <!--
-    Helper template for 'PrintWhitespaceList' template,
-    which prints out one token in the list.
+    Helper template for 'PrintWhitespaceList' template, which prints out one token in the list.
     Param(s):
            token (String) required
              Token to be printed
@@ -8415,7 +8422,7 @@ pre {
                         <xsl:value-of select="$separator"/>
                     </xsl:when>
                     <xsl:otherwise>
-                        <xsl:text> </xsl:text>
+                        <xsl:text>&#160;</xsl:text>
                     </xsl:otherwise>
                 </xsl:choose>
                 <xsl:copy-of select="$displayValue"/>
@@ -8450,11 +8457,11 @@ pre {
 
         <!--<xsl:text>&#xa;</xsl:text>-->
         <!--<div class="xs3p-xml-line">  Safer -->
-            <xsl:if test="$debug='true'"><xsl:text>BINGO-V </xsl:text></xsl:if>
+        <xsl:if test="$debug='true'"><xsl:text>BINGO-V </xsl:text></xsl:if>
 
         <xsl:call-template name="Repeat">
             <xsl:with-param name="content">
-                <xsl:text> </xsl:text>
+                <xsl:text>&#160;</xsl:text>
             </xsl:with-param>
             <xsl:with-param name="count" select="$margin"/>
         </xsl:call-template>
@@ -8564,7 +8571,7 @@ pre {
 
             <!-- Print min/max occurs -->
             <xsl:if test="$componentType='element'">
-                <xsl:text> </xsl:text>
+                <xsl:text>&#160;</xsl:text>
                 <xsl:call-template name="PrintOccurs">
                     <xsl:with-param name="minOccurs" select="$minOccurs"/>
                     <xsl:with-param name="maxOccurs" select="$maxOccurs"/>
@@ -8576,8 +8583,7 @@ pre {
     </xsl:template>
 
     <!--
-    Print out the pattern property for derivations by
-    restriction on simple content.
+    Print out the pattern property for derivations by restriction on simple content.
     Param(s):
            simpleRestrict (Node) required
              'restriction' element
@@ -8593,8 +8599,7 @@ pre {
     </xsl:template>
 
     <!--
-    Print out the total digits property for derivations by
-    restriction on simple content.
+    Print out the total digits property for derivations by restriction on simple content.
     Param(s):
            simpleRestrict (Node) required
              'restriction' element
@@ -8610,8 +8615,7 @@ pre {
     </xsl:template>
 
     <!--
-    Print out the fraction digits property for derivations by
-    restriction on simple content.
+    Print out the fraction digits property for derivations by restriction on simple content.
     Param(s):
            simpleRestrict (Node) required
              'restriction' element
@@ -8629,8 +8633,7 @@ pre {
     </xsl:template>
 
     <!--
-    Print out the enumeration list for derivations by
-    restriction on simple content.
+    Print out the enumeration list for derivations by restriction on simple content.
     Param(s):
            simpleRestrict (Node) required
              'restriction' element
@@ -8660,8 +8663,7 @@ pre {
     </xsl:template>
 
     <!--
-    Print out the length property for derivations by
-    restriction on simple content.
+    Print out the length property for derivations by restriction on simple content.
     Param(s):
            simpleRestrict (Node) required
              'restriction' element
@@ -8695,8 +8697,7 @@ pre {
     </xsl:template>
 
     <!--
-    Print out the whitespace property for derivations by
-    restriction on simple content.
+    Print out the whitespace property for derivations by restriction on simple content.
     Param(s):
            simpleRestrict (Node) required
              'restriction' element
@@ -8732,8 +8733,7 @@ pre {
     </xsl:template>
 
     <!--
-    Print out the value ranges for derivations by
-    restriction on simple content.
+    Print out the value ranges for derivations by restriction on simple content.
     Param(s):
            simpleRestrict (Node) required
              'restriction' element
@@ -8799,16 +8799,14 @@ pre {
     </xsl:template>
 
     <!--
-       Prints out JavaScript code.
-       NOTE: Javascript code is placed within comments to make it
-       work with current browsers. In strict XHTML, JavaScript code
-       should be placed within CDATA sections. However, most
-       browsers generate a syntax error if the page contains
-       CDATA sections. Placing Javascript code within comments
-       means that the code cannot contain two dashes.
-       Param(s):
-              code (Result Tree Fragment) required
-                  Javascript code
+    Prints out JavaScript code.
+    NOTE: Javascript code is placed within comments to make it work with current browsers.
+    In strict XHTML, JavaScript code should be placed within CDATA sections.
+    However, most browsers generate a syntax error if the page contains CDATA sections.
+    Placing Javascript code within comments means that the code cannot contain two dashes.
+    Param(s):
+           code (Result Tree Fragment) required
+               Javascript code
     -->
     <xsl:template name="PrintJSCode">
         <xsl:param name="code"/>
@@ -8840,8 +8838,7 @@ pre {
     </xsl:template>
 
     <!--
-    Translates occurrences of a string
-    in a piece of text with another string.
+    Translates occurrences of a string in a piece of text with another string.
     Param(s):
            value (String) required
                Text to translate

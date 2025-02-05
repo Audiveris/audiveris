@@ -1,0 +1,89 @@
+name: Build audiveris flatpak package
+
+# execute this workflow on every push
+#on:
+#  - push
+on:
+  - workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  java-dependencies:
+    name: "Get java dependencies"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+        
+      - name: Retrieve Gradle properties
+        uses: BrycensRanch/read-properties-action@v1
+        id: all
+        with:
+          file: gradle.properties
+          all: true
+
+      - name: Setup Java ${{ steps.all.outputs.minJavaVersion }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ steps.all.outputs.minJavaVersion }}
+          distribution: zulu
+
+      - name: Determine Java dependencies
+        run: >-
+          dev/flatpak/create-flatpak-dependencies.py
+
+      - name: force flatpak build from ${{ github.sha }}
+        run: >-
+          sed -i
+          -e 's,\(url: https://github.com\)/.*,\1/${{ github.repository }},'
+          -e 's,tag: .*,branch: ${{ github.ref_name }},'
+          -e 's,commit: .*,commit: ${{ github.sha }},'
+          dev/flathub/org.audiveris.audiveris.yml
+
+      - name: upload flathub archive
+        uses: actions/upload-artifact@v3
+        with:
+          name: flathub-data
+          path: dev/flathub/
+
+  flatpak:
+    name: "Flatpak"
+    runs-on: ubuntu-latest
+
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:gnome-44
+      options: --privileged
+
+    strategy:
+      matrix:
+        arch: [x86_64, aarch64]
+      fail-fast: false
+
+    steps:
+      - name: download flathub archive
+        uses: actions/download-artifact@v3
+        with:
+          name: flathub-data
+
+      - name: Install docker
+        if: ${{ matrix.arch != 'x86_64' }}
+        run: |
+          dnf -y install docker
+
+      - name: Set up QEMU
+        if: ${{ matrix.arch != 'x86_64' }}
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64
+
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          build-bundle: true
+          bundle: org.audiveris.audiveris.flatpak
+          manifest-path: org.audiveris.audiveris.yml
+          cache-key: audiveris-flatpak-${{ github.sha }}
+          arch: ${{ matrix.arch }}

@@ -12,7 +12,7 @@ dev/temp-externals/*-javadoc.jar
 dev/temp-externals/*-sources.jar
 nbproject
 
-.gitignore
+*.*~
 .gradle/*
 .idea/*
 .nb-gradle/*
@@ -23,6 +23,7 @@ nbproject
 *.mf
 *.orig
 build/*
+app/bin/*
 dist/*
 config/run.properties
 data/args
@@ -46,11 +47,23 @@ schemas/bin/
 schemas/build
 schemas/build/*
 target/*
+temp/*
+windows-installer/build
+windows-installer/build/*
+windows-installer/.gradle/*
 \.orig\..*$
 \.orig$
 \.chg\..*$
 \.rej$
 \.conflict\~$
+app/build
+app/build/*
+app/data/temp
+app/data/temp/*
+flatpak/build
+flatpak/build/*
+**/.flatpak-builder
+**.flatpak-builder/*
 
 # Ignore system files
 .DS_Store
@@ -75,3 +88,7 @@ docs/.jekyll-metadata
 docs/Gemfile.lock
 docs/_site/
 docs/pdf/build
+
+# flatpak
+dev/flatpak/.flatpak-builder/
+dev/flatpak/gradle/

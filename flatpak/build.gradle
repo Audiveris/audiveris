@@ -1,0 +1,125 @@
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                            : f l a t p a k / b u i l d . g r a d l e                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+//
+// The Linux flatpak
+//
+//--------------------------------------------------------------------------------------------------
+
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+
+plugins {
+    id 'base'
+}
+
+def app         = project(':app')
+def appDir      = app.projectDir
+def flathubDir  = new File(project.projectDir.getAbsolutePath() + "/flathub")
+
+// SHA1 computation
+// Stolen from https://gist.github.com/dagezi/9594839#file-calcsha1-gradle
+// 'file' argument must be a File object.
+def calcSha1(file) 
+{
+    MessageDigest md = MessageDigest.getInstance("SHA-1");
+    file.eachByte 4096, {bytes, size ->
+        md.update(bytes, 0, size);
+    }
+    return md.digest().encodeHex()
+}
+
+// Grab the dependencies from the app sibling sub-project
+configurations {
+    sharedConfiguration {
+        canBeConsumed = false
+    }
+}
+dependencies {
+    sharedConfiguration(project("path": ":app", "configuration": "sharedConfiguration"))
+}
+task genDependencies {
+    description("Generate app dependencies")
+    dependsOn(':app:classes')
+    dependsOn(':app:flatpakGradleGenerator')
+    
+    FileCollection sharedFiles = configurations.getByName("sharedConfiguration")
+    inputs.files(sharedFiles)
+
+    doLast {
+        println "flatpak. Copying dependencies.json"
+        copy {
+            from('../app/build/dependencies.json')
+            into(flathubDir)
+        }
+    }
+}
+
+// Generate the Flatpak manifest by expanding key variables
+// We copy gradle refs from the gradle wrapper properties
+def wrapperProps = new Properties();
+file("../gradle/wrapper/gradle-wrapper.properties").withInputStream { wrapperProps.load(it) }
+def gradleUrl = wrapperProps.getProperty("distributionUrl")
+Path path = Paths.get(new URI(gradleUrl).toURL().getFile());
+def gradleName = path.getFileName().toString();
+
+task genManifest {
+    description("Generate manifest from template")
+
+    doLast {
+        println "flatpak. Generating manifest"
+        copy {
+            from('dev/org.audiveris.audiveris.template.yml') {
+                def binding = [:]
+                binding.OPEN_JDK = "openjdk$theMinJavaVersion"
+                binding.GRADLE_URL = "$gradleUrl"
+                binding.GRADLE_NAME = "$gradleName"
+                binding.GRADLE_SHA256 = wrapperProps.getProperty("distributionSha256Sum")
+                binding.TAG = "$app.ext.tag"
+                expand(binding)
+            }
+            into(flathubDir)
+            rename '.template', ''
+        }
+    }
+}
+
+// Initialize flatpak/flathub content before build
+task initFlathub {
+    description("Populate flathub submodule")
+    dependsOn('genDependencies')
+    dependsOn('genManifest')
+
+    doLast {
+        println "flatpak. Copying resources to flathub"
+        copy {
+            from('res')
+            into(flathubDir)
+        }
+    }
+}
+
+// Build flatpak on manifest
+task buildFlatpak (type: Exec) {
+    description("Run flatpak-builder on manifest")
+    dependsOn('initFlathub')
+
+    onlyIf { app.ext.hostOSName == "linux" }
+
+    doFirst {
+        println "Running flatpak-builder in folder flatpak/flathub"
+    }
+
+    // flatpak-builder is run from the flathub directory
+    workingDir 'flathub'
+
+    // All outputs are located under the 'build' directory for an easier cleanup
+    commandLine('flatpak-builder', 
+        '--force-clean',                        // option to empty the output directory
+        'build',                                // relative path to the output directory to write
+        'org.audiveris.audiveris.yml')          // relative path to the manifest file to read
+}

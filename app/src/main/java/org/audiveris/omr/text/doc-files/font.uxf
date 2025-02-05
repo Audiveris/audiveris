@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="15.0.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>280</x>
+      <y>40</y>
+      <w>80</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>*Font*
+--
+name
+style
+size
+pointSize
+--</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>220</x>
+      <y>180</y>
+      <w>200</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>/*OmrFont*/
+bg=#ffffaa
+--
+/fontCache/
+--
+computeSize(value,dim)
+getLineMetrics(str)
+layout(str[,fat])
+--
+/createFont(name,file,size)/
+/getFont(name,file,style,size)/
+/paint(g,layout,loc,align)/</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>310</x>
+      <y>130</y>
+      <w>30</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>340</x>
+      <y>410</y>
+      <w>220</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>*TextFont*
+bg=#ffffaa
+--
+/defaultTextFamily/
+--
+TextFont(font)
+TextFont(info)
+TextInfo(size)
+TextFont(name,file,style,size)
+--
+deriveFont(size)
+--
+/create(textFont,info)/
+/getBaseFontBySize(family,size)/
+/getTextFont(family,size)/
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>370</x>
+      <y>330</y>
+      <w>30</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;80.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>80</x>
+      <y>410</y>
+      <w>220</w>
+      <h>450</h>
+    </coordinates>
+    <panel_attributes>*MusicFont*
+bg=#ffffaa
+--
+/defaultMusicFamily/
+--
+musicFamily
+--
+MusicFont(font)
+MusicFont(family,size)
+MusicFont(info)
+--
+buildImage(shape,dec)
+buildMusicFontScale(width)
+computePointSize(width) ???
+deriveFont(size)
+deriveFont(style)
+getStaffInterline()
+getSymbol(shape)
+layoutNumberByCode(num)
+layoutShape(shape,dim)
+layoutShapeByCode(shape[,fat])
+layoutSymbol(sym,dim)
+--
+/getBaseFont(family,il)/
+/getBaseFontBySize(family,size)/
+/getDefaultMusicFamily()/
+/getHeadFont(family,scale,itl)/
+/getHeadPointSize(scale,itl)/
+/getMusicFont(family,
+size)/
+/getPointSize(itl)/
+/getString(codes)/
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>250</x>
+      <y>330</y>
+      <w>30</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;80.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>10</x>
+      <y>410</y>
+      <w>90</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m2=backup</panel_attributes>
+    <additional_attributes>70.0;10.0;30.0;10.0;30.0;50.0;70.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>630</x>
+      <y>40</y>
+      <w>130</w>
+      <h>260</h>
+    </coordinates>
+    <panel_attributes>*FontInfo*
+bg=#ffffaa
+--
+/DEFAULT/
+--
+isBold
+isItalic
+isUnderlined
+isMonospace
+isSerif
+isSmallCaps
+pointSize
+fontName
+--
+getMnemo()
+--
+/createDefault(size)/
+/decode(str)/
+--
+/JaxbAdapter/</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
