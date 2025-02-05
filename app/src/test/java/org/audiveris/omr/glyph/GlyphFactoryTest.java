@@ -1,5 +1,5 @@
 /*
- * Copyright © Audiveris 2024. All rights reserved.
+ * Copyright © Audiveris 2025. All rights reserved.
  * This software is released under the GNU General Public License.
  * Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
  */
