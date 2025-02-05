@@ -87,7 +87,7 @@ back_to_top: true
 back_to_top_text: "Back to top"
 
 # Footer content appears at the bottom of every page's main content
-footer_content: "Copyright &copy; Audiveris 2024. Distributed under the <a href=\"http://www.gnu.org/licenses\">Affero General Public License</a>."
+footer_content: "Copyright &copy; Audiveris 2025. Distributed under the <a href=\"http://www.gnu.org/licenses\">Affero General Public License</a>."
 
 # Color scheme currently only supports "dark" or nil (default)
 color_scheme: nil
