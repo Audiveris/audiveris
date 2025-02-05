@@ -40,15 +40,12 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.TESSDATA_PREFIX }}
-          key: ${{ runner.os }}-tessdata-${{ env.TESSDATA_TAG }}-eng-deu-fra-ita
+          key: ${{ runner.os }}-tessdata-${{ env.TESSDATA_TAG }}-eng
 
       - name: Install tessdata files
         if: steps.cache-tessdata.outputs.cache-hit != 'true'
         run: |
-          ${GITHUB_WORKSPACE}/.github/install-tessdata.sh eng &&
-          ${GITHUB_WORKSPACE}/.github/install-tessdata.sh deu &&
-          ${GITHUB_WORKSPACE}/.github/install-tessdata.sh fra &&
-          ${GITHUB_WORKSPACE}/.github/install-tessdata.sh ita
+          ${GITHUB_WORKSPACE}/.github/install-tessdata.sh eng
 
       - name: Build Audiveris
         uses: gradle/gradle-build-action@v2.7.0
