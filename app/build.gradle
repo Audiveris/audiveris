@@ -59,8 +59,8 @@ java {
 }
 
 // Central location for application version and (flatpak) tag
-project.version = '5.4-beta'
-ext.tag         = '5.4-beta'
+project.version = '5.4'
+ext.tag         = '5.4'
 println "version: ${project.version}"
 println "tag:     ${project.ext.tag}"
 
