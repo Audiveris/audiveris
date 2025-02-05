@@ -48,7 +48,8 @@ But **it requires Java version 17** or higher to be available in your environmen
 If no suitable Java version is found at runtime, a prompt will remind you to install it.
 - for **Linux**, a flatpak package is provided on
 [Flathub](https://flathub.org/apps/org.audiveris.audiveris);  
-The package comes with the pre-installed Tesseract OCR language ``eng``.  
+The package comes with no pre-installed Tesseract OCR language,
+but you can easily install them via the `Tools | Install languages` menu.
 The needed Java environment is included in its packaging, therefore no Java installation is needed. 
 - for **macOS**, unfortunately, we have nothing similar yet [^macos]
 -- for now, you have to build from sources as described in the following section on
