@@ -77,7 +77,7 @@ notably:
 
 Within the shapes selection, specific processing is made for:
 - Stem-based heads -- they are imposed near a stem seed
-- Heads with a hollow part -- they are slightly boosted compared to the full ones
+- Heads with a hollow part -- they are slightly boosted compared to the filled ones
 
 
 ### Head templates

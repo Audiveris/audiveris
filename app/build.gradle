@@ -327,7 +327,7 @@ task handbookPdf (type: Exec) {
     description "Generates PDF version of handbook from GitHub"
     dependsOn('deletePdf')
     workingDir = projectDir
-    commandLine 'sh', 'docs/pdf/pdf-build.sh'
+    commandLine 'sh', '../docs/pdf/pdf-build.sh'
 }
 
 task handbookPdfLocalhost (type: Exec) {
@@ -335,7 +335,7 @@ task handbookPdfLocalhost (type: Exec) {
     description "Generates PDF version of handbook from local host"
     dependsOn('deletePdf')
     workingDir = projectDir
-    commandLine 'sh', 'docs/pdf/pdf-build.sh', 'localhost'
+    commandLine 'sh', '../docs/pdf/pdf-build.sh', 'localhost'
 }
 
 javadoc {
