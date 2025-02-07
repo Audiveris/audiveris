@@ -44,7 +44,7 @@ The goal of a release is to provide significant improvements, well tested and in
 resulting in a software as easy as possible to install and use:
 - for **Windows**, an installer is provided on [Github][releases];  
 The installer comes with the pre-installed Tesseract OCR language ``eng``.  
-But **it requires Java version 17** or higher to be available in your environment.
+But **it requires Java version 21** or higher to be available in your environment.
 If no suitable Java version is found at runtime, a prompt will remind you to install it.
 - for **Linux**, a flatpak package is provided on
 [Flathub](https://flathub.org/apps/org.audiveris.audiveris);  
@@ -66,7 +66,7 @@ as described in the handbook [sources section][sources].
 There are two main branches in the Audiveris project:
 - the ``master`` branch is the GitHub default branch;
 we use it for releases, and only for them;  
-To build from this branch, you will need a ``jdk`` for Java version **17** or higher.
+To build from this branch, you will need a ``jdk`` for Java version **21** or higher.
 - the ``development`` branch is the one where all developments continuously take place;
 Periodically, when a release is to be made, we merge the development branch into the master branch;  
 As of this writing, the source code on development branch requires a ``jdk`` for Java version **21**.
