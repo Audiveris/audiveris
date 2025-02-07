@@ -84,8 +84,8 @@ and the more general [Wiki][audiveris-wiki] set of articles.
 [audiveris-wiki]: https://github.com/Audiveris/audiveris/wiki
 [handbook]:       https://audiveris.github.io/audiveris/
 [imslp]:          https://imslp.org/
-[installation]:   https://audiveris.github.io/audiveris/_pages/install/README/
+[installation]:   https://audiveris.github.io/audiveris/_pages/tutorials/install/binaries/
 [musicxml]:       http://www.musicxml.com/
 [releases]:       https://github.com/Audiveris/audiveris/releases
-[sources]:        https://audiveris.github.io/audiveris/_pages/install/sources/
+[sources]:        https://audiveris.github.io/audiveris/_pages/tutorials/install/sources/
 [workflow]:       https://github.com/Audiveris/audiveris/wiki/Git-Workflow
