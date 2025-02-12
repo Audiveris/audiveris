@@ -198,6 +198,7 @@ dependencies {
         [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
         [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
         [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.4.0'],
+        [group: 'com.github.jai-imageio', name: 'jai-imageio-jpeg2000', version: '1.4.0'],
         [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'],
         [group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'],
         [group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'],
