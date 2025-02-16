@@ -119,7 +119,7 @@ parameter is kept only for potential use on a specific case.
   This field is always present, it is useful when there are too few beams
   for the engine to get a reliable measurement.
 
-The scaling specifications can depend on staves declarations are shown in the following picture.  
+The scaling specifications can depend on staves declarations, as shown in the following picture.  
 Note in this example that:
 - There are no multi-line staves, hence the need for interline specification
 - There are 1-line staves, hence the need for barline height specification
