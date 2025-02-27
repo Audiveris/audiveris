@@ -58,6 +58,9 @@ public class ViewParameters
 
     private static final Logger logger = LoggerFactory.getLogger(ViewParameters.class);
 
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(ViewParameters.class);
+
     /** Should the annotations be painted. */
     public static final String ANNOTATION_PAINTING = "annotationPainting";
 
@@ -560,9 +563,8 @@ public class ViewParameters
             layerAction = ActionManager.getInstance().getActionInstance(this, "switchLayers");
         }
 
-        Icon icon = layer.getIcon();
-        layerAction.putValue(AbstractAction.LARGE_ICON_KEY, icon); // For toolbar
-        layerAction.putValue(AbstractAction.SMALL_ICON, icon); // For menu
+        layerAction.putValue(AbstractAction.LARGE_ICON_KEY, layer.getLargeIcon()); // For toolbar
+        layerAction.putValue(AbstractAction.SMALL_ICON, layer.getSmallIcon()); // For menu
 
         // Notify new layer
         setPaintingLayer(layer);
@@ -591,9 +593,8 @@ public class ViewParameters
                     "switchSelections");
         }
 
-        Icon icon = mode.getIcon();
-        selectionAction.putValue(AbstractAction.LARGE_ICON_KEY, icon); // For toolbar
-        selectionAction.putValue(AbstractAction.SMALL_ICON, icon); // For menu
+        selectionAction.putValue(AbstractAction.LARGE_ICON_KEY, mode.getLargeIcon()); // For toolbar
+        selectionAction.putValue(AbstractAction.SMALL_ICON, mode.getSmallIcon()); // For menu
 
         // Notify new mode
         setSelectionMode(mode);
@@ -856,6 +857,7 @@ public class ViewParameters
     private static class Constants
             extends ConstantSet
     {
+
         private final Constant.Boolean annotationPainting = new Constant.Boolean(
                 true,
                 "Should the annotations be painted");
@@ -927,26 +929,41 @@ public class ViewParameters
         /** Output: score entities. */
         OUTPUT;
 
-        /** Icon assigned to layer. */
-        private Icon icon;
+        /** Icons assigned to layer. */
+        private Icon smallIcon;
+
+        private Icon largeIcon;
 
         /**
-         * Lazily building of layer icon.
+         * Lazy building of layer small icon.
          *
-         * @return the layer icon
+         * @return the layer small icon
          */
-        public Icon getIcon ()
+        public Icon getSmallIcon ()
         {
-            if (icon == null) {
-                ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-                        ViewParameters.class);
-
-                String key = getClass().getSimpleName() + "." + this + ".icon";
-                String resourceName = resource.getString(key);
-                icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
+            if (smallIcon == null) {
+                String key = getClass().getSimpleName() + "." + this + ".smallIcon";
+                String resourceName = resources.getString(key);
+                smallIcon = new ImageIcon(ViewParameters.class.getResource(resourceName));
             }
 
-            return icon;
+            return smallIcon;
+        }
+
+        /**
+         * Lazy building of layer large icon.
+         *
+         * @return the layer large icon
+         */
+        public Icon getLargeIcon ()
+        {
+            if (largeIcon == null) {
+                String key = getClass().getSimpleName() + "." + this + ".largeIcon";
+                String resourceName = resources.getString(key);
+                largeIcon = new ImageIcon(ViewParameters.class.getResource(resourceName));
+            }
+
+            return largeIcon;
         }
     }
 
@@ -959,25 +976,41 @@ public class ViewParameters
         MODE_INTER,
         MODE_SECTION;
 
-        /** Icon assigned to mode. */
-        private Icon icon;
+        /** Icons assigned to mode. */
+        private Icon smallIcon;
+
+        private Icon largeIcon;
 
         /**
-         * Lazily building of mode icon.
+         * Lazily building of mode small icon.
          *
-         * @return the mode icon
+         * @return the mode small icon
          */
-        public Icon getIcon ()
+        public Icon getSmallIcon ()
         {
-            if (icon == null) {
-                ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-                        ViewParameters.class);
-                String key = getClass().getSimpleName() + "." + this + ".icon";
-                String resourceName = resource.getString(key);
-                icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
+            if (smallIcon == null) {
+                String key = getClass().getSimpleName() + "." + this + ".smallIcon";
+                String resourceName = resources.getString(key);
+                smallIcon = new ImageIcon(ViewParameters.class.getResource(resourceName));
             }
 
-            return icon;
+            return smallIcon;
+        }
+
+        /**
+         * Lazily building of mode large icon.
+         *
+         * @return the mode large icon
+         */
+        public Icon getLargeIcon ()
+        {
+            if (largeIcon == null) {
+                String key = getClass().getSimpleName() + "." + this + ".largeIcon";
+                String resourceName = resources.getString(key);
+                largeIcon = new ImageIcon(ViewParameters.class.getResource(resourceName));
+            }
+
+            return largeIcon;
         }
     }
 }
