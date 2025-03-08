@@ -80,21 +80,21 @@ on a 14-year old laptop running Windows 10.
 We use the {{ site.view_voices }} menu item to display voices with different colors,
 and the {{ site.view_chords }} item to display the chord numeric IDs.
 
-| Sheet ID | Raw results |
-| :---: | :---: |
-| Sheet#1 | ![](./sheet1_raw.png) |
-| Sheet#2 | ![](./sheet2_raw.png) |
-| Sheet#3 | ![](./sheet3_raw.png) |
-| Sheet#4 | ![](./sheet4_raw.png) |
-| Sheet#5 | ![](./sheet5_raw.png) |
-
 ## Sheet #1
 
 No measures to fix.
 
+| Sheet ID | Raw results |
+| :---: | :---: |
+| Sheet#1 | ![](./sheet1_raw.png) |
+
 ## Sheet #2
 
 One measure in pink
+
+| Sheet ID | Raw results |
+| :---: | :---: |
+| Sheet#2 | ![](./sheet2_raw.png) |
 
 ### Measure #12
 
@@ -190,6 +190,10 @@ Doing so for the "intermediate" and for the "lower" voices, we get this final re
 
 We have four measures to fix.
 
+| Sheet ID | Raw results |
+| :---: | :---: |
+| Sheet#3 | ![](./sheet3_raw.png) |
+
 ### Measure #3
 
 ![](./sheet3_m3.png)
@@ -259,6 +263,10 @@ the measure turns white with the upper tuplets automatically inserted:
 
 Just one measure to fix.
 
+| Sheet ID | Raw results |
+| :---: | :---: |
+| Sheet#4 | ![](./sheet4_raw.png) |
+
 ### Measure #9
 
 ![](./sheet4_m9.png)
@@ -280,6 +288,10 @@ All we have to do now is to delete this false augmentation dot.
 ## Sheet #5
 
 Two measures to fix.
+
+| Sheet ID | Raw results |
+| :---: | :---: |
+| Sheet#5 | ![](./sheet5_raw.png) |
 
 ### Measure #4
 
