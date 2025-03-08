@@ -11,7 +11,7 @@ In release 5.4, the new binarization board provides the tools to manually
 select the binarization filter (either global or adaptive), adjust its settings
 and immediately see their impact on the sheet image.
 
-This new board is available only in the Binary tab, and is selected by default.
+This new board is available only in the Binary tab, and is *not* selected by default.
 
 ---
 Table of contents

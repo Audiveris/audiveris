@@ -68,7 +68,17 @@ measure is really suspicious (although the measure is not flagged as _abnormal_)
 
 ## Jumbo mode
 
+Very small glyphs located near note heads can be mistaken for augmentation dots by the OMR engine,
+resulting in erroneous durations and abnormal measures.
+Such small glyphs are often the result of poor segmentation and in many cases we cannot easily
+detect them by visual inspection.
 
+Since the 5.4 release, there is a view option called the "Jumbo" mode, selectable via the {{ site.view_jumbos}} menu item (or the `F7` funtion key).
+
+When this option is set, all augmentation dots in the current sheet are displayed as big red dots,
+so they can really stand out:
+
+![](../ui_examples/moonlight/sheet4_m9_jumbo.png)
 
 ## Chords IDs
 

@@ -42,7 +42,7 @@ permalink: /:title/
 #theme: minima
 #theme: just-the-docs
 #remote_theme: pmarsceill/just-the-docs
-remote_theme: just-the-docs/just-the-docs@v0.10.0
+remote_theme: just-the-docs/just-the-docs@v0.10.1
 
 
 plugins:
