@@ -19,6 +19,8 @@
 plugins {
     id 'application'
 
+    id 'org.barfuin.gradle.taskinfo' version '2.2.0'
+
     // Needed to retrieve all dependencies for flatpak
     id 'io.github.jwharm.flatpak-gradle-generator' version '1.2.0'
 }
@@ -59,8 +61,8 @@ java {
 }
 
 // Central location for application version and (flatpak) tag
-project.version = '5.4.1'
-ext.tag         = '5.4.1'
+project.version = '5.5.0'
+ext.tag         = '5.5.0'
 println "version: ${project.version}"
 println "tag:     ${project.ext.tag}"
 
@@ -160,8 +162,13 @@ sourceSets {
             srcDir layout.buildDirectory.file("generated-src")
         }
         resources {
-            srcDir 'src/main/java'   // Needed for BSAF use of properties
-            srcDir 'dev/icons'
+            // Needed for BSAF use of properties files at runtime
+            srcDir 'src/main/java'  
+            include '**/*.properties' 
+        }
+        resources {
+            // Crystal icons are needed at runtime 
+            srcDir 'dev/icons'      
         }
     }
 

@@ -42,6 +42,8 @@ data/train/*.zip
 data/train/*.csv
 data/www/docs/api
 data/www/docs/guides
+packaging/build
+packaging/build/*
 private/*
 schemas/bin/
 schemas/build

@@ -19,3 +19,6 @@ include 'windows-installer'
 
 // Installer for Linux
 include 'flatpak'
+
+// Multi-OS packaging
+include 'packaging'

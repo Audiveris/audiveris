@@ -1,0 +1,81 @@
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                         : p a c k a g i n g / b u i l d . g r a d l e                          //
+//                                                                                                //
+//--------------------------------------------------------------------------------------------------
+//
+// This "packaging" sub-project aims to manage the packaging of Audiveris for all supported OSes.
+//
+// It must be run on the same operating system as the one being targeted.
+//
+//--------------------------------------------------------------------------------------------------
+
+plugins {
+    // Mainly for the clean task
+    id 'base'
+
+    // Plugin which provides the jpackage task
+    id 'org.panteleyev.jpackageplugin' version '1.6.1'
+}
+
+// Pointers to the 'app' sibling sub-project
+def app     = project(':app')
+def appDir  = app.projectDir
+
+// Copy the application jar
+task copyJar (type: Copy) {
+    from(app.tasks.jar)
+    into("$buildDir/jars")
+}
+
+// Copy all external jars the application depends upon
+task copyDependencies (type: Copy) {
+    from(app.sourceSets.main.runtimeClasspath)
+    into("$buildDir/jars")
+}
+
+// Configure the jpackage task
+tasks.jpackage {
+    dependsOn(':app:classes')
+    dependsOn("copyJar")
+    dependsOn("copyDependencies")
+
+    input               = "$buildDir/jars"
+    destination         = "$buildDir/dist"
+
+    appName             = app.ext.programName
+    vendor              = "audiveris.org"
+    appDescription      = "Optical Music Recognition"
+    appVersion          = app.version
+    mainJar             = "${app.ext.programId}.jar"
+    mainClass           = app.ext.mainClass
+
+    fileAssociations    = ["dev/associations.properties"]
+    javaOptions         = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
+                           "-Dfile.encoding=UTF-8",
+                           "-Xms512m",                    
+                           "-Xmx1024m"]
+
+    windows {
+        type = "msi"                        // Or "exe"
+        icon = "$appDir/res/icon-256.ico"   // Path to the icon of the application package
+        winConsole = true                   // Create a console launcher (Useful for errors)
+        winDirChooser = true                // Let the user choose the installation directory
+        winMenu = true                      // Add a Start Menu shortcut
+        winShortcut = true                  // Create a desktop shortcut
+        winShortcutPrompt = true            // Let the user decide on shortcuts
+    }
+
+    mac {
+        // TODO: add needed statements
+        type = "dmg" // Or "pkg"
+        icon = "???"
+        javaOptions = ["--add-exports java.desktop/com.apple.eawt=ALL-UNNAMED"]
+    }
+
+    linux {
+        // TODO: add needed statements
+        type = "rpm" // Or "deb"
+        icon = "???"
+    }
+}
