@@ -52,7 +52,7 @@ public class SheetScaling
     private static final Logger logger = LoggerFactory.getLogger(SheetScaling.class);
 
     // JGoodies columns specification:     Topic      SelBox     Item             Value
-    private static final String colSpec = "10dlu,1dlu,10dlu,1dlu,80dlu,1dlu,right:15dlu";
+    private static final String colSpec = "10dlu,1dlu,10dlu,1dlu,100dlu,1dlu,right:15dlu";
 
     /** Resource injection. */
     private static final ResourceMap resources = Application.getInstance().getContext()

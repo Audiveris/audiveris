@@ -48,7 +48,9 @@ import java.awt.event.WindowListener;
 import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -191,22 +193,15 @@ public abstract class UIUtil
         final ResourceMap resources = Application.getInstance().getContext().getResourceMap(
                 UIUtil.class);
 
-        // OptionPane texts
-        final String[] keys = new String[] { //
-                "OptionPane.inputDialogTitle", //
-                "OptionPane.messageDialogTitle", //
-                "OptionPane.titleText", //
-                "OptionPane.cancelButtonText", //
-                "OptionPane.noButtonText", //
-                "OptionPane.yesButtonText" };
+        // Relevant entity names
+        final List<String> roots = Arrays.asList("OptionPane.", "FileChooser.");
 
-        for (String key : keys) {
-            final String localizedString = resources.getString(key);
-
-            if (localizedString != null) {
-                UIManager.put(key, localizedString);
-            }
-        }
+        resources.keySet().forEach(k -> {
+            roots.forEach(r -> {
+                if (k.startsWith(r))
+                    UIManager.put(k, resources.getString(k));
+            });
+        });
     }
 
     //--------------//
@@ -442,6 +437,7 @@ public abstract class UIUtil
             }
         } else {
             final JFileChooser fc = new JFileChooser();
+            fc.setApproveButtonText(title);
             fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
             // Pre-select the directory, and potentially the file to save to

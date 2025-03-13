@@ -109,11 +109,14 @@ import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.StringUtil;
 import org.audiveris.omr.util.VerticalSide;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ApplicationContext;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.jgoodies.forms.builder.FormBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.BasicStroke;
@@ -165,6 +168,12 @@ public abstract class SheetPainter
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SheetPainter.class);
+
+    private static final ApplicationContext applicationContext = Application.getInstance()
+            .getContext();
+
+    private static final ResourceMap resources = applicationContext.getResourceMap(
+            SheetPainter.class);
 
     /** A transformation to half scale. (used for slot time annotation) */
     protected static final AffineTransform halfAT = AffineTransform.getScaleInstance(0.5, 0.5);
@@ -561,8 +570,8 @@ public abstract class SheetPainter
 
         final FormLayout layout = new FormLayout(sbc.toString(), "pref");
         final Panel panel = new Panel();
+        panel.setName("VoicePanel");
         final FormBuilder builder = FormBuilder.create().layout(layout).panel(panel);
-        final CellConstraints cst = new CellConstraints();
 
         // Adjust dimensions
         final Dimension cellDim = new Dimension(5, 22);
@@ -582,6 +591,7 @@ public abstract class SheetPainter
             int col = (c <= mid) ? c : (c + 1);
             builder.addRaw(label).xy(col, 1);
         }
+
         // Separation between staves
         {
             final Color color = Color.BLACK;
@@ -593,6 +603,9 @@ public abstract class SheetPainter
             label.setForeground(color);
             builder.addRaw(label).xy(mid + 1, 1);
         }
+
+        // Resource injection
+        resources.injectComponents(panel);
 
         return panel;
     }
