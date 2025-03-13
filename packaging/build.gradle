@@ -62,6 +62,7 @@ tasks.jpackage {
         winConsole = true                   // Create a console launcher (Useful for errors)
         winDirChooser = true                // Let the user choose the installation directory
         winMenu = true                      // Add a Start Menu shortcut
+        winPerUserInstall = true            // Perform an install on a per-user basis
         winShortcut = true                  // Create a desktop shortcut
         winShortcutPrompt = true            // Let the user decide on shortcuts
     }
