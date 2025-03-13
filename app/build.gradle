@@ -161,14 +161,14 @@ sourceSets {
             srcDir 'src/main/java'
             srcDir layout.buildDirectory.file("generated-src")
         }
-        resources {
-            // Needed for BSAF use of properties files at runtime
+        resources {            
             srcDir 'src/main/java'  
-            include '**/*.properties' 
+            include '**/*.properties'   // For BSAF use of properties files at runtime
+            include '**/icon-*.png'     // For Audiveris specific icons in resources
         }
-        resources {
-            // Crystal icons are needed at runtime 
-            srcDir 'dev/icons'      
+        resources {            
+            srcDir 'dev/icons'          // Crystal icons are needed at runtime 
+            include '**/*.png'
         }
     }
 
@@ -253,6 +253,7 @@ jar {
         attributes 'Specification-Vendor': project.ext.companyName
         attributes 'Specification-Version': project.version
         attributes 'Implementation-Version': project.version
+        attributes 'Main-Class': project.ext.mainClass
     }
 }
 
