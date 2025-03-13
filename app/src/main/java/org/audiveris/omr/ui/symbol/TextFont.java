@@ -146,6 +146,22 @@ public class TextFont
         return new TextFont(font);
     }
 
+    //-------------//
+    // getBaseFont //
+    //-------------//
+    /**
+     * Report the (perhaps cached) text font based on chosen family and staff interline.
+     *
+     * @param family         chosen family font
+     * @param staffInterline real interline value for related staves
+     * @return proper scaled music font
+     */
+    public static TextFont getBaseFont (TextFamily family,
+                                        int staffInterline)
+    {
+        return getTextFont(family, MusicFont.getPointSize(staffInterline));
+    }
+
     //-------------------//
     // getBaseFontBySize //
     //-------------------//
