@@ -22,6 +22,8 @@ nbproject
 *.log
 *.mf
 *.orig
+*/nb-cache/*
+*.ser
 build/*
 app/bin/*
 dist/*
