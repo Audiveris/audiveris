@@ -21,7 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.field;
 
-import java.util.Scanner;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Locale;
 
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
@@ -43,35 +45,23 @@ public class LDoubleField
     /** Default format for display in the field : {@value} */
     public static final String DEFAULT_FORMAT = "%.5f";
 
+    /** To cope with number formats that depend on current locale. */
+    public static NumberFormat numberFormat = NumberFormat.getInstance(Locale.getDefault());
+
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Specific display format, if any */
+    /** Specific display format, if any. */
     private final String format;
 
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Create a double labeled field with proper characteristics
+     * Create a double labeled field with proper characteristics.
      *
      * @param editable tells whether the field must be editable
      * @param label    string for the label text
      * @param tip      related tool tip text
-     */
-    public LDoubleField (boolean editable,
-                         String label,
-                         String tip)
-    {
-        this(editable, label, tip, null);
-        setFilter();
-    }
-
-    /**
-     * Create a double labeled field with proper characteristics
-     *
-     * @param editable tells whether the field must be editable
-     * @param label    string for the label text
-     * @param tip      related tool tip text
-     * @param format   specific display format
+     * @param format   specific display format, if any
      */
     public LDoubleField (boolean editable,
                          String label,
@@ -84,8 +74,21 @@ public class LDoubleField
     }
 
     /**
-     * Create an (initially) editable double labeled field with proper
-     * characteristics
+     * Create a double labeled field with proper characteristics.
+     *
+     * @param editable tells whether the field must be editable
+     * @param label    string for the label text
+     * @param tip      related tool tip text
+     */
+    public LDoubleField (boolean editable,
+                         String label,
+                         String tip)
+    {
+        this(editable, label, tip, null);
+    }
+
+    /**
+     * Create an (initially) editable double labeled field with proper characteristics.
      *
      * @param label string for the label text
      * @param tip   related tool tip text
@@ -94,12 +97,10 @@ public class LDoubleField
                          String tip)
     {
         this(label, tip, null);
-        setFilter();
     }
 
     /**
-     * Create an (initially) editable double labeled field with proper
-     * characteristics
+     * Create an (initially) editable double labeled field with proper characteristics.
      *
      * @param label  string for the label text
      * @param tip    related tool tip text
@@ -110,7 +111,6 @@ public class LDoubleField
                          String format)
     {
         this(true, label, tip, format);
-        setFilter();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ public class LDoubleField
      */
     public double getValue ()
     {
-        String str = getField().getText().trim();
+        final String str = getField().getText().trim();
 
         if (str.length() == 0) {
             return 0.0;
@@ -140,8 +140,9 @@ public class LDoubleField
     /**
      * Adds the filter to the input field's document.
      */
-    private void setFilter () {
-        AbstractDocument doc = (AbstractDocument) getField().getDocument();
+    private void setFilter ()
+    {
+        final AbstractDocument doc = (AbstractDocument) getField().getDocument();
         doc.setDocumentFilter(new DoubleFilter());
     }
 
@@ -173,49 +174,56 @@ public class LDoubleField
         getField().setText(String.format(format, val));
     }
 
-
     //~ Inner Classes ------------------------------------------------------------------------------
 
-    /** 
+    /**
      * Intercepts input in the LDoubleField and disallows input that would
      * result in an invalid double.
      */
-    private class DoubleFilter extends DocumentFilter
+    private class DoubleFilter
+            extends DocumentFilter
     {
         @Override
-        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
-            throws BadLocationException {
-            Document doc = fb.getDocument();
-            StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
+        public void insertString (FilterBypass fb,
+                                  int offset,
+                                  String string,
+                                  AttributeSet attr)
+            throws BadLocationException
+        {
+            final Document doc = fb.getDocument();
+            final StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
             sb.insert(offset, string);
 
             if (test(sb.toString())) {
                 super.insertString(fb, offset, string, attr);
             }
-
         }
 
         @Override
-        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
-          throws BadLocationException {
-            Document doc = fb.getDocument();
-            StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
+        public void replace (FilterBypass fb,
+                             int offset,
+                             int length,
+                             String text,
+                             AttributeSet attrs)
+            throws BadLocationException
+        {
+            final Document doc = fb.getDocument();
+            final StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
             sb.replace(offset, offset + length, text);
 
             if (test(sb.toString())) {
                 super.replace(fb, offset, length, text, attrs);
             }
-            
         }
 
-        private boolean test(String text) {
+        private boolean test (String text)
+        {
             try {
-                Double.parseDouble(text);
+                numberFormat.parse(text);
                 return true;
-            } catch (NumberFormatException e) {
+            } catch (ParseException e) {
                 return false;
             }
-
         }
     }
 }

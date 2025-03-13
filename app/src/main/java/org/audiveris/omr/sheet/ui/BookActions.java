@@ -1536,7 +1536,7 @@ public class BookActions
         if (stub == null) {
             toggleValidityAction.putValue(
                     javax.swing.Action.SMALL_ICON,
-                    resources.getImageIcon("toggleSheetValidity.Action.icon.true"));
+                    resources.getImageIcon("toggleSheetValidity.Action.smallIcon.true"));
             toggleValidityAction.putValue(
                     javax.swing.Action.NAME,
                     resources.getString("toggleSheetValidity.Action.text.none"));
@@ -1547,7 +1547,7 @@ public class BookActions
             final boolean isValid = stub.isValid();
             toggleValidityAction.putValue(
                     javax.swing.Action.SMALL_ICON,
-                    resources.getImageIcon("toggleSheetValidity.Action.icon." + isValid));
+                    resources.getImageIcon("toggleSheetValidity.Action.smallIcon." + isValid));
             toggleValidityAction.putValue(
                     javax.swing.Action.NAME,
                     resources.getString("toggleSheetValidity.Action.text." + isValid));

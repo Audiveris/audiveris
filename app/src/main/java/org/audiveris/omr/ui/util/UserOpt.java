@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.util;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 /**
  * Class <code>UserOpt</code> provides user options.
  *
@@ -33,4 +36,13 @@ public enum UserOpt
     Apply,
     Cancel,
     Exit;
+
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(UserOpt.class);
+
+    @Override
+    public String toString ()
+    {
+        return resources.getString(name() + ".text");
+    }
 }

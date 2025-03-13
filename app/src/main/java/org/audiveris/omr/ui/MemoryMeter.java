@@ -129,7 +129,6 @@ public class MemoryMeter
         // Progress bar
         progressBar.setPreferredSize(new Dimension(UIUtil.adjustedSize(90), 20));
         progressBar.setName("progressBar");
-        progressBar.setToolTipText("Used memory / Global memory");
         progressBar.setStringPainted(true);
         component.add(progressBar, BorderLayout.CENTER);
 
