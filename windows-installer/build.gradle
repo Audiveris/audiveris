@@ -42,7 +42,7 @@ repositories {
 ext.makensisPath = null
 
 task findNsisCompiler {
-    description "Find path to NSIS compiler"
+    description "Finds the path to NSIS compiler"
     onlyIf {"windows" == "$hostOSName"}
 
     doLast {

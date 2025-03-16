@@ -46,6 +46,7 @@ data/www/docs/api
 data/www/docs/guides
 packaging/build
 packaging/build/*
+packaging/.gradle/*
 private/*
 schemas/bin/
 schemas/build
