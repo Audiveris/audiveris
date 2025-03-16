@@ -97,7 +97,11 @@ if (project.hasProperty('mainClass')) {
 //--------------
 
 repositories {
+<<<<<<< HEAD
     if (project.hasProperty("isFlatpak") && project.getProperty("isFlatpak") == "true") {
+=======
+    if (project.hasProperty("isFlatpak")) {
+>>>>>>> acf142030 (Packaging for Windows .exe and .msi installers)
         println "repositories. isFlatpak set"
         maven { // Only the offline repository
             name = 'Offline repository for flatpak'
@@ -272,6 +276,7 @@ jar {
     }
 }
 
+<<<<<<< HEAD
 // Retrieve the full hash for the latest commit from Git
 tasks.register('getCommit', Exec) {
     description "Retrieves full hash of git latest commit"
@@ -287,6 +292,11 @@ tasks.register('getCommit', Exec) {
 // Retrieve the short hash for the latest commit from Git
 tasks.register('getCommitShort', Exec) {
     description "Retrieves short hash of git latest commit"
+=======
+// Retrieve the abbreviated hash for the latest commit from Git
+tasks.register('getCommitHash', Exec) {
+    description "Retrieves git latest commit"
+>>>>>>> acf142030 (Packaging for Windows .exe and .msi installers)
     commandLine "git rev-parse --short HEAD".split(' ')
     standardOutput = new ByteArrayOutputStream()
 
@@ -300,6 +310,7 @@ tasks.register('getCommitShort', Exec) {
 tasks.register('generateProgramId') {
     group "build"
     description "Generates the ProgramId source"
+<<<<<<< HEAD
     dependsOn 'getCommit'
     dependsOn 'getCommitShort'
 
@@ -308,6 +319,9 @@ tasks.register('generateProgramId') {
     def gSrc = new File(outputDir, "${className}.java")
     outputs.file(gSrc)
 
+=======
+    dependsOn 'getCommitHash'
+>>>>>>> acf142030 (Packaging for Windows .exe and .msi installers)
     doLast {
         outputDir.exists() || outputDir.mkdirs()
         gSrc.write("package org.audiveris.omr;\n\n")
