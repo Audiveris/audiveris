@@ -25,6 +25,10 @@ plugins {
     id 'io.github.jwharm.flatpak-gradle-generator' version '1.2.0'
 }
 
+//------------
+// Properties
+//------------
+
 // Name of host OS
 ext.hostOSName   = System.getProperty('os.name').toLowerCase()\
                      .startsWith('mac os x') ? 'macosx' :\
@@ -90,12 +94,124 @@ if (project.hasProperty('mainClass')) {
     ext.mainClass = ext.programName
 }
 
+//--------------
+// Dependencies
+//--------------
+
+repositories {
+    if (project.hasProperty("isFlatpak")) {
+        println "repositories. isFlatpak set"
+        maven { // Only the offline repository
+            name = 'Offline repository for flatpak'
+            url = '../dependencies'                // TODO: check this!
+        }
+    } else {
+        mavenCentral()
+
+        maven { // Required to obtain non-free JAI
+            name = 'JBoss repository'
+            url = 'https://repository.jboss.org/nexus/content/repositories/thirdparty-releases'
+        }
+
+        mavenLocal()
+
+        ///flatDir(dirs: 'dev/externals') // for libraries not in any other repository
+    }
+}
+
+dependencies {
+    implementation(
+        [group: 'args4j', name: 'args4j', version: '2.33'],
+        [group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.14'],
+        [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.4.0'],
+        [group: 'com.github.jai-imageio', name: 'jai-imageio-jpeg2000', version: '1.4.0'],
+        [group: 'com.itextpdf', name: 'itextpdf', version: '5.5.13.2'],
+        [group: 'com.jgoodies', name: 'jgoodies-forms', version: '1.9.0'],
+        [group: 'com.jgoodies', name: 'jgoodies-looks', version: '2.7.0'],
+        [group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'],
+        [group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.1'],
+        [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
+        [group: 'javax.media', name: 'jai-core', version: '1.1.3'],
+        [group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'],
+        [group: 'net.imagej', name: 'ij', version: '1.53j'],
+        [group: 'net.jcip', name: 'jcip-annotations', version: '1.0'],
+        [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'],
+        [group: 'org.apache.pdfbox', name: 'jbig2-imageio', version: '3.0.4'],
+        [group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.4'],
+        [group: 'org.apache.pdfbox', name: 'pdfbox-io', version: '3.0.4'],
+        [group: 'org.audiveris', name: 'proxymusic', version: '4.0.3'],
+        [group: 'org.bushe', name: 'eventbus', version: '1.4'],
+        [group: 'org.bytedeco', name: 'javacpp', version: jcppVersion],
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
+        [group: 'org.jdesktop.bsaf', name: 'bsaf', version: '1.9.2'],
+        [group: 'org.jfree', name: 'jfreechart', version: '1.5.3'],
+        [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.5.1'],
+        [group: 'org.kohsuke', name: 'github-api', version: '1.301'],
+        [group: 'org.reflections', name: 'reflections', version: '0.10.2'],
+        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.35']
+    )
+
+    runtimeOnly(
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
+    )
+
+    testImplementation(
+        [group: 'junit', name: 'junit', version: '4.13.2'],
+        [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.5.1']
+    )
+}
+
+// Trick for Linux to include 'arm64' architecture in addition to 'x86_64'
+if (targetOS == "linux-x86_64") {
+    dependencies {
+        runtimeOnly(
+            [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "linux-arm64"],
+            [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "linux-arm64"]
+        )
+    }
+}
+
+//------------
+// SourceSets
+//------------
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+            srcDir layout.buildDirectory.file("generated-src")
+        }
+        resources {            
+            srcDir 'src/main/java'  
+            include '**/*.properties'   // For BSAF use of properties files at runtime
+            include '**/icon-*.png'     // For Audiveris specific icons in resources
+        }
+        resources {            
+            srcDir 'dev/icons'          // Crystal icons are needed at runtime 
+            include '**/*.png'
+        }
+    }
+
+    test {
+        java {
+            srcDir 'src/test/java'
+        }
+    }
+}
+
+//-------
+// Tasks
+//-------
+
 application {
-    mainClass.set("$project.ext.mainClass")
+    mainClass = "$project.ext.mainClass"
     
     // Needed to circumvent the limitations brought by Java 9 and above (the JigSaw cuts)
     if (hostOSName == 'macosx') {
-        applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED", "--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"]
+        applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
+                                     "--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"]
     } else {
         applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED"]
     }
@@ -134,105 +250,6 @@ tasks.run {
     }
 }
 
-repositories {
-    if (project.hasProperty("isFlatpak")) {
-        println "repositories. isFlatpak set"
-        maven { // Only the offline repository
-            name = 'Offline repository for flatpak'
-            url = '../dependencies'                // TODO: check this!
-        }
-    } else {
-        mavenCentral()
-
-        maven { // Required to obtain non-free JAI
-            name = 'JBoss repository'
-            url = 'https://repository.jboss.org/nexus/content/repositories/thirdparty-releases'
-        }
-
-        mavenLocal()
-
-        ///flatDir(dirs: 'dev/externals') // for libraries not in any other repository
-    }
-}
-
-sourceSets {
-    main {
-        java {
-            srcDir 'src/main/java'
-            srcDir layout.buildDirectory.file("generated-src")
-        }
-        resources {            
-            srcDir 'src/main/java'  
-            include '**/*.properties'   // For BSAF use of properties files at runtime
-            include '**/icon-*.png'     // For Audiveris specific icons in resources
-        }
-        resources {            
-            srcDir 'dev/icons'          // Crystal icons are needed at runtime 
-            include '**/*.png'
-        }
-    }
-
-    test {
-        java {
-            srcDir 'src/test/java'
-        }
-    }
-}
-
-dependencies {
-    implementation(
-        [group: 'org.kohsuke', name: 'github-api', version: '1.301'],
-        [group: 'args4j', name: 'args4j', version: '2.33'],
-        [group: 'org.jdesktop.bsaf', name: 'bsaf', version: '1.9.2'],
-        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.35'],
-        [group: 'net.jcip', name: 'jcip-annotations', version: '1.0'],
-        [group: 'org.bushe', name: 'eventbus', version: '1.4'],
-        [group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.14'],
-        [group: 'com.jgoodies', name: 'jgoodies-forms', version: '1.9.0'],
-        [group: 'com.jgoodies', name: 'jgoodies-looks', version: '2.7.0'],
-        [group: 'javax.media', name: 'jai-core', version: '1.1.3'],
-        [group: 'net.imagej', name: 'ij', version: '1.53j'],
-        [group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.4'],
-        [group: 'org.apache.pdfbox', name: 'pdfbox-io', version: '3.0.4'],
-        [group: 'org.apache.pdfbox', name: 'jbig2-imageio', version: '3.0.4'],
-        [group: 'org.audiveris', name: 'proxymusic', version: '4.0.3'],
-        [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.5.1'],
-        [group: 'org.jfree', name: 'jfreechart', version: '1.5.3'],
-        [group: 'com.itextpdf', name: 'itextpdf', version: '5.5.13.2'],
-        [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
-        [group: 'org.reflections', name: 'reflections', version: '0.10.2'],
-        [group: 'org.bytedeco', name: 'javacpp', version: jcppVersion],
-        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
-        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
-        [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.4.0'],
-        [group: 'com.github.jai-imageio', name: 'jai-imageio-jpeg2000', version: '1.4.0'],
-        [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'],
-        [group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'],
-        [group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'],
-        [group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.1']
-    )
-
-    runtimeOnly(
-        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
-    )
-
-    testImplementation(
-        [group: 'junit', name: 'junit', version: '4.13.2'],
-        [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.5.1']
-    )
-}
-
-// Trick for Linux to include 'arm64' architecture in addition to 'x86_64'
-if (targetOS == "linux-x86_64") {
-    dependencies {
-        runtimeOnly(
-            [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "linux-arm64"],
-            [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "linux-arm64"]
-        )
-    }
-}
-
 // Generate application.jar
 jar {
     // override default output archive name
@@ -258,7 +275,8 @@ jar {
 }
 
 // Retrieve the abbreviated hash for the latest commit from Git
-task git_build (type: Exec) {
+tasks.register('getCommitHash', Exec) {
+    description "Retrieves git latest commit"
     commandLine "git rev-parse --short HEAD".split(' ')
     standardOutput = new ByteArrayOutputStream()
 
@@ -269,10 +287,10 @@ task git_build (type: Exec) {
 }
 
 // Generate a 'ProgramId.java' source file, based on Git data
-task generateProgramId {
+tasks.register('generateProgramId') {
     group "build"
-    description "Generates ProgramId source"
-    dependsOn('git_build')
+    description "Generates the ProgramId source"
+    dependsOn 'getCommitHash'
     doLast {
         def outputDir = layout.buildDirectory.file("generated-src/org/audiveris/omr").get().asFile
         outputDir.exists() || outputDir.mkdirs()
@@ -293,7 +311,7 @@ task generateProgramId {
         gSrc.append("}\n")
     }
 }
-compileJava.dependsOn("generateProgramId")
+compileJava.dependsOn('generateProgramId')
 
 // Customization of start scripts to force a check of Java version at run time
 tasks.withType(CreateStartScripts).configureEach {
@@ -319,7 +337,7 @@ test {
 }
 
 // Defining 'debug' task allows to set its arguments later
-task debug (type: JavaExec) {
+tasks.register('debug', JavaExec) {
     dependsOn('classes')
     mainClass = "$project.ext.mainClass"
     classpath = sourceSets.main.runtimeClasspath
@@ -331,21 +349,21 @@ task debug (type: JavaExec) {
 //---------------
 
 // Generate a PDF version of handbook
-task deletePdf (type: Delete) {
+tasks.register('deletePdf', Delete) {
     delete "build/pdf"
 }
 
-task handbookPdf (type: Exec) {
+tasks.register('handbookPdf', Exec) {
     group "documentation"
-    description "Generates PDF version of handbook from GitHub"
+    description "Generates the PDF version of handbook from GitHub"
     dependsOn('deletePdf')
     workingDir = projectDir
     commandLine 'sh', '../docs/pdf/pdf-build.sh'
 }
 
-task handbookPdfLocalhost (type: Exec) {
+tasks.register('handbookPdfLocalhost', Exec) {
     group "documentation"
-    description "Generates PDF version of handbook from local host"
+    description "Generates the PDF version of handbook from local host"
     dependsOn('deletePdf')
     workingDir = projectDir
     commandLine 'sh', '../docs/pdf/pdf-build.sh', 'localhost'
@@ -383,7 +401,7 @@ if (JavaVersion.current().isJava8Compatible()) {
 // Configure the flatpakGradleGenerator plugin task
 def depsFile = file('build/dependencies.json')
 tasks.flatpakGradleGenerator {
-    description("Collect all dependencies for Flatpak")
+    description("Collects all dependencies for Flatpak")
     outputFile = depsFile
     downloadDirectory = 'dependencies'
 
@@ -412,14 +430,14 @@ fileTree("$projectDir/private").include('*.gradle').each { file ->
 }
 
 // Utility task to print out head templates
-task printTemplates (type: JavaExec) {
-    description("Print out head templates with various sizes")
+tasks.register('printTemplates', JavaExec) {
+    description("Prints out head templates with various sizes")
     dependsOn('classes')
     mainClass = "org.audiveris.omr.image.TemplateFactory"
     classpath = sourceSets.main.runtimeClasspath
 
     if (project.hasProperty("cmdLineArgs")) {
-        println "printTemplates. cmdLineArgs: ${cmdLineArgs}"
-        args(cmdLineArgs.split())
+        println "printTemplates. cmdLineArgs: "+ project.property('cmdLineArgs')
+        args(project.property('cmdLineArgs').split())
     }
 }

@@ -2,7 +2,7 @@
 //                                                                                                //
 //                         : p a c k a g i n g / b u i l d . g r a d l e                          //
 //                                                                                                //
-//--------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------//
 //
 // This "packaging" sub-project aims to manage the packaging of Audiveris for all supported OSes.
 //
@@ -14,6 +14,9 @@ plugins {
     // Mainly for the clean task
     id 'base'
 
+    // Not really needed, temporarily used just to printout tasks tree
+    id 'org.barfuin.gradle.taskinfo' version '2.2.0'
+
     // Plugin which provides the jpackage task
     id 'org.panteleyev.jpackageplugin' version '1.6.1'
 }
@@ -22,26 +25,48 @@ plugins {
 def app     = project(':app')
 def appDir  = app.projectDir
 
-// Copy the application jar
-task copyJar (type: Copy) {
-    from(app.tasks.jar)
-    into("$buildDir/jars")
+tasks.register('checkInstallerType') {
+    description "Checks if the installer type has been provided"
+    doLast {
+        if (!project.hasProperty('installerType') || project.ext.installerType == null) {
+            throw new RuntimeException("Error: No installerType is provided!")
+        }
+    }
 }
 
-// Copy all external jars the application depends upon
-task copyDependencies (type: Copy) {
-    from(app.sourceSets.main.runtimeClasspath)
-    into("$buildDir/jars")
+tasks.register('collectJars', Copy) {
+    description "Copies the application jar and all external jars it depends upon"
+    doFirst {
+        mkdir('build/jars')
+    }
+
+    into 'build/jars'
+    from app.tasks.jar
+    from app.sourceSets.main.runtimeClasspath
+}
+
+tasks.register('customJre', Exec) {
+    description "Assembles a custom JRE"
+    onlyIf('custom-jre folder does not exist yet') {
+        !file('build/custom-jre').exists()
+    }
+    commandLine "jlink",\
+        "--output", "build/custom-jre",\
+        "--add-modules", "java.base,java.datatransfer,java.desktop,java.xml,java.naming,jdk.zipfs"
 }
 
 // Configure the jpackage task
 tasks.jpackage {
-    dependsOn(':app:classes')
-    dependsOn("copyJar")
-    dependsOn("copyDependencies")
+    dependsOn 'checkInstallerType'
+    dependsOn ':app:classes'
+    dependsOn 'customJre'
+    dependsOn 'collectJars'
 
-    input               = "$buildDir/jars"
-    destination         = "$buildDir/dist"
+    input               = "build/jars"
+    destination         = "build/dist"
+    verbose             = true
+
+    runtimeImage        = "build/custom-jre"
 
     appName             = app.ext.programName
     vendor              = "audiveris.org"
@@ -50,14 +75,13 @@ tasks.jpackage {
     mainJar             = "${app.ext.programId}.jar"
     mainClass           = app.ext.mainClass
 
-    fileAssociations    = ["dev/associations.properties"]
+    fileAssociations    = ["dev/omr.properties"]
     javaOptions         = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
                            "-Dfile.encoding=UTF-8",
                            "-Xms512m",                    
                            "-Xmx1024m"]
 
     windows {
-        type = "msi"                        // Or "exe"
         icon = "$appDir/res/icon-256.ico"   // Path to the icon of the application package
         winConsole = true                   // Create a console launcher (Useful for errors)
         winDirChooser = true                // Let the user choose the installation directory
@@ -69,14 +93,21 @@ tasks.jpackage {
 
     mac {
         // TODO: add needed statements
-        type = "dmg" // Or "pkg"
         icon = "???"
         javaOptions = ["--add-exports java.desktop/com.apple.eawt=ALL-UNNAMED"]
     }
 
     linux {
         // TODO: add needed statements
-        type = "rpm" // Or "deb"
-        icon = "???"
+        icon = "$appDir/res/icon-256.png"   // Path to the icon of the application package
+        linuxShortcut = true                // Create a shortcut for the application
+    }
+
+    if (project.hasProperty('installerType') && project.ext.installerType != null) {
+        type = "$project.ext.installerType" // The type of installer to create
+
+        def installerFile = "build/dist/${app.ext.programName}-${app.version}.$project.ext.installerType"
+        println "installerFile: $installerFile"
+        outputs.file file("$installerFile")
     }
 }
