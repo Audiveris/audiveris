@@ -310,7 +310,6 @@ tasks.register('getCommitHash', Exec) {
 tasks.register('generateProgramId') {
     group "build"
     description "Generates the ProgramId source"
-<<<<<<< HEAD
     dependsOn 'getCommit'
     dependsOn 'getCommitShort'
 
@@ -319,9 +318,6 @@ tasks.register('generateProgramId') {
     def gSrc = new File(outputDir, "${className}.java")
     outputs.file(gSrc)
 
-=======
-    dependsOn 'getCommitHash'
->>>>>>> acf142030 (Packaging for Windows .exe and .msi installers)
     doLast {
         outputDir.exists() || outputDir.mkdirs()
         gSrc.write("package org.audiveris.omr;\n\n")
