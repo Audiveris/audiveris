@@ -24,12 +24,13 @@ plugins {
 // Pointers to the 'app' sibling sub-project
 def app     = project(':app')
 def appDir  = app.projectDir
+def rootDir = getRootDir()
 
 tasks.register('checkInstallerType') {
     description "Checks if the installer type has been provided"
     doLast {
-        if (!project.hasProperty('installerType') || project.ext.installerType == null) {
-            throw new RuntimeException("Error: No installerType is provided!")
+        if (!project.hasProperty('installerType') || project.property('installerType') == null) {
+            throw new RuntimeException("Error: No installerType! Please use gradle option -PinstallerType=XXX")
         }
     }
 }
@@ -52,7 +53,10 @@ tasks.register('customJre', Exec) {
     }
     commandLine "jlink",\
         "--output", "build/custom-jre",\
-        "--add-modules", "java.base,java.datatransfer,java.desktop,java.xml,java.naming,jdk.zipfs"
+        "--no-header-files",\
+        "--no-man-pages",\
+        "--strip-debug",\
+        "--add-modules", "java.base,java.datatransfer,java.desktop,java.xml,java.naming,jdk.zipfs,jdk.crypto.ec"
 }
 
 // Configure the jpackage task
@@ -70,6 +74,7 @@ tasks.jpackage {
 
     appName             = app.ext.programName
     vendor              = "audiveris.org"
+    licenseFile         = rootDir.toPath().resolve('LICENSE')
     appDescription      = "Optical Music Recognition"
     appVersion          = app.version
     mainJar             = "${app.ext.programId}.jar"
@@ -83,12 +88,12 @@ tasks.jpackage {
 
     windows {
         icon = "$appDir/res/icon-256.ico"   // Path to the icon of the application package
-        winConsole = true                   // Create a console launcher (Useful for errors)
         winDirChooser = true                // Let the user choose the installation directory
         winMenu = true                      // Add a Start Menu shortcut
-        winPerUserInstall = true            // Perform an install on a per-user basis
-        winShortcut = true                  // Create a desktop shortcut
         winShortcutPrompt = true            // Let the user decide on shortcuts
+        winShortcut = true                  // Create a desktop shortcut
+        ///winConsole = true                   // Create a console launcher (Useful only for errors)
+        ///winPerUserInstall = true            // Perform an install on a per-user basis
     }
 
     mac {
@@ -98,16 +103,11 @@ tasks.jpackage {
     }
 
     linux {
-        // TODO: add needed statements
         icon = "$appDir/res/icon-256.png"   // Path to the icon of the application package
         linuxShortcut = true                // Create a shortcut for the application
     }
 
-    if (project.hasProperty('installerType') && project.ext.installerType != null) {
-        type = "$project.ext.installerType" // The type of installer to create
-
-        def installerFile = "build/dist/${app.ext.programName}-${app.version}.$project.ext.installerType"
-        println "installerFile: $installerFile"
-        outputs.file file("$installerFile")
+    if (project.hasProperty('installerType') && project.property('installerType') != null) {
+        type = project.property('installerType')    // The type of installer to create
     }
 }
