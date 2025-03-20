@@ -31,9 +31,6 @@ plugins {
     // Mainly for the clean task
     id 'base'
 
-    // Not really needed, temporarily used just to printout tasks tree
-    id 'org.barfuin.gradle.taskinfo' version '2.2.0'
-
     // Plugin which provides the jpackage task
     id 'org.panteleyev.jpackageplugin' version '1.6.1'
 }
