@@ -5,38 +5,49 @@
 //------------------------------------------------------------------------------------------------//
 //
 // This "packaging" sub-project aims to manage the packaging of Audiveris for all supported OSes.
-//
 // It must be run on the same operating system as the one being targeted.
 //
+// 'installerType' is an optional parameter, that can be specified using the Gradle argument:
+//      -PinstallerType=XXX
+// The valid values for XXX are:
+// - for Windows: DEFAULT, EXE or MSI
+// - for macOS: DEFAULT, DMG or PKG
+// - for Linux: DEFAULT, DEB or RPM
+// If not provided, the DEFAULT type is chosen (EXE for Windows, DMG for macOS, DEB for Linux)
+//
+// For all OSes, 'jlink' is required
+// Windows requires 'WiX' 3 or higher
+// Linux requires 'fakeroot'
+// macOS requires '[image]magick', 'iconutil', 'lipo'
+//
+// The outputs are in the 'build' folder:
+// - build/jars:        Audiveris.jar, plus all the dependencies .jar files
+// - build/custom-jre:  A shrunk copy of the host Java runtime environment
+// - build/iconset:     Temporary icons for macOS
+// - build/dist:        The installer(s) built
 //--------------------------------------------------------------------------------------------------
 
 plugins {
     // Mainly for the clean task
     id 'base'
 
-    // Not really needed, temporarily used just to printout tasks tree
-    id 'org.barfuin.gradle.taskinfo' version '2.2.0'
-
     // Plugin which provides the jpackage task
     id 'org.panteleyev.jpackageplugin' version '1.6.1'
 }
+
+import org.panteleyev.jpackage.ImageType
 
 // Pointers to the 'app' sibling sub-project
 def app     = project(':app')
 def appDir  = app.projectDir
 def rootDir = getRootDir()
 
-tasks.register('checkInstallerType') {
-    description "Checks if the installer type has been provided"
-    doLast {
-        if (!project.hasProperty('installerType') || project.property('installerType') == null) {
-            throw new RuntimeException("Error: No installerType! Please use gradle option -PinstallerType=XXX")
-        }
-    }
-}
-
 tasks.register('collectJars', Copy) {
     description "Copies the application jar and all external jars it depends upon"
+    dependsOn ':app:classes'
+    onlyIf('jars folder does not exist yet') {
+        !file('build/jars').exists()
+    }
     doFirst {
         mkdir('build/jars')
     }
@@ -59,10 +70,44 @@ tasks.register('customJre', Exec) {
         "--add-modules", "java.base,java.datatransfer,java.desktop,java.xml,java.naming,jdk.zipfs,jdk.crypto.ec"
 }
 
+tasks.register('macConvertIcons') {
+    description "Converting PNG icon to ICNS format"
+    doFirst {
+        println "Creating .icns file from source icon..."
+        mkdir('build/iconset')
+    }
+
+    doLast {
+        def src = "$appDir/res/icon-256.png"
+
+        // Generate different icon sizes
+        // Including retina displays (@2x)
+       [16, 32, 64, 128, 256, 512].each {size ->
+            exec {
+                commandLine "magick", src, "-resize", "${size}x${size}",\
+                "build/iconset/icon_\"${size}x${size}\".png"
+            }
+           def dbl = size * 2
+           exec {
+               commandLine "magick", src, "-resize", "${dbl}x${dbl}",\
+                "build/iconset/icon_\"${size}x${size}\"@2x.png"
+           }
+        }
+
+        // Convert iconset to icns
+        exec {
+            commandLine "iconutil",\
+                    "-c", "icns",
+                    "-o", "build/Audiveris.icns",\
+                    "build/iconset"
+        }
+    }
+
+    doLast {println "Icon successfully created at build/Audiveris.icns"}
+}
+
 // Configure the jpackage task
 tasks.jpackage {
-    dependsOn 'checkInstallerType'
-    dependsOn ':app:classes'
     dependsOn 'customJre'
     dependsOn 'collectJars'
 
@@ -83,8 +128,20 @@ tasks.jpackage {
     fileAssociations    = ["dev/omr.properties"]
     javaOptions         = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
                            "-Dfile.encoding=UTF-8",
-                           "-Xms512m",                    
+                           "-Xms512m",
                            "-Xmx1024m"]
+
+    // Chosen installer type, if any
+    ImageType installerType = null
+    if (project.hasProperty('installerType')) {
+        try {
+            installerType = ImageType.valueOf(project.property('installerType').toString().toUpperCase())
+            println "installerType: " + installerType
+        } catch (IllegalArgumentException ex) {
+            println "Illegal installerType: " + project.property('installerType')
+            throw new RuntimeException("Error: installerType should be one of " + ImageType.values())
+        }
+    }
 
     windows {
         icon = "$appDir/res/icon-256.ico"   // Path to the icon of the application package
@@ -93,21 +150,44 @@ tasks.jpackage {
         winShortcutPrompt = true            // Let the user decide on shortcuts
         winShortcut = true                  // Create a desktop shortcut
         ///winConsole = true                   // Create a console launcher (Useful only for errors)
-        ///winPerUserInstall = true            // Perform an install on a per-user basis
+        ///winPerUserInstall = true            // Perform an install on a per-user basis (vs system basis)
+
+        // Check validity of installerType for Windows
+        if (installerType != null) {
+            if (installerType != ImageType.DEFAULT && installerType != ImageType.EXE && installerType != ImageType.MSI) {
+                throw new RuntimeException("Error: Illegal installerType for Windows: " + installerType)
+            }
+            type = installerType
+        }
     }
 
     mac {
-        // TODO: add needed statements
-        icon = "???"
+        dependsOn 'macConvertIcons'
+        icon = "build/Audiveris.icns"
+
         javaOptions = ["--add-exports java.desktop/com.apple.eawt=ALL-UNNAMED"]
+        macPackageIdentifier = "org.audiveris.app"
+        macPackageName = app.ext.programName
+
+        // Check validity of installerType for macOS
+        if (installerType != null) {
+            if (installerType != ImageType.DEFAULT && installerType != ImageType.DMG && installerType != ImageType.PKG) {
+                throw new RuntimeException("Error: Illegal installerType for macOS: " + installerType)
+            }
+            type = installerType
+        }
     }
 
     linux {
         icon = "$appDir/res/icon-256.png"   // Path to the icon of the application package
         linuxShortcut = true                // Create a shortcut for the application
-    }
 
-    if (project.hasProperty('installerType') && project.property('installerType') != null) {
-        type = project.property('installerType')    // The type of installer to create
+        // Check validity of installerType for Linux
+        if (installerType != null) {
+            if (installerType != ImageType.DEFAULT && installerType != ImageType.DEB && installerType != ImageType.RPM) {
+                throw new RuntimeException("Error: Illegal installerType for Linux: " + installerType)
+            }
+            type = installerType
+        }
     }
 }
