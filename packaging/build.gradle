@@ -103,7 +103,6 @@ tasks.register('macConvertIcons') {
         // Convert iconset to icns
         exec {
             commandLine "iconutil",\
-                    "--verbose",\
                     "--convert", "icns",\
                     "--output", "build/Audiveris.icns",\
                     "build/iconset"
