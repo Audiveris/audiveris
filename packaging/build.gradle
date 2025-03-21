@@ -78,7 +78,8 @@ tasks.register('macConvertIcons') {
     }
 
     doLast {
-        def src = "$appDir/res/icon-256.png"
+        ///def src = "$appDir/res/icon-256.png"
+        def src = "$appDir/src/main/java/org/audiveris/omr/ui/resources/icon-256.png"
 
         // Generate different icon sizes
         // Including retina displays (@2x)
