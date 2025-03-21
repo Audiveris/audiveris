@@ -31,53 +31,9 @@ jobs:
 #        uses: gradle/gradle-build-action@v2.7.0
 #        with:
 #          arguments: --info jpackage
-
-  build-windows-installer:
-    runs-on: windows-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Retrieve Gradle properties
-        uses: BrycensRanch/read-properties-action@v1
-        id: all
-        with:
-          file: gradle.properties
-          all: true
-
-      - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
-        uses: actions/setup-java@v3
-        with:
-          java-version: ${{ steps.all.outputs.theMinJavaVersion }}
-          distribution: zulu
-
-      - name: Build installer
-        uses: gradle/gradle-build-action@v2.7.0
-        with:
-          arguments: --info jpackage -PinstallerType=MSI
-
-      # outputs:
-      #   artifact-id
-      #   artifact-url
-      #   artifact-digest
-      - name: Upload installer
-        id: upload-installer
-        uses: actions/upload-artifact@v4
-        with:
-          name: win-installer
-          path: packaging/build/dist/*
-          compression-level: 0
-          overwrite: true
-
-      - name: Output artifact ID
-        run: |
-          echo 'Artifact ID is ${{ steps.upload-installer.outputs.artifact-id }}'
-          echo 'Artifact URL is ${{ steps.upload-installer.outputs.artifact-url }}'
-          echo 'Artifact DIGEST is ${{ steps.upload-installer.outputs.artifact-digest }}'
-
-#  build-macos-installer:
-#    runs-on: macos-latest
+#
+#  build-windows-installer:
+#    runs-on: windows-latest
 #
 #    steps:
 #      - name: Checkout code
@@ -96,16 +52,60 @@ jobs:
 #          java-version: ${{ steps.all.outputs.theMinJavaVersion }}
 #          distribution: zulu
 #
-#      - name: Install imagemagick
-#        run: brew install imagemagick
-#
-#      - name: Verify imagemagick
-#        run: magick --version
-#
-#      - name: Verify iconutil
-#        run: iconutil version
-#
 #      - name: Build installer
 #        uses: gradle/gradle-build-action@v2.7.0
 #        with:
-#          arguments: --info jpackage
+#          arguments: --info jpackage -PinstallerType=MSI
+#
+#      # outputs:
+#      #   artifact-id
+#      #   artifact-url
+#      #   artifact-digest
+#      - name: Upload installer
+#        id: upload-installer
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: win-installer
+#          path: packaging/build/dist/*
+#          compression-level: 0
+#          overwrite: true
+#
+#      - name: Output artifact ID
+#        run: |
+#          echo 'Artifact ID is ${{ steps.upload-installer.outputs.artifact-id }}'
+#          echo 'Artifact URL is ${{ steps.upload-installer.outputs.artifact-url }}'
+#          echo 'Artifact DIGEST is ${{ steps.upload-installer.outputs.artifact-digest }}'
+
+  build-macos-installer:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Retrieve Gradle properties
+        uses: BrycensRanch/read-properties-action@v1
+        id: all
+        with:
+          file: gradle.properties
+          all: true
+
+      - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ steps.all.outputs.theMinJavaVersion }}
+          distribution: zulu
+
+      - name: Install imagemagick
+        run: brew install imagemagick
+
+      - name: Verify imagemagick
+        run: magick --version
+
+      - name: Verify iconutil
+        run: iconutil version
+
+      - name: Build installer
+        uses: gradle/gradle-build-action@v2.7.0
+        with:
+          arguments: --info jpackage
