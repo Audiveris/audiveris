@@ -102,9 +102,6 @@ jobs:
       - name: Verify imagemagick
         run: magick --version
 
-      - name: Verify iconutil
-        run: iconutil --version
-
       - name: Build installer
         uses: gradle/gradle-build-action@v2.7.0
         with:
