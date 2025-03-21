@@ -16,7 +16,7 @@ It is now available in two versions:
 new
 {: .label .label-yellow }
 
-[Download the PDF version](https://github.com/Audiveris/audiveris/releases/download/{{ site.audiveris_release }}/Audiveris_Handbook.pdf)
+[Download the PDF version](https://github.com/Audiveris/audiveris/releases/download/{{ site.audiveris_version }}/Audiveris_Handbook.pdf)
 {: .btn .text-center }
 
 ## For the developer
