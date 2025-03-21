@@ -7,76 +7,90 @@ permissions:
   contents: read
 
 jobs:
-#  build-linux-installer:
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#
-#      - name: Retrieve Gradle properties
-#        uses: BrycensRanch/read-properties-action@v1
-#        id: all
-#        with:
-#          file: gradle.properties
-#          all: true
-#
-#      - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
-#        uses: actions/setup-java@v3
-#        with:
-#          java-version: ${{ steps.all.outputs.theMinJavaVersion }}
-#          distribution: zulu
-#
-#      - name: Build installer
-#        uses: gradle/gradle-build-action@v2.7.0
-#        with:
-#          arguments: --info jpackage
-#
-#  build-windows-installer:
-#    runs-on: windows-latest
-#
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#
-#      - name: Retrieve Gradle properties
-#        uses: BrycensRanch/read-properties-action@v1
-#        id: all
-#        with:
-#          file: gradle.properties
-#          all: true
-#
-#      - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
-#        uses: actions/setup-java@v3
-#        with:
-#          java-version: ${{ steps.all.outputs.theMinJavaVersion }}
-#          distribution: zulu
-#
-#      - name: Build installer
-#        uses: gradle/gradle-build-action@v2.7.0
-#        with:
-#          arguments: --info jpackage -PinstallerType=MSI
-#
-#      # outputs:
-#      #   artifact-id
-#      #   artifact-url
-#      #   artifact-digest
-#      - name: Upload installer
-#        id: upload-installer
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: win-installer
-#          path: packaging/build/dist/*
-#          compression-level: 0
-#          overwrite: true
-#
-#      - name: Output artifact ID
-#        run: |
-#          echo 'Artifact ID is ${{ steps.upload-installer.outputs.artifact-id }}'
-#          echo 'Artifact URL is ${{ steps.upload-installer.outputs.artifact-url }}'
-#          echo 'Artifact DIGEST is ${{ steps.upload-installer.outputs.artifact-digest }}'
+  build-linux-installer:
+#    if: false   # Job temporarily skipped ---
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Retrieve Gradle properties
+        uses: BrycensRanch/read-properties-action@v1
+        id: all
+        with:
+          file: gradle.properties
+          all: true
+
+      - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ steps.all.outputs.theMinJavaVersion }}
+          distribution: zulu
+
+      - name: Build installer
+        uses: gradle/gradle-build-action@v2.7.0
+        with:
+          arguments: --info jpackage
+
+      - name: Upload installer
+        id: upload-installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-installer
+          path: packaging/build/dist/*
+          compression-level: 0
+          overwrite: true
+
+      - name: Output artifact ID
+        run: |
+          echo 'Artifact ID is ${{ steps.upload-installer.outputs.artifact-id }}'
+          echo 'Artifact URL is ${{ steps.upload-installer.outputs.artifact-url }}'
+          echo 'Artifact DIGEST is ${{ steps.upload-installer.outputs.artifact-digest }}'
+
+  build-windows-installer:
+#    if: false   # Job temporarily skipped ---
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Retrieve Gradle properties
+        uses: BrycensRanch/read-properties-action@v1
+        id: all
+        with:
+          file: gradle.properties
+          all: true
+
+      - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ steps.all.outputs.theMinJavaVersion }}
+          distribution: zulu
+
+      - name: Build installer
+        uses: gradle/gradle-build-action@v2.7.0
+        with:
+          arguments: --info jpackage -PinstallerType=MSI
+
+      - name: Upload installer
+        id: upload-installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-installer
+          path: packaging/build/dist/*
+          compression-level: 0
+          overwrite: true
+
+      - name: Output artifact ID
+        run: |
+          echo 'Artifact ID is ${{ steps.upload-installer.outputs.artifact-id }}'
+          echo 'Artifact URL is ${{ steps.upload-installer.outputs.artifact-url }}'
+          echo 'Artifact DIGEST is ${{ steps.upload-installer.outputs.artifact-digest }}'
 
   build-macos-installer:
+#    if: false   # Job temporarily skipped ---
     runs-on: macos-latest
 
     steps:
@@ -106,3 +120,18 @@ jobs:
         uses: gradle/gradle-build-action@v2.7.0
         with:
           arguments: --stacktrace --info jpackage
+
+      - name: Upload installer
+        id: upload-installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-installer
+          path: packaging/build/dist/*
+          compression-level: 0
+          overwrite: true
+
+      - name: Output artifact ID
+        run: |
+          echo 'Artifact ID is ${{ steps.upload-installer.outputs.artifact-id }}'
+          echo 'Artifact URL is ${{ steps.upload-installer.outputs.artifact-url }}'
+          echo 'Artifact DIGEST is ${{ steps.upload-installer.outputs.artifact-digest }}'
