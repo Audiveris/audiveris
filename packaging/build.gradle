@@ -85,12 +85,12 @@ tasks.register('macConvertIcons') {
        [16, 32, 64, 128, 256, 512].each {size ->
             exec {
                 commandLine "magick", src, "-resize", "${size}x${size}",\
-                "build/iconset/icon_\"${size}x${size}\".png"
+                "build/iconset/icon_${size}x${size}.png"
             }
            def dbl = size * 2
            exec {
                commandLine "magick", src, "-resize", "${dbl}x${dbl}",\
-                "build/iconset/icon_\"${size}x${size}\"@2x.png"
+                "build/iconset/icon_${size}x${size}@2x.png"
            }
         }
 
