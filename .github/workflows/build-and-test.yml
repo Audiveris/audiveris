@@ -2,7 +2,8 @@ name: Build & Test Audiveris
 
 # execute this workflow on every push
 on:
-  - push
+#  - push
+  - workflow_dispatch
 
 permissions:
   contents: read
