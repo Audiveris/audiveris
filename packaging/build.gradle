@@ -95,11 +95,17 @@ tasks.register('macConvertIcons') {
            }
         }
 
+        // Just to inspect the created files
+        exec {
+            commandLine "ls", "-la", "build/iconset/"
+        }
+
         // Convert iconset to icns
         exec {
             commandLine "iconutil",\
-                    "-c", "icns",
-                    "-o", "build/Audiveris.icns",\
+                    "--verbose",\
+                    "--convert", "icns",\
+                    "--output", "build/Audiveris.icns",\
                     "build/iconset"
         }
     }
