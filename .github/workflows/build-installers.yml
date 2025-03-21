@@ -77,6 +77,12 @@ jobs:
           java-version: ${{ steps.all.outputs.theMinJavaVersion }}
           distribution: zulu
 
+      - name: Install imagemagick
+        run: brew install imagemagick
+
+      - name: Verify imagemagick
+        run: convert --version
+
       - name: Build installer
         uses: gradle/gradle-build-action@v2.7.0
         with:
