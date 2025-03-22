@@ -85,6 +85,9 @@ Thumb.db
 # IDEA added files
 .idea
 
+# Visual Studio added files
+.vscode
+
 # Gradle added files (temporary fix)
 gradle.properties
 

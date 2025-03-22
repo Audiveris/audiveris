@@ -44,7 +44,7 @@ CORE="$TARGET/core.html"
 CATALOG="$TARGET/catalog.txt"
 NAV="$TARGET/nav.html"
 HANDBOOK="$TARGET/Audiveris_Handbook.pdf"
-STYLE="../../docs/pdf/pdf-nav-style.css"
+STYLE="../../../docs/pdf/pdf-nav-style.css"
 
 mkdir $TARGET
 
