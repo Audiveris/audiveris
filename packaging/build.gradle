@@ -99,13 +99,21 @@ tasks.register('macConvertIcons') {
         exec {
             commandLine "ls", "-la", "build/iconset/"
         }
-
+/*
         // Convert iconset to icns
         exec {
             commandLine "iconutil",\
                     "--convert", "icns",\
                     "--output", "build/Audiveris.icns",\
                     "build/iconset"
+        }        
+ */
+        // Use an empty "build/Audiveris.icns" file
+        exec {
+            commandLine "touch", "build/Audiveris.icns"
+        }
+        exec {
+            commandLine "ls", "-la", "build"
         }
     }
 
