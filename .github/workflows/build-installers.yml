@@ -4,11 +4,11 @@ on:
   - workflow_dispatch
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-linux-installer:
-#    if: false   # Job temporarily skipped ---
+    if: false   # Job temporarily skipped ---
     runs-on: ubuntu-latest
 
     steps:
@@ -49,7 +49,7 @@ jobs:
           echo 'Artifact DIGEST is ${{ steps.upload-installer.outputs.artifact-digest }}'
 
   build-windows-installer:
-#    if: false   # Job temporarily skipped ---
+    if: false   # Job temporarily skipped ---
     runs-on: windows-latest
 
     steps:
@@ -115,6 +115,9 @@ jobs:
 
       - name: Verify imagemagick
         run: magick --version
+
+      - name: Manual of iconutil
+        run: man iconutil
 
       - name: Build installer
         uses: gradle/gradle-build-action@v2.7.0
