@@ -7,9 +7,11 @@ permissions:
   contents: write
 
 jobs:
-  build-linux-installer:
-    if: false   # Job temporarily skipped ---
-    runs-on: ubuntu-latest
+  build-installer:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - name: Checkout code
@@ -28,16 +30,21 @@ jobs:
           java-version: ${{ steps.all.outputs.theMinJavaVersion }}
           distribution: zulu
 
-      - name: Build installer
+      - name: Build installer on ${{ matrix.os }}
         uses: gradle/gradle-build-action@v2.7.0
         with:
           arguments: --info jpackage
 
+#      - name: Create release assets
+#        run: |
+#          tar -czvf my-binary-${{ matrix.os }}.tar.gz packaging/build/dist
+#          echo "Binary for ${{ matrix.os }} built and packaged."
+
       - name: Upload installer
         id: upload-installer
         uses: actions/upload-artifact@v4
         with:
-          name: linux-installer
+          name: installer-${{ matrix.os }}
           path: packaging/build/dist/*
           compression-level: 0
           overwrite: true
@@ -48,90 +55,49 @@ jobs:
           echo 'Artifact URL is ${{ steps.upload-installer.outputs.artifact-url }}'
           echo 'Artifact DIGEST is ${{ steps.upload-installer.outputs.artifact-digest }}'
 
-  build-windows-installer:
-    if: false   # Job temporarily skipped ---
-    runs-on: windows-latest
-
+  global-upload:
+    needs: build-installer
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Retrieve Gradle properties
-        uses: BrycensRanch/read-properties-action@v1
-        id: all
+      - name: Download release assets
+        uses: actions/download-artifact@v2
         with:
-          file: gradle.properties
-          all: true
+          name: installer-ubuntu-latest
+          path: ./binaries
 
-      - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
-        uses: actions/setup-java@v3
+      - name: Download release assets
+        uses: actions/download-artifact@v2
         with:
-          java-version: ${{ steps.all.outputs.theMinJavaVersion }}
-          distribution: zulu
+          name: installer-windows-latest
+          path: ./binaries
 
-      - name: Build installer
-        uses: gradle/gradle-build-action@v2.7.0
+      - name: Download release assets
+        uses: actions/download-artifact@v2
         with:
-          arguments: --info jpackage -PinstallerType=MSI
+          name: installer-macos-latest
+          path: ./binaries
 
-      - name: Upload installer
-        id: upload-installer
-        uses: actions/upload-artifact@v4
+      - name: Create final release assets
+        run: tar -czvf all-binaries.tar.gz ./binaries
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: win-installer
-          path: packaging/build/dist/*
-          compression-level: 0
-          overwrite: true
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: true
 
-      - name: Output artifact ID
-        run: |
-          echo 'Artifact ID is ${{ steps.upload-installer.outputs.artifact-id }}'
-          echo 'Artifact URL is ${{ steps.upload-installer.outputs.artifact-url }}'
-          echo 'Artifact DIGEST is ${{ steps.upload-installer.outputs.artifact-digest }}'
-
-  build-macos-installer:
-#    if: false   # Job temporarily skipped ---
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Retrieve Gradle properties
-        uses: BrycensRanch/read-properties-action@v1
-        id: all
+      - name: Upload final release assets
+        uses: actions/upload-release-asset@v1
         with:
-          file: gradle.properties
-          all: true
-
-      - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
-        uses: actions/setup-java@v3
-        with:
-          java-version: ${{ steps.all.outputs.theMinJavaVersion }}
-          distribution: zulu
-
-      - name: Install imagemagick
-        run: brew install imagemagick
-
-      - name: Verify imagemagick
-        run: magick --version
-
-      - name: Build installer
-        uses: gradle/gradle-build-action@v2.7.0
-        with:
-          arguments: --stacktrace --info jpackage
-
-      - name: Upload installer
-        id: upload-installer
-        uses: actions/upload-artifact@v4
-        with:
-          name: mac-installer
-          path: packaging/build/dist/*
-          compression-level: 0
-          overwrite: true
-
-      - name: Output artifact ID
-        run: |
-          echo 'Artifact ID is ${{ steps.upload-installer.outputs.artifact-id }}'
-          echo 'Artifact URL is ${{ steps.upload-installer.outputs.artifact-url }}'
-          echo 'Artifact DIGEST is ${{ steps.upload-installer.outputs.artifact-digest }}'
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step
+          asset_path: ./all-binaries.tar.gz
+          asset_name: all-binaries.tar.gz
+          asset_content_type: application/gzip

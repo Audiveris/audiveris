@@ -106,7 +106,7 @@ tasks.register('macConvertIcons') {
                     "--convert", "icns",\
                     "--output", "build/Audiveris.icns",\
                     "build/iconset"
-        }        
+        }
  */
         // Use an empty "build/Audiveris.icns" file
         exec {
@@ -172,6 +172,8 @@ tasks.jpackage {
                 throw new RuntimeException("Error: Illegal installerType for Windows: " + installerType)
             }
             type = installerType
+        } else {
+            type = ImageType.MSI
         }
     }
 
