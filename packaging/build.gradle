@@ -111,7 +111,7 @@ tasks.register('macConvertIcons') {
                     "--convert", "icns",\
                     "--output", "build/Audiveris.icns",\
                     "build/iconset"
-        }        
+        }
  */
         // Use an empty "build/Audiveris.icns" file
         exec {
