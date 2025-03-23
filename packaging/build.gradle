@@ -78,6 +78,11 @@ tasks.register('macConvertIcons') {
     }
 
     doLast {
+        // Install imagemagick
+        exec {
+            commandLine "brew", "install", "imagemagick"
+        }
+
         ///def src = "$appDir/res/icon-256.png"
         def src = "$appDir/src/main/java/org/audiveris/omr/ui/resources/icon-256.png"
 
