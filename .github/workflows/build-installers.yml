@@ -35,11 +35,6 @@ jobs:
         with:
           arguments: --info jpackage
 
-#      - name: Create release assets
-#        run: |
-#          tar -czvf my-binary-${{ matrix.os }}.tar.gz packaging/build/dist
-#          echo "Binary for ${{ matrix.os }} built and packaged."
-
       - name: Upload installer
         id: upload-installer
         uses: actions/upload-artifact@v4
@@ -49,12 +44,6 @@ jobs:
           compression-level: 0
           overwrite: true
 
-      - name: Output artifact ID
-        run: |
-          echo 'Artifact ID is ${{ steps.upload-installer.outputs.artifact-id }}'
-          echo 'Artifact URL is ${{ steps.upload-installer.outputs.artifact-url }}'
-          echo 'Artifact DIGEST is ${{ steps.upload-installer.outputs.artifact-digest }}'
-
   global-upload:
     needs: build-installer
     runs-on: ubuntu-latest
@@ -62,44 +51,48 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download release assets
+      - name: Download ubuntu installer
         uses: actions/download-artifact@v4
         with:
           name: installer-ubuntu-latest
           path: ./binaries
 
-      - name: Download release assets
+      - name: Download windows installer
         uses: actions/download-artifact@v4
         with:
           name: installer-windows-latest
           path: ./binaries
 
-      - name: Download release assets
+      - name: Download macos inslaller
         uses: actions/download-artifact@v4
         with:
           name: installer-macos-latest
           path: ./binaries
 
-      - name: Create final release assets
-        run: tar -czvf all-binaries.tar.gz ./binaries
-
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          name: Draft 5.5.0
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
           draft: true
           prerelease: true
+          files: ./binaries/*
 
-      - name: Upload final release assets
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step
-          asset_path: ./all-binaries.tar.gz
-          asset_name: all-binaries.tar.gz
-          asset_content_type: application/gzip
+#      - name: Upload ubuntu release assets
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step
+#          asset_path: ./all-binaries.tar.gz
+#          asset_name: all-binaries.tar.gz
+#          asset_content_type: application/gzip # application/octet-stream
+#
+#            - name: Loop through files
+#              run: |
+#                for file in $(ls *.txt); do
+#                  echo "Processing $file"
+#                done
