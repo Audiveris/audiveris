@@ -35,7 +35,7 @@ jobs:
       - name: Populate flatpak/flathub
         uses: gradle/gradle-build-action@v2.7.0
         with:
-          arguments: --info jpackage
+          arguments: --info initFlathub
 
       - name: upload flathub archive
         uses: actions/upload-artifact@v4
@@ -45,6 +45,7 @@ jobs:
 
   flatpak:
     name: "Flatpak"
+    needs: java-dependencies
     runs-on: ubuntu-latest
 
     container:
