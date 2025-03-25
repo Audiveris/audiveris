@@ -26,10 +26,10 @@ jobs:
           file: gradle.properties
           all: true
 
-      - name: Setup Java ${{ steps.all.outputs.minJavaVersion }}
+      - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
         uses: actions/setup-java@v3
         with:
-          java-version: ${{ steps.all.outputs.minJavaVersion }}
+          java-version: ${{ steps.all.outputs.theMinJavaVersion }}
           distribution: zulu
 
       - name: Populate flatpak/flathub
