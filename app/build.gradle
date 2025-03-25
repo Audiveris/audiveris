@@ -99,7 +99,7 @@ if (project.hasProperty('mainClass')) {
 //--------------
 
 repositories {
-    if (project.hasProperty("isFlatpak")) {
+    if (project.hasProperty("isFlatpak" && project.getProperty("isFlatpak") == "true") {
         println "repositories. isFlatpak set"
         maven { // Only the offline repository
             name = 'Offline repository for flatpak'

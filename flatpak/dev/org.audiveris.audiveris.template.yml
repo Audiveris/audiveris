@@ -64,7 +64,7 @@ modules:
       - install --mode=0644 -D org.audiveris.audiveris.metainfo.xml /app/share/metainfo/org.audiveris.audiveris.metainfo.xml
 
       # Run Gradle build in offline mode, with a specific repository (hence the isFlatpak property)
-      - ./gradlew -PisFlatpak --offline distTar
+      - ./gradlew -PisFlatpak=true --offline distTar
 
       # Extract lib and bin from Audiveris .tar to /app
       - tar x --directory=/app --strip-components=1 --file app/build/distributions/*.tar

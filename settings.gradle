@@ -14,10 +14,10 @@ include 'app'
 // Installer for Linux
 include 'flatpak'
 
-if (startParameter.hasProperty('isFlatpak')) {
-    println 'Initialization. isFlatpak is set, skipping useless subprojects'
+if (startParameter.projectProperties['isFlatpak'] == 'true') {
+    println "Initialization. isFlatpak is set, skipping useless subprojects"
 } else {
-    println 'Initialization. isFlatpak is not set'
+    println "Initialization. isFlatpak is not set"
 
     // Installer for Windows
     include 'windows-installer'
