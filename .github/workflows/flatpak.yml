@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
         
@@ -32,30 +32,23 @@ jobs:
           java-version: ${{ steps.all.outputs.minJavaVersion }}
           distribution: zulu
 
-      - name: Determine Java dependencies
-        run: >-
-          dev/flatpak/create-flatpak-dependencies.py
-
-      - name: force flatpak build from ${{ github.sha }}
-        run: >-
-          sed -i
-          -e 's,\(url: https://github.com\)/.*,\1/${{ github.repository }},'
-          -e 's,tag: .*,branch: ${{ github.ref_name }},'
-          -e 's,commit: .*,commit: ${{ github.sha }},'
-          dev/flathub/org.audiveris.audiveris.yml
+      - name: Populate flatpak/flathub
+        uses: gradle/gradle-build-action@v2.7.0
+        with:
+          arguments: --info jpackage
 
       - name: upload flathub archive
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: flathub-data
-          path: dev/flathub/
+          path: flatpak/flathub/
 
   flatpak:
     name: "Flatpak"
     runs-on: ubuntu-latest
 
     container:
-      image: bilelmoussaoui/flatpak-github-actions:gnome-44
+      image: bilelmoussaoui/flatpak-github-actions:gnome-47
       options: --privileged
 
     strategy:
@@ -65,7 +58,7 @@ jobs:
 
     steps:
       - name: download flathub archive
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: flathub-data
 

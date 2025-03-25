@@ -81,18 +81,3 @@ jobs:
           prerelease: true
           files: ./binaries/*
 
-#      - name: Upload ubuntu release assets
-#        uses: actions/upload-release-asset@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step
-#          asset_path: ./all-binaries.tar.gz
-#          asset_name: all-binaries.tar.gz
-#          asset_content_type: application/gzip # application/octet-stream
-#
-#            - name: Loop through files
-#              run: |
-#                for file in $(ls *.txt); do
-#                  echo "Processing $file"
-#                done
