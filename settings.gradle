@@ -14,17 +14,17 @@ include 'app'
 // Installer for Linux
 include 'flatpak'
 
-if (startParameter.projectProperties['isFlatpak'] == 'true') {
-    println "Initialization. isFlatpak is set, skipping useless subprojects"
-} else {
-    println "Initialization. isFlatpak is not set"
-
-    // Installer for Windows
-    include 'windows-installer'
-
-    // Multi-OS packaging
-    include 'packaging'
-
-    // Generation of schema-based documentation
-    include 'schemas'
-}
+//if (startParameter.projectProperties['isFlatpak'] == 'true') {
+//    println "Initialization. isFlatpak is set, skipping useless subprojects"
+//} else {
+//    println "Initialization. isFlatpak is not set"
+//
+//    // Installer for Windows
+//    include 'windows-installer'
+//
+//    // Multi-OS packaging
+//    include 'packaging'
+//
+//    // Generation of schema-based documentation
+//    include 'schemas'
+//}
