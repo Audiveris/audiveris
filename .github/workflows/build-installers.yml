@@ -13,6 +13,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        arch: [x86_64, aarch64]
+      fail-fast: false
 
     steps:
       - name: Checkout code
@@ -40,13 +42,14 @@ jobs:
         id: upload-installer
         uses: actions/upload-artifact@v4
         with:
-          name: installer-${{ matrix.os }}
+          name: installer-${{ matrix.os }}-${{ matrix.arch }}
           path: packaging/build/dist/*
           compression-level: 0
           overwrite: true
 
   # Collect all installers and draft a release with them
   global-upload:
+    if: false   # TEMPORARY
     needs: build-installer
     runs-on: ubuntu-latest
     steps:
