@@ -37,10 +37,10 @@ jobs:
         with:
           arguments: --info initFlathub
 
-      - name: upload flathub archive
+      - name: upload flathub content
         uses: actions/upload-artifact@v4
         with:
-          name: flathub-data
+          name: flathub-content
           path: flatpak/flathub/
 
   flatpak:
@@ -58,10 +58,10 @@ jobs:
       fail-fast: false
 
     steps:
-      - name: download flathub archive
+      - name: download flathub content
         uses: actions/download-artifact@v4
         with:
-          name: flathub-data
+          name: flathub-content
 
       - name: Install docker
         if: ${{ matrix.arch != 'x86_64' }}
@@ -74,10 +74,11 @@ jobs:
         with:
           platforms: arm64
 
-      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+      - name: Build flatpak ${{ github.sha }}
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           build-bundle: true
           bundle: org.audiveris.audiveris.flatpak
           manifest-path: org.audiveris.audiveris.yml
-          cache-key: audiveris-flatpak-${{ github.sha }}
+          cache-key: audiveris-flatpak-key-${{ github.sha }}
           arch: ${{ matrix.arch }}
