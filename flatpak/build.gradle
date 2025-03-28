@@ -79,7 +79,7 @@ task genManifest {
                 binding.GRADLE_URL = "$gradleUrl"
                 binding.GRADLE_NAME = "$gradleName"
                 binding.GRADLE_SHA256 = wrapperProps.getProperty("distributionSha256Sum")
-                binding.TAG = "'" + "$app.ext.tag" + "'"
+                binding.COMMIT = "$app.ext.commit"
                 expand(binding)
             }
             into(flathubDir)

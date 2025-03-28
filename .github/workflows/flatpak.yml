@@ -80,5 +80,5 @@ jobs:
           build-bundle: true
           bundle: org.audiveris.audiveris.flatpak
           manifest-path: org.audiveris.audiveris.yml
-          cache-key: audiveris-flatpak-key-${{ github.sha }}
+          cache-key: audiveris-flatpak-${{ github.sha }}
           arch: ${{ matrix.arch }}

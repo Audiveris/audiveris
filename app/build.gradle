@@ -64,11 +64,9 @@ java {
     sourceCompatibility = JavaLanguageVersion.of(theMinJavaVersion)
 }
 
-// Central location for application version and (flatpak) tag
+// Central location for application version
 project.version = '5.5.0'
-ext.tag         = '5.5.0'
 println "version: ${project.version}"
-println "tag:     ${project.ext.tag}"
 
 // Central location for the specific versions of tesseract dependencies
 ext.jcppVersion     = '1.5.9'
@@ -274,9 +272,21 @@ jar {
     }
 }
 
-// Retrieve the abbreviated hash for the latest commit from Git
-tasks.register('getCommitHash', Exec) {
-    description "Retrieves git latest commit"
+// Retrieve the full hash for the latest commit from Git
+tasks.register('getCommit', Exec) {
+    description "Retrieves full hash of git latest commit"
+    commandLine "git rev-parse HEAD".split(' ')
+    standardOutput = new ByteArrayOutputStream()
+
+    doLast {
+        project.ext.commit = standardOutput.toString().replaceAll('\n', '')
+        println "commit: ${project.ext.commit}"
+    }
+}
+
+// Retrieve the short hash for the latest commit from Git
+tasks.register('getCommitShort', Exec) {
+    description "Retrieves short hash of git latest commit"
     commandLine "git rev-parse --short HEAD".split(' ')
     standardOutput = new ByteArrayOutputStream()
 
@@ -290,7 +300,8 @@ tasks.register('getCommitHash', Exec) {
 tasks.register('generateProgramId') {
     group "build"
     description "Generates the ProgramId source"
-    dependsOn 'getCommitHash'
+    dependsOn 'getCommit'
+    dependsOn 'getCommitShort'
 
     def outputDir = file("build/generated-src/org/audiveris/omr")
     def className = "ProgramId"
