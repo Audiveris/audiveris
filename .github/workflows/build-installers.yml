@@ -7,13 +7,12 @@ permissions:
   contents: write
 
 jobs:
+  # Build an installer for each OS
   build-installer:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        arch: [x86_64, aarch64]
-      fail-fast: false
 
     steps:
       - name: Checkout code
@@ -41,13 +40,13 @@ jobs:
         id: upload-installer
         uses: actions/upload-artifact@v4
         with:
-          name: installer-${{ matrix.os }}-${{ matrix.arch }}
+          name: installer-${{ matrix.os }}
           path: packaging/build/dist/*
           compression-level: 0
           overwrite: true
 
+  # Collect all installers and draft a release with them
   global-upload:
-    if: false   # TEMPORARY
     needs: build-installer
     runs-on: ubuntu-latest
     steps:
@@ -66,7 +65,7 @@ jobs:
           name: installer-windows-latest
           path: ./binaries
 
-      - name: Download macos inslaller
+      - name: Download macos installer
         uses: actions/download-artifact@v4
         with:
           name: installer-macos-latest
@@ -78,9 +77,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Draft 5.5.0
           tag_name: ${{ github.ref }}
+          generate_release_notes: true
           draft: true
           prerelease: true
           files: ./binaries/*
-
