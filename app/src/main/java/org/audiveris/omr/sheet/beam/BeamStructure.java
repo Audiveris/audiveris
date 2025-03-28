@@ -199,9 +199,15 @@ public class BeamStructure
     //---------------------//
     /**
      * Add or extend observed border lines.
+     * <p>
      * Beam items may be merged due to stuck pixels, resulting in missing (portions of) borders.
      * In theory, we should have pairs of top & bottom borders with identical length, each pair
      * corresponding to a beam item.
+     * <p>
+     * Adding the opposite border if it can't be found was meant to allow the processing of beams
+     * with poor borders. But it also led to the creation of a non-existing border in the case of
+     * a way too thick beam candidate.
+     * So, this feature is now conditioned by the "allowBorderCreation" constant.
      *
      * @param yDir        -1 for going upward, +1 downward
      * @param globalSlope global structure slope
@@ -222,14 +228,16 @@ public class BeamStructure
             Entry<Double, Line2D> otherEntry = lookupLine(targetY, otherMap);
 
             if (otherEntry == null) {
-                // Create a brand new map entry
-                otherMap.put(
-                        targetY,
-                        new Line2D.Double(
-                                base.getX1(),
-                                base.getY1() + dy,
-                                base.getX2(),
-                                base.getY2() + dy));
+                if (constants.allowBorderCreation.isSet()) {
+                    // Create a brand new map entry
+                    otherMap.put(
+                            targetY,
+                            new Line2D.Double(
+                                    base.getX1(),
+                                    base.getY1() + dy,
+                                    base.getX2(),
+                                    base.getY2() + dy));
+                }
             } else {
                 // Extend the map entry if needed
                 Line2D other = otherEntry.getValue();
@@ -884,12 +892,16 @@ public class BeamStructure
     {
         private final Constant.Double maxSectionSlopeGap = new Constant.Double(
                 "tangent",
-                0.3, // 0.2,
+                0.3,
                 "Maximum delta slope between sections of same border");
 
         private final Constant.Ratio maxBorderJitter = new Constant.Ratio(
                 0.8,
                 "Maximum border vertical jitter, specified as ratio of typical beam height");
+
+        private final Constant.Boolean allowBorderCreation = new Constant.Boolean(
+                false,
+                "Allow the creation of non-found border");
     }
 
     //---------------//
