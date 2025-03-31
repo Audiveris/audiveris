@@ -479,7 +479,7 @@ public class CLI
          */
         public CliTask (Path path)
         {
-            this.path = path;
+            this.path = path.toAbsolutePath();
 
             String nameSansExt = FileUtil.getNameSansExtension(path);
             String alias = BookManager.getInstance().getAlias(nameSansExt);
