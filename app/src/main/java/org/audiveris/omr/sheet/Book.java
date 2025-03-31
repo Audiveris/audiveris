@@ -2924,7 +2924,13 @@ public class Book
         Book book = null;
 
         try {
-            logger.info("Loading book {}", bookPath);
+            if (!Files.exists(bookPath)) {
+                logger.warn("The file {} does not exist", bookPath);
+                return null;
+            } else {
+                logger.info("Loading book {}", bookPath);
+            }
+
             watch.start("book");
 
             // Open book file
