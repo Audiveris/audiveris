@@ -12,11 +12,7 @@ It is now available in two versions:
     - A web version (the pages you are reading)
     - A PDF version (downloadable via the button below)
 
-{: .d-inline-block }
-new
-{: .label .label-yellow }
-
-[Download the PDF version](https://github.com/Audiveris/audiveris/releases/download/{{ site.audiveris_version }}/Audiveris_Handbook.pdf)
+[Download the PDF version (latest release)](https://github.com/Audiveris/audiveris/releases/latest/download/Audiveris_Handbook.pdf)
 {: .btn .text-center }
 
 ## For the developer

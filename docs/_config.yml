@@ -134,7 +134,7 @@ callouts:
 # ---------------------------------
 
 # Latest Audiveris version
-audiveris_version: 5.4
+audiveris_version: 5.5
 
 # Needed Java version
 java_version: 21

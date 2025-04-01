@@ -17,7 +17,7 @@
 # and can be freely used for non-commercial use.
 #---------------------------------------------------------------------------------------------------
 #
-# This file can be run from the project folder
+# This file can be run directly from the 'app' project folder
 # or preferably via the Gradle task "handbookPdf"
 #
 # If the optional "local" parameter is provided, HTML content is retrieved from
@@ -46,7 +46,7 @@ NAV="$TARGET/nav.html"
 HANDBOOK="$TARGET/Audiveris_Handbook.pdf"
 STYLE="../../../docs/pdf/pdf-nav-style.css"
 
-mkdir $TARGET
+mkdir -p $TARGET
 
 # Populate CORE
 #--------------

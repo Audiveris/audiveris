@@ -41,35 +41,37 @@ On a rather regular basis, typically every 6 to 12 months, a new release is made
 on the dedicated [Audiveris Releases][releases] page.
 
 The goal of a release is to provide significant improvements, well tested and integrated,
-resulting in a software as easy as possible to install and use:
-- for **Windows**, an installer is provided on [Github][releases];  
-The installer comes with the pre-installed Tesseract OCR language ``eng``.  
-But **it requires Java version 21** or higher to be available in your environment.
-If no suitable Java version is found at runtime, a prompt will remind you to install it.
-- for **Linux**, a flatpak package is provided on
-[Flathub](https://flathub.org/apps/org.audiveris.audiveris);  
-The package comes with the pre-installed Tesseract OCR language ``eng``.  
-The needed Java environment is included in its packaging, therefore no Java installation is needed. 
-- for **macOS**, unfortunately, we have nothing similar yet [^macos]
--- for now, you have to build from sources as described in the following section on
-[Development versions](#development-versions).
+resulting in a software as easy as possible to install and use.
 
-See details in the handbook [installation section][installation].
+Since the release 5.5, an installer is provided for each of the main OSes
+(**Windows**, **Linux** and **macOS**) and comes with a pre-installed Java Runtime Environment (JRE).
+You can download any installer file from the **Assets** section, at the end of the chosen release:
+
+| OS name | Installer file extension |
+| :---    | :---   |
+| Windows | `.msi` |
+| Linux   | `.deb` |
+| macOS   | `.dmg` |
+
+Additionally for **Linux**, a _flatpak_ package, also with a suitable JRE included,
+can be installed from the [Flathub] site.
+
+See installers details in the handbook [installation] section.
 
 ## Development versions
 
 The Audiveris project is developed on GitHub, the site you are reading.  
 Any one can clone, build and run this software. 
-The needed tools are ``git``, ``gradle`` and a Java Development Kit (``jdk``),
+The needed tools are `git`, `gradle` and a Java Development Kit (`jdk`),
 as described in the handbook [sources section][sources].
 
 There are two main branches in the Audiveris project:
-- the ``master`` branch is the GitHub default branch;
+- the `master` branch is the GitHub default branch;
 we use it for releases, and only for them;  
-To build from this branch, you will need a ``jdk`` for Java version **21** or higher.
-- the ``development`` branch is the one where all developments continuously take place;
+To build from this branch, you will need a `jdk` for Java version **21** or higher.
+- the `development` branch is the one where all developments continuously take place;
 Periodically, when a release is to be made, we merge the development branch into the master branch;  
-As of this writing, the source code on development branch requires a ``jdk`` for Java version **21**.
+As of this writing, the source code on development branch requires a `jdk` for Java version **21**.
 
 See details in the [Wiki article][workflow] dedicated to the chosen development workflow.
 
@@ -78,9 +80,8 @@ See details in the [Wiki article][workflow] dedicated to the chosen development 
 Users and developers are advised to read the Audiveris [User Handbook][handbook],
 and the more general [Wiki][audiveris-wiki] set of articles.
 
-[^macos]: If you wish to give a hand, you are more than welcome!
-
 [audiveris-wiki]: https://github.com/Audiveris/audiveris/wiki
+[Flathub]:        https://flathub.org/apps/org.audiveris.audiveris
 [handbook]:       https://audiveris.github.io/audiveris/
 [imslp]:          https://imslp.org/
 [installation]:   https://audiveris.github.io/audiveris/_pages/tutorials/install/binaries/
