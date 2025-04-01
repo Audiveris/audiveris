@@ -7,17 +7,20 @@ nav_order: 1
 
 # Installation
 
-## Installers
+## Using installers
+{: .d-inline-block }
+new in 5.5
+{: .label .label-yellow }
 
-For **Windows** and for **Linux**, Audiveris provides installers available in 64-bit version.
- 
-An installer makes the installation simple but has the main drawback of being limited to
-the last official release, which can be several months old.
+For **Windows**, **macOS** and **Linux**, Audiveris provides installers available in 64-bit version.
+
+An installer simplifies installation but has the main disadvantage of being limited
+to the latest official version, which may be several months old.
 
 ## Building from sources
 
-For the major operating systems (**Windows**, **macOS**, **Linux** and **ArchLinux**),
-we have the ability to **clone and build** from the source material.
+For **Windows**, **macOS**, **Linux** and **ArchLinux**,
+you have the ability to **clone and build** from the source material.
 
 The main advantage is to benefit from all the bug fixes and improvements that are
 continuously published on the Audiveris project site in its "development" branch.
