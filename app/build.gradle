@@ -179,7 +179,7 @@ sourceSets {
     main {
         java {
             srcDir 'src/main/java'
-            srcDir layout.buildDirectory.file("generated-src")
+            srcDir 'build/generated-src'
         }
         resources {            
             srcDir 'src/main/java'  

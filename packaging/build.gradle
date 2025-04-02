@@ -117,9 +117,6 @@ tasks.register('macConvertIcons') {
         exec {
             commandLine "touch", "build/Audiveris.icns"
         }
-        exec {
-            commandLine "ls", "-la", "build"
-        }
     }
 
     doLast {println "Icon successfully created at build/Audiveris.icns"}
