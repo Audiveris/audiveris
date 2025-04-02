@@ -102,25 +102,38 @@ However, if we don't modify the code and merely want to launch the
 application we don't need to go through gradle for each and every run.
 
 Because, once we have built the software with the gradle `build` command as stated above,
-we now have a `build/distributions` folder in the repository root with tarred/zipped libraries
-(`Audiveris.tar` and `Audiveris.zip`).
+we now have a `app/build/distributions` subfolder in the project root with tarred/zipped libraries:
 
-We can simply extract either one of the archives:
+```sh
+# This content corresponds to the 5.5.0 version
+app/build/distributions/
+├── app-5.5.0.tar
+└── app-5.5.0.zip
+```
+
+We can simply extract either one of these archives into a folder of our choice:
 
 ```sh
 # Either extract the .tar archive
-tar -xf build/distributions/Audiveris.tar
+tar -xf app/build/distributions/app-5.5.0.tar
 ```
 
 ```sh
 # Or extract the .zip archive
-unzip build/distributions/Audiveris.zip
+unzip app/build/distributions/app-5.5.0.zip
 ```
 
-Then, we can repeatedly run audiveris from those files:
+Then, we can repeatedly run Audiveris from those files,
+appending arguments as desired (`-help` is just used as an example):
+
 ```sh
-# Run audiveris (append arguments if so needed):
-java -cp "Audiveris/lib/*" Audiveris
+# (Linux & Mac, or Cygwin terminal under Windows)
+./app-5.5.0/bin/Audiveris -help
+```
+
+```sh
+# (Windows terminal)
+app-5.5.0\bin\Audiveris.bat -help
 ```
 
 [freetype]: https://www.freetype.org
