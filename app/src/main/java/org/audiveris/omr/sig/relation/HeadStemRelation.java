@@ -142,8 +142,8 @@ public class HeadStemRelation
 
         if (extensionPoint == null) {
             final VerticalSide vSide = (stem.getCenter().y < head.getCenter().y) ? TOP : BOTTOM;
-            final Anchor anchor = (headSide == LEFT)
-                    ? (vSide == TOP ? Anchor.TOP_LEFT_STEM : Anchor.BOTTOM_LEFT_STEM)
+            final Anchor anchor = (headSide == LEFT) ? (vSide == TOP ? Anchor.TOP_LEFT_STEM
+                    : Anchor.BOTTOM_LEFT_STEM)
                     : (vSide == TOP ? Anchor.TOP_RIGHT_STEM : Anchor.RIGHT_STEM);
             extensionPoint = head.getStemReferencePoint(anchor);
         }
@@ -304,8 +304,8 @@ public class HeadStemRelation
      */
     public boolean isInvading ()
     {
-        return (dy <= constants.maxInvadingDy.getValue())
-                && (dx <= constants.maxInvadingDx.getValue());
+        return (dy <= constants.maxInvadingDy.getValue()) && //
+                (dx <= constants.maxInvadingDx.getValue());
     }
 
     //----------------//
@@ -414,7 +414,7 @@ public class HeadStemRelation
         final HeadInter head = (HeadInter) e.getEdgeSource();
         final StemInter stem = (StemInter) e.getEdgeTarget();
 
-        if (stem.isVip()) {
+        if (head.isVip() || stem.isVip()) {
             logger.info("VIP {} unlinked from {}", stem, head);
         }
 
@@ -682,25 +682,25 @@ public class HeadStemRelation
             rightStem = (StemInter) sig.getOppositeInter(head, rightRel);
         }
 
-        // Prefer use of relation extension points over stem physical limits
-        Line2D leftLine = leftStem.computeExtendedLine(head);
-        Line2D rightLine = rightStem.computeExtendedLine(head);
+        // Use stem physical limits rather than relation extension points over
+        final Line2D leftLine = leftStem.getMedian();
+        final Line2D rightLine = rightStem.getMedian();
 
-        Rectangle headBox = head.getBounds();
-        Point headCenter = head.getCenter();
-        double yMidLeft = (leftLine.getY1() + leftLine.getY2()) / 2;
-        double yMidRight = (rightLine.getY1() + rightLine.getY2()) / 2;
+        final Rectangle headBox = head.getBounds();
+        final Point headCenter = head.getCenter();
+        final double yMidLeft = (leftLine.getY1() + leftLine.getY2()) / 2;
+        final double yMidRight = (rightLine.getY1() + rightLine.getY2()) / 2;
 
         if ((headCenter.y >= yMidLeft) || (headCenter.y <= yMidRight)) {
             return false;
         }
 
-        double yLeftExt = (leftRel != null) ? leftRel.getExtensionPoint().getY() : headBox.y;
-        double yRightExt = (rightRel != null) ? rightRel.getExtensionPoint().getY()
+        final double yLeftExt = (leftRel != null) ? leftRel.getExtensionPoint().getY() : headBox.y;
+        final double yRightExt = (rightRel != null) ? rightRel.getExtensionPoint().getY()
                 : ((headBox.y + headBox.height) - 1);
 
-        StemPortion leftPortion = getStemPortion(head, leftLine, yLeftExt);
-        StemPortion rightPortion = getStemPortion(head, rightLine, yRightExt);
+        final StemPortion leftPortion = getStemPortion(head, leftLine, yLeftExt);
+        final StemPortion rightPortion = getStemPortion(head, rightLine, yRightExt);
 
         return (leftPortion == STEM_TOP) && (rightPortion == STEM_BOTTOM);
     }
@@ -712,20 +712,24 @@ public class HeadStemRelation
     private static class Constants
             extends ConstantSet
     {
-        private final Constant.Ratio headSupportCoeff =
-                new Constant.Ratio(4, "Value for (source) head coeff in support formula");
+        private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
+                4,
+                "Value for (source) head coeff in support formula");
 
-        private final Constant.Ratio stemSupportCoeff =
-                new Constant.Ratio(10, "Value for (target) stem coeff in support formula");
+        private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
+                10,
+                "Value for (target) stem coeff in support formula");
 
-        private final Scale.Fraction xInGapMax =
-                new Scale.Fraction(0.2, "Maximum horizontal overlap between stem & head");
+        private final Scale.Fraction xInGapMax = new Scale.Fraction(
+                0.2,
+                "Maximum horizontal overlap between stem & head");
 
         @SuppressWarnings("unused")
         private final Scale.Fraction xInGapMax_p1 = new Scale.Fraction(0.4, "Idem for profile 1");
 
-        private final Scale.Fraction xOutGapMax =
-                new Scale.Fraction(0.15, "Maximum horizontal gap between stem & head");
+        private final Scale.Fraction xOutGapMax = new Scale.Fraction(
+                0.15,
+                "Maximum horizontal gap between stem & head");
 
         @SuppressWarnings("unused")
         private final Scale.Fraction xOutGapMax_p1 = new Scale.Fraction(0.25, "Idem for profile 1");
@@ -733,8 +737,9 @@ public class HeadStemRelation
         @SuppressWarnings("unused")
         private final Scale.Fraction xOutGapMax_p2 = new Scale.Fraction(0.35, "Idem for profile 2");
 
-        private final Scale.Fraction yGapMax =
-                new Scale.Fraction(0.8, "Maximum vertical gap between stem & head");
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
+                0.8,
+                "Maximum vertical gap between stem & head");
 
         @SuppressWarnings("unused")
         private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(1.2, "Idem for profile 1");
@@ -743,13 +748,16 @@ public class HeadStemRelation
                 0.275,
                 "Vertical margin for stem anchor portion (as ratio of head height)");
 
-        private final Scale.Fraction maxInvadingDx =
-                new Scale.Fraction(0.05, "Maximum invading horizontal gap between stem & head");
+        private final Scale.Fraction maxInvadingDx = new Scale.Fraction(
+                0.05,
+                "Maximum invading horizontal gap between stem & head");
 
-        private final Scale.Fraction maxInvadingDy =
-                new Scale.Fraction(0.0, "Maximum invading vertical gap between stem & head");
+        private final Scale.Fraction maxInvadingDy = new Scale.Fraction(
+                0.0,
+                "Maximum invading vertical gap between stem & head");
 
-        private final Scale.Fraction neutralStemLength =
-                new Scale.Fraction(2.8, "Neutral stem length between small and standard");
+        private final Scale.Fraction neutralStemLength = new Scale.Fraction(
+                2.8,
+                "Neutral stem length between small and standard");
     }
 }
