@@ -162,7 +162,9 @@ public class NestView
 
                         // Draw glyph line?
                         if (ViewParameters.getInstance().isLinePainting()) {
+                            g.setColor(Color.GREEN);
                             glyph.renderLine(g);
+                            g.setColor(Color.RED);
                         }
                     }
 
