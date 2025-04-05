@@ -1,3 +1,20 @@
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  s e t t i n g s . g r a d l e                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+//
+// Audiveris project.
+//
+// Sub-projects:
+//      - app               : The application
+//      - flatpak           : The Linux flatpak
+//      - packaging         : The building of installers for Windows, Linux and macOS
+//      - schemas           : The documentation on .omr files
+//      - windows-installer : The (old) installer without JRE for Windows
+//
+//--------------------------------------------------------------------------------------------------
+
 pluginManagement {
   repositories {
     maven { url="app/build/dependencies" }

@@ -4,15 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 //
-// Audiveris root project.
-//
-// Sub-projects:
-//      - app               : The application
-//      - schemas           : The documentation on .omr files
-//      - windows-installer : The installer for Windows OS
-//
-// Sub-modules:
-//      - flatpak           : The Linux flatpak
+// This "app" sub-project handles Audiveris application.
 //
 //--------------------------------------------------------------------------------------------------
 
