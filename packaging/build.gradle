@@ -105,7 +105,7 @@ tasks.register('macConvertIcons') {
             commandLine "ls", "-la", "build/iconset/"
         }
 
-        if (startParameter.projectProperties['skipIcns'] == 'true') {
+        if (gradle.startParameter.projectProperties['skipIcns'] == 'true') {
             // Use an empty "build/Audiveris.icns" file
             exec {
                 commandLine "touch", "build/Audiveris.icns"
