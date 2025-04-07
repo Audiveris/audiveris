@@ -21,10 +21,10 @@
 // macOS requires '[image]magick', 'iconutil', 'lipo'
 //
 // The outputs are in the 'build' folder:
-// - build/jars:        Audiveris.jar, plus all the dependencies .jar files
-// - build/custom-jre:  A shrunk copy of the host Java runtime environment
-// - build/iconset:     Temporary icons for macOS
-// - build/dist:        The installer(s) built
+// - build/jars:            Audiveris.jar, plus all the dependencies .jar files
+// - build/custom-jre:      A shrunk copy of the host Java runtime environment
+// - build/macos.iconset:   Temporary icons for macOS
+// - build/dist:            The installer(s) built
 //--------------------------------------------------------------------------------------------------
 
 plugins {
@@ -74,7 +74,7 @@ tasks.register('macConvertIcons') {
     description "Converting PNG icon to ICNS format"
     doFirst {
         println "Creating .icns file from source icon..."
-        mkdir('build/iconset')
+        mkdir('build/macos.iconset')
     }
 
     doLast {
@@ -91,37 +91,30 @@ tasks.register('macConvertIcons') {
        [16, 32, 64, 128, 256, 512].each {size ->
             exec {
                 commandLine "magick", src, "-resize", "${size}x${size}",\
-                "build/iconset/icon_${size}x${size}.png"
+                "build/macos.iconset/icon_${size}x${size}.png"
             }
            def dbl = size * 2
            exec {
                commandLine "magick", src, "-resize", "${dbl}x${dbl}",\
-                "build/iconset/icon_${size}x${size}@2x.png"
+                "build/macos.iconset/icon_${size}x${size}@2x.png"
            }
         }
 
         // Just to inspect the created icon files
         exec {
-            commandLine "ls", "-la", "build/iconset/"
+            commandLine "ls", "-la", "build/macos.iconset/"
         }
 
-        if (gradle.startParameter.projectProperties['skipIcns'] == 'true') {
-            // Use an empty "build/Audiveris.icns" file
-            exec {
-                commandLine "touch", "build/Audiveris.icns"
-            }
-        } else {
-            // Convert iconset to icns
-            exec {
-                commandLine "iconutil",\
-                        "--convert", "icns",\
-                        "--output", "build/Audiveris.icns",\
-                        "build/iconset"
-            }
+        // Convert macos.iconset to icns
+        exec {
+            commandLine "iconutil",\
+                    "--convert", "icns",\
+                    "--output", "build/Audiveris.icns",\
+                    "build/macos.iconset"
         }
+    
+        println "Icon successfully created at build/Audiveris.icns"
     }
-
-    doLast {println "Icon successfully created at build/Audiveris.icns"}
 }
 
 // Configure the jpackage task
