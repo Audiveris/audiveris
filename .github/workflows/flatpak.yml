@@ -1,4 +1,4 @@
-name: Build audiveris flatpak package
+name: Build flatpak package
 
 # execute this workflow on every push
 #on:
