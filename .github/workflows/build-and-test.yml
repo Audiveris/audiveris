@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   build-and-test:
+    retention: 30 # Keep logs/artifacts for 30 days
     runs-on: ubuntu-latest
     env:
       # TESSDATA_PREFIX: /home/runner/work/audiveris/audiveris/tessdata
