@@ -15,7 +15,7 @@ jobs:
         run: |
           wget https://www.princexml.com/download/prince-16-ubuntu24.04-amd64.tar.gz
           tar -xzvf prince-16-ubuntu24.04-amd64.tar.gz
-          sudo cp prince-16-ubuntu24.04-amd64/prince /usr/local/bin/
+          sudo ./prince-16-ubuntu24.04-amd64/install.sh
 
       - name: Verify PrinceXML Installation
         run: prince --version
