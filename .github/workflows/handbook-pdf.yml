@@ -1,0 +1,24 @@
+name: Build handbook PDF
+
+on:
+  - workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PrinceXML
+        run: |
+          wget https://www.princexml.com/download/prince-16-ubuntu24.04-amd64.tar.gz
+          tar -xzvf prince-16-ubuntu24.04-amd64.tar.gz
+          sudo cp prince-16-ubuntu24.04-amd64/prince /usr/local/bin/
+
+      - name: Verify PrinceXML Installation
+        run: prince --version
+
+      - name: Generate PDF
+        run: docs/pdf/pdf-build.sh
