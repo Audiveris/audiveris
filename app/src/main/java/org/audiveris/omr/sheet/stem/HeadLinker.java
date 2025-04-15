@@ -347,18 +347,37 @@ public class HeadLinker
                         linked = true;
                     }
                 } else {
-                    // Here, there seems to be potential connections on both vertical sides
-                    // So, stop processing this head immediately for both horizontal sides
-                    // But stay open to a link coming later (from above or below)
-                    Set<HorizontalSide> hSides = undefs.get(head);
+                    // Here, there seems to be potential connections on both vertical sides.
+                    // - If the connections relate to the same glyph, then the head is not an end.
+                    //      So, stop processing this head immediately for both horizontal sides
+                    //      But stay open to a link coming later (from above or below)
+                    // - If the connections relate to different glyphs, one is wrong
+                    //      and we choose the standard connection (topRight or bottomLeft)
+                    if (clTop.stump != null && clTop.stump == clBot.stump) {
+                        Set<HorizontalSide> hSides = undefs.get(head);
 
-                    if (hSides == null) {
-                        undefs.put(head, hSides = EnumSet.noneOf(HorizontalSide.class));
+                        if (hSides == null) {
+                            undefs.put(head, hSides = EnumSet.noneOf(HorizontalSide.class));
+                        }
+
+                        hSides.add(hSide);
+
+                        return false;
                     }
-
-                    hSides.add(hSide);
-
-                    return false;
+                    switch (hSide) {
+                        case LEFT -> {
+                            if (clBot.link(stemProfile, linkProfile, append)) {
+                                logger.debug("{} linked", clBot);
+                                linked = true;
+                            }
+                        }
+                        case RIGHT -> {
+                            if (clTop.link(stemProfile, linkProfile, append)) {
+                                logger.debug("{} linked", clTop);
+                                linked = true;
+                            }
+                        }
+                    }
                 }
             } else if (botOk) {
                 if (clBot.link(stemProfile, linkProfile, append)) {
@@ -388,14 +407,18 @@ public class HeadLinker
             for (SLinker sLinker : sLinkers.values()) {
                 if (sLinker.isLinked()) {
                     for (Relation rel : sig.getRelations(head, HeadStemRelation.class)) {
-                        final StemInter stem = (StemInter) sig.getOppositeInter(head, rel);
+                        final HeadStemRelation hsRel = (HeadStemRelation) rel;
 
-                        for (Relation r : sig.getRelations(stem, HeadStemRelation.class)) {
-                            final HeadInter h = (HeadInter) sig.getOppositeInter(stem, r);
+                        if (hsRel.getHeadSide() == sLinker.hSide) {
+                            final StemInter stem = (StemInter) sig.getOppositeInter(head, rel);
 
-                            if (h != head) {
-                                for (SLinker sl : h.getLinker().sLinkers.values()) {
-                                    sl.setClosed(true);
+                            for (Relation r : sig.getRelations(stem, HeadStemRelation.class)) {
+                                final HeadInter h = (HeadInter) sig.getOppositeInter(stem, r);
+
+                                if (h != head) {
+                                    for (SLinker sl : h.getLinker().sLinkers.values()) {
+                                        sl.setClosed(true);
+                                    }
                                 }
                             }
                         }

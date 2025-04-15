@@ -4,15 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 //
-// Audiveris root project.
-//
-// Sub-projects:
-//      - app               : The application
-//      - schemas           : The documentation on .omr files
-//      - windows-installer : The installer for Windows OS
-//
-// Sub-modules:
-//      - flatpak           : The Linux flatpak
+// This "app" sub-project handles Audiveris application.
 //
 //--------------------------------------------------------------------------------------------------
 
@@ -65,7 +57,7 @@ java {
 }
 
 // Central location for application version
-project.version = '5.5.0'
+project.version = '5.5.1'
 println "version: ${project.version}"
 
 // Central location for the specific versions of tesseract dependencies

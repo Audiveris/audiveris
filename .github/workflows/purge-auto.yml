@@ -1,8 +1,11 @@
 name: Periodic purge of workflow runs
 on:
   schedule:
+    # Run monthly, at 00:00 on the 1st day of month.
     - cron: '0 0 1 * *'
-# Run monthly, at 00:00 on the 1st day of month.
+
+  workflow_dispatch:
+    # Can also run manually on demand
 
 jobs:
   del_runs:
