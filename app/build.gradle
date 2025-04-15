@@ -57,7 +57,7 @@ java {
 }
 
 // Central location for application version
-project.version = '5.5.0'
+project.version = '5.5.1'
 println "version: ${project.version}"
 
 // Central location for the specific versions of tesseract dependencies
