@@ -102,9 +102,16 @@ To uninstall the program, open `Windows Settings`
 Remark: A double-click on the `.deb` installer file would result in the opening of the `App Center`
 which would choke on audiveris being potentially unsafe, etc.
 
-Instead, in a terminal, use a command like:
+Instead, in a terminal, use commands like:
 ```sh
 $ sudo dpkg --install /path/to/audiveris_5.5.0_amd64.deb
+$ sudo apt-get install -f # To fix dependencies
+```
+
+
+Or you can simply use a command like:
+```sh
+$ sudo apt install /path/to/audiveris_5.5.0_amd64.deb
 ```
 
 This installs the application in the target folder:
