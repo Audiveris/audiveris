@@ -193,7 +193,7 @@ Since the app is not signed, macOS will block it by default. Follow these steps 
 
 2. **Adjust Privacy Settings**
     - Open **System Preferences** (or **System Settings** on macOS Ventura and later):
-        - Click the Apple menu () > **System Preferences** > **Security & Privacy** > **General** tab.
+        - Click the Apple menu (&#63743;) > **System Preferences** > **Security & Privacy** > **General** tab.
     - At the bottom, you’ll see a message: *“Audiveris” was blocked from use because it is not from an identified developer.*
     - Click **"Open Anyway"** to allow the app to run.
 
