@@ -24,11 +24,11 @@ jobs:
           ../docs/pdf/pdf-build.sh
           
       - name: Verify generated pdf
-        run: ls -l ./build/pdf
+        run: ls -l ./app/build/pdf
         
       - name: Upload handbook PDF
         uses: actions/upload-artifact@v4
         with:
-          path: ./build/pdf/*.pdf
+          path: ./app/build/pdf/*.pdf
           compression-level: 0
           overwrite: true
