@@ -20,14 +20,15 @@ jobs:
       - name: Generate PDF from Audiveris github pages
         run: |
           chmod +x ./docs/pdf/pdf-build.sh
-          ./docs/pdf/pdf-build.sh
+          cd ./app
+          ../docs/pdf/pdf-build.sh
           
       - name: Verify generated pdf
-        run: ls -l ./app/build/pdf
+        run: ls -l ./build/pdf
         
       - name: Upload handbook PDF
         uses: actions/upload-artifact@v4
         with:
-          path: ./app/build/pdf/*.pdf
+          path: ./build/pdf/*.pdf
           compression-level: 0
           overwrite: true
