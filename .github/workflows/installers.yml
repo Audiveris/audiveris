@@ -62,17 +62,17 @@ jobs:
       - name: Generate PDF
         run: |
           chmod +x ./docs/pdf/pdf-build.sh
-          cd ./app
-          ../docs/pdf/pdf-build.sh
+          cd ./docs
+          ./pdf/pdf-build.sh
           
       - name: Verify generated pdf
-        run: ls -l ./app/build/pdf
+        run: ls -l ./docs/build/pdf
         
       - name: Upload handbook PDF
         uses: actions/upload-artifact@v4
         with:
           name: handbook
-          path: ./app/build/pdf/*.pdf
+          path: ./docs/build/pdf/*.pdf
           compression-level: 0
           overwrite: true
 
