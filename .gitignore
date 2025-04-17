@@ -44,6 +44,8 @@ data/train/*.zip
 data/train/*.csv
 data/www/docs/api
 data/www/docs/guides
+docs/build
+docs/build/*
 packaging/build
 packaging/build/*
 packaging/.gradle/*

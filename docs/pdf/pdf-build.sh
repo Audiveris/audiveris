@@ -20,7 +20,7 @@
 # This file can be run directly from the 'app' project folder
 # or preferably via the Gradle task "handbookPdf"
 #
-# If the optional "local" parameter is provided, HTML content is retrieved from
+# If the optional "localhost" parameter is provided, HTML content is retrieved from
 # a local generator found at http://localhost:4000
 # Otherwise, it is retrieved from GitHub Audiveris at https://audiveris.github.io
 #
@@ -44,7 +44,7 @@ CORE="$TARGET/core.html"
 CATALOG="$TARGET/catalog.txt"
 NAV="$TARGET/nav.html"
 HANDBOOK="$TARGET/Audiveris_Handbook.pdf"
-STYLE="../../../docs/pdf/pdf-nav-style.css"
+STYLE="../../pdf/pdf-nav-style.css"
 
 mkdir -p $TARGET
 
@@ -58,8 +58,8 @@ mkdir -p $TARGET
 curl -sk $PREFIX/audiveris/_pages/handbook/ |\
 grep -o -P '<nav .*?</nav>' |\
 head -1 |\
-perl -pe 's|<button .*?</button>||g' |\
-sed -E "s|/audiveris/_pages/|$PREFIX/audiveris/_pages/|g" > $CORE
+perl -pe 's,<button .*?</button>,,g' |\
+sed -E "s,/audiveris/_pages/,$PREFIX/audiveris/_pages/,g" > $CORE
 
 # Populate catalog.txt
 #---------------------
@@ -72,9 +72,9 @@ echo "$NAV" > $CATALOG
 # 1/ sed injects a line break in front of every URL PREFIX
 # 2/ sed deletes from each line the " character and everything that follows, leaving the clean URL
 # 3/ tail deletes the first line, which contains a lonely <NAV> tag
-sed "s|$PREFIX|\n$PREFIX|g" $CORE | sed "s/\".*//g" | tail +2 >> $CATALOG
+sed "s,$PREFIX,\n$PREFIX,g" $CORE | sed "s,\".*,,g" | tail +2 >> $CATALOG
 
-# Populate NAV (header with proper style sheet for navigation, then core stuff)
+# Populate NAV (header with proper style sheet for navigation, then core stuff, then footer)
 #-------------
 echo "<!DOCTYPE html>" > $NAV
 echo "<html>" >> $NAV
@@ -86,8 +86,9 @@ echo "<body>" >> $NAV
 
 cat $CORE >> $NAV
 
+echo "</body>" >> $NAV
 echo "</html>" >> $NAV
 
 # Use Prince to build the PDF
 #----------------------------
-prince --input-list=$CATALOG -o $HANDBOOK
+prince --no-warn-css --page-size=legal --input-list=$CATALOG -o $HANDBOOK
