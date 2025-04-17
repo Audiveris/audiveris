@@ -30,13 +30,20 @@ Table of Contents
 {:toc}
 ---
 
-## Pre-installed languages
+## No preinstalled languages
 
-Starting from version 5.4, no languages ​​are installed by default.
-(except for the Windows installer which only preinstalls the English language).
+Recent history:
 
-At launch, Audiveris checks the installed language collection and issues a warning if this collection is empty.
+- In version 5.4, no languages ​​were installed by default,
+except for the old Windows installer without JRE, which preinstalled English.
 
+- In version 5.5, the old Windows installer without JRE was discontinued
+and a specific installer, including the JRE, was provided for each operating system
+(Windows, Linux, and macOS).
+No languages ​​are preinstalled for these new installers.
+
+At launch, Audiveris checks the list of installed languages 
+​and issues a warning if this list is empty.
 In interactive mode, the following warning dialog is displayed:
 
 ![](../../assets/images/no_languages.png)
@@ -48,11 +55,11 @@ in the meantime, we can still process the input scores, but the TEXTS step will 
 
 ## Installing languages
 
-Prior to the 5.4 release, the end user was left alone to manually download data
+Prior to version 5.4, the end user was left alone to manually download data
 files from the Tesseract web site into a local folder.
 This resulted in recurring errors.[^errors]
 
-Starting from the 5.4 release, Audiveris offers a convenient way to install OCR languages
+Starting from version 5.4, Audiveris offers a convenient way to install OCR languages
 *interactively* from within the application.
 
 The preferred method is to add languages via the {{ site.tools_languages }} pull-down menu.  
