@@ -83,12 +83,11 @@ tasks.register('macConvertIcons') {
             commandLine "brew", "install", "imagemagick"
         }
 
-        ///def src = "$appDir/res/icon-256.png"
         def src = "$appDir/src/main/java/org/audiveris/omr/ui/resources/icon-256.png"
 
         // Generate different icon sizes
         // Including retina displays (@2x)
-       [16, 32, 64, 128, 256, 512].each {size ->
+        [16, 32, 64, 128, 256, 512].each {size ->
             exec {
                 commandLine "magick", src, "-resize", "${size}x${size}",\
                 "build/macos.iconset/icon_${size}x${size}.png"
@@ -189,14 +188,6 @@ tasks.jpackage {
             }
             type = installerType
         }
-
-        doLast {
-            def dir = layout.projectDirectory.dir(destination)
-            def defaultDmg = "${app.ext.programName}-${app.version}.dmg"
-            def archDmg = "${app.ext.programName}-${app.version}-${app.ext.hostOSArch}.dmg"
-            println "Renaming ${defaultDmg} to ${dir}/${archDmg}"
-            file("${dir}/${defaultDmg}").renameTo(file("${dir}/${archDmg}"))
-        }
     }
 
     linux {
@@ -209,6 +200,24 @@ tasks.jpackage {
                 throw new RuntimeException("Error: Illegal installerType for Linux: " + installerType)
             }
             type = installerType
+        }
+    }
+
+    doLast {
+        // Append host name and architecture to artifact name
+        def dir = layout.projectDirectory.dir(destination)
+
+        dir.eachFile { file ->
+            def oldName = "${file.name}"
+            def dot = oldName.lastIndexOf('.');
+            def suffix = oldName.substring(dot)
+            def newName = "${app.ext.programName}-${app.version}-${app.ext.hostOSName}-${app.ext.hostOSArch}$suffix"
+            def newFile = dir.toPath().resolve("${newName}").toFile()
+
+            println "oldFile: ${file}"
+            println "newFile: ${newFile}"
+            def result = file.renameTo(newFile)
+            println "Success: $result"
         }
     }
 }
