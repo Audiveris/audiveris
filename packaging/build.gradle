@@ -189,6 +189,14 @@ tasks.jpackage {
             }
             type = installerType
         }
+
+        doLast {
+            def dir = layout.projectDirectory.dir(destination)
+            def defaultDmg = "${app.ext.programName}-${app.version}.dmg"
+            def archDmg = "${app.ext.programName}-${app.version}-${app.ext.hostOSArch}.dmg"
+            println "Renaming ${defaultDmg} to ${dir}/${archDmg}"
+            file("${dir}/${defaultDmg}").renameTo(file("${dir}/${archDmg}"))
+        }
     }
 
     linux {
