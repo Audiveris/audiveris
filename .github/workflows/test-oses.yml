@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, macos-15, macos-12, macos-12-amd64]
+        os: [macos-latest, macos-15, macos-12, macos-12-amd64, macos-15-x86_64, macos-12-x86_64]
 
     steps:
       - run: echo hostOS is ${{ matrix.os }}
