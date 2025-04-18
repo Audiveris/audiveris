@@ -36,6 +36,7 @@ plugins {
 }
 
 import org.panteleyev.jpackage.ImageType
+import java.nio.file.Paths
 
 // Pointers to the 'app' sibling sub-project
 def app     = project(':app')
@@ -206,13 +207,13 @@ tasks.jpackage {
     doLast {
         // Append host name and architecture to artifact name
         def dir = layout.projectDirectory.dir(destination)
-
-        dir.eachFile { file ->
+        
+        fileTree(dir).each { file ->
             def oldName = "${file.name}"
             def dot = oldName.lastIndexOf('.');
             def suffix = oldName.substring(dot)
             def newName = "${app.ext.programName}-${app.version}-${app.ext.hostOSName}-${app.ext.hostOSArch}$suffix"
-            def newFile = dir.toPath().resolve("${newName}").toFile()
+            def newFile = Paths.get("$dir", newName).toFile()
 
             println "oldFile: ${file}"
             println "newFile: ${newFile}"
