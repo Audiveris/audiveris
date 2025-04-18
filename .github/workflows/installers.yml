@@ -12,7 +12,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest, macos-latest-large]
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-13]
+        # macos-latest is for Apple Silicon (arm64) support, and
+        # macos-13 is for legacy Intel (x64) hardware support
 
     steps:
       - name: Checkout code
