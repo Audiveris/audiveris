@@ -73,6 +73,12 @@ jobs:
           name: installer-macos-latest
           path: ./binaries
 
+      - name: Download (old) macos installer
+        uses: actions/download-artifact@v4
+        with:
+          name: installer-macos-13
+          path: ./binaries
+
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
