@@ -12,7 +12,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-13]
+        # macos-latest is for Apple Silicon (arm64) support, and
+        # macos-13 is for legacy Intel (x64) hardware support
 
     steps:
       - name: Checkout code
@@ -100,6 +102,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: installer-macos-latest
+          path: ./artifacts
+
+      - name: Download (old) macos installer
+        uses: actions/download-artifact@v4
+        with:
+          name: installer-macos-13
           path: ./artifacts
 
       - name: Download handbook
