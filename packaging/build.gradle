@@ -36,6 +36,7 @@ plugins {
 }
 
 import org.panteleyev.jpackage.ImageType
+import java.nio.file.Paths
 
 // Pointers to the 'app' sibling sub-project
 def app     = project(':app')
@@ -83,7 +84,6 @@ tasks.register('macConvertIcons') {
             commandLine "brew", "install", "imagemagick"
         }
 
-        ///def src = "$appDir/res/icon-256.png"
         def src = "$appDir/src/main/java/org/audiveris/omr/ui/resources/icon-256.png"
 
         // Generate different icon sizes
@@ -201,6 +201,24 @@ tasks.jpackage {
                 throw new RuntimeException("Error: Illegal installerType for Linux: " + installerType)
             }
             type = installerType
+        }
+    }
+
+    doLast {
+        // Append host name and architecture to artifact name
+        def dir = layout.projectDirectory.dir(destination)
+        
+        fileTree(dir).each { file ->
+            def oldName = "${file.name}"
+            def dot = oldName.lastIndexOf('.');
+            def suffix = oldName.substring(dot)
+            def newName = "${app.ext.programName}-${app.version}-${app.ext.hostOSName}-${app.ext.hostOSArch}$suffix"
+            def newFile = Paths.get("$dir", newName).toFile()
+
+            println "oldFile: ${file}"
+            println "newFile: ${newFile}"
+            def result = file.renameTo(newFile)
+            println "Success: $result"
         }
     }
 }
