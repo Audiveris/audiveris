@@ -13,12 +13,22 @@ jobs:
 
       - name: Install PrinceXML
         run: |
-          wget https://www.princexml.com/download/prince-16-ubuntu24.04-amd64.tar.gz
-          tar -xzvf prince-16-ubuntu24.04-amd64.tar.gz
-          sudo cp prince-16-ubuntu24.04-amd64/prince /usr/local/bin/
+          wget https://www.princexml.com/download/prince_16-1_ubuntu24.04_amd64.deb
+          sudo apt install ./prince_16-1_ubuntu24.04_amd64.deb
+          prince --version
 
-      - name: Verify PrinceXML Installation
-        run: prince --version
-
-      - name: Generate PDF
-        run: docs/pdf/pdf-build.sh
+      - name: Generate PDF from Audiveris github pages
+        run: |
+          chmod +x ./docs/pdf/pdf-build.sh
+          cd ./docs
+          ./pdf/pdf-build.sh
+          
+      - name: Verify generated pdf
+        run: ls -l ./docs/build/pdf
+        
+      - name: Upload handbook PDF
+        uses: actions/upload-artifact@v4
+        with:
+          path: ./docs/build/pdf/*.pdf
+          compression-level: 0
+          overwrite: true

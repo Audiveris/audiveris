@@ -57,7 +57,7 @@ java {
 }
 
 // Central location for application version
-project.version = '5.5.1'
+project.version = '5.6.0'
 println "version: ${project.version}"
 
 // Central location for the specific versions of tesseract dependencies
@@ -353,27 +353,6 @@ tasks.register('debug', JavaExec) {
 //---------------
 // Documentation
 //---------------
-
-// Generate a PDF version of handbook
-tasks.register('deletePdf', Delete) {
-    delete "build/pdf"
-}
-
-tasks.register('handbookPdf', Exec) {
-    group "documentation"
-    description "Generates the PDF version of handbook from GitHub"
-    dependsOn('deletePdf')
-    workingDir = projectDir
-    commandLine 'sh', '../docs/pdf/pdf-build.sh'
-}
-
-tasks.register('handbookPdfLocalhost', Exec) {
-    group "documentation"
-    description "Generates the PDF version of handbook from local host"
-    dependsOn('deletePdf')
-    workingDir = projectDir
-    commandLine 'sh', '../docs/pdf/pdf-build.sh', 'localhost'
-}
 
 javadoc {
     title = "${project.ext.programName}-${project.version} API"

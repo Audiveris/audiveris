@@ -8,10 +8,10 @@
 //
 // Sub-projects:
 //      - app               : The application
+//      - docs              : The handbook documentation
 //      - flatpak           : The Linux flatpak
 //      - packaging         : The building of installers for Windows, Linux and macOS
 //      - schemas           : The documentation on .omr files
-//      - windows-installer : The (old) installer without JRE for Windows
 //
 //--------------------------------------------------------------------------------------------------
 
@@ -36,8 +36,8 @@ if (startParameter.projectProperties['isFlatpak'] == 'true') {
 } else {
     println "Initialization. isFlatpak is not set"
 
-    // Installer for Windows
-    include 'windows-installer'
+    // Documentation
+    include 'docs'
 
     // Multi-OS packaging
     include 'packaging'

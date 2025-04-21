@@ -47,9 +47,40 @@ jobs:
           compression-level: 0
           overwrite: true
 
-  # Collect all installers and draft a release with them
+  # Build the handbook PDF from Audiveris github pages
+  build-handbook:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PrinceXML
+        run: |
+          wget https://www.princexml.com/download/prince_16-1_ubuntu24.04_amd64.deb
+          sudo apt install ./prince_16-1_ubuntu24.04_amd64.deb
+          prince --version
+
+      - name: Generate PDF
+        run: |
+          chmod +x ./docs/pdf/pdf-build.sh
+          cd ./docs
+          ./pdf/pdf-build.sh
+          
+      - name: Verify generated pdf
+        run: ls -l ./docs/build/pdf
+        
+      - name: Upload handbook PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: handbook
+          path: ./docs/build/pdf/*.pdf
+          compression-level: 0
+          overwrite: true
+
+  # Collect all artifacts and draft a release with them
   global-upload:
-    needs: build-installer
+    needs: [build-installer, build-handbook]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -59,19 +90,31 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: installer-ubuntu-latest
-          path: ./binaries
+          path: ./artifacts
 
       - name: Download windows installer
         uses: actions/download-artifact@v4
         with:
           name: installer-windows-latest
-          path: ./binaries
+          path: ./artifacts
 
       - name: Download macos installer
         uses: actions/download-artifact@v4
         with:
           name: installer-macos-latest
-          path: ./binaries
+          path: ./artifacts
+
+      - name: Download (old) macos installer
+        uses: actions/download-artifact@v4
+        with:
+          name: installer-macos-13
+          path: ./artifacts
+
+      - name: Download handbook
+        uses: actions/download-artifact@v4
+        with:
+          name: handbook
+          path: ./artifacts
 
       - name: Download (old) macos installer
         uses: actions/download-artifact@v4
@@ -89,4 +132,4 @@ jobs:
           generate_release_notes: true
           draft: true
           prerelease: true
-          files: ./binaries/*
+          files: ./artifacts/*
