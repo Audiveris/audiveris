@@ -31,19 +31,30 @@ on the Tesseract site and for installing them in the user environment.
 
 The installers files can be downloaded from the assets of a recent release 
 available on the Audiveris [releases page](https://github.com/Audiveris/audiveris/releases).
-For example, the assets of the [5.5.0 release](https://github.com/Audiveris/audiveris/releases/tag/5.5.0)
+
+The name of each installer file is formatted as:
+```
+ Audiveris-<version>-<OS>-<Architecture>
+```
+
+For example, the assets of the [5.5.3 release](https://github.com/Audiveris/audiveris/releases/tag/5.5.3)
 contain these files:
 
 | File name | Size | Role |
 | :---      | :--- | :--- |
-| **Audiveris-5.5.0.dmg** | 65.7 MB | macOS installer |
-| **Audiveris-5.5.0.msi** | 66 MB   | Windows installer |
-| **audiveris_5.5.0_amd64.deb** | 64.6 MB | Linux installer |
+| **Audiveris-5.5.3-macosx-arm64.dmg** | 66.4 MB | macOS installer (arm64 architecture) |
+| **Audiveris-5.5.3-macosx-x86_64.dmg** | 68.1 MB | macOS installer (x86_64 architecture) |
+| **Audiveris-5.5.3-windows-x86_64.msi** | 66.2 MB   | Windows installer |
+| **Audiveris-5.5.3-linux-x86_64.deb** | 62.5 MB | Linux installer |
+
+Notice that, for macOS, two different installers are provided:
+- One for the `arm64` architecture
+- One for the `x86_64` architecture
 
 The downloaded installer file will then be used to install the application in the target OS, 
 as detailed in the following sections.
 
-Beside these three installers, Audiveris provides a fourth installer
+Beside these installers, Audiveris provides an additional installer
 -- actually a **Linux/Flatpak** package -- also with a suitable JRE included.
 This package can be installed directly from the
 [Flathub](https://flathub.org/apps/org.audiveris.audiveris) site.
@@ -56,7 +67,7 @@ See the [OCR languages](../../guides/main/languages.md) section.
 
 ### Installation
 
-Double-click the `Audiveris-<version>.msi` file in your `Downloads` folder (or wherever it’s saved).
+Double-click the `Audiveris-<version>-windows-x86_64.msi` file in your `Downloads` folder (or wherever it’s saved).
 
 | Action | Dialog |
 | :--- | :--- |
@@ -104,7 +115,7 @@ which would choke on audiveris being potentially unsafe, etc.
 
 Instead, in a terminal, use a command like:
 ```sh
-$ sudo apt install /path/to/audiveris_5.5.0_amd64.deb
+$ sudo apt install /path/to/Audiveris-<version>-linux-x86_64.deb
 ```
 
 This installs the application in the target folder:
@@ -170,11 +181,11 @@ This section explains how to install and run the Audiveris application on macOS 
 
 ### Installation
 
-1. **Obtain the DMG File**
-    - Download or receive the `Audiveris-<version>.dmg` file (e.g., `Audiveris-5.5.0.dmg`) from the source (e.g., a contributor or repository release).
+1. **Obtain the proper DMG File for your architecture**
+    - Download or receive the proper `.dmg` file, that is either  `Audiveris-<version>-macosx-arm64.dmg` or  `Audiveris-<version>-macosx-x86_64.dmg`, from the source (e.g., a contributor or repository release).
 
 2. **Open the DMG**
-    - Double-click the `Audiveris-<version>.dmg` file in your `Downloads` folder (or wherever it’s saved). This mounts the installer as a virtual disk on your desktop or in Finder.
+    - Double-click the chosen `.dmg` file. This mounts the installer as a virtual disk on your desktop or in Finder.
 
 3. **Install the Application**
     - Inside the mounted DMG, you’ll see `Audiveris.app`. Drag this file to your **Applications** folder to install it.
