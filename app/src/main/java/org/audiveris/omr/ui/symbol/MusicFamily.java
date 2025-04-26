@@ -46,6 +46,9 @@ public enum MusicFamily
     Leland("Leland", "Leland.otf", Bravura, new LelandSymbols()),
 
     /** Alternate family, some symbols missing. */
+    Primus("Primus", "Primus.ttf", Bravura, new PrimusSymbols()),
+
+    /** Alternate family, some symbols missing. */
     FinaleJazz("Finale Jazz", "FinaleJazz.otf", Bravura, new FinaleJazzSymbols()),
 
     /** Alternate family, for percussion symbols. */
