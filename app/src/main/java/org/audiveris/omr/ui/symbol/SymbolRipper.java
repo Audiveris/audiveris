@@ -51,6 +51,7 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.TextLayout;
@@ -58,6 +59,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Locale;
 
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -143,6 +146,15 @@ public class SymbolRipper
     // Font name
     private LSpinner fontName = new LSpinner("Font", "Name of the font");
 
+    private final JButton printButton = new JButton(new AbstractAction()
+    {
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            FontPrintOut.printFont((String) fontName.getSpinner().getValue());
+        }
+    });
+
     // Font base
     private IntegerListSpinner fontBase = new IntegerListSpinner();
 
@@ -202,6 +214,8 @@ public class SymbolRipper
                 new SpinnerListModel(
                         GraphicsEnvironment.getLocalGraphicsEnvironment()
                                 .getAvailableFontFamilyNames()));
+        printButton.setText("Generate font PDF");
+        printButton.setToolTipText("Generate the PDF of all font symbols");
 
         pointCode.setModel(new SpinnerNumberModel(0x1d100, 0, 0x1d1ff, 1));
 
@@ -350,7 +364,7 @@ public class SymbolRipper
     //---------------//
     private JPanel getParamPanel ()
     {
-        final FormLayout layout = Panel.makeFormLayout(14, 2, "right:", "35dlu", "45dlu");
+        final FormLayout layout = Panel.makeFormLayout(16, 2, "right:", "35dlu", "45dlu");
         FormBuilder builder = FormBuilder.create().layout(layout).panel(new Panel());
         int r = 1; // --------------------------------
         builder.addSeparator("Font").xyw(1, r, 7);
@@ -358,6 +372,9 @@ public class SymbolRipper
         r += 2; // --------------------------------
         builder.addRaw(fontName.getLabel()).xy(1, r);
         builder.addRaw(fontName.getSpinner()).xyw(3, r, 5);
+
+        r += 2; // --------------------------------
+        builder.addRaw(printButton).xyw(3, r, 5);
 
         r += 2; // --------------------------------
         builder.addLabel("Base").xy(1, r);
