@@ -640,7 +640,7 @@ public class SampleSheet
         //----------------//
         /**
          * {@inheritDoc}
-         * Rename the old flag shapes.
+         * Rename the old shapes.
          */
         @SuppressWarnings("unused")
         private void afterUnmarshal (Unmarshaller um,
@@ -659,6 +659,7 @@ public class SampleSheet
                         case FLAG_3_UP -> modified |= sample.renameShapeAs(Shape.FLAG_3_DOWN);
                         case FLAG_4_UP -> modified |= sample.renameShapeAs(Shape.FLAG_4_DOWN);
                         case FLAG_5_UP -> modified |= sample.renameShapeAs(Shape.FLAG_5_DOWN);
+                        case STRONG_ACCENT -> modified |= sample.renameShapeAs(Shape.MARCATO);
                         default -> {}
                     }
                 }

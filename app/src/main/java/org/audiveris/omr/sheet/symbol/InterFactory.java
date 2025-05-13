@@ -399,7 +399,8 @@ public class InterFactory
             case TENUTO:
             case STACCATO:
             case STACCATISSIMO:
-            case STRONG_ACCENT:
+            case MARCATO:
+            case MARCATO_BELOW:
                 return switches.getValue(ProcessingSwitch.articulations) ? ArticulationInter
                         .createValidAdded(glyph, shape, grade, system, systemHeadChords) : null;
 
@@ -434,9 +435,11 @@ public class InterFactory
             // Dynamics
             case DYNAMICS_P:
             case DYNAMICS_PP:
+            case DYNAMICS_PPP:
             case DYNAMICS_MP:
             case DYNAMICS_F:
             case DYNAMICS_FF:
+            case DYNAMICS_FFF:
             case DYNAMICS_MF:
             case DYNAMICS_FP:
             case DYNAMICS_SF:
@@ -1045,7 +1048,8 @@ public class InterFactory
             case TENUTO:
             case STACCATO:
             case STACCATISSIMO:
-            case STRONG_ACCENT:
+            case MARCATO:
+            case MARCATO_BELOW:
                 return new ArticulationInter(null, shape, GRADE); // No visit
 
             // Markers
@@ -1070,9 +1074,11 @@ public class InterFactory
             // Dynamics
             case DYNAMICS_P:
             case DYNAMICS_PP:
+            case DYNAMICS_PPP:
             case DYNAMICS_MP:
             case DYNAMICS_F:
             case DYNAMICS_FF:
+            case DYNAMICS_FFF:
             case DYNAMICS_MF:
             case DYNAMICS_FP:
             case DYNAMICS_SF:

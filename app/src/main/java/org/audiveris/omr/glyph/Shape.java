@@ -235,7 +235,8 @@ public enum Shape
     ACCENT,
     TENUTO,
     STACCATISSIMO,
-    STRONG_ACCENT("Marcato"),
+    MARCATO,
+    MARCATO_BELOW,
     ARPEGGIATO,
 
     //
@@ -255,9 +256,11 @@ public enum Shape
     //    DYNAMICS_SFPP,
     DYNAMICS_P("Piano"),
     DYNAMICS_PP("Pianissimo"),
+    DYNAMICS_PPP("Pianississimo"),
     DYNAMICS_MP("Mezzo piano"),
     DYNAMICS_F("Forte"),
     DYNAMICS_FF("Fortissimo"),
+    DYNAMICS_FFF("Fortississimo"),
     DYNAMICS_MF("Mezzo forte"),
     DYNAMICS_FP("FortePiano"),
     DYNAMICS_SF("Subito forte"),
@@ -523,7 +526,8 @@ public enum Shape
     FLAG_5_UP("OBSOLETE Quintuple flag up"),
     FERMATA_DOT("Fermata dot"),
     FERMATA_ARC("Fermata arc, without dot"),
-    FERMATA_ARC_BELOW("Fermata arc below, without dot");
+    FERMATA_ARC_BELOW("Fermata arc below, without dot"),
+    STRONG_ACCENT("Marcato");
 
     // =============================================================================================
     // This is the end of shape enumeration
@@ -847,6 +851,38 @@ public enum Shape
         final FontSymbol fs = getFontSymbol(family);
 
         return (fs != null) ? fs.symbol : null;
+    }
+
+    //---------//
+    // isAbove //
+    //---------//
+    /**
+     * Report whether this shape is always located above the related staff/head
+     *
+     * @return true if above
+     */
+    public boolean isAbove ()
+    {
+        return switch (this) {
+            case CODA, DAL_SEGNO, DA_CAPO, FERMATA, MARCATO, SLUR_ABOVE -> true;
+            default -> false;
+        };
+    }
+
+    //---------//
+    // isBelow //
+    //---------//
+    /**
+     * Report whether this shape is always located below the related staff/head
+     *
+     * @return true if below
+     */
+    public boolean isBelow ()
+    {
+        return switch (this) {
+            case FERMATA_BELOW, MARCATO_BELOW, PEDAL_MARK, PEDAL_UP_MARK, SLUR_BELOW -> true;
+            default -> false;
+        };
     }
 
     //-------------//

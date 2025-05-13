@@ -111,6 +111,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Class <code>SigReducer</code> deals with SIG reduction.
@@ -439,6 +440,27 @@ public class SigReducer
     //        }
     //    }
     //
+
+    //----------------//
+    // checkAbnormals //
+    //----------------//
+    /**
+     * Remove the abnormal inters.
+     *
+     * @return the count of modifications done
+     */
+    private int checkAbnormals ()
+    {
+        logger.debug("S#{} checkAbnormals", system.getId());
+
+        final Set<Inter> toRemove = sig.vertexSet().stream() //
+                .filter(inter -> inter.isAbnormal()) //
+                .filter(inter -> !inter.isManual()) //
+                .collect(Collectors.toSet());
+        toRemove.forEach(inter -> inter.remove());
+
+        return toRemove.size();
+    }
 
     //-----------------------//
     // checkAugmentationDots //
@@ -905,7 +927,7 @@ public class SigReducer
         final List<Inter> allHeads = sig.inters(ShapeSet.Heads);
         Collections.sort(allHeads, Inters.byAbscissa);
 
-        final List<LedgerInter> toDelete = new ArrayList<>();
+        int removedLedgers = 0;
         boolean modified;
 
         do {
@@ -929,12 +951,14 @@ public class SigReducer
                     final List<LedgerInter> lineLedgers = new ArrayList<>(entry.getValue());
 
                     for (LedgerInter ledger : lineLedgers) {
-                        if (!ledgerHasHeadOrLedger(staff, index, ledger, allHeads)) {
+                        if (!ledger.isRemoved() //
+                                && !ledgerHasHeadOrLedger(staff, index, ledger, allHeads)) {
                             if (ledger.isVip()) {
                                 logger.info("VIP deleting orphan ledger {}", ledger);
                             }
 
                             ledger.remove();
+                            removedLedgers++;
                             modified = true;
                         }
                     }
@@ -942,13 +966,7 @@ public class SigReducer
             }
         } while (modified);
 
-        if (!toDelete.isEmpty()) {
-            for (LedgerInter ledger : toDelete) {
-                ledger.remove(); // This updates the ledgerMap in relevant staves
-            }
-        }
-
-        return fixedLedgers + toDelete.size();
+        return fixedLedgers + removedLedgers;
     }
 
     //--------------------//
@@ -2263,6 +2281,9 @@ public class SigReducer
         public int checkConsistencies ()
         {
             int modifs = 0;
+
+            modifs += checkAbnormals();
+            deleted.addAll(contextualizeAndPurge());
 
             modifs += checkRomans();
             deleted.addAll(contextualizeAndPurge());

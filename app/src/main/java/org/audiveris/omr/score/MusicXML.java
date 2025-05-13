@@ -73,19 +73,8 @@ public abstract class MusicXML
      * <p>
      * NOTA: If this array is modified, check method {@link #getNoteTypeName(Rational) accordingly.
      */
-    private static final String[] noteTypeNames = new String[]
-    {
-            "256th",
-            "128th",
-            "64th",
-            "32nd",
-            "16th",
-            "eighth",
-            "quarter",
-            "half",
-            "whole",
-            "breve",
-            "long" };
+    private static final String[] noteTypeNames = new String[] { "256th", "128th", "64th", "32nd",
+            "16th", "eighth", "quarter", "half", "whole", "breve", "long" };
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -169,11 +158,14 @@ public abstract class MusicXML
         return switch (shape) {
             case DOT_set, STACCATO -> factory.createArticulationsStaccato(ep);
             case ACCENT -> factory.createArticulationsAccent(ep);
-            case STRONG_ACCENT -> {
-                // Type for strong accent: either up (^) or down (v)
-                // For the time being we recognize only up ones
+            case MARCATO -> {
                 final StrongAccent strongAccent = factory.createStrongAccent();
                 strongAccent.setType(UpDown.UP);
+                yield factory.createArticulationsStrongAccent(strongAccent);
+            }
+            case MARCATO_BELOW -> {
+                final StrongAccent strongAccent = factory.createStrongAccent();
+                strongAccent.setType(UpDown.DOWN);
                 yield factory.createArticulationsStrongAccent(strongAccent);
             }
             case TENUTO -> factory.createArticulationsTenuto(ep);
@@ -206,7 +198,7 @@ public abstract class MusicXML
         return switch (shape) {
             case DYNAMICS_F -> factory.createDynamicsF(empty);
             case DYNAMICS_FF -> factory.createDynamicsFf(empty);
-            //        case DYNAMICS_FFF -> factory.createDynamicsFff(empty);
+            case DYNAMICS_FFF -> factory.createDynamicsFff(empty);
             //        case DYNAMICS_FFFF -> factory.createDynamicsFfff(empty);
             //        case DYNAMICS_FFFFF -> factory.createDynamicsFffff(empty);
             //        case DYNAMICS_FFFFFF ->factory.createDynamicsFfffff(empty);
@@ -216,7 +208,7 @@ public abstract class MusicXML
             case DYNAMICS_MP -> factory.createDynamicsMp(empty);
             case DYNAMICS_P -> factory.createDynamicsP(empty);
             case DYNAMICS_PP -> factory.createDynamicsPp(empty);
-            //        case DYNAMICS_PPP -> factory.createDynamicsPpp(empty);
+            case DYNAMICS_PPP -> factory.createDynamicsPpp(empty);
             //        case DYNAMICS_PPPP -> factory.createDynamicsPppp(empty);
             //        case DYNAMICS_PPPPP -> factory.createDynamicsPpppp(empty);
             //        case DYNAMICS_PPPPPP -> factory.createDynamicsPppppp(empty);

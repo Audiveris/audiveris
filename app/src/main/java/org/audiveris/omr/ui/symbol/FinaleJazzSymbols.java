@@ -90,7 +90,7 @@ public class FinaleJazzSymbols
             case DOUBLE_SHARP -> ints(0xE263);
             case DYNAMICS_F -> ints(0xE522);
             case DYNAMICS_FF -> ints(0xE52F);
-            //        case DYNAMICS_FFF -> ints(0xE530);
+            case DYNAMICS_FFF -> ints(0xE530);
             //        case DYNAMICS_FZ -> ints(0xE535);
             //        case DYNAMICS_FFFF -> ints(0xE531);
             //        case DYNAMICS_FFFFF -> ints(0xE532);
@@ -100,7 +100,7 @@ public class FinaleJazzSymbols
             case DYNAMICS_MP -> ints(0xE52C);
             case DYNAMICS_P -> ints(0xE520);
             case DYNAMICS_PP -> ints(0xE52B);
-            //        case DYNAMICS_PPP -> ints(0xE52A);
+            case DYNAMICS_PPP -> ints(0xE52A);
             //        case DYNAMICS_PPPP -> ints(0xE529);
             //        case DYNAMICS_PPPPP -> ints(0xE528);
             //        case DYNAMICS_PPPPPP -> ints(0xE527);
@@ -210,7 +210,7 @@ public class FinaleJazzSymbols
             case STACCATO -> ints(0xE4A2);
             case STAFF_LINES -> ints(0xE014); // 0xE01A in Bravura
             case STEM -> ints(0xE210);
-            case STRONG_ACCENT -> ints(0xE4AC);
+            case MARCATO -> ints(0xE4AC);
 
             case TENUTO -> ints(0xE4A4);
             ///case THICK_BARLINE -> ints(0xE034);

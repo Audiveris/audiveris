@@ -536,6 +536,7 @@ public class Sheet
                     case FLAG_3_UP -> modified |= inter.renameShapeAs(Shape.FLAG_3_DOWN);
                     case FLAG_4_UP -> modified |= inter.renameShapeAs(Shape.FLAG_4_DOWN);
                     case FLAG_5_UP -> modified |= inter.renameShapeAs(Shape.FLAG_5_DOWN);
+                    case STRONG_ACCENT -> modified |= inter.renameShapeAs(Shape.MARCATO);
                     default -> {}
                 }
             }

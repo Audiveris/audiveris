@@ -382,7 +382,7 @@ public class ShapeSet
     public static final ShapeSet Articulations = new ShapeSet(
             ACCENT,
             Colors.SCORE_MODIFIERS,
-            shapesOf(ACCENT, TENUTO, STACCATO, STACCATISSIMO, STRONG_ACCENT));
+            shapesOf(ACCENT, TENUTO, STACCATO, STACCATISSIMO, MARCATO, MARCATO_BELOW));
 
     public static final ShapeSet Attributes = new ShapeSet(
             PEDAL_MARK,
@@ -426,9 +426,11 @@ public class ShapeSet
             shapesOf(
                     DYNAMICS_P,
                     DYNAMICS_PP,
+                    DYNAMICS_PPP,
                     DYNAMICS_MP,
                     DYNAMICS_F,
                     DYNAMICS_FF,
+                    DYNAMICS_FFF,
                     DYNAMICS_MF,
                     DYNAMICS_FP,
                     DYNAMICS_SF,
