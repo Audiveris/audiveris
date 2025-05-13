@@ -25,6 +25,7 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.score.LogicalPart;
+import org.audiveris.omr.score.MidiAbstractions;
 import org.audiveris.omr.score.PageNumber;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.PartRef;
@@ -52,6 +53,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -67,9 +69,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -80,6 +86,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
@@ -135,6 +142,11 @@ public class LogicalPartsEditor
     /** Icon for status unlocked. */
     private static final Icon unlockedIcon = resources.getIcon("unlockedIcon");
 
+    /** Name of properties linked to canClose dialog. */
+    private static final String CAN_CLOSE_TITLE = resources.getString("canClose.title");
+
+    private static final String CAN_CLOSE_PROMPT = resources.getString("canClose.prompt");
+
     /** The root component. */
     private final JDialog dialog;
 
@@ -175,7 +187,7 @@ public class LogicalPartsEditor
 
         // Non-modal dialog
         dialog = new JDialog(OMR.gui.getFrame(), null, false);
-        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         // To avoid memory leak when user closes dialog via the upper right cross
         dialog.addWindowListener(new WindowAdapter()
@@ -183,8 +195,10 @@ public class LogicalPartsEditor
             @Override
             public void windowClosing (WindowEvent we)
             {
-                score.setLogicalsEditor(null);
-                dialog.dispose();
+                if (canClose()) {
+                    score.setLogicalsEditor(null);
+                    dialog.dispose();
+                }
             }
         });
 
@@ -201,6 +215,11 @@ public class LogicalPartsEditor
         for (LogicalPart logical : score.getLogicalParts()) {
             model.logicals.add(logical.copy());
         }
+
+        // Wire the custom renderer and editor to the Midi column
+        final TableColumn column = table.getColumnModel().getColumn(Header.Midi.ordinal());
+        column.setCellRenderer(new JListTableCellRenderer());
+        column.setCellEditor(new JListTableCellEditor());
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -243,8 +262,8 @@ public class LogicalPartsEditor
         buttonPane.setInsets(10, 10, 10, 10);
 
         // NOTA: Changing a name here implies to change the name of the corresponding method
-        final String[] actions = new String[]
-        { "add", "duplicate", "remove", "moveUp", "moveDown", "save", "lock" };
+        final String[] actions = new String[] { "add", "duplicate", "remove", "moveUp", "moveDown",
+                "save", "lock" };
 
         final StringBuilder rowSpec = new StringBuilder();
         for (int i = 0; i < actions.length; i++) {
@@ -275,6 +294,38 @@ public class LogicalPartsEditor
         return buttonPane;
     }
 
+    /**
+     * Check whether the editor can be closed.
+     *
+     * @return true if so
+     */
+    public boolean canClose ()
+    {
+        if (isModified()) {
+            final int answer = JOptionPane.showConfirmDialog(
+                    dialog,
+                    CAN_CLOSE_TITLE,
+                    CAN_CLOSE_PROMPT,
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+            switch (answer) {
+                case JOptionPane.CANCEL_OPTION -> {
+                    return false;
+                }
+                case JOptionPane.YES_OPTION -> {
+                    save(null);
+                    return true;
+                }
+                case JOptionPane.NO_OPTION -> {
+                    return true;
+                }
+                default -> {}
+            }
+        }
+
+        return true;
+    }
+
     private boolean checkDownEnabled ()
     {
         final int row = table.getSelectedRow();
@@ -299,13 +350,13 @@ public class LogicalPartsEditor
         dialog.setName("LogicalPartsEditor"); // For SAF life cycle
 
         // Alternate color for zebra appearance
-        final Color zebraColor = new Color(248, 248, 255);
+        final Color zebraColor = new Color(230, 230, 255);
         UIManager.put("Table.alternateRowColor", zebraColor);
 
         // LogicalPart's table
         JScrollPane scrollPane = new JScrollPane(table);
         table.setShowGrid(true);
-        table.setRowHeight(30);
+        table.setRowHeight(25);
         table.setIntercellSpacing(new Dimension(10, 5));
         table.setFillsViewportHeight(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -639,11 +690,6 @@ public class LogicalPartsEditor
     private static class Constants
             extends ConstantSet
     {
-        private final Constant.Integer maxMidi = new Constant.Integer(
-                "id",
-                128,
-                "Maximum MIDI program number");
-
         private final Constant.Integer maxLineCount = new Constant.Integer(
                 "count",
                 6,
@@ -659,7 +705,7 @@ public class LogicalPartsEditor
         Staves(25),
         Name(80),
         Abbrev(30),
-        Midi(20);
+        Midi(110);
 
         public final int width; // Preferred column width
 
@@ -761,10 +807,34 @@ public class LogicalPartsEditor
         }
 
         /**
+         * Report the JList for a Midi cell, with the program id pre-selected if any.
+         *
+         * @param logical the logical part involved
+         * @return the populated JList
+         */
+        private JList<Object> getProgramList (LogicalPart logical)
+        {
+            final JList<Object> list = new JList<>(MidiAbstractions.getAnnotatedNames());
+            list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+            Integer program = logical.getMidiProgram();
+
+            if (program == null) {
+                program = logical.getDefaultProgram();
+            }
+
+            if (program != null) {
+                list.setSelectedIndex(program - 1);
+            }
+
+            return list;
+        }
+
+        /**
          * Report what will be the new id (that is the rank) for the provided logical.
          *
          * @param logical provided logical
-         * @return its rank in model logicals
+         * @return its rank in model logical's
          */
         public int getRank (LogicalPart logical)
         {
@@ -775,6 +845,35 @@ public class LogicalPartsEditor
         public int getRowCount ()
         {
             return size();
+        }
+
+        /**
+         * Report the JScrollPane instance for the Midi cell of a provided logical.
+         *
+         * @param table the table
+         * @param value the cell value
+         * @param row   the logical row
+         * @return the corresponding JScrollPane
+         */
+        public JScrollPane getScrollPane (Object value,
+                                          int row)
+        {
+            final JList list = (JList) value;
+            final JScrollPane scrollPane = new JScrollPane(list);
+
+            final LogicalPart logical = get(row);
+            Integer program = logical.getMidiProgram();
+
+            if (program == null) {
+                program = logical.getDefaultProgram();
+            }
+
+            if (program != null) {
+                list.setSelectedIndex(program - 1);
+                list.ensureIndexIsVisible(program - 1);
+            }
+
+            return scrollPane;
         }
 
         @Override
@@ -788,7 +887,7 @@ public class LogicalPartsEditor
                 case Staves -> StaffConfig.toCsvString(logical.getStaffConfigs());
                 case Name -> logical.getName();
                 case Abbrev -> logical.getAbbreviation();
-                case Midi -> logical.getMidiProgram();
+                case Midi -> getProgramList(logical);
             };
         }
 
@@ -825,32 +924,33 @@ public class LogicalPartsEditor
         {
             final LogicalPart logical = get(row);
             final Header header = Header.values()[col];
-            logger.debug("setValueAt row:{} col:{} value:{}", row, col, value);
+            logger.debug("setValueAt row: {} col: {} value: {}", row, col, value);
 
             switch (header) {
                 case Name -> {
-                    final String newName = (String) value;
-                    logical.setName(newName);
+                    final String newName = ((String) value).trim();
+
+                    if (!newName.equals(logical.getName())) {
+                        logical.setName(newName);
+                        setModified(true);
+                    }
                 }
                 case Abbrev -> {
-                    final String newAbbrev = (String) value;
-                    logical.setAbbreviation(newAbbrev);
+                    final String newAbbrev = ((String) value).trim();
+
+                    if (!newAbbrev.equals(logical.getAbbreviation())) {
+                        logical.setAbbreviation(newAbbrev);
+                        setModified(true);
+                    }
                 }
                 case Midi -> {
-                    final String newMidi = (String) value;
-                    if (newMidi.isBlank()) {
-                        logical.setMidiProgram(null);
-                    } else {
-                        try {
-                            final int midi = Integer.decode(newMidi);
-                            if (midi < 1 || midi > constants.maxMidi.getValue()) {
-                                logger.warn("Illegal midi value: {}", midi);
-                            } else {
-                                logical.setMidiProgram(midi);
-                            }
-                        } catch (NumberFormatException ex) {
-                            logger.warn("Illegal midi value: '{}'", newMidi);
-                        }
+                    final String newMidi = ((String) value).trim();
+                    final Integer newProgram = MidiAbstractions.getProgramId(newMidi);
+
+                    if (!newProgram.equals(logical.getMidiProgram())) {
+                        logger.debug("newMidi: {}", newMidi);
+                        logical.setMidiProgram(newProgram);
+                        setModified(true);
                     }
                 }
                 case Staves -> {
@@ -870,15 +970,16 @@ public class LogicalPartsEditor
                             try {
                                 final StaffConfig config = StaffConfig.decode(token);
                                 final int count = config.count;
+
                                 if (count < 1 || count > constants.maxLineCount.getValue()) {
-                                    logger.warn("Illegal count value: '{}'", count);
+                                    logger.warn("Illegal staff line count value: '{}'", count);
                                     ok = false;
                                     break;
                                 }
 
                                 newConfigs.add(config);
                             } catch (Exception ex) {
-                                logger.warn("Illegal config: '{}'", token);
+                                logger.warn("Illegal staff config: '{}'", token);
                                 ok = false;
                                 break;
                             }
@@ -887,17 +988,83 @@ public class LogicalPartsEditor
 
                     if (ok) {
                         logical.setStaffConfigs(newConfigs);
+                        setModified(true);
                     }
                 }
             }
 
             fireTableCellUpdated(row, col);
-            setModified(true);
         }
 
         public int size ()
         {
             return logicals.size();
+        }
+    }
+
+    //------------------------//
+    // JListTableCellRenderer //
+    //------------------------//
+    /**
+     * Specific renderer for any Midi cell.
+     */
+    private class JListTableCellRenderer
+            extends DefaultTableCellRenderer
+    {
+        @Override
+        public Component getTableCellRendererComponent (JTable table,
+                                                        Object value,
+                                                        boolean isSelected,
+                                                        boolean hasFocus,
+                                                        int row,
+                                                        int column)
+        {
+            logger.debug("\ngetTableCellRendererComponent row: {}", row);
+            return ((MyTableModel) table.getModel()).getScrollPane(value, row);
+        }
+    }
+
+    //----------------------//
+    // JListTableCellEditor //
+    //----------------------//
+    /**
+     * Specific editor for any Midi cell.
+     */
+    private class JListTableCellEditor
+            extends DefaultCellEditor
+    {
+        /** This is the MIDI JList of the latest selected row. */
+        JList list;
+
+        @SuppressWarnings("unchecked")
+        public JListTableCellEditor ()
+        {
+            super(new JComboBox(MidiAbstractions.getAnnotatedNames()));
+        }
+
+        @Override
+        public Object getCellEditorValue ()
+        {
+            return list.getSelectedValue();
+        }
+
+        // Select a new row
+        @Override
+        public Component getTableCellEditorComponent (JTable table,
+                                                      Object value,
+                                                      boolean isSelected,
+                                                      int row,
+                                                      int column)
+        {
+            logger.debug("\ngetTableCellEditorComponent row: {}", row);
+            final JScrollPane scrollPane = ((MyTableModel) table.getModel()).getScrollPane(
+                    value,
+                    row);
+
+            // Memorize the JList to be able to retrieve its selected value
+            list = (JList) scrollPane.getViewport().getView();
+
+            return scrollPane;
         }
     }
 }

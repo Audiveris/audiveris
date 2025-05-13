@@ -30,7 +30,9 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.plugin.Plugin;
 import org.audiveris.omr.plugin.PluginsManager;
+import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ui.BookParameters;
+import org.audiveris.omr.score.ui.LogicalPartsEditor;
 import org.audiveris.omr.score.ui.SheetScaling;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
@@ -1792,6 +1794,14 @@ public class BookActions
      */
     public static boolean checkStored (Book book)
     {
+        // Check the book scores
+        for (Score score : book.getScores()) {
+            final LogicalPartsEditor editor = score.getLogicalsEditor();
+            if (editor != null && !editor.canClose()) {
+                return false;
+            }
+        }
+
         final String bookStatus = book.isModified() ? resources.getString("modified")
                 : (book.isUpgraded() ? resources.getString("upgraded") : null);
 
