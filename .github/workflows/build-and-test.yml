@@ -52,10 +52,8 @@ jobs:
         uses: gradle/gradle-build-action@v2.7.0
         with:
           arguments: build -x test
-          retention-days: 30
 
       - name: Unit-Test Audiveris
         uses: gradle/gradle-build-action@v2.7.0
         with:
           arguments: test
-          retention-days: 30
