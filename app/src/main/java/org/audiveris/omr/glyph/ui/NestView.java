@@ -274,7 +274,7 @@ public class NestView
 //            g.setColor(Colors.SENTENCE_GAPS);
 //
 //            FontInfo font = sentence.getMeanFont();
-//            double height = font.pointsize * 0.4f; // TODO: Explain this 0.4
+//            double height = font.pointSize * 0.4f; // TODO: Explain this 0.4
 //
 //            TextWord prevWord = null;
 //

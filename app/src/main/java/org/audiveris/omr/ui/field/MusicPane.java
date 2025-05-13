@@ -86,7 +86,6 @@ public class MusicPane
      * @param tip         the related tool tip text
      * @param musicFamily the music family to be used initially
      * @param textFamily  the text family to be used
-     * @see #setFamilies(MusicFamily)
      */
 
     public MusicPane (boolean editable,

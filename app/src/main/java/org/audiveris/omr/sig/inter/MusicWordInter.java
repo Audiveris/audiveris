@@ -272,8 +272,8 @@ public class MusicWordInter
                             0));
         }
 
-        final MusicFont textFont = new MusicFont(fontInfo);
-        final TextLayout layout = textFont.layout(value);
+        final MusicFont musicFont = new MusicFont(fontInfo);
+        final TextLayout layout = musicFont.layout(value);
         final Rectangle2D rect = layout.getBounds();
 
         return new Rectangle(

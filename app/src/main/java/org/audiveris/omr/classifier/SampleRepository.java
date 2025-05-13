@@ -42,6 +42,7 @@ import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.symbol.TextFont;
@@ -443,7 +444,7 @@ public class SampleRepository
         if (textSymbol != null) {
             final TextFont font = TextFont.getBaseFontBySize(
                     family,
-                    MusicFont.getPointSize(STANDARD_INTERLINE));
+                    OmrFont.getPointSize(STANDARD_INTERLINE));
             sample = SymbolSample.create(shape, textSymbol, font, STANDARD_INTERLINE);
             sample.setSymbol(true);
         } else {

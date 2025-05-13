@@ -427,7 +427,7 @@ public class TextLine
      */
     private int getMaxCharGap (TextWord word)
     {
-        int pointSize = word.getFontInfo().pointsize;
+        int pointSize = word.getFontInfo().pointSize;
 
         // TODO: very rough value to be refined and explained!
         int val = (int) Math.rint((constants.maxCharDx.getValue() * pointSize) / 2.0);
@@ -480,7 +480,7 @@ public class TextLine
                         underlinedCount += length;
                     }
 
-                    if (info.isMonospace) {
+                    if (info.isMonospaced) {
                         monospaceCount += length;
                     }
 
@@ -500,7 +500,7 @@ public class TextLine
                         boldCount >= quorum, // isBold,
                         italicCount >= quorum, // isItalic,
                         underlinedCount >= quorum, // isUnderlined,
-                        monospaceCount >= quorum, // isMonospace,
+                        monospaceCount >= quorum, // isMonospaced,
                         serifCount >= quorum, // isSerif,
                         smallcapsCount >= quorum, // isSmallcaps,
                         (int) Math.rint((double) sizeTotal / charCount),
@@ -690,10 +690,10 @@ public class TextLine
         for (TextWord word : getWords()) {
             final FontInfo fontInfo = word.getFontInfo();
 
-            if (fontInfo.pointsize > maxFontSize) {
+            if (fontInfo.pointSize > maxFontSize) {
                 logger.debug(
                         "   too big font {} vs {} on {}",
-                        fontInfo.pointsize,
+                        fontInfo.pointSize,
                         maxFontSize,
                         this);
 
@@ -710,7 +710,7 @@ public class TextLine
     public void mergeStandardWords ()
     {
         final int minWordDx = (int) Math.rint(
-                getMeanFont().pointsize * constants.minWordDxFontRatio.getValue());
+                getMeanFont().pointSize * constants.minWordDxFontRatio.getValue());
         final List<TextWord> toAdd = new ArrayList<>();
         final List<TextWord> toRemove = new ArrayList<>();
 
@@ -820,7 +820,7 @@ public class TextLine
         }
 
         // Standard line, adapt inter-word gap to font size
-        int pointSize = getMeanFont().pointsize;
+        int pointSize = getMeanFont().pointSize;
 
         return (int) Math.rint(constants.maxWordDxFontRatio.getValue() * pointSize);
     }

@@ -28,7 +28,6 @@ import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.symbol.OmrFont;
-import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StringUtil;
@@ -247,25 +246,22 @@ public class TextWord
     /**
      * Adjust font size precisely according to underlying bounds.
      *
-     * @param family the text family selected for the related sheet
      * @return true if OK, false if no font modification was performed
      */
-    public boolean adjustFontSize (TextFamily family)
+    public boolean adjustFontSize ()
     {
         // Discard one-char words, they are not reliable
         if (getLength() <= 1) {
             return false;
         }
 
-        final int style = (fontInfo.isBold ? Font.BOLD : 0) | (fontInfo.isItalic ? Font.ITALIC : 0);
-        final TextFont font = new TextFont(family.getFontName(), null, style, fontInfo.pointsize);
-
+        final TextFont font = TextFont.getBestFont(fontInfo);
         final int fontSize = font.computeSize(getValue(), getBounds().getSize());
-        final double ratio = (double) fontSize / fontInfo.pointsize;
+        final double ratio = (double) fontSize / fontInfo.pointSize;
 
         if (ratio < constants.minFontRatio.getSourceValue() //
                 || ratio > constants.maxFontRatio.getSourceValue()) {
-            logger.info("   Abnormal font ratio {} {}", String.format("%.2f", ratio), this);
+            logger.debug("   Abnormal font ratio {} {}", String.format("%.2f", ratio), this);
 
             return false;
         }

@@ -284,6 +284,7 @@ public class TesseractOrder
             return null;
         }
 
+        // WARNING: The retrieved fontName is not reliable enough
         final String fontName = bp.getString();
 
         if (fontName == null) {
@@ -298,7 +299,7 @@ public class TesseractOrder
                 is_serif.get(),
                 is_smallcaps.get(),
                 pointSize.get(),
-                fontName);
+                null); // No fontName is provided at this time
     }
 
     //----------//
@@ -336,7 +337,7 @@ public class TesseractOrder
 
                 // Start of word?
                 if (it.IsAtBeginningOf(RIL_WORD)) {
-                    FontInfo fontInfo = getFont(it);
+                    final FontInfo fontInfo = getFont(it);
 
                     if (fontInfo == null) {
                         logger.debug("No font info on {}", label);

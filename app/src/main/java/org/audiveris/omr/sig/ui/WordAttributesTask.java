@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                    W o r d V a l u e T a s k                                   //
+//                               W o r d A t t r i b u t e s T a s k                              //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2024. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -24,36 +24,36 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.sig.inter.WordInter;
 
 /**
- * Class <code>WordValueTask</code> handles the text value update of a word.
+ * Class <code>WordAttributesTask</code> handles the font attributes update of a word.
  *
  * @author Hervé Bitteur
  */
-public class WordValueTask
+public class WordAttributesTask
         extends InterTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Old word content. */
-    private final String oldValue;
+    /** Old word font attributes. */
+    private final String oldAttrs;
 
-    /** New word content. */
-    private final String newValue;
+    /** New word font attributes. */
+    private final String newAttrs;
 
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>WordValueTask</code> object.
+     * Creates a new <code>WordAttributesTask</code> object.
      *
      * @param word     the word to modify
-     * @param newValue new word value
+     * @param newAttrs new font attributes
      */
-    public WordValueTask (WordInter word,
-                          String newValue)
+    public WordAttributesTask (WordInter word,
+                               String newAttrs)
     {
-        super(word.getSig(), word, word.getBounds(), null, "wordValue");
-        this.newValue = newValue;
+        super(word.getSig(), word, word.getBounds(), null, "wordAttributes");
+        this.newAttrs = newAttrs;
 
-        oldValue = word.getValue();
+        oldAttrs = word.getFontInfo().getAttributesSpec();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -67,7 +67,7 @@ public class WordValueTask
     @Override
     public void performDo ()
     {
-        getInter().setValue(newValue);
+        getInter().setFontAttributes(newAttrs);
         getInter().freeze();
 
         sheet.getInterIndex().publish(getInter());
@@ -76,8 +76,7 @@ public class WordValueTask
     @Override
     public void performUndo ()
     {
-        getInter().setValue(oldValue);
-
+        getInter().setFontAttributes(oldAttrs);
         sheet.getInterIndex().publish(getInter());
     }
 
@@ -86,8 +85,8 @@ public class WordValueTask
     {
         StringBuilder sb = new StringBuilder(actionName);
         sb.append(" ").append(inter);
-        sb.append(" from \"").append(oldValue).append("\"");
-        sb.append(" to \"").append(newValue).append("\"");
+        sb.append(" from \"").append(oldAttrs).append("\"");
+        sb.append(" to \"").append(newAttrs).append("\"");
 
         return sb.toString();
     }

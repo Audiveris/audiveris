@@ -148,9 +148,9 @@ public class TextSymbol
         TextFamily theTextFamily = textFamily;
 
         if (theTextFamily == null) {
-            theTextFamily = TextFont.getCurrentFamily();
-            if (theTextFamily == null)
-                theTextFamily = TextFamily.SansSerif;
+            //            theTextFamily = TextFont.getCurrentFamily();
+            //            if (theTextFamily == null)
+            theTextFamily = TextFamily.SansSerif;
         }
 
         final int fontSize = (int) Math.rint(font.getSize2D() * RATIO_TINY);

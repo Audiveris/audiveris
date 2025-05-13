@@ -127,7 +127,7 @@ public enum MusicFamily
             }
         }
 
-        if (value.equalsIgnoreCase("generic")) {
+        if ((value == null) || value.equalsIgnoreCase("generic")) {
             return MusicFamily.Bravura;
         }
 

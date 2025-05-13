@@ -46,8 +46,8 @@ import org.audiveris.omr.ui.dnd.ScreenPoint;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
-import static org.audiveris.omr.ui.symbol.MusicFont.getPointSize;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.util.Panel;
@@ -573,7 +573,7 @@ public class ShapeBoard
         final int zoomedInterline = (int) Math.rint(zoom.getRatio() * interline);
         final FontSymbol fs = shape.getFontSymbolByInterline(
                 fontFamily,
-                getPointSize(zoomedInterline));
+                MusicFont.getPointSize(zoomedInterline));
 
         if (fs.symbol == null) {
             logger.warn("No symbol for non-draggable shape");

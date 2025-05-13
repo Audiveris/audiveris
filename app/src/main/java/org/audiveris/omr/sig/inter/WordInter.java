@@ -33,12 +33,12 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.text.FontAttributes;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.text.TextWord;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
-import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.symbol.TextSymbol;
 import org.audiveris.omr.util.Jaxb;
@@ -233,8 +233,8 @@ public class WordInter
                                MusicFont font,
                                Point dropLocation)
     {
-        TextSymbol textSymbol = (TextSymbol) symbol;
-        Model model = textSymbol.getModel(font, dropLocation);
+        final TextSymbol textSymbol = (TextSymbol) symbol;
+        final Model model = textSymbol.getModel(font, dropLocation);
         setValue(model.value);
         fontInfo = model.fontInfo;
         location = new Point2D.Double(model.baseLoc.getX(), model.baseLoc.getY());
@@ -277,9 +277,10 @@ public class WordInter
                             0));
         }
 
-        TextFont textFont = new TextFont(fontInfo);
-        TextLayout layout = textFont.layout(value);
-        Rectangle2D rect = layout.getBounds();
+        // Use the best suitable font, based on word fontInfo
+        final TextFont textFont = TextFont.getBestFont(fontInfo);
+        final TextLayout layout = textFont.layout(value);
+        final Rectangle2D rect = layout.getBounds();
 
         return new Rectangle(
                 bounds = new Rectangle(
@@ -423,16 +424,29 @@ public class WordInter
         this.fontInfo = fontInfo;
     }
 
-    //----------//
-    // setGlyph //
-    //----------//
-    @Override
-    public void setGlyph (Glyph glyph)
+    //-------------------//
+    // setFontAttributes //
+    //-------------------//
+    /**
+     * Set word font attributes, based on the provided font attributes specification.
+     * <p>
+     * The font changes but the word width should stay the same.
+     *
+     * @param newAttrs provided spec, like "IS" for Italic+Serif
+     */
+    public void setFontAttributes (String newAttrs)
     {
-        super.setGlyph(glyph);
+        try {
+            final FontAttributes decoded = FontAttributes.decode(newAttrs.toUpperCase());
 
-        // Location?
-        // FontInfo?
+            // Keeping the same bounds, update the font size if needed
+            final TextFont textFont = TextFont.getBestFont(decoded, fontInfo.pointSize);
+            final int fontSize = textFont.computeSize(getValue(), getBounds().getSize());
+
+            fontInfo = new FontInfo(decoded, fontSize, textFont.getFontName());
+        } catch (Exception ex) {
+            logger.warn("Invalid font attributes: {}", newAttrs);
+        }
     }
 
     //-------------//
@@ -546,11 +560,10 @@ public class WordInter
                         final WordInter word = (WordInter) getInter();
                         final String value = word.getValue();
 
-                        // Select proper text font (family and size)
-                        final TextFamily textFamily = TextFont.getCurrentFamily();
-                        TextFont textFont = new TextFont(textFamily.getFontName(), null, 0, 50);
+                        // Select proper text font
+                        TextFont textFont = new TextFont(word.fontInfo);
                         final int fontSize = textFont.computeSize(value, box.getSize());
-                        model.fontInfo = new FontInfo(fontSize, textFamily.getFontName());
+                        model.fontInfo = new FontInfo(word.fontInfo, fontSize);
                         textFont = textFont.deriveFont((float) fontSize);
 
                         // Handles
@@ -574,6 +587,7 @@ public class WordInter
             final WordInter word = (WordInter) inter;
             word.location.setLocation(model.baseLoc);
             word.fontInfo = model.fontInfo;
+            word.freeze();
 
             inter.setBounds(null);
             super.doit(); // No more glyph

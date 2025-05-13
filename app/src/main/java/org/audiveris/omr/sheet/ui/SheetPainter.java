@@ -730,9 +730,6 @@ public abstract class SheetPainter
         /** Head shapes, small size. */
         protected final MusicFont headMusicFontSmall;
 
-        /** Textual score items. */
-        protected final TextFont textFont;
-
         /** Global stroke for curves (slur, wedge, ending). */
         protected final Stroke curveStroke;
 
@@ -762,7 +759,6 @@ public abstract class SheetPainter
             final int largeInterline = scale.getInterline();
             musicFont = MusicFont.getBaseFont(musicFamily, largeInterline);
             headMusicFont = MusicFont.getHeadFont(musicFamily, scale, largeInterline);
-            textFont = TextFont.getTextFont(textFamily, largeInterline * 4);
 
             // Smaller size?
             final Integer smallInterline = scale.getSmallInterline();
@@ -841,14 +837,6 @@ public abstract class SheetPainter
         private MusicFont getMusicFont (Staff staff)
         {
             return getMusicFont(false, staff);
-        }
-
-        //-------------//
-        // getTextFont //
-        //-------------//
-        public TextFont getTextFont ()
-        {
-            return textFont;
         }
 
         //-------------//
@@ -1046,11 +1034,11 @@ public abstract class SheetPainter
             setColor(word);
 
             if (word instanceof MusicWordInter) {
-                final MusicFont mf = musicFont.deriveFont((float) fontInfo.pointsize);
+                final MusicFont mf = musicFont.deriveFont((float) fontInfo.pointSize);
                 final TextLayout layout = mf.layout(word.getValue());
                 paint(layout, word.getCenter(), AREA_CENTER);
             } else {
-                final TextFont tf = TextFont.create(textFont, fontInfo);
+                final TextFont tf = new TextFont(fontInfo);
                 final TextLayout layout = tf.layout(word.getValue());
                 paint(layout, word.getLocation(), BASELINE_LEFT);
             }
