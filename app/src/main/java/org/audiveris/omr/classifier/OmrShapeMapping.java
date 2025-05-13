@@ -85,8 +85,8 @@ public abstract class OmrShapeMapping
         map.put(OmrShape.articAccentAbove, Shape.ACCENT);
         map.put(OmrShape.articAccentBelow, Shape.ACCENT);
 
-        map.put(OmrShape.articMarcatoAbove, Shape.STRONG_ACCENT);
-        map.put(OmrShape.articMarcatoBelow, Shape.STRONG_ACCENT);
+        map.put(OmrShape.articMarcatoAbove, Shape.MARCATO);
+        map.put(OmrShape.articMarcatoBelow, Shape.MARCATO_BELOW);
 
         map.put(OmrShape.articStaccatissimoAbove, Shape.STACCATISSIMO);
         map.put(OmrShape.articStaccatissimoBelow, Shape.STACCATISSIMO);
@@ -183,14 +183,16 @@ public abstract class OmrShapeMapping
         //        map.put(Shape.ACCENT, OmrShape.none); // articAccentAbove or articAccentBelow
         //        map.put(Shape.TENUTO, OmrShape.none); // articTenutoAbove or articTenutoBelow
         //        map.put(Shape.STACCATISSIMO, OmrShape.none); // articStaccatissimoAbove or articStaccatissimoBelow
-        //        map.put(Shape.STRONG_ACCENT, OmrShape.none); // articMarcatoAbove or articMarcatoBelow
+        //        map.put(Shape.MARCATO, OmrShape.none); // articMarcatoAbove or articMarcatoBelow
         //        map.put(Shape.STACCATO, OmrShape.none); // articStaccatoAbove or articStaccatoBelow
         map.put(Shape.ARPEGGIATO, OmrShape.arpeggiato);
         map.put(Shape.DYNAMICS_P, OmrShape.dynamicPiano);
         map.put(Shape.DYNAMICS_PP, OmrShape.dynamicPP);
+        map.put(Shape.DYNAMICS_PPP, OmrShape.dynamicPPP);
         map.put(Shape.DYNAMICS_MP, OmrShape.dynamicMP);
         map.put(Shape.DYNAMICS_F, OmrShape.dynamicForte);
         map.put(Shape.DYNAMICS_FF, OmrShape.dynamicFF);
+        map.put(Shape.DYNAMICS_FFF, OmrShape.dynamicFFF);
         map.put(Shape.DYNAMICS_MF, OmrShape.dynamicMF);
         map.put(Shape.DYNAMICS_FP, OmrShape.dynamicFortePiano);
         map.put(Shape.DYNAMICS_SF, OmrShape.dynamicSforzando1);

@@ -155,7 +155,7 @@ public class MusicFont
      */
     public MusicFont (FontInfo info)
     {
-        this(MusicFamily.valueOfName(info.fontName), info.pointsize);
+        this(MusicFamily.valueOfName(info.fontName), info.pointSize);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -654,21 +654,6 @@ public class MusicFont
         }
 
         return (MusicFont) font;
-    }
-
-    //--------------//
-    // getPointSize //
-    //--------------//
-    /**
-     * Report the point size that generally corresponds to the provided staff interline,
-     * with the exception of note heads that may need a slightly larger point size.
-     *
-     * @param staffInterline the provided staff interline
-     * @return the general point size value
-     */
-    public static int getPointSize (int staffInterline)
-    {
-        return 4 * staffInterline;
     }
 
     //-----------//

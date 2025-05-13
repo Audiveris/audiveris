@@ -296,7 +296,7 @@ public class MetronomeInter
             final String val = word.getValue();
 
             if (word instanceof BeatUnitInter beatUnit) {
-                m.unitFontSize = beatUnit.getFontInfo().pointsize;
+                m.unitFontSize = beatUnit.getFontInfo().pointSize;
 
                 final SheetStub stub = staff.getSystem().getSheet().getStub();
                 final MusicFamily musicFamily = stub.getMusicFamily();
@@ -315,11 +315,11 @@ public class MetronomeInter
             } else {
                 if (!afterBeat) {
                     if (m.tempoFontSize == null) {
-                        m.tempoFontSize = word.getFontInfo().pointsize;
+                        m.tempoFontSize = word.getFontInfo().pointSize;
                     }
                 } else {
                     if (m.bpmFontSize == null) {
-                        m.bpmFontSize = word.getFontInfo().pointsize;
+                        m.bpmFontSize = word.getFontInfo().pointSize;
                     }
                 }
             }
@@ -856,7 +856,7 @@ public class MetronomeInter
             }
         }
 
-        final int mfs = meanFont.pointsize;
+        final int mfs = meanFont.pointSize;
         if (model != null) {
             newModel.tempoFontSize = (model.tempoFontSize != null) ? model.tempoFontSize : mfs;
             newModel.unitFontSize = (model.unitFontSize != null) ? model.unitFontSize : mfs;

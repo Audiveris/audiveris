@@ -83,6 +83,7 @@ public class DynamicsInter
         //        sigs.put(Shape.DYNAMICS_CHAR_Z, "z");
         //
         // True dynamics symbols
+        sigs.put(Shape.DYNAMICS_PPP, "ppp");
         sigs.put(Shape.DYNAMICS_PP, "pp");
         sigs.put(Shape.DYNAMICS_P, "p");
         sigs.put(Shape.DYNAMICS_MP, "mp");
@@ -90,13 +91,12 @@ public class DynamicsInter
         sigs.put(Shape.DYNAMICS_MF, "mf");
         sigs.put(Shape.DYNAMICS_F, "f");
         sigs.put(Shape.DYNAMICS_FF, "ff");
+        sigs.put(Shape.DYNAMICS_FFF, "fff");
         sigs.put(Shape.DYNAMICS_FP, "fp"); // Forte then piano
         sigs.put(Shape.DYNAMICS_SF, "sf"); // Subito forte: suddenly strong
         sigs.put(Shape.DYNAMICS_SFZ, "sfz"); // Sforzando: sudden accent
 
-        //        sigs.put(Shape.DYNAMICS_FFF, "fff");
         //        sigs.put(Shape.DYNAMICS_FZ, "fz");
-        //        sigs.put(Shape.DYNAMICS_PPP, "ppp");
         //        sigs.put(Shape.DYNAMICS_RF, "rf");
         //        sigs.put(Shape.DYNAMICS_RFZ, "rfz");
         //        sigs.put(Shape.DYNAMICS_SF, "sf");
@@ -106,18 +106,18 @@ public class DynamicsInter
     }
 
     static {
+        shapes.put("ppp", Shape.DYNAMICS_PPP);
         shapes.put("pp", Shape.DYNAMICS_PP);
         shapes.put("p", Shape.DYNAMICS_P);
         shapes.put("mp", Shape.DYNAMICS_MP);
         shapes.put("mf", Shape.DYNAMICS_MF);
         shapes.put("f", Shape.DYNAMICS_F);
         shapes.put("ff", Shape.DYNAMICS_FF);
+        shapes.put("fff", Shape.DYNAMICS_FFF);
         shapes.put("fp", Shape.DYNAMICS_FP);
         shapes.put("sfz", Shape.DYNAMICS_SFZ);
 
-        //        shapes.put("fff", Shape.DYNAMICS_FFF);
         //        shapes.put("fz", Shape.DYNAMICS_FZ);
-        //        shapes.put("ppp", Shape.DYNAMICS_PPP);
         //        shapes.put("rf", Shape.DYNAMICS_RF);
         //        shapes.put("rfz", Shape.DYNAMICS_RFZ);
         //        shapes.put("sf", Shape.DYNAMICS_SF);
@@ -127,6 +127,7 @@ public class DynamicsInter
     }
 
     static {
+        sounds.put(Shape.DYNAMICS_PPP, 34);
         sounds.put(Shape.DYNAMICS_PP, 45);
         sounds.put(Shape.DYNAMICS_P, 56);
         sounds.put(Shape.DYNAMICS_MP, 67);
@@ -136,11 +137,11 @@ public class DynamicsInter
         sounds.put(Shape.DYNAMICS_MF, 89);
         sounds.put(Shape.DYNAMICS_F, 100);
         sounds.put(Shape.DYNAMICS_FF, 122);
+        sounds.put(Shape.DYNAMICS_FFF, 144);
 
         sounds.put(Shape.DYNAMICS_FP, 100); // ???
         sounds.put(Shape.DYNAMICS_SFZ, 100); // ???
 
-        //        sounds.put(Shape.DYNAMICS_PPP, 34);
         //        sounds.put(Shape.DYNAMICS_FP, "fp");
         //        sounds.put(Shape.DYNAMICS_FZ, "fz");
         //        sounds.put(Shape.DYNAMICS_RF, "rf");

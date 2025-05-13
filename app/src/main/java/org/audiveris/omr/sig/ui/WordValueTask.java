@@ -42,7 +42,7 @@ public class WordValueTask
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>WordTask</code> object.
+     * Creates a new <code>WordValueTask</code> object.
      *
      * @param word     the word to modify
      * @param newValue new word value
@@ -50,7 +50,7 @@ public class WordValueTask
     public WordValueTask (WordInter word,
                           String newValue)
     {
-        super(word.getSig(), word, word.getBounds(), null, "word");
+        super(word.getSig(), word, word.getBounds(), null, "wordValue");
         this.newValue = newValue;
 
         oldValue = word.getValue();
@@ -68,6 +68,7 @@ public class WordValueTask
     public void performDo ()
     {
         getInter().setValue(newValue);
+        getInter().freeze();
 
         sheet.getInterIndex().publish(getInter());
     }

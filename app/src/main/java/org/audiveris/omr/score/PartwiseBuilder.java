@@ -1388,7 +1388,7 @@ public class PartwiseBuilder
             harmony.setDefaultY(yOf(location, staff));
 
             // font-size
-            harmony.setFontSize("" + (chordName.getFontInfo().pointsize * TextFont.TO_POINT));
+            harmony.setFontSize("" + (chordName.getFontInfo().pointSize * TextFont.TO_POINT));
 
             // relative-x
             harmony.setRelativeX(toTenths(location.getX() - current.note.getCenterLeft().x));
@@ -3320,7 +3320,7 @@ public class PartwiseBuilder
         // Family
         if (fontInfo.isSerif) {
             formattedText.setFontFamily("serif");
-        } else if (fontInfo.isMonospace) {
+        } else if (fontInfo.isMonospaced) {
             formattedText.setFontFamily("monospace");
         } else {
             formattedText.setFontFamily("sans-serif");
@@ -3349,7 +3349,7 @@ public class PartwiseBuilder
         // Family
         if (fontInfo.isSerif) {
             formattedTextId.setFontFamily("serif");
-        } else if (fontInfo.isMonospace) {
+        } else if (fontInfo.isMonospaced) {
             formattedTextId.setFontFamily("monospace");
         } else {
             formattedTextId.setFontFamily("sans-serif");

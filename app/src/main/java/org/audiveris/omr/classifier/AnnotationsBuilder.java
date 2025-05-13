@@ -501,8 +501,11 @@ public class AnnotationsBuilder
                 case STACCATISSIMO -> above //
                         ? OmrShape.articStaccatissimoAbove
                         : OmrShape.articStaccatissimoBelow;
-                case STRONG_ACCENT -> above //
+                case MARCATO -> above //
                         ? OmrShape.articMarcatoAbove
+                        : OmrShape.articMarcatoBelow; // Very rare?
+                case MARCATO_BELOW -> above //
+                        ? OmrShape.articMarcatoAbove // Very rare?
                         : OmrShape.articMarcatoBelow;
                 default -> null;
             };

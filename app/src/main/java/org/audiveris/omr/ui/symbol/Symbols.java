@@ -235,7 +235,8 @@ public abstract class Symbols
         symbolMap.put(ACCENT, new ArticulationSymbol(ACCENT, family()));
         symbolMap.put(STACCATISSIMO, new ArticulationSymbol(STACCATISSIMO, family()));
         symbolMap.put(STACCATO, new ArticulationSymbol(STACCATO, family()));
-        symbolMap.put(STRONG_ACCENT, new ArticulationSymbol(STRONG_ACCENT, family()));
+        symbolMap.put(MARCATO, new ArticulationSymbol(MARCATO, family()));
+        symbolMap.put(MARCATO_BELOW, new ArticulationSymbol(MARCATO_BELOW, family()));
         symbolMap.put(TENUTO, new ArticulationSymbol(TENUTO, family()));
 
         symbolMap.put(AUGMENTATION_DOT, new AugmentationSymbol(family()));
@@ -289,8 +290,9 @@ public abstract class Symbols
         symbolMap.put(ENDING_WRL, new EndingSymbol(true, family()));
 
         symbolMap.put(SMALL_FLAG_SLASH, new SlashedFlagSymbol(SMALL_FLAG_SLASH, family()));
-        symbolMap
-                .put(SMALL_FLAG_SLASH_DOWN, new SlashedFlagSymbol(SMALL_FLAG_SLASH_DOWN, family()));
+        symbolMap.put(
+                SMALL_FLAG_SLASH_DOWN,
+                new SlashedFlagSymbol(SMALL_FLAG_SLASH_DOWN, family()));
 
         symbolMap.put(FLAT, new FlatSymbol(FLAT, family()));
         symbolMap.put(DOUBLE_FLAT, new FlatSymbol(DOUBLE_FLAT, family()));
@@ -447,8 +449,8 @@ public abstract class Symbols
         @Override
         public String toString ()
         {
-            return new StringBuilder().append('[').append(start).append("..").append(stop)
-                    .append(']').toString();
+            return new StringBuilder().append('[').append(start).append("..").append(stop).append(
+                    ']').toString();
         }
     }
 }

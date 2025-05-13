@@ -21,50 +21,46 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
+import static org.audiveris.omr.ui.symbol.TextFont.TEXT_FONT_NAME;
+import static org.audiveris.omr.util.RegexUtil.group;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.Font;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Non-mutable font attributes (generally for a word).
+ * Immutable font information (generally for a word).
  *
  * @author Hervé Bitteur
  */
 public class FontInfo
+        extends FontAttributes
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(FontInfo.class);
 
-    /** A default FontInfo instance when we absolutely need one. */
-    public static final FontInfo DEFAULT = createDefault(36);
-
-    /** Separator in memo between attributes (if any) and point size. */
+    /** Optional separator in memo between attributes (if any) and point size. */
     private static final char SEPARATOR = '-';
+
+    // Regular expression items to decode a FontInfo mnemonic
+
+    private static final String SIZE = "size";
+
+    private static final String sizePat = group(SIZE, "\\d+");
+
+    private static final Pattern mnemoPattern = Pattern.compile(
+            attrsPat + SEPARATOR + "?" + sizePat);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** True if bold. */
-    public final boolean isBold;
-
-    /** True if italic. */
-    public final boolean isItalic;
-
-    /** True if underlined. */
-    public final boolean isUnderlined;
-
-    /** True if monospace. */
-    public final boolean isMonospace;
-
-    /** True if serif. */
-    public final boolean isSerif;
-
-    /** True if small capitals. */
-    public final boolean isSmallcaps;
-
     /** Font size, specified in printer points (1/72 inch). */
-    public final int pointsize;
+    public final int pointSize;
 
     /** Font name. */
     public final String fontName;
@@ -77,28 +73,23 @@ public class FontInfo
      * @param isBold       True if the font is bold
      * @param isItalic     True if the font is italic
      * @param isUnderlined True if the font is underlined
-     * @param isMonospace  True if the font has a fixed width
+     * @param isMonospaced True if the font has a fixed width
      * @param isSerif      True for fonts with serifs
      * @param isSmallcaps  True for small caps fonts
-     * @param pointsize    font size in points
+     * @param pointSize    font size in points
      * @param fontName     font name
      */
     public FontInfo (boolean isBold,
                      boolean isItalic,
                      boolean isUnderlined,
-                     boolean isMonospace,
+                     boolean isMonospaced,
                      boolean isSerif,
                      boolean isSmallcaps,
-                     int pointsize,
+                     int pointSize,
                      String fontName)
     {
-        this.isBold = isBold;
-        this.isItalic = isItalic;
-        this.isUnderlined = isUnderlined;
-        this.isMonospace = isMonospace;
-        this.isSerif = isSerif;
-        this.isSmallcaps = isSmallcaps;
-        this.pointsize = pointsize;
+        super(isBold, isItalic, isUnderlined, isMonospaced, isSerif, isSmallcaps);
+        this.pointSize = pointSize;
         this.fontName = fontName;
     }
 
@@ -107,15 +98,15 @@ public class FontInfo
      *
      * @param isBold    True if the font is bold
      * @param isItalic  True if the font is italic
-     * @param pointsize font size in points
+     * @param pointSize font size in points
      * @param fontName  font name
      */
     public FontInfo (boolean isBold,
                      boolean isItalic,
-                     int pointsize,
+                     int pointSize,
                      String fontName)
     {
-        this(isBold, isItalic, false, false, false, false, pointsize, fontName);
+        this(isBold, isItalic, false, false, false, false, pointSize, fontName);
     }
 
     /**
@@ -131,27 +122,89 @@ public class FontInfo
                 org.isBold,
                 org.isItalic,
                 org.isUnderlined,
-                org.isMonospace,
+                org.isMonospaced,
                 org.isSerif,
                 org.isSmallcaps,
                 pointSize,
                 org.fontName);
     }
 
+    public FontInfo (FontAttributes attrs,
+                     int pointSize,
+                     String fontName)
+    {
+        this(
+                attrs.isBold,
+                attrs.isItalic,
+                attrs.isUnderlined,
+                attrs.isMonospaced,
+                attrs.isSerif,
+                attrs.isSmallcaps,
+                pointSize,
+                fontName);
+    }
+
+    /**
+     * Create a new <code>FontInfo</code> from another one and a specific font name.
+     *
+     * @param org      the original font info
+     * @param fontName the specific font name
+     */
+    public FontInfo (FontInfo org,
+                     String fontName)
+    {
+        this(
+                org.isBold,
+                org.isItalic,
+                org.isUnderlined,
+                org.isMonospaced,
+                org.isSerif,
+                org.isSmallcaps,
+                org.pointSize,
+                fontName);
+    }
+
     /**
      * Creates a new <code>FontInfo</code> object, with no attribute set,
      * just point size and font name.
      *
-     * @param pointsize font size in points
+     * @param pointSize font size in points
      * @param fontName  font name
      */
-    public FontInfo (int pointsize,
+    public FontInfo (int pointSize,
                      String fontName)
     {
-        this(false, false, false, false, false, false, pointsize, fontName);
+        this(false, false, false, false, false, false, pointSize, fontName);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //---------------//
+    // getAttributes //
+    //---------------//
+    public FontAttributes getAttributes ()
+    {
+        return new FontAttributes(
+                isBold,
+                isItalic,
+                isUnderlined,
+                isMonospaced,
+                isSerif,
+                isSmallcaps);
+    }
+
+    //-------------------//
+    // getAttributesSpec //
+    //-------------------//
+    /**
+     * Report the font attributes specification, name and size excepted.
+     *
+     * @return the font attributes specification
+     */
+    public String getAttributesSpec ()
+    {
+        return getAttributes().getSpec();
+    }
 
     //----------//
     // getMnemo //
@@ -159,47 +212,37 @@ public class FontInfo
     /**
      * Report a very short description of font characteristics.
      * <p>
-     * Format is "BS-45" or "53".
-     * Separator (-) is present only if there is at least one attribute.
+     * Format examples: "I67", "BS-45", "53".
+     * <p>
+     * The optional separator (-) can be present only if there is at least one attribute.
      * This is to avoid "-53" which would look like a negative value.
      *
      * @return a short description
      */
     public String getMnemo ()
     {
-        StringBuilder sb = new StringBuilder();
-
-        if (isBold) {
-            sb.append('B');
-        }
-
-        if (isItalic) {
-            sb.append('I');
-        }
-
-        if (isUnderlined) {
-            sb.append('U');
-        }
-
-        if (isMonospace) {
-            sb.append('M');
-        }
-
-        if (isSerif) {
-            sb.append('S');
-        }
-
-        if (isSmallcaps) {
-            sb.append('C');
-        }
+        final StringBuilder sb = new StringBuilder(getAttributesSpec());
 
         if (sb.length() > 0) {
             sb.append(SEPARATOR);
         }
 
-        sb.append(pointsize);
+        sb.append(pointSize);
 
         return sb.toString();
+    }
+
+    //----------//
+    // getStyle //
+    //----------//
+    /**
+     * Report an integer style value, based on the relevant attributes.
+     *
+     * @return the style int value
+     */
+    public int getStyle ()
+    {
+        return (isBold ? Font.BOLD : 0) | (isItalic ? Font.ITALIC : 0);
     }
 
     //----------//
@@ -208,13 +251,10 @@ public class FontInfo
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{");
-        sb.append(fontName);
-        sb.append(' ').append(getMnemo());
-        sb.append("}");
-
-        return sb.toString();
+        return new StringBuilder(getClass().getSimpleName()).append("{") //
+                .append(fontName) //
+                .append(' ').append(getMnemo()) //
+                .append("}").toString();
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
@@ -230,7 +270,7 @@ public class FontInfo
      */
     public static FontInfo createDefault (int fontSize)
     {
-        return new FontInfo(false, false, false, false, true, false, fontSize, "Serif");
+        return new FontInfo(false, false, false, false, false, false, fontSize, TEXT_FONT_NAME);
     }
 
     //--------//
@@ -244,19 +284,22 @@ public class FontInfo
      */
     public static FontInfo decode (String str)
     {
-        final int sep = str.indexOf(SEPARATOR);
-        final String sizeStr = (sep != -1) ? str.substring(sep + 1) : str;
-        final int size = Integer.decode(sizeStr);
+        final Matcher matcher = mnemoPattern.matcher(str);
 
-        return new FontInfo(
-                str.indexOf('B') != -1,
-                str.indexOf('I') != -1,
-                str.indexOf('U') != -1,
-                str.indexOf('M') != -1,
-                str.indexOf('S') != -1,
-                str.indexOf('C') != -1,
-                size,
-                "generic");
+        if (matcher.matches()) {
+            final String attrs = matcher.group(ATTRS);
+            final String sizeStr = matcher.group(SIZE);
+            final int size = Integer.decode(sizeStr);
+
+            if (attrs != null) {
+                return new FontInfo(FontAttributes.decode(attrs), size, null);
+            } else {
+                return new FontInfo(size, null);
+            }
+
+        } else {
+            throw new IllegalArgumentException("Invalid font mnemo " + str);
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

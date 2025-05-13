@@ -232,7 +232,7 @@ public class SentenceInter
      */
     public int getExportedFontSize ()
     {
-        return (int) Math.rint(getMeanFont().pointsize * TextFont.TO_POINT);
+        return (int) Math.rint(getMeanFont().pointSize * TextFont.TO_POINT);
     }
 
     //--------------//
@@ -397,7 +397,7 @@ public class SentenceInter
 
             if (!members.isEmpty()) {
                 WordInter firstWord = (WordInter) members.get(0);
-                meanFont = new FontInfo(firstWord.getFontInfo(), firstWord.getFontInfo().pointsize);
+                meanFont = new FontInfo(firstWord.getFontInfo(), firstWord.getFontInfo().pointSize);
             }
         }
 

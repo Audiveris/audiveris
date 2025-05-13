@@ -44,7 +44,6 @@ import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.WordInter;
-import org.audiveris.omr.text.FontInfo;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
@@ -156,10 +155,9 @@ public class Part
     private boolean merged;
 
     /** This is the vertical sequence of staves in this part. */
-    @XmlElementRefs(
-    {
-            @XmlElementRef(type = Staff.class),
-            @XmlElementRef(type = OneLineStaff.class),
+    @XmlElementRefs({ //
+            @XmlElementRef(type = Staff.class), //
+            @XmlElementRef(type = OneLineStaff.class), //
             @XmlElementRef(type = Tablature.class) })
     private final List<Staff> staves = new ArrayList<>();
 
@@ -1399,19 +1397,6 @@ public class Part
     {
         this.name = name;
 
-        if (name != null && !name.isRemoved()) {
-            // Normalize font info for part name
-            for (Inter inter : name.getMembers()) {
-                final WordInter word = (WordInter) inter;
-                final FontInfo old = word.getFontInfo();
-                word.setFontInfo(new FontInfo(old.pointsize, old.fontName));
-            }
-
-            final FontInfo old = name.getMeanFont();
-            name.setMeanFont(new FontInfo(old.pointsize, old.fontName));
-
-        }
-
         // Update PartRef as well
         final PartRef partRef = getRef();
         if (partRef != null) {
@@ -1425,7 +1410,8 @@ public class Part
     /**
      * Assign a name value to this part.
      * <p>
-     * This is performed by modifying current name sentence, if any, to reflect provided nameValue.
+     * This is performed by modifying the current name sentence, if any,
+     * to reflect the provided nameValue.
      *
      * @param nameValue the name value to set
      * @see #setName(SentenceInter)

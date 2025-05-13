@@ -367,7 +367,7 @@ public class TupletInter
                 "Maximum abscissa gap between tuplet and closest chord");
 
         private final Scale.Fraction maxTupletChordDy = new Scale.Fraction(
-                2.5,
+                3,
                 "Maximum ordinate gap between tuplet and closest chord");
     }
 }

@@ -81,7 +81,7 @@ public class BravuraSymbols
             case DOUBLE_SHARP -> ints(0xE263);
             case DYNAMICS_F -> ints(0xE522);
             case DYNAMICS_FF -> ints(0xE52F);
-            //        case DYNAMICS_FFF -> ints(0xE530);
+            case DYNAMICS_FFF -> ints(0xE530);
             //        case DYNAMICS_FFFF -> ints(0xE531);
             //        case DYNAMICS_FFFFF -> ints(0xE532);
             //        case DYNAMICS_FFFFFF -> ints(0xE533);
@@ -91,7 +91,7 @@ public class BravuraSymbols
             case DYNAMICS_MP -> ints(0xE52C);
             case DYNAMICS_P -> ints(0xE520);
             case DYNAMICS_PP -> ints(0xE52B);
-            //        case DYNAMICS_PPP -> ints(0xE52A);
+            case DYNAMICS_PPP -> ints(0xE52A);
             //        case DYNAMICS_PPPP -> ints(0xE529);
             //        case DYNAMICS_PPPPP -> ints(0xE528);
             //        case DYNAMICS_PPPPPP -> ints(0xE527);
@@ -144,6 +144,8 @@ public class BravuraSymbols
             case LEFT_REPEAT_SIGN -> ints(0xE040);
             case LONG_REST -> ints(0xE4E1);
 
+            case MARCATO -> ints(0xE4AC);
+            case MARCATO_BELOW -> ints(0xE4AD);
             case MORDENT -> ints(0xE56C);
             case MORDENT_INVERTED -> ints(0xE56D); // With bar
             case MULTIPLE_REST -> ints(0xE4EE);
@@ -200,7 +202,6 @@ public class BravuraSymbols
             case STACCATO -> ints(0xE4A2);
             case STAFF_LINES -> ints(0xE01A);
             case STEM -> ints(0xE210);
-            case STRONG_ACCENT -> ints(0xE4AC);
 
             case TENUTO -> ints(0xE4A4);
             case THICK_BARLINE -> ints(0xE034);

@@ -195,7 +195,7 @@ public class JazzPercSymbols
             //        case STACCATO -> ints(0xE4A2);
             //        case STAFF_LINES -> ints(0xE014); // 0xE01A in Bravura
             //        case STEM -> ints(0xE210);
-            //        case STRONG_ACCENT -> ints(0xE4AC);
+            //        case MARCATO -> ints(0xE4AC);
             //
             //        case TENUTO -> ints(0xE4A4);
             //        ///case THICK_BARLINE -> ints(0xE034);

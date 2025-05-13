@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
@@ -30,6 +31,12 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * Class <code>TextFamily</code> handles the collection of supported text font families.
+ * <p>
+ * This class is now used only for generating samples to train the glyph classifier on text
+ * symbols: {@link ShapeSet#Digits}, {@link ShapeSet#Pluckings}, {@link ShapeSet#Romans}.
+ * <p>
+ * It is no longer used to choose text font for a book or sheet, since this is now done based
+ * on the text attributes provided by OCR.
  *
  * @author Hervé Bitteur
  */

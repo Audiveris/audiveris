@@ -148,9 +148,11 @@ public abstract class OmrFont
 
         final GlyphVector glyphVector = createGlyphVector(frc, content);
         final Rectangle2D rect = glyphVector.getVisualBounds();
+
         final float ratio = (dim.width >= dim.height) //
                 ? dim.width / (float) rect.getWidth()
                 : dim.height / (float) rect.getHeight();
+
         final float s2d = getSize2D();
         final int sz = (int) Math.rint(ratio * s2d);
         logger.debug(
@@ -197,6 +199,21 @@ public abstract class OmrFont
     public LineMetrics getLineMetrics (String str)
     {
         return getLineMetrics(str, frc);
+    }
+
+    //--------------//
+    // getPointSize //
+    //--------------//
+    /**
+     * Report the point size that generally corresponds to the provided staff interline,
+     * with the exception of note heads that may need a slightly larger point size.
+     *
+     * @param staffInterline the provided staff interline
+     * @return the general point size value
+     */
+    public static int getPointSize (int staffInterline)
+    {
+        return 4 * staffInterline;
     }
 
     //--------//

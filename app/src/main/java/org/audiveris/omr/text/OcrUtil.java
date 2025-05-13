@@ -26,7 +26,6 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.text.OCR.LayoutMode;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
-import org.audiveris.omr.ui.symbol.TextFamily;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,8 +142,7 @@ public abstract class OcrUtil
 
         Collections.sort(lines, TextLine.byOrdinate(sheet.getSkew()));
 
-        final TextFamily family = sheet.getStub().getTextFamily();
-        lines.forEach(line -> line.getWords().forEach(word -> word.adjustFontSize(family)));
+        lines.forEach(line -> line.getWords().forEach(word -> word.adjustFontSize()));
 
         if (logger.isDebugEnabled()) {
             TextLine.dump("Raw OCR'd lines:", lines, constants.dumpWords.isSet());

@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.dynamic.CurvedFilament;
+import org.audiveris.omr.glyph.dynamic.FilamentFactory;
 import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale;

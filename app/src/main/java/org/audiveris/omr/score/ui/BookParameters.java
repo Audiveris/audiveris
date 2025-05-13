@@ -44,8 +44,6 @@ import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.TextFamily;
-import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.util.ComboBoxTipRenderer;
 import static org.audiveris.omr.util.param.Param.GLOBAL_SCOPE;
 
@@ -264,7 +262,6 @@ public class BookParameters
             topics.add(topic);
 
             topic.add(tagMap.get(Tag.Music));
-            topic.add(tagMap.get(Tag.Text));
             topic.add(tagMap.get(Tag.Quality));
         }
 
@@ -909,7 +906,6 @@ public class BookParameters
     public static enum Tag
     {
         Music,
-        Text,
         Quality,
         Lang,
         Filter,
@@ -954,7 +950,6 @@ public class BookParameters
         protected XactPanes ()
         {
             tagMap.put(Tag.Music, new EnumPane<>(Tag.Music, MusicFamily.values(), resources));
-            tagMap.put(Tag.Text, new EnumPane<>(Tag.Text, TextFamily.values(), resources));
             tagMap.put(Tag.Quality, new EnumPane<>(Tag.Quality, InputQuality.values(), resources));
 
             tagMap.put(Tag.Filter, new FilterPane());
@@ -1029,7 +1024,6 @@ public class BookParameters
             for (Entry<Tag, XactPane> entry : tagMap.entrySet()) {
                 switch (entry.getKey()) {
                     case Music -> entry.getValue().setModel(MusicFont.defaultMusicParam);
-                    case Text -> entry.getValue().setModel(TextFont.defaultTextParam);
                     case Quality -> entry.getValue().setModel(Profiles.defaultQualityParam);
                     case Lang -> entry.getValue().setModel(Language.ocrDefaultLanguages);
                     case Filter -> entry.getValue().setModel(FilterDescriptor.defaultFilter);
@@ -1063,7 +1057,6 @@ public class BookParameters
             for (Entry<Tag, XactPane> entry : tagMap.entrySet()) {
                 entry.getValue().setModel(switch (entry.getKey()) {
                     case Music -> book.getMusicFamilyParam();
-                    case Text -> book.getTextFamilyParam();
                     case Quality -> book.getInputQualityParam();
                     case Lang -> book.getOcrLanguagesParam();
                     case Filter -> book.getBinarizationParam();
@@ -1097,7 +1090,6 @@ public class BookParameters
             for (Entry<Tag, XactPane> entry : tagMap.entrySet()) {
                 entry.getValue().setModel(switch (entry.getKey()) {
                     case Music -> stub.getMusicFamilyParam();
-                    case Text -> stub.getTextFamilyParam();
                     case Quality -> stub.getInputQualityParam();
                     case Lang -> stub.getOcrLanguagesParam();
                     case Filter -> stub.getBinarizationFilterParam();

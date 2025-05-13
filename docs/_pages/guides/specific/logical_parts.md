@@ -88,7 +88,7 @@ On the left side, we have a sequence of rows, one per logical part:
     (for **s**mall) is appended when describing a **small** staff (for example: 5s).
 - **Name**: The (logical) part name, or blank
 - **Abbrev**: The related abbreviation if any
-- **Midi**: The specified MIDI channel (left blank, reserved for future use)
+- **Midi**: The specified MIDI channel ~~(left blank, reserved for future use)~~ See the next section on [MIDI assignments](#midi-assignments).
 
 The picture above presents the content of the logical parts editor,
 automatically pre-populated by parts collation on our example.  
@@ -113,6 +113,39 @@ This means that the logicals just saved are now locked (but can be manually unlo
 
 Notice also that the main score window now displays the updated parts names:  
 ![](../../assets/images/coffrets_parts_final.png)
+
+## MIDI assignments
+{: .d-inline-block }
+new in 5.6
+{: .label .label-yellow }
+
+Before the 5.6 release, the MIDI program for a logical part was automatically assigned,
+and exported to MusicXML, based on the number of staves in the logical part:
+- For a 1-staff part: **voice**
+- For a 2-staff part: **piano**
+- For a 3-staff part: **organ**
+
+Starting with the 5.6 release, via the logical parts editor, we can manually assign the MIDI program
+of each logical part.
+
+In the picture below, we can see an editor with 5 parts.
+Each part is composed of one staff and is, by default, assigned the "voice" instrument (program number: 54).
+
+![](../../assets/images/logical_parts_raw.png)
+
+This is not satisfactory, especially when compared to the OCR'd names of the parts...
+Perhaps one day the OMR engine will be able to infer the MIDI program from these OCR'd part names.
+
+As a first step, the user has the ability to manually modify these assignments,
+via the combo boxes in the MIDI column:
+- Either by using the up/down arrows to browse through the MIDI list of 128 instrument names,
+ranging from "*1 / Acoustic Grand Piano*" to "*128 / Gunshot*", and then click on the chosen name,
+- Or by directly typing the program numeric value.
+
+We finally get these MIDI assignments:
+
+![](../../assets/images/logical_parts_modified.png)
+
 
 ## Unlocked/Locked logicals configuration
 

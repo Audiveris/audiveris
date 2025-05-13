@@ -858,6 +858,35 @@ public class InterController
         }.execute();
     }
 
+    //----------------------//
+    // changeWordAttributes //
+    //----------------------//
+    /**
+     * Change the font attributes of a word.
+     *
+     * @param word     the word to modify
+     * @param newAttrs the new font attributes
+     */
+    @UIThread
+    public void changeWordAttributes (final WordInter word,
+                                      final String newAttrs)
+    {
+        new CtrlTask(DO, "changeWordAttributes")
+        {
+            @Override
+            protected void build ()
+            {
+                seq.add(new WordAttributesTask(word, newAttrs));
+            }
+
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(word);
+            }
+        }.execute();
+    }
+
     //--------------//
     // clearHistory //
     //--------------//

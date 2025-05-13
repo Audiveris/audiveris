@@ -21,6 +21,15 @@ plugins {
 // Properties
 //------------
 
+// Central location for application version
+project.version = '5.6.0'
+println "version: ${project.version}"
+
+// Central location for the specific versions of tesseract dependencies
+ext.jcppVersion     = '1.5.9'
+ext.leptVersion     = '1.83.0'
+ext.tessVersion     = '5.3.1'
+
 // Name of host OS
 ext.hostOSName   = System.getProperty('os.name').toLowerCase()\
                      .startsWith('mac os x') ? 'macosx' :\
@@ -55,15 +64,6 @@ println "theMinJavaVersion: $theMinJavaVersion"
 java {
     sourceCompatibility = JavaLanguageVersion.of(theMinJavaVersion)
 }
-
-// Central location for application version
-project.version = '5.5.3'
-println "version: ${project.version}"
-
-// Central location for the specific versions of tesseract dependencies
-ext.jcppVersion     = '1.5.9'
-ext.leptVersion     = '1.83.0'
-ext.tessVersion     = '5.3.1'
 
 // No longer needed, but kept for potential future use (like batch integration test)
 ext.tessdataTag     = project.property('theTessdataTag')

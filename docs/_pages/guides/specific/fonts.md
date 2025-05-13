@@ -80,43 +80,41 @@ The current family hierarchy is as follows:[^musical_symbols]
 ```
     Bravura
     ├── Leland
+    ├── Primus
     ├── Finale Jazz
     │   └── Jazz Perc
     └── Musical Symbols
 ```
 
 ## Text fonts
+{: .d-inline-block }
+modified in 5.6
+{: .label .label-green}
 
 Texts recognition is less sensitive to font family, compared to music symbols recognition.  
 The main reason is that Audiveris delegates texts recognition to Tesseract OCR.[^ocr_font]
 
-Since 5.3 release, we can tell Audiveris which text font family to use among the families available
+In the 5.3 release, the user could tell Audiveris which text font family to use among the families available
 (**Sans Serif** (the default), **Serif** and **Finale Jazz Text**):
 
-| Sample / Font Family | Sans Serif | Serif | Finale Jazz Text |
-| :---: | :---: | :---: | :---: |
-| Ophelia |![](../../assets/images/font_sans_serif.png)|![](../../assets/images/font_serif.png)|![](../../assets/images/font_finale_jazz_text.png)|
+Since the 5.6 release, Audiveris uses the OCR'd word attributes to decide
+which font name and style best fit any given word.
+And the user can manually modify the result.
 
-A proper choice of text font family will result in a better consistency between the input image
-and its displayed transcription.
+Please refer to the use of word attributes in the section on
+[word editing](../ui/ui_tools/text.md#word-editing).
 
-## Selection of fonts families
+## Selection of music font family
 
-In interactive mode, we can use the {{ site.book_parameters }} dialog in its ``Music font``
-and ``Text font`` fields:
+In interactive mode, we can use the {{ site.book_parameters }} dialog in its ``Music font`` field:
 
-![](../../assets/images/fonts_selection.png)
+![](../../assets/images/font_selection.png)
 
-In batch mode, we can make choices on the command line interface.
+In batch mode, we can make the music choice on the command line interface.
 
-- For **music**, choice is between *Bravura*, *Leland*, *FinaleJazz* and *JazzPerc*:  
+The choice is between *Bravura*, *Leland*, *Primus*, *FinaleJazz* and *JazzPerc*:  
 ```
 -constant org.audiveris.omr.ui.symbol.MusicFont.defaultMusicFamily=JazzPerc
-```
-
-- For **text**, choice is between *SansSerif*, *Serif* and *FinaleJazzText*:  
-```
--constant org.audiveris.omr.ui.symbol.TextFont.defaultTextFamily=FinaleJazzText
 ```
 
 [^musical_symbols]: The old "Musical Symbols" family has been totally replaced by "Bravura" family. It is kept only for samples generation from old ``.omr`` projects, something the end user can safely ignore.

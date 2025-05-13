@@ -252,6 +252,7 @@ public class ChordNameInter
     /**
      * No-argument constructor meant for JAXB.
      */
+    @SuppressWarnings("unused")
     private ChordNameInter ()
     {
         this.root = null;

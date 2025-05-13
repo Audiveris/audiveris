@@ -21,11 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
-import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
-
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
+import static org.audiveris.omr.ui.symbol.Alignment.TOP_CENTER;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
@@ -91,7 +91,8 @@ public class ArticulationSymbol
                     yRatio * rh.getHeight());
 
             // Define specific offset
-            p.offset = new Point2D.Double(0, dyRatio * p.rect.getHeight());
+            final int dir = shape.isBelow() ? -1 : 1;
+            p.offset = new Point2D.Double(0, dir * dyRatio * p.rect.getHeight());
         } else {
             p.rect = rs;
         }
@@ -111,20 +112,23 @@ public class ArticulationSymbol
         MyParams p = (MyParams) params;
 
         if (isDecorated) {
-            // Draw a note head (using composite) on the bottom
-            Point2D loc = alignment.translatedPoint(BOTTOM_CENTER, p.rect, location);
-            Composite oldComposite = g.getComposite();
+            // Draw a note head (using composite) on the bottom (unless isBelow)
+            final Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
-            MusicFont.paint(g, p.headLayout, loc, BOTTOM_CENTER);
+
+            final Alignment target = shape.isBelow() ? TOP_CENTER : BOTTOM_CENTER;
+            Point2D loc = alignment.translatedPoint(target, p.rect, location);
+            MusicFont.paint(g, p.headLayout, loc, target);
+
             g.setComposite(oldComposite);
 
-            // Articulation above head
+            // Articulation above head (unless isBelow)
             loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
             PointUtil.add(loc, p.offset);
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         } else {
             // Articulation alone
-            Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+            final Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         }
     }

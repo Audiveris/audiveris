@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 
 /**
- * Class <code>MidiAbstractions</code> handles various MIDI abstractions
+ * Class <code>MidiAbstractions</code> handles various MIDI abstractions.
  *
  * @author Hervé Bitteur
  */
@@ -40,265 +40,136 @@ public abstract class MidiAbstractions
     /** The extension used for Midi output files: {@value} */
     public static final String MIDI_EXTENSION = ".mid";
 
-    /** Definition of all Midi instruments in proper order */
-    private static final String[] instrumentNames =
-    {
-            /** 1 */
-            "Acoustic Grand Piano",
-            /** 2 */
-            "Bright Acoustic Piano",
-            /** 3 */
-            "Electric Grand Piano",
-            /** 4 */
-            "Honky-tonk Piano",
-            /** 5 */
-            "Electric Piano 1",
-            /** 6 */
-            "Electric Piano 2",
-            /** 7 */
-            "Harpsichord",
-            /** 8 */
-            "Clavi",
-            /** 9 */
-            "Celesta",
-            /** 10 */
-            "Glockenspiel",
-            /** 11 */
-            "Music Box",
-            /** 12 */
-            "Vibraphone",
-            /** 13 */
-            "Marimba",
-            /** 14 */
-            "Xylophone",
-            /** 15 */
-            "Tubular Bells",
-            /** 16 */
-            "Dulcimer",
-            /** 17 */
-            "Drawbar Organ",
-            /** 18 */
-            "Percussive Organ",
-            /** 19 */
-            "Rock Organ",
-            /** 20 */
-            "Church Organ",
-            /** 21 */
-            "Reed Organ",
-            /** 22 */
-            "Accordion",
-            /** 23 */
-            "Harmonica",
-            /** 24 */
-            "Tango Accordion",
-            /** 25 */
-            "Acoustic Guitar (nylon)",
-            /** 26 */
-            "Acoustic Guitar (steel)",
-            /** 27 */
-            "Electric Guitar (jazz)",
-            /** 28 */
-            "Electric Guitar (clean)",
-            /** 29 */
-            "Electric Guitar (muted)",
-            /** 30 */
-            "Overdriven Guitar",
-            /** 31 */
-            "Distortion Guitar",
-            /** 32 */
-            "Guitar harmonics",
-            /** 33 */
-            "Acoustic Bass",
-            /** 34 */
-            "Electric Bass (finger)",
-            /** 35 */
-            "Electric Bass (pick)",
-            /** 36 */
-            "Fretless Bass",
-            /** 37 */
-            "Slap Bass 1",
-            /** 38 */
-            "Slap Bass 2",
-            /** 39 */
-            "Synth Bass 1",
-            /** 40 */
-            "Synth Bass 2",
-            /** 41 */
-            "Violin",
-            /** 42 */
-            "Viola",
-            /** 43 */
-            "Cello",
-            /** 44 */
-            "Contrabass",
-            /** 45 */
-            "Tremolo Strings",
-            /** 46 */
-            "Pizzicato Strings",
-            /** 47 */
-            "Orchestral Harp",
-            /** 48 */
-            "Timpani",
-            /** 49 */
-            "String Ensemble 1",
-            /** 50 */
-            "String Ensemble 2",
-            /** 51 */
-            "SynthStrings 1",
-            /** 52 */
-            "SynthStrings 2",
-            /** 53 */
-            "Choir Aahs",
-            /** 54 */
-            "Voice Oohs",
-            /** 55 */
-            "Synth Voice",
-            /** 56 */
-            "Orchestra Hit",
-            /** 57 */
-            "Trumpet",
-            /** 58 */
-            "Trombone",
-            /** 59 */
-            "Tuba",
-            /** 60 */
-            "Muted Trumpet",
-            /** 61 */
-            "French Horn",
-            /** 62 */
-            "Brass Section",
-            /** 63 */
-            "SynthBrass 1",
-            /** 64 */
-            "SynthBrass 2",
-            /** 65 */
-            "Soprano Sax",
-            /** 66 */
-            "Alto Sax",
-            /** 67 */
-            "Tenor Sax",
-            /** 68 */
-            "Baritone Sax",
-            /** 69 */
-            "Oboe",
-            /** 70 */
-            "English Horn",
-            /** 71 */
-            "Bassoon",
-            /** 72 */
-            "Clarinet",
-            /** 73 */
-            "Piccolo",
-            /** 74 */
-            "Flute",
-            /** 75 */
-            "Recorder",
-            /** 76 */
-            "Pan Flute",
-            /** 77 */
-            "Blown Bottle",
-            /** 78 */
-            "Shakuhachi",
-            /** 79 */
-            "Whistle",
-            /** 80 */
-            "Ocarina",
-            /** 81 */
-            "Lead 1 (square)",
-            /** 82 */
-            "Lead 2 (sawtooth)",
-            /** 83 */
-            "Lead 3 (calliope)",
-            /** 84 */
-            "Lead 4 (chiff)",
-            /** 85 */
-            "Lead 5 (charang)",
-            /** 86 */
-            "Lead 6 (voice)",
-            /** 87 */
-            "Lead 7 (fifths)",
-            /** 88 */
-            "Lead 8 (bass + lead)",
-            /** 89 */
-            "Pad 1 (new age)",
-            /** 90 */
-            "Pad 2 (warm)",
-            /** 91 */
-            "Pad 3 (polysynth)",
-            /** 92 */
-            "Pad 4 (choir)",
-            /** 93 */
-            "Pad 5 (bowed)",
-            /** 94 */
-            "Pad 6 (metallic)",
-            /** 95 */
-            "Pad 7 (halo)",
-            /** 96 */
-            "Pad 8 (sweep)",
-            /** 97 */
-            "FX 1 (rain)",
-            /** 98 */
-            "FX 2 (soundtrack)",
-            /** 99 */
-            "FX 3 (crystal)",
-            /** 100 */
-            "FX 4 (atmosphere)",
-            /** 101 */
-            "FX 5 (brightness)",
-            /** 102 */
-            "FX 6 (goblins)",
-            /** 103 */
-            "FX 7 (echoes)",
-            /** 104 */
-            "FX 8 (sci-fi)",
-            /** 105 */
-            "Sitar",
-            /** 106 */
-            "Banjo",
-            /** 107 */
-            "Shamisen",
-            /** 108 */
-            "Koto",
-            /** 109 */
-            "Kalimba",
-            /** 110 */
-            "Bag pipe",
-            /** 111 */
-            "Fiddle",
-            /** 112 */
-            "Shanai",
-            /** 113 */
-            "Tinkle Bell",
-            /** 114 */
-            "Agogo",
-            /** 115 */
-            "Steel Drums",
-            /** 116 */
-            "Woodblock",
-            /** 117 */
-            "Taiko Drum",
-            /** 118 */
-            "Melodic Tom",
-            /** 119 */
-            "Synth Drum",
-            /** 120 */
-            "Reverse Cymbal",
-            /** 121 */
-            "Guitar Fret Noise",
-            /** 122 */
-            "Breath Noise",
-            /** 123 */
-            "Seashore",
-            /** 124 */
-            "Bird Tweet",
-            /** 125 */
-            "Telephone Ring",
-            /** 126 */
-            "Helicopter",
-            /** 127 */
-            "Applause",
-            /** 128 */
-            "Gunshot" };
+    /** Definition of all Midi instruments in proper order. */
+    private static final String[] instrumentNames = { //
+            "Acoustic Grand Piano", // 1
+            "Bright Acoustic Piano", // 2
+            "Electric Grand Piano", // 3
+            "Honky-tonk Piano", // 4
+            "Electric Piano 1", // 5
+            "Electric Piano 2", // 6
+            "Harpsichord", // 7
+            "Clavi", // 8
+            "Celesta", // 9
+            "Glockenspiel", // 10
+            "Music Box", // 11
+            "Vibraphone", // 12
+            "Marimba", // 13
+            "Xylophone", // 14
+            "Tubular Bells", // 15
+            "Dulcimer", // 16
+            "Drawbar Organ", // 17
+            "Percussive Organ", // 18
+            "Rock Organ", // 19
+            "Church Organ", // 20
+            "Reed Organ", // 21
+            "Accordion", // 22
+            "Harmonica", // 23
+            "Tango Accordion", // 24
+            "Acoustic Guitar (nylon)", // 25
+            "Acoustic Guitar (steel)", // 26
+            "Electric Guitar (jazz)", // 27
+            "Electric Guitar (clean)", // 28
+            "Electric Guitar (muted)", // 29
+            "Overdriven Guitar", // 30
+            "Distortion Guitar", // 31
+            "Guitar harmonics", // 32
+            "Acoustic Bass", // 33
+            "Electric Bass (finger)", // 34
+            "Electric Bass (pick)", // 35
+            "Fretless Bass", // 36
+            "Slap Bass 1", // 37
+            "Slap Bass 2", // 38
+            "Synth Bass 1", // 39
+            "Synth Bass 2", // 40
+            "Violin", // 41
+            "Viola", // 42
+            "Cello", // 43
+            "Contrabass", // 44
+            "Tremolo Strings", // 45
+            "Pizzicato Strings", // 46
+            "Orchestral Harp", // 47
+            "Timpani", // 48
+            "String Ensemble 1", // 49
+            "String Ensemble 2", // 50
+            "SynthStrings 1", // 51
+            "SynthStrings 2", // 52
+            "Choir Aahs", // 53
+            "Voice Oohs", // 54
+            "Synth Voice", // 55
+            "Orchestra Hit", // 56
+            "Trumpet", // 57
+            "Trombone", // 58
+            "Tuba", // 59
+            "Muted Trumpet", // 60
+            "French Horn", // 61
+            "Brass Section", // 62
+            "SynthBrass 1", // 63
+            "SynthBrass 2", // 64
+            "Soprano Sax", // 65
+            "Alto Sax", // 66
+            "Tenor Sax", // 67
+            "Baritone Sax", // 68
+            "Oboe", // 69
+            "English Horn", // 70
+            "Bassoon", // 71
+            "Clarinet", // 72
+            "Piccolo", // 73
+            "Flute", // 74
+            "Recorder", // 75
+            "Pan Flute", // 76
+            "Blown Bottle", // 77
+            "Shakuhachi", // 78
+            "Whistle", // 79
+            "Ocarina", // 80
+            "Lead 1 (square)", // 81
+            "Lead 2 (sawtooth)", // 82
+            "Lead 3 (calliope)", // 83
+            "Lead 4 (chiff)", // 84
+            "Lead 5 (charang)", // 85
+            "Lead 6 (voice)", // 86
+            "Lead 7 (fifths)", // 87
+            "Lead 8 (bass + lead)", // 88
+            "Pad 1 (new age)", // 89
+            "Pad 2 (warm)", // 90
+            "Pad 3 (polysynth)", // 91
+            "Pad 4 (choir)", // 92
+            "Pad 5 (bowed)", // 93
+            "Pad 6 (metallic)", // 94
+            "Pad 7 (halo)", // 95
+            "Pad 8 (sweep)", // 96
+            "FX 1 (rain)", // 97
+            "FX 2 (soundtrack)", // 98
+            "FX 3 (crystal)", // 99
+            "FX 4 (atmosphere)", // 100
+            "FX 5 (brightness)", // 101
+            "FX 6 (goblins)", // 102
+            "FX 7 (echoes)", // 103
+            "FX 8 (sci-fi)", // 104
+            "Sitar", // 105
+            "Banjo", // 106
+            "Shamisen", // 107
+            "Koto", // 108
+            "Kalimba", // 109
+            "Bag pipe", // 110
+            "Fiddle", // 111
+            "Shanai", // 112
+            "Tinkle Bell", // 113
+            "Agogo", // 114
+            "Steel Drums", // 115
+            "Woodblock", // 116
+            "Taiko Drum", // 117
+            "Melodic Tom", // 118
+            "Synth Drum", // 119
+            "Reverse Cymbal", // 120
+            "Guitar Fret Noise", // 121
+            "Breath Noise", // 122
+            "Seashore", // 123
+            "Bird Tweet", // 124
+            "Telephone Ring", // 125
+            "Helicopter", // 126
+            "Applause", // 127
+            "Gunshot" }; // 128
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -311,13 +182,64 @@ public abstract class MidiAbstractions
 
     //~ Static Methods -----------------------------------------------------------------------------
 
+    //-------------------//
+    // getAnnotatedNames //
+    //-------------------//
+    /**
+     * Report the ordered table of midi instruments, each name being led by the program id.
+     *
+     * @return an annotated table of Midi instruments
+     */
+    public static String[] getAnnotatedNames ()
+    {
+        final String[] annotated = new String[instrumentNames.length];
+
+        for (int i = 0; i < annotated.length; i++) {
+            annotated[i] = (i + 1) + " / " + instrumentNames[i];
+        }
+
+        return annotated;
+    }
+
+    //--------------//
+    // getProgramId //
+    //--------------//
+    /**
+     * Report the program ID that corresponds to the provided annotation.
+     *
+     * @param annotation a String like "58 / Trombone"
+     * @return the id, like 58. Null if annotation is invalid
+     */
+    public static Integer getProgramId (String annotation)
+    {
+        final int slash = annotation.indexOf('/');
+
+        if (slash == -1) {
+            logger.warn("Illegal Midi annotation: \"{}\"", annotation);
+        } else {
+            final String idString = annotation.substring(0, slash).trim();
+            try {
+                final int id = Integer.decode(idString);
+                if (id < 1 || id > instrumentNames.length) {
+                    logger.warn("Illegal Midi id: {}", id);
+                } else {
+                    return id;
+                }
+            } catch (NumberFormatException ex) {
+                logger.warn("Illegal Midi id: '{}'", idString);
+            }
+        }
+
+        return null;
+    }
+
     //----------------//
     // getProgramName //
     //----------------//
     /**
      * Report the instrument name for a given program id
      *
-     * @param id the given program id
+     * @param id the given program id, counted from 1
      * @return the corresponding instrument name
      */
     public static String getProgramName (int id)

@@ -284,7 +284,8 @@ public class SymbolsLinker
                     Link link = links.iterator().next();
                     link.applyTo(pedal);
                 } else {
-                    logger.info("No chord above {}", pedal);
+                    logger.debug("No chord above {}", pedal);
+                    pedal.setAbnormal(true);
                 }
             } catch (Exception ex) {
                 logger.warn("Error in linkPedals for {} {}", pedal, ex.toString(), ex);

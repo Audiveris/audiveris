@@ -23,8 +23,7 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.sheet.ui.StubsController;
+import org.audiveris.omr.text.FontAttributes;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.util.param.ConstantBasedParam;
 import org.audiveris.omr.util.param.Param;
@@ -53,7 +52,7 @@ public class TextFont
     public static final float TO_POINT = 72f / 300f;
 
     /** Name of the chosen underlying text font. */
-    private static final String TEXT_FONT_NAME = constants.defaultTextFontName.getValue();
+    public static final String TEXT_FONT_NAME = constants.defaultTextFontName.getValue();
 
     /** The base font used for text entities. */
     public static final TextFont TEXT_FONT_BASE = new TextFont(
@@ -72,17 +71,17 @@ public class TextFont
     }
 
     /**
-     * Creates a new <code>TextFont</code> based on OCR-based font information.
+     * Creates a new <code>TextFont</code> based on OCR-based font attributes and size.
      *
      * @param info OCR-based font information
      */
     public TextFont (FontInfo info)
     {
         this(
-                info.isSerif ? Font.SERIF : (info.isMonospace ? Font.MONOSPACED : Font.SANS_SERIF),
+                getBestFontName(info.getAttributes()),
                 null,
                 (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0),
-                info.pointsize);
+                info.pointSize);
     }
 
     /**
@@ -141,8 +140,9 @@ public class TextFont
                                    FontInfo info)
     {
         final int style = (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0);
-        final float size = info.pointsize;
+        final float size = info.pointSize;
         final Font font = baseFont.deriveFont(style, size);
+
         return new TextFont(font);
     }
 
@@ -159,7 +159,7 @@ public class TextFont
     public static TextFont getBaseFont (TextFamily family,
                                         int staffInterline)
     {
-        return getTextFont(family, MusicFont.getPointSize(staffInterline));
+        return getTextFont(family, getPointSize(staffInterline));
     }
 
     //-------------------//
@@ -178,23 +178,68 @@ public class TextFont
         return getTextFont(family, pointSize);
     }
 
-    //------------------//
-    // getCurrentFamily //
-    //------------------//
+    //-------------//
+    // getBestFont //
+    //-------------//
     /**
-     * Report the text family used in the sheet currently displayed.
+     * Report the font that would better fit the provided attributes and size.
      *
-     * @return the current sheet text family, null if no sheet is displayed
+     * @param attrs     the provided attributes
+     * @param pointSize the font point size
+     * @return the chosen font
      */
-    public static TextFamily getCurrentFamily ()
+    public static TextFont getBestFont (FontAttributes attrs,
+                                        int pointSize)
     {
-        final SheetStub stub = StubsController.getInstance().getSelectedStub();
-        return (stub != null) ? stub.getTextFamily() : null;
+        final String fontName = getBestFontName(attrs);
+        final int style = (attrs.isBold ? Font.BOLD : 0) | (attrs.isItalic ? Font.ITALIC : 0);
+        return new TextFont(fontName, null, style, pointSize);
+    }
+
+    //-------------//
+    // getBestFont //
+    //-------------//
+    /**
+     * Report the font that would better fit the provided font information.
+     *
+     * @param fontInfo the provided font information
+     * @return the chosen font
+     */
+    public static TextFont getBestFont (FontInfo fontInfo)
+    {
+        final String fontName = getBestFontName(fontInfo.getAttributes());
+        return new TextFont(fontName, null, fontInfo.getStyle(), fontInfo.pointSize);
+    }
+
+    //-----------------//
+    // getBestFontName //
+    //-----------------//
+    /**
+     * Select the "best suitable" font name, based on attributes.
+     * <p>
+     * Key attributes are: isSerif and isMonospaced
+     * Non yet used attributes are: isSmallcaps and isUnderlined
+     * <p>
+     * The attributes: isBold and isItalic impact only the style, not the chosen font name
+     *
+     * @param attrs the provided attributes
+     * @return the chosen font name
+     */
+    private static String getBestFontName (FontAttributes attrs)
+    {
+        return attrs.isSerif ? Font.SERIF : attrs.isMonospaced ? Font.MONOSPACED : Font.SANS_SERIF;
     }
 
     //-------------//
     // getTextFont //
     //-------------//
+    /**
+     * Report the (plain) text font for the provided family and size.
+     *
+     * @param family provided text family
+     * @param size   desired point size
+     * @return the corresponding text font
+     */
     public static TextFont getTextFont (TextFamily family,
                                         int size)
     {

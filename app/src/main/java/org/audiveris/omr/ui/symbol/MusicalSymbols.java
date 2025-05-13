@@ -75,7 +75,7 @@ public class MusicalSymbols
             case DOUBLE_SHARP -> ints(0xF0DC);
             case DYNAMICS_F -> ints(0xF066);
             case DYNAMICS_FF -> ints(0xF0C4);
-            //        case DYNAMICS_FFF -> ints(0xF0EC);
+            case DYNAMICS_FFF -> ints(0xF0EC);
             //        case DYNAMICS_FZ -> ints(0xF05A);
             //        case DYNAMICS_FFFF -> ints(0xE531);
             //        case DYNAMICS_FFFFF -> ints(0xE532);
@@ -85,7 +85,7 @@ public class MusicalSymbols
             case DYNAMICS_MP -> ints(0xF050);
             case DYNAMICS_P -> ints(0xF070);
             case DYNAMICS_PP -> ints(0xF0B9);
-            //        case DYNAMICS_PPP -> ints(0xF0B8);
+            case DYNAMICS_PPP -> ints(0xF0B8);
             //        case DYNAMICS_PPPP -> ints(0xE529); // Composed
             //        case DYNAMICS_PPPPP -> ints(0xE528); // Composed
             //        case DYNAMICS_PPPPPP -> ints(0xE527); // Composed
@@ -179,7 +179,8 @@ public class MusicalSymbols
             case STACCATISSIMO -> ints(0xF0AE);
             case STACCATO -> ints(0xF02E);
             case STEM -> ints(0xF06C);
-            case STRONG_ACCENT -> ints(0xF05E);
+            case MARCATO -> ints(0xF05E);
+            case MARCATO_BELOW -> ints(0xF076);
 
             case TENUTO -> ints(0xF02D);
             case THICK_BARLINE -> ints(0xF05B);

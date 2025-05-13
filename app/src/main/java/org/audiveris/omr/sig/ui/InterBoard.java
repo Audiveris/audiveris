@@ -41,6 +41,7 @@ import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.text.FontAttributes;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
@@ -165,7 +166,13 @@ public class InterBoard
             resources.getString("time.text"),
             resources.getString("time.toolTipText"));
 
-    /** ComboBox for text role. */
+    /** Font attributes for word. */
+    private final LTextField fontAttributes = new LTextField(
+            true,
+            resources.getString("fontAttributes.text"),
+            resources.getString("fontAttributes.toolTipText"));
+
+    /** ComboBox for sentence role. */
     private final LComboBox<TextRole> roleCombo = new LComboBox<>(
             resources.getString("roleCombo.text"),
             resources.getString("roleCombo.toolTipText"),
@@ -329,6 +336,7 @@ public class InterBoard
         toEnsButton.setHorizontalAlignment(SwingConstants.RIGHT);
         toEnsAction.setEnabled(false);
         builder.addRaw(toEnsButton).xyw(9, r, 3);
+        builder.addRaw(toEnsButton).xyw(9, r, 3);
 
         r += 2; // --------------------------------
 
@@ -337,6 +345,15 @@ public class InterBoard
         roleCombo.addActionListener(paramAction);
         roleCombo.setVisible(false);
         builder.addRaw(roleCombo.getField()).xyw(3, r, 4);
+
+        // Font attributes (for a word only)
+        fontAttributes.getLabel().setHorizontalTextPosition(SwingConstants.LEFT);
+        fontAttributes.getLabel().setHorizontalAlignment(SwingConstants.LEFT);
+        fontAttributes.getField().addActionListener(paramAction);
+        builder.addRaw(fontAttributes.getLabel()).xyw(2, r, 2);
+        builder.addRaw(fontAttributes.getField()).xyw(4, r, 2);
+        fontAttributes.setEnabled(true);
+        fontAttributes.setVisible(false);
 
         // Tie (for a SlurInter only)
         final JPanel tiePane = new JPanel(new BorderLayout());
@@ -438,7 +455,8 @@ public class InterBoard
      * @param interListEvent the inter list event
      */
     @Override
-    protected void handleEntityListEvent(EntityListEvent<Inter> interListEvent) {
+    protected void handleEntityListEvent (EntityListEvent<Inter> interListEvent)
+    {
         super.handleEntityListEvent(interListEvent);
 
         final Inter inter = interListEvent.getEntity();
@@ -451,6 +469,7 @@ public class InterBoard
         textField.setVisible(false);
         textField.setEnabled(false);
         roleCombo.setVisible(false);
+        fontAttributes.setVisible(false);
         musicPane.setVisible(false);
         verse.setVisible(false);
         aboveBelow.setVisible(false);
@@ -471,9 +490,8 @@ public class InterBoard
 
             deassignAction.putValue(
                     Action.NAME,
-                    inter.isRemoved()
-                           ? resources.getString("deassign.Action.deleted")
-                           : resources.getString("deassign.Action.text"));
+                    inter.isRemoved() ? resources.getString("deassign.Action.deleted")
+                            : resources.getString("deassign.Action.text"));
 
             switch (inter) {
                 case BeatUnitInter beatUnit -> {
@@ -493,6 +511,10 @@ public class InterBoard
                     textField.setText(word.getValue());
                     textField.setEnabled(true);
                     textField.setVisible(true);
+
+                    fontAttributes.setText(word.getFontInfo().getAttributesSpec());
+                    fontAttributes.setVisible(true);
+
                     selfUpdatingText = false;
                 }
 
@@ -585,9 +607,7 @@ public class InterBoard
         shapeName.setEnabled(inter != null);
         edit.setEnabled((inter != null) && !inter.isRemoved() && inter.isEditable());
         toEnsAction.setEnabled(
-                (inter != null)
-                        && !inter.isRemoved()
-                        && (inter.getSig() != null)
+                (inter != null) && !inter.isRemoved() && (inter.getSig() != null) //
                         && (inter.getEnsemble() != null));
     }
 
@@ -701,7 +721,7 @@ public class InterBoard
          * @param e semantic event
          */
         @Override
-        public void actionPerformed(ActionEvent e)
+        public void actionPerformed (ActionEvent e)
         {
             // Discard irrelevant action events
             if (selfUpdatingText) {
@@ -710,6 +730,29 @@ public class InterBoard
 
             // Current inter
             final Inter inter = getSelectedEntity();
+
+            if (e.getSource() == fontAttributes.getField()) {
+                // Modification of word font attributes?
+                final WordInter word = (WordInter) inter;
+                final FontAttributes oldAttrs = word.getFontInfo().getAttributes();
+
+                try {
+                    final FontAttributes newAttrs = FontAttributes.decode(
+                            fontAttributes.getField().getText().trim().toUpperCase());
+
+                    if (!newAttrs.equals(oldAttrs)) {
+                        logger.debug("new FontAttributes=\"{}\"", newAttrs.getSpec());
+                        sheet.getInterController().changeWordAttributes(word, newAttrs.getSpec());
+                    } else {
+                        // To normalize the attributes display
+                        fontAttributes.setText(oldAttrs.getSpec());
+                    }
+                } catch (IllegalArgumentException ex) {
+                    logger.warn("{}", ex.getMessage());
+                }
+
+                return;
+            }
 
             switch (inter) {
                 case null -> {}
@@ -753,7 +796,9 @@ public class InterBoard
 
                     if (newRole != sentence.getRole()) {
                         logger.debug(
-                                "Sentence=\"{}\" Role={}", textField.getText().trim(), newRole);
+                                "Sentence=\"{}\" Role={}",
+                                textField.getText().trim(),
+                                newRole);
                         sheet.getInterController().changeSentence(sentence, newRole);
                     }
                 }

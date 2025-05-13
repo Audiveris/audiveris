@@ -31,6 +31,8 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import static org.audiveris.omr.util.VerticalSide.BOTTOM;
+import static org.audiveris.omr.util.VerticalSide.TOP;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +48,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class <code>ArticulationInter</code> represents an articulation sign.
  * <p>
- * Supported shapes are ACCENT, STRONG_ACCENT, STACCATO, TENUTO, STACCATISSIMO
+ * Supported shapes are ACCENT, MARCATO, MARCATO_BELOW, STACCATO, TENUTO, STACCATISSIMO
  *
  * @author Hervé Bitteur
  */
@@ -71,7 +73,7 @@ public class ArticulationInter
      * Creates a new <code>ArticulationInter</code> object.
      *
      * @param glyph underlying glyph
-     * @param shape precise shape (ACCENT, STRONG_ACCENT, STACCATO, TENUTO, STACCATISSIMO)
+     * @param shape precise shape (ACCENT, MARCATO, MARCATO_BELOW, STACCATO, TENUTO, STACCATISSIMO)
      * @param grade the interpretation quality
      */
     public ArticulationInter (Glyph glyph,
@@ -139,6 +141,12 @@ public class ArticulationInter
     //------------//
     /**
      * Try to detect a link between this articulation instance and a HeadChord nearby.
+     * <p>
+     * Vertically, the lookup should stop at the top line of the staff above
+     * and at the bottom line of the staff below.
+     * <p>
+     * Plus, for articulation exclusively above or below, such as MARCATO and MARCATO_BELOW,
+     * the ordinate search should focus only on below or above the sign respectively.
      *
      * @param systemHeadChords collection of head chords in system, ordered by abscissa
      * @param profile          desired profile level
@@ -156,11 +164,46 @@ public class ArticulationInter
         final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum(profile));
         final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum(profile));
         final int minDy = scale.toPixels(ChordArticulationRelation.getYGapMinimum(profile));
-        final Rectangle articBox = getBounds();
-        final Point articCenter = getCenter();
-        final Rectangle luBox = new Rectangle(articCenter);
-        luBox.grow(maxDx, maxDy);
 
+        final Rectangle articBox = getBounds();
+        final Point pt = getCenter();
+        final List<Staff> stavesAround = system.getStavesAround(pt);
+
+        // Adjustment for MARCATO (above): look for chord only *below* the sign
+        // Adjustment for MARCATO_BELOW: look for chord only *above* the sign
+        final int minY;
+        final int maxY;
+
+        if (stavesAround.size() == 2) {
+            // The sign is located between 2 staves of the system
+            minY = shape.isAbove() ? pt.y : stavesAround.get(0).getLine(TOP).yAt(pt.x);
+            maxY = shape.isBelow() ? pt.y : stavesAround.get(1).getLine(BOTTOM).yAt(pt.x);
+        } else {
+            // The sign is related to a single staff
+            final Staff theStaff = stavesAround.get(0);
+
+            if (theStaff.isPointAbove(pt)) {
+                // The sign is located above staff
+                if (shape.isBelow()) {
+                    return null;
+                }
+                minY = shape.isAbove() ? pt.y : pt.y - maxDy;
+                maxY = theStaff.getLine(BOTTOM).yAt(pt.x);
+            } else if (theStaff.isPointBelow(pt)) {
+                // The sign is located below staff
+                if (shape.isAbove()) {
+                    return null;
+                }
+                minY = theStaff.getLine(TOP).yAt(pt.x);
+                maxY = shape.isBelow() ? pt.y : pt.y + maxDy;
+            } else {
+                // The sign is located within staff height
+                minY = shape.isAbove() ? pt.y : theStaff.getLine(TOP).yAt(pt.x);
+                maxY = shape.isBelow() ? pt.y : theStaff.getLine(BOTTOM).yAt(pt.x);
+            }
+        }
+
+        final Rectangle luBox = new Rectangle(pt.x - maxDx, minY, 2 * maxDx + 1, maxY - minY + 1);
         final List<Inter> chords = Inters.intersectedInters(
                 systemHeadChords,
                 GeoOrder.BY_ABSCISSA,
@@ -185,10 +228,9 @@ public class ArticulationInter
             Point center = chord.getCenter();
 
             // Select proper chord reference point (top or bottom)
-            int yRef = (articCenter.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
-            double absXGap = Math.abs(center.x - articCenter.x);
-            double yGap = (articCenter.y > center.y) ? (articCenter.y - yRef)
-                    : (yRef - articCenter.y);
+            int yRef = (pt.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
+            double absXGap = Math.abs(center.x - pt.x);
+            double yGap = (pt.y > center.y) ? (pt.y - yRef) : (yRef - pt.y);
 
             if (yGap < minDy) {
                 continue;
