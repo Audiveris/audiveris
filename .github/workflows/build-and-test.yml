@@ -1,16 +1,18 @@
 name: Build & Test Audiveris
 
-# execute this workflow on every push
+# Execute this workflow on every push
 on:
   - push
   - workflow_dispatch
+
+# Set retention period for logs/artifacts
+retention-days: 30 
 
 permissions:
   contents: read
 
 jobs:
   build-and-test:
-    retention-days: 30 # Set retention for logs/artifacts
     runs-on: ubuntu-latest
     env:
       # TESSDATA_PREFIX: /home/runner/work/audiveris/audiveris/tessdata
