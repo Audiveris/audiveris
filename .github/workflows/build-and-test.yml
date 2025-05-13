@@ -52,11 +52,10 @@ jobs:
         uses: gradle/gradle-build-action@v2.7.0
         with:
           arguments: build -x test
+          retention-days: 30
 
       - name: Unit-Test Audiveris
         uses: gradle/gradle-build-action@v2.7.0
         with:
           arguments: test
-          
-# Set retention for logs
-retention-days: 30  # Retain logs for 30 days instead of the default 90
+          retention-days: 30
