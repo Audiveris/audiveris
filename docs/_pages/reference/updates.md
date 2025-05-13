@@ -21,6 +21,26 @@ Table of contents
 {:toc}
 ---
 
+## 5.6
+(May 2025)
+
+- User Interface
+  - Logical parts editor: manual selection of MIDI program for any logical part
+  - Inter board: editing of word attributes
+- Engine
+  - Use of OCR'd word attributes to determine the text font family and style for any text word
+  - Abandon of the manual selection of text font at global/book/sheet levels
+  - Addition of Primus font into the collection of music fonts
+
+## 5.5
+(Apr 2025)
+
+- Project
+  - Use of jpackage/jlink utilities to build a JRE-included installer. Contributed by [Fabio Marques].
+  - Use of GitHub workflows to generate installers for Windows, Linux and macOS.
+  - Abandon of the old JRE-free Windows installer
+  - Generalized use of GitHub workflows to publish Audiveris releases assets (installers, sources, docs)
+
 ## 5.4
 (Feb 2025)
 
@@ -231,6 +251,7 @@ Table of contents
 
 [Baruch Hoffart]:         https://github.com/Bacchushlg
 [Brian Boe]:              https://github.com/brian-math
+[Fabio Marques]:          https://github.com/fbmrqs
 [Jan-Willem Harmannij]:   https://github.com/jwharm
 [Martin Wilck]:           https://github.com/mwilck
 [Maxim Poliakovski]:      maximumspatium@googlemail.com
