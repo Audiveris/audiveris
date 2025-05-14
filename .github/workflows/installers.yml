@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest, macos-13]
+        os: [ubuntu-22.04, windows-latest, macos-latest, macos-13]
         # macos-latest is for Apple Silicon (arm64) support, and
         # macos-13 is for legacy Intel (x64) hardware support
 
@@ -89,7 +89,7 @@ jobs:
       - name: Download ubuntu installer
         uses: actions/download-artifact@v4
         with:
-          name: installer-ubuntu-latest
+          name: installer-ubuntu-22.04
           path: ./artifacts
 
       - name: Download windows installer
