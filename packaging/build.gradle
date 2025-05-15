@@ -43,6 +43,16 @@ def app     = project(':app')
 def appDir  = app.projectDir
 def rootDir = getRootDir()
 
+tasks.register('getOsInfo') {
+    doLast {
+        def os = org.gradle.internal.os.OperatingSystem.current()
+        println "getOsInfo results:"
+        println "OS:      ${os.name}"
+        println "Version: ${os.version}"
+        println "Arch:    ${os.arch}"
+    }
+}
+
 tasks.register('collectJars', Copy) {
     description "Copies the application jar and all external jars it depends upon"
     dependsOn ':app:classes'
@@ -119,6 +129,7 @@ tasks.register('macConvertIcons') {
 
 // Configure the jpackage task
 tasks.jpackage {
+    dependsOn 'getOsInfo'
     dependsOn 'customJre'
     dependsOn 'collectJars'
 
