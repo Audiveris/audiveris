@@ -35,7 +35,7 @@ jobs:
           distribution: zulu
 
       - name: Setup Gradle
-        uses: gradle/gradle-setup-action@v4
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Show Runner Info
         run: |
