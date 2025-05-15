@@ -36,11 +36,6 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Show Runner Info
-        run: |
-          echo "Runner OS:   $RUNNER_OS"
-          echo "Runner Name: $RUNNER_NAME"
             
       - name: Build installer on ${{ matrix.os }}
         run: ./gradlew --info jpackage
