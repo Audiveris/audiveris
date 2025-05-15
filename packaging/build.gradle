@@ -49,7 +49,6 @@ tasks.register('getOsInfo') {
         println "getOsInfo results:"
         println "OS:      ${os.name}"
         println "Version: ${os.version}"
-        println "Arch:    ${os.arch}"
     }
 }
 
