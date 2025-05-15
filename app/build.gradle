@@ -30,10 +30,18 @@ ext.jcppVersion     = '1.5.9'
 ext.leptVersion     = '1.83.0'
 ext.tessVersion     = '5.3.1'
 
+// Precise name of host OS
+ext.osname   = System.getProperty('os.name')
+println "osname: ${project.ext.osname}"
+
 // Name of host OS
 ext.hostOSName   = System.getProperty('os.name').toLowerCase()\
                      .startsWith('mac os x') ? 'macosx' :\
                      System.getProperty('os.name').split(' ')[0].toLowerCase()
+
+// Version of host OS
+ext.hostOSVersion = System.getProperty('os.version')
+println "hostOSVersion: ${project.ext.hostOSVersion}"
 
 // Architecture of host OS
 // This mapping is required to adapt values of os.name and os.arch

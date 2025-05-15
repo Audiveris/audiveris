@@ -12,7 +12,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, windows-latest, macos-latest, macos-13]
+        os: [ubuntu-latest, ubuntu-22.04, windows-latest, macos-latest, macos-13]
+        # ubuntu-22.04 is a fix for issue #805 libasound2t64 is required but not found
         # macos-latest is for Apple Silicon (arm64) support, and
         # macos-13 is for legacy Intel (x64) hardware support
 
@@ -86,7 +87,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download ubuntu installer
+      - name: Download ubuntu latest installer
+        uses: actions/download-artifact@v4
+        with:
+          name: installer-ubuntu-latest
+          path: ./artifacts
+
+      - name: Download ubuntu 22.04 installer
         uses: actions/download-artifact@v4
         with:
           name: installer-ubuntu-22.04
@@ -110,7 +117,7 @@ jobs:
           name: installer-macos-13
           path: ./artifacts
 
-      - name: Download handbook
+      - name: Download handbook PDF
         uses: actions/download-artifact@v4
         with:
           name: handbook

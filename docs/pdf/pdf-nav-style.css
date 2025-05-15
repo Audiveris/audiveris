@@ -30,9 +30,7 @@
 }
 
 @page {
-    background: rgba(255, 255, 60, 0.14) !important;
-		
-	@top-center {content: "Audiveris Handbook - Table of Contents";}
-    
+    background: rgba(255, 255, 60, 0.14) !important;		
+    @top-center {content: "Audiveris Handbook - Table of Contents";}    
     @bottom-center {content: "Contents - " counter(page, upper-roman)}
 }
