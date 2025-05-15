@@ -145,7 +145,6 @@ tasks.register('macConvertIcons') {
 
 // Configure the jpackage task
 tasks.jpackage {
-    dependsOn 'getOsInfo'
     dependsOn 'customJre'
     dependsOn 'collectJars'
 
