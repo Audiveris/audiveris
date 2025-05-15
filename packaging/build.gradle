@@ -15,10 +15,10 @@
 // - for Linux: DEFAULT, DEB or RPM
 // If not provided, the DEFAULT type is chosen (EXE for Windows, DMG for macOS, DEB for Linux)
 //
-// For all OSes, 'jlink' is required
+// For all OSes, 'jlink' and 'jpackage' are required
 // Windows requires 'WiX' 3 or higher
 // Linux requires 'fakeroot'
-// macOS requires '[image]magick', 'iconutil', 'lipo'
+// macOS requires '[image]magick', 'iconutil'
 //
 // The outputs are in the 'build' folder:
 // - build/jars:            Audiveris.jar, plus all the dependencies .jar files
@@ -205,14 +205,14 @@ tasks.jpackage {
     }
 
     doLast {
-        // Append host name and architecture to artifact name
+        // Append host name, version and architecture to artifact name
         def dir = layout.projectDirectory.dir(destination)
         
         fileTree(dir).each { file ->
             def oldName = "${file.name}"
             def dot = oldName.lastIndexOf('.');
             def suffix = oldName.substring(dot)
-            def newName = "${app.ext.programName}-${app.version}-${app.ext.hostOSName}-${app.ext.hostOSArch}$suffix"
+            def newName = "${app.ext.programName}-${app.version}-${app.ext.hostOSName}-${app.ext.hostOSVersion}-${app.ext.hostOSArch}$suffix"
             def newFile = Paths.get("$dir", newName).toFile()
 
             println "oldFile: ${file}"
