@@ -43,7 +43,7 @@ jobs:
           echo "Runner Name: $RUNNER_NAME"
             
       - name: Build installer on ${{ matrix.os }}
-        run: gradlew --info jpackage
+        run: ./gradlew --info jpackage
 
       - name: Upload installer
         id: upload-installer
