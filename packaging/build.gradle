@@ -53,7 +53,7 @@ tasks.register('linuxGetName', Exec) {
     standardOutput = new ByteArrayOutputStream()
     
     doLast {
-        project.ext.osname = standardOutput.toString().toLowerCase()
+        project.ext.osname = standardOutput.toString().toLowerCase().replaceAll('\n', '')
         println "osname: ${project.ext.osname}"
     }
 }
@@ -64,7 +64,7 @@ tasks.register('linuxGetVersion', Exec) {
     standardOutput = new ByteArrayOutputStream()
     
     doLast {
-        project.ext.osversion = standardOutput.toString()
+        project.ext.osversion = standardOutput.toString().replaceAll('\n', '')
         println "osversion: ${project.ext.osversion}"
     }
 }
