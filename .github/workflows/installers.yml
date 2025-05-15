@@ -87,7 +87,7 @@ jobs:
 
   # Collect all artifacts and draft a release with them
   global-upload:
-    needs: [build-installer, build-handbook]
+    needs: [build-installer, build-handbook-pdf]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
