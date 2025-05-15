@@ -53,7 +53,7 @@ tasks.register('linuxGetName', Exec) {
     standardOutput = new ByteArrayOutputStream()
     
     doLast {
-        project.ext.osname = standardOutput.toString().lowerCase()
+        project.ext.osname = standardOutput.toString().toLowerCase()
         println "osname: ${project.ext.osname}"
     }
 }
