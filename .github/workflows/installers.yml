@@ -55,7 +55,7 @@ jobs:
           overwrite: true
 
   # Build the handbook PDF from Audiveris github pages
-  build-handbook:
+  build-handbook-pdf:
     runs-on: ubuntu-latest
 
     steps:
