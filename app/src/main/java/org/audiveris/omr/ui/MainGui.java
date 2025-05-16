@@ -288,11 +288,11 @@ public class MainGui
 
         frame.setJMenuBar(outerBar);
 
-        // Mac Application menu
-        if (WellKnowns.MAC_OS_X) {
-            MacApplication.setupMacMenus();
-            MacApplication.setupMacDockIcon();
-        }
+        //        // Mac Application menu
+        //        if (WellKnowns.MAC_OS_X) {
+        //            MacApplication.setupMacMenus();
+        //            MacApplication.setupMacDockIcon();
+        //        }
     }
 
     //---------------------//

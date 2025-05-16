@@ -204,7 +204,7 @@ public class MacApplication
         } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
                 | InstantiationException | NoSuchMethodException | SecurityException
                 | InvocationTargetException ex) {
-            logger.warn("Unable to setup Mac OS X menu integration", ex);
+            logger.warn("Unable to setup Mac OS X menu integration, {}", ex.getMessage(), ex);
 
             return false;
         }
