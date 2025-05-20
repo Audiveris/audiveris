@@ -204,7 +204,6 @@ tasks.jpackage {
         dependsOn 'macConvertIcons'
         icon = "build/Audiveris.icns"
 
-        javaOptions = ["--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"]
         macPackageIdentifier = "org.audiveris.app"
         macPackageName = app.ext.programName
 

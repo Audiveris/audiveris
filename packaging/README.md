@@ -1,38 +1,97 @@
-# How to Use the Audiveris macOS Installer
+# Packaging
 
-This guide explains how to install and run the Audiveris application on macOS using the provided DMG installer. Since the installer is not signed with an Apple Developer certificate, you'll need to adjust your macOS privacy settings to allow it to run.
+The `packaging` sub-project is in charge of building the OS-dependent Audiveris installer
+for the OS the project is being run upon.
 
-## Installation Steps
+The GitHub workflow named `draft-release.yml` drives the building of installers for various OSes,
+collects all the installers, adds a PDF version of Audiveris handbook,
+and creates a draft release with all these assets.
 
-1. **Obtain the DMG File**
-    - Download or receive the `Audiveris-<version>.dmg` file (e.g., `Audiveris-1.0.dmg`) from the source (e.g., a contributor or repository release).
+## Relevant files
 
-2. **Open the DMG**
-    - Double-click the `Audiveris-<version>.dmg` file in your `Downloads` folder (or wherever it’s saved). This mounts the installer as a virtual disk on your desktop or in Finder.
+<pre>
+.
+├── .github
+│   └── workflows
+│       └── draft-release.yml   // Workflow to draft a release
+│
+├── app
+│   └── build.gradle            // Building Audiveris application
+│
+├── docs
+│   └── pdf
+│       ├── pdf-build.sh        // Building the PDF version of handbook
+│       └── pdf-nav-style.css   // Styling for the PDF table of contents
+│
+├── packaging
+│   ├── README.md               // This file
+│   ├── build.gradle            // Building an OS-dependent installer
+│   └── dev
+│       └── omr.properties      // Mapping the .omr extension to Audiveris application
+</pre>
 
-3. **Install the Application**
-    - Inside the mounted DMG, you’ll see `Audiveris.app`. Drag this file to your **Applications** folder to install it.
-    - Once copied, you can eject the DMG by clicking the eject icon next to it in Finder or dragging it to the trash.
+## Building an installer
 
-## Running Audiveris
+The approach is based on two Java tools:
+- [`jlink`](https://docs.oracle.com/en/java/javase/17/docs/specs/man/jlink.html)
+which assembles a set of JRE  modules and their dependencies into a custom runtime image,
+- [`jpackage`](https://docs.oracle.com/en/java/javase/21/docs/specs/man/jpackage.html)
+which packages a Java application into a platform-specific self-contained executable.
+It is supported by the dedicated [jpackage-gradle-plugin](https://github.com/petr-panteleyev/jpackage-gradle-plugin)
+with its specific `window`, `mac` and `linux` blocks.
 
-Since the app is not signed, macOS will block it by default. Follow these steps to allow it to run:
+The implementation is driven in the `packaging/build.gradle` file by the Gradle task named `jpackage`
+provided by a dedicated [jpackage-gradle-plugin](https://github.com/petr-panteleyev/jpackage-gradle-plugin)
+with its specific `window`, `mac` and `linux` blocks, as follows:
+1. `customJre`: task to package only the needed JRE modules
+(resulting in a reduction of about 75% of the installer file size)
+2. `collectJars`: task to collect the `audiveris.jar` just built, with all the jars it depends on
+3. `jpackage` with os-specific actions:
+    - for `Windows`: The installer type is `MSI` by default.  
+    We could ask for a Windows console, if so needed. This option is OFF by default.
+    - for `Linux`: The installer type is `DEB` by default.  
+    The installer name conveys the Ubuntu version, that is either `20.04` or `22.04` as of this writing.
+    - for `macOS`: The installer type is `DMG` by default.  
+    The `macConvertIcons` task uses `imagemagick` and `iconutil` utilities
+    to generate a set of Audiveris icons with differents sizes.
+4. Finally, rename the resulting installer file according to:
+    - OS name,
+    - OS version if needed,
+    - machine architecture,
+    - installer type.
 
-1. **Attempt to Open the App**
-    - Go to your **Applications** folder and double-click `Audiveris.app`.
-    - You’ll likely see a warning: *"“Audiveris” cannot be opened because it is from an unidentified developer."*
+## Packaging and publishing
 
-2. **Adjust Privacy Settings**
-    - Open **System Preferences** (or **System Settings** on macOS Ventura and later):
-        - Click the Apple menu () > **System Preferences** > **Security & Privacy** > **General** tab.
-    - At the bottom, you’ll see a message: *“Audiveris” was blocked from use because it is not from an identified developer.*
-    - Click **"Open Anyway"** to allow the app to run.
+### Drafting a release
 
-3. **Launch the App**
-    - Double-click `Audiveris.app` again. You may see one final prompt asking for confirmation—click **"Open"**.
-    - The app should now launch successfully.
+The workflow file `draft-release.yml` launches the job `build-installer` in parallel on several machines.
+As of this writing, these machines are:
 
-## Notes
+| Name           | Version | Architecture |
+| :---           | :---    | :--- | 
+| ubuntu-latest  | 24.04   | x86_64 |
+| ubuntu-22.04   | 22.04   | x86_64 | 
+| windows-latest | 10      | x86_64 |
+| macos-latest   | 14      | arm64  | 
+| macos-13       | 13      | x86_64 |
 
-- **Unsigned App**: The lack of a signature is due to the installer not being created with an Apple Developer account. This is a one-time adjustment; once approved, macOS will remember your choice.
-- **Troubleshooting**: If the app still won’t open, ensure you’ve completed the privacy settings step. For persistent issues, contact the provider or check the Audiveris documentation.
+It also launches in parallel the job `build-handbook-pdf` to generate the PDF version of the handbook.
+
+Then, the job `global-upload` collects all the produced artifacts to create a draft release.
+
+![](./build_installers.png)
+
+### Editing the release
+
+The draft is now present in the [Releases section](https://github.com/Audiveris/audiveris/releases)
+of the Audiveris repository, but since it is a draft, it is visible only by the repository authors.
+
+We have to enter the editing mode to manually adjust this draft:
+1. Set or choose a tag
+2. Rename the release
+3. Write comments about the main features of the release
+4. Perhaps set it as a pre-release
+5. Or set it as the latest release
+6. Finally press the `Update release` button
+
+At this point in time, the release is now fully visible and even referenced as the latest release.
