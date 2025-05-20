@@ -37,8 +37,6 @@ The approach is based on two Java tools:
 which assembles a set of JRE  modules and their dependencies into a custom runtime image,
 - [`jpackage`](https://docs.oracle.com/en/java/javase/21/docs/specs/man/jpackage.html)
 which packages a Java application into a platform-specific self-contained executable.
-It is supported by the dedicated [jpackage-gradle-plugin](https://github.com/petr-panteleyev/jpackage-gradle-plugin)
-with its specific `window`, `mac` and `linux` blocks.
 
 The implementation is driven in the `packaging/build.gradle` file by the Gradle task named `jpackage`
 provided by a dedicated [jpackage-gradle-plugin](https://github.com/petr-panteleyev/jpackage-gradle-plugin)
@@ -64,7 +62,8 @@ with its specific `window`, `mac` and `linux` blocks, as follows:
 
 ### Drafting a release
 
-The workflow file `draft-release.yml` launches the job `build-installer` in parallel on several machines.
+The workflow file `draft-release.yml` launches the job `build-installer`
+(which runs the `jpackage` Gradle task described above) in parallel on several machines.
 As of this writing, these machines are:
 
 | Name           | Version | Architecture |
@@ -79,12 +78,14 @@ It also launches in parallel the job `build-handbook-pdf` to generate the PDF ve
 
 Then, the job `global-upload` collects all the produced artifacts to create a draft release.
 
-![](./build_installers.png)
+![](./draft-release.png)
 
 ### Editing the release
 
 The draft is now present in the [Releases section](https://github.com/Audiveris/audiveris/releases)
 of the Audiveris repository, but since it is a draft, it is visible only by the repository authors.
+
+![](./edit-release.png)
 
 We have to enter the editing mode to manually adjust this draft:
 1. Set or choose a tag
@@ -95,3 +96,7 @@ We have to enter the editing mode to manually adjust this draft:
 6. Finally press the `Update release` button
 
 At this point in time, the release is now fully visible and even referenced as the latest release.
+
+Something like that:
+
+![](./latest-release.png)
