@@ -23,16 +23,19 @@ and creates a draft release with all these assets.
 │       ├── pdf-build.sh        // Building the PDF version of handbook
 │       └── pdf-nav-style.css   // Styling for the PDF table of contents
 │
-├── packaging
-│   ├── README.md               // This file
-│   ├── build.gradle            // Building an OS-dependent installer
-│   └── dev
-│       └── omr.properties      // Mapping the .omr extension to Audiveris application
+└── packaging
+    ├── README.md               // This file
+    ├── build.gradle            // Building an OS-dependent installer
+    └── dev
+        └── omr.properties      // Mapping the .omr extension to Audiveris application
 </pre>
 
 ## Building an installer
 
-The approach is based on two Java tools:
+Each created installer includes a (shrunk) Java Runtime Environment (JRE), the Audiveris application and all the
+dependent libraries. It contains no pre-installed language file for the Tesseract library.
+
+This approach is based on two Java tools:
 - [`jlink`](https://docs.oracle.com/en/java/javase/17/docs/specs/man/jlink.html)
 which assembles a set of JRE  modules and their dependencies into a custom runtime image,
 - [`jpackage`](https://docs.oracle.com/en/java/javase/21/docs/specs/man/jpackage.html)
@@ -53,16 +56,17 @@ with its specific `window`, `mac` and `linux` blocks, as follows:
     The `macConvertIcons` task uses `imagemagick` and `iconutil` utilities
     to generate a set of Audiveris icons with differents sizes.
 4. Finally, rename the resulting installer file according to:
-    - OS name,
-    - OS version if needed,
-    - machine architecture,
-    - installer type.
+    - the Audiveris version,
+    - the OS name,
+    - the OS version if needed,
+    - the machine architecture,
+    - the installer type.
 
 ## Packaging and publishing
 
 ### Drafting a release
 
-The workflow file `draft-release.yml` launches the job `build-installer`
+The Github workflow file `draft-release.yml` launches the job `build-installer`
 (which runs the `jpackage` Gradle task described above) in parallel on several machines.
 As of this writing, these machines are:
 
