@@ -122,7 +122,11 @@ Definition of Audiveris precise version.
 Definitions for the handbook documentation.
 
 Note: It should be possible to determine these values ​​automatically from the variables listed above.
+<<<<<<< HEAD
 But unfortunately, as of this writing, these values must be entered manually...
+=======
+But currently, these values must be entered manually...
+>>>>>>> be8671dde (Project documentation based on sub-projects README.md files)
 
 | Variable name | Variable role | Current value |
 | :---          | :---          | :---          | 
