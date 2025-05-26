@@ -72,6 +72,7 @@ public class XsltTransformer
     public XsltTransformer ()
     {
     }
+
     //~ Methods ------------------------------------------------------------------------------------
 
     //~ Static Methods -----------------------------------------------------------------------------
@@ -84,7 +85,7 @@ public class XsltTransformer
      *
      * @param inputStream the input stream
      * @return the resulting string
-     * @throws IOException
+     * @throws IOException if an IO error has occurred
      */
     public static String convertToString (InputStream inputStream)
         throws IOException
@@ -111,10 +112,10 @@ public class XsltTransformer
      * Command line entry point.
      *
      * @param args styleSheet.xsl source.xsd target.html
-     * @throws TransformerFactoryConfigurationError
-     * @throws TransformerException
-     * @throws java.io.FileNotFoundException
-     * @throws org.kohsuke.args4j.CmdLineException
+     * @throws TransformerFactoryConfigurationError if occurred
+     * @throws TransformerException                 if occurred
+     * @throws java.io.FileNotFoundException        if occurred
+     * @throws org.kohsuke.args4j.CmdLineException  if occurred
      */
     public static void main (String[] args)
         throws TransformerFactoryConfigurationError, TransformerException, FileNotFoundException,

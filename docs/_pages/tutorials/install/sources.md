@@ -27,9 +27,9 @@ Table of contents
 
 * [Gradle][gradle]: build tool.
 
-* [Java Development Kit (JDK)][jdk]: version {{ site.java_version }}
+* [Java Development Kit (JDK)][jdk]: version {{ site.master_java_version }}
  (higher numbers may work, to be confirmed).  
-  This is the Java version needed for the *master* branch.
+  This is the minimum Java version needed for the *master* branch.
   The *development* branch may require a higher version, please
   check on the Audiveris [project site](https://github.com/Audiveris/audiveris/tree/development?tab=readme-ov-file#development-versions).  
   Audiveris {{ site.audiveris_version }} runs only on 64-bit architectures.

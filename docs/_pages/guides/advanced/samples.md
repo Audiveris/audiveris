@@ -44,7 +44,7 @@ It's the one that has been used to train the Glyph classifier provided with
 latest Audiveris release.
 
 We begin by downloading this archive (without expanding it) into our own `config/train` folder
-(see its precise location in [Folders] section).  
+(see its precise location in the [Essential Folders](../../reference/folders/essential.md) section).  
 We will then be able to augment this collection on our own.
 
 We can also download the `images.zip` file which is not mandatory for training, but which will

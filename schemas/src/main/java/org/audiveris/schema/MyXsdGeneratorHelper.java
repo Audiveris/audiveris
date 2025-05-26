@@ -5,29 +5,6 @@
 //------------------------------------------------------------------------------------------------//
 package org.audiveris.schema;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.mojo.jaxb2.schemageneration.AbstractXsdGeneratorMojo;
@@ -48,6 +25,31 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -77,8 +79,8 @@ import org.xml.sax.InputSource;
  */
 public class MyXsdGeneratorHelper
 {
-
     //~ Static fields/initializers -----------------------------------------------------------------
+
     // Constants
     private static final String MISCONFIG = "Misconfiguration detected: ";
 
@@ -100,7 +102,7 @@ public class MyXsdGeneratorHelper
                     // Accept directories for recursive operation, and
                     // files with names matching the SCHEMAGEN_EMITTED_FILENAME Pattern.
                     return toMatch.isDirectory()
-                                   || AbstractXsdGeneratorMojo.SCHEMAGEN_EMITTED_FILENAME.matcher(
+                            || AbstractXsdGeneratorMojo.SCHEMAGEN_EMITTED_FILENAME.matcher(
                                     toMatch.getName()).matches();
                 }
 
@@ -128,12 +130,12 @@ public class MyXsdGeneratorHelper
      * @throws MojoExecutionException if two generated schema files used the same namespace URI.
      */
     public static Map<String, SimpleNamespaceResolver> getFileNameToResolverMap (
-            final File outputDirectory)
-            throws MojoExecutionException
+                                                                                 final File outputDirectory)
+        throws MojoExecutionException
     {
 
-        final Map<String, SimpleNamespaceResolver> toReturn
-                = new TreeMap<String, SimpleNamespaceResolver>();
+        final Map<String, SimpleNamespaceResolver> toReturn =
+                new TreeMap<String, SimpleNamespaceResolver>();
 
         // Each generated schema file should be written to the output directory.
         // Each generated schema file should have a unique targetNamespace.
@@ -141,8 +143,8 @@ public class MyXsdGeneratorHelper
         {
             public boolean accept (File pathname)
             {
-                return pathname.getName().startsWith("schema") && pathname.getName()
-                        .endsWith(".xsd");
+                return pathname.getName().startsWith("schema") && pathname.getName().endsWith(
+                        ".xsd");
             }
         });
 
@@ -163,14 +165,16 @@ public class MyXsdGeneratorHelper
      * @param configuredTransformSchemas The List of configuration schemas provided to this mojo.
      * @throws MojoExecutionException if any two configuredSchemas instances contain duplicate
      *                                values for any of the
-     *                                properties uri, prefix or file. Also throws a MojoExecutionException if the uri of any Schema
+     *                                properties uri, prefix or file. Also throws a
+     *                                MojoExecutionException if the uri of any Schema
      *                                is null
-     *                                or empty, or if none of the 'file' and 'prefix' properties are given within any of the
+     *                                or empty, or if none of the 'file' and 'prefix' properties are
+     *                                given within any of the
      *                                configuredSchema instances.
      */
     public static void validateSchemasInPluginConfiguration (
-            final List<TransformSchema> configuredTransformSchemas)
-            throws MojoExecutionException
+                                                             final List<TransformSchema> configuredTransformSchemas)
+        throws MojoExecutionException
     {
 
         final List<String> uris = new ArrayList<String>();
@@ -185,41 +189,46 @@ public class MyXsdGeneratorHelper
 
             // We cannot work with a null or empty uri
             if (StringUtils.isEmpty(currentURI)) {
-                throw new MojoExecutionException(MISCONFIG
-                                                         + "Null or empty property 'uri' found in "
-                                                         + "plugin configuration for schema element at index ["
-                                                 + i + "]: " + current);
+                throw new MojoExecutionException(
+                        MISCONFIG + "Null or empty property 'uri' found in "
+                                + "plugin configuration for schema element at index [" + i + "]: "
+                                + current);
             }
 
             // No point in having *only* a namespace.
             if (StringUtils.isEmpty(currentPrefix) && StringUtils.isEmpty(currentFile)) {
-                throw new MojoExecutionException(MISCONFIG + "Null or empty properties 'prefix' "
-                                                         + "and 'file' found within plugin configuration for schema element at index ["
-                                                 + i + "]: " + current);
+                throw new MojoExecutionException(
+                        MISCONFIG + "Null or empty properties 'prefix' "
+                                + "and 'file' found within plugin configuration for schema element at index ["
+                                + i + "]: " + current);
             }
 
             // Validate that all given uris are unique.
             if (uris.contains(currentURI)) {
-                throw new MojoExecutionException(getDuplicationErrorMessage("uri", currentURI,
-                                                                            uris.indexOf(currentURI),
-                                                                            i));
+                throw new MojoExecutionException(
+                        getDuplicationErrorMessage("uri", currentURI, uris.indexOf(currentURI), i));
             }
             uris.add(currentURI);
 
             // Validate that all given prefixes are unique.
             if (prefixes.contains(currentPrefix) && !(currentPrefix == null)) {
-                throw new MojoExecutionException(getDuplicationErrorMessage("prefix", currentPrefix,
-                                                                            prefixes.indexOf(
-                                                                                    currentPrefix),
-                                                                            i));
+                throw new MojoExecutionException(
+                        getDuplicationErrorMessage(
+                                "prefix",
+                                currentPrefix,
+                                prefixes.indexOf(currentPrefix),
+                                i));
             }
             prefixes.add(currentPrefix);
 
             // Validate that all given files are unique.
             if (fileNames.contains(currentFile)) {
-                throw new MojoExecutionException(getDuplicationErrorMessage("file", currentFile,
-                                                                            fileNames.indexOf(
-                                                                                    currentFile), i));
+                throw new MojoExecutionException(
+                        getDuplicationErrorMessage(
+                                "file",
+                                currentFile,
+                                fileNames.indexOf(currentFile),
+                                i));
             }
             fileNames.add(currentFile);
         }
@@ -230,6 +239,7 @@ public class MyXsdGeneratorHelper
      * within the supplied outputDir.
      *
      * @param log       A Maven Log.
+     * @param encoding  The chosen encoding name
      * @param outputDir The outputDir, where generated XSD files are found.
      * @param docs      The SearchableDocumentation for the source files within the compilation
      *                  unit.
@@ -258,10 +268,11 @@ public class MyXsdGeneratorHelper
         if (foundFiles.size() > 0) {
 
             // Create the processors.
-            final MyXsdAnnotationProcessor classProcessor = new MyXsdAnnotationProcessor(docs,
-                                                                                         renderer);
-//            final XsdEnumerationAnnotationProcessor enumProcessor
-//                    = new XsdEnumerationAnnotationProcessor(docs, renderer);
+            final MyXsdAnnotationProcessor classProcessor = new MyXsdAnnotationProcessor(
+                    docs,
+                    renderer);
+            //            final XsdEnumerationAnnotationProcessor enumProcessor
+            //                    = new XsdEnumerationAnnotationProcessor(docs, renderer);
 
             for (File current : foundFiles) {
 
@@ -278,9 +289,10 @@ public class MyXsdGeneratorHelper
 
         } else {
             if (log.isWarnEnabled()) {
-                log.warn("Found no generated 'vanilla' XSD files to process under ["
-                                 + FileSystemUtilities.getCanonicalPath(outputDir)
-                                 + "]. Aborting processing.");
+                log.warn(
+                        "Found no generated 'vanilla' XSD files to process under ["
+                                + FileSystemUtilities.getCanonicalPath(outputDir)
+                                + "]. Aborting processing.");
             }
         }
 
@@ -302,22 +314,23 @@ public class MyXsdGeneratorHelper
      * @throws MojoExecutionException If the namespace replacement could not be done.
      */
     public static void replaceNamespacePrefixes (
-            final Map<String, SimpleNamespaceResolver> resolverMap,
-            final List<TransformSchema> configuredTransformSchemas,
-            final Log mavenLog,
-            final File schemaDirectory,
-            final String encoding)
-            throws MojoExecutionException
+                                                 final Map<String, SimpleNamespaceResolver> resolverMap,
+                                                 final List<TransformSchema> configuredTransformSchemas,
+                                                 final Log mavenLog,
+                                                 final File schemaDirectory,
+                                                 final String encoding)
+        throws MojoExecutionException
     {
 
         if (mavenLog.isDebugEnabled()) {
-            mavenLog
-                    .debug("Got resolverMap.keySet() [generated filenames]: " + resolverMap.keySet());
+            mavenLog.debug(
+                    "Got resolverMap.keySet() [generated filenames]: " + resolverMap.keySet());
         }
 
         for (SimpleNamespaceResolver currentResolver : resolverMap.values()) {
-            File generatedSchemaFile
-                    = new File(schemaDirectory, currentResolver.getSourceFilename());
+            File generatedSchemaFile = new File(
+                    schemaDirectory,
+                    currentResolver.getSourceFilename());
             Document generatedSchemaFileDocument = null;
 
             for (TransformSchema currentTransformSchema : configuredTransformSchemas) {
@@ -335,10 +348,10 @@ public class MyXsdGeneratorHelper
                         validatePrefixSubstitutionIsPossible(oldPrefix, newPrefix, currentResolver);
 
                         if (mavenLog.isDebugEnabled()) {
-                            mavenLog.debug("Substituting namespace prefix [" + oldPrefix + "] with ["
-                                                   + newPrefix
-                                                   + "] in file [" + currentResolver
-                                            .getSourceFilename() + "].");
+                            mavenLog.debug(
+                                    "Substituting namespace prefix [" + oldPrefix + "] with ["
+                                            + newPrefix + "] in file [" + currentResolver
+                                                    .getSourceFilename() + "].");
                         }
 
                         // Get the Document of the current schema file.
@@ -347,7 +360,9 @@ public class MyXsdGeneratorHelper
                         }
 
                         // Replace all namespace prefixes within the provided document.
-                        process(generatedSchemaFileDocument.getFirstChild(), true,
+                        process(
+                                generatedSchemaFileDocument.getFirstChild(),
+                                true,
                                 new ChangeNamespacePrefixProcessor(oldPrefix, newPrefix));
                     }
                 }
@@ -355,13 +370,18 @@ public class MyXsdGeneratorHelper
 
             if (generatedSchemaFileDocument != null) {
                 // Overwrite the generatedSchemaFile with the content of the generatedSchemaFileDocument.
-                mavenLog.debug("Overwriting file [" + currentResolver.getSourceFilename()
-                                       + "] with content ["
-                                       + getHumanReadableXml(generatedSchemaFileDocument) + "]");
-                savePrettyPrintedDocument(generatedSchemaFileDocument, generatedSchemaFile, encoding);
+                mavenLog.debug(
+                        "Overwriting file [" + currentResolver.getSourceFilename()
+                                + "] with content [" + getHumanReadableXml(
+                                        generatedSchemaFileDocument) + "]");
+                savePrettyPrintedDocument(
+                        generatedSchemaFileDocument,
+                        generatedSchemaFile,
+                        encoding);
             } else {
-                mavenLog.debug("No namespace prefix changes to generated schema file ["
-                                       + generatedSchemaFile.getName() + "]");
+                mavenLog.debug(
+                        "No namespace prefix changes to generated schema file ["
+                                + generatedSchemaFile.getName() + "]");
             }
         }
     }
@@ -380,11 +400,11 @@ public class MyXsdGeneratorHelper
      * @param charsetName                The encoding / charset name.
      */
     public static void renameGeneratedSchemaFiles (
-            final Map<String, SimpleNamespaceResolver> resolverMap,
-            final List<TransformSchema> configuredTransformSchemas,
-            final Log mavenLog,
-            final File schemaDirectory,
-            final String charsetName)
+                                                   final Map<String, SimpleNamespaceResolver> resolverMap,
+                                                   final List<TransformSchema> configuredTransformSchemas,
+                                                   final Log mavenLog,
+                                                   final File schemaDirectory,
+                                                   final String charsetName)
     {
 
         // Create the map relating namespace URI to desired filenames.
@@ -397,22 +417,28 @@ public class MyXsdGeneratorHelper
 
         // Replace the schemaLocation values to correspond to the new filenames
         for (SimpleNamespaceResolver currentResolver : resolverMap.values()) {
-            File generatedSchemaFile
-                    = new File(schemaDirectory, currentResolver.getSourceFilename());
+            File generatedSchemaFile = new File(
+                    schemaDirectory,
+                    currentResolver.getSourceFilename());
             Document generatedSchemaFileDocument = parseXmlToDocument(generatedSchemaFile);
 
             // Replace all namespace prefixes within the provided document.
-            process(generatedSchemaFileDocument.getFirstChild(), true,
+            process(
+                    generatedSchemaFileDocument.getFirstChild(),
+                    true,
                     new ChangeFilenameProcessor(namespaceUriToDesiredFilenameMap));
 
             // Overwrite the generatedSchemaFile with the content of the generatedSchemaFileDocument.
             if (mavenLog.isDebugEnabled()) {
-                mavenLog.debug("Changed schemaLocation entries within [" + currentResolver
-                        .getSourceFilename() + "]. "
-                                       + "Result: [" + getHumanReadableXml(
-                                generatedSchemaFileDocument) + "]");
+                mavenLog.debug(
+                        "Changed schemaLocation entries within [" + currentResolver
+                                .getSourceFilename() + "]. " + "Result: [" + getHumanReadableXml(
+                                        generatedSchemaFileDocument) + "]");
             }
-            savePrettyPrintedDocument(generatedSchemaFileDocument, generatedSchemaFile, charsetName);
+            savePrettyPrintedDocument(
+                    generatedSchemaFileDocument,
+                    generatedSchemaFile,
+                    charsetName);
         }
 
         // Now, rename the actual files.
@@ -426,15 +452,18 @@ public class MyXsdGeneratorHelper
             }
 
             final String newFilename = namespaceUriToDesiredFilenameMap.get(localNamespaceURI);
-            final File originalFile = new File(schemaDirectory, currentResolver.getSourceFilename());
+            final File originalFile = new File(
+                    schemaDirectory,
+                    currentResolver.getSourceFilename());
 
             if (StringUtils.isNotEmpty(newFilename)) {
                 File renamedFile = FileUtils.resolveFile(schemaDirectory, newFilename);
-                String renameResult = (originalFile.renameTo(renamedFile) ? "Success " : "Failure ");
+                String renameResult = (originalFile.renameTo(renamedFile) ? "Success "
+                        : "Failure ");
 
                 if (mavenLog.isDebugEnabled()) {
                     String suffix = "renaming [" + originalFile.getAbsolutePath() + "] to ["
-                                            + renamedFile + "]";
+                            + renamedFile + "]";
                     mavenLog.debug(renameResult + suffix);
                 }
             }
@@ -522,8 +551,9 @@ public class MyXsdGeneratorHelper
             transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
             transformer.transform(new DOMSource(node), new StreamResult(toReturn));
         } catch (TransformerException e) {
-            throw new IllegalStateException("Could not transform node [" + node.getNodeName()
-                                                    + "] to XML", e);
+            throw new IllegalStateException(
+                    "Could not transform node [" + node.getNodeName() + "] to XML",
+                    e);
         }
 
         return toReturn.toString();
@@ -538,10 +568,9 @@ public class MyXsdGeneratorHelper
                                                       final int currentIndex)
     {
         return MISCONFIG + "Duplicate '" + propertyName + "' property with value [" + propertyValue
-                       + "] found in plugin configuration. Correct schema elements index ("
-                       + firstIndex + ") and ("
-                       + currentIndex + "), to ensure that all '" + propertyName
-                       + "' values are unique.";
+                + "] found in plugin configuration. Correct schema elements index (" + firstIndex
+                + ") and (" + currentIndex + "), to ensure that all '" + propertyName
+                + "' values are unique.";
     }
 
     /**
@@ -559,16 +588,15 @@ public class MyXsdGeneratorHelper
     private static void validatePrefixSubstitutionIsPossible (final String oldPrefix,
                                                               final String newPrefix,
                                                               final SimpleNamespaceResolver currentResolver)
-            throws MojoExecutionException
+        throws MojoExecutionException
     {
         // Make certain the newPrefix does not exist already.
         if (currentResolver.getNamespaceURI2PrefixMap().containsValue(newPrefix)) {
-            throw new MojoExecutionException(MISCONFIG + "Namespace prefix [" + newPrefix
-                                                     + "] is already in use."
-                                                     + " Cannot replace namespace prefix ["
-                                                     + oldPrefix + "] with [" + newPrefix
-                                                     + "] in file ["
-                                                     + currentResolver.getSourceFilename() + "].");
+            throw new MojoExecutionException(
+                    MISCONFIG + "Namespace prefix [" + newPrefix + "] is already in use."
+                            + " Cannot replace namespace prefix [" + oldPrefix + "] with ["
+                            + newPrefix + "] in file [" + currentResolver.getSourceFilename()
+                            + "].");
         }
     }
 
@@ -600,12 +628,13 @@ public class MyXsdGeneratorHelper
     {
         Writer out = null;
         try {
-            out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(targetFile),
-                                                            charsetName));
+            out = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(targetFile), charsetName));
             out.write(getHumanReadableXml(toSave.getFirstChild()));
         } catch (IOException e) {
-            throw new IllegalStateException("Could not write to file [" + targetFile
-                    .getAbsolutePath() + "]", e);
+            throw new IllegalStateException(
+                    "Could not write to file [" + targetFile.getAbsolutePath() + "]",
+                    e);
         } finally {
             IOUtil.close(out);
         }
@@ -641,7 +670,9 @@ public class MyXsdGeneratorHelper
                 FACTORY = TransformerFactory.newInstance();
 
                 // Harmonize XML formatting
-                for (String currentAttributeName : Arrays.asList("indent-number", OutputKeys.INDENT)) {
+                for (String currentAttributeName : Arrays.asList(
+                        "indent-number",
+                        OutputKeys.INDENT)) {
                     try {
                         FACTORY.setAttribute(currentAttributeName, 2);
                     } catch (IllegalArgumentException ex) {
@@ -652,7 +683,8 @@ public class MyXsdGeneratorHelper
 
                 // This should really not happen... but it seems to happen in some test cases.
                 throw new IllegalStateException(
-                        "Could not acquire TransformerFactory implementation.", exception);
+                        "Could not acquire TransformerFactory implementation.",
+                        exception);
             }
         }
 

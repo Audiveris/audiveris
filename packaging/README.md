@@ -24,6 +24,7 @@ and creates a draft release with all these assets.
 │       └── pdf-nav-style.css   // Styling for the PDF table of contents
 │
 └── packaging
+    ├── assets                  // Images used by README.md
     ├── README.md               // This file
     ├── build.gradle            // Building an OS-dependent installer
     └── dev
@@ -82,14 +83,14 @@ It also launches in parallel the job `build-handbook-pdf` to generate the PDF ve
 
 Then, the job `global-upload` collects all the produced artifacts to create a draft release.
 
-![](./draft-release.png)
+![](./assets/draft-release.png)
 
 ### Editing the release
 
 The draft is now present in the [Releases section](https://github.com/Audiveris/audiveris/releases)
 of the Audiveris repository, but since it is a draft, it is visible only by the repository authors.
 
-![](./edit-release.png)
+![](./assets/edit-release.png)
 
 We have to enter the editing mode to manually adjust this draft:
 1. Set or choose a tag
@@ -103,4 +104,4 @@ At this point in time, the release is now fully visible and even referenced as t
 
 Something like that:
 
-![](./latest-release.png)
+![](./assets/latest-release.png)
