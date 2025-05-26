@@ -280,7 +280,13 @@ int xmlDocWidth = 50
                 }
                 
                 target << srcLine << lineSeparator
-            }            
+            }  
+
+//            if (target.exists()) {
+//                println "BINGO target exists $target"
+//            } else {
+//                println "BINGO target does not exist $target"
+//            }          
         }        
     }
     completeSchemas.dependsOn("completeSchema$cls")

@@ -19,7 +19,7 @@ These files are rendered as HTML pages and delivered on-line from the GitHub web
 
 The latest web format is available [here](web-latest).
 
-Via any web browser, we can:
+Via any web browser, the user can:
 - Access the documentation on-line,
 - Navigate through its hierarchy (via the side navigation pane),
 - Search the documentation for matching words (via the "Search Audiveris Pages" field),
@@ -36,7 +36,7 @@ The PDF file is organized as follows:
 
 The latest PDF format can be downloaded from [here][pdf-latest].
 
-With the PDF format, we can:
+With the PDF format, the user can:
 - Read the documentation off-line,
 - Navigate through its hierarchy (via the table of contents),
 - Print it on paper,
@@ -92,8 +92,8 @@ tutorials, how-to guides, reference and explanation.
 
 The file `_config.yml` gathers the configuration settings.
 The developer should pay attention to two site variables defined in this file:
-- `audiveris_version`: should reflect the version of Audiveris (e.g. 5.6) to which the manual applies.
-- `java_version`: should reflect the Java version (e.g. 21) needed for building the `master` branch.
+- `audiveris_functional_version`: should reflect the functional version of Audiveris (e.g. 5.6) to which the manual applies.
+- `master_java_version`: should reflect the Java version (e.g. 21) needed for building the `master` branch.
 
 "Visual Studio Code" is a convenient editor to work interactively on this documentation.
 
@@ -117,7 +117,7 @@ From that point on, the local site can be accessed via a browser pointing to [ht
 The purpose of the local generator is to have a good preview of the web rendering,
 based on the current files being edited, without resorting to GitHub site.
 
-### On GitHub pages
+### On GitHub
 
 Since Audiveris is a public repository on GitHub, its documentation is readily available
 on [https://audiveris.github.io/audiveris/](https://audiveris.github.io/audiveris/).
@@ -142,18 +142,21 @@ assumed to be installed, which can be freely used for non-commercial use.
 | `docs/pdf/pdf-nav-style.css`  | Style file used by the table of contents |
 | `docs/build/`                 | Folder where the results are generated |
 
-### Local generation
+### Locally
 
 The file `docs/build.gradle` can drive the PDF generation via two possible tasks:
-- `handbookPdf` task which gets the web content from Audiveris project on github site  (https://audiveris.github.io)
+- `handbookPdf` task which gets the web content from Audiveris project on GitHub site  (https://audiveris.github.io)
 - `handbookPdfLocalhost` task which gets the web content from a local Jekyll generator (http://localhost:4000)
 
-### Remote generation
+We can also directly call the `pdf/pdf-build.sh` command file from within the `docs` folder.
+The optional `localhost` argument would retrieve the web content locally instead of the remote GitHub site.
+
+### On GitHub
 
 It is generally more convenient to generate and package the PDF format any time a new Audiveris version is released.
 
-The `draft-release.yml` GitHub workflow file, beside building the desired installers,
-generates the handbook PDF format, and packages all the artifacts as release assets.
+The `draft-release.yml` GitHub workflow file, in addition to creating the desired installers,
+generates the PDF format of the handbook, and bundles all artifacts as release assets.
 
 It does so by directly calling the `pdf/pdf-build.sh` command file from within the `docs` folder.
 

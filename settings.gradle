@@ -7,11 +7,11 @@
 // Audiveris project.
 //
 // Sub-projects:
-//      - app               : The application
-//      - docs              : The handbook documentation
-//      - flatpak           : The Linux flatpak
-//      - packaging         : The building of installers for Windows, Linux and macOS
-//      - schemas           : The documentation on .omr files
+//      - app       : The application
+//      - docs      : The handbook documentation
+//      - flatpak   : The Linux flatpak
+//      - packaging : The building of installers for Windows, Linux and macOS
+//      - schemas   : The documentation about the .omr files
 //
 //--------------------------------------------------------------------------------------------------
 
@@ -23,6 +23,7 @@ pluginManagement {
   }
 }
 
+// Name for the project
 rootProject.name = 'Audiveris'
 
 // Application
@@ -42,6 +43,6 @@ if (startParameter.projectProperties['isFlatpak'] == 'true') {
     // Multi-OS packaging
     include 'packaging'
 
-    // Generation of schema-based documentation
+    // Generation of schemas-based documentation
     include 'schemas'
 }

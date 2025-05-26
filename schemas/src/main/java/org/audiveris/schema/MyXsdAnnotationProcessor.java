@@ -24,7 +24,6 @@
  */
 package org.audiveris.schema;
 
-import java.util.SortedMap;
 import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.NodeProcessor;
 import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.JavaDocData;
 import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.JavaDocRenderer;
@@ -35,10 +34,12 @@ import org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.location.
 import org.codehaus.mojo.jaxb2.shared.Validate;
 import org.w3c.dom.Node;
 
+import java.util.SortedMap;
+
 /**
  * Node processor that injects XSD documentation annotations consisting of JavaDoc harvested Java
  * source code
- * into ComplexTypes, Elements and Attributes. The documentation is injected as follows:</p>
+ * into ComplexTypes, Elements and Attributes. The documentation is injected as follows:
  * <ol>
  * <li><strong>ComplexType</strong>: Class-level JavaDoc from the corresponding type is injected as
  * an
@@ -53,7 +54,9 @@ import org.w3c.dom.Node;
  * annotation directly inside the element.</li>
  * </ol>
  * <p>
- * Thus, the following 'vanilla'-generated XSD:</p>
+ * Thus, the following 'vanilla'-generated XSD:
+ * </p>
+ *
  * <pre>
  *     <code>
  *         &lt;xs:complexType name="somewhatNamedPerson"&gt;
@@ -66,7 +69,9 @@ import org.w3c.dom.Node;
  *     </code>
  * </pre>
  * <p>
- * ... would be converted to the following annotated XSD, given a DefaultJavaDocRenderer:</p>
+ * ... would be converted to the following annotated XSD, given a DefaultJavaDocRenderer:
+ * </p>
+ *
  * <pre>
  *     <code>
  *         &lt;xs:complexType name="somewhatNamedPerson"&gt;
@@ -99,7 +104,8 @@ import org.w3c.dom.Node;
  * <p>
  * ... given that the Java class <code>SomewhatNamedPerson</code> has JavaDoc on its class and
  * fields
- * corresponding to the injected XSD annotation/documentation elements.</p>
+ * corresponding to the injected XSD annotation/documentation elements.
+ * </p>
  * <p>
  * HB: This is a modified version of class
  * org.codehaus.mojo.jaxb2.schemageneration.postprocessing.javadoc.XsdAnnotationProcessor
@@ -112,8 +118,8 @@ import org.w3c.dom.Node;
 public class MyXsdAnnotationProcessor
         implements NodeProcessor
 {
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     // Internal state
     private SortedMap<ClassLocation, JavaDocData> classJavaDocs;
 
@@ -124,6 +130,7 @@ public class MyXsdAnnotationProcessor
     private JavaDocRenderer renderer;
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates an XsdAnnotationProcessor that uses the supplied/generated SearchableDocumentation to
      * read all
@@ -151,6 +158,7 @@ public class MyXsdAnnotationProcessor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -202,7 +210,11 @@ public class MyXsdAnnotationProcessor
     @Override
     public void process (final Node aNode)
     {
-        MyDomHelper.insertXmlDocumentationAnnotationsFor(aNode, classJavaDocs, fieldJavaDocs,
-                                                         methodJavaDocs, renderer);
+        MyDomHelper.insertXmlDocumentationAnnotationsFor(
+                aNode,
+                classJavaDocs,
+                fieldJavaDocs,
+                methodJavaDocs,
+                renderer);
     }
 }

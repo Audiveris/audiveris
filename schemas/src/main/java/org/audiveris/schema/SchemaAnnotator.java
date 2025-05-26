@@ -65,9 +65,8 @@ import java.util.SortedMap;
 public class SchemaAnnotator
         extends AbstractXsdGeneratorMojo
 {
-
-    //~ Static fields/initializers -----------------------------------------------------------------
     //~ Instance fields ----------------------------------------------------------------------------
+
     /**
      * The directory where the plain XSD files are read.
      * From this directory the XSDs will be copied to the outputDirectory for further processing.
@@ -152,6 +151,12 @@ public class SchemaAnnotator
     //---------//
     // process //
     //---------//
+    /**
+     * Perform the annotation of XSD schema files with JavaDoc information.
+     *
+     * @throws MojoExecutionException if occurred
+     * @throws MojoFailureException   if occurred
+     */
     public final void process ()
         throws MojoExecutionException, MojoFailureException
     {
@@ -252,6 +257,11 @@ public class SchemaAnnotator
     }
 
     // HB
+    /**
+     * Debugging method to print out the provided docs.
+     *
+     * @param docs the provided docs
+     */
     public void dumpDocs (SearchableDocumentation docs)
     {
         SortedMap<SortableLocation, JavaDocData> map = docs.getAll();

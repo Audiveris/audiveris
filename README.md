@@ -77,8 +77,8 @@ See details in the [Wiki article][workflow] dedicated to the chosen development 
 
 ## Further Information
 
-Users and developers are advised to read the Audiveris [User Handbook][handbook],
-and the more general [Wiki][audiveris-wiki] set of articles.
+- For users: the Audiveris [User Handbook][handbook].
+- For developers: the [Project Documentation][project] and the [Wiki][audiveris-wiki] set of articles.
 
 [audiveris-wiki]: https://github.com/Audiveris/audiveris/wiki
 [Flathub]:        https://flathub.org/apps/org.audiveris.audiveris
@@ -86,6 +86,7 @@ and the more general [Wiki][audiveris-wiki] set of articles.
 [imslp]:          https://imslp.org/
 [installation]:   https://audiveris.github.io/audiveris/_pages/tutorials/install/binaries/
 [musicxml]:       http://www.musicxml.com/
+[project]:        project-structure.md
 [releases]:       https://github.com/Audiveris/audiveris/releases
 [sources]:        https://audiveris.github.io/audiveris/_pages/tutorials/install/sources/
 [workflow]:       https://github.com/Audiveris/audiveris/wiki/Git-Workflow

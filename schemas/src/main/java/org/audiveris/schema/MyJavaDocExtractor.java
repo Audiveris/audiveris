@@ -65,7 +65,6 @@ import javax.xml.bind.annotation.XmlType;
  * However, the javadoc documentation present in java source files is required within the generated
  * XSD to increase usability and produce an XSD which does not loose out on important usage
  * information.
- * </p>
  * <p>
  * The JavaDocExtractor is used as a post processor after creating the XSDs within the compilation
  * unit, and injects XSD annotations into the appropriate XSD elements or types.
