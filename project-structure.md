@@ -125,6 +125,7 @@ Note: It should be possible to determine these values ​​automatically from t
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 But unfortunately, as of this writing, these values must be entered manually...
 =======
 But currently, these values must be entered manually...
@@ -135,6 +136,9 @@ But unfortunately, as of this writing, these values must be entered manually...
 =======
 But currently, these values must be entered manually...
 >>>>>>> be8671dde (Project documentation based on sub-projects README.md files)
+=======
+But unfortunately, as of this writing, these values must be entered manually...
+>>>>>>> b25bd8a62 (Doc for the app sub-project)
 
 | Variable name | Variable role | Current value |
 | :---          | :---          | :---          | 
