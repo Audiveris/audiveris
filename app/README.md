@@ -113,12 +113,12 @@ They are listed here for information only:
 | `project.ext.commit` | Full hash of latest commit | 9315e943438c603a0b6520526d01a1d7fe7df2fa | 
 | `project.ext.programBuild` | Short hash of latest commit | 9315e9434 | 
 
-## `config-examples` folder
+## The `config-examples` folder
 
 These files are **NOT** read at runtime.
 They are just examples that could be customized and placed in the user `config` folder.
 
-## `dev` folder
+## The `dev` folder
 
 These are development items.
 
@@ -127,21 +127,27 @@ These are development items.
 This ensemble of Crystal icons is loaded as a runtime resource, next to the Java classes,
 to represent the various user interface actions.
 
+Such as:
+![](./dev/icons/crystal/32x32/actions/1leftarrow.png)
+![](./dev/icons/crystal/32x32/actions/1rightarrow.png)
+![](./dev/icons/crystal/32x32/mimetypes/pdf.png)
+![](./dev/icons/crystal/32x32/mimetypes/gettext.png)
 ### `dev/scripts`
 
 These files are script templates, that are used to check at launch time if the Java runtime environment (JRE) fits the application requirements..
 
 Note: This is useful only when the user launches the application via its `Audiveris` or `Audiveris.bat` command files.
-It is no longer useful when using the new Audiveris installers which carry the needed JRE.
+It is no longer useful when using the new Audiveris installers
+since those carry the needed JRE with them.
 
 ### `dev/tessdata`
 
-It was used to carry the default language data file for Tesseract.
+It was used to provide the default language data file for Tesseract.
 
 It is no longer used, since these data files can now be downloaded at runtime.
-But it is kept for a possible future use, in some Continuous Integration actions.
+But it is kept for a potential future use, in some Continuous Integration actions.
 
-## `res` folder
+## The `res` folder
 
 These are resources that must be available at runtime.
 
@@ -175,7 +181,7 @@ It can be overridden by another `basic-classifier.zip` file, located in the user
 
 These are definition files, managed by the developer, and read at runtime.
 
-In most cases, the end user can override them, but putting a corresponding
+In most cases, the end user can override them, by putting a corresponding
 file with the same name in the user `config` folder.
 
 | File name | Role | Overridable by |
