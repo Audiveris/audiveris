@@ -7,7 +7,7 @@ The GitHub workflow named `draft-release.yml` drives the building of installers 
 collects all the installers, adds a PDF version of Audiveris handbook,
 and creates a draft release with all these assets.
 
-## Relevant files
+## Most relevant files
 
 <pre>
 .

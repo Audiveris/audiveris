@@ -78,7 +78,7 @@ The order is not strictly alphabetical, in order to group the entities by role.
 
 ## Information sources
 
-Below are the *unique* locations, relative to the project root, where the Audiveris key parameters are defined.
+Below are the *unique* locations, relative to the project root, where the Audiveris key parameters are defined
 and can be modified manually.
 
 ### `settings.gradle`
@@ -101,7 +101,7 @@ Definition of the desired Gradle version.
 
 ### `gradle.properties`
 
-Definition of the main variables.
+Definition of 'the' main variables.
 
 | Variable name | Variable role | Current value |
 | :---          | :---          | :---          | 
