@@ -78,7 +78,8 @@ The order is not strictly alphabetical, in order to group the entities by role.
 
 ## Information sources
 
-Below are the *unique* locations, relative to the project root, where the Audiveris key parameters are defined, and can be modified manually.
+Below are the *unique* locations, relative to the project root, where the Audiveris key parameters are defined.
+and can be modified manually.
 
 ### `settings.gradle`
 
@@ -121,7 +122,7 @@ Definition of Audiveris precise version.
 Definitions for the handbook documentation.
 
 Note: It should be possible to determine these values ​​automatically from the variables listed above.
-But currently, these values must be entered manually...
+But unfortunately, as of this writing, these values must be entered manually...
 
 | Variable name | Variable role | Current value |
 | :---          | :---          | :---          | 

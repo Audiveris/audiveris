@@ -7,7 +7,7 @@ The Gradle tasks allow to:
 - run or debug the application
 - generate its JavaDoc
 
-## Relevant files
+## Most relevant files
 
 <pre>
 .
@@ -26,8 +26,8 @@ The Gradle tasks allow to:
     ├── README.md                               // This file!
     ├── build.gradle                            // The Gradle sub-project building file
     │   
-    ├── config                                  // Examples for user customization
-    │   ├── plugins.xml                         // Plugins example
+    ├── config-examples                         // Examples for user customization
+    │   ├── plugins.xml                         // Plugins examples
     │   └── user-actions.xml                    // User actions examples
     │   
     ├── dev                                     // Items for development
@@ -79,29 +79,25 @@ The Gradle tasks allow to:
 
 </pre>
 
-## Unique definitions
+## Variable definitions
 
-### `settings.gradle`
-
-Modifiable definitions:
-| Variable name | Variable role | Current value |
-| :--- | :--- | :--- | 
-| `rootProject.name` | Project name | Audiveris |
-
+Please refer to the [Information Sources at project level](../project-structure.md#information-sources) which apply to all sub-projects.
 
 ### `app/build.gradle`
 
-Modifiable definitions:
-| Variable name | Variable role | Current value |
-| :--- | :--- | :--- | 
+These are the variables for `app/build.gradle` file.
 
-Modifiable definitions:
-| Variable name | Variable role | Current value |
-| :--- | :--- | :--- | 
+Only the first one (`project.version`) is meant to be manually modified here:
 
 | Variable name | Variable role | Example value |
 | :--- | :--- | :--- | 
 | `project.version` | Audiveris version | 5.6.1 |
+
+The other variables are automatically retrieved from other sources.
+They are listed here for information only:
+
+| Variable name | Variable role | Example value |
+| :--- | :--- | :--- | 
 | `project.ext.hostOSName` | Host OS name | windows | 
 | `project.ext.hostOSArch` | Host OS architecture | x86_64 | 
 | `project.ext.hostOS` | Host OS full ID | windows-x86_64 | 
@@ -116,3 +112,77 @@ Modifiable definitions:
 | `project.ext.mainClass` | Name of main class | `project.ext.programName` | 
 | `project.ext.commit` | Full hash of latest commit | 9315e943438c603a0b6520526d01a1d7fe7df2fa | 
 | `project.ext.programBuild` | Short hash of latest commit | 9315e9434 | 
+
+## `config-examples` folder
+
+These files are **NOT** read at runtime.
+They are just examples that could be customized and placed in the user `config` folder.
+
+## `dev` folder
+
+These are development items.
+
+### `dev/icons`
+
+This ensemble of Crystal icons is loaded as a runtime resource, next to the Java classes,
+to represent the various user interface actions.
+
+### `dev/scripts`
+
+These files are script templates, that are used to check at launch time if the Java runtime environment (JRE) fits the application requirements..
+
+Note: This is useful only when the user launches the application via its `Audiveris` or `Audiveris.bat` command files.
+It is no longer useful when using the new Audiveris installers which carry the needed JRE.
+
+### `dev/tessdata`
+
+It was used to carry the default language data file for Tesseract.
+
+It is no longer used, since these data files can now be downloaded at runtime.
+But it is kept for a possible future use, in some Continuous Integration actions.
+
+## `res` folder
+
+These are resources that must be available at runtime.
+
+### Music font files
+
+All files with a `.otf` or `.ttf` extension, such as `Bravura.otf`,
+define a specific music font meant for display, for note head template matching,
+and for symbol recognition.
+
+### Icon files
+
+These icons represent the Audiveris icon in different sizes and formats.
+
+![](./res/icon-64.png)
+
+### Splash files
+
+They represent the Audiveris logo in different formats.
+
+![](./res/splash.png)
+
+### `basic-classifier.zip`
+
+This is the result of the training of Audiveris neural network on fixed size symbols.
+
+It is used at runtime to infer the most probable symbols for a given glyph.
+
+It can be overridden by another `basic-classifier.zip` file, located in the user `config/train` folder.
+
+### `.xml` files
+
+These are definition files, managed by the developer, and read at runtime.
+
+In most cases, the end user can override them, but putting a corresponding
+file with the same name in the user `config` folder.
+
+| File name | Role | Overridable by |
+| :--- | :--- | :--- | 
+| `ISO639-3.xml`         | Table of 3-letter codes for OCR languages | - |
+| `alias-patterns.xml`   | Patterns for renaming input file names | config/`alias-patterns.xml` |
+| `drum-set.xml`         | Mapping for drum instruments | config/`drum-set.xml` |
+| `logback-elements.xml` | Logging appenders | config/`logback-elements.xml` |
+| `logback.xml`          | Loggers configuration | config/`logback.xml` |
+| `system-actions.xml`   | User Interface actions | config/`user-actions.xml` |

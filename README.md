@@ -78,7 +78,7 @@ See details in the [Wiki article][workflow] dedicated to the chosen development 
 ## Further Information
 
 - For users: the Audiveris [User Handbook][handbook].
-- For developers: the [Project Documentation][project] and the [Wiki][audiveris-wiki] set of articles.
+- For developers: the [Project Structure][project] and the [Wiki][audiveris-wiki] set of articles.
 
 [audiveris-wiki]: https://github.com/Audiveris/audiveris/wiki
 [Flathub]:        https://flathub.org/apps/org.audiveris.audiveris

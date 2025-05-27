@@ -1,4 +1,7 @@
 
+# Schemas
+
+The `schemas` sub-project handles the generation of the technical documentation about the Book, Sheet and PlayList XML files.
 
 ## Purpose
 
