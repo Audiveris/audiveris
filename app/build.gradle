@@ -183,7 +183,7 @@ sourceSets {
             include '**/icon-*.png'     // For Audiveris specific icons in resources
         }
         resources {            
-            srcDir 'dev/icons'          // Crystal icons are needed at runtime 
+            srcDir 'dev/icons'          // Crystal icons needed at runtime (in build/resources/main)
             include '**/*.png'
         }
     }
