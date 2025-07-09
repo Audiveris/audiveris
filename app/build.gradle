@@ -310,7 +310,7 @@ tasks.register('generateProgramId') {
             def strParts = str.split("_")
             def propName = strParts[0] + strParts[1].capitalize()
             gSrc.append("\n    /** Precise ${strParts[0]} ${strParts[1]}: {@value} */")
-            gSrc.append("\n    public static final String ${str.toUpperCase()} = \"${project.ext."$propName"}\";\n")
+            gSrc.append("\n    public static final String ${str.toUpperCase(Locale.ROOT)} = \"${project.ext."$propName"}\";\n")
         }
 
         gSrc.append("}\n")
