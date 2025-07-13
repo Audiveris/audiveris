@@ -186,7 +186,7 @@ tasks.jpackage {
         winMenu = true                      // Add a Start Menu shortcut
         winShortcutPrompt = true            // Let the user decide on shortcuts
         winShortcut = true                  // Create a desktop shortcut
-        ///winConsole = true                   // Create a console launcher (Useful only for errors)
+        winConsole = true                   // Create a console launcher (Useful only for errors)
         ///winPerUserInstall = true            // Perform an install on a per-user basis (vs system basis)
 
         // Check validity of installerType for Windows
