@@ -110,7 +110,7 @@ jobs:
           name: installer-ubuntu-22.04
           path: ./artifacts
 
-      - name: Download windows installer
+      - name: Download windows installer without console
         uses: actions/download-artifact@v4
         with:
           name: installer-windows-latest
