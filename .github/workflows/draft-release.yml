@@ -21,6 +21,8 @@ jobs:
           - console: ""
           - os: windows-latest
             console: "Console"
+          - os: windows-latest
+            console: ""
 
     steps:
       - name: Checkout code
