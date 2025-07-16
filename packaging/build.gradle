@@ -46,6 +46,7 @@ def rootDir = getRootDir()
 // Playing with host name and version
 project.ext.osname = "${app.ext.hostOSName}"
 project.ext.osversion = ""
+project.ext.console = ""
 
 tasks.register('linuxGetName', Exec) {
     description "Getting Linux host name"
@@ -166,7 +167,7 @@ tasks.jpackage {
     javaOptions         = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
                            "-Dfile.encoding=UTF-8",
                            "-Xms512m",
-                           "-Xmx1024m"]
+                           "-Xmx2G"]
 
     // Chosen installer type, if any
     ImageType installerType = null
@@ -186,8 +187,21 @@ tasks.jpackage {
         winMenu = true                      // Add a Start Menu shortcut
         winShortcutPrompt = true            // Let the user decide on shortcuts
         winShortcut = true                  // Create a desktop shortcut
-        winConsole = true                   // Create a console launcher (Useful only for errors)
         ///winPerUserInstall = true            // Perform an install on a per-user basis (vs system basis)
+
+        if (project.hasProperty('console')) {
+            // Create a console launcher? (Useful only for errors)
+            if (project.property('console') == "Console") {
+                winConsole = true
+                println "winConsole: true"
+            } else {
+                winConsole = false
+                println "winConsole: false 1"
+            }
+        } else {
+            winConsole = false
+            println "winConsole: false 2"
+        }
 
         // Check validity of installerType for Windows
         if (installerType != null) {
@@ -232,14 +246,14 @@ tasks.jpackage {
     }
 
     doLast {
-        // Append host name, version and architecture to artifact name
+        // Append host name, version and architecture to artifact name + console variant
         def dir = layout.projectDirectory.dir(destination)
         
         fileTree(dir).each { file ->
             def oldName = "${file.name}"
             def dot = oldName.lastIndexOf('.');
             def suffix = oldName.substring(dot)
-            def newName = "${app.ext.programName}-${app.version}-${project.ext.osname}${project.ext.osversion}-${app.ext.hostOSArch}$suffix"
+            def newName = "${app.ext.programName}-${app.version}-${project.ext.osname}${project.ext.osversion}${project.ext.console}-${app.ext.hostOSArch}$suffix"
             def newFile = Paths.get("$dir", newName).toFile()
 
             println "oldFile: ${file}"

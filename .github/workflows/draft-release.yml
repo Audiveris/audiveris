@@ -17,6 +17,10 @@ jobs:
         # ubuntu-22.04 is a fix for issue #805 libasound2t64 is required but not found
         # macos-latest is for Apple Silicon (arm64) support
         # macos-13 is for legacy Intel (x64) hardware support
+        include:
+          - console: ""
+          - os: windows-latest
+            console: "Console"
 
     steps:
       - name: Checkout code
@@ -38,14 +42,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build installer on ${{ matrix.os }}
-        run: ./gradlew --info jpackage
+      - name: Build installer on ${{ matrix.os }} with console ${{ matrix.console }}
+        run: ./gradlew --info jpackage -Pconsole=${{ matrix.console }}
 
       - name: Upload installer
         id: upload-installer
         uses: actions/upload-artifact@v4
         with:
-          name: installer-${{ matrix.os }}
+          name: installer-${{ matrix.os }}${{ matrix.console }}
           path: packaging/build/dist/*
           compression-level: 0
           overwrite: true
@@ -101,10 +105,16 @@ jobs:
           name: installer-ubuntu-22.04
           path: ./artifacts
 
-      - name: Download windows installer
+      - name: Download windows installer without console
         uses: actions/download-artifact@v4
         with:
           name: installer-windows-latest
+          path: ./artifacts
+
+      - name: Download windows installer with console
+        uses: actions/download-artifact@v4
+        with:
+          name: installer-windows-latestConsole
           path: ./artifacts
 
       - name: Download macos installer
