@@ -189,19 +189,10 @@ tasks.jpackage {
         winShortcut = true                  // Create a desktop shortcut
         ///winPerUserInstall = true            // Perform an install on a per-user basis (vs system basis)
 
-        if (project.hasProperty('console')) {
-            // Create a console launcher? (Useful only for errors)
-            if (project.property('console') == "Console") {
-                winConsole = true
-                println "winConsole: true"
-            } else {
-                winConsole = false
-                println "winConsole: false 1"
-            }
-        } else {
-            winConsole = false
-            println "winConsole: false 2"
-        }
+        // Create a console launcher? (Useful only for errors)
+        project.ext.console = project(':').findProperty('console')?:''
+        println "Windows console: ${project.ext.console}"
+        winConsole = (project.ext.console == "Console")
 
         // Check validity of installerType for Windows
         if (installerType != null) {
