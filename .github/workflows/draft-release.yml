@@ -13,16 +13,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-22.04, windows-latest, macos-latest, macos-13]
+        ###### os: [ubuntu-latest, ubuntu-22.04, windows-latest, macos-latest, macos-13]
         # ubuntu-22.04 is a fix for issue #805 libasound2t64 is required but not found
         # macos-latest is for Apple Silicon (arm64) support
         # macos-13 is for legacy Intel (x64) hardware support
         include:
-          - console: ""
+          - os: ubuntu-latest
+          - os: ubuntu-22.04    # fix for issue #805 libasound2t64 is required but not found
+          - os: macos-latest    # for Apple Silicon (arm64) support
+          - os: macos-13        # for legacy Intel (x64) hardware support
           - os: windows-latest
-            console: "Console"
+            console: ""         # without console
           - os: windows-latest
-            console: ""
+            console: Console    # with console
 
     steps:
       - name: Checkout code
