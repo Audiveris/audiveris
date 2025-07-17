@@ -104,7 +104,7 @@ repositories {
 
         maven { // Required to obtain non-free JAI
             name = 'JBoss repository'
-            url = 'https://repository.jboss.org/nexus/content/repositories/thirdparty-releases'
+            url = 'https://repository.jboss.org/maven2'
         }
 
         mavenLocal()
