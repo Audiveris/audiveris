@@ -43,10 +43,9 @@ def app     = project(':app')
 def appDir  = app.projectDir
 def rootDir = getRootDir()
 
-// Playing with host name and version
+// Playing with host name, plus option if any
 project.ext.osname = "${app.ext.hostOSName}"
-project.ext.osversion = ""
-project.ext.console = ""
+project.ext.option = ""
 
 tasks.register('linuxGetName', Exec) {
     description "Getting Linux host name"
@@ -65,8 +64,8 @@ tasks.register('linuxGetVersion', Exec) {
     standardOutput = new ByteArrayOutputStream()
     
     doLast {
-        project.ext.osversion = standardOutput.toString().replaceAll('\n', '')
-        println "osversion: ${project.ext.osversion}"
+        project.ext.option = standardOutput.toString().replaceAll('\n', '')
+        println "Linux option: ${project.ext.option}"
     }
 }
 
@@ -190,9 +189,9 @@ tasks.jpackage {
         ///winPerUserInstall = true            // Perform an install on a per-user basis (vs system basis)
 
         // Create a console launcher? (Useful only for errors)
-        project.ext.console = project(':').findProperty('console')?:''
-        println "Windows console: ${project.ext.console}"
-        winConsole = (project.ext.console == "Console")
+        project.ext.option = project(':').findProperty('option')?:''
+        println "Windows option: ${project.ext.option}"
+        winConsole = (project.ext.option == "Console")
 
         // Check validity of installerType for Windows
         if (installerType != null) {
@@ -237,14 +236,14 @@ tasks.jpackage {
     }
 
     doLast {
-        // Append host name, version and architecture to artifact name + console variant
+        // Rename artifact as: program name + version + host name + option? + architecture + .ext
         def dir = layout.projectDirectory.dir(destination)
         
         fileTree(dir).each { file ->
             def oldName = "${file.name}"
             def dot = oldName.lastIndexOf('.');
             def suffix = oldName.substring(dot)
-            def newName = "${app.ext.programName}-${app.version}-${project.ext.osname}${project.ext.osversion}${project.ext.console}-${app.ext.hostOSArch}$suffix"
+            def newName = "${app.ext.programName}-${app.version}-${project.ext.osname}${project.ext.option}-${app.ext.hostOSArch}$suffix"
             def newFile = Paths.get("$dir", newName).toFile()
 
             println "oldFile: ${file}"

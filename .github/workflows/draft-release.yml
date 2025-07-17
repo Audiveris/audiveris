@@ -23,9 +23,9 @@ jobs:
           - os: macos-latest    # for Apple Silicon (arm64) support
           - os: macos-13        # for legacy Intel (x64) hardware support
           - os: windows-latest
-            console: ""         # without console
+            option: ""          # without console
           - os: windows-latest
-            console: Console    # with console
+            option: Console     # with console
 
     steps:
       - name: Checkout code
@@ -47,14 +47,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build installer on ${{ matrix.os }} with console ${{ matrix.console }}
-        run: ./gradlew --info jpackage -Pconsole=${{ matrix.console }}
+      - name: Build installer on ${{ matrix.os }} option ${{ matrix.option }}
+        run: ./gradlew --info jpackage -Poption=${{ matrix.option }}
 
       - name: Upload installer
         id: upload-installer
         uses: actions/upload-artifact@v4
         with:
-          name: installer-${{ matrix.os }}${{ matrix.console }}
+          name: installer-${{ matrix.os }}${{ matrix.option }}
           path: packaging/build/dist/*
           compression-level: 0
           overwrite: true
@@ -110,13 +110,13 @@ jobs:
           name: installer-ubuntu-22.04
           path: ./artifacts
 
-      - name: Download windows installer without console
+      - name: Download windows installer
         uses: actions/download-artifact@v4
         with:
           name: installer-windows-latest
           path: ./artifacts
 
-      - name: Download windows installer with console
+      - name: Download windows installer with Console option
         uses: actions/download-artifact@v4
         with:
           name: installer-windows-latestConsole
