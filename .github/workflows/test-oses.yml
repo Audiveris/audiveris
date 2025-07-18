@@ -1,0 +1,19 @@
+name: Test OSes
+
+on:
+  - workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  # Run the test on each OS
+  test-os:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, macos-15, macos-13, macos-13-amd64, macos-13-x86_64]
+
+    steps:
+      - run: echo hostOS is ${{ matrix.os }}
+

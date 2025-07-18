@@ -132,6 +132,7 @@ Such as:
 ![](./dev/icons/crystal/32x32/actions/1rightarrow.png)
 ![](./dev/icons/crystal/32x32/mimetypes/pdf.png)
 ![](./dev/icons/crystal/32x32/mimetypes/gettext.png)
+
 ### `dev/scripts`
 
 These files are script templates, that are used to check at launch time if the Java runtime environment (JRE) fits the application requirements..

@@ -36,11 +36,6 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Show Runner Info
-        run: |
-          echo "Runner OS:   $RUNNER_OS"
-          echo "Runner Name: $RUNNER_NAME"
             
       - name: Build installer on ${{ matrix.os }}
         run: ./gradlew --info jpackage
@@ -128,6 +123,12 @@ jobs:
         with:
           name: handbook
           path: ./artifacts
+
+      - name: Download (old) macos installer
+        uses: actions/download-artifact@v4
+        with:
+          name: installer-macos-13
+          path: ./binaries
 
       - name: Create Release
         id: create_release
