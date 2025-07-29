@@ -361,10 +361,10 @@ public class LogicalPartsEditor
         table.setFillsViewportHeight(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Table preferred columns width
+        // Table minimum columns width
         final TableColumnModel columnModel = table.getColumnModel();
         for (Header header : Header.values()) {
-            columnModel.getColumn(header.ordinal()).setPreferredWidth(header.width);
+            columnModel.getColumn(header.ordinal()).setMinWidth(header.width);
         }
 
         // Text centered in cells
@@ -705,9 +705,9 @@ public class LogicalPartsEditor
         Staves(25),
         Name(80),
         Abbrev(30),
-        Midi(110);
+        Midi(170);
 
-        public final int width; // Preferred column width
+        public final int width; // Minimum column width
 
         Header (int width)
         {
