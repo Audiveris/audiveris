@@ -719,7 +719,7 @@ public class BookActions
     }
 
     //---------------------//
-    // getInputHistoryMenu //
+    // getImageHistoryMenu //
     //---------------------//
     public HistoryMenu getImageHistoryMenu ()
     {
