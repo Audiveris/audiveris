@@ -30,11 +30,13 @@ import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -130,11 +132,14 @@ public class ConstantManager
 
     private static final Logger logger = LoggerFactory.getLogger(ConstantManager.class);
 
-    /** User properties file name */
+    /** User properties file name. */
     private static final String USER_FILE_NAME = "run.properties";
 
-    /** The singleton */
+    /** The singleton. */
     private static final ConstantManager INSTANCE = new ConstantManager();
+
+    /** Name of the char-set needed for CJK (Chinese, Japanese, Korean) characters. */
+    private static final String UTF8 = "UTF-8";
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -357,8 +362,10 @@ public class ConstantManager
         private void loadFromFile ()
         {
             try {
-                try (InputStream in = new FileInputStream(path.toFile())) {
-                    properties.load(in);
+                try (BufferedReader reader = new BufferedReader(
+                        // The UTF-8 charset is needed to support CJK characters
+                        new InputStreamReader(new FileInputStream(path.toFile()), UTF8))) {
+                    properties.load(reader);
                 }
             } catch (FileNotFoundException ignored) {
                 // This is not at all an error
@@ -427,9 +434,11 @@ public class ConstantManager
                 // First make sure the directory exists (Brenton patch)
                 Files.createDirectories(path.getParent());
 
-                try ( // Then write down the properties
-                        FileOutputStream out = new FileOutputStream(path.toFile())) {
-                    properties.store(out, " Audiveris user properties file. Do not edit");
+                // Then write down the properties
+                try (OutputStreamWriter writer = new OutputStreamWriter(
+                        new FileOutputStream(path.toFile()),
+                        UTF8)) { // The UTF-8 charset is needed to support chinese characters
+                    properties.store(writer, " Audiveris user properties file. Do not edit");
                 } catch (FileNotFoundException ex) {
                     logger.warn(
                             "Property file {} not found or not writable",
