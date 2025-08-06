@@ -37,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -137,9 +138,6 @@ public class ConstantManager
 
     /** The singleton. */
     private static final ConstantManager INSTANCE = new ConstantManager();
-
-    /** Name of the char-set needed for CJK (Chinese, Japanese, Korean) characters. */
-    private static final String UTF8 = "UTF-8";
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -364,7 +362,7 @@ public class ConstantManager
             try {
                 try (BufferedReader reader = new BufferedReader(
                         // The UTF-8 charset is needed to support CJK characters
-                        new InputStreamReader(new FileInputStream(path.toFile()), UTF8))) {
+                        new InputStreamReader(new FileInputStream(path.toFile()), UTF_8))) {
                     properties.load(reader);
                 }
             } catch (FileNotFoundException ignored) {
@@ -437,7 +435,7 @@ public class ConstantManager
                 // Then write down the properties
                 try (OutputStreamWriter writer = new OutputStreamWriter(
                         new FileOutputStream(path.toFile()),
-                        UTF8)) { // The UTF-8 charset is needed to support chinese characters
+                        UTF_8)) { // The UTF-8 charset is needed to support chinese characters
                     properties.store(writer, " Audiveris user properties file. Do not edit");
                 } catch (FileNotFoundException ex) {
                     logger.warn(
