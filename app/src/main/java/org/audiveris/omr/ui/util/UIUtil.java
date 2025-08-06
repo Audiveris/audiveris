@@ -963,7 +963,7 @@ public abstract class UIUtil
                 "Font size for URL");
 
         private final Constant.String defaultFontName = new Constant.String(
-                "Arial",
-                "Default font name (e.g. Arial, Dialog, Segoe UI, ...");
+                "Dialog",
+                "Default font name (preferably a Java logical font)");
     }
 }
