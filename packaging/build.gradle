@@ -166,7 +166,7 @@ tasks.jpackage {
     javaOptions         = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
                            "-Dfile.encoding=UTF-8",
                            "-Xms512m",
-                           "-Xmx2G"]
+                           "-Xmx8G"]
 
     // Chosen installer type, if any
     ImageType installerType = null
