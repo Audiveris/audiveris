@@ -71,10 +71,10 @@ public class TextFontTest
         File dir = new File("data/temp");
         dir.mkdirs();
 
-        final String fontName = "Jazz Text";
+        final String fontName = "Finale Jazz Text";
         final String trimmed = fontName.replaceAll(" ", "");
         final File file = new File(dir, trimmed + ".pdf");
-        final Font font = OmrFont.getFont(fontName, trimmed + ".ttf", 0, 64);
+        final Font font = OmrFont.getFont(fontName, trimmed + ".otf", 0, 64);
 
         try (FileOutputStream fos = new FileOutputStream(file)) {
             Rectangle rect = new Rectangle(pageWidth, pageHeight);
