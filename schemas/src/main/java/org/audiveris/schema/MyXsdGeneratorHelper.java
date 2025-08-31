@@ -134,13 +134,13 @@ public class MyXsdGeneratorHelper
         throws MojoExecutionException
     {
 
-        final Map<String, SimpleNamespaceResolver> toReturn =
-                new TreeMap<String, SimpleNamespaceResolver>();
+        final Map<String, SimpleNamespaceResolver> toReturn = new TreeMap<>();
 
         // Each generated schema file should be written to the output directory.
         // Each generated schema file should have a unique targetNamespace.
         File[] generatedSchemaFiles = outputDirectory.listFiles(new FileFilter()
         {
+            @Override
             public boolean accept (File pathname)
             {
                 return pathname.getName().startsWith("schema") && pathname.getName().endsWith(
@@ -177,9 +177,9 @@ public class MyXsdGeneratorHelper
         throws MojoExecutionException
     {
 
-        final List<String> uris = new ArrayList<String>();
-        final List<String> prefixes = new ArrayList<String>();
-        final List<String> fileNames = new ArrayList<String>();
+        final List<String> uris = new ArrayList<>();
+        final List<String> prefixes = new ArrayList<>();
+        final List<String> fileNames = new ArrayList<>();
 
         for (int i = 0; i < configuredTransformSchemas.size(); i++) {
             final TransformSchema current = configuredTransformSchemas.get(i);
@@ -262,10 +262,10 @@ public class MyXsdGeneratorHelper
         Validate.notNull(renderer, "renderer");
 
         int processedXSDs = 0;
-        final List<File> foundFiles = new ArrayList<File>();
+        final List<File> foundFiles = new ArrayList<>();
         addRecursively(foundFiles, RECURSIVE_XSD_FILTER, outputDir);
 
-        if (foundFiles.size() > 0) {
+        if (!foundFiles.isEmpty()) {
 
             // Create the processors.
             final MyXsdAnnotationProcessor classProcessor = new MyXsdAnnotationProcessor(
@@ -408,7 +408,7 @@ public class MyXsdGeneratorHelper
     {
 
         // Create the map relating namespace URI to desired filenames.
-        Map<String, String> namespaceUriToDesiredFilenameMap = new TreeMap<String, String>();
+        Map<String, String> namespaceUriToDesiredFilenameMap = new TreeMap<>();
         for (TransformSchema current : configuredTransformSchemas) {
             if (StringUtils.isNotEmpty(current.getToFile())) {
                 namespaceUriToDesiredFilenameMap.put(current.getUri(), current.getToFile());
