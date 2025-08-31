@@ -114,7 +114,6 @@ public class AboutAction
                 null,
                 options,
                 options[0]);
-        System.out.println("choice: " + choice);
 
         if (choice == 1) {
             copyToClipBoard();

@@ -139,7 +139,7 @@ composed of the `BIUMSC` characters.
 
 These attributes are used to:
 1. Choose the text font  (based on the `M` and `S` attributes):  
-  The chosen font is *Serif* (if specified), otherwise *Monospaced* (if specified), otherwise *Sans Serif *[^MS]
+  The chosen font is *Serif* (if specified), otherwise *Monospaced* (if specified), otherwise *Sans Serif* [^MS]
 2. Apply a font style (based on the `B` and `I` attributes)  :
   The chosen style is *Plain* or *Bold* or *Italic* or *Bold+Italic*.
 

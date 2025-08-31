@@ -43,7 +43,7 @@ dependencies {
     sharedConfiguration(project("path": ":app", "configuration": "sharedConfiguration"))
 }
 task genDependencies {
-    description("Generate app dependencies")
+    description = "Generate app dependencies"
     dependsOn(':app:classes')
     dependsOn(':app:flatpakGradleGenerator')
     
@@ -68,7 +68,7 @@ Path path = Paths.get(new URI(gradleUrl).toURL().getFile());
 def gradleName = path.getFileName().toString();
 
 task genManifest {
-    description("Generate manifest from template")
+    description = "Generate manifest from template"
 
     doLast {
         println "flatpak. Generating manifest"
@@ -90,7 +90,7 @@ task genManifest {
 
 // Initialize flatpak/flathub content before build
 task initFlathub {
-    description("Populate flathub submodule")
+    description = "Populate flathub submodule"
     dependsOn('genDependencies')
     dependsOn('genManifest')
 
@@ -105,7 +105,7 @@ task initFlathub {
 
 // Build flatpak on manifest
 task buildFlatpak (type: Exec) {
-    description("Run flatpak-builder on manifest")
+    description = "Run flatpak-builder on manifest"
     dependsOn('initFlathub')
 
     onlyIf { app.ext.hostOSName == "linux" }

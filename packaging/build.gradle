@@ -32,11 +32,13 @@ plugins {
     id 'base'
 
     // Plugin which provides the jpackage task
-    id 'org.panteleyev.jpackageplugin' version '1.6.1'
+    id 'org.panteleyev.jpackageplugin' version '1.7.3'
 }
 
 import org.panteleyev.jpackage.ImageType
 import java.nio.file.Paths
+
+def pkg = project(':packaging')
 
 // Pointers to the 'app' sibling sub-project
 def app     = project(':app')
@@ -44,8 +46,8 @@ def appDir  = app.projectDir
 def rootDir = getRootDir()
 
 // Playing with host name, plus option if any
-project.ext.osname = "${app.ext.hostOSName}"
-project.ext.option = ""
+ext.osname = "${app.ext.hostOSName}"
+ext.option = ""
 
 tasks.register('linuxGetName', Exec) {
     description "Getting Linux host name"
@@ -53,8 +55,8 @@ tasks.register('linuxGetName', Exec) {
     standardOutput = new ByteArrayOutputStream()
     
     doLast {
-        project.ext.osname = standardOutput.toString().toLowerCase().replaceAll('\n', '')
-        println "osname: ${project.ext.osname}"
+        pkg.ext.osname = standardOutput.toString().toLowerCase().replaceAll('\n', '')
+        println "osname: ${pkg.ext.osname}"
     }
 }
 
@@ -64,13 +66,13 @@ tasks.register('linuxGetVersion', Exec) {
     standardOutput = new ByteArrayOutputStream()
     
     doLast {
-        project.ext.option = standardOutput.toString().replaceAll('\n', '')
-        println "Linux option: ${project.ext.option}"
+        pkg.ext.option = standardOutput.toString().replaceAll('\n', '')
+        println "Linux option: ${pkg.ext.option}"
     }
 }
 
 tasks.register('collectJars', Copy) {
-    description "Copies the application jar and all external jars it depends upon"
+    description = "Copies the application jar and all external jars it depends upon"
     dependsOn ':app:classes'
     onlyIf('jars folder does not exist yet') {
         !file('build/jars').exists()
@@ -85,7 +87,7 @@ tasks.register('collectJars', Copy) {
 }
 
 tasks.register('customJre', Exec) {
-    description "Assembles a custom JRE"
+    description = "Assembles a custom JRE"
     onlyIf('custom-jre folder does not exist yet') {
         !file('build/custom-jre').exists()
     }
@@ -98,7 +100,7 @@ tasks.register('customJre', Exec) {
 }
 
 tasks.register('macConvertIcons') {
-    description "Converting PNG icon to ICNS format"
+    description = "Converting PNG icon to ICNS format"
     doFirst {
         println "Creating .icns file from source icon..."
         mkdir('build/macos.iconset')
@@ -148,22 +150,24 @@ tasks.jpackage {
     dependsOn 'customJre'
     dependsOn 'collectJars'
 
-    input               = "build/jars"
-    destination         = "build/dist"
+    input               = layout.buildDirectory.dir("jars")
+    destination         = layout.buildDirectory.dir("dist")
+
     verbose             = true
 
-    runtimeImage        = "build/custom-jre"
+    runtimeImage        = layout.buildDirectory.dir("custom-jre")
 
     appName             = app.ext.programName
     vendor              = "audiveris.org"
-    licenseFile         = rootDir.toPath().resolve('LICENSE')
+    licenseFile         = file(rootDir.toPath().resolve('LICENSE'))
     appDescription      = "Optical Music Recognition"
     appVersion          = app.version
     mainJar             = "${app.ext.programId}.jar"
     mainClass           = app.ext.mainClass
 
-    fileAssociations    = ["dev/omr.properties"]
+    fileAssociations    = files(layout.projectDirectory.file("dev/omr.properties"))
     javaOptions         = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
+                           "--enable-native-access=ALL-UNNAMED",
                            "-Dfile.encoding=UTF-8",
                            "-Xms512m",
                            "-Xmx2G"]
@@ -181,7 +185,7 @@ tasks.jpackage {
     }
 
     windows {
-        icon = "$appDir/res/icon-256.ico"   // Path to the icon of the application package
+        icon = file("$appDir/res/icon-256.ico")   // Path to the icon of the application package
         winDirChooser = true                // Let the user choose the installation directory
         winMenu = true                      // Add a Start Menu shortcut
         winShortcutPrompt = true            // Let the user decide on shortcuts
@@ -189,9 +193,9 @@ tasks.jpackage {
         ///winPerUserInstall = true            // Perform an install on a per-user basis (vs system basis)
 
         // Create a console launcher? (Useful only for errors)
-        project.ext.option = project(':').findProperty('option')?:''
-        println "Windows option: ${project.ext.option}"
-        winConsole = (project.ext.option == "Console")
+        pkg.ext.option = project(':').findProperty('option')?:''
+        println "Windows option: ${pkg.ext.option}"
+        winConsole = (pkg.ext.option == "Console")
 
         // Check validity of installerType for Windows
         if (installerType != null) {
@@ -206,7 +210,7 @@ tasks.jpackage {
 
     mac {
         dependsOn 'macConvertIcons'
-        icon = "build/Audiveris.icns"
+        icon = layout.buildDirectory.file("Audiveris.icns")
 
         macPackageIdentifier = "org.audiveris.app"
         macPackageName = app.ext.programName
@@ -223,7 +227,7 @@ tasks.jpackage {
     linux {
         dependsOn 'linuxGetName'
         dependsOn 'linuxGetVersion'
-        icon = "$appDir/res/icon-256.png"   // Path to the icon of the application package
+        icon = file("$appDir/res/icon-256.png")   // Path to the icon of the application package
         linuxShortcut = true                // Create a shortcut for the application
 
         // Check validity of installerType for Linux
@@ -237,17 +241,21 @@ tasks.jpackage {
 
     doLast {
         // Rename artifact as: program name + version + host name + option? + architecture + .ext
-        def dir = layout.projectDirectory.dir(destination)
+        def dest = destination.get().asFile
         
-        fileTree(dir).each { file ->
+        fileTree(destination).each { file ->
+            println "oldFile: ${file}"
+
+            // Retrieve suffix
             def oldName = "${file.name}"
             def dot = oldName.lastIndexOf('.');
             def suffix = oldName.substring(dot)
-            def newName = "${app.ext.programName}-${app.version}-${project.ext.osname}${project.ext.option}-${app.ext.hostOSArch}$suffix"
-            def newFile = Paths.get("$dir", newName).toFile()
 
-            println "oldFile: ${file}"
+            // Forge artifact new file
+            def newName = "${app.ext.programName}-${app.version}-${pkg.ext.osname}${pkg.ext.option}-${app.ext.hostOSArch}$suffix"
+            def newFile = Paths.get("$dest", newName).toFile()
             println "newFile: ${newFile}"
+
             def result = file.renameTo(newFile)
             println "Success: $result"
         }

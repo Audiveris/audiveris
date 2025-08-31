@@ -11,24 +11,24 @@
 plugins {
     id 'application'
 
-    id 'org.barfuin.gradle.taskinfo' version '2.2.0'
-
     // Needed to retrieve all dependencies for flatpak
-    id 'io.github.jwharm.flatpak-gradle-generator' version '1.2.0'
+    id 'io.github.jwharm.flatpak-gradle-generator' version '1.5.0'
 }
 
 //------------
 // Properties
 //------------
 
+def app = project(':app')
+
 // Central location for application version
-project.version = '5.6.3'
+project.version = '5.7.0'
 println "version: ${project.version}"
 
 // Central location for the specific versions of tesseract dependencies
-ext.jcppVersion     = '1.5.9'
-ext.leptVersion     = '1.83.0'
-ext.tessVersion     = '5.3.1'
+ext.jcppVersion     = '1.5.12'
+ext.leptVersion     = '1.85.0'
+ext.tessVersion     = '5.5.1'
 
 // Name of host OS
 ext.hostOSName   = System.getProperty('os.name').toLowerCase()\
@@ -37,7 +37,7 @@ ext.hostOSName   = System.getProperty('os.name').toLowerCase()\
 
 // Version of host OS
 ext.hostOSVersion = System.getProperty('os.version')
-println "hostOSVersion: ${project.ext.hostOSVersion}"
+println "hostOSVersion: ${ext.hostOSVersion}"
 
 // Architecture of host OS
 // This mapping is required to adapt values of os.name and os.arch
@@ -49,8 +49,8 @@ ext.hostOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86", "x86
                    [System.getProperty('os.arch').toLowerCase()]
 
 // Full host OS identification as "name-arch"
-ext.hostOS       = "${project.ext.hostOSName}-${project.ext.hostOSArch}"
-println "hostOS: ${project.ext.hostOS}"
+ext.hostOS       = "${ext.hostOSName}-${ext.hostOSArch}"
+println "hostOS: ${ext.hostOS}"
 
 // Architecture of target OS
 if (project.hasProperty('targetOS')) {
@@ -59,7 +59,7 @@ if (project.hasProperty('targetOS')) {
 } else {
     ext.targetOS = ext.hostOS
 }
-println "targetOS: ${project.ext.targetOS}"
+println "targetOS: ${ext.targetOS}"
 
 // Handling of Java version
 ext.theMinJavaVersion = project.property('theMinJavaVersion')
@@ -147,8 +147,8 @@ dependencies {
     )
 
     runtimeOnly(
-        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${project.ext.targetOS}"]
+        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${app.ext.targetOS}"],
+        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${app.ext.targetOS}"]
     )
 
     testImplementation(
@@ -200,10 +200,17 @@ sourceSets {
 //-------
 
 application {
-    mainClass = "$project.ext.mainClass"
+    mainClass = "$app.ext.mainClass"
     
-    // Needed to circumvent the limitations brought by Java 9 and above (the JigSaw cuts)
-    applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED"]
+    // 1/ Needed to circumvent the limitations brought by Java 9 and above (the JigSaw cuts)
+
+    // 2/ WARNING: A restricted method in java.lang.System has been called
+    // WARNING: java.lang.System::load has been called by org.bytedeco.javacpp.Loader in an unnamed module
+    // (file:/C:/Users/herve/.gradle/caches/modules-2/files-2.1/org.bytedeco/javacpp/1.5.12/d37e3e9c7f3e3a9e492c245e62fd358611889e04/javacpp-1.5.12.jar)
+    // WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+    // WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+    applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
+                                 "--enable-native-access=ALL-UNNAMED"]
 }
 
 // Perhaps no longer needed?
@@ -254,45 +261,58 @@ jar {
     }
 
     manifest {
-        attributes 'Built-By': project.ext.companyName
-        attributes 'Specification-Title': project.ext.programName
-        attributes 'Specification-Vendor': project.ext.companyName
+        attributes 'Built-By': app.ext.companyName
+        attributes 'Specification-Title': app.ext.programName
+        attributes 'Specification-Vendor': app.ext.companyName
         attributes 'Specification-Version': project.version
         attributes 'Implementation-Version': project.version
-        attributes 'Main-Class': project.ext.mainClass
+        attributes 'Main-Class': app.ext.mainClass
     }
 }
 
 // Retrieve the full hash for the latest commit from Git
 tasks.register('getCommit', Exec) {
-    description "Retrieves full hash of git latest commit"
-    commandLine "git rev-parse HEAD".split(' ')
+    description = "Retrieves full hash of git latest commit"
+    outputs.file("build/commit.txt")
+    commandLine = "git rev-parse HEAD".split(' ')
     standardOutput = new ByteArrayOutputStream()
 
     doLast {
-        project.ext.commit = standardOutput.toString().replaceAll('\n', '')
-        println "commit: ${project.ext.commit}"
+        def commit = standardOutput.toString().replaceAll('\n', '')
+        println "commit: ${commit}"
+        app.ext.commit = commit
+
+        def commitFile = file("build/commit.txt")
+        commitFile.text = commit
     }
 }
 
 // Retrieve the short hash for the latest commit from Git
 tasks.register('getCommitShort', Exec) {
-    description "Retrieves short hash of git latest commit"
-    commandLine "git rev-parse --short HEAD".split(' ')
+    description = "Retrieves short hash of git latest commit"
+    outputs.file("build/commitShort.txt")
+
+    commandLine = "git rev-parse --short HEAD".split(' ')
     standardOutput = new ByteArrayOutputStream()
 
     doLast {
-        project.ext.programBuild = standardOutput.toString().replaceAll('\n', '')
-        println "programBuild: ${project.ext.programBuild}"
+        def commitShort = standardOutput.toString().replaceAll('\n', '')
+        println "commitShort: ${commitShort}"
+
+        def commitShortFile = file("build/commitShort.txt")
+        commitShortFile.text = commitShort
     }
 }
 
 // Generate a 'ProgramId.java' source file, based on Git data
 tasks.register('generateProgramId') {
-    group "build"
-    description "Generates the ProgramId source"
+    group = "build"
+    description = "Generates the ProgramId source"
     dependsOn 'getCommit'
     dependsOn 'getCommitShort'
+
+    inputs.file("build/commit.txt")
+    inputs.file("build/commitShort.txt")
 
     def outputDir = file("build/generated-src/org/audiveris/omr")
     def className = "ProgramId"
@@ -306,11 +326,12 @@ tasks.register('generateProgramId') {
         gSrc.append(" * This code has been automatically generated by Gradle.\n */\n")
         gSrc.append("public abstract class $className {")
 
+        app.ext.programBuild = file('build/commitShort.txt').text.trim()
         ["company_name", "company_id", "program_name", "program_id", "program_version", "program_build", "tessdata_tag"].each { str ->
             def strParts = str.split("_")
             def propName = strParts[0] + strParts[1].capitalize()
             gSrc.append("\n    /** Precise ${strParts[0]} ${strParts[1]}: {@value} */")
-            gSrc.append("\n    public static final String ${str.toUpperCase(Locale.ROOT)} = \"${project.ext."$propName"}\";\n")
+            gSrc.append("\n    public static final String ${str.toUpperCase(Locale.ROOT)} = \"${app.ext."${propName}"}\";\n")
         }
 
         gSrc.append("}\n")
@@ -341,10 +362,10 @@ test {
     testLogging.showStandardStreams = true
 }
 
-// Defining 'debug' task allows to set its arguments later
+// Defining 'debug' task allows to set its arguments later   
 tasks.register('debug', JavaExec) {
     dependsOn('classes')
-    mainClass = "$project.ext.mainClass"
+    mainClass = "$app.ext.mainClass"
     classpath = sourceSets.main.runtimeClasspath
     debug true
 }
@@ -354,7 +375,7 @@ tasks.register('debug', JavaExec) {
 //---------------
 
 javadoc {
-    title = "${project.ext.programName}-${project.version} API"
+    title = "${app.ext.programName}-${project.version} API"
     options.overview('src/main/java/overview.html')
 
     // Copy images from src to javadoc hierarchy
@@ -385,11 +406,11 @@ if (JavaVersion.current().isJava8Compatible()) {
 // Configure the flatpakGradleGenerator plugin task
 def depsFile = file('build/dependencies.json')
 tasks.flatpakGradleGenerator {
-    description("Collects all dependencies for Flatpak")
+    description = "Collects all dependencies for Flatpak"
     outputFile = depsFile
     downloadDirectory = 'dependencies'
 
-    outputs.file(depsFile)
+    // outputs.files = depsFile
     doFirst { println "app. Generating dependencies" }
     doLast { println "app. Dependencies generated" }
 }
@@ -415,7 +436,7 @@ fileTree("$projectDir/private").include('*.gradle').each { file ->
 
 // Utility task to print out head templates
 tasks.register('printTemplates', JavaExec) {
-    description("Prints out head templates with various sizes")
+    description = "Prints out head templates with various sizes"
     dependsOn('classes')
     mainClass = "org.audiveris.omr.image.TemplateFactory"
     classpath = sourceSets.main.runtimeClasspath
