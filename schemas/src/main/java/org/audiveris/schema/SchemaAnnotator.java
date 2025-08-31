@@ -105,6 +105,12 @@ public class SchemaAnnotator
         this.sources = sources;
     }
 
+    @Override
+    protected void addGeneratedSourcesToProjectSourceRoot (String string)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     @Override
     protected File getWorkDirectory ()
@@ -172,9 +178,7 @@ public class SchemaAnnotator
                     getLog());
 
             for (File current : toCopy) {
-                // Get the path to the current file
-                final String currentPath = FileSystemUtilities.getCanonicalPath(
-                        current.getAbsoluteFile());
+                final String currentPath = current.toPath().toString();
                 final File target = new File(
                         getOutputDirectory(),
                         FileSystemUtilities.relativize(currentPath, getWorkDirectory(), true));
