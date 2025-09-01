@@ -1,7 +1,7 @@
 # Structure of the Audiveris project
 
 This is a documentation on how the Audiveris project is now structured.
-It has evolved from a aingle project to a tree of Gradle sub-projects for better modularity.
+It has evolved from a single project to a tree of Gradle sub-projects for better modularity.
 
 ## Motivations and actions
 
@@ -36,7 +36,9 @@ The order is not strictly alphabetical, in order to group the entities by role.
 │       ├── draft-release.yml
 │       └── flatpak.yml
 │
-├── README.md                           // This file!
+├── project-structure.md                // This file!
+│
+├── README.md                           // Introduction of Audiveris application
 │
 ├── settings.gradle                     // Definition of the project structure
 │
