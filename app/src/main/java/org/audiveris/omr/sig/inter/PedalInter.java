@@ -25,10 +25,12 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.util.HorizontalSide;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -137,18 +139,35 @@ public class PedalInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
-        final Point location = getCenter();
-        final Rectangle box = getBounds();
-        final MeasureStack stack = system.getStackAt(location);
         Link link = null;
 
-        if (stack != null) {
-            final AbstractChordInter chordAbove = stack.getStandardChordAbove(location, box);
+        try {
+            final Point location = getCenter();
+            final MeasureStack stack = system.getStackAt(location);
 
-            if (chordAbove != null) {
-                link = new Link(chordAbove, new ChordPedalRelation(), false);
+            if (stack != null) {
+                final Rectangle box = getBounds();
+
+                // A PedalUp may not be strictly horizontally aligned with the related chord
+                // and may appear much farther on right
+                // So, for this up shape, we extend the lookup box abscissa on the left of the pedal
+                // until the beginning of the measure.
+                if (getShape() == Shape.PEDAL_UP_MARK) {
+                    final Staff theStaff = system.getStaffAtOrAbove(location);
+                    final Measure measure = stack.getMeasureAt(theStaff);
+                    final int left = measure.getAbscissa(HorizontalSide.LEFT, theStaff);
+                    final int margin = box.x - left;
+                    box.x -= margin;
+                    box.width += margin;
+                }
+
+                final AbstractChordInter chordAbove = stack.getStandardChordAbove(location, box);
+
+                if (chordAbove != null) {
+                    link = new Link(chordAbove, new ChordPedalRelation(), false);
+                }
             }
-        }
+        } catch (Exception ignored) {}
 
         return (link == null) ? Collections.emptyList() : Collections.singleton(link);
     }

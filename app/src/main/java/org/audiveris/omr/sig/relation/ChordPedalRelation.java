@@ -21,6 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.PedalInter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -34,6 +39,17 @@ public class ChordPedalRelation
         extends Support
 {
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final PedalInter pedal = (PedalInter) e.getEdgeTarget();
+
+        pedal.checkAbnormal();
+    }
 
     //----------------//
     // isSingleSource //
@@ -51,5 +67,18 @@ public class ChordPedalRelation
     public boolean isSingleTarget ()
     {
         return true;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final PedalInter pedal = (PedalInter) e.getEdgeTarget();
+
+        if (!pedal.isRemoved()) {
+            pedal.checkAbnormal();
+        }
     }
 }
