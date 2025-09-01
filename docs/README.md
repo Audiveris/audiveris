@@ -17,7 +17,7 @@ It describes how to edit the Audiveris handbook and how to generate the PDF form
 Technically, the handbook is written as a hierarchy of Markdown files.
 These files are rendered as HTML pages and delivered on-line from the GitHub web site.
 
-The latest web format is available [here](web-latest).
+The latest web format is available [here][web-latest].
 
 Via any web browser, the user can:
 - Access the documentation on-line,
