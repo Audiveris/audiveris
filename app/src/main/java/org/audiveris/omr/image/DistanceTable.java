@@ -23,7 +23,6 @@ package org.audiveris.omr.image;
 
 import static org.audiveris.omr.image.ChamferDistance.VALUE_TARGET;
 import static org.audiveris.omr.image.ChamferDistance.VALUE_UNKNOWN;
-
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.Table;
 

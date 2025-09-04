@@ -21,10 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
-
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.image.TemplateFactory;
+import static org.audiveris.omr.ui.symbol.Alignment.AREA_CENTER;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,9 +96,10 @@ public class TemplateSymbol
 
         while (symbol == null && font.getBackup() != null) {
             logger.debug(
-                    "no symbol in TemplateSymbol for {} in family {} ...",
+                    "No symbol for {} in family {}, trying {}",
                     shape,
-                    font.getMusicFamily());
+                    font.getMusicFamily(),
+                    font.getBackup().getMusicFamily());
             font = font.getBackup();
             symbol = font.getSymbol(shape);
         }
@@ -119,7 +119,8 @@ public class TemplateSymbol
         final Rectangle fatSym = rawSym.getBounds();
 
         // Template rectangle with origin at (0,0) and some room around the symbol
-        final int room = 2 * (int) Math.ceil(TemplateFactory.maxDistanceFromSymbol());
+        final int pointSize = font.getSize();
+        final int room = 2 * (int) Math.ceil(TemplateFactory.maxDistanceFromSymbol(pointSize));
         p.rect = new Rectangle2D.Double(
                 0,
                 0,

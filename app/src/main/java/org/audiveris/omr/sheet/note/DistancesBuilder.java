@@ -118,8 +118,9 @@ public class DistancesBuilder
 
         // Display distances image in a template view?
         if ((OMR.gui != null) && constants.displayTemplates.isSet()) {
-            SelectionService templateService = new SelectionService("templateService", new Class[]
-            { AnchoredTemplateEvent.class });
+            SelectionService templateService = new SelectionService(
+                    "templateService",
+                    new Class[] { AnchoredTemplateEvent.class });
             BufferedImage img = table.getImage(sheet.getScale().getInterline() / 2);
             TemplateBoard templateBoard = new TemplateBoard(sheet, table, templateService);
             sheet.getStub().getAssembly().addViewTab(

@@ -266,8 +266,6 @@ public class Template
                                 Anchor anchor,
                                 DistanceTable distances)
     {
-        if (shape == Shape.NOTEHEAD_VOID_SMALL)
-            logger.warn("ERROR");
         final Point ul = upperLeft(x, y, anchor);
 
         // Loop through template key positions and read related distance.
