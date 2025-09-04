@@ -10,5 +10,6 @@
 //--------------------------------------------------------------------------------------------------
 
 plugins {
+    // To provide 'tiTree' and 'tiOrder' about Gradle tasks relationships
     id("org.barfuin.gradle.taskinfo") version "2.2.0" 
 }
