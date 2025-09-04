@@ -42,6 +42,7 @@ import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
+import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
@@ -73,6 +74,7 @@ import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
 import static org.audiveris.omr.sig.relation.Exclusion.ExclusionCause.INCOMPATIBLE;
@@ -460,6 +462,57 @@ public class SigReducer
         toRemove.forEach(inter -> inter.remove());
 
         return toRemove.size();
+    }
+
+    //--------------------//
+    // checkArticulations //
+    //--------------------//
+    /**
+     * Perform checks on chord articulations
+     * <p>
+     * A chord cannot have several articulations.
+     *
+     * @return the count of modifications done
+     */
+    private int checkArticulations ()
+    {
+        logger.debug("S#{} checkArticulations", system.getId());
+
+        int modifs = 0;
+        final List<Inter> systemHeadChords = sig.inters(HeadChordInter.class);
+
+        for (Inter inter : systemHeadChords) {
+            final HeadChordInter chord = (HeadChordInter) inter;
+            final Set<Relation> rels = sig.getRelations(chord, ChordArticulationRelation.class);
+
+            if (rels.size() > 1) {
+                final Point chordCenter = chord.getCenter();
+                final List<ArticulationInter> artics = new ArrayList<>();
+
+                for (Relation rel : rels) {
+                    artics.add((ArticulationInter) sig.getOppositeInter(chord, rel));
+                }
+
+                // Keep only the closest articulation
+                Collections.sort(
+                        artics,
+                        (a1,
+                         a2) -> Double.compare(
+                                 a1.getCenter().distanceSq(chordCenter),
+                                 a2.getCenter().distanceSq(chordCenter)));
+
+                for (ArticulationInter artic : artics.subList(1, artics.size())) {
+                    if (artic.isVip()) {
+                        logger.info("VIP deleting redundant {}", artic);
+                    }
+
+                    artic.remove();
+                    modifs++;
+                }
+            }
+        }
+
+        return modifs;
     }
 
     //-----------------------//
@@ -2301,6 +2354,7 @@ public class SigReducer
             checkTimeSignatures();
             deleted.addAll(contextualizeAndPurge());
 
+            modifs += checkArticulations();
             modifs += checkAugmentationDots();
             modifs += checkAugmentedHeads();
             modifs += checkAugmentedRests();
