@@ -136,10 +136,10 @@ exclude:
 # ---------------------------------
 
 # Latest Audiveris functional version
-audiveris_functional_version: 5.6
+audiveris_functional_version: 5.7
 
 # Needed Java version for master
-master_java_version: 21
+master_java_version: 24
 
 # File menu paths
 file_input:           <a href="/audiveris/_pages/reference/menus/file/#input"><code>File → Input</code></a>

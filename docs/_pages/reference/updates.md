@@ -20,6 +20,20 @@ Table of contents
 - TOC
 {:toc}
 ---
+## 5.7
+(September 2025)
+
+- User Interface
+  - Support for CJK (Chinese, Japanese, Korean) characters  
+- Engine
+  - Correct handling of void regions in small note head templates
+- Project
+  - Additional Windows installer provided with console, useful for launch messages
+  - All installers now come with a max heap set at 8GB
+- Documentation  
+  - The developer-oriented schema documentation is now included as an asset in each release
+- Java
+  - Upgrade to Java 24 and Gradle 9.0  
 
 ## 5.6
 (May 2025)
