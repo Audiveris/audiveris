@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.SeparablePopupMenu;
 import static org.audiveris.omr.ui.util.UIPredicates.isContextWanted;
@@ -62,6 +64,8 @@ import javax.swing.SwingConstants;
 public class BoardsPane
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BoardsPane.class);
 
@@ -111,7 +115,7 @@ public class BoardsPane
         component.setName("boardsPane");
         component.setBorder(null);
 
-        final int inset = UIUtil.adjustedSize(6);
+        final int inset = UIUtil.adjustedSize(constants.inset.getValue());
         component.setInsets(inset, inset, inset, inset); // TLBR
         component.setMinimumSize(new Dimension(Board.MIN_BOARD_WIDTH + (2 * inset), 1));
 
@@ -384,6 +388,18 @@ public class BoardsPane
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Integer inset = new Constant.Integer(
+                "pixels",
+                6,
+                "Inset value for boards pane");
+    }
 
     //----------------//
     // MyMouseAdapter //

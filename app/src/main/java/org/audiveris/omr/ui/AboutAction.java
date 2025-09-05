@@ -167,7 +167,7 @@ public class AboutAction
         final JLabel titleLabel = new JLabel();
         titleLabel.setFont(
                 new Font(
-                        "Arial",
+                        UIUtil.defaultFontName(),
                         Font.BOLD,
                         UIUtil.adjustedSize(constants.titleFontSize.getValue())));
         titleLabel.setName("aboutTitleLabel");

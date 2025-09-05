@@ -556,7 +556,10 @@ public abstract class SheetPainter
     public static JPanel getVoicePanel ()
     {
         final int length = Voices.getColorCount();
-        final Font font = new Font("Arial", Font.BOLD, UIUtil.adjustedSize(18));
+        final Font font = new Font(
+                UIUtil.defaultFontName(),
+                Font.BOLD,
+                UIUtil.adjustedSize(constants.voicesFontSize.getValue()));
         final Color background = Color.WHITE;
         final StringBuilder sbc = new StringBuilder();
 
@@ -622,6 +625,11 @@ public abstract class SheetPainter
                 "points",
                 30,
                 "Standard font size for annotations");
+
+        private final Constant.Integer voicesFontSize = new Constant.Integer(
+                "points",
+                22,
+                "Font size for voices panel");
 
         private final Constant.Boolean drawPartLimits = new Constant.Boolean(
                 false,

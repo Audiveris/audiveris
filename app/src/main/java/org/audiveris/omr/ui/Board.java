@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.field.LCheckBox;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
@@ -84,13 +86,16 @@ public abstract class Board
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(Board.class);
 
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(Board.class);
 
     /** Minimum width available for a board. */
-    public static final int MIN_BOARD_WIDTH = UIUtil.adjustedSize(350);
+    public static final int MIN_BOARD_WIDTH = UIUtil.adjustedSize(
+            constants.minBoardWidth.getValue());
 
     // Predefined boards names with preferred display positions
     public static final Desc PIXEL = new Desc("Pixel", 100);
@@ -231,7 +236,7 @@ public abstract class Board
         header = (useCount || useVip || useDump) ? new Header(useCount, useVip, useDump) : null;
 
         if (header != null) {
-            header.setInsets(0, 0, UIUtil.adjustedSize(3), 0); // TLBR
+            header.setInsets(0, 0, UIUtil.adjustedSize(constants.headerBottomInset.getValue()), 0); // TLBR
         }
 
         defineLayout();
@@ -275,12 +280,12 @@ public abstract class Board
         component.setName(name + " board");
         component.setBorder(new TitledBorder(name));
         component.setInsets(
-                UIUtil.adjustedSize(12),
-                UIUtil.adjustedSize(10),
-                UIUtil.adjustedSize(5),
-                UIUtil.adjustedSize(5)); // TLBR sides
+                UIUtil.adjustedSize(constants.borderTopInset.getValue()),
+                UIUtil.adjustedSize(constants.borderLeftInset.getValue()),
+                UIUtil.adjustedSize(constants.borderBottomInset.getValue()),
+                UIUtil.adjustedSize(constants.borderRightInset.getValue())); // TLBR sides
 
-        body.setNoInsets();
+        body.setNoInsets(); // This can be modified within each board
 
         final StringBuilder rowsSpec = new StringBuilder();
 
@@ -557,6 +562,43 @@ public abstract class Board
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Integer minBoardWidth = new Constant.Integer(
+                "pixels",
+                350,
+                "Minimum board width");
+
+        private final Constant.Integer borderTopInset = new Constant.Integer(
+                "pixels",
+                15,
+                "Border inset on top side");
+
+        private final Constant.Integer borderLeftInset = new Constant.Integer(
+                "pixels",
+                10,
+                "Border inset on left side");
+
+        private final Constant.Integer borderBottomInset = new Constant.Integer(
+                "pixels",
+                5,
+                "Border inset on bottom side");
+
+        private final Constant.Integer borderRightInset = new Constant.Integer(
+                "pixels",
+                5,
+                "Border inset on right side");
+
+        private final Constant.Integer headerBottomInset = new Constant.Integer(
+                "pixels",
+                3,
+                "Header inset on bottom side");
+    }
 
     //------//
     // Desc //

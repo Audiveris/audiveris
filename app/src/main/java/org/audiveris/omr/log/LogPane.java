@@ -153,8 +153,7 @@ public class LogPane
      */
     public void notifyLog ()
     {
-        SwingUtilities.invokeLater( () ->
-        {
+        SwingUtilities.invokeLater( () -> {
             while (LogGuiAppender.getEventCount() > 0) {
                 ILoggingEvent event = LogGuiAppender.pollEvent();
 
@@ -163,7 +162,7 @@ public class LogPane
                     StyleConstants.setForeground(attributes, getLevelColor(event.getLevel()));
 
                     // Font name
-                    StyleConstants.setFontFamily(attributes, constants.fontName.getValue());
+                    StyleConstants.setFontFamily(attributes, UIUtil.defaultMonospacedFontName());
 
                     // Font size
                     int fontSize = UIUtil.adjustedSize(constants.fontSize.getValue());
@@ -208,12 +207,8 @@ public class LogPane
     {
         private final Constant.Integer fontSize = new Constant.Integer(
                 "Points",
-                10,
+                12,
                 "Font size for log pane");
-
-        private final Constant.String fontName = new Constant.String(
-                "Lucida Console",
-                "Font name for log pane");
     }
 
     //-------------//

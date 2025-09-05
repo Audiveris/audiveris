@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.AdaptiveDescriptor;
 import org.audiveris.omr.image.FilterDescriptor;
 import static org.audiveris.omr.image.FilterKind.ADAPTIVE;
@@ -83,6 +85,8 @@ public class BinarizationBoard
         implements ActionListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BinarizationBoard.class);
 
@@ -363,7 +367,7 @@ public class BinarizationBoard
     //--------------//
     private void defineLayout ()
     {
-        final int inset = UIUtil.adjustedSize(3);
+        final int inset = UIUtil.adjustedSize(constants.inset.getValue());
         ((Panel) getBody()).setInsets(inset, 0, inset, inset); // TLBR
 
         final FormLayout layout = Panel.makeFormLayout(6, 3);
@@ -563,6 +567,18 @@ public class BinarizationBoard
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Integer inset = new Constant.Integer(
+                "pixels",
+                3,
+                "Body inset value");
+    }
 
     //-----------------//
     // LFieldValidater //

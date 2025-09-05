@@ -284,7 +284,7 @@ public class InterBoard
     /**
      * Text items 'shapeName' and 'textField' need to display alteration signs: {@link
      * ChordNameInter#FLAT} , {@link ChordNameInter#SHARP} and perhaps {@link
-     * ChordNameInter#NATURAL}, so they need a font different from default Arial.
+     * ChordNameInter#NATURAL}, so they may need a font different from default.
      */
     private void adjustFontForAlterations ()
     {

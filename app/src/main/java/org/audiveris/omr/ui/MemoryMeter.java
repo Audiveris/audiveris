@@ -127,7 +127,9 @@ public class MemoryMeter
         component.setLayout(new BorderLayout());
 
         // Progress bar
-        progressBar.setPreferredSize(new Dimension(UIUtil.adjustedSize(90), 20));
+        progressBar.setPreferredSize(
+            new Dimension(UIUtil.adjustedSize(constants.barWidth.getValue()),
+                            constants.barHeight.getValue()));
         progressBar.setName("progressBar");
         progressBar.setStringPainted(true);
         component.add(progressBar, BorderLayout.CENTER);
@@ -241,6 +243,16 @@ public class MemoryMeter
     private static class Constants
             extends ConstantSet
     {
+        private final Constant.Integer barWidth = new Constant.Integer(
+                "pixels",
+                90,
+                "Width of progress bar");
+
+        private final Constant.Integer barHeight = new Constant.Integer(
+                "pixels",
+                20,
+                "Height of progress bar");
+
         private final Constant.Integer samplingPeriod = new Constant.Integer(
                 "MilliSeconds",
                 2_000,

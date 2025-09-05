@@ -232,6 +232,32 @@ public abstract class UIUtil
         return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
     }
 
+    //-----------------//
+    // defaultFontName //
+    //-----------------//
+    /**
+     * Report the font name to use by default in this application.
+     *
+     * @return the default font name
+     */
+    public static String defaultFontName ()
+    {
+        return constants.defaultFontName.getValue();
+    }
+
+    //---------------------------//
+    // defaultMonospacedFontName //
+    //---------------------------//
+    /**
+     * Report the monospaced font name to use by default in this application.
+     *
+     * @return the default monospaced font name
+     */
+    public static String defaultMonospacedFontName ()
+    {
+        return constants.defaultMonospacedFontName.getValue();
+    }
+
     //------------------//
     // directoryChooser //
     //------------------//
@@ -965,5 +991,9 @@ public abstract class UIUtil
         private final Constant.String defaultFontName = new Constant.String(
                 "Dialog",
                 "Default font name (preferably a Java logical font)");
+
+        private final Constant.String defaultMonospacedFontName = new Constant.String(
+                "Lucida Console",
+                "Default monospaced font name");
     }
 }

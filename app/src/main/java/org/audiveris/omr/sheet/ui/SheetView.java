@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SheetAssembly.ScrollValues;
@@ -58,6 +60,8 @@ import javax.swing.JSplitPane;
 public class SheetView
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SheetView.class);
 
@@ -129,8 +133,7 @@ public class SheetView
         // Called back when split container is resized
         splitPane.addPropertyChangeListener(
                 JSplitPane.DIVIDER_LOCATION_PROPERTY,
-                (PropertyChangeEvent pce) ->
-                {
+                (PropertyChangeEvent pce) -> {
                     assembly.setCommonDividerLocation(splitPane.getDividerLocation());
                 });
 
@@ -344,8 +347,8 @@ public class SheetView
         {
             this.setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER);
 
-            final int inset = UIUtil.adjustedSize(6);
-            setMinimumSize(new Dimension(Board.MIN_BOARD_WIDTH + (2 * inset), 1));
+            final int padding = UIUtil.adjustedSize(constants.padding.getValue());
+            setMinimumSize(new Dimension(Board.MIN_BOARD_WIDTH + (2 * padding), 1));
         }
 
         public void setBoards (JComponent boards)
@@ -353,5 +356,17 @@ public class SheetView
             setViewportView(boards);
             revalidate();
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Integer padding = new Constant.Integer(
+                "pixels",
+                6,
+                "Horizontal padding of boards");
     }
 }
