@@ -99,50 +99,62 @@ tasks.register('customJre', Exec) {
         "--add-modules", "java.base,java.datatransfer,java.desktop,java.xml,java.naming,jdk.zipfs,jdk.crypto.ec"
 }
 
-tasks.register('macConvertIcons') {
-    description = "Converting PNG icon to ICNS format"
-    doFirst {
-        println "Creating .icns file from source icon..."
-        mkdir('build/macos.iconset')
+tasks.register('macImagemagick', Exec) {
+    description = "Install imagemagick"
+
+    commandLine = "brew install imagemagick"
+}
+
+def src = "$appDir/src/main/java/org/audiveris/omr/ui/resources/icon-256.png"
+
+tasks.register('macSimples') {
+    description = "Generate icons in simple size"
+}
+
+tasks.register('macDoubles') {
+    description = "Generate icons in double size"
+}
+
+// Generate different icon sizes
+// Including retina displays (@2x)
+[16, 32, 64, 128, 256, 512].each {size ->
+    tasks.register("macSimple$size", Exec) {
+        dependsOn('macImagemagick')
+
+        commandLine "magick", src, "-resize", "${size}x${size}",\
+        "build/macos.iconset/icon_${size}x${size}.png"
     }
+    macSimples.dependsOn("macSimple$size")
+   
+    def dbl = size * 2
+    tasks.register("macDouble$size", Exec) {
+        dependsOn('macImagemagick')
 
-    doLast {
-        // Install imagemagick
-        exec {
-            commandLine "brew", "install", "imagemagick"
-        }
+        commandLine "magick", src, "-resize", "${dbl}x${dbl}",\
+        "build/macos.iconset/icon_${size}x${size}@2x.png"
+    }
+    macDoubles.dependsOn("macDouble$size")
+}
 
-        def src = "$appDir/src/main/java/org/audiveris/omr/ui/resources/icon-256.png"
-
-        // Generate different icon sizes
-        // Including retina displays (@2x)
-        [16, 32, 64, 128, 256, 512].each {size ->
-            exec {
-                commandLine "magick", src, "-resize", "${size}x${size}",\
-                "build/macos.iconset/icon_${size}x${size}.png"
-            }
-           def dbl = size * 2
-           exec {
-               commandLine "magick", src, "-resize", "${dbl}x${dbl}",\
-                "build/macos.iconset/icon_${size}x${size}@2x.png"
-           }
-        }
-
-        // Just to inspect the created icon files
-        exec {
-            commandLine "ls", "-la", "build/macos.iconset/"
-        }
-
-        // Convert macos.iconset to icns
-        exec {
-            commandLine "iconutil",\
-                    "--convert", "icns",\
-                    "--output", "build/Audiveris.icns",\
-                    "build/macos.iconset"
-        }
+tasks.register('macListIcons', Exec) {
+    description = "Just to inspect the created icon files"
+    dependsOn('macSimples')
+    dependsOn('macDoubles')
     
-        println "Icon successfully created at build/Audiveris.icns"
-    }
+    commandLine "ls", "-la", "build/macos.iconset/"
+}
+
+
+tasks.register('macConvertIcons', Exec) {
+    description = "Convert macos.iconset to icns"
+    dependsOn('macSimples')
+    dependsOn('macDoubles')
+    dependsOn('macListIcons')
+
+    commandLine "iconutil",\
+            "--convert", "icns",\
+            "--output", "build/Audiveris.icns",\
+            "build/macos.iconset"
 }
 
 // Configure the jpackage task

@@ -13,10 +13,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        ###### os: [ubuntu-latest, ubuntu-22.04, windows-latest, macos-latest, macos-13]
-        # ubuntu-22.04 is a fix for issue #805 libasound2t64 is required but not found
-        # macos-latest is for Apple Silicon (arm64) support
-        # macos-13 is for legacy Intel (x64) hardware support
         include:
           - os: ubuntu-latest
           - os: ubuntu-22.04    # fix for issue #805 libasound2t64 is required but not found
@@ -134,7 +130,7 @@ jobs:
 
   # Collect all artifacts and draft a release with them
   global-upload:
-    needs: [build-installer, build-handbook-pdf]
+    needs: [build-installer, build-handbook-pdf, build-schema-doc]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
