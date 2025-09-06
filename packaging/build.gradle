@@ -105,6 +105,17 @@ tasks.register('macImagemagick', Exec) {
     commandLine "brew", "install", "imagemagick"
 }
 
+tasks.register('macCreateFolder', Exec) {
+    description = "Allocate target folder"
+    
+    def iconDir = file("build/macos.iconset")
+    outputs.dir(iconDir)
+
+    doFirst {
+        iconDir.mkdirs()
+    }
+}
+
 def src = "$appDir/src/main/java/org/audiveris/omr/ui/resources/icon-256.png"
 
 tasks.register('macSimples') {
@@ -120,6 +131,8 @@ tasks.register('macDoubles') {
 [16, 32, 64, 128, 256, 512].each {size ->
     tasks.register("macSimple$size", Exec) {
         dependsOn('macImagemagick')
+        dependsOn('macCreateFolder')
+        inputs.dir("build/macos.iconset")
 
         commandLine "magick", src, "-resize", "${size}x${size}",\
         "build/macos.iconset/icon_${size}x${size}.png"
@@ -129,6 +142,8 @@ tasks.register('macDoubles') {
     def dbl = size * 2
     tasks.register("macDouble$size", Exec) {
         dependsOn('macImagemagick')
+        dependsOn('macCreateFolder')
+        inputs.dir("build/macos.iconset")
 
         commandLine "magick", src, "-resize", "${dbl}x${dbl}",\
         "build/macos.iconset/icon_${size}x${size}@2x.png"
