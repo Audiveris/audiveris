@@ -68,10 +68,10 @@ as described in the handbook [sources section][sources].
 There are two main branches in the Audiveris project:
 - the `master` branch is the GitHub default branch;
 we use it for releases, and only for them;  
-To build from this branch, you will need a `jdk` for Java version **21** or higher.
+To build from this branch, you will need a `jdk` for Java version **24** or higher.
 - the `development` branch is the one where all developments continuously take place;
 Periodically, when a release is to be made, we merge the development branch into the master branch;  
-As of this writing, the source code on development branch requires a `jdk` for Java version **21**.
+As of this writing, the source code on development branch requires a `jdk` for Java version **24**.
 
 See details in the [Wiki article][workflow] dedicated to the chosen development workflow.
 
