@@ -102,7 +102,7 @@ tasks.register('customJre', Exec) {
 tasks.register('macImagemagick', Exec) {
     description = "Install imagemagick"
 
-    commandLine = "brew install imagemagick"
+    commandLine "brew", "install", "imagemagick"
 }
 
 def src = "$appDir/src/main/java/org/audiveris/omr/ui/resources/icon-256.png"
