@@ -46,7 +46,7 @@ This section describes how a developer can (re)generate this documentation local
 using the `schemas` Gradle sub-project.
 
 **Prequisite**:  
- Beside the usual software set (JDK(17), Git and Gradle),
+ Beside the usual software set (JDK, Git and Gradle),
 you need to have `xsltproc` software installed.  
 If not, you can still generate the `.xsd` schema definitions, but you cannot generate the related
 `.html` files.

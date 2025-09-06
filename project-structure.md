@@ -96,28 +96,27 @@ Gradle definition of project structure.
 
 Definition of the desired Gradle version.
 
-| Variable name | Variable role | Current value |
+| Variable name | Variable role | Example value |
 | :---          | :---          | :---          | 
-| `distributionUrl` | URL for Gradle wrapper | https\://services.gradle.org/distributions/gradle-8.7-all.zip |
-| `distributionSha256Sum`| SHA256 for Gradle wrapper | 194717442575a6f96e1c1befa2c30e9a4fc90f701d7aee33eb879b79e7ff05c0 |
+| `distributionUrl` | URL for Gradle wrapper | https\://services.gradle.org/distributions/gradle-9.0-all.zip |
+| `distributionSha256Sum`| SHA256 for Gradle wrapper | 8fad3d78296ca518113f3d29016617c7f9367dc005f932bd9d93bf45ba46072b |
 
 ### `gradle.properties`
 
 Definition of 'the' main variables.
 
-| Variable name | Variable role | Current value |
+| Variable name | Variable role | Example value |
 | :---          | :---          | :---          | 
-| `theMinJavaVersion` | Minimum Java version  | 21 |
+| `theMinJavaVersion` | Minimum Java version  | 24 |
 | `theTessdataTag`| Tesseract languages version | 4.1.0 |
-| `theXsltTransformer` | Xslt processor. <br>Used for schemas-documentation | XsltProc |
 
 ### app/`build.gradle`
 
 Definition of Audiveris precise version.
 
-| Variable name | Variable role | Current value |
+| Variable name | Variable role | Exxample value |
 | :---          | :---          | :---          | 
-| `project.version` | Audiveris precise version. <br> Format: Major.minor.suffix | 5.6.1 |
+| `project.version` | Audiveris precise version. <br> Format: Major.minor.suffix | 5.7.0 |
 
 ### docs/`_config.yml`
 
@@ -126,7 +125,7 @@ Definitions for the handbook documentation.
 Note: It should be possible to determine these values ​​automatically from the variables listed above.
 But unfortunately, as of this writing, these values must be entered manually...
 
-| Variable name | Variable role | Current value |
+| Variable name | Variable role | Example value |
 | :---          | :---          | :---          | 
-| `audiveris_functional_version` | Audiveris functional version for handbook.<br>Format: Major.minor | 5.6 |
-| `master_java_version` | Minimum Java version for the master branch | 21 |
+| `audiveris_functional_version` | Audiveris functional version for handbook.<br>Format: Major.minor | 5.7 |
+| `master_java_version` | Minimum Java version for the master branch | 24 |

@@ -38,9 +38,8 @@
 //    next to the XSD and HTML files, so that links to images can work.
 //    Tasks: copyImages
 //
-// 5. Use xs3p.xsl file and an XSLT transformer to generate the HTML files from the annotated schemas.
-//    The XSLT transformer can be one of XsltProc (default), Saxon or Jaxp as specified by the
-//    property 'theXsltTransformer'.
+// 5. Use xs3p.xsl file and XSLT transformer to generate the HTML files from the annotated schemas.
+//    The XSLT transformer is xsltproc .
 //    Tasks: genHtmls (genHtmlBook, genHtmlPlayList, genHtmlSheet)
 //
 // 6. Wrap all files as a ZIP archive.
@@ -80,9 +79,9 @@
  22. :schemas:copyIndexFile           (org.gradle.api.tasks.Copy)
 
  23. :schemas:checkXsltProc           (org.gradle.api.DefaultTask)
- 24. :schemas:XsltProcGenHtmlBook     (org.gradle.api.tasks.Exec)
- 25. :schemas:XsltProcGenHtmlPlayList (org.gradle.api.tasks.Exec)
- 26. :schemas:XsltProcGenHtmlSheet    (org.gradle.api.tasks.Exec)
+ 24. :schemas:GenHtmlBook             (org.gradle.api.tasks.Exec)
+ 25. :schemas:GenHtmlPlayList         (org.gradle.api.tasks.Exec)
+ 26. :schemas:GenHtmlSheet            (org.gradle.api.tasks.Exec)
  27. :schemas:genHtmls                (org.gradle.api.DefaultTask)
 
  28. :schemas:genArchive              (org.gradle.api.tasks.bundling.Zip)
@@ -104,21 +103,12 @@ repositories {
     mavenCentral() 
 }
 
-// Specification of XSLT transformer
-ext.xsltTransformer = project.property('theXsltTransformer')
-println "theXsltTransformer: $xsltTransformer"
-
 dependencies { 
     implementation(group: 'args4j', name: 'args4j', version: '2.33')
     implementation(group: 'org.codehaus.mojo', name: 'jaxb2-maven-plugin', version: '3.3.0')
     implementation(group: 'org.apache.maven.plugin-tools', name: 'maven-plugin-annotations', version: '3.5.1')
     implementation(group: 'org.apache.maven', name: 'maven-plugin-api', version: '3.9.11')
     implementation(group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1')
-    
-    if ("$xsltTransformer".toString() == 'Saxon') {
-        println "Adding saxon library to implementation"
-        implementation(group: 'net.sf.saxon', name: 'Saxon-HE', version: '12.4')
-    }
 }
 
 // Main task
@@ -358,9 +348,9 @@ int xmlDocWidth = 50
     completeSchemas.dependsOn("completeSchema$cls")
     copyImages.dependsOn("completeSchema$cls")
     
-    // Generating HTML from complete schema, using XsltProc
+    // Generating HTML from complete schema, using xsltproc
     // NOTA: this processor works but is getting old, stuck to stylesheet version 1.0
-    task ("XsltProcGenHtml$cls", type: Exec) {
+    task ("GenHtml$cls", type: Exec) {
         description = "Generate HTML for $cls class, using XsltProc"
         group = "Documentation"
         dependsOn('checkXsltProc')
@@ -394,60 +384,8 @@ int xmlDocWidth = 50
             commandLine(args)
         }
     }
-/*
-    // Generating HTML from complete schema, using Saxon
-    // NOTA: this does not work correctly for html tags in JavaDoc elements
-    task ("SaxonGenHtml$cls", type: JavaExec) {
-        description = "Generate HTML for $cls class, using Saxon"
-        group = "Documentation"
-        dependsOn("completeSchema$cls")
-                  
-        def opts = []
-        opts.add("-xsl:${styleSheet}")
-        opts.add("-s:build/output/${cls}.xsd")
-        opts.add("-o:build/output/${cls}.html")
-        opts.add("title=${cls}-rooted Schema Documentation")
-        opts.add("printNSPrefixes=false")
-        opts.add("xmlDocWidth=$xmlDocWidth")
-        opts.add("useTypeShortcut=true")
-        opts.add("useMarkdown=false")
-        ///opts.add("debug=true")
 
-        args(opts)
-        mainClass = 'net.sf.saxon.Transform'
-        classpath(project(':app').sourceSets.main.runtimeClasspath)
-    }
-
-    // Generating HTML from complete schema, using Jaxp
-    // NOTA: this crashes on processing Sheet schema, due to Picture and Voice classes!
-    task ("JaxpGenHtml$cls", type: JavaExec) {
-        description = "Generate HTML for $cls class, using Jaxp"
-        group = "Documentation"
-        dependsOn("completeSchema$cls")
-                  
-        def opts = []
-        opts.add("-xsl")
-        opts.add("$styleSheet")
-        opts.add("-s")
-        opts.add("build/output/${cls}.xsd")
-        opts.add("-o")
-        opts.add("build/output/${cls}.html")
-        opts.add("--")
-        opts.add("title='${cls}-rooted Schema Documentation'")
-        opts.add("xmlDocWidth=$xmlDocWidth")
-        opts.add("printGlossary=false")
-        opts.add("printNSPrefixes=false")
-        opts.add("useTypeShortcut=true")
-        opts.add("useMarkdown=false")
-        ///opts.add("debug=true")
-
-        args(opts)
-        mainClass = 'org.audiveris.schema.XsltTransformer'
-        classpath(project(':app').sourceSets.main.runtimeClasspath)
-    }
-*/
-    // Use of actual Xslt Transformer
-    genHtmls.dependsOn("${xsltTransformer}GenHtml$cls")       
+    genHtmls.dependsOn("GenHtml$cls")       
 }
 
 // Build a ZIP archive with relevant .xsd and .html files (plus doc-files folder)

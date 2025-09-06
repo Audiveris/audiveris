@@ -34,7 +34,7 @@ The PDF file is organized as follows:
 2. All the pages, one chapter after the other,
 3. Possibly an index of major entities (this feature is not yet implemented).
 
-The latest PDF format can be downloaded from [here][pdf-latest].
+The latest PDF format can be downloaded from the assets of the [latest release][latest-release].
 
 With the PDF format, the user can:
 - Read the documentation off-line,
@@ -149,7 +149,8 @@ The file `docs/build.gradle` can drive the PDF generation via two possible tasks
 - `handbookPdfLocalhost` task which gets the web content from a local Jekyll generator (http://localhost:4000)
 
 We can also directly call the `pdf/pdf-build.sh` command file from within the `docs` folder.
-The optional `localhost` argument would retrieve the web content locally instead of the remote GitHub site.
+- First argument (mandatory): Audiveris version number
+- Second optional argument: `localhost` would retrieve the web content locally instead of the remote GitHub site.
 
 ### On GitHub
 
@@ -158,7 +159,7 @@ It is generally more convenient to generate and package the PDF format any time 
 The `draft-release.yml` GitHub workflow file, in addition to creating the desired installers,
 generates the PDF format of the handbook, and bundles all artifacts as release assets.
 
-It does so by directly calling the `pdf/pdf-build.sh` command file from within the `docs` folder.
+It does so by using the `handbookPdf` Gradle task.
 
-[pdf-latest]:   https://github.com/Audiveris/audiveris/releases/latest/download/Audiveris_Handbook.pdf
-[web-latest]:   https://audiveris.github.io/audiveris/_pages/handbook/
+[latest-release]:   https://github.com/Audiveris/audiveris/releases/latest/
+[web-latest]:       https://audiveris.github.io/audiveris/_pages/handbook/
