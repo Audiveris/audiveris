@@ -105,7 +105,7 @@ tasks.register('macImagemagick', Exec) {
     commandLine "brew", "install", "imagemagick"
 }
 
-tasks.register('macCreateFolder', Exec) {
+tasks.register('macCreateFolder') {
     description = "Allocate target folder"
     
     def iconDir = file("build/macos.iconset")
