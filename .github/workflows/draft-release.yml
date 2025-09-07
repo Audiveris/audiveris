@@ -76,10 +76,7 @@ jobs:
           prince --version
 
       - name: Generate PDF
-        run: |
-          chmod +x ./docs/pdf/pdf-build.sh
-          cd ./docs
-          ./pdf/pdf-build.sh
+        run: ./gradlew --info :docs:handbookPdf
           
       - name: Verify generated pdf
         run: ls -l ./docs/build/pdf
