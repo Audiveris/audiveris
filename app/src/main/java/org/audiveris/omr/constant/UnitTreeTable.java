@@ -82,16 +82,21 @@ public class UnitTreeTable
     {
         super(model);
 
-        setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        // Keep the auto-resize, to cope with changing the font ratio
+        ///setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         // Zebra
         UIManager.put("Table.alternateRowColor", zebraColor);
         setFillsViewportHeight(true);
 
         // Show grid?
-        //setShowGrid(true);
+        setShowGrid(true);
+
         // Specify column widths
         adjustColumns();
+
+        // Specify row height, according to the font ratio chosen by user
+        setRowHeight(UIUtil.adjustedSize(getRowHeight()));
 
         // Customize the tree aspect
         tree.setRootVisible(false);
@@ -156,8 +161,7 @@ public class UnitTreeTable
     // getCellRenderer //
     //-----------------//
     /**
-     * Used by the UI to get the proper renderer for each given cell in
-     * the table.
+     * Used by the UI to get the proper renderer for each given cell in the table.
      *
      * @param row row in the table
      * @param col column in the table
@@ -267,9 +271,9 @@ public class UnitTreeTable
     public void scrollRowToVisible (int row)
     {
         final int height = tree.getRowHeight();
-        Rectangle rect = new Rectangle(0, row * height, 0, 0);
+        final Rectangle rect = new Rectangle(0, row * height, 0, 0);
 
-        Container container = getParent();
+        final Container container = getParent();
 
         if (container instanceof JComponent comp) {
             rect.grow(0, comp.getHeight() / 2);

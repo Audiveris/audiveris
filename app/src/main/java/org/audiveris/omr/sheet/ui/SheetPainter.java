@@ -568,24 +568,20 @@ public abstract class SheetPainter
                 sbc.append(",");
             }
 
-            sbc.append("10dlu");
+            sbc.append("6dlu");
         }
 
-        final FormLayout layout = new FormLayout(sbc.toString(), "pref");
+        final String rowSpecs = "center:16dlu";
+        final FormLayout layout = new FormLayout(sbc.toString(), rowSpecs);
         final Panel panel = new Panel();
-        panel.setName("VoicePanel");
+        panel.setNoInsets();
         final FormBuilder builder = FormBuilder.create().layout(layout).panel(panel);
-
-        // Adjust dimensions
-        final Dimension cellDim = new Dimension(5, 22);
-        panel.setInsets(3, 0, 0, 3); // TLBR
 
         final int mid = length / 2;
 
         for (int c = 1; c <= length; c++) {
             final Color color = new Color(Voices.colorOf(c).getRGB()); // Remove alpha
             final JLabel label = new JLabel("" + c, JLabel.CENTER);
-            label.setPreferredSize(cellDim);
             label.setFont(font);
             label.setOpaque(true);
             label.setBackground(background);
@@ -599,7 +595,6 @@ public abstract class SheetPainter
         {
             final Color color = Color.BLACK;
             final JLabel label = new JLabel(" /");
-            label.setPreferredSize(cellDim);
             label.setFont(font);
             label.setOpaque(true);
             label.setBackground(background);
@@ -628,7 +623,7 @@ public abstract class SheetPainter
 
         private final Constant.Integer voicesFontSize = new Constant.Integer(
                 "points",
-                22,
+                14,
                 "Font size for voices panel");
 
         private final Constant.Boolean drawPartLimits = new Constant.Boolean(

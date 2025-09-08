@@ -60,7 +60,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
@@ -83,13 +82,15 @@ public abstract class Preferences
 
     private static final Logger logger = LoggerFactory.getLogger(Preferences.class);
 
-    /** Layouts for 2 items. */
-    private static final FormLayout layout2 = new FormLayout("3dlu,70dlu,10dlu,pref", "pref");
+    /** Layouts for 2 items horizontally. */
+    private static final FormLayout layout2 = new FormLayout("3dlu,70dlu,10dlu,157dlu", "30dlu");
 
-    private static final FormLayout layout2b = new FormLayout("70dlu,10dlu,250dlu", "pref");
+    private static final FormLayout layout2b = new FormLayout("70dlu,10dlu,160dlu", "15dlu");
 
-    /** Layout for 3 items. */
-    private static final FormLayout layout3 = new FormLayout("9dlu,1dlu,60dlu,10dlu,pref", "pref");
+    /** Layout for 3 items horizontally. */
+    private static final FormLayout layout3 = new FormLayout(
+            "center:9dlu,1dlu,60dlu,10dlu,155dlu",
+            "10dlu");
 
     private static final ApplicationContext context = Application.getInstance().getContext();
 
@@ -130,14 +131,14 @@ public abstract class Preferences
      *
      * @return the panel
      */
-    private static JPanel getMessage ()
+    private static Panel getMessage ()
     {
         final Panel panel = new Panel();
         panel.setName("Preferences");
 
         final FormLayout layout = new FormLayout(
                 "pref",
-                "pref, 5dlu, pref, 5dlu, pref, 5dlu, pref");
+                "fill:30dlu,2dlu,fill:30dlu,2dlu,fill:70dlu,2dlu,fill:127dlu");
         final FormBuilder builder = FormBuilder.create().layout(layout).panel(panel);
         int r = 1;
         builder.addRaw(new EarlyPane()).xy(1, r);
@@ -171,7 +172,7 @@ public abstract class Preferences
      * Pane for the advanced topic switches.
      */
     private static class AdvancedTopicsPane
-            extends JPanel
+            extends Panel
     {
         public AdvancedTopicsPane ()
         {
@@ -186,23 +187,24 @@ public abstract class Preferences
 
             // Layout
             final FormLayout layout = new FormLayout(
-                    "pref",
-                    "28,1," + "26,1," + "22,1,22,1,22,1,22,1,22,1,22");
+                    "1dlu, fill:239dlu",
+                    "8dlu, " + "14dlu, 1dlu, 14dlu, 1dlu,"
+                            + " 12dlu, 1dlu, 12dlu, 1dlu, 12dlu, 1dlu, 12dlu, 1dlu, 12dlu, 1dlu, 12dlu");
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
-            int r = 1;
+            int r = 2;
 
             // Scaling
-            builder.addRaw(new ScalingPane()).xy(1, r);
+            builder.addRaw(new ScalingPane()).xy(2, r);
             r += 2;
 
             // Locale
-            builder.addRaw(new LocalePane()).xy(1, r);
+            builder.addRaw(new LocalePane()).xy(2, r);
             r += 2;
 
             // Switches
             for (Topic topic : Topic.values()) {
                 final String topicName = LabeledEnum.valueOf(topic, localeTopics).label;
-                builder.addRaw(new TopicPane(topic, topicName)).xy(1, r);
+                builder.addRaw(new TopicPane(topic, topicName)).xy(2, r);
                 r += 2;
             }
         }
@@ -215,7 +217,7 @@ public abstract class Preferences
      * Which step should we trigger on any input image.
      */
     private static class EarlyPane
-            extends JPanel
+            extends Panel
             implements ActionListener
     {
         private final JComboBox<OmrStep> stepBox; // ComboBox for desired step
@@ -224,7 +226,6 @@ public abstract class Preferences
         {
             final String className = getClass().getSimpleName();
             setBorder(createTitledBorder(resource.getString(className + ".titledBorder.text")));
-
             final String tip = resource.getString(className + ".stepBox.toolTipText");
 
             // Define stepBox
@@ -404,7 +405,7 @@ public abstract class Preferences
      * Where should outputs be stored.
      */
     private static class OutputsPane
-            extends JPanel
+            extends Panel
     {
         final SeparatePane separatePane = new SeparatePane();
 
@@ -418,16 +419,19 @@ public abstract class Preferences
             setBorder(createTitledBorder(resource.getString(className + ".titledBorder.text")));
 
             // Layout
-            final FormLayout layout = new FormLayout("pref", "22,1," + "26,1," + "22");
+            final FormLayout layout = new FormLayout(
+                    "1dlu, fill:239dlu",
+                    "6dlu, 18dlu, 1dlu, 18dlu, 1dlu, 18dlu");
+
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
-            int r = 1;
-            builder.addRaw(siblingPane).xy(1, r);
+            int r = 2;
+            builder.addRaw(siblingPane).xy(2, r);
 
             r += 2;
-            builder.addRaw(defaultPane).xy(1, r);
+            builder.addRaw(defaultPane).xy(2, r);
 
             r += 2;
-            builder.addRaw(separatePane).xy(1, r);
+            builder.addRaw(separatePane).xy(2, r);
         }
     }
 
@@ -438,7 +442,7 @@ public abstract class Preferences
      * Which plugin should be the default one.
      */
     private static class PluginPane
-            extends JPanel
+            extends Panel
             implements ActionListener
     {
         private final JComboBox<String> pluginBox; // ComboBox for registered plugins
