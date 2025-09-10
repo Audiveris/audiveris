@@ -76,6 +76,7 @@ import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
@@ -222,6 +223,9 @@ public class Sheet
 
     /** Dictionary of sheet lags. */
     private LagManager lagManager;
+
+    /** For time measurement. */
+    private StopWatch watch;
 
     //-- UI ---
     //
@@ -1157,6 +1161,23 @@ public class Sheet
     public List<SystemInfo> getSystems ()
     {
         return systemManager.getSystems();
+    }
+
+    //----------//
+    // getWatch //
+    //----------//
+    /**
+     * Report the stop watch for this sheet.
+     *
+     * @return the stop watch
+     */
+    public StopWatch getWatch ()
+    {
+        if (watch == null) {
+            watch = new StopWatch(getId());
+        }
+
+        return watch;
     }
 
     //----------//

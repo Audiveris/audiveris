@@ -488,6 +488,7 @@ public class SheetStub
 
             // Implement a timeout for this step on the stub
             future = OmrExecutors.getCachedLowExecutor().submit( () -> {
+                sheet.getWatch().start(step.name());
                 LogUtil.start(SheetStub.this);
 
                 try {
@@ -506,6 +507,7 @@ public class SheetStub
                     }
                 } finally {
                     LogUtil.stopStub();
+                    sheet.getWatch().stop();
                 }
 
                 return null;
@@ -1104,6 +1106,9 @@ public class SheetStub
         return binaryTable;
     }
 
+    //----------//
+    // hasSheet //
+    //----------//
     /**
      * Report whether the stub has a sheet in memory
      *
@@ -1319,6 +1324,17 @@ public class SheetStub
             upgradeParameters().switches = old_switches;
             old_switches = null;
         }
+    }
+
+    //------------//
+    // printWatch //
+    //------------//
+    /**
+     * Print out the step-based processing times for this sheet.
+     */
+    public void printWatch ()
+    {
+        getSheet().getWatch().print();
     }
 
     //-----------//

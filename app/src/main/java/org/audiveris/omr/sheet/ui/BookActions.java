@@ -1030,6 +1030,24 @@ public class BookActions
         return new PrintSheetTask(stub.getSheet(), sheetPrintPath);
     }
 
+    //-----------------//
+    // printSheetWatch //
+    //-----------------//
+    /**
+     * Print out the watch on sheet processing.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_IDLE)
+    public void printSheetWatch (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub != null) {
+            stub.printWatch();
+        }
+    }
+
     //---------------//
     // rebuildScores //
     //---------------//

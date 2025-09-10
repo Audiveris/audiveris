@@ -83,12 +83,12 @@ public class StopWatch
     {
         stop();
 
-        final String format = "%5d %3d%% %s";
+        final String format = "%5d %5.1f%% %s";
         final String dashes = "-----------------------------------";
         out.println();
         out.println(getClass().getSimpleName() + " \"" + name + "\"");
         out.println(dashes);
-        out.println("   ms    % Task");
+        out.println("   ms      % Task");
         out.println(dashes);
 
         for (Task t : tasks) {
@@ -97,13 +97,13 @@ public class StopWatch
                         String.format(
                                 format,
                                 t.elapsed,
-                                (total != 0) ? ((100 * t.elapsed) / total) : 100,
+                                (total != 0) ? ((100.0 * t.elapsed) / total) : 100.0,
                                 t.label));
             }
         }
 
         out.println(dashes);
-        out.println(String.format(format, total, 100, "Total"));
+        out.println(String.format(format, total, 100.0, "Total"));
     }
 
     //-------//
