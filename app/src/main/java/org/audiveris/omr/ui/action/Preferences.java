@@ -83,18 +83,19 @@ public abstract class Preferences
     private static final Logger logger = LoggerFactory.getLogger(Preferences.class);
 
     /** Layouts for 2 items horizontally. */
-    private static final FormLayout layout2 = new FormLayout("3dlu,70dlu,10dlu,157dlu", "30dlu");
+    private static final FormLayout layout2 = new FormLayout("3dlu,90dlu,10dlu,fill:pref", "30dlu");
 
-    private static final FormLayout layout2b = new FormLayout("70dlu,10dlu,160dlu", "15dlu");
+    /** Layout for the browse pane. Field on right must be kept extended, hence the 190dlu. */
+    private static final FormLayout layout2b = new FormLayout("90dlu,10dlu,fill:190dlu", "15dlu");
 
     /** Layout for 3 items horizontally. */
     private static final FormLayout layout3 = new FormLayout(
-            "center:9dlu,1dlu,60dlu,10dlu,155dlu",
+            "center:9dlu,1dlu,80dlu,10dlu,fill:pref",
             "10dlu");
 
     private static final ApplicationContext context = Application.getInstance().getContext();
 
-    private static final ResourceMap resource = context.getResourceMap(Preferences.class);
+    private static final ResourceMap resources = context.getResourceMap(Preferences.class);
 
     private static final Insets titledInsets = new Insets(15, 6, 6, 6);
 
@@ -160,7 +161,7 @@ public abstract class Preferences
     //------//
     public static void show ()
     {
-        OMR.gui.displayMessage(getMessage(), resource.getString("Preferences.title"));
+        OMR.gui.displayMessage(getMessage(), resources.getString("Preferences.title"));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -177,19 +178,20 @@ public abstract class Preferences
         public AdvancedTopicsPane ()
         {
             final String className = getClass().getSimpleName();
-            setBorder(createTitledBorder(resource.getString(className + ".titledBorder.text")));
+            setBorder(createTitledBorder(resources.getString(className + ".titledBorder.text")));
 
             // Localized values of Topic enum type
             final LabeledEnum<Topic>[] localeTopics = LabeledEnum.values(
                     Topic.values(),
-                    resource,
+                    resources,
                     Topic.class);
 
             // Layout
             final FormLayout layout = new FormLayout(
-                    "1dlu, fill:239dlu",
-                    "8dlu, " + "14dlu, 1dlu, 14dlu, 1dlu,"
-                            + " 12dlu, 1dlu, 12dlu, 1dlu, 12dlu, 1dlu, 12dlu, 1dlu, 12dlu, 1dlu, 12dlu");
+                    "1dlu,fill:pref",
+                    "8dlu," // For title
+                            + "14dlu,1dlu,14dlu,1dlu," // For scaling and locale
+                            + " 12dlu,1dlu,12dlu,1dlu,12dlu,1dlu,12dlu,1dlu,12dlu,1dlu,12dlu");
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
             int r = 2;
 
@@ -225,8 +227,8 @@ public abstract class Preferences
         public EarlyPane ()
         {
             final String className = getClass().getSimpleName();
-            setBorder(createTitledBorder(resource.getString(className + ".titledBorder.text")));
-            final String tip = resource.getString(className + ".stepBox.toolTipText");
+            setBorder(createTitledBorder(resources.getString(className + ".titledBorder.text")));
+            final String tip = resources.getString(className + ".stepBox.toolTipText");
 
             // Define stepBox
             stepBox = new JComboBox<>(OmrStep.values());
@@ -267,7 +269,7 @@ public abstract class Preferences
         public LocalePane ()
         {
             final String className = getClass().getSimpleName();
-            final String tip = resource.getString(className + ".localeBox.toolTipText");
+            final String tip = resources.getString(className + ".localeBox.toolTipText");
 
             // Define localeBox
             localeBox = new JComboBox<>(locales.toArray(new Locale[locales.size()]));
@@ -312,7 +314,7 @@ public abstract class Preferences
             browse = new JButton(new BrowseAction());
             field = new JTextField();
             field.setText(BookManager.getBaseFolder().toString());
-            field.setToolTipText(resource.getString(className + ".toolTipText"));
+            field.setToolTipText(resources.getString(className + ".toolTipText"));
 
             // Layout
             final FormBuilder builder = FormBuilder.create().layout(layout2b).panel(this);
@@ -333,7 +335,7 @@ public abstract class Preferences
         {
             public BrowseAction ()
             {
-                super(resource.getString(className + ".text"));
+                super(resources.getString(className + ".text"));
                 putValue(Action.SHORT_DESCRIPTION, "Browse for output folder");
             }
 
@@ -344,7 +346,7 @@ public abstract class Preferences
                         true,
                         DefaultOutputPane.this,
                         BookManager.getBaseFolder().toFile(),
-                        resource.getString(className + ".title"));
+                        resources.getString(className + ".title"));
 
                 if (dir != null) {
                     field.setText(dir.toString());
@@ -377,9 +379,9 @@ public abstract class Preferences
             box.addActionListener(this);
 
             final String className = getClass().getSimpleName();
-            name = new JLabel(resource.getString(className + ".text"));
-            desc = new JLabel(resource.getString(className + ".desc"));
-            name.setToolTipText(resource.getString(className + ".toolTipText"));
+            name = new JLabel(resources.getString(className + ".text"));
+            desc = new JLabel(resources.getString(className + ".desc"));
+            name.setToolTipText(resources.getString(className + ".toolTipText"));
 
             // Layout
             final FormBuilder builder = FormBuilder.create().layout(layout3).panel(this);
@@ -416,11 +418,11 @@ public abstract class Preferences
         public OutputsPane ()
         {
             final String className = getClass().getSimpleName();
-            setBorder(createTitledBorder(resource.getString(className + ".titledBorder.text")));
+            setBorder(createTitledBorder(resources.getString(className + ".titledBorder.text")));
 
             // Layout
             final FormLayout layout = new FormLayout(
-                    "1dlu, fill:239dlu",
+                    "1dlu, fill:pref",
                     "6dlu, 18dlu, 1dlu, 18dlu, 1dlu, 18dlu");
 
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
@@ -450,8 +452,8 @@ public abstract class Preferences
         public PluginPane ()
         {
             final String className = getClass().getSimpleName();
-            setBorder(createTitledBorder(resource.getString(className + ".titledBorder.text")));
-            final String tip = resource.getString(className + ".pluginBox.toolTipText");
+            setBorder(createTitledBorder(resources.getString(className + ".titledBorder.text")));
+            final String tip = resources.getString(className + ".pluginBox.toolTipText");
 
             // Define pluginBox
             final Collection<String> ids = PluginsManager.getInstance().getPluginIds();
@@ -501,7 +503,7 @@ public abstract class Preferences
         public ScalingPane ()
         {
             final String className = getClass().getSimpleName();
-            sliderText = resource.getString(className + ".slider.text");
+            sliderText = resources.getString(className + ".slider.text");
 
             // Define slider
             slider.setToolTipText(sliderText);
@@ -533,7 +535,7 @@ public abstract class Preferences
             label.setFont(label.getFont().deriveFont((float) ratio * defaultSize));
 
             final int percent = (int) Math.rint(ratio * 100);
-            label.setText(sliderText + " " + percent + "%");
+            label.setText(percent + "% " + sliderText);
         }
 
         private double ratioOf (int tick)
@@ -610,8 +612,6 @@ public abstract class Preferences
         }
     }
 
-    //~ Enumerations -------------------------------------------------------------------------------
-
     //-------//
     // Topic //
     //-------//
@@ -674,7 +674,7 @@ public abstract class Preferences
         {
             this.topic = topic;
 
-            String desc = resource.getString("Topic." + topic + ".toolTipText");
+            String desc = resources.getString("Topic." + topic + ".toolTipText");
 
             if (desc == null) {
                 desc = topic.getDescription();
