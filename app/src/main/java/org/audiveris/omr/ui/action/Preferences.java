@@ -43,8 +43,6 @@ import org.slf4j.LoggerFactory;
 import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
-import java.awt.Component;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -82,22 +80,17 @@ public abstract class Preferences
 
     private static final Logger logger = LoggerFactory.getLogger(Preferences.class);
 
-    /** Layouts for 2 items horizontally. */
-    private static final FormLayout layout2 = new FormLayout("3dlu,90dlu,10dlu,fill:pref", "30dlu");
-
-    /** Layout for the browse pane. Field on right must be kept extended, hence the 190dlu. */
-    private static final FormLayout layout2b = new FormLayout("90dlu,10dlu,fill:190dlu", "15dlu");
-
-    /** Layout for 3 items horizontally. */
-    private static final FormLayout layout3 = new FormLayout(
-            "center:9dlu,1dlu,80dlu,10dlu,fill:pref",
-            "10dlu");
+    /**
+     * Common column specifications for all rows.
+     * For the browse pane, last field on right must be kept extended, hence the fixed 190dlu value
+     */
+    private static final String columnSpecs = "3dlu" // Left border
+            + ",9dlu,1dlu,80dlu" // Checkbox + item, or button alone
+            + ",10dlu" + ",fill:190dlu"; // Gap, then large field on right
 
     private static final ApplicationContext context = Application.getInstance().getContext();
 
     private static final ResourceMap resources = context.getResourceMap(Preferences.class);
-
-    private static final Insets titledInsets = new Insets(15, 6, 6, 6);
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -108,29 +101,14 @@ public abstract class Preferences
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    //--------------------//
-    // createTitledBorder //
-    //--------------------//
-    private static TitledBorder createTitledBorder (String title)
-    {
-        return new TitledBorder(title)
-        {
-            @Override
-            public Insets getBorderInsets (Component c)
-            {
-                return titledInsets;
-            }
-        };
-
-    }
-
     //------------//
     // getMessage //
     //------------//
     /**
-     * Report the message panel to be displayed to the user
+     * Report the message panel to be displayed to the user.
+     * Organized as a vertical sequence of panes.
      *
-     * @return the panel
+     * @return the message panel
      */
     private static Panel getMessage ()
     {
@@ -139,8 +117,12 @@ public abstract class Preferences
 
         final FormLayout layout = new FormLayout(
                 "pref",
-                "fill:30dlu,2dlu,fill:30dlu,2dlu,fill:70dlu,2dlu,fill:127dlu");
+                "fill:30dlu" // Early
+                        + ",2dlu" + ",fill:30dlu" // Plugin
+                        + ",2dlu" + ",fill:70dlu" // Outputs
+                        + ",2dlu" + ",fill:140dlu"); // Advanced
         final FormBuilder builder = FormBuilder.create().layout(layout).panel(panel);
+
         int r = 1;
         builder.addRaw(new EarlyPane()).xy(1, r);
 
@@ -159,6 +141,9 @@ public abstract class Preferences
     //------//
     // show //
     //------//
+    /**
+     * Display this entity.
+     */
     public static void show ()
     {
         OMR.gui.displayMessage(getMessage(), resources.getString("Preferences.title"));
@@ -178,7 +163,7 @@ public abstract class Preferences
         public AdvancedTopicsPane ()
         {
             final String className = getClass().getSimpleName();
-            setBorder(createTitledBorder(resources.getString(className + ".titledBorder.text")));
+            setBorder(new TitledBorder(resources.getString(className + ".titledBorder.text")));
 
             // Localized values of Topic enum type
             final LabeledEnum<Topic>[] localeTopics = LabeledEnum.values(
@@ -188,25 +173,31 @@ public abstract class Preferences
 
             // Layout
             final FormLayout layout = new FormLayout(
-                    "1dlu,fill:pref",
-                    "8dlu," // For title
-                            + "14dlu,1dlu,14dlu,1dlu," // For scaling and locale
-                            + " 12dlu,1dlu,12dlu,1dlu,12dlu,1dlu,12dlu,1dlu,12dlu,1dlu,12dlu");
+                    "fill:pref",
+                    "6dlu" // Title height
+                            + ",20dlu" // Scaling
+                            + ",1dlu" + ",18dlu" // Locale
+                            + ",1dlu" + ",12dlu" // Topic
+                            + ",1dlu" + ",12dlu" // Topic
+                            + ",1dlu" + ",12dlu" // Topic
+                            + ",1dlu" + ",12dlu" // Topic
+                            + ",1dlu" + ",12dlu" // Topic
+                            + ",1dlu" + ",12dlu"); // Topic
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
             int r = 2;
 
             // Scaling
-            builder.addRaw(new ScalingPane()).xy(2, r);
+            builder.addRaw(new ScalingPane()).xy(1, r);
             r += 2;
 
             // Locale
-            builder.addRaw(new LocalePane()).xy(2, r);
+            builder.addRaw(new LocalePane()).xy(1, r);
             r += 2;
 
             // Switches
             for (Topic topic : Topic.values()) {
                 final String topicName = LabeledEnum.valueOf(topic, localeTopics).label;
-                builder.addRaw(new TopicPane(topic, topicName)).xy(2, r);
+                builder.addRaw(new TopicPane(topic, topicName)).xy(1, r);
                 r += 2;
             }
         }
@@ -227,18 +218,18 @@ public abstract class Preferences
         public EarlyPane ()
         {
             final String className = getClass().getSimpleName();
-            setBorder(createTitledBorder(resources.getString(className + ".titledBorder.text")));
             final String tip = resources.getString(className + ".stepBox.toolTipText");
+            setBorder(new TitledBorder(resources.getString(className + ".titledBorder.text")));
 
             // Define stepBox
             stepBox = new JComboBox<>(OmrStep.values());
-            stepBox.setToolTipText(tip);
             stepBox.addActionListener(this);
 
             // Layout
-            final FormBuilder builder = FormBuilder.create().layout(layout2).panel(this);
-            builder.addRaw(stepBox).xy(2, 1);
-            builder.addRaw(new JLabel(tip)).xy(4, 1);
+            final FormLayout layout = new FormLayout(columnSpecs, "30dlu");
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
+            builder.addRaw(stepBox).xyw(2, 1, 3);
+            builder.addRaw(new JLabel(tip)).xy(6, 1);
 
             // Initial status
             stepBox.setSelectedItem(StubsController.getEarlyStep());
@@ -256,7 +247,7 @@ public abstract class Preferences
     // LocalePane //
     //------------//
     /**
-     * Which Locale should be used in application.
+     * Which locale should be used in application.
      */
     private static class LocalePane
             extends Panel
@@ -273,13 +264,13 @@ public abstract class Preferences
 
             // Define localeBox
             localeBox = new JComboBox<>(locales.toArray(new Locale[locales.size()]));
-            localeBox.setToolTipText(tip);
             localeBox.addActionListener(this);
 
             // Layout
-            final FormBuilder builder = FormBuilder.create().layout(layout3).panel(this);
-            builder.addRaw(localeBox).xyw(1, 1, 3);
-            builder.addRaw(new JLabel(tip)).xy(5, 1);
+            final FormLayout layout = new FormLayout(columnSpecs, "fill:pref");
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
+            builder.addRaw(localeBox).xyw(2, 1, 3);
+            builder.addRaw(new JLabel(tip)).xy(6, 1);
 
             // Initial status
             localeBox.setSelectedItem(Locale.getDefault());
@@ -317,9 +308,10 @@ public abstract class Preferences
             field.setToolTipText(resources.getString(className + ".toolTipText"));
 
             // Layout
-            final FormBuilder builder = FormBuilder.create().layout(layout2b).panel(this);
-            builder.addRaw(browse).xy(1, 1);
-            builder.addRaw(field).xy(3, 1);
+            final FormLayout layout = new FormLayout(columnSpecs, "15dlu");
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
+            builder.addRaw(browse).xyw(2, 1, 3);
+            builder.addRaw(field).xy(6, 1);
         }
 
         @Override
@@ -336,7 +328,7 @@ public abstract class Preferences
             public BrowseAction ()
             {
                 super(resources.getString(className + ".text"));
-                putValue(Action.SHORT_DESCRIPTION, "Browse for output folder");
+                putValue(Action.SHORT_DESCRIPTION, resources.getString(className + ".title"));
             }
 
             @Override
@@ -384,10 +376,11 @@ public abstract class Preferences
             name.setToolTipText(resources.getString(className + ".toolTipText"));
 
             // Layout
-            final FormBuilder builder = FormBuilder.create().layout(layout3).panel(this);
-            builder.addRaw(box).xy(1, 1);
-            builder.addRaw(name).xy(3, 1);
-            builder.addRaw(desc).xy(5, 1);
+            final FormLayout layout = new FormLayout(columnSpecs, "10dlu");
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
+            builder.addRaw(box).xy(2, 1);
+            builder.addRaw(name).xy(4, 1);
+            builder.addRaw(desc).xy(6, 1);
         }
 
         @Override
@@ -418,22 +411,25 @@ public abstract class Preferences
         public OutputsPane ()
         {
             final String className = getClass().getSimpleName();
-            setBorder(createTitledBorder(resources.getString(className + ".titledBorder.text")));
+            setBorder(new TitledBorder(resources.getString(className + ".titledBorder.text")));
 
             // Layout
             final FormLayout layout = new FormLayout(
-                    "1dlu, fill:pref",
-                    "6dlu, 18dlu, 1dlu, 18dlu, 1dlu, 18dlu");
-
+                    "fill:pref",
+                    "6dlu" // Title height
+                            + ",18dlu" // Sibling
+                            + ",1dlu" + ",18dlu" // Default
+                            + ",1dlu" + ",18dlu"); // Separate
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
+
             int r = 2;
-            builder.addRaw(siblingPane).xy(2, r);
+            builder.addRaw(siblingPane).xy(1, r);
 
             r += 2;
-            builder.addRaw(defaultPane).xy(2, r);
+            builder.addRaw(defaultPane).xy(1, r);
 
             r += 2;
-            builder.addRaw(separatePane).xy(2, r);
+            builder.addRaw(separatePane).xy(1, r);
         }
     }
 
@@ -452,7 +448,7 @@ public abstract class Preferences
         public PluginPane ()
         {
             final String className = getClass().getSimpleName();
-            setBorder(createTitledBorder(resources.getString(className + ".titledBorder.text")));
+            setBorder(new TitledBorder(resources.getString(className + ".titledBorder.text")));
             final String tip = resources.getString(className + ".pluginBox.toolTipText");
 
             // Define pluginBox
@@ -462,9 +458,10 @@ public abstract class Preferences
             pluginBox.addActionListener(this);
 
             // Layout
-            final FormBuilder builder = FormBuilder.create().layout(layout2).panel(this);
-            builder.addRaw(pluginBox).xy(2, 1);
-            builder.addRaw(new JLabel(tip)).xy(4, 1);
+            final FormLayout layout = new FormLayout(columnSpecs, "30dlu");
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
+            builder.addRaw(pluginBox).xyw(2, 1, 3);
+            builder.addRaw(new JLabel(tip)).xy(6, 1);
 
             // Initial status
             pluginBox.setSelectedItem(PluginsManager.defaultPluginId.getValue());
@@ -520,9 +517,10 @@ public abstract class Preferences
             });
 
             // Layout
-            final FormBuilder builder = FormBuilder.create().layout(layout3).panel(this);
-            builder.addRaw(slider).xyw(1, 1, 3);
-            builder.addRaw(label).xy(5, 1);
+            final FormLayout layout = new FormLayout(columnSpecs, "fill:pref");
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
+            builder.addRaw(slider).xyw(2, 1, 3);
+            builder.addRaw(label).xy(6, 1);
 
             // Initial status
             final double ratio = UIUtil.getGlobalFontRatio();
@@ -685,10 +683,11 @@ public abstract class Preferences
             box.setSelected(topic.isSet());
 
             // Layout
-            final FormBuilder builder = FormBuilder.create().layout(layout3).panel(this);
-            builder.addRaw(box).xy(1, 1);
-            builder.addRaw(new JLabel(topicName)).xy(3, 1);
-            builder.addRaw(new JLabel(desc)).xy(5, 1);
+            final FormLayout layout = new FormLayout(columnSpecs, "10dlu");
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
+            builder.addRaw(box).xy(2, 1);
+            builder.addRaw(new JLabel(topicName)).xy(4, 1);
+            builder.addRaw(new JLabel(desc)).xy(6, 1);
         }
 
         @Override
