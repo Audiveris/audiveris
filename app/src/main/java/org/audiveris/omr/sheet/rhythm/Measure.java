@@ -380,7 +380,7 @@ public class Measure
     public void addInter (Inter inter)
     {
         if (inter.isVip()) {
-            logger.info("VIP addInter {} into {}", inter, this);
+            logger.info("VIP {} addInter {}", this, inter);
         }
 
         switch (inter) {
@@ -599,7 +599,8 @@ public class Measure
             }
 
             // Precise abscissa limits
-            if ((getAbscissa(LEFT, staff) <= center.x) && (center.x <= getAbscissa(RIGHT, staff))) {
+            if ((getAbscissa(LEFT, staff) < center.x) // Away from left
+                    && (center.x <= getAbscissa(RIGHT, staff))) { // Include right
                 kept.add(inter);
             }
         }

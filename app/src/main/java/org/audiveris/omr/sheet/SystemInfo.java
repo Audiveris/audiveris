@@ -90,16 +90,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlType(propOrder =
-{
+@XmlType(propOrder = {
         /** NOTA: Sig must be marshalled last. */
-        "id",
-        "indented",
-        "stacks",
-        "parts",
-        "partGroups",
-        "freeGlyphs",
-        "sig" })
+        "id", "indented", "stacks", "parts", "partGroups", "freeGlyphs", "sig" })
 public class SystemInfo
         implements Comparable<SystemInfo>
 {
@@ -1173,7 +1166,7 @@ public class SystemInfo
                             }
                         }
 
-                        if ((x >= x1) && (x <= x2)) {
+                        if ((x > x1) && (x <= x2)) { // Away from left, include right
                             return stack;
                         }
                     }

@@ -944,8 +944,9 @@ public class SigReducer
             Part part = staff.getPart();
             Measure measure = part.getMeasureAt(center);
 
-            if ((measure != null) && (measure == part.getLastMeasure()) && (measure
-                    .getPartBarlineOn(HorizontalSide.RIGHT) == null)) {
+            if ((measure != null) //
+                    && (measure == part.getLastMeasure()) //
+                    && (measure.getPartBarlineOn(HorizontalSide.RIGHT) == null)) {
                 // Empty measure?
                 // Measure width?
                 continue;

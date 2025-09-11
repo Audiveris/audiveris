@@ -621,8 +621,10 @@ public class MeasureStack
             }
 
             // Precise abscissa limits
-            if ((measure != null) && (measure.getAbscissa(LEFT, staff) <= center.x)
-                    && (center.x <= measure.getAbscissa(RIGHT, staff))) {
+            if ((measure != null) //
+                    && measures.contains(measure) //
+                    && (measure.getAbscissa(LEFT, staff) < center.x) // Away from left
+                    && (center.x <= measure.getAbscissa(RIGHT, staff))) { // Include right
                 kept.add(inter);
             }
         }

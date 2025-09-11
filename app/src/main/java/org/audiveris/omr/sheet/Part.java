@@ -784,8 +784,7 @@ public class Part
     // getMeasureAt //
     //--------------//
     /**
-     * Report the measure that contains a given point (assumed to be in the containing
-     * part).
+     * Report the measure that contains a given point (assumed to be in the containing part).
      *
      * @param point coordinates of the given point
      * @return the containing measure
@@ -799,8 +798,7 @@ public class Part
     // getMeasureAt //
     //--------------//
     /**
-     * Report the measure that contains a given point (assumed to be in the containing
-     * part).
+     * Report the measure that contains a given point (assumed to be in the containing part).
      *
      * @param point coordinates of the given point
      * @param staff related staff
@@ -813,10 +811,10 @@ public class Part
             return null;
         }
 
-        if ((point.getX() >= staff.getAbscissa(LEFT)) && (point.getX() <= staff.getAbscissa(
-                RIGHT))) {
+        if ((point.getX() >= staff.getAbscissa(LEFT)) //
+                && (point.getX() <= staff.getAbscissa(RIGHT))) {
             for (Measure measure : measures) {
-                PartBarline barline = measure.getRightPartBarline();
+                final PartBarline barline = measure.getRightPartBarline();
 
                 if ((barline == null) || (point.getX() <= barline.getRightX(this, staff))) {
                     return measure;

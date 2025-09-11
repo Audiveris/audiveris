@@ -405,7 +405,7 @@ public class ChordsBuilder
 
             if (measure != null) {
                 // Case of chord which have changed of containing measure
-                // while being build head after head
+                // while being built head after head
                 final Measure chordMeasure = chord.getMeasure();
                 if ((chordMeasure != null) && (chordMeasure != measure)) {
                     chordMeasure.removeInter(chord);

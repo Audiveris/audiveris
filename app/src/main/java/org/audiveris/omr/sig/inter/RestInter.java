@@ -197,7 +197,7 @@ public class RestInter
 
             final Point center = inter.getCenter();
 
-            return (center.x >= left) && (center.x <= right);
+            return (center.x > left) && (center.x <= right); // Away from left, include right
         });
 
         for (Inter chord : measureChords) {
