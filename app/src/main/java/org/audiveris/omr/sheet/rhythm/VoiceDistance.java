@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.rhythm;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -135,17 +136,17 @@ public abstract class VoiceDistance
 
         private final Constant.Integer mergedStemDiffOne = new Constant.Integer(
                 "penalty",
-                10,
+                0,
                 "Merged. Penalty for chord with a stem and chord without stem");
 
         private final Constant.Integer separatedStemDiffOne = new Constant.Integer(
                 "penalty",
-                10,
+                0,
                 "Separated. Penalty for chord with a stem and chord without stem");
 
         private final Constant.Integer mergedStemDiffTwo = new Constant.Integer(
                 "penalty",
-                2,
+                6,
                 "Merged. Penalty for chords with opposite stems");
 
         private final Constant.Integer separatedStemDiffTwo = new Constant.Integer(
@@ -376,9 +377,13 @@ public abstract class VoiceDistance
                 int p2 = right.getHighestNote().getAbsolutePitch();
                 dp = Math.abs(p2 - p1);
             } else {
-                // At least one rest involved, use chord area centers
-                int y1 = left.getCenter().y;
-                int y2 = right.getCenter().y;
+                // At least one rest involved, use heads area for the head chord
+                int y1 = (left instanceof HeadChordInter headChord) //
+                        ? GeoUtil.center(headChord.getHeadsBounds()).y
+                        : left.getCenter().y;
+                int y2 = (right instanceof HeadChordInter headChord) //
+                        ? GeoUtil.center(headChord.getHeadsBounds()).y
+                        : right.getCenter().y;
                 dp = Math.abs((2 * (y2 - y1)) / scale.getInterline());
             }
 
