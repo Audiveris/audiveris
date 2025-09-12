@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image to MusicXML Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+        }
+        .output {
+            white-space: pre-wrap;
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 8px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Upload Sheet Music Screenshot</h2>
+        <input type="file" id="imageInput" accept="image/*">
+        <div id="output" class="output">Image content will be processed...</div>
+    </div>
+
+    <script>
+        document.getElementById('imageInput').addEventListener('change', async function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const imageData = e.target.result;
+                    document.getElementById('output').textContent = "Processing image...";
+
+                    // Placeholder: Send image data to external OMR service
+                    try {
+                        const response = await fetch('https://api.example.com/omr', {
+                            method: 'POST',
+                            body: JSON.stringify({ image: imageData }),
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const result = await response.json();
+                        document.getElementById('output').textContent = result.musicxml || "Failed to extract music.";
+                    } catch (error) {
+                        document.getElementById('output').textContent = "Error processing image: " + error.message;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
+
