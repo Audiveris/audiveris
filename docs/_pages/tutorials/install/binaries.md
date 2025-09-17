@@ -213,7 +213,7 @@ audiveris <some_file>
 scoop uninstall audiveris
 ```
 
-## Windows installer
+## Windows
 
 This describes the manual installation, starting from a downloaded installer file.
 
