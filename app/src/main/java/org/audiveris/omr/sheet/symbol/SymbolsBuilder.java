@@ -39,7 +39,6 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Navigable;
@@ -88,14 +87,8 @@ public class SymbolsBuilder
     /** Shape classifier to use. */
     private final Classifier classifier = ShapeClassifier.getInstance();
 
-    //    /** Shape second classifier to use. */
-    //    private final Classifier classifier2 = ShapeClassifier.getSecondInstance();
-    //
     /** Companion factory for symbols inters. */
     private final InterFactory factory;
-
-    /** Areas where fine glyphs may be needed. */
-    private final List<Rectangle> fineBoxes = new ArrayList<>();
 
     /** Scale-dependent global constants. */
     private final Parameters params;
@@ -156,10 +149,6 @@ public class SymbolsBuilder
     {
         final StopWatch watch = new StopWatch("buildSymbols system #" + system.getId());
         logger.debug("System#{} buildSymbols", system.getId());
-
-        // Identify areas for fine glyphs
-        watch.start("retrieveFineBoxes");
-        retrieveFineBoxes();
 
         // Retrieve all candidate glyphs
         watch.start("getSymbolsGlyphs");
@@ -258,13 +247,7 @@ public class SymbolsBuilder
         List<Glyph> glyphs = new ArrayList<>();
 
         for (Glyph glyph : system.getGroupedGlyphs(GlyphGroup.SYMBOL)) {
-            final int weight = glyph.getWeight();
-
-            if (weight >= params.minWeight) {
-                glyphs.add(glyph);
-            } else if ((weight >= params.minFineWeight) && hitFineBox(glyph)) {
-                glyphs.add(glyph);
-            }
+            glyphs.add(glyph);
         }
 
         // Include optional glyphs as well
@@ -272,39 +255,11 @@ public class SymbolsBuilder
 
         if ((optionals != null) && !optionals.isEmpty()) {
             for (Glyph glyph : optionals) {
-                final int weight = glyph.getWeight();
-
-                if (weight >= params.minWeight) {
-                    glyphs.add(glyph);
-                } else if ((weight >= params.minFineWeight) && hitFineBox(glyph)) {
-                    glyphs.add(glyph);
-                }
+                glyphs.add(glyph);
             }
         }
 
         return glyphs;
-    }
-
-    //------------//
-    // hitFineBox //
-    //------------//
-    /**
-     * Check whether the provided glyph intersects a fine box.
-     *
-     * @param glyph the glyph to check
-     * @return true if in fine area
-     */
-    private boolean hitFineBox (Glyph glyph)
-    {
-        final Rectangle glyphBounds = glyph.getBounds();
-
-        for (Rectangle box : fineBoxes) {
-            if (box.intersects(glyphBounds)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     //-----------------//
@@ -355,28 +310,6 @@ public class SymbolsBuilder
                     evaluateGlyph(glyph);
                 }
             }
-        }
-    }
-
-    //-------------------//
-    // retrieveFineBoxes //
-    //-------------------//
-    /**
-     * Define a fine box on the right side of every small chord, specifically meant for
-     * detecting a potential small flag there.
-     */
-    private void retrieveFineBoxes ()
-    {
-        final List<Inter> smallChords = system.getSig().inters(SmallChordInter.class);
-
-        for (Inter inter : smallChords) {
-            final Rectangle box = inter.getBounds();
-            final Rectangle fineBox = new Rectangle(
-                    box.x + box.width,
-                    box.y,
-                    params.smallChordMargin,
-                    box.height);
-            fineBoxes.add(fineBox);
         }
     }
 
@@ -441,20 +374,11 @@ public class SymbolsBuilder
 
         final int maxSymbolHeight;
 
-        final int smallChordMargin;
-
-        final int minWeight;
-
-        final int minFineWeight;
-
         Parameters (Scale scale)
         {
             maxGap = scale.toPixelsDouble(constants.maxGap);
             maxSymbolWidth = scale.toPixels(constants.maxSymbolWidth);
             maxSymbolHeight = scale.toPixels(constants.maxSymbolHeight);
-            smallChordMargin = scale.toPixels(constants.smallChordMargin);
-            minWeight = scale.toPixels(constants.minWeight);
-            minFineWeight = scale.toPixels(constants.minFineWeight);
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);
