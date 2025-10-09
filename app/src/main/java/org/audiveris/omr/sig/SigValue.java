@@ -25,7 +25,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sig.inter.AbstractInter;
-import org.audiveris.omr.sig.inter.AbstractPauseInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
@@ -36,6 +35,7 @@ import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.BeatUnitInter;
+import org.audiveris.omr.sig.inter.BowInter;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.BracketConnectorInter;
 import org.audiveris.omr.sig.inter.BracketInter;
@@ -105,6 +105,7 @@ import org.audiveris.omr.sig.relation.BeamRestRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
+import org.audiveris.omr.sig.relation.ChordBowRelation;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
 import org.audiveris.omr.sig.relation.ChordGraceRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
@@ -203,6 +204,7 @@ public class SigValue
             @XmlElementRef(type = BeamGroupInter.class),
             @XmlElementRef(type = BeamHookInter.class),
             @XmlElementRef(type = BeamInter.class),
+            @XmlElementRef(type = BowInter.class),
             @XmlElementRef(type = BraceInter.class),
             @XmlElementRef(type = BracketConnectorInter.class),
             @XmlElementRef(type = BracketInter.class),
@@ -236,7 +238,6 @@ public class SigValue
             @XmlElementRef(type = NumberInter.class),
             @XmlElementRef(type = OctaveShiftInter.class),
             @XmlElementRef(type = OrnamentInter.class),
-            @XmlElementRef(type = AbstractPauseInter.class),
             @XmlElementRef(type = PedalInter.class),
             @XmlElementRef(type = PlayingInter.class),
             @XmlElementRef(type = PluckingInter.class),
@@ -413,6 +414,7 @@ public class SigValue
                 @XmlElementRef(type = BeamStemRelation.class),
                 @XmlElementRef(type = ChordArpeggiatoRelation.class),
                 @XmlElementRef(type = ChordArticulationRelation.class),
+                @XmlElementRef(type = ChordBowRelation.class),
                 @XmlElementRef(type = ChordDynamicsRelation.class),
                 @XmlElementRef(type = ChordGraceRelation.class),
                 @XmlElementRef(type = ChordNameRelation.class),

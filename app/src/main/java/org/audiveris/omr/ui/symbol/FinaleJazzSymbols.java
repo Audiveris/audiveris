@@ -58,6 +58,8 @@ public class FinaleJazzSymbols
             case AUGMENTATION_DOT -> ints(0xE044);
 
             case BACK_TO_BACK_REPEAT_SIGN -> ints(0xE042);
+            case BOW_DOWN -> ints(0xE610);
+            case BOW_UP -> ints(0xE612);
             ///case BRACE -> ints(0xE000);
             ///case BRACKET -> ints(0xE002);
             ///case BRACKET_LOWER_SERIF -> ints(0xE004);

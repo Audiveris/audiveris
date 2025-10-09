@@ -387,7 +387,7 @@ public class ShapeSet
     public static final ShapeSet Attributes = new ShapeSet(
             PEDAL_MARK,
             Colors.SCORE_MODIFIERS,
-            shapesOf(PEDAL_MARK, PEDAL_UP_MARK, ARPEGGIATO));
+            shapesOf(PEDAL_MARK, PEDAL_UP_MARK, ARPEGGIATO, BOW_DOWN, BOW_UP));
 
     public static final ShapeSet Barlines = new ShapeSet(
             LEFT_REPEAT_SIGN,

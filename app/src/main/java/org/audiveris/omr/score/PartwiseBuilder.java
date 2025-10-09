@@ -57,6 +57,7 @@ import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.BeatUnitInter;
+import org.audiveris.omr.sig.inter.BowInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
@@ -87,6 +88,7 @@ import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
+import org.audiveris.omr.sig.relation.ChordBowRelation;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
@@ -134,6 +136,7 @@ import org.audiveris.proxymusic.Direction;
 import org.audiveris.proxymusic.DirectionType;
 import org.audiveris.proxymusic.Dynamics;
 import org.audiveris.proxymusic.Empty;
+import org.audiveris.proxymusic.EmptyPlacement;
 import org.audiveris.proxymusic.Encoding;
 import org.audiveris.proxymusic.Ending;
 import org.audiveris.proxymusic.Fermata;
@@ -1354,6 +1357,20 @@ public class PartwiseBuilder
         }
     }
 
+    //------------//
+    // processBow //
+    //------------//
+    private void processBow (BowInter bow)
+    {
+        final EmptyPlacement placement = factory.createEmptyPlacement();
+        placement.setPlacement(AboveBelow.ABOVE);
+
+        getTechnical().getUpBowOrDownBowOrHarmonic().add(
+                (bow.getShape() == Shape.BOW_DOWN) //
+                        ? factory.createTechnicalDownBow(placement)
+                        : factory.createTechnicalUpBow(placement));
+    }
+
     //--------------//
     // processChord //
     //--------------//
@@ -2219,6 +2236,8 @@ public class PartwiseBuilder
 
                         if (rel instanceof ChordSentenceRelation) {
                             processDirection((SentenceInter) other);
+                        } else if (rel instanceof ChordBowRelation) {
+                            processBow((BowInter) other);
                         } else if (rel instanceof ChordPedalRelation) {
                             processPedal((PedalInter) other);
                         } else if (rel instanceof ChordWedgeRelation chordWedgeRelation) {

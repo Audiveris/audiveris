@@ -280,6 +280,12 @@ public enum Shape
     //
     TUPLET_THREE("3"),
     TUPLET_SIX("6"),
+
+    //
+    // Techniques ---
+    //
+    BOW_DOWN("stringsDownBow"),
+    BOW_UP("stringsUpBow"),
     PEDAL_MARK("Pedal down"),
     PEDAL_UP_MARK("Pedal downup"),
 

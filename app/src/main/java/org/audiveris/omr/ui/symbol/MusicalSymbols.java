@@ -53,6 +53,8 @@ public class MusicalSymbols
             case AUGMENTATION_DOT -> ints(0xF02E);
 
             ///case BACK_TO_BACK_REPEAT_SIGN -> ints(0xE042); // composed
+            case BOW_DOWN -> ints(0xF0B3);
+            case BOW_UP -> ints(0xF0B2);
             ///case BRACE -> ints(0xE000); // 0xF0A7 + OxF0EA top + down
             ///case BRACKET -> ints(0xE002); // Composed with serifs
             case BREATH_MARK -> ints(0xF02C);

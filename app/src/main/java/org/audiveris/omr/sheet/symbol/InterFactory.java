@@ -25,6 +25,8 @@ import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
+import static org.audiveris.omr.glyph.Shape.BOW_DOWN;
+import static org.audiveris.omr.glyph.Shape.BOW_UP;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Sheet;
@@ -46,6 +48,7 @@ import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.BeatUnitInter;
+import org.audiveris.omr.sig.inter.BowInter;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.BracketInter;
 import org.audiveris.omr.sig.inter.BreathMarkInter;
@@ -493,6 +496,11 @@ public class InterFactory
             // Plucked techniques
             case ARPEGGIATO:
                 return ArpeggiatoInter.createValidAdded(glyph, grade, system, systemHeadChords);
+
+            // Strings techniques
+            case BOW_DOWN:
+            case BOW_UP:
+                return BowInter.createValidAdded(glyph, shape, grade, system, systemHeadChords);
 
             // Keyboards
             case PEDAL_MARK:
@@ -1128,6 +1136,11 @@ public class InterFactory
             // Plucked techniques
             case ARPEGGIATO:
                 return new ArpeggiatoInter(null, GRADE);
+
+            // Strings techniques
+            case BOW_DOWN:
+            case BOW_UP:
+                return new BowInter(null, shape, GRADE); // No visit
 
             // Keyboards
             case PEDAL_MARK:
