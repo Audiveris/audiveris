@@ -42,7 +42,6 @@ import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
-import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
@@ -468,9 +467,9 @@ public class SigReducer
     // checkArticulations //
     //--------------------//
     /**
-     * Perform checks on chord articulations
+     * Perform checks on chord articulations.
      * <p>
-     * A chord cannot have several articulations.
+     * A chord cannot have several identical articulations.
      *
      * @return the count of modifications done
      */
@@ -487,27 +486,34 @@ public class SigReducer
 
             if (rels.size() > 1) {
                 final Point chordCenter = chord.getCenter();
-                final List<ArticulationInter> artics = new ArrayList<>();
+                final Map<Shape, List<Inter>> artics = new LinkedHashMap<>();
 
                 for (Relation rel : rels) {
-                    artics.add((ArticulationInter) sig.getOppositeInter(chord, rel));
-                }
+                    final Inter artic = sig.getOppositeInter(chord, rel);
+                    List<Inter> list = artics.get(artic.getShape());
 
-                // Keep only the closest articulation
-                Collections.sort(
-                        artics,
-                        (a1,
-                         a2) -> Double.compare(
-                                 a1.getCenter().distanceSq(chordCenter),
-                                 a2.getCenter().distanceSq(chordCenter)));
-
-                for (ArticulationInter artic : artics.subList(1, artics.size())) {
-                    if (artic.isVip()) {
-                        logger.info("VIP deleting redundant {}", artic);
+                    if (list == null) {
+                        artics.put(artic.getShape(), list = new ArrayList<>());
                     }
 
-                    artic.remove();
-                    modifs++;
+                    list.add(artic);
+                }
+
+                // Keep only the best articulation within the same articulation shape
+                for (Entry<Shape, List<Inter>> entry : artics.entrySet()) {
+                    final List<Inter> list = entry.getValue();
+                    if (list.size() > 1) {
+                        Collections.sort(list, Inters.byReverseGrade);
+
+                        for (Inter artic : list.subList(1, list.size())) {
+                            if (artic.isVip()) {
+                                logger.info("VIP deleting redundant {}", artic);
+                            }
+
+                            artic.remove();
+                            modifs++;
+                        }
+                    }
                 }
             }
         }
