@@ -736,7 +736,7 @@ public class Template
                 "Weight assigned to template interior background pixels");
 
         private final Scale.Fraction dilation = new Scale.Fraction(
-                0.15,
+                0.2,
                 "Dilation applied on a note head to be erased");
 
         private final Constant.Double maxDistanceHigh = new Constant.Double(
