@@ -423,19 +423,8 @@ public abstract class AbstractTimeInter
     public static TimeRational rationalOf (OmrShape omrShape)
     {
         return switch (omrShape) {
-            case timeSigCommon, timeSig4over4 -> new TimeRational(4, 4);
-            case timeSigCutCommon, timeSig2over2 -> new TimeRational(2, 2);
-            case timeSig2over4 -> new TimeRational(2, 4);
-            case timeSig3over2 -> new TimeRational(3, 2);
-            case timeSig3over4 -> new TimeRational(3, 4);
-            case timeSig3over8 -> new TimeRational(3, 8);
-            case timeSig5over4 -> new TimeRational(5, 4);
-            case timeSig5over8 -> new TimeRational(5, 8);
-            case timeSig6over4 -> new TimeRational(6, 4);
-            case timeSig6over8 -> new TimeRational(6, 8);
-            case timeSig7over8 -> new TimeRational(7, 8);
-            case timeSig9over8 -> new TimeRational(9, 8);
-            case timeSig12over8 -> new TimeRational(12, 8);
+            case timeSigCommon -> new TimeRational(4, 4);
+            case timeSigCutCommon -> new TimeRational(2, 2);
             case null, default -> null;
         };
     }

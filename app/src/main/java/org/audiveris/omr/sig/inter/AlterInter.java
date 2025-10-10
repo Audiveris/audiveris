@@ -467,9 +467,9 @@ public class AlterInter
         double geoPitch = staff.pitchPositionOf(center);
 
         // Pitch offset for flat-based alterations
-        if ((omrShape == OmrShape.keyFlat) || (omrShape == OmrShape.accidentalFlat)
-                || (omrShape == OmrShape.accidentalDoubleFlat)
-                || (omrShape == OmrShape.accidentalFlatSmall)) {
+        if ((omrShape == OmrShape.keyFlat) //
+                || (omrShape == OmrShape.accidentalFlat)
+                || (omrShape == OmrShape.accidentalDoubleFlat)) {
             geoPitch += getAreaPitchOffset(Shape.FLAT);
         }
 

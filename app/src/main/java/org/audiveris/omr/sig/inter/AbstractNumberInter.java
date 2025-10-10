@@ -208,6 +208,27 @@ public abstract class AbstractNumberInter
     //~ Static Methods -----------------------------------------------------------------------------
 
     //---------//
+    // shapeOf //
+    //---------//
+    public static Shape shapeOf (int val)
+    {
+        return switch (val) {
+            case 0 -> Shape.TIME_ZERO;
+            case 1 -> Shape.TIME_ONE;
+            case 2 -> Shape.TIME_TWO;
+            case 3 -> Shape.TIME_THREE;
+            case 4 -> Shape.TIME_FOUR;
+            case 5 -> Shape.TIME_FIVE;
+            case 6 -> Shape.TIME_SIX;
+            case 7 -> Shape.TIME_SEVEN;
+            case 8 -> Shape.TIME_EIGHT;
+            case 9 -> Shape.TIME_NINE;
+
+            default -> throw new IllegalArgumentException("No shape defined for value: " + val);
+        };
+    }
+
+    //---------//
     // valueOf //
     //---------//
     protected static int valueOf (OmrShape omrShape)
@@ -223,8 +244,6 @@ public abstract class AbstractNumberInter
             case timeSig7 -> 7;
             case timeSig8 -> 8;
             case timeSig9 -> 9;
-            case timeSig12 -> 12;
-            case timeSig16 -> 16;
 
             default -> throw new IllegalArgumentException(
                     "No integer value defined for " + omrShape);
