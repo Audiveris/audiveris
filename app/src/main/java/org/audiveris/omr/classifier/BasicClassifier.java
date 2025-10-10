@@ -134,6 +134,15 @@ public class BasicClassifier
                 getMaxEpochs());
     }
 
+    //----------------//
+    // getEpochsTotal //
+    //----------------//
+    @Override
+    public int getEpochsTotal ()
+    {
+        return model.getEpochsTotal();
+    }
+
     //--------------//
     // getMaxEpochs //
     //--------------//
