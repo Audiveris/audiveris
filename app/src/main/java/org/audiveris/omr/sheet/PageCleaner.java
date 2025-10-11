@@ -449,7 +449,8 @@ public abstract class PageCleaner
     }
 
     /**
-     * Default strategy for a basic inter is to paint the related symbol.
+     * Default strategy for a basic inter is to paint the underlying glyph if any,
+     * otherwise the related symbol.
      *
      * @param inter the basic inter to erase
      */
@@ -460,18 +461,23 @@ public abstract class PageCleaner
             return;
         }
 
-        final boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
-        final int size = isSmall ? smallPointSize : enlargedSize;
-        final FontSymbol fs = inter.getShape().getFontSymbolBySize(family, size);
-
-        if (fs.symbol == null) {
-            logger.warn("No symbol for inter {}", inter);
-            return;
-        }
-
         final Glyph glyph = inter.getGlyph();
-        final Point2D center = (glyph != null) ? glyph.getCenter2D() : inter.getCenter2D();
-        fs.symbol.paintSymbol(g, fs.font, center, Alignment.AREA_CENTER);
+
+        if (glyph != null) {
+            processGlyph(glyph);
+        } else {
+            final boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
+            final int size = isSmall ? smallPointSize : enlargedSize;
+            final FontSymbol fs = inter.getShape().getFontSymbolBySize(family, size);
+
+            if (fs.symbol == null) {
+                logger.warn("No symbol for inter {}", inter);
+                return;
+            }
+
+            final Point2D center = (glyph != null) ? glyph.getCenter2D() : inter.getCenter2D();
+            fs.symbol.paintSymbol(g, fs.font, center, Alignment.AREA_CENTER);
+        }
     }
 
     @Override
@@ -591,10 +597,12 @@ public abstract class PageCleaner
     private static class Constants
             extends ConstantSet
     {
-        private final Constant.Ratio enlargementRatio =
-                new Constant.Ratio(1.1, "Size augmentation to use with eraser music font");
+        private final Constant.Ratio enlargementRatio = new Constant.Ratio(
+                1.1,
+                "Size augmentation to use with eraser music font");
 
-        private final Scale.Fraction lineMargin =
-                new Scale.Fraction(0.1, "Thickness of white lines drawn on items borders");
+        private final Scale.Fraction lineMargin = new Scale.Fraction(
+                0.1,
+                "Thickness of white lines drawn on items borders");
     }
 }
