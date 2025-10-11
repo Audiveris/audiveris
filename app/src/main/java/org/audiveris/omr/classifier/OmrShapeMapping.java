@@ -194,6 +194,7 @@ public abstract class OmrShapeMapping
         map.put(Shape.DYNAMICS_FFF, OmrShape.dynamicFFF);
         map.put(Shape.DYNAMICS_MF, OmrShape.dynamicMF);
         map.put(Shape.DYNAMICS_FP, OmrShape.dynamicFP);
+        map.put(Shape.DYNAMICS_FZ, OmrShape.dynamicFZ);
         map.put(Shape.DYNAMICS_SF, OmrShape.dynamicSF);
         map.put(Shape.DYNAMICS_SFZ, OmrShape.dynamicSFZ);
         map.put(Shape.TR, OmrShape.ornamentTrill);

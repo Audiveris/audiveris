@@ -87,8 +87,8 @@ public class BravuraSymbols
             //        case DYNAMICS_FFFF -> ints(0xE531);
             //        case DYNAMICS_FFFFF -> ints(0xE532);
             //        case DYNAMICS_FFFFFF -> ints(0xE533);
-            //        case DYNAMICS_FZ -> ints(0xE535);
             case DYNAMICS_FP -> ints(0xE534);
+            case DYNAMICS_FZ -> ints(0xE535);
             case DYNAMICS_MF -> ints(0xE52D);
             case DYNAMICS_MP -> ints(0xE52C);
             case DYNAMICS_P -> ints(0xE520);

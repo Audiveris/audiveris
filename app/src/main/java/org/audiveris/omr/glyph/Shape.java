@@ -261,6 +261,7 @@ public enum Shape
     DYNAMICS_FFF("Fortississimo"),
     DYNAMICS_MF("Mezzo forte"),
     DYNAMICS_FP("FortePiano"),
+    DYNAMICS_FZ("Forzando"),
     DYNAMICS_SF("Subito forte"),
     DYNAMICS_SFZ("Sforzando"),
 

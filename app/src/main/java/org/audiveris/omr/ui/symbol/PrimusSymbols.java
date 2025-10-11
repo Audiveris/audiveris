@@ -87,8 +87,8 @@ public class PrimusSymbols
             //        case DYNAMICS_FFFF -> ints(0xE531);
             //        case DYNAMICS_FFFFF -> ints(0xE532);
             //        case DYNAMICS_FFFFFF -> ints(0xE533);
-            //        case DYNAMICS_FZ -> ints(0xE535);
             case DYNAMICS_FP -> ints(0xF069);
+            case DYNAMICS_FZ -> ints(0xE535);
             case DYNAMICS_MF -> ints(0xF05B);
             case DYNAMICS_MP -> ints(0xF060);
             case DYNAMICS_P -> ints(0xF061);

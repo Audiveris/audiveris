@@ -445,6 +445,7 @@ public class InterFactory
             case DYNAMICS_FFF:
             case DYNAMICS_MF:
             case DYNAMICS_FP:
+            case DYNAMICS_FZ:
             case DYNAMICS_SF:
             case DYNAMICS_SFZ:
                 return new DynamicsInter(glyph, shape, grade);
@@ -1089,6 +1090,7 @@ public class InterFactory
             case DYNAMICS_FFF:
             case DYNAMICS_MF:
             case DYNAMICS_FP:
+            case DYNAMICS_FZ:
             case DYNAMICS_SF:
             case DYNAMICS_SFZ:
                 return new DynamicsInter(null, shape, GRADE); // No visit

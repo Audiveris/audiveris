@@ -433,6 +433,7 @@ public class ShapeSet
                     DYNAMICS_FFF,
                     DYNAMICS_MF,
                     DYNAMICS_FP,
+                    DYNAMICS_FZ,
                     DYNAMICS_SF,
                     DYNAMICS_SFZ,
                     CRESCENDO,

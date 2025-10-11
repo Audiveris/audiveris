@@ -203,7 +203,7 @@ public abstract class MusicXML
             //        case DYNAMICS_FFFFF -> factory.createDynamicsFffff(empty);
             //        case DYNAMICS_FFFFFF ->factory.createDynamicsFfffff(empty);
             case DYNAMICS_FP -> factory.createDynamicsFp(empty);
-            //        case DYNAMICS_FZ -> factory.createDynamicsFz(empty);
+            case DYNAMICS_FZ -> factory.createDynamicsFz(empty);
             case DYNAMICS_MF -> factory.createDynamicsMf(empty);
             case DYNAMICS_MP -> factory.createDynamicsMp(empty);
             case DYNAMICS_P -> factory.createDynamicsP(empty);
