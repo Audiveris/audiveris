@@ -34,7 +34,7 @@ public abstract class Annotations
     public static final String BOOK_ANNOTATIONS_EXTENSION = ".annotations.zip";
 
     /** File name extension for single sheet annotations: {@value}. */
-    public static final String SHEET_ANNOTATIONS_EXTENSION = ".xml";
+    public static final String SHEET_ANNOTATIONS_EXTENSION = ".annotations.xml";
 
     /** File format for single sheet image: {@value}. */
     public static final String SHEET_IMAGE_FORMAT = "png";

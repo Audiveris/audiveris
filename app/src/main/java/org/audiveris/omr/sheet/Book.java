@@ -374,10 +374,7 @@ public class Book
             for (SheetStub stub : theStubs) {
                 try {
                     LogUtil.start(stub);
-
-                    final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
-                    final Sheet sheet = stub.getSheet();
-                    sheet.annotate(sheetFolder);
+                    stub.getSheet().annotate(root);
                 } catch (Exception ex) {
                     logger.warn("Error annotating {} {}", stub, ex.toString(), ex);
                 } finally {
