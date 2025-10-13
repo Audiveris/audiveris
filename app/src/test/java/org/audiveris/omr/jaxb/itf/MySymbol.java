@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.jaxb.itf;
 
+import org.junit.Ignore;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -30,6 +32,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  *
  * @author Hervé Bitteur
  */
+@Ignore
 @XmlAccessorType(XmlAccessType.NONE)
 public class MySymbol
         extends MyAbstractEntity

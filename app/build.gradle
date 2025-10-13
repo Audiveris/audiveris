@@ -195,6 +195,12 @@ sourceSets {
     }
 }
 
+test {
+    // Test classes not meant for Junit
+    exclude '**/org/audiveris/omr/jaxb/basic/**'
+    exclude '**/org/audiveris/omr/jaxb/facade/**'
+}
+
 //-------
 // Tasks
 //-------

@@ -22,7 +22,6 @@
 package org.audiveris.omr.image;
 
 import static org.junit.Assert.fail;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -48,7 +47,7 @@ public class MedianGrayFilterTest
     {
     }
 
-    //    @Test
+    @Test
     public void testProcess_black_1 ()
     {
         System.out.println("\nprocess_black_1");

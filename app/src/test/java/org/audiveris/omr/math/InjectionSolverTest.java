@@ -23,6 +23,8 @@ package org.audiveris.omr.math;
 
 import org.audiveris.omr.util.WrappedInteger;
 
+import org.junit.Ignore;
+
 import junit.framework.*;
 
 /**
@@ -70,6 +72,7 @@ public class InjectionSolverTest
     {
     }
 
+    @Ignore
     public static class MyDistance
             implements InjectionSolver.Distance
     {

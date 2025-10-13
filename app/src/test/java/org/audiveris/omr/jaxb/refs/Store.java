@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.jaxb.refs;
 
+import org.junit.Ignore;
+
 import java.util.ArrayList;
 
 import javax.xml.bind.annotation.XmlElementRef;
@@ -32,6 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @author Hervé Bitteur
  */
+@Ignore
 @XmlRootElement
 public class Store
 {

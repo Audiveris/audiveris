@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.jaxb.itf;
 
+import org.junit.Ignore;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlIDREF;
@@ -31,6 +33,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @author Hervé Bitteur
  */
+@Ignore
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class MyCompound

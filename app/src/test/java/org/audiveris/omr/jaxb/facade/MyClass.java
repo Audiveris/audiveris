@@ -23,6 +23,8 @@ package org.audiveris.omr.jaxb.facade;
 
 import org.audiveris.omr.util.Jaxb;
 
+import org.junit.Ignore;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Map;
@@ -42,6 +44,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *
  * @author Hervé Bitteur
  */
+@Ignore
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
 public class MyClass

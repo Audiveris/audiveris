@@ -21,11 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.junit.Ignore;
+
 /**
  * Unitary tests of ChordNameInter.
  *
  * @author Hervé Bitteur
  */
+@Ignore
 public class ChordNameInterTest
 {
     //

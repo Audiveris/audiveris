@@ -21,11 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.jaxb.itf;
 
+import org.junit.Ignore;
+
 /**
  * Interface <code>MyEntity</code>
  *
  * @author Hervé Bitteur
  */
+@Ignore
 public interface MyEntity
 {
     /**
