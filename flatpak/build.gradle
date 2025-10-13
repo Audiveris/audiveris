@@ -72,6 +72,9 @@ task genManifest {
 
     doLast {
         println "flatpak. Generating manifest"
+        def commit = file('../app/build/commit.txt').text.trim()
+        println "commit: $commit"
+
         copy {
             from('dev/org.audiveris.audiveris.template.yml') {
                 def binding = [:]
@@ -79,7 +82,7 @@ task genManifest {
                 binding.GRADLE_URL = "$gradleUrl"
                 binding.GRADLE_NAME = "$gradleName"
                 binding.GRADLE_SHA256 = wrapperProps.getProperty("distributionSha256Sum")
-                binding.COMMIT = "$app.ext.commit"
+                binding.COMMIT = "$commit"
                 expand(binding)
             }
             into(flathubDir)
