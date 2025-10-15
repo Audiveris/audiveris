@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -33,7 +36,23 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordDynamicsRelation
         extends Support
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
+
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    /**
+     * @return the supporting coefficient for (target) dynamics
+     */
+    @Override
+    protected double getTargetCoeff ()
+    {
+        return constants.dynamicsSupportCoeff.getValue();
+    }
 
     //----------------//
     // isSingleSource //
@@ -51,5 +70,18 @@ public class ChordDynamicsRelation
     public boolean isSingleTarget ()
     {
         return true;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Ratio dynamicsSupportCoeff = new Constant.Ratio(
+                2.5,
+                "Supporting coeff for (target) dynamics");
     }
 }
