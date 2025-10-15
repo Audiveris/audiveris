@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -53,6 +55,9 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +78,8 @@ public class KeyInter
         implements InterEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(KeyInter.class);
 
@@ -210,7 +217,7 @@ public class KeyInter
             return false;
         }
 
-        final ClefInter effectiveClef = getEffectiveClef();
+        final ClefInter effectiveClef = getEffectiveClef(staff, getCenter());
 
         if (effectiveClef != null) {
             // First call, needed to get bounds of new key symbol
@@ -268,41 +275,6 @@ public class KeyInter
     public InterEditor getEditor ()
     {
         return new HorizontalEditor(this);
-    }
-
-    //------------------//
-    // getEffectiveClef //
-    //------------------//
-    /**
-     * Report the clef which is effective at this KeyInter location.
-     *
-     * @return the effective clef found, or null
-     */
-    private ClefInter getEffectiveClef ()
-    {
-        if (staff == null) {
-            logger.debug("null staff");
-
-            return null;
-        }
-
-        final Point pt = getCenter();
-
-        if (pt == null) {
-            logger.debug("null pt");
-
-            return null;
-        }
-
-        Measure measure = staff.getPart().getMeasureAt(pt, staff);
-
-        if (measure == null) {
-            logger.debug("null measure");
-
-            return null;
-        }
-
-        return measure.getClefBefore(getCenter(), staff);
     }
 
     //-----------//
@@ -600,6 +572,65 @@ public class KeyInter
     //~ Static Methods -----------------------------------------------------------------------------
 
     //-------------//
+    // canMakeAKey //
+    //-------------//
+    /**
+     * Check whether the provided inters can compose a key signature.
+     *
+     * @param inters the provided inters
+     * @return the potential fifths value, null otherwise
+     */
+    public static Integer canMakeAKey (Collection<Inter> inters)
+    {
+        final List<AlterInter> alters = new ArrayList<>();
+        Shape shape = null;
+        Staff staff = null;
+
+        // Only AlterInter instances are allowed
+        for (Inter inter : inters) {
+            if (inter instanceof AlterInter alter) {
+                alters.add(alter);
+                if (shape == null) {
+                    shape = alter.getShape();
+                } else if (shape != alter.getShape()) {
+                    logger.debug("{} shape different from {}", inter, shape);
+                    return null;
+                }
+                if (staff == null) {
+                    staff = inter.getStaff();
+                } else if (staff != inter.getStaff()) {
+                    logger.debug("Different staves");
+                    return null;
+                }
+            } else {
+                logger.debug("{} cannot be a Key member", inter);
+                return null;
+            }
+        }
+
+        // Sort candidates by abscissa
+        Collections.sort(alters, Inters.byFullAbscissa);
+
+        // Check their pitches with respect to effective clef
+        final ClefInter clef = getEffectiveClef(staff, alters.get(0).getCenter());
+        final ClefKind clefKind = clef.getKind();
+        final int[] pitches = getPitches(clefKind, shape);
+        final int nb = alters.size();
+
+        final double maxDiff = constants.maxPitchDiff.getValue();
+        for (int i = 0; i < nb; i++) {
+            final AlterInter alter = alters.get(i);
+            final double diff = Math.abs(alter.getPitch() - pitches[i]);
+            logger.debug("{} pitchDiff: {}", alter, diff);
+            if (diff > 0.5) {
+                return null;
+            }
+        }
+
+        return (shape == Shape.SHARP) ? nb : -nb;
+    }
+
+    //-------------//
     // createAdded //
     //-------------//
     /**
@@ -653,6 +684,42 @@ public class KeyInter
         }
 
         return 0;
+    }
+
+    //------------------//
+    // getEffectiveClef //
+    //------------------//
+    /**
+     * Report the clef which is effective at this location.
+     *
+     * @return the effective clef found, or null
+     * @param staff the related staff
+     * @param point the precise point
+     */
+    private static ClefInter getEffectiveClef (Staff staff,
+                                               Point point)
+    {
+        if (staff == null) {
+            logger.debug("null staff");
+
+            return null;
+        }
+
+        if (point == null) {
+            logger.debug("null point");
+
+            return null;
+        }
+
+        Measure measure = staff.getPart().getMeasureAt(point, staff);
+
+        if (measure == null) {
+            logger.debug("null measure");
+
+            return null;
+        }
+
+        return measure.getClefBefore(point, staff);
     }
 
     //--------------//
@@ -844,7 +911,7 @@ public class KeyInter
     //---------//
     // shapeOf //
     //---------//
-    private static Shape shapeOf (int fifths)
+    public static Shape shapeOf (int fifths)
     {
         return switch (fifths) {
             case -7 -> Shape.KEY_FLAT_7;
@@ -869,7 +936,7 @@ public class KeyInter
     //---------//
     // valueOf //
     //---------//
-    private static int valueOf (Shape shape)
+    public static int valueOf (Shape shape)
     {
         return switch (shape) {
             case KEY_FLAT_7 -> -7;
@@ -890,4 +957,19 @@ public class KeyInter
             default -> throw new IllegalArgumentException("No fifth value for " + shape);
         };
     }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Double maxPitchDiff = new Constant.Double(
+                "pitch",
+                0.5,
+                "Maximum acceptable difference in pitch");
+    }
+
 }

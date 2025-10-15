@@ -1457,8 +1457,8 @@ public abstract class SheetPainter
         public void visit (KeyInter key)
         {
             // Normally, key ensemble is painted via its alter members
-            // But for a manual key, there are no members available, so we paint the symbol
-            if (key.isManual()) {
+            // But for a manual key, if there are no members available we paint the symbol
+            if (key.isManual() && key.getMembers().isEmpty()) {
                 final Rectangle bounds = key.getBounds();
 
                 if (bounds != null) {
