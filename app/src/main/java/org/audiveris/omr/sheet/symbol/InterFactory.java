@@ -659,13 +659,19 @@ public class InterFactory
             }
         }
 
+        // Sort by decreasing length, then decreasing grade
         Collections.sort(
                 complexes,
                 (d1,
-                 d2) -> Integer.compare(
-                         d2.getSymbolString().length(),
-                         d1.getSymbolString().length()) // Sort by decreasing length
-        );
+                 d2) -> {
+                    final int lgComp = Integer.compare(
+                            d2.getSymbolString().length(),
+                            d1.getSymbolString().length());
+                    if (lgComp != 0) {
+                        return lgComp;
+                    }
+                    return Double.compare(d2.getGrade(), d1.getGrade());
+                });
 
         for (DynamicsInter complex : complexes) {
             complex.swallowShorterDynamics(dynamics);
