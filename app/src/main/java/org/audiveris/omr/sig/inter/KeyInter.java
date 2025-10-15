@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -84,33 +83,25 @@ public class KeyInter
     public static final Map<ClefKind, int[]> FLAT_PITCHES_MAP = new EnumMap<>(ClefKind.class);
 
     /** Sharp keys note steps. */
-    private static final AbstractNoteInter.NoteStep[] SHARP_STEPS = new AbstractNoteInter.NoteStep[]
-    { F, C, G, D, A, E, B };
+    private static final AbstractNoteInter.NoteStep[] SHARP_STEPS =
+            new AbstractNoteInter.NoteStep[] { F, C, G, D, A, E, B };
 
     /** Flat keys note steps. */
-    private static final AbstractNoteInter.NoteStep[] FLAT_STEPS = new AbstractNoteInter.NoteStep[]
-    { B, E, A, D, G, C, F };
+    private static final AbstractNoteInter.NoteStep[] FLAT_STEPS =
+            new AbstractNoteInter.NoteStep[] { B, E, A, D, G, C, F };
 
     static {
-        SHARP_PITCHES_MAP.put(TREBLE, new int[]
-        { -4, -1, -5, -2, 1, -3, 0 });
-        SHARP_PITCHES_MAP.put(ALTO, new int[]
-        { -3, 0, -4, -1, 2, -2, 1 });
-        SHARP_PITCHES_MAP.put(BASS, new int[]
-        { -2, 1, -3, 0, 3, -1, 2 });
-        SHARP_PITCHES_MAP.put(TENOR, new int[]
-        { 2, -2, 1, -3, 0, -4, -1 });
+        SHARP_PITCHES_MAP.put(TREBLE, new int[] { -4, -1, -5, -2, 1, -3, 0 });
+        SHARP_PITCHES_MAP.put(ALTO, new int[] { -3, 0, -4, -1, 2, -2, 1 });
+        SHARP_PITCHES_MAP.put(BASS, new int[] { -2, 1, -3, 0, 3, -1, 2 });
+        SHARP_PITCHES_MAP.put(TENOR, new int[] { 2, -2, 1, -3, 0, -4, -1 });
     }
 
     static {
-        FLAT_PITCHES_MAP.put(TREBLE, new int[]
-        { 0, -3, 1, -2, 2, -1, 3 });
-        FLAT_PITCHES_MAP.put(ALTO, new int[]
-        { 1, -2, 2, -1, 3, 0, 4 });
-        FLAT_PITCHES_MAP.put(BASS, new int[]
-        { 2, -1, 3, 0, 4, 1, 5 });
-        FLAT_PITCHES_MAP.put(TENOR, new int[]
-        { -1, -4, 0, -3, 1, -2, 2 });
+        FLAT_PITCHES_MAP.put(TREBLE, new int[] { 0, -3, 1, -2, 2, -1, 3 });
+        FLAT_PITCHES_MAP.put(ALTO, new int[] { 1, -2, 2, -1, 3, 0, 4 });
+        FLAT_PITCHES_MAP.put(BASS, new int[] { 2, -1, 3, 0, 4, 1, 5 });
+        FLAT_PITCHES_MAP.put(TENOR, new int[] { -1, -4, 0, -3, 1, -2, 2 });
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -138,7 +129,7 @@ public class KeyInter
     public KeyInter (Double grade,
                      Integer fifths)
     {
-        super((Glyph) null, null, (fifths != null) ? shapeOf(fifths) : null, grade, null, null);
+        super(null, null, (fifths != null) ? shapeOf(fifths) : null, grade, null, null);
         this.fifths = fifths;
     }
 

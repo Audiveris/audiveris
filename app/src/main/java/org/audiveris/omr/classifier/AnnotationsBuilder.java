@@ -25,6 +25,7 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -68,6 +69,12 @@ import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
+import org.audiveris.omr.ui.symbol.KeyCancelSymbol;
+import org.audiveris.omr.ui.symbol.KeySharpSymbol;
+import org.audiveris.omr.ui.symbol.KeySymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omrdataset.api.OmrShape;
 import org.audiveris.omrdataset.api.SheetAnnotations;
 import org.audiveris.omrdataset.api.SheetAnnotations.SheetInfo;
@@ -78,6 +85,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -109,21 +117,14 @@ public class AnnotationsBuilder
         excludedInterClasses.add(AbstractChordInter.class);
         excludedInterClasses.add(BarConnectorInter.class);
         excludedInterClasses.add(BeamGroupInter.class);
-        //excludedInterClasses.add(BeamInter.class);
-        //excludedInterClasses.add(BeamHookInter.class); // TODO: should be defined in OmrShape?
         excludedInterClasses.add(BracketConnectorInter.class);
         excludedInterClasses.add(BracketInter.class); // TODO: should be defined in OmrShape?
         excludedInterClasses.add(EndingInter.class);
-        excludedInterClasses.add(KeyInter.class);
+        //excludedInterClasses.add(KeyInter.class);
         excludedInterClasses.add(RepeatDotInter.class); // Processed via BarlineInter
-        //excludedInterClasses.add(SegmentInter.class);
         excludedInterClasses.add(SentenceInter.class);
-        //excludedInterClasses.add(SlurInter.class);
-        //excludedInterClasses.add(SmallBeamInter.class);
         excludedInterClasses.add(StaffBarlineInter.class);
-        ///excludedInterClasses.add(StemInter.class);
         excludedInterClasses.add(TimeNumberInter.class); // Processed via TimePairInter
-        //excludedInterClasses.add(WedgeInter.class);
         excludedInterClasses.add(WordInter.class);
     }
 
@@ -320,12 +321,18 @@ public class AnnotationsBuilder
             final OmrShape omrShape;
 
             // Specific classes
-            if (inter instanceof AbstractTimeInter time) {
+            if (inter instanceof KeyInter key) {
+                if (key.isManual()) {
+                    exportManualKey(key); // Export individual symbols
+                }
+
+                return;
+            } else if (inter instanceof AbstractTimeInter time) {
                 exportTime(time);
 
                 return;
-            } else if (inter instanceof BarlineInter) {
-                exportBarlineGroup((BarlineInter) inter);
+            } else if (inter instanceof BarlineInter barline) {
+                exportBarlineGroup(barline);
 
                 return;
             } else if (inter instanceof KeyAlterInter key) {
@@ -409,6 +416,49 @@ public class AnnotationsBuilder
             final int interline = staff.getSpecificInterline();
             annotations.addSymbol(
                     new SymbolInfo(omrShape, interline, inter.getId(), null, interBounds));
+        }
+
+        /**
+         * Export a manual key (for which there are no individual inters).
+         * <p>
+         * We need to compute the bounding box for each individual symbol.
+         *
+         * @param key the manual key inter
+         */
+        private void exportManualKey (KeyInter key)
+        {
+            final int id = key.getId();
+            final int interline = key.getStaff().getSpecificInterline();
+            final MusicFamily family = sheet.getStub().getMusicFamily();
+            final int pointSize = OmrFont.getPointSize(interline);
+            final MusicFont font = MusicFont.getMusicFont(family, pointSize);
+
+            final KeySymbol symbol = (KeySymbol) key.getSymbolToDraw(font);
+            final OmrShape oShape = (symbol instanceof KeyCancelSymbol) //
+                    ? OmrShape.keyNatural
+                    : (symbol instanceof KeySharpSymbol) //
+                            ? OmrShape.keySharp
+                            : OmrShape.keyFlat;
+            final int fifths = symbol.fifths; // Different from key fifths for the cancel key!
+            final KeySymbol.MyParams p = symbol.getParams(font);
+
+            // Set loc to (x = left side, y = mid line)
+            final Point2D loc = key.getCenter2D();
+            PointUtil.add(
+                    loc,
+                    -p.rect.getWidth() / 2,
+                    -KeyInter.getStandardPosition(fifths) * p.stepDy);
+
+            final int sign = Integer.signum(fifths);
+            for (int k = 1; k <= (fifths * sign); k++) {
+                final int pitch = KeyInter.getItemPitch(k * sign, null);
+                final Rectangle box = new Rectangle(
+                        (int) Math.rint(loc.getX() + ((k - 1) * p.itemDx)),
+                        (int) Math.rint(loc.getY() + (pitch * p.stepDy) - p.itemRect.height / 2.0),
+                        p.itemRect.width,
+                        p.itemRect.height);
+                annotations.addSymbol(new SymbolInfo(oShape, interline, id, null, box));
+            }
         }
 
         /**

@@ -84,7 +84,7 @@ public abstract class KeySymbol
     // getParams //
     //-----------//
     @Override
-    protected MyParams getParams (MusicFont font)
+    public MyParams getParams (MusicFont font)
     {
         MyParams p = new MyParams();
 
@@ -158,8 +158,10 @@ public abstract class KeySymbol
         Point2D loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
 
         // Set loc to (x=left side, y=staff mid line)
-        PointUtil
-                .add(loc, -p.rect.getWidth() / 2, -KeyInter.getStandardPosition(fifths) * p.stepDy);
+        PointUtil.add(
+                loc,
+                -p.rect.getWidth() / 2,
+                -KeyInter.getStandardPosition(fifths) * p.stepDy);
 
         if (fifths == 0) {
             int pitch = KeyInter.getItemPitch(1, null);
@@ -189,13 +191,13 @@ public abstract class KeySymbol
     //----------//
     // MyParams //
     //----------//
-    protected static class MyParams
+    public static class MyParams
             extends Params
     {
-        double stepDy; // Dy from one step to the other
+        public double stepDy; // Dy from one step to the other
 
-        double itemDx; // Dx from one item to the other
+        public double itemDx; // Dx from one item to the other
 
-        Rectangle itemRect; // One item rectangle
+        public Rectangle itemRect; // One item rectangle
     }
 }
