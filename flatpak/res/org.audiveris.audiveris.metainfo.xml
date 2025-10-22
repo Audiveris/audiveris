@@ -56,8 +56,53 @@
     </screenshot>
   </screenshots>
   <launchable type="desktop-id">org.audiveris.audiveris.desktop</launchable>
-  <developer_name>Hervé Bitteur et al.</developer_name>
+  <developer id="org.audiveris"><name>Hervé Bitteur</name></developer>
   <releases>
+    <release version="5.7" date="2025-09-06" urgency="low" type="stable">
+      <description>
+	<p>User Interface</p>
+	<ul>
+	  <li>Support for CJK (Chinese, Japanese, Korean) characters</li>
+	</ul>
+	<p>Engine</p>
+	<ul>
+	  <li>Correct handling of void regions in small note head
+	  templates</li>
+	</ul>
+    </description>
+    </release>
+    <release version="5.6" date="2025-05-15" urgency="low" type="stable">
+      <description>
+	<p>User Interface</p>
+	<ul>
+	  <li>Logical parts editor: manual selection of MIDI program for any
+	  logical part</li>
+	  <li>Inter board: editing of word attributes</li>
+	</ul>
+	<p>Engine</p>
+	<ul>
+	  <li>Use of OCR’d word attributes to determine the text font family
+	  and style for any text word</li>
+	  <li>Abandon of the manual selection of text font at
+	  global/book/sheet levels</li>
+	  <li>Addition of Primus font into the collection of music fonts</li>
+	</ul>
+      </description>
+    </release>
+    <release version="5.5" date="2025-04-15" urgency="low" type="stable">
+      <description>
+	<p>Project</p>
+	<ul>
+	  <li>Use of jpackage/jlink utilities to build a JRE-included
+	  installer. Contributed by Fabio Marques.</li>
+	  <li>Use of GitHub workflows to generate installers for Windows, Linux
+	  and macOS.</li>
+	  <li>Abandon of the old JRE-free Windows installer</li>
+	  <li>Generalized use of GitHub workflows to publish Audiveris releases
+	  assets (installers, sources, docs)</li>
+	</ul>
+      </description>
+    </release>
     <release version="5.4" date="2024-12-25" urgency="low"
 	     type="stable">
       <description>
