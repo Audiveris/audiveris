@@ -280,7 +280,7 @@ jar {
 tasks.register('getCommit', Exec) {
     description = "Retrieves full hash of git latest commit"
     outputs.file("build/commit.txt")
-    commandLine = "git rev-parse HEAD".split(' ')
+    commandLine = "git log -n1 --pretty=%H -- . :!flatpak/flathub".split(' ')
     standardOutput = new ByteArrayOutputStream()
 
     doLast {
