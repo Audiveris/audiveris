@@ -46,7 +46,6 @@ jobs:
   flatpak:
     name: "Flatpak"
     needs: java-dependencies
-    runs-on: ubuntu-latest
 
     container:
       image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
@@ -54,25 +53,19 @@ jobs:
 
     strategy:
       matrix:
-        arch: [x86_64, aarch64]
+        variant:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
       fail-fast: false
+    runs-on: ${{ matrix.variant.runner }}
 
     steps:
       - name: download flathub content
         uses: actions/download-artifact@v4
         with:
           name: flathub-content
-
-      - name: Install docker
-        if: ${{ matrix.arch != 'x86_64' }}
-        run: |
-          dnf -y install docker
-
-      - name: Set up QEMU
-        if: ${{ matrix.arch != 'x86_64' }}
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: arm64
 
       - name: Build flatpak ${{ github.sha }}
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
@@ -81,4 +74,4 @@ jobs:
           bundle: org.audiveris.audiveris.flatpak
           manifest-path: org.audiveris.audiveris.yml
           cache-key: audiveris-flatpak-${{ github.sha }}
-          arch: ${{ matrix.arch }}
+          arch: ${{ matrix.variant.arch }}
