@@ -291,9 +291,23 @@ tasks.register('getCommit', Exec) {
     }
 }
 
+tasks.register('createBuildFolder') {
+    description = "Make sure the 'build' folder exists"
+    doLast {
+        def dir = file('build')
+        if (!dir.exists()) {
+            dir.mkdirs()
+            println "app. Directory created: ${dir}"
+        } else {
+            println "app. Directory already exists: ${dir}"
+        }
+    }
+}
+
 // Compare commit with the one used for the generation of ProgramId Java class
 tasks.register('checkCommit') {
     dependsOn 'getCommit'
+    dependsOn 'createBuildFolder'
 
     doLast {
         def cache = file("build/commit.properties")
