@@ -281,7 +281,7 @@ jar {
 tasks.register('getCommit', Exec) {
     description = "Retrieves hash of git latest commit"
     // NOTA: We exclude the folder 'flatpak/flathub' from this commit retrieval
-    commandLine = "git log -n1 --pretty=%H -- . :!flatpak/flathub".split(' ')
+    commandLine = "git -C .. log -n1 --pretty=%H -- . :!flatpak/flathub".split(' ')
     standardOutput = new ByteArrayOutputStream()
 
     doLast {
