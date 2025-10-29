@@ -280,8 +280,8 @@ jar {
 // Output is in 'app.ext.commit' property
 tasks.register('getCommit', Exec) {
     description = "Retrieves hash of git latest commit"
-    // NOTA: We exclude the folder 'flatpak/flathub' from this commit retrieval
-    commandLine = "git -C .. log -n1 --pretty=%H -- . :!flatpak/flathub".split(' ')
+    // NOTA: We exclude the folder '<root>/flatpak/flathub' from this commit retrieval
+    commandLine = "git log -n1 --pretty=%H -- :^../flatpak/flathub".split(' ')
     standardOutput = new ByteArrayOutputStream()
 
     doLast {
