@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.dynamic.CurvedFilament;
@@ -47,6 +49,7 @@ import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.ui.view.RubberPanel;
+import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.VerticalSide;
@@ -64,14 +67,12 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_BYTE_GRAY;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
@@ -89,6 +90,8 @@ import static java.util.stream.Collectors.toList;
  * parallel with each other.
  * The midLine defining points become handles that can be moved vertically, and the side defining
  * points can be moved both vertically and horizontally, allowing to extend or shrink the staff.
+ * If the staff grows significantly on its left or right side, additional defining points
+ * (and thus handles) get automatically inserted.
  * </ul>
  * In both modes, as staff geometry is being modified, remaining horizontal sections can get removed
  * (or reinserted) if they are detected as new staff line members.
@@ -104,6 +107,8 @@ public abstract class StaffEditor
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(StaffEditor.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -114,6 +119,12 @@ public abstract class StaffEditor
 
     /** Staff lines. */
     protected final List<LineInfo> lines;
+
+    /**
+     * Typical horizontal gap between the staff lines defining points.
+     * This will be used to detect when an intermediate point should be inserted.
+     */
+    protected final int typicalDx;
 
     /** Maximum line thickness. */
     protected final int maxLineThickness;
@@ -140,6 +151,11 @@ public abstract class StaffEditor
         lines = staff.getLines();
         maxLineThickness = system.getSheet().getScale().getMaxFore();
         hLag = system.getSheet().getLagManager().getLag(Lags.HLAG);
+
+        // Compute the typical gap between defining points
+        // And make sure no too long gap still exists
+        typicalDx = getTypicalDx();
+        refinePoints();
 
         // Collect all relevant sections (internals and externals)
         originalInternals = collectInternalSections();
@@ -424,6 +440,59 @@ public abstract class StaffEditor
         return stickers;
     }
 
+    //--------------//
+    // getTypicalDx //
+    //--------------//
+    /**
+     * Compute the typical (median) horizontal distance between all line defining points.
+     */
+    private int getTypicalDx ()
+    {
+        final List<Integer> dxs = new ArrayList<>();
+
+        for (int il = 0; il < lines.size(); il++) {
+            final StaffLine line = (StaffLine) lines.get(il);
+            final List<Point2D> points = line.getPoints();
+
+            for (int ip = 1; ip < points.size(); ip++) {
+                final Point2D p = points.get(ip);
+                dxs.add((int) Math.rint(p.getX() - points.get(ip - 1).getX()));
+            }
+        }
+
+        Collections.sort(dxs);
+
+        return dxs.get(dxs.size() / 2);
+    }
+
+    //--------------//
+    // refinePoints //
+    //--------------//
+    /**
+     * Harmonize the defining points along the staff, based on staff width and typicalDx value.
+     */
+    private void refinePoints ()
+    {
+        final Staff staff = getStaff();
+        final double left = staff.getAbscissa(LEFT);
+        final double right = staff.getAbscissa(RIGHT);
+        final double width = right - left;
+        final int count = (int) Math.rint(width / typicalDx);
+        final double gap = width / count;
+
+        for (LineInfo lineInfo : staff.getLines()) {
+            final StaffLine line = (StaffLine) lineInfo;
+            final List<Point2D> newPoints = new ArrayList<>();
+
+            for (int ip = 0; ip <= count; ip++) {
+                final double x = left + ip * gap;
+                newPoints.add(new Point2D.Double(x, line.yAt(x)));
+            }
+
+            line.setPoints(newPoints);
+        }
+    }
+
     //------//
     // undo //
     //------//
@@ -464,6 +533,17 @@ public abstract class StaffEditor
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Ratio maxHandleXGapRatio = new Constant.Ratio(
+                1.5,
+                "Maximum handle horizontal gap vs typical gap");
+    }
+
     //--------------//
     // GlobalEditor //
     //--------------//
@@ -479,104 +559,64 @@ public abstract class StaffEditor
         /** The staff middle line. */
         private final StaffLine midLine;
 
-        /**
-         * The map of vertical distances for every defining point WRT staff midLine.
-         * <ul>
-         * <li>Key: line index in staff lines
-         * <li>Value: list of ordinate deltas, one for each defining point of the line
-         * </ul>
-         */
-        private final SortedMap<Integer, List<Double>> dyMap = new TreeMap<>();
-
         public GlobalEditor (Staff staff)
         {
             super(staff);
 
             midLine = (StaffLine) staff.getMidLine();
 
-            // Compute the delta ordinates
-            populateDyMap();
-
             // Models
             originalModel = new GlobalModel(staff, midLine);
             model = new GlobalModel(staff, midLine);
 
-            final List<Point2D> points = ((GlobalModel) model).midModel.points;
-            final int nb = points.size();
-
-            // Side handles
-            Arrays.asList(points.get(0), points.get(nb - 1)).forEach(p -> handles.add(new Handle(p)
-            {
-                @Override
-                public boolean move (int dx,
-                                     int dy)
-                {
-                    // Move in any direction
-                    PointUtil.add(p, dx, dy);
-
-                    return true;
-                }
-            }));
+            // Handles list, kept parallel to combs list
+            final List<Comb> combs = ((GlobalModel) model).combs;
+            final int nb = combs.size();
+            handles.add(new OmniHandle(combs.get(0).midPoint)); // Left
+            combs.subList(1, nb - 1).forEach(c -> handles.add(new VerticalHandle(c.midPoint)));
+            handles.add(new OmniHandle(combs.get(nb - 1).midPoint)); // Right
 
             // Pre-select the left-side handle
             selectedHandle = handles.get(0);
-
-            // Inside handles
-            points.subList(1, nb - 1).forEach(p -> handles.add(new Handle(p)
-            {
-                @Override
-                public boolean move (int dx,
-                                     int dy)
-                {
-                    // Move only vertically
-                    if (dy == 0) {
-                        return false;
-                    }
-
-                    PointUtil.add(p, 0, dy);
-
-                    return true;
-                }
-            }));
         }
 
         @Override
         protected void applyModel (StaffModel model)
         {
-            final List<Point2D> midPoints = ((GlobalModel) model).midModel.points;
+            final GlobalModel globalModel = (GlobalModel) model;
+            final List<Comb> combs = globalModel.combs;
             final Staff staff = getStaff();
 
             // Special policy for a side handle: all lines ends are kept aligned vertically
-            final double left = midPoints.get(0).getX();
-            final double right = midPoints.get(midPoints.size() - 1).getX();
+            final double left = combs.get(0).midPoint.getX();
+            final double right = combs.get(combs.size() - 1).midPoint.getX();
 
-            // Adjust midLine
-            midLine.setPoints(midPoints);
-            midLine.getSpline();
+            // Remove any comb (and its handle) that is located beyond staff sides
+            for (Iterator<Comb> iterator = globalModel.combs.iterator(); iterator.hasNext();) {
+                final Comb comb = iterator.next();
+                final double x = comb.midPoint.getX();
 
-            // Apply the dys for the other lines
-            for (Entry<Integer, List<Double>> entry : dyMap.entrySet()) {
-                final StaffLine line = (StaffLine) lines.get(entry.getKey());
-                final List<Point2D> points = line.getPoints();
-                final int ipLast = points.size() - 1; // Index to last line point
-                final List<Double> dys = entry.getValue();
-                final List<Point2D> newPoints = new ArrayList<>();
-
-                // Left
-                newPoints.add(new Point2D.Double(left, midLine.yAt(left) + dys.get(0)));
-
-                // Inside
-                for (int ip = 1; ip < ipLast; ip++) {
-                    final Point2D p = points.get(ip);
-                    final double x = p.getX();
-                    final double midY = midLine.yAt(x);
-                    final double dy = dys.get(ip);
-                    newPoints.add(new Point2D.Double(x, midY + dy));
+                if (x < left || x > right) {
+                    final int ic = combs.indexOf(comb);
+                    iterator.remove();
+                    handles.remove(ic);
                 }
+            }
 
-                // Right
-                newPoints.add(new Point2D.Double(right, midLine.yAt(right) + dys.get(ipLast)));
+            // Check for need of intermediate comb
+            checkInsertion(combs, LEFT);
+            checkInsertion(combs, RIGHT);
 
+            // Compute the defining points for each line
+            for (int i = 0; i < lines.size(); i++) {
+                final int idx = i;
+                final StaffLine line = (StaffLine) lines.get(idx);
+                final List<Point2D> newPoints = new ArrayList<>();
+                globalModel.combs.forEach(
+                        c -> newPoints.add(
+                                new Point2D.Double(
+                                        c.midPoint.getX(),
+                                        c.midPoint.getY() + c.dys.get(idx))));
                 line.setPoints(newPoints);
             }
 
@@ -590,49 +630,92 @@ public abstract class StaffEditor
         }
 
         /**
-         * Compute the vertical deltas of every line with respect to the staff middle line.
+         * Check on the provided side for any needed insertion of an intermediate comb
+         * when the staff is significantly extended.
+         *
+         * @param combs the current list of combs
+         * @param hSide the horizontal side to check
          */
-        private void populateDyMap ()
+        private void checkInsertion (List<Comb> combs,
+                                     HorizontalSide hSide)
         {
-            for (int il = 0; il < lines.size(); il++) {
-                final StaffLine line = (StaffLine) lines.get(il);
+            if (combs.size() >= 2) {
+                final double maxDx = constants.maxHandleXGapRatio.getValue() * typicalDx;
+                final int extIdx = hSide == LEFT ? 0 : combs.size() - 1; // Exterior index
+                final int intIdx = hSide == LEFT ? 1 : combs.size() - 2; // Interior index
+                final int dir = hSide == LEFT ? 1 : -1; // X direction from exterior to interior
 
-                if (line != midLine) {
-                    final List<Double> dys = new ArrayList<>();
-                    line.getPoints().forEach(p -> dys.add(p.getY() - midLine.yAt(p.getX())));
-                    dyMap.put(il, dys);
+                final Point2D extPt = combs.get(extIdx).midPoint;
+                final Point2D inPt = combs.get(intIdx).midPoint;
+                final double dx = Math.abs(extPt.getX() - inPt.getX());
+
+                if (dx > maxDx) {
+                    // Insert a comb, with a vertical handle on the mid point
+                    final Point2D addedPt = new Point2D.Double(
+                            extPt.getX() + dir * dx / 2,
+                            (extPt.getY() + inPt.getY()) / 2);
+                    final Comb addedComb = new Comb(addedPt, combs.get(extIdx));
+
+                    final int maxIdx = Math.max(extIdx, intIdx);
+                    combs.add(maxIdx, addedComb);
+                    handles.add(maxIdx, new VerticalHandle(addedPt));
                 }
             }
         }
 
-        /** Driven by midLine model. */
+        /** Ordinates around a mid point. */
+        private static class Comb
+        {
+            /** Point on the staff middle line. */
+            public final Point2D midPoint;
+
+            /** Delta ordinates of comb points WRT middle point. */
+            public final List<Double> dys = new ArrayList<>();
+
+            /** Deltas are copied from another (source) comb. */
+            public Comb (Point2D p,
+                         Comb source)
+            {
+                midPoint = p;
+                source.dys.forEach(dy -> dys.add(dy));
+            }
+
+            /** Deltas are measured from actual staff lines. */
+            public Comb (Staff staff,
+                         double x)
+            {
+                final double midY = staff.getMidLine().yAt(x);
+                midPoint = new Point2D.Double(x, midY);
+                staff.getLines().forEach(l -> dys.add(l.yAt(x) - midY));
+            }
+        }
+
+        /** Driven by midLine. */
         private static class GlobalModel
                 extends StaffModel
         {
-            public final LineModel midModel;
+            /** The sequence of combs. */
+            public final List<Comb> combs = new ArrayList<>();
 
             public GlobalModel (Staff staff,
-                                StaffLine staffLine)
+                                StaffLine midLine)
             {
                 super(staff);
-                midModel = new LineModel(staffLine);
+                midLine.getPoints().forEach(p -> combs.add(new Comb(staff, p.getX())));
             }
-        }
-    }
 
-    //-----------//
-    // LineModel //
-    //-----------//
-    /** Model for one staff line. */
-    protected static class LineModel
-    {
-        // The line defining points
-        public final List<Point2D> points = new ArrayList<>();
+            public int indexOf (Point2D center)
+            {
+                for (int i = 0, iBreak = combs.size(); i < iBreak; i++) {
+                    final Comb comb = combs.get(i);
 
-        public LineModel (StaffLine staffLine)
-        {
-            // Make a deep copy of provided points, to avoid live sharing of points
-            points.addAll(staffLine.getPointsDeepCopy());
+                    if (comb.midPoint == center) {
+                        return combs.indexOf(comb);
+                    }
+                }
+
+                return -1;
+            }
         }
     }
 
@@ -671,22 +754,7 @@ public abstract class StaffEditor
 
             // Handles
             ((LineArrayModel) model).lineModels.forEach(
-                    lineModel -> lineModel.points.forEach(p -> handles.add(new Handle(p)
-                    {
-                        @Override
-                        public boolean move (int dx,
-                                             int dy)
-                        {
-                            // Move only vertically
-                            if (dy == 0) {
-                                return false;
-                            }
-
-                            PointUtil.add(p, 0, dy);
-
-                            return true;
-                        }
-                    })));
+                    lineModel -> lineModel.points.forEach(p -> handles.add(new VerticalHandle(p))));
         }
 
         @Override
@@ -711,6 +779,41 @@ public abstract class StaffEditor
                 super(staff);
                 staff.getLines().forEach(line -> lineModels.add(new LineModel((StaffLine) line)));
             }
+
+            /** Model for one staff line. */
+            private static class LineModel
+            {
+                // The line defining points
+                public final List<Point2D> points = new ArrayList<>();
+
+                public LineModel (StaffLine staffLine)
+                {
+                    // Make a deep copy of provided points, to avoid live sharing of points
+                    points.addAll(staffLine.getPointsDeepCopy());
+                }
+            }
+        }
+    }
+
+    //------------//
+    // OmniHandle //
+    //------------//
+    /** Handle moving in any direction. */
+    protected static class OmniHandle
+            extends Handle
+    {
+        public OmniHandle (Point2D center)
+        {
+            super(center);
+        }
+
+        @Override
+        public boolean move (int dx,
+                             int dy)
+        {
+            PointUtil.add(center, dx, dy);
+
+            return true;
         }
     }
 
@@ -736,6 +839,28 @@ public abstract class StaffEditor
             if (staff.getHeader() != null) {
                 headerStop = staff.getHeader().stop;
             }
+        }
+    }
+
+    //----------------//
+    // VerticalHandle //
+    //----------------//
+    /** Handle moving only vertically. */
+    protected static class VerticalHandle
+            extends Handle
+    {
+        public VerticalHandle (Point2D center)
+        {
+            super(center);
+        }
+
+        @Override
+        public boolean move (int dx,
+                             int dy)
+        {
+            PointUtil.add(center, 0, dy);
+
+            return dy != 0;
         }
     }
 }
