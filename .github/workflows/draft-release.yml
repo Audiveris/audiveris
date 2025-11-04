@@ -172,7 +172,7 @@ jobs:
       - name: Download (old) macos installer
         uses: actions/download-artifact@v4
         with:
-          name: installer-macos-13
+          name: installer-macos-15-intel
           path: ./artifacts
 
       - name: Download handbook PDF
