@@ -17,7 +17,7 @@ jobs:
           - os: ubuntu-latest
           - os: ubuntu-22.04    # fix for issue #805 libasound2t64 is required but not found
           - os: macos-latest    # for Apple Silicon (arm64) support
-          - os: macos-13        # for legacy Intel (x64) hardware support
+          - os: macos-15-intel  # for legacy Intel (x64) hardware support
           - os: windows-latest
             option: ""          # without console
           - os: windows-latest
