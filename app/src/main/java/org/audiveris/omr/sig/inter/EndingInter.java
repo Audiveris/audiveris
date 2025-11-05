@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.PointUtil;
@@ -31,6 +32,7 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.curve.Curves;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.ui.ObjectUIModel;
@@ -611,6 +613,32 @@ public class EndingInter
         this.number = number;
     }
 
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        if (glyph != null) {
+            if (line == null) {
+                // Case of manual ending: we compute the lines based on glyph bounds
+                // We use the half of standard line thickness to refine coordinates
+                final int half = (int) Math.rint(Curves.DEFAULT_THICKNESS / 2);
+                final Rectangle b = glyph.getBounds();
+                b.grow(-half, -half);
+
+                line = new Line2D.Double(b.x, b.y, b.x + b.width, b.y);
+                leftLeg = new Line2D.Double(b.x, b.y, b.x, b.y + b.height);
+
+                if (shape == Shape.ENDING_WRL) {
+                    rightLeg = new Line2D.Double(b.x + b.width, b.y, b.x + b.width, b.y + b.height);
+                }
+            }
+        }
+    }
+
     //-----------------//
     // upgradeOldStuff //
     //-----------------//
@@ -647,11 +675,13 @@ public class EndingInter
     /**
      * User editor for an ending.
      * <p>
-     * For an ending, there are 3 handles:
+     * For an ending, there can be between 3 to 5 handles:
      * <ul>
      * <li>Left handle, moving only horizontally (with its related leg if any)
+     * <li>Bottom left handle, moving only vertically (if there is a left leg)
      * <li>Top middle handle, moving the whole inter in any direction
      * <li>Right handle, moving only horizontally (with its related leg if any)
+     * <li>Bottom right handle, moving only vertically (if there is a right leg)
      * </ul>
      */
     private static class Editor
@@ -667,6 +697,10 @@ public class EndingInter
 
         private final Point2D midRight;
 
+        private final Point2D bottomLeft;
+
+        private final Point2D bottomRight;
+
         public Editor (final EndingInter ending)
         {
             super(ending);
@@ -681,18 +715,22 @@ public class EndingInter
             if (ending.leftLeg != null) {
                 originalModel.bottomLeft = ending.leftLeg.getP2();
                 model.bottomLeft = ending.leftLeg.getP2();
+                bottomLeft = model.bottomLeft;
                 midLeft = PointUtil.middle(ending.leftLeg);
             } else {
                 midLeft = null;
+                bottomLeft = null;
             }
 
             if (ending.rightLeg != null) {
                 originalModel.bottomRight = ending.rightLeg.getP2();
                 model.bottomRight = ending.rightLeg.getP2();
+                bottomRight = model.bottomRight;
 
                 midRight = PointUtil.middle(ending.rightLeg);
             } else {
                 midRight = null;
+                bottomRight = null;
             }
 
             // Global move: move all points
@@ -720,8 +758,8 @@ public class EndingInter
                 }
             });
 
-            // Left handle: move horizontally only
             if (ending.leftLeg != null) {
+                // Left handle: move horizontally only
                 handles.add(new InterEditor.Handle(midLeft)
                 {
                     @Override
@@ -735,12 +773,31 @@ public class EndingInter
                         PointUtil.add(model.topLeft, dx, 0);
                         PointUtil.add(midLeft, dx, 0);
                         PointUtil.add(model.bottomLeft, dx, 0);
-                        PointUtil.add(midTop, dx / 2, 0);
+                        PointUtil.add(midTop, dx / 2.0, 0);
+
+                        return true;
+                    }
+                });
+
+                // BottomLeft handle: move vertically only
+                handles.add(new InterEditor.Handle(bottomLeft)
+                {
+                    @Override
+                    public boolean move (int dx,
+                                         int dy)
+                    {
+                        if (dy == 0) {
+                            return false;
+                        }
+
+                        PointUtil.add(midLeft, 0, dy / 2.0);
+                        PointUtil.add(model.bottomLeft, 0, dy);
 
                         return true;
                     }
                 });
             } else {
+                // Left handle: move horizontally only
                 handles.add(new InterEditor.Handle(model.topLeft)
                 {
                     @Override
@@ -752,15 +809,15 @@ public class EndingInter
                         }
 
                         PointUtil.add(model.topLeft, dx, 0);
-                        PointUtil.add(midTop, dx / 2, 0);
+                        PointUtil.add(midTop, dx / 2.0, 0);
 
                         return true;
                     }
                 });
             }
 
-            // Right handle: move horizontally only
             if (ending.rightLeg != null) {
+                // Right handle: move horizontally only
                 handles.add(new InterEditor.Handle(midRight)
                 {
                     @Override
@@ -774,11 +831,30 @@ public class EndingInter
                         PointUtil.add(model.topRight, dx, 0);
                         PointUtil.add(midRight, dx, 0);
                         PointUtil.add(model.bottomRight, dx, 0);
-                        PointUtil.add(midTop, dx / 2, 0);
+                        PointUtil.add(midTop, dx / 2.0, 0);
 
                         return true;
                     }
                 });
+
+                // BottomRight handle: move vertically only
+                handles.add(new InterEditor.Handle(bottomRight)
+                {
+                    @Override
+                    public boolean move (int dx,
+                                         int dy)
+                    {
+                        if (dy == 0) {
+                            return false;
+                        }
+
+                        PointUtil.add(midRight, 0, dy / 2.0);
+                        PointUtil.add(model.bottomRight, 0, dy);
+
+                        return true;
+                    }
+                });
+
             } else {
                 handles.add(new InterEditor.Handle(model.topRight)
                 {
@@ -791,7 +867,7 @@ public class EndingInter
                         }
 
                         PointUtil.add(model.topRight, dx, 0);
-                        PointUtil.add(midTop, dx / 2, 0);
+                        PointUtil.add(midTop, dx / 2.0, 0);
 
                         return true;
                     }
@@ -845,11 +921,9 @@ public class EndingInter
     public static class Impacts
             extends GradeImpacts
     {
-        private static final String[] NAMES = new String[]
-        { "straight", "slope", "length" };
+        private static final String[] NAMES = new String[] { "straight", "slope", "length" };
 
-        private static final double[] WEIGHTS = new double[]
-        { 1, 1, 1 };
+        private static final double[] WEIGHTS = new double[] { 1, 1, 1 };
 
         public Impacts (double straight,
                         double slope,
