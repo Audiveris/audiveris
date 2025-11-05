@@ -89,6 +89,7 @@ public class KeyAlterInter
                 alter.staff,
                 alter.pitch,
                 alter.getMeasuredPitch());
+        bounds = alter.getBounds();
     }
 
     //~ Methods ------------------------------------------------------------------------------------

@@ -69,6 +69,7 @@ import org.audiveris.omr.sig.inter.InterPair;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.KeyInter;
+import org.audiveris.omr.sig.inter.KeyInter.KeyConfig;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MetronomeInter;
@@ -438,14 +439,14 @@ public class InterController
     /**
      * Build a key signature from the provided (AlterInter) members.
      *
-     * @param system   the containing system
-     * @param members  the members of the future key
-     * @param keyShape the key shape
+     * @param system    the containing system
+     * @param members   the members of the future key
+     * @param keyConfig the precise key configuration
      */
     @UIThread
     public void buildKey (SystemInfo system,
                           List<Inter> members,
-                          Shape keyShape)
+                          KeyConfig keyConfig)
     {
         final SIGraph sig = system.getSig();
         final List<AlterInter> alters = new ArrayList<>();
@@ -470,7 +471,7 @@ public class InterController
 
                 // Create key and link members
                 final List<Link> links = new ArrayList<>();
-                final KeyInter key = new KeyInter(1.0, keyShape);
+                final KeyInter key = new KeyInter(1.0, keyConfig.fifths, keyConfig.shape);
                 key.setManual(true);
                 key.setStaff(staff);
                 members.forEach(m -> links.add(new Link(m, new Containment(), true)));

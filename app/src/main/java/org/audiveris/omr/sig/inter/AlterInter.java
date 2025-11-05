@@ -190,6 +190,23 @@ public class AlterInter
         };
     }
 
+    //----------------//
+    // getAlteredHead //
+    //----------------//
+    /**
+     * Report the head altered by this accidental.
+     *
+     * @return the altered head, otherwise null
+     */
+    public HeadInter getAlteredHead ()
+    {
+        for (Relation rel : sig.getRelations(this, AlterHeadRelation.class)) {
+            return (HeadInter) sig.getOppositeInter(this, rel);
+        }
+
+        return null;
+    }
+
     //------------//
     // getDetails //
     //------------//

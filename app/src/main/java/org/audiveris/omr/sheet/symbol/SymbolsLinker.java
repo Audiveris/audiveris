@@ -32,6 +32,7 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.PedalInter;
@@ -364,5 +365,8 @@ public class SymbolsLinker
         linkTuplets();
         linkOctaveShifts();
         linkNumbers();
+
+        // Check for any key signature change (before "abnormal" alters are removed)
+        KeyInter.lookupCandidates(system);
     }
 }
