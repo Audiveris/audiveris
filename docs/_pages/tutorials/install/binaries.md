@@ -233,15 +233,19 @@ Since the app is not signed, macOS will block it by default. Follow these steps 
 1. **Attempt to Open the App**
     - Go to your **Applications** folder and double-click `Audiveris.app`.
     - You’ll likely see a warning: *"“Audiveris” cannot be opened because it is from an unidentified developer."*
+    - On MacOS Tahoe, you will see a screen as below.  Press "Done"
+    - <img width="275" height="288" alt="Image" src="https://github.com/user-attachments/assets/e77482ad-0203-4181-a975-764dd64770f6" />
 
 2. **Adjust Privacy Settings**
     - Open **System Preferences** (or **System Settings** on macOS Ventura and later):
         - Click the Apple menu (&#63743;) > **System Preferences** > **Security & Privacy** > **General** tab.
     - At the bottom, you’ll see a message: *“Audiveris” was blocked from use because it is not from an identified developer.*
     - Click **"Open Anyway"** to allow the app to run.
+    - <img width="700" height="119" alt="Image" src="https://github.com/user-attachments/assets/b9c5801e-a271-4891-9e41-65fe0eb4e1bd" />
 
 3. **Launch the App**
-    - Double-click `Audiveris.app` again. You may see one final prompt asking for confirmation—click **"Open"**.
+    - Double-click `Audiveris.app` again. You may see one final prompt asking for confirmation—click **"Open"** or **"Open Anyway"**.
+    - <img width="249" height="354" alt="Image" src="https://github.com/user-attachments/assets/16a3f9ee-0513-484e-9ae3-f00c2e2dbb8f" />
     - The app should now launch successfully.
 
 ### Notes
@@ -250,5 +254,6 @@ Since the app is not signed, macOS will block it by default. Follow these steps 
 - **Troubleshooting**: If the app still won’t open, ensure you’ve completed the privacy settings step. For persistent issues, contact the provider or check the Audiveris documentation.
 
 ### Uninstallation
+
 
 TODO
