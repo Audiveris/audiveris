@@ -43,12 +43,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: tiTree on ${{ matrix.os }}
-        run: ./gradlew tiTree jpackage
-
-      - name: tiOrder on ${{ matrix.os }}
-        run: ./gradlew tiOrder jpackage
-
       - name: Build installer on ${{ matrix.os }} option ${{ matrix.option }}
         run: ./gradlew --info jpackage -Poption=${{ matrix.option }}
 
