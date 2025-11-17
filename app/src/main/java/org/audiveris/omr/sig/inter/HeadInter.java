@@ -351,7 +351,7 @@ public class HeadInter
      */
     public int getAlteration (Integer fifths)
     {
-        return HeadInter.this.getAlteration(fifths, true);
+        return getAlteration(fifths, true);
     }
 
     //---------------//
@@ -1452,11 +1452,9 @@ public class HeadInter
     public static class Impacts
             extends GradeImpacts
     {
-        private static final String[] NAMES = new String[]
-        { "dist" };
+        private static final String[] NAMES = new String[] { "dist" };
 
-        private static final double[] WEIGHTS = new double[]
-        { 1 };
+        private static final double[] WEIGHTS = new double[] { 1 };
 
         public Impacts (double dist)
         {

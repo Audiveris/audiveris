@@ -20,13 +20,35 @@ Table of contents
 - TOC
 {:toc}
 ---
+
+## 5.8
+(November 2025)
+
+- User Interface
+  - Improved key editor to build key signature from its members
+  - Improved staff editor that inserts intermediate defining points where needed by staff extension
+  - Improved ending editor that can resize the ending legs.
+- Engine
+  - Support for key signature changes
+  - Support for strings techniques of up bow and down bow
+  - Multi-measure rests can survive the lack of a recognized measure count
+- Project
+  - Use of 'macos-15-intel' instead of 'macos-13' runner to build the installer for macOS Intel
+  - Flatpak to catch up with OS installers
+  - Revamped the book/sheet annotations meant for training an external model
+- Java
+  - Upgrade to Java 25 and Gradle 9.1
+
 ## 5.7
 (September 2025)
 
 - User Interface
   - Support for CJK (Chinese, Japanese, Korean) characters  
+  - The Preferences and Constants dialogs now scale correctly with font size changing
+  - Ability to print out the detailed steps durations for a sheet processing
 - Engine
   - Correct handling of void regions in small note head templates
+  - Improved computation of voices distances, resulting in better voices assignment
 - Project
   - Additional Windows installer provided with console, useful for launch messages
   - All installers now come with a max heap set at 8GB

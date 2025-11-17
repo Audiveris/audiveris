@@ -95,8 +95,8 @@ public class DynamicsInter
         sigs.put(Shape.DYNAMICS_FP, "fp"); // Forte then piano
         sigs.put(Shape.DYNAMICS_SF, "sf"); // Subito forte: suddenly strong
         sigs.put(Shape.DYNAMICS_SFZ, "sfz"); // Sforzando: sudden accent
+        sigs.put(Shape.DYNAMICS_FZ, "fz"); // Forzando
 
-        //        sigs.put(Shape.DYNAMICS_FZ, "fz");
         //        sigs.put(Shape.DYNAMICS_RF, "rf");
         //        sigs.put(Shape.DYNAMICS_RFZ, "rfz");
         //        sigs.put(Shape.DYNAMICS_SF, "sf");
@@ -115,9 +115,9 @@ public class DynamicsInter
         shapes.put("ff", Shape.DYNAMICS_FF);
         shapes.put("fff", Shape.DYNAMICS_FFF);
         shapes.put("fp", Shape.DYNAMICS_FP);
+        shapes.put("fz", Shape.DYNAMICS_FZ);
         shapes.put("sfz", Shape.DYNAMICS_SFZ);
 
-        //        shapes.put("fz", Shape.DYNAMICS_FZ);
         //        shapes.put("rf", Shape.DYNAMICS_RF);
         //        shapes.put("rfz", Shape.DYNAMICS_RFZ);
         //        shapes.put("sf", Shape.DYNAMICS_SF);
@@ -140,17 +140,15 @@ public class DynamicsInter
         sounds.put(Shape.DYNAMICS_FFF, 144);
 
         sounds.put(Shape.DYNAMICS_FP, 100); // ???
+        sounds.put(Shape.DYNAMICS_FZ, 100); // ???
         sounds.put(Shape.DYNAMICS_SFZ, 100); // ???
 
-        //        sounds.put(Shape.DYNAMICS_FP, "fp");
-        //        sounds.put(Shape.DYNAMICS_FZ, "fz");
         //        sounds.put(Shape.DYNAMICS_RF, "rf");
         //        sounds.put(Shape.DYNAMICS_RFZ, "rfz");
         //        sounds.put(Shape.DYNAMICS_SF, "sf");
         //        sounds.put(Shape.DYNAMICS_SFFZ, "sffz");
         //        sounds.put(Shape.DYNAMICS_SFP, "sfp");
         //        sounds.put(Shape.DYNAMICS_SFPP, "sfpp");
-        //        sounds.put(Shape.DYNAMICS_SFZ, "sfz");
     }
 
     //~ Constructors -------------------------------------------------------------------------------

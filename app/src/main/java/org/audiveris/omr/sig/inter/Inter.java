@@ -93,6 +93,15 @@ public interface Inter
     void added ();
 
     /**
+     * Report whether the inter can survive, even if abnormal.
+     * This is meant for inters, which should not be deleted by reduction even if abnormal.
+     * The {@link MultipleRestInter} should be kept even without a recognized count.
+     *
+     * @return true if so
+     */
+    boolean canStayAbnormal ();
+
+    /**
      * Run checks to detect if this inter is abnormal.
      *
      * @return the resulting status

@@ -31,6 +31,31 @@ This Wiki gathers various articles about the development and potential evolution
 {% endfor %}
 </ul>
 
+## All contributors test
+
+<ul>
+  {% for contributor in site.github.contributors %}
+    <li>
+      <img src="{{ contributor.avatar_url }}" alt="{{ contributor.login }}'s avatar" width="50">
+      <a href="https://github.com/{{ contributor.login }}">{{ contributor.login }}</a>
+    </li>
+  {% endfor %}
+</ul>
+
+## Tests
+
+tag_name:
+
+{{ site.github.release.tag_name }}
+
+name:
+
+{{ site.github.release.name }}
+
+html_url:
+
+{{ site.github.release.html_url }}
+
 
 [Audiveris Wiki]:           https://github.com/Audiveris/audiveris/wiki
 [Format of ".omr" files]:   ./_pages/reference/outputs/omr

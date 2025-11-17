@@ -57,6 +57,7 @@ import org.audiveris.omr.sheet.ui.StaffEditor;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNumberInter;
+import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BraceInter;
@@ -66,6 +67,9 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterPair;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.KeyAlterInter;
+import org.audiveris.omr.sig.inter.KeyInter;
+import org.audiveris.omr.sig.inter.KeyInter.KeyConfig;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MetronomeInter;
@@ -135,6 +139,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import static java.util.Collections.emptySet;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -426,6 +431,62 @@ public class InterController
 
         ghost.setStaff(staff);
         addInter(ghost);
+    }
+
+    //----------//
+    // buildKey //
+    //----------//
+    /**
+     * Build a key signature from the provided (AlterInter) members.
+     *
+     * @param system    the containing system
+     * @param members   the members of the future key
+     * @param keyConfig the precise key configuration
+     */
+    @UIThread
+    public void buildKey (SystemInfo system,
+                          List<Inter> members,
+                          KeyConfig keyConfig)
+    {
+        final SIGraph sig = system.getSig();
+        final List<AlterInter> alters = new ArrayList<>();
+        members.forEach(m -> alters.add((AlterInter) m));
+        Collections.sort(alters, Inters.byFullCenterAbscissa);
+        final Staff staff = alters.get(0).getStaff();
+
+        new CtrlTask(DO, "buildKey")
+        {
+            @Override
+            protected void build ()
+            {
+                // Convert each AlterInter to KeyAlterInter
+                List<KeyAlterInter> members = new ArrayList<>();
+                alters.forEach(alter -> members.add(new KeyAlterInter(alter)));
+
+                // Remove old alters
+                alters.forEach(alter -> seq.add(new RemovalTask(alter)));
+
+                // Add new members
+                members.forEach(m -> seq.add(new AdditionTask(sig, m, m.getBounds(), emptySet())));
+
+                // Create key and link members
+                final List<Link> links = new ArrayList<>();
+                final KeyInter key = new KeyInter(1.0, keyConfig.fifths, keyConfig.shape);
+                key.setManual(true);
+                key.setStaff(staff);
+                members.forEach(m -> links.add(new Link(m, new Containment(), true)));
+                seq.add(new AdditionTask(sig, key, null, links));
+            }
+
+            @Override
+            protected void publish ()
+            {
+                if (toPublish.value != null) {
+                    sheet.getInterIndex().publish(toPublish.value);
+                }
+            }
+        }.execute();
+
     }
 
     //-----------//
@@ -1258,7 +1319,7 @@ public class InterController
     // linkMultiple //
     //--------------//
     /**
-     * Add a relation between inters.
+     * Add relations.
      *
      * @param sig  the containing SIG
      * @param strs the list of SourceTargetRelation to add

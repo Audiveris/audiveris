@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.jaxb.refs;
 
+import org.junit.Ignore;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -29,6 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @author Hervé Bitteur
  */
+@Ignore
 @XmlRootElement(name = "apple")
 public class Apple
         extends Fruit

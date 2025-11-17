@@ -30,8 +30,7 @@ import org.audiveris.omr.sig.ui.InterEditor;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>KeyAlterInter</code> is an Alteration inter which is part of a key
- * signature.
+ * Class <code>KeyAlterInter</code> is an Alteration inter which is part of a key signature.
  * <p>
  * Its shape can be:
  * <ul>
@@ -70,10 +69,27 @@ public class KeyAlterInter
                           Shape shape,
                           Double grade,
                           Staff staff,
-                          double pitch,
-                          double measuredPitch)
+                          Double pitch,
+                          Double measuredPitch)
     {
         super(glyph, shape, grade, staff, pitch, measuredPitch);
+    }
+
+    /**
+     * Convenient constructor meant for conversion from an AlterInter.
+     *
+     * @param alter the source alter
+     */
+    public KeyAlterInter (AlterInter alter)
+    {
+        this(
+                alter.glyph,
+                alter.shape,
+                alter.getGrade(),
+                alter.staff,
+                alter.pitch,
+                alter.getMeasuredPitch());
+        bounds = alter.getBounds();
     }
 
     //~ Methods ------------------------------------------------------------------------------------

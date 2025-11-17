@@ -24,10 +24,8 @@ package org.audiveris.omrdataset.api;
 import static org.audiveris.omrdataset.api.OmrShape.*;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Class <code>OmrShapes</code> complements enum {@link OmrShape} with related features.
@@ -44,13 +42,9 @@ public abstract class OmrShapes
     /** All note heads. */
     public static final EnumSet<OmrShape> HEADS = EnumSet.of(
             noteheadBlack,
-            noteheadBlackSmall,
             noteheadHalf,
-            noteheadHalfSmall,
             noteheadWhole,
-            noteheadWholeSmall,
             noteheadDoubleWhole,
-            noteheadDoubleWholeSmall,
             noteheadXBlack,
             noteheadXHalf,
             noteheadXWhole);
@@ -66,9 +60,7 @@ public abstract class OmrShapes
             timeSig6,
             timeSig7,
             timeSig8,
-            timeSig9,
-            timeSig12,
-            timeSig16);
+            timeSig9);
 
     /** Partial numbers for time signatures. */
     public static final EnumSet<OmrShape> TIME_PARTIALS = EnumSet.of(
@@ -80,30 +72,28 @@ public abstract class OmrShapes
             timeSig6,
             timeSig7,
             timeSig8,
-            timeSig9,
-            timeSig12,
-            timeSig16);
+            timeSig9);
 
     /** Predefined commons for time signatures. */
     public static final EnumSet<OmrShape> TIME_COMMONS = EnumSet.of(
             timeSigCommon,
             timeSigCutCommon);
 
-    /** Predefined combos for time signatures. */
-    public static final EnumSet<OmrShape> TIME_COMBOS = EnumSet.of(
-            timeSig2over4,
-            timeSig2over2,
-            timeSig3over2,
-            timeSig3over4,
-            timeSig3over8,
-            timeSig4over4,
-            timeSig5over4,
-            timeSig5over8,
-            timeSig6over4,
-            timeSig6over8,
-            timeSig7over8,
-            timeSig9over8,
-            timeSig12over8);
+    //    /** Predefined combos for time signatures. */
+    //    public static final EnumSet<OmrShape> TIME_COMBOS = EnumSet.of(
+    //            timeSig2over4,
+    //            timeSig2over2,
+    //            timeSig3over2,
+    //            timeSig3over4,
+    //            timeSig3over8,
+    //            timeSig4over4,
+    //            timeSig5over4,
+    //            timeSig5over8,
+    //            timeSig6over4,
+    //            timeSig6over8,
+    //            timeSig7over8,
+    //            timeSig9over8,
+    //            timeSig12over8);
 
     /** All time signature items. */
     public static final EnumSet<OmrShape> TIMES = EnumSet.noneOf(OmrShape.class);
@@ -111,37 +101,29 @@ public abstract class OmrShapes
     static {
         TIMES.addAll(TIME_PARTIALS);
         TIMES.addAll(TIME_COMMONS);
-        TIMES.addAll(TIME_COMBOS);
+        // TIMES.addAll(TIME_COMBOS);
     }
 
     /** Clef shapes (not including changes, nor 8 and 15 separate entities). */
     public static final EnumSet<OmrShape> CLEFS = EnumSet.of(
             gClef,
-            gClef8vb,
-            gClef8va,
-            gClef15mb,
-            gClef15ma,
             cClefAlto,
             cClefTenor,
             fClef,
-            fClef8vb,
-            fClef8va,
-            fClef15mb,
-            fClef15ma,
             unpitchedPercussionClef1);
 
-    /** Clef changes (usually smaller). */
-    public static final EnumSet<OmrShape> CLEF_CHANGES = EnumSet.of(
-            gClefChange,
-            cClefAltoChange,
-            cClefTenorChange,
-            fClefChange);
+    //    /** Clef changes (usually smaller). */
+    //    public static final EnumSet<OmrShape> CLEF_CHANGES = EnumSet.of(
+    //            gClefChange,
+    //            cClefAltoChange,
+    //            cClefTenorChange,
+    //            fClefChange);
 
     /** Key items (including keyNatural). */
     public static final EnumSet<OmrShape> KEY_ALTERS = EnumSet.of(keyFlat, keyNatural, keySharp);
 
-    /** Map of predefined combos to num/den integer pairs. */
-    public static final Map<OmrShape, NumDen> COMBO_MAP = buildComboMap();
+    //    /** Map of predefined combos to num/den integer pairs. */
+    //    public static final Map<OmrShape, NumDen> COMBO_MAP = buildComboMap();
 
     /** Articulations. */
     public static final EnumSet<OmrShape> ARTICULATIONS = EnumSet.of(
@@ -154,34 +136,24 @@ public abstract class OmrShapes
             articStaccatissimoAbove,
             articStaccatissimoBelow,
             articMarcatoAbove,
-            articMarcatoBelow,
-            articTenutoStaccatoAbove,
-            articTenutoStaccatoBelow);
+            articMarcatoBelow);
 
     /** Flags. */
     public static final EnumSet<OmrShape> FLAGS = EnumSet.of(
             flag8thUp,
-            flag8thUpSmall,
             flag16thUp,
             flag32ndUp,
             flag64thUp,
             flag128thUp,
-            flag256thUp,
-            flag512thUp,
-            flag1024thUp,
             flag8thDown,
-            flag8thDownSmall,
             flag16thDown,
             flag32ndDown,
             flag64thDown,
-            flag128thDown,
-            flag256thDown,
-            flag512thDown,
-            flag1024thDown);
+            flag128thDown);
 
     /** Rests. */
     public static final EnumSet<OmrShape> RESTS = EnumSet.of(
-            restMaxima,
+            //            restMaxima,
             restLonga,
             restDoubleWhole,
             restWhole,
@@ -192,34 +164,31 @@ public abstract class OmrShapes
             rest32nd,
             rest64th,
             rest128th,
-            rest256th,
-            rest512th,
-            rest1024th,
+            //            rest256th,
+            //            rest512th,
+            //            rest1024th,
             restHBar);
 
     /** Accidentals. */
     public static final EnumSet<OmrShape> ACCIDENTALS = EnumSet.of(
             accidentalFlat,
-            accidentalFlatSmall,
             accidentalNatural,
-            accidentalNaturalSmall,
             accidentalSharp,
-            accidentalSharpSmall,
             accidentalDoubleSharp,
             accidentalDoubleFlat);
 
     /** Dynamics. */
     public static final EnumSet<OmrShape> DYNAMICS = EnumSet.of(
-            dynamicPiano,
-            dynamicMezzo,
-            dynamicForte,
+            dynamicP,
+            dynamicM,
+            dynamicF,
             dynamicRinforzando,
             dynamicSforzando,
             dynamicZ,
-            dynamicNiente,
-            dynamicPPPPPP,
-            dynamicPPPPP,
-            dynamicPPPP,
+            //            dynamicNiente,
+            //            dynamicPPPPPP,
+            //            dynamicPPPPP,
+            //            dynamicPPPP,
             dynamicPPP,
             dynamicPP,
             dynamicMP,
@@ -227,41 +196,41 @@ public abstract class OmrShapes
             dynamicPF,
             dynamicFF,
             dynamicFFF,
-            dynamicFFFF,
-            dynamicFFFFF,
-            dynamicFFFFFF,
-            dynamicFortePiano,
-            dynamicForzando,
-            dynamicSforzando1,
-            dynamicSforzandoPiano,
-            dynamicSforzandoPianissimo,
-            dynamicSforzato,
-            dynamicSforzatoPiano,
-            dynamicSforzatoFF,
-            dynamicRinforzando1,
-            dynamicRinforzando2);
+            //            dynamicFFFF,
+            //            dynamicFFFFF,
+            //            dynamicFFFFFF,
+            dynamicFP,
+            dynamicFZ,
+            dynamicSF,
+            dynamicSFP,
+            dynamicSFPP,
+            dynamicSFZ,
+            dynamicSFZP,
+            dynamicSFFZ,
+            dynamicRF,
+            dynamicRFZ);
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    private static Map<OmrShape, NumDen> buildComboMap ()
-    {
-        final Map<OmrShape, NumDen> map = new EnumMap<>(OmrShape.class);
-        map.put(OmrShape.timeSig2over4, new NumDen(2, 4));
-        map.put(OmrShape.timeSig2over2, new NumDen(2, 2));
-        map.put(OmrShape.timeSig3over2, new NumDen(3, 2));
-        map.put(OmrShape.timeSig3over4, new NumDen(3, 4));
-        map.put(OmrShape.timeSig3over8, new NumDen(3, 8));
-        map.put(OmrShape.timeSig4over4, new NumDen(4, 4));
-        map.put(OmrShape.timeSig5over4, new NumDen(5, 4));
-        map.put(OmrShape.timeSig5over8, new NumDen(5, 8));
-        map.put(OmrShape.timeSig6over4, new NumDen(6, 4));
-        map.put(OmrShape.timeSig6over8, new NumDen(6, 8));
-        map.put(OmrShape.timeSig7over8, new NumDen(7, 8));
-        map.put(OmrShape.timeSig9over8, new NumDen(9, 8));
-        map.put(OmrShape.timeSig12over8, new NumDen(12, 8));
-
-        return map;
-    }
+    //    private static Map<OmrShape, NumDen> buildComboMap ()
+    //    {
+    //        final Map<OmrShape, NumDen> map = new EnumMap<>(OmrShape.class);
+    //        map.put(OmrShape.timeSig2over4, new NumDen(2, 4));
+    //        map.put(OmrShape.timeSig2over2, new NumDen(2, 2));
+    //        map.put(OmrShape.timeSig3over2, new NumDen(3, 2));
+    //        map.put(OmrShape.timeSig3over4, new NumDen(3, 4));
+    //        map.put(OmrShape.timeSig3over8, new NumDen(3, 8));
+    //        map.put(OmrShape.timeSig4over4, new NumDen(4, 4));
+    //        map.put(OmrShape.timeSig5over4, new NumDen(5, 4));
+    //        map.put(OmrShape.timeSig5over8, new NumDen(5, 8));
+    //        map.put(OmrShape.timeSig6over4, new NumDen(6, 4));
+    //        map.put(OmrShape.timeSig6over8, new NumDen(6, 8));
+    //        map.put(OmrShape.timeSig7over8, new NumDen(7, 8));
+    //        map.put(OmrShape.timeSig9over8, new NumDen(9, 8));
+    //        map.put(OmrShape.timeSig12over8, new NumDen(12, 8));
+    //
+    //        return map;
+    //    }
 
     /**
      * Report the list of OmrShape values, to be used by DL4J.
@@ -298,8 +267,8 @@ public abstract class OmrShapes
             case timeSig7 -> 7;
             case timeSig8 -> 8;
             case timeSig9 -> 9;
-            case timeSig12 -> 12;
-            case timeSig16 -> 16;
+            //            case timeSig12 -> 12;
+            //            case timeSig16 -> 16;
             default -> null;
         };
     }

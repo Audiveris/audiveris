@@ -49,6 +49,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.WordInter;
@@ -343,6 +344,12 @@ public class SymbolsFilter
 
                     if (inter.isFrozen()) {
                         strongs.add(inter);
+                        continue;
+                    }
+
+                    // Save the lyrics
+                    if (inter instanceof LyricItemInter item) {
+                        strongs.add(item);
                         continue;
                     }
 

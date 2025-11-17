@@ -118,6 +118,17 @@ public class MultipleRestInter
         visitor.visit(this);
     }
 
+    //-----------------//
+    // canStayAbnormal //
+    //-----------------//
+    @Override
+    public boolean canStayAbnormal ()
+    {
+        // We allow this MultipleRestInter to survive, even when the related measure count
+        // could not be automatically recognized.
+        return true;
+    }
+
     //---------------//
     // checkAbnormal //
     //---------------//

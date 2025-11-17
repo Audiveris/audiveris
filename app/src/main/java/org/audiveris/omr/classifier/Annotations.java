@@ -31,16 +31,16 @@ public abstract class Annotations
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** File name extension for whole book annotations: {@value}. */
-    public static final String BOOK_ANNOTATIONS_EXTENSION = "-annotations.zip";
+    public static final String BOOK_ANNOTATIONS_EXTENSION = ".annotations.zip";
 
     /** File name extension for single sheet annotations: {@value}. */
-    public static final String SHEET_ANNOTATIONS_EXTENSION = "-annotations.xml";
+    public static final String SHEET_ANNOTATIONS_EXTENSION = ".annotations.xml";
 
     /** File format for single sheet image: {@value}. */
     public static final String SHEET_IMAGE_FORMAT = "png";
 
     /** File name extension for single sheet image: {@value}. */
-    public static final String SHEET_IMAGE_EXTENSION = "-image." + SHEET_IMAGE_FORMAT;
+    public static final String SHEET_IMAGE_EXTENSION = "." + SHEET_IMAGE_FORMAT;
 
     //~ Constructors -------------------------------------------------------------------------------
 

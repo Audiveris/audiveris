@@ -399,10 +399,10 @@ public class ClefInter
     public static ClefKind kindOf (OmrShape omrShape)
     {
         return switch (omrShape) {
-            case gClef, gClef8vb, gClef8va, gClef15mb, gClef15ma -> ClefKind.TREBLE;
+            case gClef -> ClefKind.TREBLE;
             case cClefAlto -> ClefKind.ALTO;
             case cClefTenor -> ClefKind.TENOR;
-            case fClef, fClef8vb, fClef8va, fClef15mb, fClef15ma -> ClefKind.BASS;
+            case fClef -> ClefKind.BASS;
             case unpitchedPercussionClef1 -> ClefKind.PERCUSSION;
             default -> throw new IllegalArgumentException("No ClefKind for " + omrShape);
         };

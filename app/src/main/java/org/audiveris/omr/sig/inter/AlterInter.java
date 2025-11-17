@@ -190,6 +190,23 @@ public class AlterInter
         };
     }
 
+    //----------------//
+    // getAlteredHead //
+    //----------------//
+    /**
+     * Report the head altered by this accidental.
+     *
+     * @return the altered head, otherwise null
+     */
+    public HeadInter getAlteredHead ()
+    {
+        for (Relation rel : sig.getRelations(this, AlterHeadRelation.class)) {
+            return (HeadInter) sig.getOppositeInter(this, rel);
+        }
+
+        return null;
+    }
+
     //------------//
     // getDetails //
     //------------//
@@ -467,9 +484,9 @@ public class AlterInter
         double geoPitch = staff.pitchPositionOf(center);
 
         // Pitch offset for flat-based alterations
-        if ((omrShape == OmrShape.keyFlat) || (omrShape == OmrShape.accidentalFlat)
-                || (omrShape == OmrShape.accidentalDoubleFlat)
-                || (omrShape == OmrShape.accidentalFlatSmall)) {
+        if ((omrShape == OmrShape.keyFlat) //
+                || (omrShape == OmrShape.accidentalFlat)
+                || (omrShape == OmrShape.accidentalDoubleFlat)) {
             geoPitch += getAreaPitchOffset(Shape.FLAT);
         }
 

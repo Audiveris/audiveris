@@ -88,9 +88,6 @@ public class SymbolsBuilder
     /** Shape classifier to use. */
     private final Classifier classifier = ShapeClassifier.getInstance();
 
-    //    /** Shape second classifier to use. */
-    //    private final Classifier classifier2 = ShapeClassifier.getSecondInstance();
-    //
     /** Companion factory for symbols inters. */
     private final InterFactory factory;
 

@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.jaxb.refs;
 
+import org.junit.Ignore;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -30,6 +32,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @author Hervé Bitteur
  */
+@Ignore
 @XmlRootElement(name = "fruit")
 public abstract class Fruit
 {

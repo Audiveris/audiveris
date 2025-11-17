@@ -22,10 +22,7 @@
 package org.audiveris.omr.classifier;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omrdataset.api.OmrShape;
-import org.audiveris.omrdataset.api.OmrShapes;
-import static org.audiveris.omrdataset.api.OmrShapes.COMBO_MAP;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -113,21 +110,23 @@ public abstract class OmrShapeMapping
     {
         final Map<Shape, OmrShape> map = new EnumMap<>(Shape.class);
 
-        map.put(Shape.DAL_SEGNO, OmrShape.dalSegno);
-        map.put(Shape.DA_CAPO, OmrShape.daCapo);
+        map.put(Shape.BEAM, OmrShape.beam);
+        map.put(Shape.BEAM_HOOK, OmrShape.beam);
+        //        map.put(Shape.DAL_SEGNO, OmrShape.dalSegno);
+        //        map.put(Shape.DA_CAPO, OmrShape.daCapo);
         map.put(Shape.SEGNO, OmrShape.segno);
         map.put(Shape.CODA, OmrShape.coda);
         map.put(Shape.BREATH_MARK, OmrShape.breathMarkComma);
         map.put(Shape.CAESURA, OmrShape.caesura);
         map.put(Shape.G_CLEF, OmrShape.gClef);
-        map.put(Shape.G_CLEF_SMALL, OmrShape.gClefChange);
-        map.put(Shape.G_CLEF_8VA, OmrShape.gClef8va);
-        map.put(Shape.G_CLEF_8VB, OmrShape.gClef8vb);
+        //        map.put(Shape.G_CLEF_SMALL, OmrShape.gClef);
+        //        map.put(Shape.G_CLEF_8VA, OmrShape.gClef8va);
+        //        map.put(Shape.G_CLEF_8VB, OmrShape.gClef8vb);
         ///map.put(Shape.C_CLEF, OmrShape.cClef);
         map.put(Shape.F_CLEF, OmrShape.fClef);
-        map.put(Shape.F_CLEF_SMALL, OmrShape.fClefChange);
-        map.put(Shape.F_CLEF_8VA, OmrShape.fClef8va);
-        map.put(Shape.F_CLEF_8VB, OmrShape.fClef8vb);
+        //        map.put(Shape.F_CLEF_SMALL, OmrShape.fClefChange);
+        //        map.put(Shape.F_CLEF_8VA, OmrShape.fClef8va);
+        //        map.put(Shape.F_CLEF_8VB, OmrShape.fClef8vb);
         map.put(Shape.PERCUSSION_CLEF, OmrShape.unpitchedPercussionClef1);
         map.put(Shape.FLAT, OmrShape.accidentalFlat); // If not in key
         map.put(Shape.NATURAL, OmrShape.accidentalNatural); // If not in key
@@ -144,19 +143,19 @@ public abstract class OmrShapeMapping
         map.put(Shape.TIME_SEVEN, OmrShape.timeSig7);
         map.put(Shape.TIME_EIGHT, OmrShape.timeSig8);
         map.put(Shape.TIME_NINE, OmrShape.timeSig9);
-        map.put(Shape.TIME_TWELVE, OmrShape.timeSig12);
-        map.put(Shape.TIME_SIXTEEN, OmrShape.timeSig16);
+        //        map.put(Shape.TIME_TWELVE, OmrShape.timeSig12);
+        //        map.put(Shape.TIME_SIXTEEN, OmrShape.timeSig16);
         map.put(Shape.COMMON_TIME, OmrShape.timeSigCommon);
         map.put(Shape.CUT_TIME, OmrShape.timeSigCutCommon);
-        map.put(Shape.TIME_FOUR_FOUR, OmrShape.timeSig4over4);
-        map.put(Shape.TIME_TWO_TWO, OmrShape.timeSig2over2);
-        map.put(Shape.TIME_TWO_FOUR, OmrShape.timeSig2over4);
-        map.put(Shape.TIME_THREE_FOUR, OmrShape.timeSig3over4);
-        map.put(Shape.TIME_FIVE_FOUR, OmrShape.timeSig5over4);
-        map.put(Shape.TIME_SIX_FOUR, OmrShape.timeSig6over4);
-        map.put(Shape.TIME_THREE_EIGHT, OmrShape.timeSig3over8);
-        map.put(Shape.TIME_SIX_EIGHT, OmrShape.timeSig6over8);
-        map.put(Shape.TIME_TWELVE_EIGHT, OmrShape.timeSig12over8);
+        //        map.put(Shape.TIME_FOUR_FOUR, OmrShape.timeSig4over4);
+        //        map.put(Shape.TIME_TWO_TWO, OmrShape.timeSig2over2);
+        //        map.put(Shape.TIME_TWO_FOUR, OmrShape.timeSig2over4);
+        //        map.put(Shape.TIME_THREE_FOUR, OmrShape.timeSig3over4);
+        //        map.put(Shape.TIME_FIVE_FOUR, OmrShape.timeSig5over4);
+        //        map.put(Shape.TIME_SIX_FOUR, OmrShape.timeSig6over4);
+        //        map.put(Shape.TIME_THREE_EIGHT, OmrShape.timeSig3over8);
+        //        map.put(Shape.TIME_SIX_EIGHT, OmrShape.timeSig6over8);
+        //        map.put(Shape.TIME_TWELVE_EIGHT, OmrShape.timeSig12over8);
         //        map.put(Shape.OTTAVA_ALTA, OmrShape.ottavaAlta);
         //        map.put(Shape.OTTAVA_BASSA, OmrShape.ottavaBassaVb);
         map.put(Shape.LONG_REST, OmrShape.restLonga);
@@ -177,7 +176,7 @@ public abstract class OmrShapeMapping
         map.put(Shape.FLAG_3_DOWN, OmrShape.flag32ndDown);
         map.put(Shape.FLAG_4_DOWN, OmrShape.flag64thDown);
         map.put(Shape.FLAG_5_DOWN, OmrShape.flag128thDown);
-        map.put(Shape.SMALL_FLAG, OmrShape.flag8thUpSmall);
+        //        map.put(Shape.SMALL_FLAG, OmrShape.flag8thUpSmall);
         //        map.put(Shape.FLAG_SLASH_SMALL, OmrShape.none);
         map.put(Shape.BREVE, OmrShape.noteheadDoubleWhole);
         //        map.put(Shape.ACCENT, OmrShape.none); // articAccentAbove or articAccentBelow
@@ -186,17 +185,18 @@ public abstract class OmrShapeMapping
         //        map.put(Shape.MARCATO, OmrShape.none); // articMarcatoAbove or articMarcatoBelow
         //        map.put(Shape.STACCATO, OmrShape.none); // articStaccatoAbove or articStaccatoBelow
         map.put(Shape.ARPEGGIATO, OmrShape.arpeggiato);
-        map.put(Shape.DYNAMICS_P, OmrShape.dynamicPiano);
+        map.put(Shape.DYNAMICS_P, OmrShape.dynamicP);
         map.put(Shape.DYNAMICS_PP, OmrShape.dynamicPP);
         map.put(Shape.DYNAMICS_PPP, OmrShape.dynamicPPP);
         map.put(Shape.DYNAMICS_MP, OmrShape.dynamicMP);
-        map.put(Shape.DYNAMICS_F, OmrShape.dynamicForte);
+        map.put(Shape.DYNAMICS_F, OmrShape.dynamicF);
         map.put(Shape.DYNAMICS_FF, OmrShape.dynamicFF);
         map.put(Shape.DYNAMICS_FFF, OmrShape.dynamicFFF);
         map.put(Shape.DYNAMICS_MF, OmrShape.dynamicMF);
-        map.put(Shape.DYNAMICS_FP, OmrShape.dynamicFortePiano);
-        map.put(Shape.DYNAMICS_SF, OmrShape.dynamicSforzando1);
-        map.put(Shape.DYNAMICS_SFZ, OmrShape.dynamicSforzato);
+        map.put(Shape.DYNAMICS_FP, OmrShape.dynamicFP);
+        map.put(Shape.DYNAMICS_FZ, OmrShape.dynamicFZ);
+        map.put(Shape.DYNAMICS_SF, OmrShape.dynamicSF);
+        map.put(Shape.DYNAMICS_SFZ, OmrShape.dynamicSFZ);
         map.put(Shape.TR, OmrShape.ornamentTrill);
         map.put(Shape.TURN, OmrShape.ornamentTurn);
         map.put(Shape.TURN_INVERTED, OmrShape.ornamentTurnInverted);
@@ -206,6 +206,8 @@ public abstract class OmrShapeMapping
         map.put(Shape.MORDENT_INVERTED, OmrShape.ornamentMordentInverted);
         map.put(Shape.TUPLET_THREE, OmrShape.tuplet3);
         map.put(Shape.TUPLET_SIX, OmrShape.tuplet6);
+        map.put(Shape.BOW_DOWN, OmrShape.stringsDownBow);
+        map.put(Shape.BOW_UP, OmrShape.stringsUpBow);
         map.put(Shape.PEDAL_MARK, OmrShape.keyboardPedalPed);
         map.put(Shape.PEDAL_UP_MARK, OmrShape.keyboardPedalUp);
         map.put(Shape.DIGIT_0, OmrShape.fingering0);
@@ -230,19 +232,19 @@ public abstract class OmrShapeMapping
         map.put(Shape.PLUCK_I, OmrShape.fingeringILower);
         map.put(Shape.PLUCK_M, OmrShape.fingeringMLower);
         map.put(Shape.PLUCK_A, OmrShape.fingeringALower);
-        map.put(Shape.CLUTTER, OmrShape.none);
+        //        map.put(Shape.CLUTTER, OmrShape.none);
         //        map.put(Shape.TEXT, OmrShape.none);
         //        map.put(Shape.CHARACTER, OmrShape.none);
-        map.put(Shape.REPEAT_DOT, OmrShape.repeatDot);
+        //        map.put(Shape.REPEAT_DOT, OmrShape.repeatDot);
         map.put(Shape.AUGMENTATION_DOT, OmrShape.augmentationDot);
         map.put(Shape.WHOLE_REST, OmrShape.restWhole);
         map.put(Shape.HALF_REST, OmrShape.restHalf);
         map.put(Shape.NOTEHEAD_BLACK, OmrShape.noteheadBlack);
-        map.put(Shape.NOTEHEAD_BLACK_SMALL, OmrShape.noteheadBlackSmall);
+        //        map.put(Shape.NOTEHEAD_BLACK_SMALL, OmrShape.noteheadBlackSmall);
         map.put(Shape.NOTEHEAD_VOID, OmrShape.noteheadHalf);
-        map.put(Shape.NOTEHEAD_VOID_SMALL, OmrShape.noteheadHalfSmall);
+        //        map.put(Shape.NOTEHEAD_VOID_SMALL, OmrShape.noteheadHalfSmall);
         map.put(Shape.WHOLE_NOTE, OmrShape.noteheadWhole);
-        map.put(Shape.WHOLE_NOTE_SMALL, OmrShape.noteheadWholeSmall);
+        //        map.put(Shape.WHOLE_NOTE_SMALL, OmrShape.noteheadWholeSmall);
         //        map.put(Shape.BEAM, OmrShape.none);
         //        map.put(Shape.BEAM_SMALL, OmrShape.none);
         //        map.put(Shape.BEAM_HOOK, OmrShape.none);
@@ -266,19 +268,19 @@ public abstract class OmrShapeMapping
         //        map.put(Shape.THICK_CONNECTOR, OmrShape.none);
         //        map.put(Shape.BRACKET_CONNECTOR, OmrShape.none);
         map.put(Shape.DOUBLE_BARLINE, OmrShape.barlineDouble);
-        map.put(Shape.FINAL_BARLINE, OmrShape.barlineFinal);
-        map.put(Shape.REVERSE_FINAL_BARLINE, OmrShape.barlineReverseFinal);
+        //        map.put(Shape.FINAL_BARLINE, OmrShape.barlineFinal);
+        //        map.put(Shape.REVERSE_FINAL_BARLINE, OmrShape.barlineReverseFinal);
         map.put(Shape.LEFT_REPEAT_SIGN, OmrShape.repeatLeft);
         map.put(Shape.RIGHT_REPEAT_SIGN, OmrShape.repeatRight);
         map.put(Shape.BACK_TO_BACK_REPEAT_SIGN, OmrShape.repeatRightLeft);
         //        map.put(Shape.ENDING, OmrShape.none);
-        //        map.put(Shape.CRESCENDO, OmrShape.none);
-        //        map.put(Shape.DIMINUENDO, OmrShape.none);
+        map.put(Shape.CRESCENDO, OmrShape.dynamicCrescendoHairpin);
+        map.put(Shape.DIMINUENDO, OmrShape.dynamicDiminuendoHairpin);
         map.put(Shape.BRACE, OmrShape.brace);
-        //        map.put(Shape.BRACKET, OmrShape.none);
-        map.put(Shape.REPEAT_DOT_PAIR, OmrShape.repeatDots);
+        map.put(Shape.BRACKET, OmrShape.bracket);
+        //        map.put(Shape.REPEAT_DOT_PAIR, OmrShape.repeatDots);
         //map.put(Shape.NOISE, OmrShape.none);
-        map.put(Shape.LEDGER, OmrShape.legerLine);
+        map.put(Shape.LEDGER, OmrShape.ledgerLine);
         //        map.put(Shape.ENDING_HORIZONTAL, OmrShape.none);
         //        map.put(Shape.ENDING_VERTICAL, OmrShape.none);
         //        map.put(Shape.SEGMENT, OmrShape.none);
@@ -295,27 +297,27 @@ public abstract class OmrShapeMapping
         return map;
     }
 
-    /**
-     * Report the mapped OmrShape, if any, for a given TimePairInter.
-     *
-     * @param timePair the provided TimePairInter instance
-     * @return the corresponding OmrShape or null
-     */
-    public static OmrShape getTimeCombo (TimePairInter timePair)
-    {
-        int num = timePair.getNum().getValue();
-        int den = timePair.getDen().getValue();
-
-        for (Map.Entry<OmrShape, OmrShapes.NumDen> entry : COMBO_MAP.entrySet()) {
-            OmrShapes.NumDen nd = entry.getValue();
-
-            if ((nd.num == num) && (nd.den == den)) {
-                return entry.getKey();
-            }
-        }
-
-        return null;
-    }
+    //    /**
+    //     * Report the mapped OmrShape, if any, for a given TimePairInter.
+    //     *
+    //     * @param timePair the provided TimePairInter instance
+    //     * @return the corresponding OmrShape or null
+    //     */
+    //    public static OmrShape getTimeCombo (TimePairInter timePair)
+    //    {
+    //        int num = timePair.getNum().getValue();
+    //        int den = timePair.getDen().getValue();
+    //
+    //        for (Map.Entry<OmrShape, OmrShapes.NumDen> entry : COMBO_MAP.entrySet()) {
+    //            OmrShapes.NumDen nd = entry.getValue();
+    //
+    //            if ((nd.num == num) && (nd.den == den)) {
+    //                return entry.getKey();
+    //            }
+    //        }
+    //
+    //        return null;
+    //    }
 
     /**
      * Report the OmrShape that corresponds to the provided shape.

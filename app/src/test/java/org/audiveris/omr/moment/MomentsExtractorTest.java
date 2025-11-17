@@ -201,6 +201,7 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
     //----------//
     // Relation //
     //----------//
+    @Ignore
     private class Relation
     {
         final Shape from;
@@ -227,6 +228,7 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
     //----------------//
     // ShapeRelations //
     //----------------//
+    @Ignore
     private class ShapeRelations
     {
         final Shape shape;

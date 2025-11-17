@@ -58,6 +58,8 @@ public class FinaleJazzSymbols
             case AUGMENTATION_DOT -> ints(0xE044);
 
             case BACK_TO_BACK_REPEAT_SIGN -> ints(0xE042);
+            case BOW_DOWN -> ints(0xE610);
+            case BOW_UP -> ints(0xE612);
             ///case BRACE -> ints(0xE000);
             ///case BRACKET -> ints(0xE002);
             ///case BRACKET_LOWER_SERIF -> ints(0xE004);
@@ -91,11 +93,11 @@ public class FinaleJazzSymbols
             case DYNAMICS_F -> ints(0xE522);
             case DYNAMICS_FF -> ints(0xE52F);
             case DYNAMICS_FFF -> ints(0xE530);
-            //        case DYNAMICS_FZ -> ints(0xE535);
             //        case DYNAMICS_FFFF -> ints(0xE531);
             //        case DYNAMICS_FFFFF -> ints(0xE532);
             //        case DYNAMICS_FFFFFF -> ints(0xE533);
             case DYNAMICS_FP -> ints(0xE534);
+            case DYNAMICS_FZ -> ints(0xE535);
             case DYNAMICS_MF -> ints(0xE52D);
             case DYNAMICS_MP -> ints(0xE52C);
             case DYNAMICS_P -> ints(0xE520);

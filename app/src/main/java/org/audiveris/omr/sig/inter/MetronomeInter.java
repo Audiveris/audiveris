@@ -1146,10 +1146,12 @@ public class MetronomeInter
                 }
 
                 // Stuff after note?
-                final String content = word.getValue();
-                final int nextIndex = ctx.charIndex + ctx.charCount;
-                if (content.length() > nextIndex) {
-                    created.add(extractText(glyphIndex, word, nextIndex, content.length()));
+                if (ctx.charCount != null) {
+                    final int nextIndex = ctx.charIndex + ctx.charCount;
+                    final String content = word.getValue();
+                    if (content.length() > nextIndex) {
+                        created.add(extractText(glyphIndex, word, nextIndex, content.length()));
+                    }
                 }
             } else { // This is just a plain word
                 final WordInter wi = new WordInter(word);

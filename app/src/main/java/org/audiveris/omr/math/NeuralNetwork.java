@@ -84,6 +84,10 @@ public class NeuralNetwork
     @XmlAttribute(name = "output-size")
     private final int outputSize;
 
+    /** Total count of epochs run so far. */
+    @XmlAttribute(name = "epochs-total")
+    private int epochsTotal = 0;
+
     /** Labels of input cells. */
     @XmlElement(name = "input-labels")
     private final StringArray inputLabels;
@@ -240,6 +244,7 @@ public class NeuralNetwork
         sb.append(String.format("LearningRate = %f%n", learningRate));
         sb.append(String.format("Momentum     = %f%n", momentum));
         sb.append(String.format("Epochs       = %d%n", epochs));
+        sb.append(String.format("EpochsCount  = %d%n", epochsTotal));
 
         // Input
         sb.append(String.format("%nInputs  : %d cells%n", inputSize));
@@ -320,6 +325,19 @@ public class NeuralNetwork
 
             ///outs[o] = relu(sum);
         }
+    }
+
+    //----------------//
+    // getEpochsTotal //
+    //----------------//
+    /**
+     * Report the total number of epochs already run.
+     *
+     * @return the total number of epochs
+     */
+    public int getEpochsTotal ()
+    {
+        return epochsTotal;
     }
 
     //---------------//
@@ -583,67 +601,127 @@ public class NeuralNetwork
                        TrainingMonitor listener,
                        int iterPeriod)
     {
-        stopping=false;
+        stopping = false;
 
-        Objects.requireNonNull(inputs,"inputs array is null");Objects.requireNonNull(desiredOutputs,"desiredOutputs array is null");logger.info("Network is being trained on {} epochs...",epochs);
+        Objects.requireNonNull(inputs, "inputs array is null");
+        Objects.requireNonNull(desiredOutputs, "desiredOutputs array is null");
+        logger.info("Network is being trained on {} epochs...", epochs);
 
-        final int patterns=inputs.length;final long startTime=System.currentTimeMillis();
+        final int patterns = inputs.length;
+        final long startTime = System.currentTimeMillis();
 
         // Allocate needed arrays
-        final double[]gottenOutputs=new double[outputSize];final double[]hiddenGrads=new double[hiddenSize];final double[]outputGrads=new double[outputSize];final double[][]hiddenDeltas=createMatrix(hiddenSize,inputSize+1,0);final double[][]outputDeltas=createMatrix(outputSize,hiddenSize+1,0);final double[]hiddens=new double[hiddenSize];int iter=0;
+        final double[] gottenOutputs = new double[outputSize];
+        final double[] hiddenGrads = new double[hiddenSize];
+        final double[] outputGrads = new double[outputSize];
+        final double[][] hiddenDeltas = createMatrix(hiddenSize, inputSize + 1, 0);
+        final double[][] outputDeltas = createMatrix(outputSize, hiddenSize + 1, 0);
+        final double[] hiddens = new double[hiddenSize];
+        int iter = 0;
 
-        for(int ie=1;ie<=epochs;ie++){iter++; // For this old engine, iter = epoch
+        for (int ie = 1; ie <= epochs; ie++) {
+            iter++; // For this old engine, iter = epoch
+            epochsTotal++;
 
-        if(listener!=null){listener.epochStarted(ie);}
+            if (listener != null) {
+                listener.epochStarted(ie);
+            }
 
-        // Loop on all input patterns
-        for(int ip=0;ip<patterns;ip++){
-        // Run the network with input values and current weights
-        run(inputs[ip],hiddens,gottenOutputs);
+            // Loop on all input patterns
+            for (int ip = 0; ip < patterns; ip++) {
+                // Run the network with input values and current weights
+                run(inputs[ip], hiddens, gottenOutputs);
 
-        // Compute the output layer error terms
-        for(int io=outputSize-1;io>=0;io--){double out=gottenOutputs[io];double dif=desiredOutputs[ip][io]-out;
-        ///outputGrads[io] = dif * out * (1 - out); // Sigmoid'
-        outputGrads[io]=dif*sigmoidDif(out); // Sigmoid'
-        ///outputGrads[io] = dif * reluDif(out); // ReLU'
+                // Compute the output layer error terms
+                for (int io = outputSize - 1; io >= 0; io--) {
+                    double out = gottenOutputs[io];
+                    double dif = desiredOutputs[ip][io] - out;
+                    ///outputGrads[io] = dif * out * (1 - out); // Sigmoid'
+                    outputGrads[io] = dif * sigmoidDif(out); // Sigmoid'
+                    ///outputGrads[io] = dif * reluDif(out); // ReLU'
+                }
+
+                // Compute the hidden layer error terms
+                for (int ih = hiddenSize - 1; ih >= 0; ih--) {
+                    double sum = 0;
+                    double hid = hiddens[ih];
+
+                    for (int o = outputSize - 1; o >= 0; o--) {
+                        sum += (outputGrads[o] * outputWeights[o][ih + 1]);
+                    }
+
+                    ///hiddenGrads[h] = sum * hid * (1 - hid); // Sigmoid'
+                    hiddenGrads[ih] = sum * sigmoidDif(hid); // Sigmoid'
+                    ///hiddenGrads[h] = sum * reluDif(hid); // ReLU'
+                }
+
+                // Update the output weights
+                for (int io = outputSize - 1; io >= 0; io--) {
+                    for (int ih = hiddenSize - 1; ih >= 0; ih--) {
+                        double dw = (learningRate * outputGrads[io] * hiddens[ih]) + (momentum
+                                * outputDeltas[io][ih + 1]);
+                        outputWeights[io][ih + 1] += dw;
+                        outputDeltas[io][ih + 1] = dw;
+                    }
+
+                    // Bias
+                    double dw = (learningRate * outputGrads[io]) + (momentum * outputDeltas[io][0]);
+                    outputWeights[io][0] += dw;
+                    outputDeltas[io][0] = dw;
+                }
+
+                // Update the hidden weights
+                for (int ih = hiddenSize - 1; ih >= 0; ih--) {
+                    for (int i = inputSize - 1; i >= 0; i--) {
+                        double dw = (learningRate * hiddenGrads[ih] * inputs[ip][i]) + (momentum
+                                * hiddenDeltas[ih][i + 1]);
+                        hiddenWeights[ih][i + 1] += dw;
+                        hiddenDeltas[ih][i + 1] = dw;
+                    }
+
+                    // Bias
+                    double dw = (learningRate * hiddenGrads[ih]) + (momentum * hiddenDeltas[ih][0]);
+                    hiddenWeights[ih][0] += dw;
+                    hiddenDeltas[ih][0] = dw;
+                }
+            }
+
+            if (listener != null) {
+                if ((iter % iterPeriod) == 0) {
+                    double mse = 0d; // Mean Squared Error
+
+                    for (int ip = 0; ip < patterns; ip++) {
+                        final double[] patternDesiredOutputs = desiredOutputs[ip];
+                        run(inputs[ip], hiddens, gottenOutputs);
+
+                        for (int o = outputSize - 1; o >= 0; o--) {
+                            double out = gottenOutputs[o];
+                            double dif = patternDesiredOutputs[o] - out;
+                            mse += (dif * dif);
+                        }
+                    }
+
+                    mse /= patterns;
+                    listener.iterationPeriodDone(epochsTotal, iter, mse);
+                }
+            }
+
+            // Stop required?
+            if (stopping) {
+                logger.info("Stopping.");
+
+                break;
+            }
         }
 
-        // Compute the hidden layer error terms
-        for(int ih=hiddenSize-1;ih>=0;ih--){double sum=0;double hid=hiddens[ih];
-
-        for(int o=outputSize-1;o>=0;o--){sum+=(outputGrads[o]*outputWeights[o][ih+1]);}
-
-        ///hiddenGrads[h] = sum * hid * (1 - hid); // Sigmoid'
-        hiddenGrads[ih]=sum*sigmoidDif(hid); // Sigmoid'
-        ///hiddenGrads[h] = sum * reluDif(hid); // ReLU'
-        }
-
-        // Update the output weights
-        for(int io=outputSize-1;io>=0;io--){for(int ih=hiddenSize-1;ih>=0;ih--){double dw=(learningRate*outputGrads[io]*hiddens[ih])+(momentum*outputDeltas[io][ih+1]);outputWeights[io][ih+1]+=dw;outputDeltas[io][ih+1]=dw;}
-
-        // Bias
-        double dw=(learningRate*outputGrads[io])+(momentum*outputDeltas[io][0]);outputWeights[io][0]+=dw;outputDeltas[io][0]=dw;}
-
-        // Update the hidden weights
-        for(int ih=hiddenSize-1;ih>=0;ih--){for(int i=inputSize-1;i>=0;i--){double dw=(learningRate*hiddenGrads[ih]*inputs[ip][i])+(momentum*hiddenDeltas[ih][i+1]);hiddenWeights[ih][i+1]+=dw;hiddenDeltas[ih][i+1]=dw;}
-
-        // Bias
-        double dw=(learningRate*hiddenGrads[ih])+(momentum*hiddenDeltas[ih][0]);hiddenWeights[ih][0]+=dw;hiddenDeltas[ih][0]=dw;}}
-
-        if(listener!=null){if((iter%iterPeriod)==0){double mse=0d; // Mean Squared Error
-
-        for(int ip=0;ip<patterns;ip++){final double[]patternDesiredOutputs=desiredOutputs[ip];run(inputs[ip],hiddens,gottenOutputs);
-
-        for(int o=outputSize-1;o>=0;o--){double out=gottenOutputs[o];double dif=patternDesiredOutputs[o]-out;mse+=(dif*dif);}}
-
-        mse/=patterns;listener.iterationPeriodDone(iter,mse);}}
-
-        // Stop required?
-        if(stopping){logger.info("Stopping.");
-
-        break;}}
-
-        final long dur=System.currentTimeMillis()-startTime;logger.info(String.format("Duration %,d seconds, %d iterations on %d patterns",dur/1_000,epochs,patterns));stopping=false;
+        final long dur = System.currentTimeMillis() - startTime;
+        logger.info(
+                String.format(
+                        "Duration %,d seconds, %d iterations on %d patterns",
+                        dur / 1000,
+                        epochs,
+                        patterns));
+        stopping = false;
     }
 
     //~ Static Methods -----------------------------------------------------------------------------

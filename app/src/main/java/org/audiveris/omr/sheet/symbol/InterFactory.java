@@ -25,6 +25,8 @@ import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
+import static org.audiveris.omr.glyph.Shape.BOW_DOWN;
+import static org.audiveris.omr.glyph.Shape.BOW_UP;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Sheet;
@@ -46,6 +48,7 @@ import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.BeatUnitInter;
+import org.audiveris.omr.sig.inter.BowInter;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.BracketInter;
 import org.audiveris.omr.sig.inter.BreathMarkInter;
@@ -442,6 +445,7 @@ public class InterFactory
             case DYNAMICS_FFF:
             case DYNAMICS_MF:
             case DYNAMICS_FP:
+            case DYNAMICS_FZ:
             case DYNAMICS_SF:
             case DYNAMICS_SFZ:
                 return new DynamicsInter(glyph, shape, grade);
@@ -493,6 +497,11 @@ public class InterFactory
             // Plucked techniques
             case ARPEGGIATO:
                 return ArpeggiatoInter.createValidAdded(glyph, grade, system, systemHeadChords);
+
+            // Strings techniques
+            case BOW_DOWN:
+            case BOW_UP:
+                return BowInter.createValidAdded(glyph, shape, grade, system, systemHeadChords);
 
             // Keyboards
             case PEDAL_MARK:
@@ -650,13 +659,19 @@ public class InterFactory
             }
         }
 
+        // Sort by decreasing length, then decreasing grade
         Collections.sort(
                 complexes,
                 (d1,
-                 d2) -> Integer.compare(
-                         d2.getSymbolString().length(),
-                         d1.getSymbolString().length()) // Sort by decreasing length
-        );
+                 d2) -> {
+                    final int lgComp = Integer.compare(
+                            d2.getSymbolString().length(),
+                            d1.getSymbolString().length());
+                    if (lgComp != 0) {
+                        return lgComp;
+                    }
+                    return Double.compare(d2.getGrade(), d1.getGrade());
+                });
 
         for (DynamicsInter complex : complexes) {
             complex.swallowShorterDynamics(dynamics);
@@ -1081,6 +1096,7 @@ public class InterFactory
             case DYNAMICS_FFF:
             case DYNAMICS_MF:
             case DYNAMICS_FP:
+            case DYNAMICS_FZ:
             case DYNAMICS_SF:
             case DYNAMICS_SFZ:
                 return new DynamicsInter(null, shape, GRADE); // No visit
@@ -1128,6 +1144,11 @@ public class InterFactory
             // Plucked techniques
             case ARPEGGIATO:
                 return new ArpeggiatoInter(null, GRADE);
+
+            // Strings techniques
+            case BOW_DOWN:
+            case BOW_UP:
+                return new BowInter(null, shape, GRADE); // No visit
 
             // Keyboards
             case PEDAL_MARK:

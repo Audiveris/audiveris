@@ -104,13 +104,13 @@ class TrainingPanel
             "Maximum number of epochs to perform");
 
     /** Output for number of epochs performed so far. */
-    private final LLabel epochIndex = new LLabel("Epoch:", "Current epoch");
+    private final LLabel epochsTotal = new LLabel("Total:", "Total epochs so far");
 
     /** Output for number of iterations performed so far. */
-    private final LLabel iterIndex = new LLabel("Iteration:", "Iterations performed so far");
+    private final LLabel epochIndex = new LLabel("Epoch:", "Current epoch");
 
     /** Output for score on last iteration. */
-    private final LLabel trainScore = new LLabel("Score:", "Score on last iteration");
+    private final LLabel trainScore = new LLabel("Score:", "Score on last epoch");
 
     /** Current epoch. */
     private int epoch;
@@ -149,6 +149,8 @@ class TrainingPanel
 
         displayParams();
         inputParams();
+
+        display(task.classifier.getEpochsTotal(), 0, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -256,8 +258,8 @@ class TrainingPanel
         builder.addRaw(maxEpochs.getLabel()).xy(5, r);
         builder.addRaw(maxEpochs.getField()).xy(7, r);
 
-        builder.addRaw(epochIndex.getLabel()).xy(9, r);
-        builder.addRaw(epochIndex.getField()).xy(11, r);
+        builder.addRaw(epochsTotal.getLabel()).xy(9, r);
+        builder.addRaw(epochsTotal.getField()).xy(11, r);
 
         r += 2; // ----------------------------
 
@@ -265,26 +267,29 @@ class TrainingPanel
 
         builder.addRaw(new JButton(trainAction)).xy(3, r);
 
-        builder.addRaw(iterIndex.getLabel()).xy(5, r);
-        builder.addRaw(iterIndex.getField()).xy(7, r);
+        builder.addRaw(epochIndex.getLabel()).xy(5, r);
+        builder.addRaw(epochIndex.getField()).xy(7, r);
 
         builder.addRaw(trainScore.getLabel()).xy(9, r);
         builder.addRaw(trainScore.getField()).xy(11, r);
     }
 
-    private void display (final int epoch,
-                          final int iter,
-                          final double score)
+    //---------//
+    // display //
+    //---------//
+    private void display (final int total,
+                          final int epoch,
+                          final Double score)
     {
         // This part is run on swing thread
         SwingUtilities.invokeLater( () -> {
             // Update current values
+            epochsTotal.setText(Integer.toString(total));
             epochIndex.setText(Integer.toString(epoch));
-            iterIndex.setText(Integer.toString(iter));
-            trainScore.setText(String.format("%.4f", score));
+            trainScore.setText(score != null ? String.format("%.4f", score) : "");
 
             // Update progress bar
-            progressBar.setValue(iter);
+            progressBar.setValue(epoch);
 
             component.repaint();
         });
@@ -354,11 +359,12 @@ class TrainingPanel
     //        }
     //
     @Override
-    public void iterationPeriodDone (int iter,
+    public void iterationPeriodDone (int total,
+                                     int epoch,
                                      double score)
     {
-        logger.info(String.format("iteration:%4d score: %.5f", iter, score));
-        display(epoch, iter, score);
+        logger.info(String.format("epochsTotal:%4d epoch:%4d score: %.5f", total, epoch, score));
+        display(total, epoch, score);
     }
 
     //----------------//
@@ -388,7 +394,7 @@ class TrainingPanel
     {
         private final Constant.Integer listenerPeriod = new Constant.Integer(
                 "period",
-                50,
+                10,
                 "Period (in iterations) between listener calls");
     }
 
@@ -422,6 +428,7 @@ class TrainingPanel
 
             if (answer == JOptionPane.YES_OPTION) {
                 task.classifier.reset();
+                display(0, 0, null);
             }
         }
     }

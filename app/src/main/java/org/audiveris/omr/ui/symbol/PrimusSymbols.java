@@ -49,6 +49,8 @@ public class PrimusSymbols
             case AUGMENTATION_DOT -> ints(0xF05A);
 
             //            case BACK_TO_BACK_REPEAT_SIGN -> ints(0xE042);
+            case BOW_DOWN -> ints(0xF0C5);
+            case BOW_UP -> ints(0xF0C4);
             //            case BRACE -> ints(0xE000);
             //            case BRACKET -> ints(0xE002);
             //            case BRACKET_LOWER_SERIF -> ints(0xE004);
@@ -85,8 +87,8 @@ public class PrimusSymbols
             //        case DYNAMICS_FFFF -> ints(0xE531);
             //        case DYNAMICS_FFFFF -> ints(0xE532);
             //        case DYNAMICS_FFFFFF -> ints(0xE533);
-            //        case DYNAMICS_FZ -> ints(0xE535);
             case DYNAMICS_FP -> ints(0xF069);
+            case DYNAMICS_FZ -> ints(0xF065);
             case DYNAMICS_MF -> ints(0xF05B);
             case DYNAMICS_MP -> ints(0xF060);
             case DYNAMICS_P -> ints(0xF061);

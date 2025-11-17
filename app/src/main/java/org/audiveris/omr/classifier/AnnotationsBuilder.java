@@ -25,19 +25,24 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.AbstractNumberInter;
+import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
-import org.audiveris.omr.sig.inter.BeamHookInter;
-import org.audiveris.omr.sig.inter.BeamInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.BracketConnectorInter;
 import org.audiveris.omr.sig.inter.BracketInter;
+import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -48,19 +53,28 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
-import org.audiveris.omr.sig.inter.SegmentInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
-import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
+import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
+import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.SlurHeadRelation;
+import org.audiveris.omr.ui.symbol.KeyCancelSymbol;
+import org.audiveris.omr.ui.symbol.KeySharpSymbol;
+import org.audiveris.omr.ui.symbol.KeySymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omrdataset.api.OmrShape;
 import org.audiveris.omrdataset.api.SheetAnnotations;
 import org.audiveris.omrdataset.api.SheetAnnotations.SheetInfo;
@@ -71,6 +85,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -101,21 +116,15 @@ public class AnnotationsBuilder
     static {
         excludedInterClasses.add(AbstractChordInter.class);
         excludedInterClasses.add(BarConnectorInter.class);
-        excludedInterClasses.add(BeamInter.class);
-        excludedInterClasses.add(BeamHookInter.class); // TODO: should be defined in OmrShape?
+        excludedInterClasses.add(BeamGroupInter.class);
         excludedInterClasses.add(BracketConnectorInter.class);
         excludedInterClasses.add(BracketInter.class); // TODO: should be defined in OmrShape?
         excludedInterClasses.add(EndingInter.class);
-        excludedInterClasses.add(KeyInter.class);
+        //excludedInterClasses.add(KeyInter.class);
         excludedInterClasses.add(RepeatDotInter.class); // Processed via BarlineInter
-        excludedInterClasses.add(SegmentInter.class);
         excludedInterClasses.add(SentenceInter.class);
-        excludedInterClasses.add(SlurInter.class);
-        excludedInterClasses.add(SmallBeamInter.class);
         excludedInterClasses.add(StaffBarlineInter.class);
-        ///excludedInterClasses.add(StemInter.class);
         excludedInterClasses.add(TimeNumberInter.class); // Processed via TimePairInter
-        excludedInterClasses.add(WedgeInter.class);
         excludedInterClasses.add(WordInter.class);
     }
 
@@ -221,16 +230,15 @@ public class AnnotationsBuilder
         }
 
         /**
-         * Export a barline group, including repeat dots if any.
+         * Export a barline group.
          * <p>
          * We export something only when called on the first barline within the group.
-         * We build the whole group, including repeat dots.
          *
          * @param bar a barline
          */
         private void exportBarlineGroup (BarlineInter bar)
         {
-            SortedSet<Inter> items = bar.getGroupItems();
+            final SortedSet<Inter> items = bar.getGroupItems();
 
             // Make sure first barline is ours
             for (Inter item : items) {
@@ -264,20 +272,26 @@ public class AnnotationsBuilder
                                     item.getBounds()));
                 }
 
-                // Determine the outer shape
-                OmrShape oShape = getBarGroupShape(items);
-                SymbolInfo outer = new SymbolInfo(
-                        oShape,
-                        interline,
-                        null,
-                        null,
-                        Inters.getBounds(items));
+                // Determine the outer shape, if any
+                final OmrShape oShape = getBarGroupShape(items);
+                if (oShape != null) {
+                    SymbolInfo outer = new SymbolInfo(
+                            oShape,
+                            interline,
+                            null,
+                            null,
+                            Inters.getBounds(items));
 
-                for (SymbolInfo inner : inners) {
-                    outer.addInnerSymbol(inner);
+                    for (SymbolInfo inner : inners) {
+                        outer.addInnerSymbol(inner);
+                    }
+
+                    annotations.addSymbol(outer);
+                } else {
+                    for (SymbolInfo inner : inners) {
+                        annotations.addSymbol(inner);
+                    }
                 }
-
-                annotations.addSymbol(outer);
             }
         }
 
@@ -301,25 +315,36 @@ public class AnnotationsBuilder
                 return;
             }
 
-            Shape interShape = inter.getShape();
-            Rectangle interBounds = inter.getBounds();
+            final Shape interShape = inter.getShape();
+            final Rectangle interBounds = inter.getBounds();
             Staff staff = inter.getStaff();
-            OmrShape omrShape;
+            final OmrShape omrShape;
 
             // Specific classes
-            if (inter instanceof TimePairInter) {
-                exportTimePair((TimePairInter) inter);
+            if (inter instanceof KeyInter key) {
+                if (key.isManual()) {
+                    exportManualKey(key); // Export individual symbols
+                }
 
                 return;
-            } else if (inter instanceof BarlineInter) {
-                exportBarlineGroup((BarlineInter) inter);
+            } else if (inter instanceof AbstractTimeInter time) {
+                exportTime(time);
 
                 return;
-            } else if (inter instanceof KeyAlterInter) {
-                omrShape = getOmrShape((KeyAlterInter) inter);
-            } else if (inter instanceof ArticulationInter) {
-                omrShape = getOmrShape((ArticulationInter) inter);
+            } else if (inter instanceof BarlineInter barline) {
+                exportBarlineGroup(barline);
+
+                return;
+            } else if (inter instanceof KeyAlterInter key) {
+                omrShape = getOmrShape(key);
+            } else if (inter instanceof ArticulationInter artic) {
+                omrShape = getOmrShape(artic);
+            } else if (inter instanceof ClefInter clef) {
+                omrShape = getOmrShape(clef);
+            } else if (inter instanceof SlurInter slur) {
+                omrShape = slur.isTie() ? OmrShape.tie : OmrShape.slur;
             } else {
+                // Standard case
                 omrShape = OmrShapeMapping.omrShapeOf(interShape);
 
                 if (omrShape == null) {
@@ -336,23 +361,50 @@ public class AnnotationsBuilder
                 }
             }
 
-            if (staff == null) {
-                if (inter instanceof BraceInter) {
-                    // Simply pick up the first staff embraced by this brace
-                    staff = ((BraceInter) inter).getFirstStaff();
-                } else if (inter instanceof StemInter) {
-                    // Use staff of first head found
-                    staff = getStemStaff((StemInter) inter);
-                } else if (inter instanceof PedalInter) {
-                    // Use bottom staff of related chord if any
-                    staff = getPedalStaff((PedalInter) inter);
-                }
-            }
-
             if (omrShape == null) {
                 logger.warn("{} has no OmrShape, ignored.", inter);
 
                 return;
+            }
+
+            if (staff == null) {
+                if (inter instanceof BraceInter brace) {
+                    // Simply pick up the first staff embraced by this brace
+                    staff = brace.getFirstStaff();
+                } else if (inter instanceof StemInter stem) {
+                    // Use staff of first head found
+                    staff = getStemStaff(stem);
+                } else if (inter instanceof PedalInter pedal) {
+                    // Use bottom staff of related chord if any
+                    staff = getPedalStaff(pedal);
+                } else if (inter instanceof AbstractBeamInter) {
+                    // Use a related stem
+                    for (Relation rel : sig.getRelations(inter, BeamStemRelation.class)) {
+                        final StemInter stem = (StemInter) sig.getOppositeInter(inter, rel);
+                        staff = stem.getStaff();
+                        if (staff != null) {
+                            break;
+                        }
+                    }
+                } else if (inter instanceof SlurInter slur) {
+                    // Use a related head
+                    for (Relation rel : sig.getRelations(slur, SlurHeadRelation.class)) {
+                        final HeadInter head = (HeadInter) sig.getOppositeInter(slur, rel);
+                        staff = head.getStaff();
+                        if (staff != null) {
+                            break;
+                        }
+                    }
+                } else if (inter instanceof WedgeInter wedge) {
+                    // Use a related chord
+                    for (Relation rel : sig.getRelations(wedge, ChordWedgeRelation.class)) {
+                        final Inter chord = sig.getOppositeInter(wedge, rel);
+                        staff = chord.getStaff();
+                        if (staff != null) {
+                            break;
+                        }
+                    }
+                }
             }
 
             if (staff == null) {
@@ -367,54 +419,127 @@ public class AnnotationsBuilder
         }
 
         /**
-         * Export a TimePairInter (time signature defined as a pair num/den).
+         * Export a manual key (for which there are no individual inters).
+         * <p>
+         * We need to compute the bounding box for each individual symbol.
+         *
+         * @param key the manual key inter
+         */
+        private void exportManualKey (KeyInter key)
+        {
+            final int id = key.getId();
+            final int interline = key.getStaff().getSpecificInterline();
+            final MusicFamily family = sheet.getStub().getMusicFamily();
+            final int pointSize = OmrFont.getPointSize(interline);
+            final MusicFont font = MusicFont.getMusicFont(family, pointSize);
+
+            final KeySymbol symbol = (KeySymbol) key.getSymbolToDraw(font);
+            final OmrShape oShape = (symbol instanceof KeyCancelSymbol) //
+                    ? OmrShape.keyNatural
+                    : (symbol instanceof KeySharpSymbol) //
+                            ? OmrShape.keySharp
+                            : OmrShape.keyFlat;
+            final int fifths = symbol.fifths; // Different from key fifths for the cancel key!
+            final KeySymbol.MyParams p = symbol.getParams(font);
+
+            // Set loc to (x = left side, y = mid line)
+            final Point2D loc = key.getCenter2D();
+            PointUtil.add(
+                    loc,
+                    -p.rect.getWidth() / 2,
+                    -KeyInter.getStandardPosition(fifths) * p.stepDy);
+
+            final int sign = Integer.signum(fifths);
+            for (int k = 1; k <= (fifths * sign); k++) {
+                final int pitch = KeyInter.getItemPitch(k * sign, null);
+                final Rectangle box = new Rectangle(
+                        (int) Math.rint(loc.getX() + ((k - 1) * p.itemDx)),
+                        (int) Math.rint(loc.getY() + (pitch * p.stepDy) - p.itemRect.height / 2.0),
+                        p.itemRect.width,
+                        p.itemRect.height);
+                annotations.addSymbol(new SymbolInfo(oShape, interline, id, null, box));
+            }
+        }
+
+        /**
+         * Export a TimeSignature.
          * <p>
          * It the pair is known as a predefined combo, we generate one outer symbol (the pair) with
          * two inner symbols (num & den).
          * Otherwise, we simply generate two stand-alone symbols (num & den).
          *
-         * @param pair the inter to process
+         * @param time the inter to process
          */
-        private void exportTimePair (TimePairInter pair)
+        private void exportTime (AbstractTimeInter time)
         {
-            final int interline = pair.getStaff().getSpecificInterline();
-            final List<SymbolInfo> inners = new ArrayList<>();
+            final int interline = time.getStaff().getSpecificInterline();
 
-            for (Inter inter : pair.getMembers()) {
-                OmrShape oShape = OmrShapeMapping.omrShapeOf(inter.getShape());
+            if (time instanceof TimePairInter pair) {
+                for (Inter inter : pair.getMembers()) {
+                    final Integer val = TimeNumberInter.valueOf(inter.getShape());
+                    exportTimeNumber(val, inter.getBounds(), interline, inter.getId());
+                }
+            } else if (time instanceof TimeCustomInter custom) {
+                final Rectangle wBox = custom.getSymbolBounds(interline);
+
+                final Rectangle half = new Rectangle(wBox.x, wBox.y, wBox.width, wBox.height / 2);
+                exportTimeNumber(custom.getNumerator(), half, interline, custom.getId());
+
+                half.translate(0, half.height);
+                exportTimeNumber(custom.getDenominator(), half, interline, custom.getId());
+            } else if (time instanceof TimeWholeInter whole) {
+                final int id = whole.getId();
+                final Rectangle wBox = whole.getBounds();
+                final OmrShape oShape = OmrShapeMapping.omrShapeOf(whole.getShape());
 
                 if (oShape != null) {
-                    inners.add(
-                            new SymbolInfo(
-                                    oShape,
-                                    interline,
-                                    inter.getId(),
-                                    null,
-                                    inter.getBounds()));
+                    // COMMON_TIME, CUT_TIME
+                    annotations.addSymbol(new SymbolInfo(oShape, interline, id, null, wBox));
+                } else {
+                    // TIME_FOUR_FOUR, TIME_TWELVE_EIGHT, etc ...
+                    final TimeRational rat = AbstractTimeInter.rationalOf(whole.getShape());
+                    Rectangle half = new Rectangle(wBox.x, wBox.y, wBox.width, wBox.height / 2);
+                    exportTimeNumber(rat.num, half, interline, id);
+
+                    half.translate(0, half.height);
+                    exportTimeNumber(rat.den, half, interline, id);
                 }
-            }
-
-            final OmrShape pairShape = OmrShapeMapping.getTimeCombo(pair);
-
-            if (pairShape != null) {
-                SymbolInfo outer = new SymbolInfo(
-                        pairShape,
-                        interline,
-                        pair.getId(),
-                        null,
-                        pair.getBounds());
-
-                for (SymbolInfo inner : inners) {
-                    outer.addInnerSymbol(inner);
-                }
-
-                annotations.addSymbol(outer);
             } else {
-                logger.info("{} is not a predefined time combo.", pair);
+                logger.error("Unsupported time object: " + time);
+            }
+        }
 
-                for (SymbolInfo inner : inners) {
-                    annotations.addSymbol(inner);
-                }
+        /**
+         * Export a numeric time value.
+         *
+         * @param val       time value between 1 and 99
+         * @param box       symbol bounds
+         * @param interline related staff interline
+         * @param id        relevant inter ID
+         */
+        private void exportTimeNumber (int val,
+                                       Rectangle box,
+                                       int interline,
+                                       int id)
+        {
+            if (val <= 9) {
+                // Export 1 digit
+                final Shape shape = AbstractNumberInter.shapeOf(val);
+                final OmrShape oShape = OmrShapeMapping.omrShapeOf(shape);
+                annotations.addSymbol(new SymbolInfo(oShape, interline, id, null, box));
+            } else {
+                // Export 2 digits
+                final Rectangle half = new Rectangle(box.x, box.y, box.width / 2, box.height);
+                final int dec = val / 10;
+                Shape shape = AbstractNumberInter.shapeOf(dec);
+                OmrShape oShape = OmrShapeMapping.omrShapeOf(shape);
+                annotations.addSymbol(new SymbolInfo(oShape, interline, id, null, half));
+
+                half.translate(half.width, 0);
+                final int unit = val % 10;
+                shape = AbstractNumberInter.shapeOf(unit);
+                oShape = OmrShapeMapping.omrShapeOf(shape);
+                annotations.addSymbol(new SymbolInfo(oShape, interline, id, null, half));
             }
         }
 
@@ -422,7 +547,7 @@ public class AnnotationsBuilder
          * Determine the proper OmrShape for the provided bar group.
          *
          * @param items inters that compose the barline group (perhaps including dots)
-         * @return the corresponding OmrShape
+         * @return the corresponding OmrShape if any, null otherwise
          */
         private OmrShape getBarGroupShape (SortedSet<Inter> items)
         {
@@ -444,14 +569,15 @@ public class AnnotationsBuilder
                     final Shape lastShape = last.getShape();
 
                     if (firstShape == Shape.THICK_BARLINE) {
-                        if (lastShape == Shape.THICK_BARLINE) {
-                            return OmrShape.barlineHeavyHeavy;
-                        } else {
-                            return OmrShape.barlineReverseFinal;
-                        }
+                        return null;
+                        //                        if (lastShape == Shape.THICK_BARLINE) {
+                        //                            return OmrShape.barlineHeavyHeavy;
+                        //                        } else {
+                        //                            return OmrShape.barlineReverseFinal;
+                        //                        }
                     } else {
                         if (lastShape == Shape.THICK_BARLINE) {
-                            return OmrShape.barlineFinal;
+                            return null; // OmrShape.barlineFinal;
                         } else {
                             return OmrShape.barlineDouble;
                         }
@@ -509,7 +635,25 @@ public class AnnotationsBuilder
                         : OmrShape.articMarcatoBelow;
                 default -> null;
             };
+        }
 
+        /**
+         * Report the OmrShape for a given ClefInter.
+         *
+         * @param inter the provided ClefInter
+         * @return the proper OmrShape value
+         */
+        private OmrShape getOmrShape (ClefInter inter)
+        {
+            return switch (inter.getShape()) {
+                case G_CLEF, G_CLEF_SMALL, G_CLEF_8VA, G_CLEF_8VB -> OmrShape.gClef;
+                case C_CLEF -> inter.getIntegerPitch() == 0 //
+                        ? OmrShape.cClefAlto
+                        : OmrShape.cClefTenor;
+                case F_CLEF, F_CLEF_SMALL, F_CLEF_8VA, F_CLEF_8VB -> OmrShape.fClef;
+                case PERCUSSION_CLEF -> OmrShape.unpitchedPercussionClef1;
+                default -> null;
+            };
         }
 
         /**

@@ -317,6 +317,15 @@ public abstract class AbstractInter
         }
     }
 
+    //-----------------//
+    // canStayAbnormal //
+    //-----------------//
+    @Override
+    public boolean canStayAbnormal ()
+    {
+        return false;
+    }
+
     //---------------//
     // checkAbnormal //
     //---------------//
@@ -1139,9 +1148,8 @@ public abstract class AbstractInter
         }
 
         // Ensemble <--> that?
-        if (this instanceof InterEnsemble) {
-            final InterEnsemble thisEnsemble = (InterEnsemble) this;
-            final List<? extends Inter> members = thisEnsemble.getMembers();
+        if (this instanceof InterEnsemble ensemble) {
+            final List<? extends Inter> members = ensemble.getMembers();
 
             if (members.contains(that)) {
                 return false;

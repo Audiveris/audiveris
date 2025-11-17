@@ -49,6 +49,7 @@ plugins:
   - jekyll-feed
   - jekyll-relative-links
   - jekyll-seo-tag
+  - jekyll-github-metadata
 
 relative_links:
   enabled: true
@@ -136,10 +137,10 @@ exclude:
 # ---------------------------------
 
 # Latest Audiveris functional version
-audiveris_functional_version: 5.7
+audiveris_functional_version: 5.8
 
 # Needed Java version for master
-master_java_version: 24
+master_java_version: 25
 
 # File menu paths
 file_input:           <a href="/audiveris/_pages/reference/menus/file/#input"><code>File → Input</code></a>

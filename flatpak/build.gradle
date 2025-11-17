@@ -21,7 +21,7 @@ def app         = project(':app')
 def appDir      = app.projectDir
 def flathubDir  = new File(project.projectDir.getAbsolutePath() + "/flathub")
 
-// SHA1 computation
+// SHA1 computation (no longer used, could be removed)
 // Stolen from https://gist.github.com/dagezi/9594839#file-calcsha1-gradle
 // 'file' argument must be a File object.
 def calcSha1(file) 
@@ -72,6 +72,9 @@ task genManifest {
 
     doLast {
         println "flatpak. Generating manifest"
+        def commit = app.ext.commit
+        println "flatpak. commit: $commit"
+
         copy {
             from('dev/org.audiveris.audiveris.template.yml') {
                 def binding = [:]
@@ -79,7 +82,7 @@ task genManifest {
                 binding.GRADLE_URL = "$gradleUrl"
                 binding.GRADLE_NAME = "$gradleName"
                 binding.GRADLE_SHA256 = wrapperProps.getProperty("distributionSha256Sum")
-                binding.COMMIT = "$app.ext.commit"
+                binding.COMMIT = "$commit"
                 expand(binding)
             }
             into(flathubDir)

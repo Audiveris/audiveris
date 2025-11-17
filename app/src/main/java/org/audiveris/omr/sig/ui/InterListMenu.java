@@ -22,15 +22,23 @@
 package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.OMR;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.KeyInter;
+import org.audiveris.omr.sig.inter.KeyInter.KeyConfig;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
+import org.audiveris.omr.ui.symbol.KeyCancelSymbol;
+import org.audiveris.omr.ui.symbol.KeyFlatSymbol;
+import org.audiveris.omr.ui.symbol.KeySharpSymbol;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 
@@ -94,8 +102,7 @@ public class InterListMenu
                 "Delete " + sysInters.size() + " inters for System #" + system.getId() + ":");
 
         // To delete all listed inters when item is clicked upon
-        item.addActionListener( (ActionEvent e) ->
-        {
+        item.addActionListener( (ActionEvent e) -> {
             if (OMR.gui.displayConfirmation(
                     "Do you confirm the removal of " + sysInters.size() + " inter(s)?")) {
                 sheet.getInterController().removeInters(sysInters);
@@ -116,6 +123,39 @@ public class InterListMenu
                                 sysInters));
             }
         });
+        this.add(item);
+        this.addSeparator();
+    }
+
+    //-------------------//
+    // insertKeyBuilding //
+    //-------------------//
+    /**
+     * Insert a menu item to build a key from the provided system inters.
+     *
+     * @param system    the related system
+     * @param inters    the AlterInter members
+     * @param keyConfig the precise key configuration
+     */
+    private void insertKeyBuilding (final SystemInfo system,
+                                    final List<Inter> inters,
+                                    final KeyConfig keyConfig)
+    {
+        final MusicFamily family = system.getSheet().getStub().getMusicFamily();
+        final ShapeSymbol shapeSymbol = switch (keyConfig.shape) {
+            case NATURAL -> new KeyCancelSymbol(keyConfig.fifths, family);
+            case SHARP -> new KeySharpSymbol(keyConfig.fifths, Shape.SHARP, family);
+            case FLAT -> new KeyFlatSymbol(keyConfig.fifths, Shape.FLAT, family);
+            default -> null;
+        };
+        final JMenuItem item = new JMenuItem(
+                "Build a Key signature from these members",
+                shapeSymbol);
+
+        // Action to build key when menu item is clicked upon
+        item.addActionListener(
+                (ActionEvent e) -> sheet.getInterController().buildKey(system, inters, keyConfig));
+
         this.add(item);
         this.addSeparator();
     }
@@ -164,9 +204,19 @@ public class InterListMenu
                         addSeparator();
                     }
 
-                    List<Inter> sysInters = entry.getValue();
+                    final List<Inter> sysInters = entry.getValue();
+
+                    // Building a key?
+                    final KeyConfig keyConfig = KeyInter.canPropose(sysInters);
+                    if (keyConfig != null) {
+                        final int nb = Math.abs(keyConfig.fifths);
+                        insertKeyBuilding(system, sysInters.subList(0, nb), keyConfig);
+                    }
+
+                    // Deleting inters?
                     insertDeletionItem(system, sysInters);
 
+                    // One item per inter
                     for (Inter inter : sysInters) {
                         if (!inter.isRemoved()) {
                             // A menu dedicated to this inter instance

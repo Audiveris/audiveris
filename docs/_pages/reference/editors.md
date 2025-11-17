@@ -76,12 +76,16 @@ Please refer to [Part merge](../guides/ui/ui_tools/part.md) section for such Bra
 * A side handle moves the side in any direction, **snapping** the beam side on any stem nearby.
 
 ## Ending editor
+{: .d-inline-block }
+updated in 5.8
+{: .label .label-green}
 
 ![](../assets/images/ending_edited.png)
 
-* Center handle moves the whole ending in any direction
-* A side handle moves the ending side horizontally
-(together with its side leg if any)
+* The center handle moves the whole ending in any direction
+* A side handle moves the ending side horizontally (together with its side leg if any)
+* A bottom handle resizes the leg vertically 
+
 
 ## Flag editor
 
@@ -159,9 +163,10 @@ See Staff Editing [Lines mode](../guides/ui/ui_tools/staff_editing.md#lines-mode
 Handles are located on the staff middle line but they work for all lines as a whole
 (all lines are kept parallel when a handle is moved):
 * Side handles (left and right) can be dragged both vertically and horizontally, thus allowing
- to stretch or shrink the staff.
+ to stretch or shrink the staff.  
+ If the staff is stretched significantly, new defining points (and handles) are inserted.
+ These inserted handles are meant to allow a fine vertical adjustment of the staff lines.
 * Non-side handles can be dragged only vertically.
-
 
 See Staff Editing [Global mode](../guides/ui/ui_tools/staff_editing.md#global-mode).
 

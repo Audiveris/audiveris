@@ -717,7 +717,7 @@ public class ClefBuilder
                 "Minimum weight for a glyph part");
 
         private final Scale.Fraction maxPartGap = new Scale.Fraction(
-                1.0,
+                0.75,
                 "Maximum distance between two parts of a single clef symbol");
 
         private final Scale.Fraction maxGlyphHeight = new Scale.Fraction(

@@ -1,7 +1,5 @@
-@XmlJavaTypeAdapters({
-    @XmlJavaTypeAdapter(value = Jaxb.PointAdapter.class, type = Point.class),
-    @XmlJavaTypeAdapter(value = Jaxb.RectangleAdapter.class, type = Rectangle.class)
-})
+@XmlJavaTypeAdapters({ @XmlJavaTypeAdapter(value = Jaxb.PointAdapter.class, type = Point.class),
+        @XmlJavaTypeAdapter(value = Jaxb.RectangleAdapter.class, type = Rectangle.class) })
 package org.audiveris.omr.jaxb.facade;
 
 import org.audiveris.omr.util.Jaxb;
