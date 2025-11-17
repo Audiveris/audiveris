@@ -58,6 +58,32 @@
   <launchable type="desktop-id">org.audiveris.audiveris.desktop</launchable>
   <developer id="org.audiveris"><name>Hervé Bitteur</name></developer>
   <releases>
+    <release version="5.8" date="2025-11-17" urgency="low" type="stable">
+      <description>
+	      <p>User Interface</p>
+	      <ul>
+	        <li>Improved key editor to build key signature from its members</li>
+	        <li>Improved staff editor that inserts intermediate defining points where needed by staff extension</li>
+	        <li>Improved ending editor that can resize the ending legs</li>
+	      </ul>
+	     <p>Engine</p>
+	     <ul>
+	       <li>Support for key signature changes</li>
+	       <li>Support for strings techniques of up bow and down bow</li>
+	       <li>Multi-measure rests can survive the lack of a recognized measure count</li>
+	     </ul>
+       <p>Project</p>
+       <ul>
+         <li>Use of macos-15-intel instead of macos-13 runner to build the installer for macOS Intel</li>
+         <li>Flatpak to catch up with OS installers</li>
+         <li>Revamped the book/sheet annotations meant for training an external model</li>
+       </ul>
+       <p>Java</p>
+       <ul>
+         <li>Upgrade to Java 25 and Gradle 9.1</li>
+      </ul>
+    </description>
+    </release>
     <release version="5.7" date="2025-09-06" urgency="low" type="stable">
       <description>
 	<p>User Interface</p>

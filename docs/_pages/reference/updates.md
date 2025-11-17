@@ -25,6 +25,7 @@ Table of contents
 (November 2025)
 
 - User Interface
+  - Improved key editor to build key signature from its members
   - Improved staff editor that inserts intermediate defining points where needed by staff extension
   - Improved ending editor that can resize the ending legs.
 - Engine
