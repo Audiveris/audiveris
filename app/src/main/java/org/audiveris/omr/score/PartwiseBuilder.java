@@ -971,9 +971,17 @@ public class PartwiseBuilder
      */
     private void insertMultipleRest (MeasureStack stack)
     {
-        final Integer count = stack.getMultipleMeasureCount(current.multipleRests);
+        Integer count = stack.getMultipleMeasureCount(current.multipleRests);
 
         if (count != null) {
+            if (count == 0) {
+                count = constants.multirestDefaultValue.getValue();
+                logger.warn(
+                        "{} Multirest with no measure count, using default value {}",
+                        current.measure,
+                        count);
+            }
+
             // Measure duration
             final AbstractTimeInter timeSig = stack.getCurrentTimeSignature();
             final int dur = current.page.simpleDurationOf(
@@ -3597,6 +3605,11 @@ public class PartwiseBuilder
         private final Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
                 false,
                 "Should we avoid brackets for all tuplets");
+
+        private final Constant.Integer multirestDefaultValue = new Constant.Integer(
+                "count",
+                1,
+                "Default value for multirest measure count");
     }
 
     //---------//
