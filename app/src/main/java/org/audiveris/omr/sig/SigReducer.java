@@ -32,7 +32,6 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.stem.BeamLinker;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
@@ -52,7 +51,6 @@ import org.audiveris.omr.sig.inter.FretInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
@@ -456,6 +454,7 @@ public class SigReducer
 
         final Set<Inter> toRemove = sig.vertexSet().stream() //
                 .filter(inter -> inter.isAbnormal()) //
+                .filter(inter -> !inter.canStayAbnormal()) //
                 .filter(inter -> !inter.isManual()) //
                 .collect(Collectors.toSet());
         toRemove.forEach(inter -> inter.remove());
@@ -1354,22 +1353,16 @@ public class SigReducer
      * <p>
      * This method is key!
      *
-     * @param inters the collection of inters to process
+     * @param inters the collection of inters to process (filtered and sorted by abscissa)
      */
-    private void detectOverlaps (List<Inter> inters,
-                                 ReductionAdapter adapter)
+    private void detectOverlaps (List<Inter> inters)
     {
         logger.debug("S#{} detectOverlaps", system.getId());
-        Collections.sort(inters, Inters.byAbscissa);
+        final double minIou = constants.minIou.getValue();
 
         NextLeft:
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
-            Inter left = inters.get(i);
-
-            if (left.isRemoved() || left.isImplicit()) {
-                continue;
-            }
-
+            final Inter left = inters.get(i);
             final Rectangle leftBox = left.getBounds();
             final Set<Inter> mirrors = new LinkedHashSet<>();
 
@@ -1398,10 +1391,6 @@ public class SigReducer
             final double xMax = leftBox.getMaxX();
 
             for (Inter right : inters.subList(i + 1, inters.size())) {
-                if (right.isRemoved() || right.isImplicit()) {
-                    continue;
-                }
-
                 // Mirror entities do not exclude one another
                 if (mirrors.contains(right)) {
                     continue;
@@ -1412,9 +1401,9 @@ public class SigReducer
                     continue;
                 }
 
-                Rectangle rightBox = right.getBounds();
+                final Rectangle rightBox = right.getBounds();
 
-                if (leftBox.intersects(rightBox)) {
+                if (GeoUtil.iou(leftBox, rightBox) >= minIou) {
                     // Have a more precise look
                     if (left.isVip() && right.isVip()) {
                         logger.info("VIP check overlap {} vs {}", left, right);
@@ -1645,33 +1634,8 @@ public class SigReducer
      */
     private List<Inter> getHeadersInters ()
     {
-        List<Inter> inters = new ArrayList<>();
-
-        for (Staff staff : system.getStaves()) {
-            if (staff.isTablature()) {
-                continue;
-            }
-
-            StaffHeader header = staff.getHeader();
-
-            if (header.clef != null) {
-                inters.add(header.clef);
-            }
-
-            if (header.key != null) {
-                inters.add(header.key);
-                inters.addAll(header.key.getMembers());
-            }
-
-            if (header.time != null) {
-                inters.add(header.time);
-
-                if (header.time instanceof InterEnsemble interEnsemble) {
-                    inters.addAll(interEnsemble.getMembers());
-                }
-            }
-        }
-
+        final List<Inter> inters = new ArrayList<>();
+        system.getStaves().forEach(staff -> inters.addAll(staff.getHeaderInters()));
         logger.trace("S#{} headers inters: {}", system.getId(), inters);
 
         return inters;
@@ -1922,9 +1886,14 @@ public class SigReducer
         logger.debug("S#{} reducing sig ...", system.getId());
 
         // General exclusions based on overlap
-        List<Inter> inters = sig.inters(overlapPredicate);
-        inters.removeAll(getHeadersInters());
-        detectOverlaps(inters, adapter);
+        final List<Inter> headerInters = getHeadersInters();
+        final List<Inter> filtered = sig.inters(overlapPredicate).stream() //
+                .filter(inter -> !headerInters.contains(inter)) //
+                .filter(inter -> !inter.isRemoved()) //
+                .filter(inter -> !inter.isImplicit()) //
+                .sorted(Inters.byAbscissa) //
+                .collect(Collectors.toList());
+        detectOverlaps(filtered);
 
         // Inters that conflict with frozen inters must be deleted
         adapter.checkFrozens();
@@ -2406,6 +2375,10 @@ public class SigReducer
         private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
                 3,
                 "Maximum width for slur around tuplet");
+
+        private final Constant.Ratio minIou = new Constant.Ratio(
+                0.05,
+                "Minimum IOU to detect general overlap");
 
         private final Constant.Ratio minIouStemHead = new Constant.Ratio(
                 0.02,

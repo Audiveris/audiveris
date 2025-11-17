@@ -67,6 +67,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
 
@@ -633,6 +634,15 @@ public class KeyInter
                     logger.debug("Different staves");
                     return null;
                 }
+
+                if (alter instanceof KeyAlterInter keyAlter) {
+                    // Already part of a key?
+                    final Inter ensemble = keyAlter.getEnsemble();
+                    if (ensemble instanceof KeyInter) {
+                        logger.debug("Already part of a key");
+                        return null;
+                    }
+                }
             } else {
                 logger.debug("{} cannot be a Key member", inter);
                 return null;
@@ -1078,7 +1088,12 @@ public class KeyInter
                     }
                 }
             });
-            Collections.sort(staffAlters, Inters.byFullCenterAbscissa);
+            Collections.sort(staffAlters, Inters.byAbscissa);
+
+            // NOTA: This method is run before the inters created during SYMBOLS step are reduced
+            // Hence, we have to filter out overlapping AlterInter's
+            filterOverlappingAlters(staffAlters);
+
             logger.debug("staff: {} alters: {}", staff.getId(), Inters.ids(staffAlters));
 
             for (int i = 0; i < staffAlters.size(); i++) {
@@ -1274,6 +1289,44 @@ public class KeyInter
         logger.info("Key built {}", key);
     }
 
+    //-------------------------//
+    // filterOverlappingAlters //
+    //-------------------------//
+    /**
+     * Filter the provided sequence of AlterInter candidates, by resolving any overlap.
+     *
+     * @param alters (input/output) A sequence of alters, sorted by abscissa
+     */
+    private static void filterOverlappingAlters (List<AlterInter> alters)
+    {
+        final double minOverlapIou = constants.minOverlapIou.getValue();
+
+        for (ListIterator<AlterInter> it1 = alters.listIterator(); it1.hasNext();) {
+            final int idx = it1.nextIndex();
+            final AlterInter left = it1.next();
+            final Rectangle leftBox = left.getBounds();
+
+            for (ListIterator<AlterInter> it2 = alters.listIterator(idx + 1); it2.hasNext();) {
+                final AlterInter right = it2.next();
+                final Rectangle rightBox = right.getBounds();
+
+                if (leftBox.x + leftBox.width <= rightBox.x) {
+                    break; // Since the sequence is sorted by abscissa
+                }
+
+                if (GeoUtil.iou(leftBox, rightBox) >= minOverlapIou) {
+                    // We have an overlap, we keep the best graded candidate
+                    if (left.getGrade() >= right.getGrade()) {
+                        it2.remove();
+                    } else {
+                        it1.remove();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     //---------//
     // shapeOf //
     //---------//
@@ -1333,6 +1386,10 @@ public class KeyInter
         private final Fraction maxInternalXGap = new Fraction(
                 0.5,
                 "Maximum abscissa gap between two key signs");
+
+        private final Constant.Ratio minOverlapIou = new Constant.Ratio(
+                0.4,
+                "Minimum IOU to detect overlap between Alter candidates");
     }
 
     //-----------//
