@@ -52,7 +52,7 @@ public class KeyAlterInter
      */
     private KeyAlterInter ()
     {
-        super((Glyph) null, null, 0.0, null, null, null);
+        super(null, null, 0.0, null, null, null);
     }
 
     /**
@@ -64,6 +64,7 @@ public class KeyAlterInter
      * @param staff         the related staff
      * @param pitch         the pitch value WRT staff
      * @param measuredPitch the measured pitch
+     * @see ShapeSet#KeyValidShapes
      */
     public KeyAlterInter (Glyph glyph,
                           Shape shape,

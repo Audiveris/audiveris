@@ -155,6 +155,9 @@ public class ShapeSet
             SMALL_FLAG_DOWN,
             SMALL_FLAG_SLASH_DOWN);
 
+    /** Valid shapes in a key. */
+    public static final EnumSet<Shape> KeyValidShapes = EnumSet.of(SHARP, FLAT, NATURAL);
+
     /** All SHARP-based keys. */
     public static final EnumSet<Shape> SharpKeys = EnumSet.of(
             KEY_SHARP_1,

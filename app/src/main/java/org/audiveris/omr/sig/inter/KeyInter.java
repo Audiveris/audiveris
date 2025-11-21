@@ -67,9 +67,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -628,6 +628,11 @@ public class KeyInter
                     return null;
                 }
 
+                if (!ShapeSet.KeyValidShapes.contains(shape)) {
+                    logger.debug("{} invalid shape {}", inter, shape);
+                    return null;
+                }
+
                 if (staff == null) {
                     staff = inter.getStaff();
                 } else if (staff != inter.getStaff()) {
@@ -1064,9 +1069,13 @@ public class KeyInter
      */
     public static void lookupCandidates (SystemInfo system)
     {
-        final SIGraph sig = system.getSig();
-        final List<Inter> sysAlters = sig.inters(AlterInter.class); // System alters
         final double maxPitchDiff = constants.maxPitchDiff.getValue();
+
+        // Only AlterInter instances with shape SHARP, FLAT or NATURAL
+        // No DOUBLE_SHARP or DOUBLE_FLAT
+        List<Inter> sysAlters = system.getSig().inters(AlterInter.class); // System alters
+        sysAlters = sysAlters.stream().filter(al -> ShapeSet.KeyValidShapes.contains(al.getShape()))
+                .collect(Collectors.toList());
 
         for (Staff staff : system.getStaves()) {
             // Skip staff header
@@ -1084,7 +1093,7 @@ public class KeyInter
                     if (absPitch <= 5 + maxPitchDiff) {
                         staffAlters.add((AlterInter) a);
                     } else {
-                        logger.debug("Spurious key candidate member {}", a);
+                        logger.debug("Too far from staff {}", a);
                     }
                 }
             });
@@ -1092,8 +1101,8 @@ public class KeyInter
 
             // NOTA: This method is run before the inters created during SYMBOLS step are reduced
             // Hence, we have to filter out overlapping AlterInter's
+            logger.debug("staff: {} alters: {}", staff.getId(), Inters.ids(staffAlters));
             filterOverlappingAlters(staffAlters);
-
             logger.debug("staff: {} alters: {}", staff.getId(), Inters.ids(staffAlters));
 
             for (int i = 0; i < staffAlters.size(); i++) {
@@ -1301,13 +1310,12 @@ public class KeyInter
     {
         final double minOverlapIou = constants.minOverlapIou.getValue();
 
-        for (ListIterator<AlterInter> it1 = alters.listIterator(); it1.hasNext();) {
-            final int idx = it1.nextIndex();
-            final AlterInter left = it1.next();
+        for (int i = 0; i < alters.size(); i++) {
+            final AlterInter left = alters.get(i);
             final Rectangle leftBox = left.getBounds();
 
-            for (ListIterator<AlterInter> it2 = alters.listIterator(idx + 1); it2.hasNext();) {
-                final AlterInter right = it2.next();
+            for (int j = i + 1; j < alters.size(); j++) {
+                final AlterInter right = alters.get(j);
                 final Rectangle rightBox = right.getBounds();
 
                 if (leftBox.x + leftBox.width <= rightBox.x) {
@@ -1317,9 +1325,9 @@ public class KeyInter
                 if (GeoUtil.iou(leftBox, rightBox) >= minOverlapIou) {
                     // We have an overlap, we keep the best graded candidate
                     if (left.getGrade() >= right.getGrade()) {
-                        it2.remove();
+                        alters.remove(j--);
                     } else {
-                        it1.remove();
+                        alters.remove(i--);
                         break;
                     }
                 }
