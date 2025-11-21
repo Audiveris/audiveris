@@ -183,7 +183,7 @@ chords that the engine has considered as adjacent.
 
 [^voice_sharing]:
     There is an on-going debate about the possibility for Audiveris to share [rest-] chords between voices.
-    But for the current {{ site.audiveris_version }} release, a chord can be assigned to exactly one voice.
+    But for the current {{ site.audiveris_functional_version }} release, a chord can be assigned to exactly one voice.
 
 [^whole_chord]:
     The current heuristic for whole chords is to gather whole heads if they are aligned vertically

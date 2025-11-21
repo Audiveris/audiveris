@@ -32,7 +32,7 @@ Table of contents
   This is the minimum Java version needed for the *master* branch.
   The *development* branch may require a higher version, please
   check on the Audiveris [project site](https://github.com/Audiveris/audiveris/tree/development?tab=readme-ov-file#development-versions).  
-  Audiveris {{ site.audiveris_version }} runs only on 64-bit architectures.
+  Audiveris {{ site.audiveris_functional_version }} runs only on 64-bit architectures.
 
 * [FreeType library][freetype]: Unix-like platforms (including macOS) need FreeType in our $PATH
 to handle those specific PDFs that contain vector graphics.  

@@ -8,7 +8,7 @@ has_toc: false
 # Audiveris Handbook
 {: .no_toc }
 
-This documentation applies to release {{ site.audiveris_version }} and later.
+This documentation applies to release {{ site.audiveris_functional_version }} and later.
 
 ---
 Table of Contents
