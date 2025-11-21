@@ -22,7 +22,7 @@ plugins {
 def app = project(':app')
 
 // Central location for application version
-project.version = '5.8.0'
+project.version = '5.8.1'
 println "version: ${project.version}"
 
 // Central location for the specific versions of tesseract dependencies
