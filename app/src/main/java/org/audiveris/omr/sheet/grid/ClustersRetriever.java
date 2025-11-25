@@ -120,8 +120,7 @@ public class ClustersRetriever
 
     /** Comparator on cluster ordinate. */
     public Comparator<LineCluster> byOrdinate = (LineCluster c1,
-                                                 LineCluster c2) ->
-    {
+                                                 LineCluster c2) -> {
         double o1 = ordinateOf(c1);
         double o2 = ordinateOf(c2);
 
@@ -140,8 +139,7 @@ public class ClustersRetriever
      * Comparator by page layout (this leads to systems).
      */
     public Comparator<LineCluster> byLayout = (LineCluster c1,
-                                               LineCluster c2) ->
-    {
+                                               LineCluster c2) -> {
         Point p1 = c1.getCenter();
         Point p2 = c2.getCenter();
 
@@ -1102,7 +1100,7 @@ public class ClustersRetriever
             colX[col] = x;
 
             // Retrieve Filaments with ordinate at x, sorted by increasing y
-            List<FilY> filys = retrieveFilamentsAtX(x);
+            final List<FilY> filys = retrieveFilamentsAtX(x);
 
             // Second, check y deltas to detect combs
             FilamentComb comb = null;
@@ -1120,7 +1118,11 @@ public class ClustersRetriever
                             comb.append(prevFily.filament, prevFily.y);
 
                             if (prevFily.filament.isVip()) {
-                                logger.info("VIP created {} with {}", comb, prevFily.filament);
+                                logger.info(
+                                        "VIP x:{} created {} with {}",
+                                        x,
+                                        comb,
+                                        prevFily.filament);
                             }
                         }
 
@@ -1128,7 +1130,7 @@ public class ClustersRetriever
                         comb.append(fily.filament, fily.y);
 
                         if (fily.filament.isVip()) {
-                            logger.info("VIP appended {} to {}", fily.filament, comb);
+                            logger.info("VIP x:{} appended {} to {}", x, fily.filament, comb);
                         }
                     } else {
                         // No comb active
@@ -1153,7 +1155,7 @@ public class ClustersRetriever
      */
     private List<FilY> retrieveFilamentsAtX (double x)
     {
-        List<FilY> list = new ArrayList<>();
+        final List<FilY> list = new ArrayList<>();
 
         for (StaffFilament fil : allFilaments) {
             if ((x >= fil.getStartPoint().getX()) && (x <= fil.getStopPoint().getX())) {
@@ -1419,11 +1421,11 @@ public class ClustersRetriever
                 "Rough margin around cluster ordinate");
 
         private final Scale.Fraction combMinMargin = new Scale.Fraction(
-                0.0,
+                0.05,
                 "Comb margin below minimum interline (use with caution)");
 
         private final Scale.Fraction combMaxMargin = new Scale.Fraction(
-                0.0,
+                0.05,
                 "Comb margin above maximum interline (use with caution)");
 
         private final Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
