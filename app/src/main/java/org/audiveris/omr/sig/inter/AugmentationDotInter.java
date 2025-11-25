@@ -496,7 +496,10 @@ public class AugmentationDotInter
     // lookupRestLinks //
     //-----------------//
     /**
-     * Look up for all possible links with rests
+     * Look up for all possible links with rests.
+     * <p>
+     * As opposed to a head or a dot, a rest can be rather high.
+     * Therefore, we have to adjust the ordinate tests.
      *
      * @param systemRests system rests, sorted by abscissa
      * @param system      containing system
@@ -524,14 +527,18 @@ public class AugmentationDotInter
         final List<Inter> rests = dotStack.filter(
                 Inters.intersectedInters(systemRests, GeoOrder.BY_ABSCISSA, luBox));
         final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(profile));
+        final double heightRatio = AugmentationRelation.getRestHeightRatio().getValue();
 
         for (Inter inter : rests) {
-            RestInter rest = (RestInter) inter;
-            Point refPt = rest.getCenterRight();
-            double xGap = dotCenter.x - refPt.x;
+            final RestInter rest = (RestInter) inter;
+            final int restHeight = rest.getBounds().height;
+            final double yMargin = restHeight * heightRatio;
+            final Point refPt = rest.getCenterRight();
+            final double xGap = dotCenter.x - refPt.x;
 
             if (xGap >= minDx) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
+                yGap = Math.max(0, yGap - yMargin);
                 AugmentationRelation rel = new AugmentationRelation();
                 rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), profile);
 
