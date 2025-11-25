@@ -231,7 +231,7 @@ public class ScaleBuilder
         final int minHeight = Math.max(
                 blackPeak.max,
                 (int) Math.rint(constants.beamMinFraction.getValue() * largerInterline));
-        final int maxHeight = Math.max(
+        final int maxHeight = Math.min(
                 largerInterline - blackPeak.main,
                 (int) Math.rint(constants.beamMaxFraction.getValue() * largerInterline));
         final double beamRatio = constants.beamRangeRatio.getValue();
@@ -305,8 +305,7 @@ public class ScaleBuilder
         if (histoKeeper == null) {
             try {
                 doRetrieveScale(true); // Dummy retrieval
-            } catch (StepException ignored) {
-            }
+            } catch (StepException ignored) {}
         }
 
         if (histoKeeper != null) {
@@ -487,7 +486,7 @@ public class ScaleBuilder
                 "Minimum ratio between beam height and interline");
 
         private final Constant.Ratio beamMaxFraction = new Constant.Ratio(
-                1.0,
+                0.85,
                 "Maximum ratio between beam height and interline");
 
         private final Constant.Ratio beamMinCountRatio = new Constant.Ratio(
