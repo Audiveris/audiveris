@@ -85,7 +85,7 @@ public class ChordOrnamentRelation
     @Override
     public boolean isSingleTarget ()
     {
-        return true;
+        return false; // A chord can have several ornaments
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
@@ -122,12 +122,16 @@ public class ChordOrnamentRelation
                 0.75,
                 "Maximum horizontal gap between ornament center & chord");
 
-        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction(1.2, "Idem for profile 1");
+        private final Scale.Fraction xGapMax_p1 = new Scale.Fraction( //
+                1.2,
+                "Idem for profile 1");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
-                2.0,
+                3.0,
                 "Maximum vertical gap between ornament center & chord");
 
-        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction(3.0, "Idem for profile 1");
+        private final Scale.Fraction yGapMax_p1 = new Scale.Fraction( //
+                4.0,
+                "Idem for profile 1");
     }
 }
