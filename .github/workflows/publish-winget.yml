@@ -30,10 +30,7 @@ jobs:
           $installerUrl = $installers | Select -ExpandProperty browser_download_url -First 1
           echo "=== installerUrl is $installerUrl"
           
-          # Update the manifest
+          # Update and submit the manifest
           echo "=== updating manifest..."
-          .\wingetcreate.exe update audiveris.org.Audiveris -v $latest.tag_name -u $installerUrl -t ${{ secrets.WINGET_PAT }}
-          echo "=== manifest updated!"
-          
-          # Display the updated Audiveris information
-          winget show audiveris.org.Audiveris
+          .\wingetcreate.exe update audiveris.org.Audiveris --submit --version $latest.tag_name --urls $installerUrl --token ${{ secrets.WINGET_PAT }}
+          echo "=== manifest updated and submitted!"
