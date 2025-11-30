@@ -1,5 +1,5 @@
 
-name: Publish latest release on Windows community repository
+name: Publish on Windows repository
 
 on:
   release:
@@ -29,6 +29,6 @@ jobs:
           # Create a folder
           New-Item -Path "." -Name "myDocs" -ItemType Directory
           # Create the manifest
-          .\wingetcreate.exe new $installerUrl --output myDocs
+          .\wingetcreate.exe New $installerUrl --out myDocs
           dir -Recurse myDocs
           
