@@ -28,11 +28,12 @@ jobs:
           echo "=== installerUrl is $installerUrl"
           # Create a folder
           New-Item -Path "." -Name "myDocs" -ItemType Directory
+          echo "=== dir -Recurse myDocs"
           dir -Recurse myDocs
           # Create the manifest
           echo "=== creating manifest"
           ##.\wingetcreate.exe New $installerUrl --out myDocs
-          .\wingetcreate.exe update mymanifest -v $latest.tag_name -u $installerUrl 
+          .\wingetcreate.exe update audiveris -v $latest.tag_name -u $installerUrl 
           echo "=== created manifest"
           dir -Recurse myDocs
           
