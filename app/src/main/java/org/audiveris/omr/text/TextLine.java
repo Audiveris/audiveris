@@ -974,7 +974,7 @@ public class TextLine
             extends ConstantSet
     {
         private final Scale.Fraction maxFontSize = new Scale.Fraction(
-                4.0,
+                5.0,
                 "Maximum font size with respect to interline");
 
         private final Scale.Fraction minFontSize = new Scale.Fraction(
