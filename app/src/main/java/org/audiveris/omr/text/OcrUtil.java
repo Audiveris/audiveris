@@ -142,7 +142,7 @@ public abstract class OcrUtil
 
         Collections.sort(lines, TextLine.byOrdinate(sheet.getSkew()));
 
-        lines.forEach(line -> line.getWords().forEach(word -> word.adjustFontSize()));
+        lines.forEach(line -> line.getWords().forEach(word -> word.adjustFont()));
 
         if (logger.isDebugEnabled()) {
             TextLine.dump("Raw OCR'd lines:", lines, constants.dumpWords.isSet());

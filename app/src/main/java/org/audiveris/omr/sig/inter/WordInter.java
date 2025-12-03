@@ -437,13 +437,9 @@ public class WordInter
     public void setFontAttributes (String newAttrs)
     {
         try {
-            final FontAttributes decoded = FontAttributes.decode(newAttrs.toUpperCase());
-
-            // Keeping the same bounds, update the font size if needed
-            final TextFont textFont = TextFont.getBestFont(decoded, fontInfo.pointSize);
-            final int fontSize = textFont.computeSize(getValue(), getBounds().getSize());
-
-            fontInfo = new FontInfo(decoded, fontSize, textFont.getFontName());
+            // Keeping the same bounds, adjust the font size and name
+            final FontAttributes attrs = FontAttributes.decode(newAttrs.toUpperCase());
+            fontInfo = FontInfo.adjustedTextFont(attrs, fontInfo.pointSize, value, getBounds());
         } catch (Exception ex) {
             logger.warn("Invalid font attributes: {}", newAttrs);
         }
