@@ -48,7 +48,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class <code>ArticulationInter</code> represents an articulation sign.
  * <p>
- * Supported shapes are ACCENT, MARCATO, MARCATO_BELOW, STACCATO, TENUTO, STACCATISSIMO
+ * Supported shapes are ACCENT, MARCATO, MARCATO_BELOW, STACCATO, TENUTO,
+ * STACCATISSIMO, STACCATISSIMO_BELOW
  *
  * @author Hervé Bitteur
  */
@@ -73,7 +74,8 @@ public class ArticulationInter
      * Creates a new <code>ArticulationInter</code> object.
      *
      * @param glyph underlying glyph
-     * @param shape precise shape (ACCENT, MARCATO, MARCATO_BELOW, STACCATO, TENUTO, STACCATISSIMO)
+     * @param shape precise shape (ACCENT, MARCATO, MARCATO_BELOW, STACCATO, TENUTO,
+     *              STACCATISSIMO, STACCATISSIMO_BELOW)
      * @param grade the interpretation quality
      */
     public ArticulationInter (Glyph glyph,
@@ -169,8 +171,8 @@ public class ArticulationInter
         final Point pt = getCenter();
         final List<Staff> stavesAround = system.getStavesAround(pt);
 
-        // Adjustment for MARCATO (above): look for chord only *below* the sign
-        // Adjustment for MARCATO_BELOW: look for chord only *above* the sign
+        // Adjustment for MARCATO/STACCATISSIMO (above): look for chord only *below* the sign
+        // Adjustment for MARCATO_BELOW/STACCATISSIMO_BELOW: look for chord only *above* the sign
         final int minY;
         final int maxY;
 

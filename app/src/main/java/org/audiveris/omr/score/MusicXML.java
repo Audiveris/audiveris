@@ -30,6 +30,7 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.TremoloInter;
+import org.audiveris.proxymusic.AboveBelow;
 import org.audiveris.proxymusic.AccidentalText;
 import org.audiveris.proxymusic.AccidentalValue;
 import org.audiveris.proxymusic.BarStyle;
@@ -152,8 +153,8 @@ public abstract class MusicXML
         //        detached-legato | staccatissimo | spiccato |
         //        scoop | plop | doit | falloff | breath-mark |
         //        caesura | stress | unstress | other-articulation)*)>
-        ObjectFactory factory = new ObjectFactory();
-        EmptyPlacement ep = factory.createEmptyPlacement();
+        final ObjectFactory factory = new ObjectFactory();
+        final EmptyPlacement ep = factory.createEmptyPlacement();
 
         return switch (shape) {
             case DOT_set, STACCATO -> factory.createArticulationsStaccato(ep);
@@ -170,6 +171,10 @@ public abstract class MusicXML
             }
             case TENUTO -> factory.createArticulationsTenuto(ep);
             case STACCATISSIMO -> factory.createArticulationsStaccatissimo(ep);
+            case STACCATISSIMO_BELOW -> {
+                ep.setPlacement(AboveBelow.BELOW);
+                yield factory.createArticulationsStaccatissimo(ep);
+            }
             case BREATH_MARK -> {
                 BreathMark breathMark = factory.createBreathMark();
                 breathMark.setValue("comma");

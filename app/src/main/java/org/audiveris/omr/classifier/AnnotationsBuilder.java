@@ -626,6 +626,9 @@ public class AnnotationsBuilder
                         : OmrShape.articTenutoBelow;
                 case STACCATISSIMO -> above //
                         ? OmrShape.articStaccatissimoAbove
+                        : OmrShape.articStaccatissimoBelow; // Very rare?
+                case STACCATISSIMO_BELOW -> above //
+                        ? OmrShape.articStaccatissimoAbove // Very rare?
                         : OmrShape.articStaccatissimoBelow;
                 case MARCATO -> above //
                         ? OmrShape.articMarcatoAbove

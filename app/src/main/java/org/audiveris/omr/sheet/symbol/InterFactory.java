@@ -402,6 +402,7 @@ public class InterFactory
             case TENUTO:
             case STACCATO:
             case STACCATISSIMO:
+            case STACCATISSIMO_BELOW:
             case MARCATO:
             case MARCATO_BELOW:
                 return switches.getValue(ProcessingSwitch.articulations) ? ArticulationInter
@@ -1063,6 +1064,7 @@ public class InterFactory
             case TENUTO:
             case STACCATO:
             case STACCATISSIMO:
+            case STACCATISSIMO_BELOW:
             case MARCATO:
             case MARCATO_BELOW:
                 return new ArticulationInter(null, shape, GRADE); // No visit

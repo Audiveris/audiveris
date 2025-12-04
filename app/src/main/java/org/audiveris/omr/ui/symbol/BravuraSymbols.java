@@ -201,6 +201,7 @@ public class BravuraSymbols
             case SHARP -> ints(0xE262);
             case SIXTEENTH_NOTE_UP, METRO_SIXTEENTH -> ints(0xE1D9);
             case STACCATISSIMO -> ints(0xE4A6);
+            case STACCATISSIMO_BELOW -> ints(0xE4A7);
             case STACCATO -> ints(0xE4A2);
             case STAFF_LINES -> ints(0xE01A);
             case STEM -> ints(0xE210);
