@@ -22,7 +22,7 @@ plugins {
 def app = project(':app')
 
 // Central location for application version
-project.version = '5.8.1'
+project.version = '5.9.0'
 println "version: ${project.version}"
 
 // Central location for the specific versions of tesseract dependencies
@@ -237,7 +237,7 @@ allprojects {
 // Heap size (and other stuff) can be modified via a 'jvmLineArgs' on gradle command line
 tasks.run {
     minHeapSize = '512m'
-    maxHeapSize = '1g'
+    maxHeapSize = '8g'
 
     // Retrieve JVM arguments from jvmLineArgs property if any
     if (project.hasProperty("jvmLineArgs")) {

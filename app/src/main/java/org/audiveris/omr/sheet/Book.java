@@ -53,6 +53,7 @@ import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.StepPause;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.ui.Colors;
+import static org.audiveris.omr.ui.action.AdvancedTopics.swapProcessedSheets;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.util.FileUtil;
@@ -588,8 +589,7 @@ public class Book
                            List<Score> theScores)
     {
         // Make sure material is ready
-        final boolean swap = (OMR.gui == null) || Main.getCli().isSwap() || BookActions
-                .swapProcessedSheets();
+        final boolean swap = (OMR.gui == null) || Main.getCli().isSwap() || swapProcessedSheets();
         final boolean ok = transcribe(theStubs, theScores, swap);
 
         if (!ok) {
@@ -1915,11 +1915,10 @@ public class Book
     {
         try {
             logger.debug("reachStep {} force:{} stubs:{} swap:{}", target, force, theStubs, swap);
+            final OmrStep least = getLeastStep(theStubs);
 
             if (!force) {
                 // Check against the least advanced step performed across all sheets concerned
-                OmrStep least = getLeastStep(theStubs);
-
                 if ((least != null) && (least.compareTo(target) >= 0)) {
                     return true; // Nothing to do
                 }
@@ -1939,15 +1938,25 @@ public class Book
 
                 if (isMultiSheet() && constants.processAllStubsInParallel.isSet()
                         && (OmrExecutors.defaultParallelism.getValue() == true)) {
-                    // Process all stubs in parallel
+
                     List<Callable<Boolean>> tasks = new ArrayList<>();
+
+                    // Initial session
+                    // Process all stubs in parallel, up until RHYTHMS & PAGE steps excluded
+                    final OmrStep maxStep = (target.compareTo(OmrStep.lastParallel()) > 0) //
+                            ? OmrStep.lastParallel()
+                            : target;
+
+                    if (force || target != maxStep) {
+                        logger.info("Initial book processing until {}", maxStep);
+                    }
 
                     for (final SheetStub stub : theStubs) {
                         tasks.add( () -> {
                             LogUtil.start(stub);
 
                             try {
-                                boolean ok = stub.reachStep(target, force);
+                                boolean ok = stub.reachStep(maxStep, force);
 
                                 if (ok && (OMR.gui == null)) {
                                     stub.swapSheet(); // Save sheet & global book info to disk
@@ -1955,6 +1964,7 @@ public class Book
 
                                 return ok;
                             } finally {
+                                stub.printWatch();
                                 LogUtil.stopStub();
                             }
                         });
@@ -1978,11 +1988,49 @@ public class Book
                                 someFailure = true;
                             }
                         }
-
-                        return !someFailure;
                     } catch (InterruptedException ex) {
                         logger.warn("Error in parallel reachBookStep", ex);
                         someFailure = true;
+                    }
+
+                    // Final session?
+                    if (target.compareTo(OmrStep.lastParallel()) > 0) {
+                        logger.info("Final book processing until {}", target);
+
+                        // Final processing, one stub after the other
+                        for (SheetStub stub : theStubs) {
+                            LogUtil.start(stub);
+
+                            try {
+                                if (stub.reachStep(target, false)) {} else {
+                                    someFailure = true;
+                                }
+                            } catch (StepPause ex) {
+                                // Book pause required
+                                // Stop processing for the other stubs
+                                logger.info("Book processing stopped by user.");
+                                someFailure = true;
+                                break;
+                            } catch (ProcessingCancellationException ex) {
+                                // Exception (such as timeout) raised on stub
+                                // Let processing continue for the other stubs
+                                logger.warn("Error processing stub");
+                                someFailure = true;
+                            } catch (Exception ex) {
+                                // Exception raised on stub
+                                // Let processing continue for the other stubs
+                                logger.warn("Error processing stub {}", ex);
+                                someFailure = true;
+                            } finally {
+                                stub.printWatch();
+                                if (swap) {
+                                    swapAllSheets(); // Save sheet(s) & global book info to disk
+                                    logger.info("End of {}", stub);
+                                }
+
+                                LogUtil.stopStub();
+                            }
+                        }
                     }
                 } else {
                     // Process one stub after the other
@@ -2010,9 +2058,10 @@ public class Book
                             logger.warn("Error processing stub {}", ex);
                             someFailure = true;
                         } finally {
+                            stub.printWatch();
                             if (swap) {
                                 swapAllSheets(); // Save sheet(s) & global book info to disk
-                                logger.info("End of {} memory: {}", stub, Memory.getValue());
+                                logger.info("End of {}", stub);
                             }
 
                             LogUtil.stopStub();
@@ -2671,7 +2720,7 @@ public class Book
 
                 if ((refBelow != null) && !refBelow.isMovementStart()) {
                     final Score nextScore = scoreOf(refBelow);
-                    if (score != nextScore) {
+                    if (nextScore != null && score != nextScore) {
                         score.mergeWith(nextScore);
                     }
                 }

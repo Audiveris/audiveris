@@ -48,6 +48,8 @@ docs/build
 docs/build/*
 packaging/build
 packaging/build/*
+packaging/manifests
+packaging/manifests/*
 packaging/.gradle/*
 private/*
 schemas/bin/

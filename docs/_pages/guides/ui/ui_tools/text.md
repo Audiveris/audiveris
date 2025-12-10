@@ -103,9 +103,6 @@ The word "senza" has been OCR'd as "scnza".
 We can modify the content in the text field and press `ENTER`.
 
 ### Word attributes
-{: .d-inline-block }
-new in 5.6
-{: .label .label-yellow }
 
 We can do the same content modification for the word "sordino" OCR'd as "sardino".
 

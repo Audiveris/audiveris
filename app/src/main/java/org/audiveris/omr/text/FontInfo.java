@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
+import org.audiveris.omr.ui.symbol.TextFont;
 import static org.audiveris.omr.ui.symbol.TextFont.TEXT_FONT_NAME;
 import static org.audiveris.omr.util.RegexUtil.group;
 
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Font;
+import java.awt.Rectangle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -179,6 +181,23 @@ public class FontInfo
 
     //~ Methods ------------------------------------------------------------------------------------
 
+    //------------------//
+    // adjustedTextFont //
+    //------------------//
+    /**
+     * Report a new FontInfo instance for which font name and pointSize have been adjusted
+     * according to the provided text value and bounds.
+     *
+     * @param value  the provided text value
+     * @param bounds the text bounds
+     * @return a suitable FontInfo
+     */
+    public FontInfo adjustedTextFont (String value,
+                                      Rectangle bounds)
+    {
+        return adjustedTextFont(getAttributes(), pointSize, value, bounds);
+    }
+
     //---------------//
     // getAttributes //
     //---------------//
@@ -258,6 +277,29 @@ public class FontInfo
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
+
+    //------------------//
+    // adjustedTextFont //
+    //------------------//
+    /**
+     * Report a new FontInfo instance for which font name and pointSize have been adjusted
+     * according to the provided text value and bounds.
+     *
+     * @param attrs     font attributes
+     * @param pointSize font size (very approximate)
+     * @param value     the provided text value
+     * @param bounds    the text bounds
+     * @return a suitable FontInfo
+     */
+    public static FontInfo adjustedTextFont (FontAttributes attrs,
+                                             int pointSize,
+                                             String value,
+                                             Rectangle bounds)
+    {
+        final TextFont textFont = TextFont.getBestFont(attrs, pointSize);
+        final int fontSize = textFont.computeSize(value, bounds.getSize());
+        return new FontInfo(attrs, fontSize, textFont.getFontName());
+    }
 
     //---------------//
     // createDefault //

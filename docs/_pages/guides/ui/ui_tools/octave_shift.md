@@ -6,9 +6,6 @@ nav_order: 15
 ---
 # Octave shift
 {: .no_toc }
-{: .d-inline-block }
-New in 5.3
-{: .label .label-yellow }
 
 ---
 Table of contents

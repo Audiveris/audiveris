@@ -115,9 +115,6 @@ Notice also that the main score window now displays the updated parts names:
 ![](../../assets/images/coffrets_parts_final.png)
 
 ## MIDI assignments
-{: .d-inline-block }
-new in 5.6
-{: .label .label-yellow }
 
 Before the 5.6 release, the MIDI program for a logical part was automatically assigned,
 and exported to MusicXML, based on the number of staves in the logical part:

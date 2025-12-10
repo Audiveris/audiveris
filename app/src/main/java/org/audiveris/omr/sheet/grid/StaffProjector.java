@@ -662,7 +662,7 @@ public class StaffProjector
         // Multiple rest: check white spaces beyond serif core
         if (addedChunk != 0) {
             if (fullHeightData.whiteRatio < constants.minWhiteRatioBeyondVerticalSerif.getValue()) {
-                logger.info(
+                logger.debug(
                         "Too high serif for multiple rest in Staff#{} at x:{}",
                         staff.getId(),
                         xMid);

@@ -21,11 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.step;
 
-import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.util.OmrExecutors;
 
 import org.slf4j.Logger;
@@ -141,12 +141,11 @@ public abstract class AbstractSystemStep<C>
                                 final C context)
     {
         try {
-            final boolean parallel = Main.processSystemsInParallel();
+            final boolean parallel = AdvancedTopics.processSystemsInParallel();
             final Collection<Callable<Void>> tasks = new ArrayList<>();
 
             for (final SystemInfo system : sheet.getSystems()) {
-                tasks.add( () ->
-                {
+                tasks.add( () -> {
                     // If run on a separate thread (case of parallel), we have to set/unset log
                     // If not, let's not unset log (it may be needed in following epilog)
                     try {

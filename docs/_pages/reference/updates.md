@@ -21,6 +21,21 @@ Table of contents
 {:toc}
 ---
 
+## 5.9
+(December 2025)
+
+- User Interface
+  - The Preferences dialog let the user select new processing options.
+- Engine
+  - Ability to automatically swap a sheet from memory to disk once it has been processed.
+  - Ability to process all systems of a sheet in parallel.
+  - Support for Cyrillic OCR'd characters.
+  - Better handling of staves that exhibit non-regular vertical spacing between lines.
+  - Support for the Staccatissimo below shape.
+- Project
+  - Publication of Audiveris on the Windows Community repository via WinGet command.
+
+
 ## 5.8
 (November 2025)
 

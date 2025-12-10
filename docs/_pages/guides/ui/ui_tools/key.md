@@ -6,9 +6,6 @@ nav_order: 10
 ---
 # Key Signature
 {: .no_toc }
-{: .d-inline-block }
-updated in 5.8
-{: .label .label-green}
 
 A key signature generally appears at the beginning of a staff, within what Audiveris calls the staff
 "header". A staff header is an initial sequence of: 

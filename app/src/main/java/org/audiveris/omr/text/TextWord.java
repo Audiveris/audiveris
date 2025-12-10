@@ -67,7 +67,7 @@ public class TextWord
     private static final Logger logger = LoggerFactory.getLogger(TextWord.class);
 
     /** Abnormal characters. */
-    private static final char[] ABNORMAL_CHARS = new char[] { '\\' };
+    private static final int[] ABNORMAL_CHARS = new int[] { 0x005C }; // \
 
     /** Regexp for one-letter words. */
     private static final Pattern ONE_LETTER_WORDS = compileRegexp(constants.oneLetterWordRegexp);
@@ -170,7 +170,7 @@ public class TextWord
     {
         super(sheet, bounds, value, baseline, confidence);
         this.textLine = textLine;
-        this.fontInfo = fontInfo;
+        this.fontInfo = (fontInfo != null) ? fontInfo.adjustedTextFont(value, bounds) : null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -240,36 +240,16 @@ public class TextWord
         }
     }
 
-    //----------------//
-    // adjustFontSize //
-    //----------------//
+    //------------//
+    // adjustFont //
+    //------------//
     /**
-     * Adjust font size precisely according to underlying bounds.
-     *
-     * @return true if OK, false if no font modification was performed
+     * Adjust font size and name precisely according to underlying bounds.
      */
-    public boolean adjustFontSize ()
+    public void adjustFont ()
     {
-        // Discard one-char words, they are not reliable
-        if (getLength() <= 1) {
-            return false;
-        }
-
-        final TextFont font = TextFont.getBestFont(fontInfo);
-        final int fontSize = font.computeSize(getValue(), getBounds().getSize());
-        final double ratio = (double) fontSize / fontInfo.pointSize;
-
-        if (ratio < constants.minFontRatio.getSourceValue() //
-                || ratio > constants.maxFontRatio.getSourceValue()) {
-            logger.debug("   Abnormal font ratio {} {}", String.format("%.2f", ratio), this);
-
-            return false;
-        }
-
-        fontInfo = new FontInfo(fontInfo, fontSize);
+        fontInfo = fontInfo.adjustedTextFont(value, getBounds());
         textLine.invalidateCache();
-
-        return true;
     }
 
     //---------------//
@@ -293,7 +273,7 @@ public class TextWord
         }
 
         // Remove word with abnormal characters
-        for (char ch : ABNORMAL_CHARS) {
+        for (int ch : ABNORMAL_CHARS) {
             if (value.indexOf(ch) != -1) {
                 logger.debug("      abnormal char {} in {}", ch, this);
                 return "abnormal-chars";
@@ -738,8 +718,9 @@ public class TextWord
                 "^[\\W]*([\\w])[\\W]*$",
                 "Regular expression to detect one-letter words");
 
+        // An "abnormal" word is composed only of "non-common" characters: <>
         private final Constant.String abnormalWordRegexp = new Constant.String(
-                "^[^a-zA-Z_0-9-.,&=©\\?}]+$",
+                "^[<>\\{\\}\\[\\]]+$",
                 "Regular expression to detect abnormal words");
 
         private final Constant.String tupletWordRegexp = new Constant.String(
@@ -757,14 +738,6 @@ public class TextWord
         private final Constant.String partNameRegexp = new Constant.String(
                 ".*[\\w]+.*$",
                 "Regular expression to validate a part name");
-
-        private final Constant.Ratio maxFontRatio = new Constant.Ratio(
-                2.0,
-                "Maximum ratio between ocr and glyph font sizes");
-
-        private final Constant.Ratio minFontRatio = new Constant.Ratio(
-                0.3,
-                "Minimum ratio between ocr and glyph font sizes");
 
         private final Scale.Fraction standardFontSize = new Scale.Fraction(
                 2.5,

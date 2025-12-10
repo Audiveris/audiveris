@@ -8,9 +8,6 @@ nav_order: 1
 # Installation
 
 ## Using installers
-{: .d-inline-block }
-new in 5.5
-{: .label .label-yellow }
 
 For **Windows**, **macOS** and **Linux**, Audiveris provides installers available in 64-bit version.
 

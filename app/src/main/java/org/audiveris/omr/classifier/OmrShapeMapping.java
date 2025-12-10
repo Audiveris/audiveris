@@ -86,7 +86,7 @@ public abstract class OmrShapeMapping
         map.put(OmrShape.articMarcatoBelow, Shape.MARCATO_BELOW);
 
         map.put(OmrShape.articStaccatissimoAbove, Shape.STACCATISSIMO);
-        map.put(OmrShape.articStaccatissimoBelow, Shape.STACCATISSIMO);
+        map.put(OmrShape.articStaccatissimoBelow, Shape.STACCATISSIMO_BELOW);
 
         map.put(OmrShape.articStaccatoAbove, Shape.STACCATO);
         map.put(OmrShape.articStaccatoBelow, Shape.STACCATO);

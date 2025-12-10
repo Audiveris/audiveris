@@ -66,6 +66,26 @@
 		</ul>
       </description>
     </release>
+    <release version="5.9" date="2025-12-10" urgency="low" type="stable">
+      <description>
+	      <p>User Interface</p>
+	      <ul>
+	        <li>The Preferences dialog let the user select new processing options</li>
+	      </ul>
+	     <p>Engine</p>
+	     <ul>
+	       <li>Ability to automatically swap a sheet from memory to disk once it has been processed</li>
+	       <li>Ability to process all systems of a sheet in parallel</li>
+	       <li>Support for Cyrillic OCR'd characters</li>
+	       <li>Better handling of staves that exhibit non-regular vertical spacing between lines</li>
+	       <li>Support for the Staccatissimo below shape</li>
+	     </ul>
+       <p>Project</p>
+       <ul>
+         <li>Publication of Audiveris on the Windows Community repository via WinGet command</li>
+       </ul>
+    </description>
+    </release>
     <release version="5.8" date="2025-11-17" urgency="low" type="stable">
       <description>
 	      <p>User Interface</p>

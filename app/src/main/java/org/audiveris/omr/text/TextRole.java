@@ -238,8 +238,7 @@ public enum TextRole
                     return ChordName;
                 } else {
                     if (lyricsAllowed //
-                            && hasVowel //
-                            ///&& (!isMainlyItalic) //
+                            ///&& hasVowel //
                             && (switches.getValue(ProcessingSwitch.lyricsAboveStaff))) {
                         return Lyrics;
                     } else {
@@ -263,8 +262,7 @@ public enum TextRole
                 } else if (metronomeAllowed && MetronomeInter.isLikely(line)) {
                     return Metronome;
                 } else if (lyricsAllowed //
-                        && hasVowel //
-                        ///&& !isMainlyItalic //
+                        ///&& hasVowel //
                         && (switches.getValue(ProcessingSwitch.lyrics) //
                                 || switches.getValue(ProcessingSwitch.lyricsAboveStaff))
                         && ((partPosition == StaffPosition.BELOW_STAVES)
@@ -290,8 +288,7 @@ public enum TextRole
 
                 if (part.getStaves().size() == 1) {
                     if (lyricsAllowed //
-                            && hasVowel //
-                            ///&& !isMainlyItalic //
+                            ///&& hasVowel //
                             && (switches.getValue(ProcessingSwitch.lyrics) //
                                     || switches.getValue(ProcessingSwitch.lyricsAboveStaff))
                             && (partPosition == StaffPosition.BELOW_STAVES)) {

@@ -235,6 +235,7 @@ public enum Shape
     ACCENT,
     TENUTO,
     STACCATISSIMO,
+    STACCATISSIMO_BELOW,
     MARCATO,
     MARCATO_BELOW,
     ARPEGGIATO,
@@ -885,7 +886,8 @@ public enum Shape
     public boolean isBelow ()
     {
         return switch (this) {
-            case FERMATA_BELOW, MARCATO_BELOW, PEDAL_MARK, PEDAL_UP_MARK, SLUR_BELOW -> true;
+            case FERMATA_BELOW, MARCATO_BELOW, PEDAL_MARK, PEDAL_UP_MARK, //
+                    STACCATISSIMO_BELOW, SLUR_BELOW -> true;
             default -> false;
         };
     }

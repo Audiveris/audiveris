@@ -33,6 +33,7 @@ import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.RunClass;
+import static org.audiveris.omr.ui.action.AdvancedTopics.swapProcessedSheets;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.NaturalSpec;
@@ -823,7 +824,7 @@ public class CLI
                 }
                 LogUtil.start(book);
 
-                boolean swap = (OMR.gui == null) || isSwap() || BookActions.swapProcessedSheets();
+                boolean swap = (OMR.gui == null) || isSwap() || swapProcessedSheets();
 
                 // Make sure stubs are available
                 if (book.getStubs().isEmpty()) {

@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
@@ -54,6 +56,8 @@ public class ChordSyllableRelation
         extends Support
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ChordSyllableRelation.class);
 
@@ -93,6 +97,15 @@ public class ChordSyllableRelation
         }
 
         item.checkAbnormal();
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    @Override
+    protected double getTargetCoeff ()
+    {
+        return constants.targetCoeff.getValue();
     }
 
     //----------------//
@@ -182,5 +195,18 @@ public class ChordSyllableRelation
         if (!item.isRemoved()) {
             item.checkAbnormal();
         }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Ratio targetCoeff = new Constant.Ratio(
+                0.5,
+                "Supporting coeff for (target) syllable");
     }
 }

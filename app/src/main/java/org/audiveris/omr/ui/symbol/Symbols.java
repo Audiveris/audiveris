@@ -234,6 +234,7 @@ public abstract class Symbols
         // Decorated symbols
         symbolMap.put(ACCENT, new ArticulationSymbol(ACCENT, family()));
         symbolMap.put(STACCATISSIMO, new ArticulationSymbol(STACCATISSIMO, family()));
+        symbolMap.put(STACCATISSIMO_BELOW, new ArticulationSymbol(STACCATISSIMO_BELOW, family()));
         symbolMap.put(STACCATO, new ArticulationSymbol(STACCATO, family()));
         symbolMap.put(MARCATO, new ArticulationSymbol(MARCATO, family()));
         symbolMap.put(MARCATO_BELOW, new ArticulationSymbol(MARCATO_BELOW, family()));

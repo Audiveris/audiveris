@@ -6,6 +6,9 @@ parent: Installation
 ---
 # Installing binaries
 {: .no_toc }
+{: .d-inline-block }
+Updated in 5.9
+{: .label .label-green }
 
 ---
 Table of contents
@@ -14,9 +17,6 @@ Table of contents
 {:toc}
 ---
 ## Installers
-{: .d-inline-block }
-new in 5.5
-{: .label .label-yellow }
 
 Since version 5.5, Audiveris provides installers for Windows, for Linux and for macOS.
 
@@ -79,6 +79,78 @@ This package can be installed directly from the
 [Flathub](https://flathub.org/apps/org.audiveris.audiveris) site.  
 However, the future of this Flatpak package is not clear, for lack of skill and/or manpower. 
 
+## Windows community repository
+{: .d-inline-block }
+New in 5.9
+{: .label .label-yellow }
+
+Thanks to [Matthew Watkins suggestion](https://github.com/Audiveris/audiveris/issues/868),
+Audiveris is now available on the Windows community repository.
+
+Anybody can try this command in a terminal window:
+> winget show Audiveris
+
+which gives (as of this writing):
+```
+Version: 5.8.1
+Publisher: audiveris.org
+Description: Optical Music Recognition
+License: AGPLv3
+Installer:
+  Installer Type: wix
+  Installer Locale: en-US
+  Installer Url: https://github.com/Audiveris/audiveris/releases/download/5.8.1/Audiveris-5.8.1-windows
+-x86_64.msi
+  Installer SHA256: 0bafcdf120a7c4bece0edc95f295611493c4550a7fa3b67108f880ec25b18716
+  Offline Distribution Supported: true
+```
+
+### Installation
+
+In a terminal window, enter this command:
+> winget install Audiveris
+
+which gives (after being prompted for confirmation by the User Account Control):
+```
+Found Audiveris [audiveris.org.Audiveris] Version 5.8.1
+This application is licensed to you by its owner.
+Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.
+Downloading https://github.com/Audiveris/audiveris/releases/download/5.8.1/Audiveris-5.8.1-windows-x86_64.msi
+  ██████████████████████████████  68.0 MB / 68.0 MB
+Successfully verified installer hash
+Starting package install...
+Successfully installed
+```
+Note: The WinGet command references the Audiveris Windows installation file available in the release resources on GitHub.
+However, running WinGet does not raise any additional questions regarding unrecognized app,
+the license agreement, the installation folder, or shortcuts.
+
+There is no shortcut in the start menu, just a shortcut on the desktop.
+
+### Running
+
+The application can be launched in different ways:
+
+| Way  | Illustration |
+| :--- | :---         |
+| Double-clicking on the Audiveris icon located on Windows **desktop** | ![](../../assets/images/windows_desktop_shortcut.png) |
+| Entering Audiveris in the Windows **search area** and selecting an action | ![](../../assets/images/windows_search_area.png) |
+| Double-clicking on a **`.omr` file**, since the `.omr` file extension (which represents a  Book) has been associated with Audiveris application | ![](../../assets/images/windows_book_file.png) |
+| In a terminal window, entering a **command**  refering to the program location | "C:\Program Files\Audiveris\Audiveris.exe" `<potential arguments>` |
+ 
+Again, since the application is installed by WinGet, it will not generate any alerts from the antivirus.
+
+### Uninstallation
+
+In a terminal window, enter this command:
+> winget uninstall Audiveris
+
+This will give (after being prompted for confirmation by the User Account Control):
+```
+Found Audiveris [audiveris.org.Audiveris]
+Starting package uninstall...
+Successfully uninstalled
+```
 
 ## Windows installer
 
@@ -88,7 +160,9 @@ Double-click the `Audiveris-<version>-windows-x86_64.msi` file in your `Download
 
 | Action | Dialog |
 | :--- | :--- |
-| A double-click has opened the `Audiveris Setup` dialog box | ![](../../assets/images/windows_install.png) |
+| The double-click may have raised an alert from Microsoft Defender. <br> Click on "More info" (or press "Don't run" to abandon) | ![](../../assets/images/windows_protected_your_PC.png) |
+| Press "Run anyway" to keep going (or press "Don't run" to abandon) | ![](../../assets/images/windows_protected_your_PC_run_anyway.png) |
+| Now you get the `Audiveris Setup` dialog box | ![](../../assets/images/windows_install.png) |
 | The license agreement is displayed. If you agree, tick the checkbox and then click on `Next`| ![](../../assets/images/windows_license.png) |
 | The default installation folder can be changed | ![](../../assets/images/windows_install_folder.png) |
 | By default, the installer creates one shortcut on the desktop and one shortcut in the Windows start menu | ![](../../assets/images/windows_shortcuts.png) |
@@ -102,8 +176,9 @@ The application can be launched in different ways:
 
 | Way  | Illustration |
 | :--- | :---         |
-|Opening the Windows **start menu** and selecting the Audiveris item | ![](../../assets/images/windows_start_menu.png) |
+|Opening the Windows **start menu** and selecting the Audiveris item [^start_menu] | ![](../../assets/images/windows_start_menu.png) |
 | Double-clicking on the Audiveris icon located on Windows **desktop** | ![](../../assets/images/windows_desktop_shortcut.png) |
+| Entering Audiveris in the Windows **search area** and selecting an action | ![](../../assets/images/windows_search_area.png) |
 | Double-clicking on a **`.omr` file**, since the `.omr` file extension (which represents a  Book) has been associated with Audiveris application | ![](../../assets/images/windows_book_file.png) |
 | In a terminal window, entering a **command**  refering to the program location | "C:\Program Files\Audiveris\Audiveris.exe" `<potential arguments>` |
 
@@ -257,3 +332,7 @@ Since the app is not signed, macOS will block it by default. Follow these steps 
 
 
 TODO
+
+---
+
+[^start_menu]: It seems that the Windows installer no longer creates a shortcut in the start menu...
