@@ -49,6 +49,7 @@ import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.ViewParameters;
+import static org.audiveris.omr.ui.action.AdvancedTopics.swapProcessedSheets;
 import org.audiveris.omr.ui.util.OmrFileFilter;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.util.UserOpt;
@@ -2080,19 +2081,6 @@ public class BookActions
         return paths;
     }
 
-    //---------------------//
-    // swapProcessedSheets //
-    //---------------------//
-    /**
-     * Report whether we should swap out any processed sheet.
-     *
-     * @return true if so
-     */
-    public static boolean swapProcessedSheets ()
-    {
-        return constants.swapProcessedSheets.isSet();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
 
     //---------------//
@@ -2149,10 +2137,6 @@ public class BookActions
         private final Constant.Boolean preOpenBookParameters = new Constant.Boolean(
                 false,
                 "Automatically open book parameters dialog at book creation?");
-
-        private final Constant.Boolean swapProcessedSheets = new Constant.Boolean(
-                false,
-                "Automatically swap out sheets once they are processed?");
     }
 
     //----------------//

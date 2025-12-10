@@ -231,4 +231,17 @@ public enum OmrStep
     {
         return values()[values().length - 1];
     }
+
+    //--------------//
+    // lastParallel //
+    //--------------//
+    /**
+     * Report the last step for which sheets can be processed in parallel.
+     *
+     * @return the last parallel step
+     */
+    public static OmrStep lastParallel ()
+    {
+        return LINKS;
+    }
 }

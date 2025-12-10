@@ -316,19 +316,6 @@ public class Main
         }
     }
 
-    //--------------------------//
-    // processSystemsInParallel //
-    //--------------------------//
-    /**
-     * Tell whether we should process systems of a sheet in parallel.
-     *
-     * @return true if so
-     */
-    public static boolean processSystemsInParallel ()
-    {
-        return constants.processSystemsInParallel.isSet();
-    }
-
     //---------------//
     // runBatchTasks //
     //---------------//
@@ -461,10 +448,6 @@ public class Main
         private final Constant.Boolean runBatchTasksInParallel = new Constant.Boolean(
                 false,
                 "Should we process all tasks in parallel when running in batch?");
-
-        private final Constant.Boolean processSystemsInParallel = new Constant.Boolean(
-                false,
-                "Should we process all systems in parallel in a sheet?");
 
         private final Constant.Integer sheetStepTimeOut = new Constant.Integer(
                 "Seconds",

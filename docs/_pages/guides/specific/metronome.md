@@ -6,9 +6,6 @@ nav_order: -1
 ---
 # Metronome
 {: .no_toc }
-{: .d-inline-block }
-new in 5.4
-{: .label .label-yellow }
 
 The picture below displays a typical metronome mark :
 
@@ -116,7 +113,7 @@ To do so, we click on the `Texts` set in the shape board, which opens this set a
 
 ![](../../assets/images/Texts_palette.png)
 
-This set (new in 5.4) gathers just the text-oriented shapes: `lyric`, (plain) `text`  and `metronome`.
+This set gathers just the text-oriented shapes: `lyric`, (plain) `text`  and `metronome`.
 
 We now can make a drag n' drop from the metronome button to the sheet location of our choice.
 

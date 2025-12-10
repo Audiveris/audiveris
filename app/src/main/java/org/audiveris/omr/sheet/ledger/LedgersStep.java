@@ -32,6 +32,7 @@ import org.audiveris.omr.ui.action.Preferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,7 +141,8 @@ public class LedgersStep
         public final Map<SystemInfo, List<Section>> sectionMap;
 
         /** Map system -> builder. */
-        public final Map<SystemInfo, LedgersBuilder> builders = new HashMap<>();
+        public final Map<SystemInfo, LedgersBuilder> builders = //
+                Collections.synchronizedMap(new HashMap<>());
 
         /**
          * Create a Context.
@@ -149,7 +151,7 @@ public class LedgersStep
          */
         public Context (Map<SystemInfo, List<Section>> sectionMap)
         {
-            this.sectionMap = sectionMap;
+            this.sectionMap = Collections.synchronizedMap(sectionMap);
         }
     }
 }

@@ -197,7 +197,7 @@ public class LedgersPostAnalysis
      *
      * @param LedgerInter ledger
      */
-    private void discard (LedgerInter ledger)
+    private synchronized void discard (LedgerInter ledger)
     {
         final SystemInfo system = ledger.getStaff().getSystem();
         List<LedgerInter> list = discarded.get(system);

@@ -6,9 +6,6 @@ nav_order: 3
 ---
 # Moonlight sonata
 {: .no_toc }
-{: .d-inline-block }
-new in 5.4
-{: .label .label-yellow }
 
 This famous *Sonata No. 14 "Moonlight"*, 1st movement,
 is a typical example of a score with implicit tuplets.

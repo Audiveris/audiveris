@@ -6,9 +6,6 @@ nav_order: 0
 ---
 # Snippets
 {: .no_toc }
-{: .d-inline-block }
-new in 5.4
-{: .label .label-yellow }
 
 Tiny pieces of music can be found on the Internet, generally for illustration purpose.
 For example, this [Wikipedia page](https://en.wikipedia.org/wiki/Fandango) is about the Fandango dance.

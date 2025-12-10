@@ -46,9 +46,6 @@ And, as for [bar repeats editing](bar_repeat.md#editing), the measure count item
 or dragged from the shape palette in its `Times` set.
 
 ## Model
-{: .d-inline-block }
-updated in 5.8
-{: .label .label-green}
 
 Since release 5.3, with no need for a specific processing switch,
 the multiple rests should be detected (during the `BEAMS` step), 
