@@ -38,14 +38,13 @@ import org.audiveris.omr.util.Version.UpgradeVersion;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
-import org.kohsuke.github.GHAsset;
-import org.kohsuke.github.GHOrganization;
 import org.kohsuke.github.GHRelease;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 
 import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
@@ -53,7 +52,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import java.awt.Color;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -70,6 +68,7 @@ import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
 /**
@@ -207,52 +206,6 @@ public abstract class Versions
         }
     }
 
-    //------------------//
-    // getLatestRelease //
-    //------------------//
-    /**
-     * Retrieve the latest release available on Audiveris project site.
-     *
-     * @return the latest release, or null if something went wrong
-     */
-    public static GHRelease getLatestRelease ()
-    {
-        try {
-            GitHub github = GitHub.connectAnonymously();
-
-            GHOrganization organization = github.getOrganization(WellKnowns.TOOL_NAME);
-            logger.debug("{}", organization);
-
-            GHRepository repository = organization.getRepository(WellKnowns.TOOL_ID);
-            logger.debug("{}", repository);
-
-            if (repository == null) {
-                logger.warn("Unknown repository: {}", WellKnowns.TOOL_ID);
-
-                return null;
-            }
-
-            GHRelease latestRelease = repository.getLatestRelease();
-            logger.debug("Latest release: {}", latestRelease);
-
-            List<GHAsset> assets = latestRelease.listAssets().toList();
-
-            // Remember the date this poll  was made
-            Calendar now = new GregorianCalendar();
-            constants.lastReleaseCheckDate.setValue(now.getTime());
-
-            return latestRelease;
-        } catch (IOException ex) {
-            logger.warn("Could not connect to Audiveris project.\n{}", ex.toString());
-
-            if (ex.getCause() != null) {
-                logger.warn("Cause: {}", ex.getCause().toString());
-            }
-
-            return null;
-        }
-    }
-
     //----------------------//
     // getLocaleFrequencies //
     //----------------------//
@@ -348,8 +301,8 @@ public abstract class Versions
      */
     private static boolean isTimeToPoll ()
     {
-        Calendar now = new GregorianCalendar();
-        Calendar next = getNextPollDate();
+        final Calendar now = new GregorianCalendar();
+        final Calendar next = getNextPollDate();
 
         if (next == null) {
             return false;
@@ -368,7 +321,7 @@ public abstract class Versions
      */
     public static void poll (boolean manual)
     {
-        final GHRelease latest = getLatestRelease();
+        final GHRelease latest = Releases.getLatestRelease();
         final Version latestVersion = new Version(latest.getTagName().trim());
 
         if (Versions.CURRENT_SOFTWARE.compareTo(latestVersion) < 0) {
@@ -378,7 +331,7 @@ public abstract class Versions
                 logger.info("See {}", latest.getHtmlUrl());
             } else {
                 // Explicitly tell the user that check result is positive
-                AbstractPanel panel = new PositivePanel(latest);
+                final PositivePanel panel = new PositivePanel(latest);
                 getResources().injectComponents(panel);
 
                 JOptionPane.showMessageDialog(
@@ -392,7 +345,7 @@ public abstract class Versions
 
             if ((OMR.gui != null) && manual) {
                 // Explicitly tell the user that check result is negative
-                AbstractPanel panel = new NegativePanel(latest);
+                final NegativePanel panel = new NegativePanel(latest);
                 getResources().injectComponents(panel);
 
                 JOptionPane.showMessageDialog(
@@ -509,7 +462,7 @@ public abstract class Versions
         }
     }
 
-    //~ Enumerations -------------------------------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
 
     //-------------//
     // CheckResult //
@@ -589,9 +542,9 @@ public abstract class Versions
 
         private final LLabel releaseTitle = new LLabel(JLabel.LEFT);
 
-        private final JLabel contentLabel = new JLabel();
-
         private final JTextPane contentField = new JTextPane();
+
+        private final JScrollPane scrollPane = new JScrollPane();
 
         PositivePanel (GHRelease release)
         {
@@ -601,12 +554,10 @@ public abstract class Versions
             // Status
             status.setText(getResources().getString("Positive.msg"));
 
-            defineLayout();
-
             // Published
             published.setName("published");
 
-            DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG);
+            final DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG);
             published.setText(dateFormat.format(release.getPublished_at()));
 
             // Url
@@ -626,13 +577,15 @@ public abstract class Versions
             releaseTitle.setText(release.getName());
 
             // Content
-            contentLabel.setName("contentLabel");
-
             contentField.setName("contentField");
-            contentField.setBackground(Color.WHITE);
+            contentField.setBackground(new Color(255, 255, 230)); // Light yellow
             contentField.setEditable(false);
             contentField.setMargin(new Insets(5, 5, 5, 5));
-            contentField.setText(release.getBody().trim());
+            contentField.setContentType("text/html");
+            contentField.setText(htmlOf(release.getBody().trim()));
+            scrollPane.setViewportView(contentField);
+
+            defineLayout();
         }
 
         private void defineLayout ()
@@ -654,8 +607,7 @@ public abstract class Versions
 
             // Content
             r += 2; // -----------------------------------
-            builder.addRaw(contentLabel).xy(1, r);
-            builder.addRaw(contentField).xyw(3, r, 3);
+            builder.addRaw(scrollPane).xyw(1, r, 5);
         }
 
         @Override
@@ -667,7 +619,35 @@ public abstract class Versions
         @Override
         protected String getRowsSpec ()
         {
-            return super.getRowsSpec() + ", 3dlu,pref, 3dlu,pref, 3dlu,pref, 3dlu,pref";
+            return super.getRowsSpec() + ", 3dlu,pref, 3dlu,pref, 3dlu,pref, 3dlu,150dlu";
+        }
+
+        private String htmlOf (String markdown)
+        {
+            // Trick to get rid of useless final part
+            final int fc = markdown.indexOf("**Full Changelog**");
+            if (fc != -1) {
+                markdown = markdown.substring(0, fc);
+            }
+
+            // Convert Markdown to HTML
+            final Parser parser = Parser.builder().build();
+            final HtmlRenderer renderer = HtmlRenderer.builder().build();
+
+            return renderer.render(parser.parse(markdown));
+        }
+
+        @Override
+        public void setVisible (boolean visible)
+        {
+            super.setVisible(visible);
+
+            if (visible == true) {
+                scrollPane.getVerticalScrollBar().setValue(0); // scroll bar to the top
+                scrollPane.getHorizontalScrollBar().setValue(0); // scroll bar to the left
+            }
+
+            scrollPane.repaint();
         }
     }
 }
