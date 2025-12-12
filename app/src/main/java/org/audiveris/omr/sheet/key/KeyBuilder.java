@@ -279,9 +279,9 @@ public class KeyBuilder
             {
                 // Values (w/ threshold)
                 XYSeries valueSeries = peakFinder.getValueSeries(
+                        "Key",
                         projection.getXMin(),
                         projection.getXMax());
-                valueSeries.setKey("Key");
                 plotter.add(valueSeries, Colors.CHART_VALUE);
             }
 

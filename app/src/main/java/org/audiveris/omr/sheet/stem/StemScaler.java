@@ -331,7 +331,7 @@ public class StemScaler
                     title,
                     "Stem thickness - Scale " + stemScale,
                     "Counts");
-            peakFinder.plot(plotter, true);
+            peakFinder.plot(plotter, true, "Thickness");
             plotter.display(new Point(80, 80));
         }
     }
