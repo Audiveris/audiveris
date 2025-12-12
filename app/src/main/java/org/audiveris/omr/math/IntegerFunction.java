@@ -21,10 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.math;
 
-import org.jfree.data.xy.XYSeries;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.jfree.data.xy.XYSeries;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -291,11 +291,12 @@ public class IntegerFunction
     /**
      * Report the XY series for function values on whole x domain.
      *
+     * @param key function name
      * @return the XY values ready to plot
      */
-    public XYSeries getValueSeries ()
+    public XYSeries getValueSeries (String key)
     {
-        return getValueSeries(xMin, xMax);
+        return getValueSeries(key, xMin, xMax);
     }
 
     //----------------//
@@ -304,12 +305,14 @@ public class IntegerFunction
     /**
      * Report the XY series for function values up to provided xMax.
      *
-     * @param x2 upper value for x
+     * @param key function name
+     * @param x2  upper value for x
      * @return the XY values ready to plot
      */
-    public XYSeries getValueSeries (int x2)
+    public XYSeries getValueSeries (String key,
+                                    int x2)
     {
-        return getValueSeries(xMin, x2);
+        return getValueSeries(key, xMin, x2);
     }
 
     //----------------//
@@ -318,14 +321,16 @@ public class IntegerFunction
     /**
      * Report the XY series for function values from x1 to x2.
      *
-     * @param x1 lower value for x
-     * @param x2 upper value for x
+     * @param key function name
+     * @param x1  lower value for x
+     * @param x2  upper value for x
      * @return the XY values ready to plot
      */
-    public XYSeries getValueSeries (int x1,
+    public XYSeries getValueSeries (String key,
+                                    int x1,
                                     int x2)
     {
-        XYSeries valueSeries = new XYSeries("Value", false); // No autosort
+        XYSeries valueSeries = new XYSeries(key, false); // No autosort
 
         for (int x = x1; x <= x2; x++) {
             if ((x >= xMin) && (x <= xMax)) {

@@ -146,8 +146,7 @@ public class HeaderTimeBuilder
     {
         {
             // Values
-            XYSeries series = projection.getValueSeries();
-            series.setKey("Time");
+            XYSeries series = projection.getValueSeries("Time");
             plotter.add(series, Color.BLUE);
         }
 

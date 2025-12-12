@@ -432,11 +432,12 @@ public class HiLoPeakFinder
      * Report the XY series for function values on finder domain, together with minValue
      * threshold if any.
      *
+     * @param key function name
      * @return the XY values (and threshold if any) ready to plot
      */
-    public XYSeries getValueSeries ()
+    public XYSeries getValueSeries (String key)
     {
-        return getValueSeries(xMin, xMax);
+        return getValueSeries(key, xMin, xMax);
     }
 
     //----------------//
@@ -446,15 +447,17 @@ public class HiLoPeakFinder
      * Report the XY series for function values on finder domain, together with
      * minTopValue threshold if any.
      *
-     * @param x1 lower x bound for plot
-     * @param x2 upper x bound for plot
+     * @param key function name
+     * @param x1  lower x bound for plot
+     * @param x2  upper x bound for plot
      * @return the XY values (and threshold if any) ready to plot
      */
-    public XYSeries getValueSeries (int x1,
+    public XYSeries getValueSeries (String key,
+                                    int x1,
                                     int x2)
     {
         // Function values
-        XYSeries valueSeries = function.getValueSeries(x1, x2);
+        XYSeries valueSeries = function.getValueSeries(key, x1, x2);
 
         if (quorum != null) {
             valueSeries.add(x1, null); // Cut link with function values
@@ -487,9 +490,10 @@ public class HiLoPeakFinder
      * @return plotter (for daisy chaining if so desired)
      */
     public ChartPlotter plot (ChartPlotter plotter,
-                              boolean withZero)
+                              boolean withZero,
+                              String key)
     {
-        return plot(plotter, withZero, xMin, xMax);
+        return plot(plotter, withZero, key, xMin, xMax);
     }
 
     //------//
@@ -501,12 +505,14 @@ public class HiLoPeakFinder
      *
      * @param plotter  plotter to populate
      * @param withZero true for zero line
+     * @param key      function name
      * @param x1       lower x bound for plot
      * @param x2       upper x bound for plot
      * @return plotter (for daisy chaining if so desired)
      */
     public ChartPlotter plot (ChartPlotter plotter,
                               boolean withZero,
+                              String key,
                               int x1,
                               int x2)
     {
@@ -521,7 +527,7 @@ public class HiLoPeakFinder
         }
 
         // Values (w/ threshold?)
-        plotter.add(getValueSeries(x1, x2), Colors.CHART_VALUE);
+        plotter.add(getValueSeries(key, x1, x2), Colors.CHART_VALUE);
 
         // Derivatives (w/ thresholds)
         plotter.add(getDerivativeSeries(x1 + 1, x2), Colors.CHART_DERIVATIVE);

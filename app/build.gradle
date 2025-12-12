@@ -127,23 +127,24 @@ dependencies {
         [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
         [group: 'javax.media', name: 'jai-core', version: '1.1.3'],
         [group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'],
-        [group: 'net.imagej', name: 'ij', version: '1.53j'],
+        [group: 'net.imagej', name: 'ij', version: '1.54p'],
         [group: 'net.jcip', name: 'jcip-annotations', version: '1.0'],
         [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'],
         [group: 'org.apache.pdfbox', name: 'jbig2-imageio', version: '3.0.4'],
-        [group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.4'],
-        [group: 'org.apache.pdfbox', name: 'pdfbox-io', version: '3.0.4'],
+        [group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.6'],
+        [group: 'org.apache.pdfbox', name: 'pdfbox-io', version: '3.0.6'],
         [group: 'org.audiveris', name: 'proxymusic', version: '4.0.3'],
         [group: 'org.bushe', name: 'eventbus', version: '1.4'],
         [group: 'org.bytedeco', name: 'javacpp', version: jcppVersion],
         [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
         [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
+        [group: 'org.commonmark', name: 'commonmark', version: '0.27.0'],
         [group: 'org.jdesktop.bsaf', name: 'bsaf', version: '1.9.2'],
-        [group: 'org.jfree', name: 'jfreechart', version: '1.5.3'],
-        [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.5.1'],
-        [group: 'org.kohsuke', name: 'github-api', version: '1.301'],
+        [group: 'org.jfree', name: 'jfreechart', version: '1.5.6'],
+        [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.5.2'],
+        [group: 'org.kohsuke', name: 'github-api', version: '1.330'],
         [group: 'org.reflections', name: 'reflections', version: '0.10.2'],
-        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.35']
+        [group: 'org.slf4j', name: 'slf4j-api', version: '2.0.17']
     )
 
     runtimeOnly(
@@ -153,7 +154,7 @@ dependencies {
 
     testImplementation(
         [group: 'junit', name: 'junit', version: '4.13.2'],
-        [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.5.1']
+        [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.5.2']
     )
 }
 
