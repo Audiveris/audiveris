@@ -29,6 +29,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.ui.ShapeColorChooser;
 import org.audiveris.omr.sheet.BookManager;
+import org.audiveris.omr.sheet.Releases;
 import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.text.tesseract.Languages;
 import org.audiveris.omr.ui.action.Preferences;
@@ -277,6 +278,21 @@ public class GuiActions
     public void launchTrainer (ActionEvent e)
     {
         CursorController.launchWithDelayedMessage("Launching trainer...", () -> Trainer.launch());
+    }
+
+    //---------------//
+    // printReleases //
+    //---------------//
+    /**
+     * Print out information about all Audiveris releases on GitHub.
+     *
+     * @param e unused
+     */
+    @Action
+    public void printReleases (ActionEvent e)
+    {
+        Releases.printAllReleases();
+        logger.info("Releases printed.");
     }
 
     //-------------------//

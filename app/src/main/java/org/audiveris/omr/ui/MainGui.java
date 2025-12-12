@@ -33,7 +33,6 @@ import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.score.PartwiseBuilder;
 import org.audiveris.omr.sheet.Book;
-import org.audiveris.omr.sheet.Releases;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.sheet.ui.BookActions;
@@ -557,10 +556,6 @@ public class MainGui
             logger.info("MainGui submitting {}", task);
             OmrExecutors.getCachedLowExecutor().submit(task);
         }
-
-        if (constants.printReleases.isSet()) {
-            Releases.printAllReleases();
-        }
     }
 
     //---------//
@@ -613,10 +608,6 @@ public class MainGui
         private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
                 true,
                 "Should we preload costly packages in the background?");
-
-        private final Constant.Boolean printReleases = new Constant.Boolean(
-                false,
-                "Should we print releases info?");
     }
 
     //-----------------//
