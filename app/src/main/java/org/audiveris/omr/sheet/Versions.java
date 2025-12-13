@@ -51,6 +51,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Color;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.text.DateFormat;
@@ -355,6 +356,12 @@ public abstract class Versions
                         JOptionPane.INFORMATION_MESSAGE);
             }
         }
+
+        if (!manual) {
+            // Remember the date this poll was made
+            final Calendar now = new GregorianCalendar();
+            constants.lastReleaseCheckDate.setValue(now.getTime());
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -586,6 +593,11 @@ public abstract class Versions
             scrollPane.setViewportView(contentField);
 
             defineLayout();
+
+            // Trick to pre-position the scroll pane at its top left
+            javax.swing.SwingUtilities.invokeLater( () -> {
+                scrollPane.getViewport().setViewPosition(new Point(0, 0));
+            });
         }
 
         private void defineLayout ()
@@ -635,19 +647,6 @@ public abstract class Versions
             final HtmlRenderer renderer = HtmlRenderer.builder().build();
 
             return renderer.render(parser.parse(markdown));
-        }
-
-        @Override
-        public void setVisible (boolean visible)
-        {
-            super.setVisible(visible);
-
-            if (visible == true) {
-                scrollPane.getVerticalScrollBar().setValue(0); // scroll bar to the top
-                scrollPane.getHorizontalScrollBar().setValue(0); // scroll bar to the left
-            }
-
-            scrollPane.repaint();
         }
     }
 }
