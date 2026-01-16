@@ -248,7 +248,7 @@ public enum TextRole
 
                 break;
 
-            case WITHIN_STAVES: // Name, Lyrics, Direction
+            case WITHIN_STAVES: // Name, Lyrics, Direction, ChordName, Metronome
                 if (leftOfStaves) {
                     if (TextWord.PART_NAME_WORDS != null) {
                         Matcher matcher = TextWord.PART_NAME_WORDS.matcher(line.getValue());
@@ -261,6 +261,8 @@ public enum TextRole
                     }
                 } else if (metronomeAllowed && MetronomeInter.isLikely(line)) {
                     return Metronome;
+                } else if (isAllChords) {
+                    return ChordName;
                 } else if (lyricsAllowed //
                         ///&& hasVowel //
                         && (switches.getValue(ProcessingSwitch.lyrics) //
