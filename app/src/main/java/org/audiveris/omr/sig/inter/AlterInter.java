@@ -223,6 +223,9 @@ public class AlterInter
         return sb.toString();
     }
 
+    //------------------//
+    // getMeasuredPitch //
+    //------------------//
     /**
      * @return the measuredPitch
      */
