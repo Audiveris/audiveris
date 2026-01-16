@@ -311,7 +311,7 @@ public class InterDnd
 
         if (staff != null) {
             if (updateGhost(location)) {
-                // Location may have been modified slightly, as well as ghost staff
+                // Location may have been slightly modified, as well as ghost staff
                 staff = ghost.getStaff();
 
                 if (staff != null) {

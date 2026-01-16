@@ -32,6 +32,14 @@ import static org.audiveris.omr.glyph.Shape.*;
 public class BravuraSymbols
         extends Symbols
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    /** Code for 1-line symbol. */
+    public static final int[] LINE_CODE = ints(0xe010);
+
+    /** Code for the 5-line staff symbol. */
+    public static final int[] STAFF_CODE = ints(0xe01a);
+
     //~ Methods ------------------------------------------------------------------------------------
 
     @Override
