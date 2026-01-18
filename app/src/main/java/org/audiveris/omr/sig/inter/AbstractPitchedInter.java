@@ -321,7 +321,7 @@ public abstract class AbstractPitchedInter
             extends ConstantSet
     {
         private final Constant.Boolean printPitchOffsets = new Constant.Boolean(
-                true,
+                false,
                 "Should we print all pitch offsets");
     }
 }

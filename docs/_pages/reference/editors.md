@@ -75,6 +75,42 @@ Please refer to [Part merge](../guides/ui/ui_tools/part.md) section for such Bra
 * Center handle moves the whole beam in any direction.
 * A side handle moves the side in any direction, **snapping** the beam side on any stem nearby.
 
+## Clef editor
+{: .d-inline-block }
+updated in 5.10
+{: .label .label-green}
+
+There is only one (central) handle which can be moved:
+- Horizontally within the lateral limits of the containing staff
+- Vertically, but only for certain clef shapes (`C_CLEF` and `F_CLEF`/`F_CLEF_SMALL`) 
+as shown in the image below:
+
+![](../assets/images/mutable_clefs.png)
+
+When a clef is edited -- or inserted by drag and drop --
+its reference point aligns vertically with the nearest appropriate line, as described below.
+(The lines are numbered from bottom to top):
+
+- For the treble clef (`G_CLEF`),
+all the variants (`G_CLEF`,`G_CLEF_SMALL`,`G_CLEF_8VA`,`G_CLEF_8VB`), are aligned on line 2.
+- For the `C_CLEF` shape, the possible positions are:
+  - Line 4: TENOR
+  - Line 3: ALTO
+  - Line 2: MEZZO_SOPRANO
+  - Line 1: SOPRANO
+- For the `F_CLEF` and `F_CLEF_SMALL` shape, the possible positions are:
+  - Line 4: BASS
+  - Line 3: BARITONE
+- The bass clefs `F_CLEF_8VA` and `F_CLEF_8VB` remain aligned on line 4.
+- The `PERCUSSION`clef remains aligned on line 3.
+
+When a clef is moved vertically, the InterBoard interface is updated
+as shown below for an `F_CLEF` example:
+
+![](../assets/images/F_clef_bass.png)
+
+![](../assets/images/F_clef_baritone.png)
+
 ## Ending editor
 {: .d-inline-block }
 updated in 5.8
