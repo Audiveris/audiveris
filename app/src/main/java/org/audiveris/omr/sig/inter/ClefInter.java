@@ -56,9 +56,9 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <p>
  * Pitch of NoteStep line of the clef:
  * <ul>
- * <li>-4 for top line (Baritone)
+ * <li>-4 for top line (old Baritone)
  * <li>-2 for Bass and Tenor
- * <li>0 for Alto
+ * <li>0 for Alto and Baritone
  * <li>+2 for Treble and Mezzo-Soprano
  * <li>+4 for bottom line (Soprano)
  * </ul>
@@ -149,8 +149,8 @@ public class ClefInter
             case G_CLEF, G_CLEF_SMALL -> 34 - intPitch;
             case G_CLEF_8VA -> (34 + 7) - intPitch;
             case G_CLEF_8VB -> (34 - 7) - intPitch;
-            case C_CLEF -> 28 - (int) Math.rint(this.pitch) - intPitch;
-            case F_CLEF, F_CLEF_SMALL -> 22 - intPitch;
+            case C_CLEF -> (28 - (int) Math.rint(this.pitch)) - intPitch;
+            case F_CLEF, F_CLEF_SMALL -> (20 - (int) Math.rint(this.pitch)) - intPitch;
             case F_CLEF_8VA -> (22 + 7) - intPitch;
             case F_CLEF_8VB -> (22 - 7) - intPitch;
             case PERCUSSION_CLEF -> 0;
@@ -179,7 +179,7 @@ public class ClefInter
     {
         super.added();
 
-        // Add it to containing measure stack
+        // Add it to the containing measure stack
         MeasureStack stack = sig.getSystem().getStackAt(getCenter());
 
         if (stack != null) {
@@ -210,21 +210,21 @@ public class ClefInter
                 return false;
             }
 
-            // We snap ordinate to lines, according to the clef shape
+            // We snap ordinate to specific lines, according to the clef shape
             boolean modified = false;
             final Point center = getCenter();
             final Integer targetPitch = getTargetPitch(symbol.getShape(), center, staff);
 
             if (targetPitch != null) {
-                // Adjust ordinate
+                // Adjust the ordinate
                 final double pitchOffset = getAreaPitchOffset(shape);
                 dropLocation.y = (int) Math.rint(
                         staff.pitchToOrdinate(center.x, targetPitch - pitchOffset));
 
                 modified = true;
 
-                if (shape == Shape.C_CLEF) {
-                    // Adjust C clef kind
+                if (kindIsMutable(shape)) {
+                    // Precise the clef kind
                     center.y = dropLocation.y;
                     kind = kindOf(center, shape, staff);
                 }
@@ -254,7 +254,7 @@ public class ClefInter
     /**
      * Report the current kind of the clef.
      * <p>
-     * NOTA: The kind changes if a C_CLEF is moved up or down
+     * NOTA: The kind changes if a C_CLEF / F_CLEF / F_CLEF_SMALL is moved up or down
      *
      * @return the kind
      */
@@ -280,6 +280,15 @@ public class ClefInter
         return new Point2D.Double(
                 center.getX(),
                 center.getY() + (0.5 * il * getAreaPitchOffset(shape)));
+    }
+
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return kind + " " + shape;
     }
 
     //-------------------------//
@@ -319,7 +328,10 @@ public class ClefInter
             case C_CLEF ->
                     HeadInter.NoteStep.values()[((72 + (int) Math.rint(this.pitch)) - pitch) % 7];
 
-            case F_CLEF, F_CLEF_SMALL, F_CLEF_8VA, F_CLEF_8VB -> //
+            case F_CLEF, F_CLEF_SMALL -> //
+                    HeadInter.NoteStep.values()[((75 + (int) Math.rint(this.pitch)) - pitch) % 7];
+
+            case F_CLEF_8VA, F_CLEF_8VB -> //
                     HeadInter.NoteStep.values()[(73 - pitch) % 7];
 
             default -> {
@@ -348,7 +360,7 @@ public class ClefInter
             case G_CLEF_8VA -> ((34 - intPitch) / 7) + 1;
             case G_CLEF_8VB -> ((34 - intPitch) / 7) - 1;
             case C_CLEF -> ((28 + (int) Math.rint(this.pitch)) - intPitch) / 7;
-            case F_CLEF, F_CLEF_SMALL -> (22 - intPitch) / 7;
+            case F_CLEF, F_CLEF_SMALL ->    ((24  + (int) Math.rint(this.pitch)) - intPitch) / 7;
             case F_CLEF_8VA -> ((22 - intPitch) / 7) + 1;
             case F_CLEF_8VB -> ((22 - intPitch) / 7) - 1;
 
@@ -429,6 +441,26 @@ public class ClefInter
         }
     }
 
+    //---------//
+    // cKindOf //
+    //---------//
+    /**
+     * Report the precise ClefKind for a C_CLEF shape at the provided pitch.
+     *
+     * @param pitch the provided pitch (rounded to multiple of 2)
+     * @return the corresponding ClefKind
+     */
+    public static ClefKind cKindOf (int pitch)
+    {
+        return switch (pitch) {
+            case -2 -> ClefKind.TENOR;
+            case 0 -> ClefKind.ALTO;
+            case 2 -> ClefKind.MEZZO_SOPRANO;
+            case 4 -> ClefKind.SOPRANO;
+            default -> null;
+        };
+    }
+
     //-------------//
     // createValid //
     //-------------//
@@ -456,14 +488,14 @@ public class ClefInter
             case G_CLEF, G_CLEF_SMALL, G_CLEF_8VA, G_CLEF_8VB -> //
                     new ClefInter(glyph, shape, grade, staff, 2.0, ClefKind.TREBLE);
 
-            case C_CLEF -> {
+            case C_CLEF, F_CLEF, F_CLEF_SMALL -> {
                 final Point2D center = glyph.getCenter2D();
                 final ClefKind kind = kindOf(center,shape,staff);
-                final int roundedPitch = getTargetPitch(shape, center, staff);
+                final int roundedPitch = ClefInter.getTargetPitch(shape, center, staff);
                 yield new ClefInter(glyph, shape, grade, staff, (double) roundedPitch, kind);
             }
 
-            case F_CLEF, F_CLEF_SMALL, F_CLEF_8VA, F_CLEF_8VB -> //
+            case F_CLEF_8VA, F_CLEF_8VB -> //
                     new ClefInter(glyph, shape, grade, staff, -2.0, ClefKind.BASS);
 
             case PERCUSSION_CLEF -> //
@@ -471,20 +503,29 @@ public class ClefInter
         };
     }
 
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
+    //---------//
+    // fKindOf //
+    //---------//
+    /**
+     * Report the precise ClefKind for a F_CLEF / F_CLEF_SMALL shape at the provided pitch.
+     *
+     * @param pitch the provided pitch (rounded to multiple of 2)
+     * @return the corresponding ClefKind
+     */
+    public static ClefKind fKindOf (int pitch)
     {
-        return kind + " " + shape;
+        return switch (pitch) {
+            case -2 -> ClefKind.BASS;
+            case 0 -> ClefKind.BARITONE;
+            default -> null;
+        };
     }
 
     //----------------//
     // getTargetPitch //
     //----------------//
     /**
-     * Report the theoretical pitch of clef center when correctly aligned with
+     * Report the theoretical pitch of clef reference line when correctly aligned with
      * possible staff lines.
      *
      * @param shape  clef shape
@@ -501,29 +542,63 @@ public class ClefInter
         }
 
         return switch (shape) {
-            case C_CLEF -> {
-                final double pitchModuloTwo = staff.pitchPositionOf(center) / 2.0;
-                int target = 2 * (int) Math.rint(pitchModuloTwo);
-                target = Math.min(target, 4);
-                target = Math.max(target, -4);
-                yield target;
-            }
-
-            case F_CLEF, F_CLEF_SMALL, F_CLEF_8VA, F_CLEF_8VB -> -2;
-
+            case C_CLEF -> getTargetPitch(shape, center, staff, -2, 4);
+            case F_CLEF, F_CLEF_SMALL -> getTargetPitch(shape, center, staff, -2, 0);
+            case F_CLEF_8VA, F_CLEF_8VB -> -2;
             case G_CLEF, G_CLEF_SMALL, G_CLEF_8VA, G_CLEF_8VB -> 2;
-
             case PERCUSSION_CLEF -> 0;
-
-            default -> null;
+            default -> {
+                logger.error("{} is not a valid shape for a clef", shape);
+                yield null;}
         };
+    }
+
+    //----------------//
+    // getTargetPitch //
+    //----------------//
+    /**
+     * Report the closest theoretical reference pitch for clef.
+     *
+     * @param shape  clef shape
+     * @param center current clef area center
+     * @param staff  underlying staff
+     * @param min    minimum pitch value
+     * @param max    maximum pitch value
+     * @return the most suitable reference pitch value
+     */
+    private static int getTargetPitch (Shape shape,
+                                       Point2D center,
+                                       Staff staff,
+                                       int min,
+                                       int max)
+    {
+        // Pitch even target value
+        final double centerPitch = staff.pitchPositionOf(center);
+        final double pitchOffset = getAreaPitchOffset(shape); // Area center -> Clef reference point
+        final int evenPitchTarget = 2 * (int) Math.rint((centerPitch + pitchOffset) / 2.0);
+
+        return Math.min(max, Math.max(min, evenPitchTarget));
+    }
+
+    //---------------//
+    // kindIsMutable //
+    //---------------//
+    /**
+     * Report whether the clef kind can change, based on the vertical location of the shape.
+     *
+     * @param shape the clef shape
+     * @return true if so
+     */
+    private static boolean kindIsMutable (Shape shape)
+    {
+        return (shape == Shape.C_CLEF) || (shape == Shape.F_CLEF) || (shape == Shape.F_CLEF_SMALL);
     }
 
     //--------//
     // kindOf //
     //--------//
     /**
-     * Report the ClefKind for a provided OmrShape
+     * Report the ClefKind for a provided OmrShape.
      *
      * @param omrShape provided OmrShape
      * @return related ClefKind
@@ -562,12 +637,10 @@ public class ClefInter
 
         return switch (shape) {
             case G_CLEF, G_CLEF_SMALL, G_CLEF_8VA, G_CLEF_8VB -> ClefKind.TREBLE;
-            case C_CLEF -> {
-                // Disambiguate between all C-clef possibilities
-                final int roundedPitch = getTargetPitch(shape, center, staff);
-                yield CKindOf(roundedPitch);
-            }
-            case F_CLEF, F_CLEF_SMALL, F_CLEF_8VA, F_CLEF_8VB -> ClefKind.BASS;
+            case C_CLEF -> cKindOf(ClefInter.getTargetPitch(shape, center, staff));
+            case F_CLEF, F_CLEF_SMALL -> fKindOf(ClefInter.getTargetPitch(shape, center, staff));
+            case F_CLEF_8VA, F_CLEF_8VB -> ClefKind.BASS;
+
             case PERCUSSION_CLEF -> ClefKind.PERCUSSION;
             default -> null;
         };
@@ -616,29 +689,11 @@ public class ClefInter
         }
     }
 
-    //---------//
-    // CKindOf //
-    //---------//
-    /**
-     * Report the precise ClefKind for a C_CLEF shape at the provided pitch
-     *
-     * @param pitch the provided pitch (rounded to multiple of 2)
-     * @return the corresponding ClefKind
-     */
-    public static ClefKind CKindOf (int pitch)
-    {
-        return switch (pitch) {
-            case -4 -> ClefKind.BARITONE;
-            case -2 -> ClefKind.TENOR;
-            case 0 -> ClefKind.ALTO;
-            case 2 -> ClefKind.MEZZO_SOPRANO;
-            case 4 -> ClefKind.SOPRANO;
-            default -> null;
-        };
-    }
+    //~ Inner Classes ------------------------------------------------------------------------------
 
-    //~ Enumerations -------------------------------------------------------------------------------
-
+    //----------//
+    // ClefKind //
+    //----------//
     /**
      * Clef kind, based on shape and pitch.
      */
@@ -647,8 +702,8 @@ public class ClefInter
         TREBLE(Shape.G_CLEF, 2),
 
         BASS(Shape.F_CLEF, -2),
+        BARITONE(Shape.F_CLEF, 0),
 
-        BARITONE(Shape.C_CLEF, -4),
         TENOR(Shape.C_CLEF, -2),
         ALTO(Shape.C_CLEF, 0),
         MEZZO_SOPRANO(Shape.C_CLEF, 2),
@@ -678,7 +733,8 @@ public class ClefInter
      * <p>
      * For a clef, we provide only one handle:
      * <ul>
-     * <li>Middle handle, moving vertically only for C_CLEF, and horizontally fur all shapes.
+     * <li>Middle handle, moving vertically only for C_CLEF / F_CLEF / F_CLEF_SMALL,
+     * and horizontally for all shapes.
      * </ul>
      */
     private static class Editor
@@ -709,7 +765,7 @@ public class ClefInter
                 public boolean move (int dx,
                                      int dy)
                 {
-                    if (shape != Shape.C_CLEF) {
+                    if (!kindIsMutable(shape)) {
                         dy = 0;
                     }
 
@@ -732,8 +788,8 @@ public class ClefInter
                         latestBounds.y = (int) Math.rint(newCenterY - halfHeight);
                         clef.setBounds(latestBounds);
 
-                        if (clef.shape == Shape.C_CLEF) {
-                            // Adjust C_CLEF precise kind
+                        if (kindIsMutable(shape)) {
+                            // Adjust precise kind
                             final Point2D newCenter = new Point2D.Double(center.getX(), newCenterY);
                             final ClefKind oldKind = clef.kind;
                             clef.kind = kindOf(newCenter, clef.shape, staff);
