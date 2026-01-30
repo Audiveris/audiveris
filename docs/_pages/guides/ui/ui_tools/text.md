@@ -7,7 +7,7 @@ nav_order: 13
 # Text
 {: .no_toc }
 {: .d-inline-block }
-updated for 5.6
+updated for 5.10
 {: .label .label-green}
 
 The recognition of textual elements is delegated to the Tesseract OCR library.
@@ -193,6 +193,7 @@ A sentence role can be set to any value among:
 - Rights
 - EndingNumber
 - EndingText
+- Rehearsal
 - ___Metronome___
 
 Since the 5.2 release, in all cases, we can manually modify the sentence role afterwards,
@@ -204,12 +205,32 @@ from any role to any other role.
 ### Plain sentence
 
 A "plain" sentence is any sentence which is assigned a role different
-from `Lyrics`, `ChordName` and `Metronome`.
+from `Lyrics`, `ChordName`, `Rehearsal` and `Metronome`.
 
 Following an OCR recognition (`Texts` step or manual OCR), the role of each resulting 
 _plain_ sentence is precised.
 Based on a bunch of heuristics, the engine tries to further distinguish between plain roles
 like: direction, part name , title, composer, lyricist, etc.
+
+### Rehearsal mark
+{: .d-inline-block }
+New in 5.10
+{: .label .label-yellow }
+
+![](../../../assets/images/rehearsal.png)
+
+A rehearsal mark is a short sentence, enclosed in a rectangular box.
+It is notated in the score for reference during rehearsal.
+
+Since release 5.10, the rehearsal marks are detected by the engine.  
+Note that, merely because of the enclosure, a mark is not detected and OCR'd during the `TEXTS` step,
+but during the `CURVES` step later.
+
+This mark can be edited like a plain sentence, that is word by word.
+
+It can also be manually inserted via a drag n' drop action from the `Text` shape button.  
+In that case, when the sentence role is set to `Rehearsal`,
+a suitable rectangular enclosure is automatically generated around the sentence.
 
 ### Chord name
 

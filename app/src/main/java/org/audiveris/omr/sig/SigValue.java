@@ -74,6 +74,7 @@ import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
+import org.audiveris.omr.sig.inter.RehearsalInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
@@ -241,6 +242,7 @@ public class SigValue
             @XmlElementRef(type = PedalInter.class),
             @XmlElementRef(type = PlayingInter.class),
             @XmlElementRef(type = PluckingInter.class),
+            @XmlElementRef(type = RehearsalInter.class),
             @XmlElementRef(type = RepeatDotInter.class),
             @XmlElementRef(type = RestChordInter.class),
             @XmlElementRef(type = RestInter.class),

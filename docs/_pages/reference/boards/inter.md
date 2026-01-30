@@ -68,8 +68,8 @@ Role of the sentence (such as Direction, PartName, Rights, Lyrics, ...).
 
 ![](../../assets/images/role_board.png)
 
-Nota: `Lyrics` is such a specific sentence role that it cannot be changed in an existing `Inter`.
-Instead, a new (lyrics) inter is created automatically.
+Nota: The `Lyrics` and `Metronome` sentence roles are so specific that when they are changed,
+a new inter instance is transparently created to replace the previous one.
 
 ## (lyrics)
 ![](../../assets/images/lyrics_data.png)

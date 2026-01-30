@@ -45,6 +45,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.MeasureRepeatInter;
+import org.audiveris.omr.sig.inter.RehearsalInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SimileMarkInter;
@@ -178,6 +179,15 @@ public class Measure
     @XmlElement(name = "times")
     @Trimmable.Collection
     private final LinkedHashSet<AbstractTimeInter> timeSigs = new LinkedHashSet<>();
+
+    /**
+     * We can have a rehearsal mark, perhaps more?.
+     */
+    @XmlList
+    @XmlIDREF
+    @XmlElement(name = "rehearsals")
+    @Trimmable.Collection
+    private final LinkedHashSet<RehearsalInter> rehearsals = new LinkedHashSet<>();
 
     /**
      * All head chords, both standard and small, in this measure.
@@ -397,6 +407,7 @@ public class Measure
             }
             case KeyInter keyInter -> keys.add(keyInter);
             case AbstractTimeInter abstractTimeInter -> timeSigs.add(abstractTimeInter);
+            case RehearsalInter rehearsalInter -> rehearsals.add(rehearsalInter);
             case AbstractChordInter chord -> {
                 chord.setMeasure(this);
 
@@ -463,11 +474,14 @@ public class Measure
             final SIGraph sig = part.getSystem().getSig();
             boolean upgraded = false;
 
-            // Clefs, keys, timeSigs to fill measure
-            List<Inter> measureInters = filter(
+            // Clefs, keys, timeSigs, rehearsals to fill measure
+            final List<Inter> measureInters = filter(
                     sig.inters(
-                            new Class[] { ClefInter.class, KeyInter.class,
-                                    AbstractTimeInter.class }));
+                            new Class[] { //
+                                    ClefInter.class, //
+                                    KeyInter.class, //
+                                    AbstractTimeInter.class, //
+                                    RehearsalInter.class }));
 
             for (Inter inter : measureInters) {
                 addInter(inter);
@@ -1262,6 +1276,19 @@ public class Measure
     }
 
     //---------------//
+    // getRehearsals //
+    //---------------//
+    /**
+     * Report the rehearsals in this measure.
+     *
+     * @return the measure rehearsals
+     */
+    public Set<RehearsalInter> getRehearsals ()
+    {
+        return Collections.unmodifiableSet(rehearsals);
+    }
+
+    //---------------//
     // getRestChords //
     //---------------//
     /**
@@ -1734,6 +1761,7 @@ public class Measure
         //
         addOtherCollection(other.clefs);
         addOtherCollection(other.timeSigs);
+        addOtherCollection(other.rehearsals);
         addOtherCollection(other.headChords);
         addOtherCollection(other.restChords);
         addOtherCollection(other.flags);
@@ -1811,6 +1839,7 @@ public class Measure
             case ClefInter clefInter -> clefs.remove(clefInter);
             case KeyInter keyInter -> keys.remove(keyInter);
             case AbstractTimeInter abstractTimeInter -> timeSigs.remove(abstractTimeInter);
+            case RehearsalInter rehearsalInter -> rehearsals.remove(rehearsalInter);
             case HeadChordInter headChordInter -> {
                 headChords.remove(headChordInter);
                 removeVoiceChord(headChordInter);
@@ -2069,6 +2098,7 @@ public class Measure
         leftMeasure.timeSigs.addAll(timeSigs);
         timeSigs.clear();
 
+        splitCollectionAt(xRefs, leftMeasure, rehearsals);
         splitCollectionAt(xRefs, leftMeasure, headChords);
         splitCollectionAt(xRefs, leftMeasure, restChords);
         splitCollectionAt(xRefs, leftMeasure, flags);
@@ -2112,6 +2142,7 @@ public class Measure
         splitCollectionBefore(stavesBelow, measureBelow, clefs);
         Collections.sort(measureBelow.clefs, Inters.byFullCenterAbscissa); // Useful???
         splitCollectionBefore(stavesBelow, measureBelow, timeSigs);
+        splitCollectionBefore(stavesBelow, measureBelow, rehearsals);
         splitCollectionBefore(stavesBelow, measureBelow, headChords);
         splitCollectionBefore(stavesBelow, measureBelow, restChords);
         splitCollectionBefore(stavesBelow, measureBelow, flags);
@@ -2235,6 +2266,7 @@ public class Measure
         switchCollectionPart(newPart, clefs);
         switchCollectionPart(newPart, keys);
         switchCollectionPart(newPart, timeSigs);
+        switchCollectionPart(newPart, rehearsals);
         switchCollectionPart(newPart, headChords);
         switchCollectionPart(newPart, restChords);
         switchCollectionPart(newPart, flags);

@@ -586,6 +586,10 @@ public class WordInter
             word.freeze();
 
             inter.setBounds(null);
+            final Inter sentence = inter.getEnsemble();
+            if (sentence != null) {
+                sentence.invalidateCache();
+            }
             super.doit(); // No more glyph
         }
 
@@ -598,6 +602,10 @@ public class WordInter
             word.fontInfo = originalModel.fontInfo;
 
             inter.setBounds(null);
+            final Inter sentence = inter.getEnsemble();
+            if (sentence != null) {
+                sentence.invalidateCache();
+            }
             super.undo();
         }
     }

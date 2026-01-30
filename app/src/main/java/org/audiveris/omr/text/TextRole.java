@@ -78,6 +78,8 @@ public enum TextRole
     EndingNumber,
     /** Ending text, when different from number. */
     EndingText,
+    /** Rehearsal mark, such as "Verse 1". */
+    Rehearsal,
     /** Metronome mark, such as "quarter = value". */
     Metronome;
 
