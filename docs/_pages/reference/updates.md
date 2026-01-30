@@ -21,6 +21,12 @@ Table of contents
 {:toc}
 ---
 
+## 5.10
+(February 2026)
+
+- Engine
+  - Support for the rehearsal marks.
+
 ## 5.9
 (December 2025)
 

@@ -74,6 +74,7 @@ import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MetronomeInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
+import org.audiveris.omr.sig.inter.RehearsalInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -298,7 +299,7 @@ public class InterController
 
                 // Convert to absolute lines (and the underlying word glyphs)
                 final TextBuilder textBuilder = new TextBuilder(system, shape);
-                final List<TextLine> glyphLines = textBuilder.processGlyph(
+                final List<TextLine> glyphLines = textBuilder.processBuffer(
                         buffer,
                         relativeLines,
                         glyph.getTopLeft());
@@ -769,6 +770,31 @@ public class InterController
                         for (Inter member : members) {
                             member.setManual(true);
                             seq.add(new LinkTask(sig, metro, member, new Containment()));
+                        }
+                    }
+
+                    case Rehearsal -> {
+                        // Convert to rehearsal mark, with an enclosure
+                        final RehearsalInter rehearsal = new RehearsalInter(sentence);
+                        final Staff stf = system.getStaffAtOrBelow(sentence.getCenter());
+                        rehearsal.setStaff((stf != null) ? stf : sentence.getStaff());
+                        rehearsal.setManual(true);
+                        seq.add(
+                                new AdditionTask(
+                                        sig,
+                                        rehearsal,
+                                        rehearsal.getBounds(),
+                                        Collections.emptyList()));
+
+                        // Migrate the members from sentence to rehearsal
+                        final List<Inter> members = sentence.getMembers();
+
+                        // Remove former sentence (and its links to members)
+                        seq.add(new RemovalTask(sentence));
+
+                        for (Inter member : members) {
+                            member.setManual(true);
+                            seq.add(new LinkTask(sig, rehearsal, member, new Containment()));
                         }
                     }
 

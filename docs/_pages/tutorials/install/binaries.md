@@ -6,9 +6,6 @@ parent: Installation
 ---
 # Installing binaries
 {: .no_toc }
-{: .d-inline-block }
-Updated in 5.9
-{: .label .label-green }
 
 ---
 Table of contents
@@ -80,12 +77,9 @@ This package can be installed directly from the
 However, the future of this Flatpak package is not clear, for lack of skill and/or manpower. 
 
 ## Windows community repository
-{: .d-inline-block }
-New in 5.9
-{: .label .label-yellow }
 
-Thanks to [Matthew Watkins suggestion](https://github.com/Audiveris/audiveris/issues/868),
-Audiveris is now available on the Windows community repository.
+Since release 5.9 and thanks to [Matthew Watkins suggestion](https://github.com/Audiveris/audiveris/issues/868),
+Audiveris is available on the Windows community repository.
 
 Anybody can try this command in a terminal window:
 > winget show Audiveris

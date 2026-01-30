@@ -236,5 +236,5 @@ The handle on the lower segment allows to increase or decrease the wedge vertica
 
 ![](../assets/images/word_edited.png)
 
-* Center handle shifts the word in any direction,
-* Right handle modifies the word dimensions, by increasing or decreasing the font size.
+* The center handle shifts the word in any direction,
+* The right handle modifies the word dimensions, by increasing or decreasing the font size.

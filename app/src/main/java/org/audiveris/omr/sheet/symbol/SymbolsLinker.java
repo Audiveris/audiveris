@@ -255,7 +255,7 @@ public class SymbolsLinker
                         link.applyTo(os);
                     }
                 } else {
-                    logger.info("No chord linked to {}", os);
+                    logger.info("No chord linked to {} at {}", os, os.getCenter());
                 }
             } catch (Exception ex) {
                 logger.warn("Error in linkOctaveShifts for {} {}", os, ex.toString(), ex);
