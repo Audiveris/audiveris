@@ -256,6 +256,10 @@ public class ProcessingSwitches
 
         final Constant.Boolean articulations = new Constant.Boolean(true, "Articulations");
 
+        final Constant.Boolean disconnectedBracedParts = new Constant.Boolean(
+                false,
+                "Accept disconnected braced parts");
+
         final Constant.Boolean implicitTuplets = new Constant.Boolean(false, "Implicit tuplets");
     }
 

@@ -69,6 +69,7 @@ public enum ProcessingSwitch
     keepGrayImages(ProcessingSwitches.constants.keepGrayImages),
     indentations(ProcessingSwitches.constants.indentations),
     bothSharedHeadDots(ProcessingSwitches.constants.bothSharedHeadDots),
+    disconnectedBracedParts(ProcessingSwitches.constants.disconnectedBracedParts),
     implicitTuplets(ProcessingSwitches.constants.implicitTuplets),
 
     // Obsolete switches:
