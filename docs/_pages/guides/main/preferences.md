@@ -7,6 +7,7 @@ nav_order: 2
 
 # Preferences
 {: .no_toc }
+
 The {{ site.tools_preferences }} pull-down menu opens this dialog, 
 focused on on the handling of a few user preferences.  
 It operates at a much higher level than the direct handling of application constants.
@@ -24,7 +25,9 @@ Table of contents
 ---
 
 ## Standard processing options
-Since release 5.9, these options impact the way the engine can work, especially for demanding scores.
+(Since 5.9)
+
+These options impact the way the engine can work, especially for demanding scores.
 - The **SWAPPED_SHEETS** option determines whether the engine should save a sheet to disk
 and then remove it from memory after processing.  
 This is particularly useful when transcribing a book with many sheets,
