@@ -516,6 +516,7 @@ public class WordInter
             model = new Model(word.getValue(), word.getLocation(), word.getFontInfo());
 
             final Rectangle box = word.getBounds();
+            final double hw = (double) box.height / box.width; // Ratio of Height vs Width
 
             middle = new Point2D.Double(box.x + (box.width / 2.0), box.y + (box.height / 2.0));
             right = new Point2D.Double(box.x + box.width, box.y + (box.height / 2.0));
@@ -551,6 +552,7 @@ public class WordInter
 
                     // Data
                     box.width += dx;
+                    box.height = (int) Math.rint(hw * box.width); // To respect h/w ratio
 
                     if (box.width > 0) {
                         final WordInter word = (WordInter) getInter();
