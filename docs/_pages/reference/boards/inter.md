@@ -59,8 +59,9 @@ For a word inter, the modifiable word textual content.
 
 ## (sentence)
 (output)  
-For a sentence inter, the _non-modifiable_ sentence textual content.
-Modifications can be performed at word level only.
+For a sentence inter, the _non-modifiable_ sentence textual content.  
+Except for the [Metronome](../../guides/specific/metronome.md) case, 
+the modifications of a sentence textual content can be performed only at the word level.
 
 ## (sentence role)
 (input/output)  

@@ -59,6 +59,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public class TextWord
         extends TextBasedItem
+        implements Word
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

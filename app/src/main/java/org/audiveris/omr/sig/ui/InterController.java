@@ -864,6 +864,35 @@ public class InterController
         }.execute();
     }
 
+    //--------------------------//
+    // changeSentenceAttributes //
+    //--------------------------//
+    /**
+     * Change the font attributes for a whole sentence.
+     *
+     * @param sentence the sentence to modify
+     * @param newAttrs the new font attributes
+     */
+    @UIThread
+    public void changeSentenceAttributes (final SentenceInter sentence,
+                                          final String newAttrs)
+    {
+        new CtrlTask(DO, "changeSentenceAttributes")
+        {
+            @Override
+            protected void build ()
+            {
+                seq.add(new SentenceAttributesTask(sentence, newAttrs));
+            }
+
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(sentence);
+            }
+        }.execute();
+    }
+
     //------------//
     // changeTime //
     //------------//

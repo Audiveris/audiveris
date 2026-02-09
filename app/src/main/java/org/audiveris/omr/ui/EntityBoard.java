@@ -69,12 +69,11 @@ public class EntityBoard<E extends Entity>
 
     private static final Logger logger = LoggerFactory.getLogger(EntityBoard.class);
 
-    private static final ResourceMap resources =
-            Application.getInstance().getContext().getResourceMap(EntityBoard.class);
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(EntityBoard.class);
 
     /** Events this board is interested in. */
-    private static final Class<?>[] eventsRead = new Class<?>[]
-    { EntityListEvent.class };
+    private static final Class<?>[] eventsRead = new Class<?>[] { EntityListEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
 
