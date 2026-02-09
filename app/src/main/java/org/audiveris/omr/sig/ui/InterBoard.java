@@ -42,6 +42,7 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.TimeCustomInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.FontAttributes;
+import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
@@ -340,13 +341,7 @@ public class InterBoard
 
         r += 2; // --------------------------------
 
-        // Role (for a SentenceInter only)
-        roleCombo.getField().setMaximumRowCount(TextRole.values().length);
-        roleCombo.addActionListener(paramAction);
-        roleCombo.setVisible(false);
-        builder.addRaw(roleCombo.getField()).xyw(3, r, 4);
-
-        // Font attributes (for a word only)
+        // Font attributes (for a word or a sentence)
         fontAttributes.getLabel().setHorizontalTextPosition(SwingConstants.LEFT);
         fontAttributes.getLabel().setHorizontalAlignment(SwingConstants.LEFT);
         fontAttributes.getField().addActionListener(paramAction);
@@ -381,6 +376,14 @@ public class InterBoard
         custom.setVisible(false);
         builder.addRaw(custom.getLabel()).xyw(1, r, 1);
         builder.addRaw(custom.getField()).xyw(3, r, 1);
+
+        r += 2; // --------------------------------
+
+        // Role (for a SentenceInter only)
+        roleCombo.getField().setMaximumRowCount(TextRole.values().length);
+        roleCombo.addActionListener(paramAction);
+        roleCombo.setVisible(false);
+        builder.addRaw(roleCombo.getField()).xyw(3, r, 4);
 
         r += 2; // --------------------------------
 
@@ -428,7 +431,7 @@ public class InterBoard
     @Override
     protected FormLayout getFormLayout ()
     {
-        return Panel.makeFormLayout(5, 3);
+        return Panel.makeFormLayout(6, 3);
     }
 
     //---------------//
@@ -478,7 +481,7 @@ public class InterBoard
         tie.setVisible(false);
 
         if (inter != null) {
-            Double cp = inter.getContextualGrade();
+            final Double cp = inter.getContextualGrade();
 
             if (cp != null) {
                 grade.setText(String.format("%.2f/%.2f", inter.getGrade(), cp));
@@ -539,23 +542,29 @@ public class InterBoard
                     roleCombo.setVisible(true);
                     roleCombo.setEnabled(true);
 
-                    if (inter instanceof LyricLineInter lyric) {
+                    fontAttributes.setText(sentence.getMeanFont().getAttributesSpec());
+                    fontAttributes.setVisible(true);
+
+                    if (sentence instanceof LyricLineInter lyric) {
                         verse.setVisible(true);
                         verse.setValue(lyric.getNumber());
 
-                        boolean isAbove = lyric.getStaff().isPointAbove(inter.getCenter());
+                        final boolean isAbove = lyric.getStaff().isPointAbove(inter.getCenter());
                         aboveBelow.setText(resources.getString(isAbove ? "above" : "below"));
                         aboveBelow.setVisible(true);
 
-                        LyricItemInter firstNormalItem = lyric.getFirstNormalItem();
+                        final LyricItemInter firstNormalItem = lyric.getFirstNormalItem();
 
                         if (firstNormalItem != null) {
-                            HeadChordInter firstChord = firstNormalItem.getHeadChord();
-                            Voice theVoice = firstChord.getVoice();
+                            final HeadChordInter firstChord = firstNormalItem.getHeadChord();
 
-                            if (theVoice != null) {
-                                voice.setVisible(true);
-                                voice.setValue(theVoice.getId());
+                            if (firstChord != null) {
+                                final Voice theVoice = firstChord.getVoice();
+
+                                if (theVoice != null) {
+                                    voice.setVisible(true);
+                                    voice.setValue(theVoice.getId());
+                                }
                             }
                         }
                     }
@@ -732,26 +741,53 @@ public class InterBoard
             final Inter inter = getSelectedEntity();
 
             if (e.getSource() == fontAttributes.getField()) {
-                // Modification of word font attributes?
-                final WordInter word = (WordInter) inter;
-                final FontAttributes oldAttrs = word.getFontInfo().getAttributes();
+                if (inter instanceof WordInter word) {
+                    // Modification of word font attributes?
+                    final FontAttributes oldAttrs = word.getFontInfo().getAttributes();
 
-                try {
-                    final FontAttributes newAttrs = FontAttributes.decode(
-                            fontAttributes.getField().getText().trim().toUpperCase());
+                    try {
+                        final FontAttributes newAttrs = FontAttributes.decode(
+                                fontAttributes.getField().getText().trim().toUpperCase());
 
-                    if (!newAttrs.equals(oldAttrs)) {
-                        logger.debug("new FontAttributes=\"{}\"", newAttrs.getSpec());
-                        sheet.getInterController().changeWordAttributes(word, newAttrs.getSpec());
-                    } else {
-                        // To normalize the attributes display
-                        fontAttributes.setText(oldAttrs.getSpec());
+                        if (!newAttrs.equals(oldAttrs)) {
+                            logger.debug("new FontAttributes=\"{}\"", newAttrs.getSpec());
+                            sheet.getInterController().changeWordAttributes(
+                                    word,
+                                    newAttrs.getSpec());
+                        } else {
+                            // To normalize the attributes display
+                            fontAttributes.setText(oldAttrs.getSpec());
+                        }
+                    } catch (IllegalArgumentException ex) {
+                        logger.warn("{}", ex.getMessage());
                     }
-                } catch (IllegalArgumentException ex) {
-                    logger.warn("{}", ex.getMessage());
-                }
 
-                return;
+                    return;
+                } else if (inter instanceof SentenceInter sentence) {
+                    // Modification of whole sentence font attributes?
+                    final FontInfo oldFontInfo = sentence.getMeanFont();
+                    final FontAttributes oldAttrs = (oldFontInfo != null) ? oldFontInfo
+                            .getAttributes() : null;
+
+                    try {
+                        final FontAttributes newAttrs = FontAttributes.decode(
+                                fontAttributes.getField().getText().trim().toUpperCase());
+
+                        if (!newAttrs.equals(oldAttrs)) {
+                            logger.debug("new GlobalAttributes=\"{}\"", newAttrs.getSpec());
+                            sheet.getInterController().changeSentenceAttributes(
+                                    sentence,
+                                    newAttrs.getSpec());
+                        } else {
+                            // To normalize the attributes display
+                            fontAttributes.setText((oldAttrs != null) ? oldAttrs.getSpec() : "");
+                        }
+                    } catch (IllegalArgumentException ex) {
+                        logger.warn("{}", ex.getMessage());
+                    }
+
+                    return;
+                }
             }
 
             switch (inter) {

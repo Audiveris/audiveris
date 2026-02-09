@@ -25,10 +25,11 @@ Table of contents
 (February 2026)
 
 - User Interface
-  - Better drag n' drop for all clefs.
+  - Ability to set font attributes at a sentence level to apply them to all its words.
   - Better text word resizing, keeping a constant height/width ratio.
+  - Better drag n' drop for all clefs.
 - Engine
-  - Verse numbers are filtered out of the lyric lines.
+  - Verse numbers are detected and filtered out of the lyric lines.
   - Isolated punctuations marks (as in French) are combined with the preceding lyric syllable.
   - Support for the rehearsal marks.
   - Support for BARITONE, MEZZO_SOPRANO and SOPRANO clefs.

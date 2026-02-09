@@ -31,8 +31,6 @@ import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.text.WordScanner.OcrScanner;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
-import org.audiveris.omr.ui.symbol.OmrFont;
-import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
@@ -446,73 +444,7 @@ public class TextLine
     public FontInfo getMeanFont ()
     {
         if (meanFont == null) {
-            int charCount = 0; // Number of (representative) characters
-            int boldCount = 0; // Number of rep chars with bold attribute
-            int italicCount = 0; // Number of rep chars with italic attribute
-            int serifCount = 0; // Number of rep chars with serif attribute
-            int monospaceCount = 0; // Number of rep chars with monospace attribute
-            int smallcapsCount = 0; // Number of rep chars with smallcaps attribute
-            int underlinedCount = 0; // Number of rep chars with underlined attribute
-            float sizeTotal = 0; // Total of font sizes on rep chars
-
-            for (TextWord word : words) {
-                int length = word.getLength();
-
-                // Discard one-char words, they are not reliable
-                if (length > 1) {
-                    final FontInfo info = word.getFontInfo();
-                    final OmrFont font = new TextFont(info);
-                    final int fontSize = font.computeSize(
-                            word.getValue(),
-                            word.getBounds().getSize());
-                    sizeTotal += (fontSize * length);
-                    charCount += length;
-
-                    if (info.isBold) {
-                        boldCount += length;
-                    }
-
-                    if (info.isItalic) {
-                        italicCount += length;
-                    }
-
-                    if (info.isUnderlined) {
-                        underlinedCount += length;
-                    }
-
-                    if (info.isMonospaced) {
-                        monospaceCount += length;
-                    }
-
-                    if (info.isSerif) {
-                        serifCount += word.getLength();
-                    }
-
-                    if (info.isSmallcaps) {
-                        smallcapsCount += length;
-                    }
-                }
-            }
-
-            if (charCount > 0) {
-                int quorum = charCount / 2;
-                meanFont = new FontInfo(
-                        boldCount >= quorum, // isBold,
-                        italicCount >= quorum, // isItalic,
-                        underlinedCount >= quorum, // isUnderlined,
-                        monospaceCount >= quorum, // isMonospaced,
-                        serifCount >= quorum, // isSerif,
-                        smallcapsCount >= quorum, // isSmallcaps,
-                        (int) Math.rint((double) sizeTotal / charCount),
-                        "DummyFont");
-            } else {
-                // We have no representative data, let's use the first word
-                if (getFirstWord() != null) {
-                    meanFont = getFirstWord().getFontInfo();
-                } else {
-                    logger.error("TextLine with no first word {}", this);
-                }
-            }
+            meanFont = FontInfo.computeMeanFontInfo(words);
         }
 
         return meanFont;

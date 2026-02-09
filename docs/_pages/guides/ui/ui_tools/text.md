@@ -50,9 +50,9 @@ don't require the setting of any specific option.
 
 The OCR can also be launched manually on a glyph(s) selection by pressing one of the
 buttons provided in the `Texts` palette of the Shape board:
-* The `text` button
 * The `lyric` button,
-* The `metronome` button,
+* The `text` button,
+* The `metronome` button.
 
 ![](../../../assets/images/Texts_palette.png)
 
@@ -84,7 +84,10 @@ We can manually modify any of these informations.
   The sentence ___content___ is simply defined as the concatenation of the contents of its words members.
   Except for the case of `Metronome` -- which mixes text and music characters --
   we __cannot__ modify a sentence content directly, but rather via each of its words members.
-  
+
+  Since release 5.10, we can also directly modify the sentence font __attributes__ 
+  to apply them on all the contained words.
+
 ## Word editing
 
 Here is the example of an input line and the corresponding OCR result, at the end of the TEXTS step:
@@ -200,6 +203,24 @@ Since the 5.2 release, in all cases, we can manually modify the sentence role af
 from any role to any other role.
 
 ![](../../../assets/images/sentence_role_edited.png)
+
+### Sentence attributes
+{: .d-inline-block }
+New in 5.10
+{: .label .label-yellow}
+
+The font attributes of a sentence is initially defined as the "main" attributes found in its word members.
+
+We can now conveniently modify these font attributes, *directly at the sentence level*.
+
+To do so, we first have to select the sentence, for instance by pointing to one of its words,
+and then pressing the `To Ensemble` button.
+
+The `Attributes` field is still there as for a word,
+but it now relates to the font attributes of the sentence.
+We can simply modify the attributes and commit the modifications by pressing the `Enter` key.
+
+The new font attributes of the sentence are applied transitively to each of its words.
 
 
 ### Plain sentence

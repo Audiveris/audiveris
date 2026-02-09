@@ -37,6 +37,7 @@ import org.audiveris.omr.text.FontAttributes;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.text.TextWord;
+import org.audiveris.omr.text.Word;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.TextFont;
@@ -77,6 +78,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "word")
 public class WordInter
         extends AbstractInter
+        implements Word
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -416,14 +418,6 @@ public class WordInter
         return tasks;
     }
 
-    //-------------//
-    // setFontInfo //
-    //-------------//
-    public void setFontInfo (FontInfo fontInfo)
-    {
-        this.fontInfo = fontInfo;
-    }
-
     //-------------------//
     // setFontAttributes //
     //-------------------//
@@ -443,6 +437,14 @@ public class WordInter
         } catch (Exception ex) {
             logger.warn("Invalid font attributes: {}", newAttrs);
         }
+    }
+
+    //-------------//
+    // setFontInfo //
+    //-------------//
+    public void setFontInfo (FontInfo fontInfo)
+    {
+        this.fontInfo = fontInfo;
     }
 
     //-------------//

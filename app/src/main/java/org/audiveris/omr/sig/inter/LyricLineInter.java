@@ -191,7 +191,7 @@ public class LyricLineInter
     @Override
     public String getShapeString ()
     {
-        return "LYRICS";
+        return "LYRIC LINE";
     }
 
     //-----------//
