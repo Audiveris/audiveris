@@ -232,17 +232,28 @@ public class TextBuilder
             }
 
             if (staff != null) {
-                // Create words
+                // Create word inters
                 for (TextWord word : line.getWords()) {
-                    final WordInter w = switch (role) {
-                        case Lyrics -> new LyricItemInter(word);
-                        case ChordName -> ChordNameInter.createValid(word);
-                        case Metronome -> null; // Already performed at MetronomeInter creation
-                        default -> new WordInter(word);
-                    };
-
-                    if (w != null) {
-                        createdWords.add(w);
+                    switch (role) {
+                        case Lyrics -> {
+                            final WordInter prev = createdWords.isEmpty() ? null
+                                    : createdWords.get(createdWords.size() - 1);
+                            final List<LyricItemInter> ws = LyricItemInter.createValid(word, prev);
+                            for (WordInter w : ws) {
+                                createdWords.add(w);
+                            }
+                        }
+                        case ChordName -> {
+                            final WordInter w = ChordNameInter.createValid(word);
+                            if (w != null) {
+                                createdWords.add(w);
+                            }
+                        }
+                        case Metronome -> {} // Already performed at MetronomeInter creation
+                        default -> {
+                            final WordInter w = new WordInter(word);
+                            createdWords.add(w);
+                        }
                     }
                 }
 

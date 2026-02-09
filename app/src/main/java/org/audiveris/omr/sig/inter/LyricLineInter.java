@@ -22,6 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sig.inter.LyricItemInter.LyricItemKind;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
@@ -39,7 +40,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class <code>LyricLineInter</code> gathers one line of lyrics.
  * <p>
  * A lyric line is composed of instances of {@link LyricItemInter}, which can be Syllables, Hyphens,
- * Extensions or Elisions
+ * Extensions or Elisions, plus Numbers and Punctuations.
  *
  * @author Hervé Bitteur
  */
@@ -260,11 +261,13 @@ public class LyricLineInter
             }
 
             // We process only syllable items
-            if (item.getItemKind() == LyricItemInter.LyricItemKind.Syllable) {
+            if (item.getItemKind() == LyricItemKind.Syllable) {
                 item.defineSyllabicType(precedingItem, followingItem);
             }
 
-            precedingItem = item;
+            if (item.getItemKind() != LyricItemKind.Number) { // We just "ignore" numbers
+                precedingItem = item;
+            }
         }
     }
 
