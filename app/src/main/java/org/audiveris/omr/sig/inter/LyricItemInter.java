@@ -22,7 +22,9 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
@@ -37,10 +39,15 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextBuilder;
+import org.audiveris.omr.text.TextChar;
+import static org.audiveris.omr.text.TextItem.boundsOf;
 import org.audiveris.omr.text.TextWord;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import static org.audiveris.omr.util.RegexUtil.getGroup;
+import static org.audiveris.omr.util.RegexUtil.group;
 import static org.audiveris.omr.util.StringUtil.ELISION_CHAR;
 import static org.audiveris.omr.util.StringUtil.ELISION_STRING;
 import static org.audiveris.omr.util.StringUtil.EXTENSIONS;
@@ -53,12 +60,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -78,6 +89,17 @@ public class LyricItemInter
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LyricItemInter.class);
+
+    /** Pattern for number. */
+    private static final String NUMBER = "number";
+
+    private static final String REST = "rest";
+
+    private static final Pattern numberPattern = Pattern.compile(
+            group(NUMBER, "[0-9]+\\.?") + group(REST, ".*"));
+
+    /** Pattern for (isolated) punctuation. */
+    private static final Pattern punctuationPattern = Pattern.compile("\\p{Punct}");
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -117,7 +139,7 @@ public class LyricItemInter
     {
         super(textWord, Shape.LYRICS);
 
-        itemKind = inferItemKind();
+        itemKind = inferItemKind(value);
     }
 
     /**
@@ -136,7 +158,29 @@ public class LyricItemInter
                 w.getFontInfo(),
                 PointUtil.rounded(w.getLocation()));
 
-        itemKind = inferItemKind();
+        itemKind = inferItemKind(value);
+    }
+
+    /**
+     * Creates a new LyricItemInter object from all details.
+     *
+     * @param glyph    underlying glyph
+     * @param bounds   bounding box
+     * @param grade    quality
+     * @param value    the word content
+     * @param fontInfo font information
+     * @param location location
+     */
+    public LyricItemInter (Glyph glyph,
+                           Rectangle bounds,
+                           double grade,
+                           String value,
+                           FontInfo fontInfo,
+                           Point location)
+    {
+        super(glyph, bounds, Shape.LYRICS, grade, value, fontInfo, location);
+
+        itemKind = inferItemKind(value);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -161,6 +205,8 @@ public class LyricItemInter
         if (itemKind == LyricItemKind.Syllable) {
             // Check if connected to a head chord
             setAbnormal(getHeadChord() == null);
+        } else {
+            setAbnormal(false);
         }
 
         return isAbnormal();
@@ -240,18 +286,12 @@ public class LyricItemInter
     //----------------------//
     /**
      * Report the reference abscissa of this lyric item to be used for chord link test.
-     * <p>
-     * NOTA: Some words width are very exaggerated by OCR, hence we use a standard abscissa distance
-     * off of word start abscissa.
      *
      * @return the x to use to chord link test
      */
     private double getReferenceAbscissa ()
     {
-        final Scale scale = staff.getSystem().getSheet().getScale();
-        final int xShift = scale.toPixels(constants.leftShift);
-
-        return getLocation().getX() + xShift;
+        return getCenter().x;
     }
 
     //-----------------//
@@ -280,25 +320,6 @@ public class LyricItemInter
         }
 
         return null;
-    }
-
-    //---------------//
-    // inferItemKind //
-    //---------------//
-    /**
-     * Infer item kind from content.
-     */
-    private LyricItemKind inferItemKind ()
-    {
-        if (ELISION_STRING.equals(value)) {
-            return LyricItemKind.Elision;
-        } else if (EXTENSIONS.contains(value)) {
-            return LyricItemKind.Extension;
-        } else if (HYPHEN_STRING.equals(value)) {
-            return LyricItemKind.Hyphen;
-        } else {
-            return LyricItemKind.Syllable;
-        }
     }
 
     //-----------//
@@ -597,8 +618,8 @@ public class LyricItemInter
     {
         super.setValue(value);
 
-        LyricItemKind oldKind = itemKind;
-        itemKind = inferItemKind();
+        final LyricItemKind oldKind = itemKind;
+        itemKind = inferItemKind(value);
 
         if ((sig != null) && (itemKind != oldKind)) {
             if (itemKind == LyricItemKind.Syllable) {
@@ -611,10 +632,118 @@ public class LyricItemInter
                     sig.removeEdge(rel);
                 }
             }
+
+            checkAbnormal();
         }
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------//
+    // createValid //
+    //-------------//
+    /**
+     * Create (valid) lyric items from a TextWord.
+     * <p>
+     * Special cases:
+     * <ul>
+     * <li>Isolated punctuations:
+     * Rather than creating a separate element for each isolated punctuation mark, we aim to
+     * "extend" the preceding word by integrating that mark.
+     * This is particularly true in French, where the ':', ';', '?', '!' characters
+     * are separated from the preceding word by a space.
+     * <li>Initial numbers:
+     * Isolate the initial characters that correspond to a number, possibly followed by a period.
+     * </ul>
+     *
+     * @param word         the raw text word
+     * @param previousWord the WordInter just before in the lyrics line
+     * @return the sequence of LyricItemInter instances created
+     */
+    public static List<LyricItemInter> createValid (TextWord word,
+                                                    WordInter previousWord)
+    {
+        final String value = word.getValue();
+        final Matcher matcher = numberPattern.matcher(value);
+
+        if (!matcher.matches()) {
+            if (inferItemKind(value) == LyricItemKind.Punctuation) {
+                if (previousWord instanceof LyricItemInter prevItem) {
+                    if (prevItem.isSyllable()) {
+                        prevItem.setValue(prevItem.getValue() + " " + value);
+                        return Collections.emptyList();
+                    }
+                }
+            }
+
+            // Standard case
+            return Arrays.asList(new LyricItemInter(word));
+        }
+
+        final List<LyricItemInter> created = new ArrayList<>();
+        final String number = getGroup(matcher, NUMBER);
+        final String rest = getGroup(matcher, REST);
+        logger.debug("Numbered word: {} number:\"{}\" rest:\"{}\"", value, number, rest);
+
+        final List<TextChar> chars = word.getChars();
+        final Line2D baseline = word.getBaseline();
+
+        // Number part
+        final List<TextChar> numChars = chars.subList(0, number.length());
+        final Rectangle numBounds = boundsOf(numChars);
+        final int numY = (int) Math.rint(LineUtil.yAtX(baseline, numBounds.x));
+        created.add(
+                new LyricItemInter(
+                        null,
+                        numBounds,
+                        word.getConfidence(),
+                        number,
+                        word.getFontInfo(),
+                        new Point(numBounds.x, numY)));
+
+        // Remaining part, if any
+        final List<TextChar> restChars = chars.subList(number.length(), chars.size());
+        if (!restChars.isEmpty()) {
+            final Rectangle restBounds = boundsOf(restChars);
+            final int restY = (int) Math.rint(LineUtil.yAtX(baseline, restBounds.x));
+            created.add(
+                    new LyricItemInter(
+                            null,
+                            restBounds,
+                            word.getConfidence(),
+                            rest,
+                            word.getFontInfo(),
+                            new Point(restBounds.x, restY)));
+        }
+
+        return created;
+    }
+
+    //---------------//
+    // inferItemKind //
+    //---------------//
+    /**
+     * Infer item kind from the provided value.
+     */
+    private static LyricItemKind inferItemKind (String value)
+    {
+        if (ELISION_STRING.equals(value)) {
+            return LyricItemKind.Elision;
+        } else if (EXTENSIONS.contains(value)) {
+            // Tesseract often takes a hyphen for an isolated extension character
+            return (value.length() == 1) ? LyricItemKind.Hyphen : LyricItemKind.Extension;
+        } else if (HYPHEN_STRING.equals(value)) {
+            return LyricItemKind.Hyphen;
+        } else {
+            if (numberPattern.matcher(value).matches()) {
+                return LyricItemKind.Number;
+            } else if (punctuationPattern.matcher(value).matches()) {
+                return LyricItemKind.Punctuation;
+            } else {
+                return LyricItemKind.Syllable;
+            }
+        }
+    }
 
     //-------------//
     // isSeparator //
@@ -641,10 +770,6 @@ public class LyricItemInter
         private final Scale.Fraction maxItemDx = new Scale.Fraction(
                 3,
                 "Maximum horizontal distance between a note and its lyric item");
-
-        private final Scale.Fraction leftShift = new Scale.Fraction(
-                1.0,
-                "Shift of left item abscissa");
     }
 
     //~ Enumerations -------------------------------------------------------------------------------
@@ -663,6 +788,10 @@ public class LyricItemInter
         Extension,
         /** A hyphen between syllables. */
         Hyphen,
+        /** A punctuation. */
+        Punctuation,
+        /** A (line?) number. */
+        Number,
         /** A real syllable. */
         Syllable;
     }

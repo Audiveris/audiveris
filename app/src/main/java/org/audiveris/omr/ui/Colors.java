@@ -145,7 +145,7 @@ public abstract class Colors
     public static final Color SCORE_PHYSICALS = new Color(0x806040);
 
     /** frame: lyric text. */
-    public static final Color SCORE_LYRICS = Color.BLUE;
+    public static final Color SCORE_LYRICS = Color.GRAY;
 
     /** Unknown shape. */
     public static final Color SHAPE_UNKNOWN = Color.LIGHT_GRAY;
