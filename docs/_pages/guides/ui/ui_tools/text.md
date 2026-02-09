@@ -264,6 +264,9 @@ For example, we can type "Bb" then press `Enter` and the chord name will be tran
 displayed as "B♭".
 
 ### Lyric line
+{: .d-inline-block }
+updated in 5.10
+{: .label .label-green}
 
 A lyric line is a sentence composed of lyric items.
 
@@ -281,6 +284,34 @@ nor is it always clear which voice is concerned.
 If a syllable is not linked to the correct chord, we can modify this link manually by dragging
 from the syllable to the suitable chord.
 This will update on-the-fly the line data (voice, verse, location).
+
+![](../../../assets/images/lyrics_numbers.png)
+
+Since the 5.10 release, the lyric words are searched for initial numbers.
+
+Such numbers, possibly followed by a period, are generally meant to indicate the verse number
+as in the example shown above.
+- This is redundant with the verse number already computed by the engine
+and exported to the MusicXML stream.
+- When singing the lyrics, we sing the syllables, not these numbers!
+- Before the 5.10 release, these numbers were taken as standard syllables
+and consequently linked to head chords.
+They were in competition with the real syllables, resulting in a number linked to a voice
+and the following syllable linked to another voice.
+
+The new policy is as follows:
+- The numbers are now recognized as such and not processed as syllables.
+- They are no longer linked to a head chord (hence their different color in the display).
+- They are not exported to the MusicXML output stream.
+
+There is a risk that a standard word be OCR'd as a number, as the "6" value
+in the center of the example above.  
+However:
+- This anomaly really stands out in the display, which is a good visual aid.
+- The primary cause is that the original accented character **`ô`** was misinterpreted by the OCR
+as a character **`6`** (even though the OCR was launched on the French language).
+- It's rather easy to manually fix the word content on the `Inter` board.
+This will automatically change the word kind from 'number' to 'syllable'.
 
 ### Metronome mark
 
