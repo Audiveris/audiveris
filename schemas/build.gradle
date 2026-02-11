@@ -104,11 +104,11 @@ repositories {
 }
 
 dependencies { 
-    implementation(group: 'args4j', name: 'args4j', version: '2.33')
-    implementation(group: 'org.codehaus.mojo', name: 'jaxb2-maven-plugin', version: '3.3.0')
-    implementation(group: 'org.apache.maven.plugin-tools', name: 'maven-plugin-annotations', version: '3.5.1')
-    implementation(group: 'org.apache.maven', name: 'maven-plugin-api', version: '3.9.11')
-    implementation(group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1')
+    implementation('args4j:args4j:2.33')
+    implementation('org.codehaus.mojo:jaxb2-maven-plugin:3.3.0')
+    implementation('org.apache.maven.plugin-tools:maven-plugin-annotations:3.5.1')
+    implementation('org.apache.maven:maven-plugin-api:3.9.11')
+    implementation('javax.xml.bind:jaxb-api:2.3.1')
 }
 
 // Main task
