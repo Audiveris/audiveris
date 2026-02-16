@@ -1045,7 +1045,7 @@ public class BookActions
         final SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            stub.printWatch();
+            stub.printWatch(true);
         }
     }
 

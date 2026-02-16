@@ -1964,7 +1964,7 @@ public class Book
 
                                 return ok;
                             } finally {
-                                stub.printWatch();
+                                stub.printWatch(false);
                                 LogUtil.stopStub();
                             }
                         });
@@ -2022,7 +2022,7 @@ public class Book
                                 logger.warn("Error processing stub {}", ex);
                                 someFailure = true;
                             } finally {
-                                stub.printWatch();
+                                stub.printWatch(false);
                                 if (swap) {
                                     swapAllSheets(); // Save sheet(s) & global book info to disk
                                     logger.info("End of {}", stub);
@@ -2058,7 +2058,7 @@ public class Book
                             logger.warn("Error processing stub {}", ex);
                             someFailure = true;
                         } finally {
-                            stub.printWatch();
+                            stub.printWatch(false);
                             if (swap) {
                                 swapAllSheets(); // Save sheet(s) & global book info to disk
                                 logger.info("End of {}", stub);
@@ -3065,7 +3065,7 @@ public class Book
     {
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
-                "Should we print out the stop watch?");
+                "Should we print out the book stop watch?");
 
         private final Constant.Boolean processAllStubsInParallel = new Constant.Boolean(
                 false,
