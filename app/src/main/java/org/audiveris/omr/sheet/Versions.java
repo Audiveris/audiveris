@@ -246,7 +246,7 @@ public abstract class Versions
             case Never -> next = null;
         }
 
-        logger.info(
+        logger.debug(
                 "Versions. Poll frequency: {}, next poll on: {}",
                 frequency,
                 (next != null) ? DATE_FORMAT.format(next.getTime()) : null);

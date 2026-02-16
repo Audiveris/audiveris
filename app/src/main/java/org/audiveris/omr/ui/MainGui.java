@@ -565,7 +565,7 @@ public class MainGui
     protected void startup ()
     {
         logger.debug("MainGui. 2/startup");
-        logger.info("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
+        logger.debug("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
         logger.info("\n{}", LogUtil.allInitialMessages());
 
         if (!OcrUtil.getOcr().isAvailable()) {

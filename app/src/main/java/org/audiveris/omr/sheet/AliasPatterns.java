@@ -64,9 +64,7 @@ public class AliasPatterns
 
     private static final String ALIAS_PATTERNS_FILENAME = "alias-patterns.xml";
 
-    //~ Instance fields ----------------------------------------------------------------------------
-
-    private final List<Pattern> patterns = loadAliasPatterns();
+    private static List<Pattern> patterns = null;
 
     //~ Methods ------------------------------------------------------------------------------------
 
@@ -81,7 +79,7 @@ public class AliasPatterns
      */
     public String getAlias (String name)
     {
-        for (Pattern pattern : patterns) {
+        for (Pattern pattern : getPatterns()) {
             Matcher matcher = pattern.matcher(name);
 
             if (matcher.find()) {
@@ -96,6 +94,20 @@ public class AliasPatterns
         return null;
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------------//
+    // getPatterns //
+    //-------------//
+    private static List<Pattern> getPatterns ()
+    {
+        if (patterns == null) {
+            patterns = loadAliasPatterns();
+        }
+
+        return patterns;
+    }
+
     //-------------------//
     // loadAliasPatterns //
     //-------------------//
@@ -106,15 +118,15 @@ public class AliasPatterns
      *
      * @return the list of patterns found, perhaps empty
      */
-    private List<Pattern> loadAliasPatterns ()
+    private static List<Pattern> loadAliasPatterns ()
     {
         final List<Pattern> patternList = new ArrayList<>();
 
         if (useAliasPatterns()) {
-            URI[] uris = new URI[]
-            {
-                    WellKnowns.CONFIG_FOLDER.resolve(ALIAS_PATTERNS_FILENAME).toUri().normalize(),
-                    UriUtil.toURI(WellKnowns.RES_URI, ALIAS_PATTERNS_FILENAME) };
+            URI[] uris = new URI[] { WellKnowns.CONFIG_FOLDER.resolve(ALIAS_PATTERNS_FILENAME)
+                    .toUri().normalize(), UriUtil.toURI(
+                            WellKnowns.RES_URI,
+                            ALIAS_PATTERNS_FILENAME) };
 
             for (int i = 0; i < uris.length; i++) {
                 URI uri = uris[i];
@@ -151,8 +163,6 @@ public class AliasPatterns
 
         return patternList;
     }
-
-    //~ Static Methods -----------------------------------------------------------------------------
 
     //------------------//
     // useAliasPatterns //

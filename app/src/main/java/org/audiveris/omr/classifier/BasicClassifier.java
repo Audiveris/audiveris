@@ -283,7 +283,7 @@ public class BasicClassifier
         }
 
         if ((means != null) && (stds != null)) {
-            logger.info("Classifier loaded XML norms.");
+            logger.debug("Classifier loaded XML norms.");
 
             return new Norms(means, stds);
         }
