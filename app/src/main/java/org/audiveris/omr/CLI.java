@@ -266,6 +266,19 @@ public class CLI
         return params.swap;
     }
 
+    //---------------//
+    // isVersionMode //
+    //---------------//
+    /**
+     * Report whether we are running in version mode (to stop immediately).
+     *
+     * @return true for version mode
+     */
+    public boolean isVersionMode ()
+    {
+        return params.versionMode;
+    }
+
     //-----------------//
     // parseParameters //
     //-----------------//
@@ -279,7 +292,7 @@ public class CLI
     public Parameters parseParameters (final String... args)
         throws CmdLineException
     {
-        logger.info("CLI args: {}", Arrays.toString(args));
+        logger.debug("CLI args: {}", Arrays.toString(args));
 
         // Bug fix if an arg is made of spaces
         // And deprecated "-option" must be replaced by "-constant"
@@ -332,14 +345,9 @@ public class CLI
      */
     public void printUsage ()
     {
-        StringBuilder buf = new StringBuilder();
-
-        // Print version
-        buf.append("\n").append(toolName).append(" Version:");
-        buf.append("\n   ").append(WellKnowns.TOOL_REF);
+        final StringBuilder buf = new StringBuilder();
 
         // Print syntax
-        buf.append("\n");
         buf.append("\nSyntax:");
         buf.append("\n    audiveris [OPTIONS] [--] [INPUT_FILES]\n");
 
@@ -366,7 +374,7 @@ public class CLI
         }
 
         buf.append("\n");
-        logger.info(buf.toString());
+        System.out.println(buf.toString());
     }
 
     //---------------------//
@@ -633,29 +641,26 @@ public class CLI
      */
     public static class Parameters
     {
-        /** Help mode. */
-        @Option(name = "-help", help = true, usage = "Display general help then stop")
-        boolean helpMode;
 
         /** Batch mode. */
         @Option(name = "-batch", usage = "Run with no graphic user interface")
         boolean batchMode;
 
-        /** The set of sheet IDs to load. */
-        @Option(name = "-sheets", usage = "Select sheet numbers and ranges (1 4-5)", handler = IntArrayOptionHandler.class)
-        private ArrayList<Integer> sheets;
+        /** The map of application options. */
+        @Option(name = "-constant", usage = "Define an application constant", handler = PropertyOptionHandler.class)
+        Properties constants;
 
-        /** Should book be transcribed?. */
-        @Option(name = "-transcribe", usage = "Transcribe whole book")
-        boolean transcribe;
-
-        /** Specific step. */
-        @Option(name = "-step", usage = "Define a specific target step")
-        OmrStep step;
+        /** Should MusicXML data be produced?. */
+        @Option(name = "-export", usage = "Export MusicXML")
+        boolean export;
 
         /** Force step re-processing. */
         @Option(name = "-force", usage = "Force step/transcribe re-processing")
         boolean force;
+
+        /** Help mode. */
+        @Option(name = "-help", help = true, usage = "Display general help then stop")
+        boolean helpMode;
 
         /** Output directory. */
         @Option(name = "-output", usage = "Define base output folder", metaVar = "<output-folder>")
@@ -665,29 +670,46 @@ public class CLI
         @Option(name = "-playlist", usage = "Build a compound book from playlist", metaVar = "<file.xml>")
         Path playListPath;
 
-        /** Should MusicXML data be produced?. */
-        @Option(name = "-export", usage = "Export MusicXML")
-        boolean export;
-
         /** Should book be printed?. */
         @Option(name = "-print", usage = "Print out book")
         boolean print;
-
-        /** The map of application options. */
-        @Option(name = "-constant", usage = "Define an application constant", handler = PropertyOptionHandler.class)
-        Properties constants;
-
-        /** Should book file be upgraded?. */
-        @Option(name = "-upgrade", usage = "Upgrade whole book file")
-        boolean upgrade;
 
         /** Should book be saved on every successful batch step?. */
         @Option(name = "-save", usage = "In batch, save book on every successful step")
         boolean save;
 
+        /** The set of sheet IDs to load. */
+        @Option(name = "-sheets", usage = "Select sheet numbers and ranges (1 4-5)", handler = IntArrayOptionHandler.class)
+        private ArrayList<Integer> sheets;
+
+        /** Specific step. */
+        @Option(name = "-step", usage = "Define a specific target step", handler = StepOptionHandler.class)
+        OmrStep step;
+
         /** Should every sheet be swapped after processing?. */
         @Option(name = "-swap", usage = "Swap out every sheet after its processing")
         boolean swap;
+
+        /** Should book be transcribed?. */
+        @Option(name = "-transcribe", usage = "Transcribe whole book")
+        boolean transcribe;
+
+        /** Should book file be upgraded?. */
+        @Option(name = "-upgrade", usage = "Upgrade whole book file")
+        boolean upgrade;
+
+        /** Version. */
+        @Option(name = "-version", help = true, usage = "Display version then stop")
+        boolean versionMode;
+
+        /** Optional "--" separator. */
+        @Argument
+        @Option(name = "--", handler = StopOptionHandler.class)
+        /** Final arguments. */
+        List<Path> arguments = new ArrayList<>();
+
+        // Advanced options
+        //-----------------
 
         /** Ability to run a class on each valid sheet. */
         @Option(name = "-run", usage = "(advanced) Run provided class on valid sheets", handler = ClassOptionHandler.class)
@@ -698,14 +720,8 @@ public class CLI
         boolean sample;
 
         /** Should symbols annotations be produced?. */
-        @Option(name = "-annotate", usage = "(advanced) Annotate book symbols")
+        @Option(name = "-annotate", usage = "(advanced) Annotate all book symbols")
         boolean annotate;
-
-        /** Optional "--" separator. */
-        @Argument
-        @Option(name = "--", handler = StopOptionHandler.class)
-        /** Final arguments. */
-        List<Path> arguments = new ArrayList<>();
 
         private Parameters ()
         {
@@ -1028,6 +1044,54 @@ public class CLI
         public String toString ()
         {
             return "Samples \"" + path + "\"";
+        }
+    }
+
+    //-------------------//
+    // StepOptionHandler //
+    //-------------------//
+    /**
+     * Option handler for a step.
+     */
+    public static class StepOptionHandler
+            extends OptionHandler<OmrStep>
+    {
+        /**
+         * Create a StepOptionHandler object.
+         *
+         * @param parser Command line argument owner
+         * @param option Run-time copy of the Option or Argument annotation
+         * @param setter Setter interface
+         */
+        public StepOptionHandler (CmdLineParser parser,
+                                  OptionDef option,
+                                  Setter<OmrStep> setter)
+        {
+            super(parser, option, setter);
+        }
+
+        @Override
+        public String getDefaultMetaVariable ()
+        {
+            return "<step>";
+        }
+
+        @Override
+        public int parseArguments (org.kohsuke.args4j.spi.Parameters params)
+            throws CmdLineException
+        {
+            final String stepName = params.getParameter(0).trim();
+
+            if (!stepName.isEmpty()) {
+                try {
+                    final OmrStep step = OmrStep.valueOf(stepName);
+                    setter.addValue(step);
+                } catch (Exception ex) {
+                    throw new CmdLineException(owner, ex);
+                }
+            }
+
+            return 1;
         }
     }
 }
