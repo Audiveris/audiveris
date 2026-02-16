@@ -1331,10 +1331,14 @@ public class SheetStub
     //------------//
     /**
      * Print out the step-based processing times for this sheet.
+     *
+     * @param force if true, do print regardless of local constant switch
      */
-    public void printWatch ()
+    public void printWatch (boolean force)
     {
-        getSheet().getWatch().print();
+        if (force || constants.printWatch.isSet()) {
+            getSheet().getWatch().print();
+        }
     }
 
     //-----------//
