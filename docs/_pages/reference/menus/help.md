@@ -47,17 +47,19 @@ This gives, for example:
 ```
 Audiveris
 Role: Optical Music Recognition
-Version: 5.4-alpha:af6b6cc29
-Container: file:/D:/soft/audiveris-github/languages/app/build/classes/java/main/
+Version: 5.10.0
+Commit: 7cd25598ed15dcf1fd041ab60c1e7543f55588d4
+Container: file:/D:/soft/audiveris-github/bugfix/app/build/classes/java/main/
 Home page: http://www.audiveris.org
-Dev. project: https://github.com/Audiveris/audiveris
+Project: https://github.com/Audiveris/audiveris
 Software license: GNU Affero GPL v3
-OCR engine: Tesseract OCR, version 5.3.1
+OCR engine: Tesseract OCR, version 5.5.1
 OCR folder: C:\Users\herve\AppData\Roaming\AudiverisLtd\audiveris\config\tessdata
+Installed languages: deu,eng,fra,ita
 Java vendor: Oracle Corporation
-Java version: 21.0.5
-Java runtime: Java(TM) SE Runtime Environment (build 21.0.5+9-LTS-239)
-Java VM: Java HotSpot(TM) 64-Bit Server VM (build 21.0.5+9-LTS-239, mixed mode, sharing)
+Java version: 25
+Java runtime: Java(TM) SE Runtime Environment (build 25+37-LTS-3491)
+Java VM: Java HotSpot(TM) 64-Bit Server VM (build 25+37-LTS-3491, mixed mode, sharing)
 Operating System: Windows 10 10.0
 Architecture: amd64
 ```

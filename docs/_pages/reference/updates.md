@@ -22,10 +22,10 @@ Table of contents
 ---
 
 ## 5.10
-(February 2026)
+(March 2026)
 
 - User Interface
-  - Ability to set font attributes at a sentence level to apply them to all its words.
+  - Ability to set font attributes at a sentence level to apply them to all its member words.
   - Better text word resizing, keeping a constant height/width ratio.
   - Better drag n' drop for all clefs.
 - Engine
@@ -34,6 +34,8 @@ Table of contents
   - Support for the rehearsal marks.
   - Support for BARITONE, MEZZO_SOPRANO and SOPRANO clefs.
   - Additional book processing switch to accept braced parts without internal bar connections.
+- Project
+  - Audiveris for Windows is now available on the Scoop Extras bucket
 
 ## 5.9
 (December 2025)
