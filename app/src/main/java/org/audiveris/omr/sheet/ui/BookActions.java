@@ -46,6 +46,7 @@ import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sheet.stem.StemScaler;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.OmrStep;
+import org.audiveris.omr.step.StepPause;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.ViewParameters;
@@ -2208,7 +2209,9 @@ public class BookActions
                     sheet.getStub().reachStep(OmrStep.PAGE, false);
                     sheet.export(sheetExportPath);
                 }
-            } catch (Throwable ex) {
+            } catch (StepPause sp) {
+                logger.info("ExportSheetTask stopped by user.");
+            } catch (Exception ex) {
                 logger.warn("Error in ExportSheetTask {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopStub();

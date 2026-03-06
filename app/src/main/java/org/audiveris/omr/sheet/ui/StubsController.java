@@ -248,6 +248,7 @@ public class StubsController
      */
     private void checkStubStatus (final SheetStub stub,
                                   final boolean early)
+        throws Exception
     {
         logger.debug("stateChanged/checkStubStatus on {}", stub);
 
@@ -377,6 +378,8 @@ public class StubsController
                     }
                 });
 
+                return null;
+            } catch (Exception ex) {
                 return null;
             } finally {
                 LogUtil.stopStub();

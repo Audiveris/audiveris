@@ -68,7 +68,9 @@ public class LoadStep
         final SheetStub stub = sheet.getStub();
         final BufferedImage image = stub.loadGrayImage();
 
-        if (image != null) {
+        if (image == null) {
+            throw new StepException("No image");
+        } else {
             // Threshold on image size
             final int count = image.getWidth() * image.getHeight();
             final int max = constants.maxPixelCount.getValue();
@@ -103,9 +105,9 @@ public class LoadStep
     private static class Constants
             extends ConstantSet
     {
-        private final Constant.Integer maxPixelCount=new Constant.Integer( //
-        "Pixels", //
-        20_000_000, //
-        "Maximum image size, specified in pixel count (0 for no check)");
+        private final Constant.Integer maxPixelCount = new Constant.Integer( //
+                "Pixels", //
+                20_000_000, //
+                "Maximum image size, specified in pixel count (0 for no check)");
     }
 }

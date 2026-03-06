@@ -1938,8 +1938,10 @@ public class Book
 
                 if (isMultiSheet() && constants.processAllStubsInParallel.isSet()
                         && (OmrExecutors.defaultParallelism.getValue() == true)) {
+                    // Process early steps for all selected stubs in parallel
+                    // Then process the RHYTHMS & PAGE steps, if needed, in sequence
 
-                    List<Callable<Boolean>> tasks = new ArrayList<>();
+                    final List<Callable<Boolean>> tasks = new ArrayList<>();
 
                     // Initial session
                     // Process all stubs in parallel, up until RHYTHMS & PAGE steps excluded
@@ -1956,13 +1958,13 @@ public class Book
                             LogUtil.start(stub);
 
                             try {
-                                boolean ok = stub.reachStep(maxStep, force);
+                                stub.reachStep(maxStep, force);
 
-                                if (ok && (OMR.gui == null)) {
+                                if (OMR.gui == null) {
                                     stub.swapSheet(); // Save sheet & global book info to disk
                                 }
 
-                                return ok;
+                                return null;
                             } finally {
                                 stub.printWatch(false);
                                 LogUtil.stopStub();
@@ -1984,8 +1986,8 @@ public class Book
                                     logger.debug("StepPause in Future {}", future);
                                 } else {
                                     logger.warn("Future exception", ex);
+                                    someFailure = true;
                                 }
-                                someFailure = true;
                             }
                         }
                     } catch (InterruptedException ex) {
@@ -2002,24 +2004,16 @@ public class Book
                             LogUtil.start(stub);
 
                             try {
-                                if (stub.reachStep(target, false)) {} else {
-                                    someFailure = true;
-                                }
+                                stub.reachStep(target, false);
                             } catch (StepPause ex) {
                                 // Book pause required
                                 // Stop processing for the other stubs
                                 logger.info("Book processing stopped by user.");
-                                someFailure = true;
                                 break;
-                            } catch (ProcessingCancellationException ex) {
-                                // Exception (such as timeout) raised on stub
-                                // Let processing continue for the other stubs
-                                logger.warn("Error processing stub");
-                                someFailure = true;
                             } catch (Exception ex) {
                                 // Exception raised on stub
                                 // Let processing continue for the other stubs
-                                logger.warn("Error processing stub {}", ex);
+                                logger.warn("Error processing stub");
                                 someFailure = true;
                             } finally {
                                 stub.printWatch(false);
@@ -2038,24 +2032,16 @@ public class Book
                         LogUtil.start(stub);
 
                         try {
-                            if (stub.reachStep(target, force)) {} else {
-                                someFailure = true;
-                            }
+                            stub.reachStep(target, force);
                         } catch (StepPause ex) {
                             // Book pause required
                             // Stop processing for the other stubs
                             logger.info("Book processing stopped by user.");
-                            someFailure = true;
                             break;
-                        } catch (ProcessingCancellationException ex) {
-                            // Exception (such as timeout) raised on stub
-                            // Let processing continue for the other stubs
-                            logger.warn("Error processing stub");
-                            someFailure = true;
                         } catch (Exception ex) {
                             // Exception raised on stub
                             // Let processing continue for the other stubs
-                            logger.warn("Error processing stub {}", ex);
+                            logger.warn("Error processing stub");
                             someFailure = true;
                         } finally {
                             stub.printWatch(false);
@@ -2068,7 +2054,7 @@ public class Book
                         }
                     }
 
-                    logger.info("Book processed.");
+                    logger.info("End of {}", this);
                 }
 
                 return !someFailure;
@@ -2079,6 +2065,8 @@ public class Book
                 long stopTime = System.currentTimeMillis();
                 logger.debug("End of step set in {} ms.", (stopTime - startTime));
             }
+        } catch (StepPause sp) {
+            logger.info("Processing stopped.");
         } catch (ProcessingCancellationException pce) {
             throw pce;
         } catch (Exception ex) {

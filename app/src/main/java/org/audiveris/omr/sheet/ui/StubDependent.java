@@ -399,7 +399,7 @@ public abstract class StubDependent
                 return;
             }
 
-            SheetStub stub = stubEvent.getData();
+            final SheetStub stub = stubEvent.getData();
 
             // Update stubAvailable
             setStubAvailable(stub != null);
@@ -449,7 +449,7 @@ public abstract class StubDependent
             // Update sheet properties
             if ((stub != null) && stub.hasSheet()) {
                 final Sheet sheet = stub.getSheet();
-                InterController ctrl = sheet.getInterController();
+                final InterController ctrl = sheet.getInterController();
                 setUndoable(ctrl.canUndo());
                 setRedoable(ctrl.canRedo());
                 updateProperties(sheet);

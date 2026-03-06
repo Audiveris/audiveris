@@ -220,7 +220,7 @@ public class StepMenu
                         try {
                             LogUtil.start(stub);
 
-                            boolean ok = stub.reachStep(step, true);
+                            stub.reachStep(step, true);
                             logger.info("End of sheet step {}", stub.getLatestStep());
                         } finally {
                             LogUtil.stopStub();
@@ -265,7 +265,7 @@ public class StepMenu
         public void displayState (SheetStub stub,
                                   boolean isIdle)
         {
-            StepAction action = (StepAction) getAction();
+            final StepAction action = (StepAction) getAction();
 
             if ((stub == null) || !stub.isValid()) {
                 setState(false);

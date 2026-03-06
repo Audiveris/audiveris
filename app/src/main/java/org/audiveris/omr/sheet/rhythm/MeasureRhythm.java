@@ -428,7 +428,6 @@ public class MeasureRhythm
     //                }
     //
     //                if (ch.getTimeOffset().equals(start)) {
-    //                    logger.info("BINGO");
     //                    shrinkVoice(null, voice, start);
     //                    continue NextVoice;
     //                }
