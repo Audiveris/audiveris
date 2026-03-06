@@ -106,14 +106,15 @@ public class BinaryStep
 
     /**
      * Filters a sheet using its selected binary filter.
-     * 
+     *
      * @param sheet the sheet whose image will be filtered.
-      */
-    public static void runBinarizationFilter(final Sheet sheet) {
+     */
+    public static void runBinarizationFilter (final Sheet sheet)
+    {
         final StopWatch watch = new StopWatch("Binary step for " + sheet.getId());
         watch.start("Getting initial source");
-        
-        Picture picture = sheet.getPicture();
+
+        final Picture picture = sheet.getPicture();
         ByteProcessor initial = picture.getSource(SourceKey.GRAY);
 
         FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
@@ -121,11 +122,11 @@ public class BinaryStep
         logger.debug("{}", "Binarization");
 
         PixelFilter filter = desc.getFilter(initial);
-        if (watch != null) watch.start("Binarize source");
+        watch.start("Binarize source");
 
         ByteProcessor binary = filter.filteredImage();
 
-        if (watch != null) watch.start("Create binary RunTable");
+        watch.start("Create binary RunTable");
 
         RunTableFactory vertFactory = new RunTableFactory(Orientation.VERTICAL);
         RunTable wholeVertTable = vertFactory.createTable(binary);

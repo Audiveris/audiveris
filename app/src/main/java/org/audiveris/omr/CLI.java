@@ -538,6 +538,7 @@ public class CLI
          * @param book the book to process
          */
         protected void processBook (Book book)
+            throws Exception
         {
             // Void by default
         }
@@ -826,6 +827,7 @@ public class CLI
 
         @Override
         protected void processBook (Book book)
+            throws Exception
         {
             final Path folder = BookManager.getDefaultBookFolder(book);
             boolean cancelled = false;
@@ -880,16 +882,28 @@ public class CLI
 
                 // Specific step to reach on valid selected sheets in the book?
                 if (params.step != null) {
-                    boolean ok = book.reachBookStep(params.step, params.force, validStubs, swap);
+                    final boolean ok = book.reachBookStep(
+                            params.step,
+                            params.force,
+                            validStubs,
+                            swap);
 
                     if (!ok) {
-                        return;
+                        if (OMR.gui == null) {
+                            throw new Exception("Error in reaching step " + params.step);
+                        } else {
+                            return; // Safer
+                        }
                     }
                 }
 
                 // Score(s)
                 if (params.transcribe) {
-                    book.transcribe(validStubs, scores, swap);
+                    final boolean ok = book.transcribe(validStubs, scores, swap);
+
+                    if (!ok && (OMR.gui == null)) {
+                        throw new Exception("Error in transcribing " + book);
+                    }
                 }
 
                 // Specific class to run?
@@ -910,7 +924,11 @@ public class CLI
                 // Book export?
                 if (params.export) {
                     logger.debug("Export book");
-                    book.export(validStubs, scores);
+                    final boolean ok = book.export(validStubs, scores);
+
+                    if (!ok && (OMR.gui == null)) {
+                        throw new Exception("Error in export");
+                    }
                 }
 
                 // Book sample?
@@ -934,9 +952,9 @@ public class CLI
                 logger.warn("Cancelled " + book);
                 cancelled = true;
                 throw pce;
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 logger.warn("Exception occurred " + ex, ex);
-                throw new RuntimeException(ex);
+                throw ex;
             } finally {
                 // Close (when in batch mode only)
                 if (OMR.gui == null) {

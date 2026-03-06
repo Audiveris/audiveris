@@ -260,11 +260,11 @@ public class Main
             MusicFont.checkMusicFont();
 
             // Run the required tasks, if any (and remember if at least one task failed)
-            boolean failure = runBatchTasks();
+            final boolean failure = runBatchTasks();
 
             // At this point all tasks have completed (except timeout...)
             // So shutdown gracefully the executors
-            boolean timeout = !OmrExecutors.shutdown();
+            final boolean timeout = !OmrExecutors.shutdown();
 
             // Save global sample repository if modified
             if (SampleRepository.hasInstance()) {
@@ -286,12 +286,12 @@ public class Main
                 int status = 0;
 
                 if (failure) {
-                    status -= 1;
+                    status += 1;
                     msg += " Failure";
                 }
 
                 if (timeout) {
-                    status -= 2;
+                    status += 2;
                     msg += " Timeout";
                 }
 
