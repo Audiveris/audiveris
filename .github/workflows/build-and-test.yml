@@ -16,7 +16,7 @@ jobs:
       TESSDATA_PREFIX: /home/runner/.config/AudiverisLtd/audiveris/tessdata
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         
       - name: Retrieve Gradle properties
         uses: BrycensRanch/read-properties-action@v1
@@ -26,7 +26,7 @@ jobs:
           all: true
 
       - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           java-version: ${{ steps.all.outputs.theMinJavaVersion }}
           distribution: zulu
@@ -38,7 +38,7 @@ jobs:
       # cache loaded tessdata files so they don't have to be re-downloaded on every workflow execution
       - name: Get cached tessdata files
         id: cache-tessdata
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ${{ env.TESSDATA_PREFIX }}
           key: ${{ runner.os }}-tessdata-${{ env.TESSDATA_TAG }}-eng
