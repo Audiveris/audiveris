@@ -281,6 +281,30 @@ public class WedgeInter
         }
     }
 
+    //----------//
+    // getChord //
+    //----------//
+    /**
+     * Report the chord linked to this wedge on the provided side.
+     *
+     * @param side the provided side
+     * @return the linked chord, if any, otherwise null
+     */
+    public AbstractChordInter getChord (HorizontalSide side)
+    {
+        if (sig != null) {
+            for (org.audiveris.omr.sig.relation.Relation rel : sig.edgesOf(this)) {
+                if (rel instanceof ChordWedgeRelation chordWedgeRelation) {
+                    if (chordWedgeRelation.getSide() == side) {
+                        return (AbstractChordInter) sig.getOppositeInter(this, rel);
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     //-------------//
     // searchLinks //
     //-------------//
