@@ -224,12 +224,34 @@ public class InterController
             @Override
             protected void build ()
             {
+                // If replacing a HeadInter, salvage its AugmentationRelation(s)
+                final List<UITask> recoveredTasks = new ArrayList<>();
+                if (inter instanceof org.audiveris.omr.sig.inter.HeadInter) {
+                    final org.audiveris.omr.sheet.SystemInfo system = inter.getStaff().getSystem();
+                    final org.audiveris.omr.sig.SIGraph sig = system.getSig();
+                    final List<Inter> intersected = sig.intersectedInters(inter.getGlyph().getBounds());
+                    
+                    for (Inter comp : intersected) {
+                        if ((comp != inter) && (comp.getGlyph() == inter.getGlyph()) && (comp instanceof org.audiveris.omr.sig.inter.HeadInter)) {
+                            for (org.audiveris.omr.sig.relation.Relation rel : sig.incomingEdgesOf(comp)) {
+                                if (rel instanceof org.audiveris.omr.sig.relation.AugmentationRelation) {
+                                    Inter dot = sig.getEdgeSource(rel);
+                                    recoveredTasks.add(new LinkTask(sig, dot, inter, new org.audiveris.omr.sig.relation.AugmentationRelation()));
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // If glyph is used by another inter, delete this other inter
                 removeCompetitors(inter, inter.getGlyph(), seq);
 
                 // Addition task and other related tasks (additions, links) if any
                 final WrappedBoolean cancel = new WrappedBoolean(false);
                 seq.addAll(inter.preAdd(cancel, toPublish));
+                
+                // Re-apply salvaged links
+                seq.addAll(recoveredTasks);
 
                 if (cancel.isSet()) {
                     seq.setCancelled(true);
