@@ -256,6 +256,14 @@ public class ProcessingSwitches
 
         final Constant.Boolean articulations = new Constant.Boolean(true, "Articulations");
 
+        final Constant.Boolean dynamicsAboveStaff = new Constant.Boolean(
+                false,
+                "Dynamics located above staff");
+
+        final Constant.Boolean dynamicsBelowStaff = new Constant.Boolean(
+                false,
+                "Dynamics located below staff");
+
         final Constant.Boolean implicitTuplets = new Constant.Boolean(false, "Implicit tuplets");
     }
 
