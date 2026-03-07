@@ -243,7 +243,7 @@ public class ProcessingSwitches
                 "Partial whole rests");
 
         final Constant.Boolean multiWholeHeadChords = new Constant.Boolean(
-                false,
+                true,
                 "Multi-whole head chords");
 
         final Constant.Boolean chordNames = new Constant.Boolean(false, "Chord names");
