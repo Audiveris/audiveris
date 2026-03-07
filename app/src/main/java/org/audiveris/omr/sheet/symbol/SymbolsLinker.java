@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -255,7 +255,7 @@ public class SymbolsLinker
                         link.applyTo(os);
                     }
                 } else {
-                    logger.info("No chord linked to {}", os);
+                    logger.info("No chord linked to {} at {}", os, os.getCenter());
                 }
             } catch (Exception ex) {
                 logger.warn("Error in linkOctaveShifts for {} {}", os, ex.toString(), ex);

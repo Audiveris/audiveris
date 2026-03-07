@@ -22,7 +22,8 @@ plugins {
 def app = project(':app')
 
 // Central location for application version
-project.version = '5.9.0'
+// REMINDER: Also update the "audiveris_functional_version" in docs/_config.yml
+project.version = '5.10.0'
 println "version: ${project.version}"
 
 // Central location for the specific versions of tesseract dependencies
@@ -94,7 +95,7 @@ if (project.hasProperty('mainClass')) {
 
 repositories {
     if (project.hasProperty("isFlatpak") && project.getProperty("isFlatpak") == "true") {
-        println "repositories. isFlatpak set"
+        logger.info("repositories. isFlatpak set")
         maven { // Only the offline repository
             name = 'Offline repository for flatpak'
             url = '../dependencies'                // TODO: check this!
@@ -115,45 +116,46 @@ repositories {
 
 dependencies {
     implementation(
-        [group: 'args4j', name: 'args4j', version: '2.33'],
-        [group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.14'],
-        [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.4.0'],
-        [group: 'com.github.jai-imageio', name: 'jai-imageio-jpeg2000', version: '1.4.0'],
-        [group: 'com.itextpdf', name: 'itextpdf', version: '5.5.13.2'],
-        [group: 'com.jgoodies', name: 'jgoodies-forms', version: '1.9.0'],
-        [group: 'com.jgoodies', name: 'jgoodies-looks', version: '2.7.0'],
-        [group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0.1'],
-        [group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.1'],
-        [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
-        [group: 'javax.media', name: 'jai-core', version: '1.1.3'],
-        [group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'],
-        [group: 'net.imagej', name: 'ij', version: '1.53j'],
-        [group: 'net.jcip', name: 'jcip-annotations', version: '1.0'],
-        [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'],
-        [group: 'org.apache.pdfbox', name: 'jbig2-imageio', version: '3.0.4'],
-        [group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.4'],
-        [group: 'org.apache.pdfbox', name: 'pdfbox-io', version: '3.0.4'],
-        [group: 'org.audiveris', name: 'proxymusic', version: '4.0.3'],
-        [group: 'org.bushe', name: 'eventbus', version: '1.4'],
-        [group: 'org.bytedeco', name: 'javacpp', version: jcppVersion],
-        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}"],
-        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}"],
-        [group: 'org.jdesktop.bsaf', name: 'bsaf', version: '1.9.2'],
-        [group: 'org.jfree', name: 'jfreechart', version: '1.5.3'],
-        [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.5.1'],
-        [group: 'org.kohsuke', name: 'github-api', version: '1.301'],
-        [group: 'org.reflections', name: 'reflections', version: '0.10.2'],
-        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.35']
+        'args4j:args4j:2.33',
+        'ch.qos.logback:logback-classic:1.4.14',
+        'com.github.jai-imageio:jai-imageio-core:1.4.0',
+        'com.github.jai-imageio:jai-imageio-jpeg2000:1.4.0',
+        'com.itextpdf:itextpdf:5.5.13.2',
+        'com.jgoodies:jgoodies-forms:1.9.0',
+        'com.jgoodies:jgoodies-looks:2.7.0',
+        'com.sun.xml.bind:jaxb-core:2.3.0.1',
+        'com.sun.xml.bind:jaxb-impl:2.3.1',
+        'gov.nist.math:jama:1.0.3',
+        'javax.media:jai-core:1.1.3',
+        'javax.xml.bind:jaxb-api:2.3.1',
+        'net.imagej:ij:1.54p',
+        'net.jcip:jcip-annotations:1.0',
+        'org.apache.directory.studio:org.apache.commons.io:2.4',
+        'org.apache.pdfbox:jbig2-imageio:3.0.4',
+        'org.apache.pdfbox:pdfbox:3.0.6',
+        'org.apache.pdfbox:pdfbox-io:3.0.6',
+        'org.audiveris:proxymusic:4.0.3',
+        'org.bushe:eventbus:1.4',
+        "org.bytedeco:javacpp:${jcppVersion}",
+        "org.bytedeco:leptonica:${leptVersion}-${jcppVersion}",
+        "org.bytedeco:tesseract:${tessVersion}-${jcppVersion}",
+        'org.commonmark:commonmark:0.27.0',
+        'org.jdesktop.bsaf:bsaf:1.9.2',
+        'org.jfree:jfreechart:1.5.6',
+        'org.jgrapht:jgrapht-core:1.5.2',
+        'org.kohsuke:github-api:1.330',
+        'org.reflections:reflections:0.10.2',
+        'org.slf4j:slf4j-api:2.0.17'
     )
 
     runtimeOnly(
-        [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "${app.ext.targetOS}"],
-        [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "${app.ext.targetOS}"]
+        "org.bytedeco:leptonica:${leptVersion}-${jcppVersion}:${app.ext.targetOS}",
+        "org.bytedeco:tesseract:${tessVersion}-${jcppVersion}:${app.ext.targetOS}"
     )
 
     testImplementation(
-        [group: 'junit', name: 'junit', version: '4.13.2'],
-        [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.5.1']
+        'junit:junit:4.13.2',
+        'org.jgrapht:jgrapht-ext:1.5.2'
     )
 }
 
@@ -161,8 +163,8 @@ dependencies {
 if (targetOS == "linux-x86_64") {
     dependencies {
         runtimeOnly(
-            [group: 'org.bytedeco', name: 'leptonica', version: "${leptVersion}-${jcppVersion}", classifier: "linux-arm64"],
-            [group: 'org.bytedeco', name: 'tesseract', version: "${tessVersion}-${jcppVersion}", classifier: "linux-arm64"]
+            "org.bytedeco:leptonica:${leptVersion}-${jcppVersion}:linux-arm64",
+            "org.bytedeco:tesseract:${tessVersion}-${jcppVersion}:linux-arm64"
         )
     }
 }
@@ -208,13 +210,16 @@ test {
 application {
     mainClass = "$app.ext.mainClass"
     
-    // 1/ Needed to circumvent the limitations brought by Java 9 and above (the JigSaw cuts)
-
-    // 2/ WARNING: A restricted method in java.lang.System has been called
+    // REMINDER: the same arguments should be copied into the "javaOptions" of packaging/build.gradle
+    //
+    // Arg 1: Needed to circumvent the limitations brought by Java 9 and above (the JigSaw cuts)
+    //
+    // Arg 2: WARNING: A restricted method in java.lang.System has been called
     // WARNING: java.lang.System::load has been called by org.bytedeco.javacpp.Loader in an unnamed module
     // (file:/C:/Users/herve/.gradle/caches/modules-2/files-2.1/org.bytedeco/javacpp/1.5.12/d37e3e9c7f3e3a9e492c245e62fd358611889e04/javacpp-1.5.12.jar)
     // WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
     // WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+    //
     applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
                                  "--enable-native-access=ALL-UNNAMED"]
 }
@@ -286,7 +291,7 @@ tasks.register('getCommit', Exec) {
 
     doLast {
         def commit = standardOutput.toString().replaceAll('\n', '')
-        println "app. New commit: ${commit}"
+        logger.info("app. New commit: {}", commit)
         app.ext.commit = commit
     }
 }
@@ -297,9 +302,9 @@ tasks.register('createBuildFolder') {
         def dir = file('build')
         if (!dir.exists()) {
             dir.mkdirs()
-            println "app. Directory created: ${dir}"
+            logger.info("app. Directory created: {}", dir)
         } else {
-            println "app. Directory already exists: ${dir}"
+            logger.info("app. Directory already exists: {}", dir)
         }
     }
 }
@@ -316,26 +321,24 @@ tasks.register('checkCommit') {
             def props = new Properties()
             cache.withInputStream { props.load(it) }
             app.ext.oldCommit = props.getProperty('commit')
-            println "app. Old commit: ${app.ext.oldCommit}"
+            logger.info("app. Old commit: {}", app.ext.oldCommit)
             if (!app.ext.oldCommit.equals(app.ext.commit)) {
                 app.ext.commitChanged = 'true'
             }
         } else {
-            println "app. No old commit"
+            logger.info("app. No old commit")
             app.ext.commitChanged = 'true'
         }
 
-        if (project.hasProperty('commitChanged')) {
-            // Save the new value
-            def properties = new Properties()
-            properties.setProperty('commit', app.ext.commit)
+        // Always cache the last commit value
+        def properties = new Properties()
+        properties.setProperty('commit', app.ext.commit)
 
-            cache.withOutputStream { out ->
-                properties.store(out, ' Last commit value')
-            }
-
-            println "app. Properties written to disk: ${cache}"            
+        cache.withOutputStream { out ->
+            properties.store(out, ' Last commit value')
         }
+
+        logger.info("app. Properties written to disk: {}", cache)
     }
 }
 
@@ -367,7 +370,7 @@ tasks.register('generateProgramId') {
 
         gSrc.append("}\n")
 
-        println "app. Java class ProgramId generated"
+        logger.info("app. Java class ProgramId generated")
     }
 }
 compileJava.dependsOn('generateProgramId')
@@ -444,8 +447,8 @@ tasks.flatpakGradleGenerator {
     downloadDirectory = 'dependencies'
 
     // outputs.files = depsFile
-    doFirst { println "app. Generating dependencies" }
-    doLast { println "app. Dependencies generated" }
+    doFirst { logger.info("app. Generating dependencies") }
+    doLast { logger.info("app. Dependencies generated") }
 }
 
 configurations {

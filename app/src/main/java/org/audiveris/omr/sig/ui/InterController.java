@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -74,6 +74,7 @@ import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MetronomeInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
+import org.audiveris.omr.sig.inter.RehearsalInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -298,7 +299,7 @@ public class InterController
 
                 // Convert to absolute lines (and the underlying word glyphs)
                 final TextBuilder textBuilder = new TextBuilder(system, shape);
-                final List<TextLine> glyphLines = textBuilder.processGlyph(
+                final List<TextLine> glyphLines = textBuilder.processBuffer(
                         buffer,
                         relativeLines,
                         glyph.getTopLeft());
@@ -772,6 +773,31 @@ public class InterController
                         }
                     }
 
+                    case Rehearsal -> {
+                        // Convert to rehearsal mark, with an enclosure
+                        final RehearsalInter rehearsal = new RehearsalInter(sentence);
+                        final Staff stf = system.getStaffAtOrBelow(sentence.getCenter());
+                        rehearsal.setStaff((stf != null) ? stf : sentence.getStaff());
+                        rehearsal.setManual(true);
+                        seq.add(
+                                new AdditionTask(
+                                        sig,
+                                        rehearsal,
+                                        rehearsal.getBounds(),
+                                        Collections.emptyList()));
+
+                        // Migrate the members from sentence to rehearsal
+                        final List<Inter> members = sentence.getMembers();
+
+                        // Remove former sentence (and its links to members)
+                        seq.add(new RemovalTask(sentence));
+
+                        for (Inter member : members) {
+                            member.setManual(true);
+                            seq.add(new LinkTask(sig, rehearsal, member, new Containment()));
+                        }
+                    }
+
                     default -> {
                         // Convert to SentenceInter if so needed
                         final SentenceInter finalSentence;
@@ -834,6 +860,35 @@ public class InterController
             protected void publish ()
             {
                 sheet.getInterIndex().publish(!sentence.isRemoved() ? sentence : null);
+            }
+        }.execute();
+    }
+
+    //--------------------------//
+    // changeSentenceAttributes //
+    //--------------------------//
+    /**
+     * Change the font attributes for a whole sentence.
+     *
+     * @param sentence the sentence to modify
+     * @param newAttrs the new font attributes
+     */
+    @UIThread
+    public void changeSentenceAttributes (final SentenceInter sentence,
+                                          final String newAttrs)
+    {
+        new CtrlTask(DO, "changeSentenceAttributes")
+        {
+            @Override
+            protected void build ()
+            {
+                seq.add(new SentenceAttributesTask(sentence, newAttrs));
+            }
+
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(sentence);
             }
         }.execute();
     }

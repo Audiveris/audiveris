@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -29,6 +29,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.ui.ShapeColorChooser;
 import org.audiveris.omr.sheet.BookManager;
+import org.audiveris.omr.sheet.Releases;
 import org.audiveris.omr.sheet.Versions;
 import org.audiveris.omr.text.tesseract.Languages;
 import org.audiveris.omr.ui.action.Preferences;
@@ -277,6 +278,21 @@ public class GuiActions
     public void launchTrainer (ActionEvent e)
     {
         CursorController.launchWithDelayedMessage("Launching trainer...", () -> Trainer.launch());
+    }
+
+    //---------------//
+    // printReleases //
+    //---------------//
+    /**
+     * Print out information about all Audiveris releases on GitHub.
+     *
+     * @param e unused
+     */
+    @Action
+    public void printReleases (ActionEvent e)
+    {
+        Releases.printAllReleases();
+        logger.info("Releases printed.");
     }
 
     //-------------------//

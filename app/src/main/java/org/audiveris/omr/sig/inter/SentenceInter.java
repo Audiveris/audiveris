@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,6 +44,7 @@ import static org.audiveris.omr.text.TextRole.EndingText;
 import static org.audiveris.omr.text.TextRole.Lyrics;
 import static org.audiveris.omr.text.TextRole.Metronome;
 import static org.audiveris.omr.text.TextRole.PartName;
+import org.audiveris.omr.text.Word;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.WrappedBoolean;
@@ -54,6 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -587,6 +589,29 @@ public class SentenceInter
         final Link link = lookupEndingLink(system);
 
         return (link != null) ? Collections.singleton(link) : Collections.emptySet();
+    }
+
+    //-------------------//
+    // setFontAttributes //
+    //-------------------//
+    /**
+     * Set sentence font attributes, based on the provided font attributes specification.
+     * <p>
+     * Forward the specification to every member word
+     *
+     * @param newAttrs provided spec, like "IS" for Italic+Serif
+     */
+    public void setFontAttributes (String newAttrs)
+    {
+        final List<Word> words = new ArrayList<>();
+
+        for (Inter member : getMembers()) {
+            final WordInter word = (WordInter) member;
+            word.setFontAttributes(newAttrs);
+            words.add(word);
+        }
+
+        meanFont = FontInfo.computeMeanFontInfo(words);
     }
 
     //-------------//

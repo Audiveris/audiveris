@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -76,7 +76,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -470,6 +469,10 @@ public class SheetStub
      * Do just one specified step, synchronously, with display of related UI if any.
      * <p>
      * OmrStep duration is guarded by a timeout, so that processing cannot get blocked infinitely.
+     * <ul>
+     * <li>If the step is paused by the user, a StepPause exception is thrown.
+     * <li>If the step is stopped by timeout, a ProcessingCancellationException is thrown.
+     * </ul>
      *
      * @param step the step to perform
      * @throws Exception
@@ -1254,11 +1257,11 @@ public class SheetStub
      */
     public synchronized BufferedImage loadGrayImage ()
     {
-        try {
-            final SheetInput si = getSheetInput();
+        final SheetInput si = getSheetInput();
 
+        try {
             if (!Files.exists(si.path)) {
-                logger.info("Input {} not found", si.path);
+                logger.warn("Input {} not found", si.path);
 
                 return null;
             }
@@ -1266,6 +1269,8 @@ public class SheetStub
             final ImageLoading.Loader loader = ImageLoading.getLoader(si.path);
 
             if (loader == null) {
+                logger.warn("No image loader for {}", si.path);
+
                 return null;
             }
 
@@ -1281,7 +1286,7 @@ public class SheetStub
 
             return img;
         } catch (IOException ex) {
-            logger.warn("Error in SheetStub.loadGrayImage", ex);
+            logger.warn("Error loading image " + si.path, ex);
 
             return null;
         }
@@ -1331,10 +1336,14 @@ public class SheetStub
     //------------//
     /**
      * Print out the step-based processing times for this sheet.
+     *
+     * @param force if true, do print regardless of local constant switch
      */
-    public void printWatch ()
+    public void printWatch (boolean force)
     {
-        getSheet().getWatch().print();
+        if (force || constants.printWatch.isSet()) {
+            getSheet().getWatch().print();
+        }
     }
 
     //-----------//
@@ -1345,19 +1354,20 @@ public class SheetStub
      * <p>
      * Each needed step is performed sequentially, guarded by a timeout.
      *
-     * @param target the step to check
+     * @param target the step to reach
      * @param force  if true and step already reached, stub is reset and processed until step
-     * @return true if OK, false if not OK (including when a step paused)
+     * @throws java.lang.Exception if not OK
      */
-    public boolean reachStep (OmrStep target,
-                              boolean force)
+    public void reachStep (OmrStep target,
+                           boolean force)
+        throws Exception
     {
         final StubsController ctrl = (OMR.gui != null) ? StubsController.getInstance() : null;
         final StopWatch watch = new StopWatch("reachStep " + target);
-        EnumSet<OmrStep> neededSteps = null;
         boolean ok = false;
+
         getLock().lock(); // Wait for completion of early processing if any
-        logger.debug("reachStep got lock on {}", this);
+        logger.debug("reachStep obtained lock on {}", this);
 
         try {
             final OmrStep latestStep = getLatestStep();
@@ -1370,10 +1380,10 @@ public class SheetStub
                 }
             }
 
-            neededSteps = getNeededSteps(target);
+            final EnumSet<OmrStep> neededSteps = getNeededSteps(target);
 
             if (neededSteps.isEmpty()) {
-                return true;
+                return;
             }
 
             logger.debug("Sheet#{} scheduling {}", number, neededSteps);
@@ -1396,23 +1406,9 @@ public class SheetStub
 
             ok = true;
         } catch (StepPause sp) {
-            ok = false;
-            logger.info("Processing stopped.");
+            logger.info("Processing paused.");
+            ok = true;
             throw sp;
-        } catch (ProcessingCancellationException pce) {
-            ok = false;
-            throw pce;
-        } catch (StepException ignored) {
-            logger.info("StepException detected in " + neededSteps);
-        } catch (ExecutionException ex) {
-            // A StepException may have been wrapped into an ExecutionException
-            if (ex.getCause() instanceof StepException) {
-                logger.info("StepException cause detected in " + neededSteps);
-            } else {
-                logger.warn("Error in performing {} {}", neededSteps, ex.toString(), ex);
-            }
-        } catch (Exception ex) {
-            logger.warn("Error in performing {} {}", neededSteps, ex.toString(), ex);
         } finally {
             StepMonitoring.notifyStop();
 
@@ -1422,13 +1418,11 @@ public class SheetStub
 
             logger.debug("reachStep releasing lock on {}", this);
             getLock().unlock();
-        }
 
-        if (ctrl != null) {
-            ctrl.markTab(this, ok ? Colors.SHEET_OK : Colors.SHEET_NOT_OK);
+            if (ctrl != null) {
+                ctrl.markTab(this, ok ? Colors.SHEET_OK : Colors.SHEET_NOT_OK);
+            }
         }
-
-        return ok;
     }
 
     //---------------//
@@ -1657,7 +1651,7 @@ public class SheetStub
             }
 
             if (sheet != null) {
-                logger.info("Disposed sheet{}", sheet.getStub().getNum());
+                logger.info("Sheet{} disposed", sheet.getStub().getNum());
                 sheet = null;
                 Memory.gc(); // Trigger a garbage collection...
             }
@@ -1693,13 +1687,11 @@ public class SheetStub
     //------------//
     /**
      * Convenient method to reach last step on this stub.
-     * Defined as reachStep(Step.last(), false);
-     *
-     * @return true if OK
      */
-    public boolean transcribe ()
+    public void transcribe ()
+        throws Exception
     {
-        return reachStep(OmrStep.last(), false);
+        reachStep(OmrStep.last(), false);
     }
 
     //-------------------//

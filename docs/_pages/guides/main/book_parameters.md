@@ -70,11 +70,6 @@ This decision is especially important for head recognition which is based on a f
 template matching technique.  
 See the specific [Music Font](../specific/fonts.md#music-fonts) section.
 
-* **Text font**  
-The text font has no impact on recognition, but can provide a more faithful output.
-We can adjust the text font between
-``Sans Serif``, ``Serif`` and ``Finale Jazz Text``.
-
 * **Input quality**  
 This item allows adapting the OCR engine behavior to the expected quality of the input image between
 ``synthetic``, ``standard`` and ``poor``.
@@ -157,6 +152,12 @@ So it is safer to use them only when we have to.
   * Potential presence of articulations
   * Link augmentation dot to both shared heads
   * Support for implicit tuplets
+  * Accept disconnected braced parts:  
+    {: .d-inline-block }
+    New in 5.10
+    {: .label .label-yellow }
+    - Typically, within the same part, the staves are connected by a brace and internal barlines.
+    - This switch relaxes the requirement on internal barlines connections.
 
 {: .highlight }
 A switch can disable a feature for the OMR automatic recognition,

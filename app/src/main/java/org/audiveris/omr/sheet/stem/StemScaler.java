@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -331,7 +331,7 @@ public class StemScaler
                     title,
                     "Stem thickness - Scale " + stemScale,
                     "Counts");
-            peakFinder.plot(plotter, true);
+            peakFinder.plot(plotter, true, "Thickness");
             plotter.display(new Point(80, 80));
         }
     }

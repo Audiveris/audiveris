@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -68,7 +68,9 @@ public class LoadStep
         final SheetStub stub = sheet.getStub();
         final BufferedImage image = stub.loadGrayImage();
 
-        if (image != null) {
+        if (image == null) {
+            throw new StepException("No image");
+        } else {
             // Threshold on image size
             final int count = image.getWidth() * image.getHeight();
             final int max = constants.maxPixelCount.getValue();
@@ -103,9 +105,9 @@ public class LoadStep
     private static class Constants
             extends ConstantSet
     {
-        private final Constant.Integer maxPixelCount=new Constant.Integer( //
-        "Pixels", //
-        20_000_000, //
-        "Maximum image size, specified in pixel count (0 for no check)");
+        private final Constant.Integer maxPixelCount = new Constant.Integer( //
+                "Pixels", //
+                20_000_000, //
+                "Maximum image size, specified in pixel count (0 for no check)");
     }
 }

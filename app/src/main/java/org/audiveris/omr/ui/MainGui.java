@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -565,7 +565,7 @@ public class MainGui
     protected void startup ()
     {
         logger.debug("MainGui. 2/startup");
-        logger.info("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
+        logger.debug("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
         logger.info("\n{}", LogUtil.allInitialMessages());
 
         if (!OcrUtil.getOcr().isAvailable()) {

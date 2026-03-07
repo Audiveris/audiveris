@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -232,17 +232,28 @@ public class TextBuilder
             }
 
             if (staff != null) {
-                // Create words
+                // Create word inters
                 for (TextWord word : line.getWords()) {
-                    final WordInter w = switch (role) {
-                        case Lyrics -> new LyricItemInter(word);
-                        case ChordName -> ChordNameInter.createValid(word);
-                        case Metronome -> null; // Already performed at MetronomeInter creation
-                        default -> new WordInter(word);
-                    };
-
-                    if (w != null) {
-                        createdWords.add(w);
+                    switch (role) {
+                        case Lyrics -> {
+                            final WordInter prev = createdWords.isEmpty() ? null
+                                    : createdWords.get(createdWords.size() - 1);
+                            final List<LyricItemInter> ws = LyricItemInter.createValid(word, prev);
+                            for (WordInter w : ws) {
+                                createdWords.add(w);
+                            }
+                        }
+                        case ChordName -> {
+                            final WordInter w = ChordNameInter.createValid(word);
+                            if (w != null) {
+                                createdWords.add(w);
+                            }
+                        }
+                        case Metronome -> {} // Already performed at MetronomeInter creation
+                        default -> {
+                            final WordInter w = new WordInter(word);
+                            createdWords.add(w);
+                        }
                     }
                 }
 
@@ -903,42 +914,42 @@ public class TextBuilder
         }
     }
 
-    //--------------//
-    // processGlyph //
-    //--------------//
+    //---------------//
+    // processBuffer //
+    //---------------//
     /**
-     * Retrieve the glyph lines, among the lines OCR'd from the glyph buffer.
+     * Process the (relative) lines OCR'd from the provided buffer,
+     * mapping them to the underlying glyphs and translating them to absolute coordinates.
      * <p>
-     * This method is called in manual mode only.
-     * The 'shape' element is not null and is LYRICS, METRONOME or TEXT
+     * The instance 'shape' element is not null and is LYRICS, METRONOME or TEXT.
      *
-     * @param buffer     the (glyph) pixel buffer
-     * @param glyphLines the glyph raw OCR lines, relative to buffer origin
-     * @param offset     glyph top left corner (with respect to sheet origin)
+     * @param buffer      the pixel buffer
+     * @param bufferLines the raw OCR'd lines, relative to buffer origin
+     * @param offset      buffer top left corner (with respect to sheet origin)
      * @return the final absolute text lines, ready to be inserted in sig
      */
-    public List<TextLine> processGlyph (ByteProcessor buffer,
-                                        List<TextLine> glyphLines,
-                                        Point offset)
+    public List<TextLine> processBuffer (ByteProcessor buffer,
+                                         List<TextLine> bufferLines,
+                                         Point offset)
     {
         // Pre-assign text role as lyrics?
         if (shape == Shape.LYRICS) {
-            for (TextLine line : glyphLines) {
+            for (TextLine line : bufferLines) {
                 line.setRole(TextRole.Lyrics); // Here, lyrics role is certain!
             }
         }
 
-        List<Section> relativeSections = getSections(buffer, glyphLines);
-        mapGlyphs(glyphLines, relativeSections, offset);
+        final List<Section> relativeSections = getSections(buffer, bufferLines);
+        mapGlyphs(bufferLines, relativeSections, offset);
 
         // Translate to absolute coordinates
-        for (TextLine glyphLine : glyphLines) {
+        for (TextLine glyphLine : bufferLines) {
             glyphLine.translate(offset.x, offset.y);
         }
 
-        glyphLines = recomposeLines(glyphLines);
+        bufferLines = recomposeLines(bufferLines);
 
-        return glyphLines;
+        return bufferLines;
     }
 
     //---------------//

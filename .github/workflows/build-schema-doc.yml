@@ -24,7 +24,7 @@ jobs:
           all: true
 
       - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           java-version: ${{ steps.all.outputs.theMinJavaVersion }}
           distribution: zulu

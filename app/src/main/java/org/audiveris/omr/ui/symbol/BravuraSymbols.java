@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,6 +32,14 @@ import static org.audiveris.omr.glyph.Shape.*;
 public class BravuraSymbols
         extends Symbols
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    /** Code for 1-line symbol. */
+    public static final int[] LINE_CODE = ints(0xe010);
+
+    /** Code for the 5-line staff symbol. */
+    public static final int[] STAFF_CODE = ints(0xe01a);
+
     //~ Methods ------------------------------------------------------------------------------------
 
     @Override

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -78,6 +78,7 @@ import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PlayingInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
+import org.audiveris.omr.sig.inter.RehearsalInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -137,6 +138,7 @@ import org.audiveris.proxymusic.DirectionType;
 import org.audiveris.proxymusic.Dynamics;
 import org.audiveris.proxymusic.Empty;
 import org.audiveris.proxymusic.EmptyPlacement;
+import org.audiveris.proxymusic.EnclosureShape;
 import org.audiveris.proxymusic.Encoding;
 import org.audiveris.proxymusic.Ending;
 import org.audiveris.proxymusic.Fermata;
@@ -2058,6 +2060,11 @@ public class PartwiseBuilder
                 clefIters.push(slots.get(0).getXOffset(), null);
             }
 
+            // Rehearsal mark?
+            for (RehearsalInter rehearsal : measure.getRehearsals()) {
+                processRehearsal(rehearsal);
+            }
+
             // Now voice per voice
             Rational timeCounter = Rational.ZERO;
 
@@ -2788,6 +2795,50 @@ public class PartwiseBuilder
         }
     }
 
+    //------------------//
+    // processRehearsal //
+    //------------------//
+    private void processRehearsal (RehearsalInter rehearsal)
+    {
+        try {
+            logger.debug("Visiting {}", rehearsal);
+
+            final Staff staff = rehearsal.getStaff();
+            final String content = rehearsal.getValue();
+            final Direction direction = new Direction();
+            final Point2D location = rehearsal.getLocation();
+
+            final DirectionType directionType = new DirectionType();
+            direction.getDirectionType().add(directionType);
+
+            // Placement
+            direction.setPlacement(AboveBelow.ABOVE);
+
+            final FormattedTextId fti = factory.createFormattedTextId();
+            fti.setValue(content);
+
+            if (rehearsal.getEnclosure() != null) {
+                fti.setEnclosure(EnclosureShape.RECTANGLE);
+            }
+
+            // default-y
+            fti.setDefaultY(yOf(location, staff));
+
+            // relative-x
+            fti.setRelativeX(toTenths(location.getX() - current.measure.getAbscissa(LEFT, staff)));
+
+            // Font information
+            setFontInfo(fti, rehearsal);
+            fti.setFontWeight(FontWeight.BOLD); // Enforce bold for rehearsals!
+
+            directionType.getRehearsal().add(fti);
+
+            current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+        } catch (Exception ex) {
+            logger.warn("Error visiting {} in {}", rehearsal, current.page, ex);
+        }
+    }
+
     //--------------//
     // processScore //
     //--------------//
@@ -2970,6 +3021,7 @@ public class PartwiseBuilder
 
                 default -> {
                     // LyricItem, Direction, Metronome, ChordName are handled through related Note
+                    // Rehearsal is handled directly through its containing measure
                     return;
                 }
             }

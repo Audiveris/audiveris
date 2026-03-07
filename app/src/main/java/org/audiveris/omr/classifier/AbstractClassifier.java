@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -106,8 +106,9 @@ public abstract class AbstractClassifier<M extends Object>
     public static final String STDS_XML_ENTRY_NAME = "stds.xml";
 
     /** A special evaluation array, used to report NOISE. */
-    private static final Evaluation[] noiseEvaluations =
-    { new Evaluation(Shape.NOISE, Evaluation.ALGORITHM) };
+    private static final Evaluation[] noiseEvaluations = { new Evaluation(
+            Shape.NOISE,
+            Evaluation.ALGORITHM) };
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -346,7 +347,7 @@ public abstract class AbstractClassifier<M extends Object>
                         logger.warn(msg);
                     } else {
                         // Tell user we are not using the default
-                        logger.info("Classifier data loaded from local {}", path);
+                        logger.info("Local classifier data found at {}", path);
 
                         return model; // Normal exit
                     }
@@ -393,7 +394,7 @@ public abstract class AbstractClassifier<M extends Object>
                         + ", please retrain from scratch";
                 logger.warn(msg);
             } else {
-                logger.info("Classifier data loaded from default uri {}", uri);
+                logger.debug("Classifier data loaded from default uri {}", uri);
 
                 return model; // Normal exit
             }

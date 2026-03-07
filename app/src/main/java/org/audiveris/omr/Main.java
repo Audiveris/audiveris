@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -218,13 +218,16 @@ public class Main
         // Locale to be used in the whole application?
         checkLocale();
 
-        // Environment
-        showEnvironment();
-
         // Help?
         if (cli.isHelpMode()) {
             cli.printUsage();
 
+            return;
+        }
+
+        // Version?
+        if (cli.isVersionMode()) {
+            showEnvironment();
             return;
         }
 
@@ -257,11 +260,11 @@ public class Main
             MusicFont.checkMusicFont();
 
             // Run the required tasks, if any (and remember if at least one task failed)
-            boolean failure = runBatchTasks();
+            final boolean failure = runBatchTasks();
 
             // At this point all tasks have completed (except timeout...)
             // So shutdown gracefully the executors
-            boolean timeout = !OmrExecutors.shutdown();
+            final boolean timeout = !OmrExecutors.shutdown();
 
             // Save global sample repository if modified
             if (SampleRepository.hasInstance()) {
@@ -283,12 +286,12 @@ public class Main
                 int status = 0;
 
                 if (failure) {
-                    status -= 1;
+                    status += 1;
                     msg += " Failure";
                 }
 
                 if (timeout) {
-                    status -= 2;
+                    status += 2;
                     msg += " Timeout";
                 }
 
@@ -391,30 +394,34 @@ public class Main
     /**
      * Show the application environment to the user.
      */
-    private static void showEnvironment ()
+    public static void showEnvironment ()
     {
         if (constants.showAllEnvironmentVariables.isSet()) {
             final Map<String, String> map = System.getenv();
-            final TreeSet<String> keys = new TreeSet<>(map.keySet());
+            final TreeSet<String> keys = new TreeSet<>(map.keySet()); // Sorted
             keys.forEach(k -> logger.info("{} : {}", k, map.get(k)));
         }
 
         if (constants.showEnvironment.isSet()) {
-            logger.info(
-                    """
-                            Environment:
-                            - Audiveris:    {}
-                            - OS:           {}
-                            - Architecture: {}
-                            - Java VM:      {}
-                            - OCR Engine:   {}""",
-                    WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD,
-                    System.getProperty("os.name") + " " + System.getProperty("os.version"),
-                    System.getProperty("os.arch"),
-                    System.getProperty("java.vm.name") + " (build " + System.getProperty(
-                            "java.vm.version") + ", " + System.getProperty("java.vm.info") + ")",
-                    TesseractOCR.getInstance().identify());
+            System.out.println(getEnvironment());
+            System.out.println();
         }
+    }
+
+    private static String getEnvironment ()
+    {
+        return String.join(
+                WellKnowns.LINE_SEPARATOR,
+                "Audiveris",
+                "- Version:      " + WellKnowns.TOOL_REF,
+                "- Commit:       " + WellKnowns.TOOL_BUILD,
+                "- OS:           " + System.getProperty("os.name") + //
+                        " " + System.getProperty("os.version"),
+                "- Architecture: " + System.getProperty("os.arch"),
+                "- Java VM:      " + System.getProperty("java.vm.name") + //
+                        " (build " + System.getProperty("java.vm.version") + //
+                        ", " + System.getProperty("java.vm.info") + ")",
+                "- OCR Engine:   " + TesseractOCR.getInstance().identify());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

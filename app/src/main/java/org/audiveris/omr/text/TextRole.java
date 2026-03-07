@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -78,6 +78,8 @@ public enum TextRole
     EndingNumber,
     /** Ending text, when different from number. */
     EndingText,
+    /** Rehearsal mark, such as "Verse 1". */
+    Rehearsal,
     /** Metronome mark, such as "quarter = value". */
     Metronome;
 
@@ -248,7 +250,7 @@ public enum TextRole
 
                 break;
 
-            case WITHIN_STAVES: // Name, Lyrics, Direction
+            case WITHIN_STAVES: // Name, Lyrics, Direction, ChordName, Metronome
                 if (leftOfStaves) {
                     if (TextWord.PART_NAME_WORDS != null) {
                         Matcher matcher = TextWord.PART_NAME_WORDS.matcher(line.getValue());
@@ -261,6 +263,8 @@ public enum TextRole
                     }
                 } else if (metronomeAllowed && MetronomeInter.isLikely(line)) {
                     return Metronome;
+                } else if (isAllChords) {
+                    return ChordName;
                 } else if (lyricsAllowed //
                         ///&& hasVowel //
                         && (switches.getValue(ProcessingSwitch.lyrics) //

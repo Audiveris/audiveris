@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -44,7 +44,10 @@ import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.F;
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.G;
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
 import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.ALTO;
+import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.BARITONE;
 import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.BASS;
+import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.MEZZO_SOPRANO;
+import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.SOPRANO;
 import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.TENOR;
 import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.TREBLE;
 import org.audiveris.omr.sig.relation.Containment;
@@ -77,15 +80,26 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class <code>KeyInter</code> represents a key signature on a staff.
  * <p>
- * <img src="doc-files/KeySignatures.png" alt="Example of key signatures in different clefs">
+ * Copied from <a href="https://www.dacapoalcoda.com/key-signature-identification">dacapoalcoda
+ * site</a>,
+ * here are all the keys layouts.
  * <p>
- * Audiveris data model considers that within a key signature, the shape of all items
+ * 7-Sharp keys in all clefs:
+ * <br>
+ * <img src="doc-files/key-signature-7-sharps.png" alt="7 sharps in all clefs">
+ * <p>
+ * 7-Flat keys in all clefs:
+ * <br>
+ * <img src="doc-files/key-signature-7-flats.png" alt="7 flats in all clefs">
+ * <p>
+ * The Audiveris data model considers that within a key signature, the shape of all items
  * (SHARP, FLAT, NATURAL) must be identical.
- * <p>
- * In particular, it ignores "courtesy" NATURAL items at the beginning of a new key.
- * It only accepts NATURAL items in a 'cancel' key (made only of NATURAL items).
+ * <ul>
+ * <li>In particular, it simply ignores "courtesy" NATURAL items at the beginning of a new key.
+ * <li>It processes NATURAL items in a 'cancel' key (a key made only of NATURAL items).
  * The role of such 'cancel' key is to cancel the effective key and switch to C maj / A min,
  * with no SHARP's or FLAT's.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -103,10 +117,15 @@ public class KeyInter
     /** Sharp pitches per clef kind. */
     public static final Map<ClefKind, int[]> SHARP_PITCHES_MAP = new EnumMap<>(ClefKind.class);
     static {
-        SHARP_PITCHES_MAP.put(TREBLE, new int[] { -4, -1, -5, -2, 1, -3, 0 });
-        SHARP_PITCHES_MAP.put(ALTO, new int[] { -3, 0, -4, -1, 2, -2, 1 });
-        SHARP_PITCHES_MAP.put(BASS, new int[] { -2, 1, -3, 0, 3, -1, 2 });
-        SHARP_PITCHES_MAP.put(TENOR, new int[] { 2, -2, 1, -3, 0, -4, -1 });
+        // @formatter:off
+        SHARP_PITCHES_MAP.put(TREBLE,        new int[] { -4, -1, -5, -2,  1, -3,  0 });
+        SHARP_PITCHES_MAP.put(BASS,          new int[] { -2,  1, -3,  0,  3, -1,  2 });
+        SHARP_PITCHES_MAP.put(BARITONE,      new int[] {  0,  3, -1,  2, -2,  1, -3 });
+        SHARP_PITCHES_MAP.put(TENOR,         new int[] {  2, -2,  1, -3,  0, -4, -1 });
+        SHARP_PITCHES_MAP.put(ALTO,          new int[] { -3,  0, -4, -1,  2, -2,  1 });
+        SHARP_PITCHES_MAP.put(MEZZO_SOPRANO, new int[] { -1,  2, -2,  1, -3,  0, -4 });
+        SHARP_PITCHES_MAP.put(SOPRANO,       new int[] {  1,  4,  0,  3, -1,  2, -2 });
+        // @formatter:on
     }
 
     /** Sharp keys note steps. */
@@ -116,10 +135,15 @@ public class KeyInter
     /** Flat pitches per clef kind. */
     public static final Map<ClefKind, int[]> FLAT_PITCHES_MAP = new EnumMap<>(ClefKind.class);
     static {
-        FLAT_PITCHES_MAP.put(TREBLE, new int[] { 0, -3, 1, -2, 2, -1, 3 });
-        FLAT_PITCHES_MAP.put(ALTO, new int[] { 1, -2, 2, -1, 3, 0, 4 });
-        FLAT_PITCHES_MAP.put(BASS, new int[] { 2, -1, 3, 0, 4, 1, 5 });
-        FLAT_PITCHES_MAP.put(TENOR, new int[] { -1, -4, 0, -3, 1, -2, 2 });
+        // @formatter:off
+        FLAT_PITCHES_MAP.put(TREBLE,         new int[] {  0, -3,  1, -2,  2, -1,  3 });
+        FLAT_PITCHES_MAP.put(BASS,           new int[] {  2, -1,  3,  0,  4,  1,  5 });
+        FLAT_PITCHES_MAP.put(BARITONE,       new int[] { -3,  1, -2,  2, -1,  3,  0 });
+        FLAT_PITCHES_MAP.put(TENOR,          new int[] { -1, -4,  0, -3,  1, -2,  2 });
+        FLAT_PITCHES_MAP.put(ALTO,           new int[] {  1, -2,  2, -1,  3,  0,  4 });
+        FLAT_PITCHES_MAP.put(MEZZO_SOPRANO,  new int[] { -4,  0, -3,  1, -2,  2, -1 });
+        FLAT_PITCHES_MAP.put(SOPRANO,        new int[] { -2,  2, -1,  3,  0,  4,  1 });
+        // @formatter:on
     }
 
     /** Flat keys note steps. */

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -28,10 +28,21 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.ui.symbol.BravuraSymbols;
+import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.util.Jaxb;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Rectangle;
+import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -52,6 +63,8 @@ public abstract class AbstractPitchedInter
 
     private static final Constants constants = new Constants();
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractPitchedInter.class);
+
     /** To order from bottom to top. */
     public static final Comparator<AbstractPitchedInter> bottomUp = (AbstractPitchedInter p1,
                                                                      AbstractPitchedInter p2) -> {
@@ -63,6 +76,9 @@ public abstract class AbstractPitchedInter
         // Resort to ordinate
         return Double.compare(p2.getCenter().y, p1.getCenter().y);
     };
+
+    /** Vertical pitch offset from symbol center to focus line. */
+    private static final Map<Shape, Double> pitchOffsets = new TreeMap<>();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -229,28 +245,71 @@ public abstract class AbstractPitchedInter
     // getAreaPitchOffset //
     //--------------------//
     /**
-     * Report for the provided shape the pitch center offset with respect to area center.
+     * Report the pitch offset of the shape focus line with respect to the area center.
      * <p>
      * This is 0 when shape is symmetrical in vertical direction.
      *
      * @param shape the provided shape
-     * @return offset of pitch center WRT area center
+     * @return pitch offset of the focus line WRT area center
      */
     public static double getAreaPitchOffset (Shape shape)
     {
         return switch (shape) {
-            case G_CLEF -> constants.areaPitchOffset_G_CLEF.getValue();
-            case G_CLEF_SMALL -> constants.areaPitchOffset_G_CLEF_SMALL.getValue();
-            case G_CLEF_8VA -> constants.areaPitchOffset_G_CLEF_8VA.getValue();
-            case G_CLEF_8VB -> constants.areaPitchOffset_G_CLEF_8VB.getValue();
-            case F_CLEF -> constants.areaPitchOffset_F_CLEF.getValue();
-            case F_CLEF_SMALL -> constants.areaPitchOffset_F_CLEF_SMALL.getValue();
-            case F_CLEF_8VA -> constants.areaPitchOffset_F_CLEF_8VA.getValue();
-            case F_CLEF_8VB -> constants.areaPitchOffset_F_CLEF_8VB.getValue();
-            case FLAT, DOUBLE_FLAT, KEY_FLAT_7, KEY_FLAT_6, KEY_FLAT_5, KEY_FLAT_4, KEY_FLAT_3, //
-                    KEY_FLAT_2, KEY_FLAT_1 -> constants.areaPitchOffset_FLAT.getValue();
+            case //
+                    G_CLEF, G_CLEF_SMALL, G_CLEF_8VA, G_CLEF_8VB, //
+                    F_CLEF, F_CLEF_SMALL, F_CLEF_8VA, F_CLEF_8VB -> pitchOffsets.get(shape);
+            case FLAT, DOUBLE_FLAT, //
+                    KEY_FLAT_7, KEY_FLAT_6, KEY_FLAT_5, //
+                    KEY_FLAT_4, KEY_FLAT_3, KEY_FLAT_2, KEY_FLAT_1 -> pitchOffsets.get(Shape.FLAT);
             default -> 0;
         };
+    }
+
+    //----------------------//
+    // populatePitchOffsets //
+    //----------------------//
+    /**
+     * Populate the 'pitchOffsets' map.
+     */
+    private static void populatePitchOffsets ()
+    {
+        final MusicFamily musicFamily = MusicFamily.Bravura;
+        final MusicFont font = MusicFont.getMusicFont(musicFamily, 200); // Arbitrary size
+
+        // Retrieve pitch height from 5-line and 1-line symbols
+        final double staffHeight = font.layout(MusicFont.getString(BravuraSymbols.STAFF_CODE))
+                .getBounds().getHeight();
+        final double lineHeight = font.layout(MusicFont.getString(BravuraSymbols.LINE_CODE))
+                .getBounds().getHeight();
+        final double pitchHeight = (staffHeight - lineHeight) / 8; // 4 interlines = 8 pitches
+
+        // For each shape, retrieve delta pitch from area center to focus line (at ordinate zero)
+        Arrays.asList(
+                Shape.G_CLEF,
+                Shape.G_CLEF_SMALL,
+                Shape.G_CLEF_8VA,
+                Shape.G_CLEF_8VB,
+                Shape.F_CLEF,
+                Shape.F_CLEF_SMALL,
+                Shape.F_CLEF_8VA,
+                Shape.F_CLEF_8VB,
+                Shape.FLAT)//
+                .forEach(s -> {
+                    final TextLayout layout = font.layoutShapeByCode(s);
+                    final Rectangle2D rect = layout.getBounds();
+                    final double offset = (-rect.getY() - rect.getHeight() / 2) / pitchHeight;
+                    pitchOffsets.put(s, offset);
+                });
+    }
+
+    static {
+        populatePitchOffsets();
+
+        if (constants.printPitchOffsets.isSet()) {
+            System.out.println("pitchOffsets:");
+            pitchOffsets.entrySet().forEach(
+                    e -> System.out.printf("%-12s : %5.2f%n", e.getKey(), e.getValue()));
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -261,49 +320,8 @@ public abstract class AbstractPitchedInter
     private static class Constants
             extends ConstantSet
     {
-        private final Constant.Double areaPitchOffset_FLAT = new Constant.Double(
-                "pitch",
-                1.2,
-                "Pitch offset WRT area center for FLAT");
-
-        private final Constant.Double areaPitchOffset_G_CLEF = new Constant.Double(
-                "pitch",
-                1.8,
-                "Pitch offset WRT area center for G_CLEF");
-
-        private final Constant.Double areaPitchOffset_G_CLEF_SMALL = new Constant.Double(
-                "pitch",
-                1.2,
-                "Pitch offset WRT area center for G_CLEF_SMALL");
-
-        private final Constant.Double areaPitchOffset_G_CLEF_8VA = new Constant.Double(
-                "pitch",
-                2.9,
-                "Pitch offset WRT area center for G_CLEF_8VA");
-
-        private final Constant.Double areaPitchOffset_G_CLEF_8VB = new Constant.Double(
-                "pitch",
-                0.5,
-                "Pitch offset WRT area center for G_CLEF_8VB");
-
-        private final Constant.Double areaPitchOffset_F_CLEF = new Constant.Double(
-                "pitch",
-                -1.3,
-                "Pitch offset WRT area center for F_CLEF");
-
-        private final Constant.Double areaPitchOffset_F_CLEF_SMALL = new Constant.Double(
-                "pitch",
-                -0.8,
-                "Pitch offset WRT area center for F_CLEF_SMALL");
-
-        private final Constant.Double areaPitchOffset_F_CLEF_8VA = new Constant.Double(
-                "pitch",
-                0,
-                "Pitch offset WRT area center for F_CLEF_8VA");
-
-        private final Constant.Double areaPitchOffset_F_CLEF_8VB = new Constant.Double(
-                "pitch",
-                -2.5,
-                "Pitch offset WRT area center for F_CLEF_8VB");
+        private final Constant.Boolean printPitchOffsets = new Constant.Boolean(
+                false,
+                "Should we print all pitch offsets");
     }
 }

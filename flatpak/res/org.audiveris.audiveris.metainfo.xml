@@ -58,6 +58,28 @@
   <launchable type="desktop-id">org.audiveris.audiveris.desktop</launchable>
   <developer id="org.audiveris"><name>Hervé Bitteur et al.</name></developer>
   <releases>
+    <release version="5.10" date="2026-03-07" urgency="low" type="stable">
+      <description>
+	      <p>User Interface</p>
+	      <ul>
+	        <li>Ability to set font attributes at a sentence level to apply them to all its member words</li>
+	        <li>Better text word resizing, keeping a constant height/width ratio</li>
+	        <li>Better drag n' drop for all clefs</li>
+	      </ul>
+	     <p>Engine</p>
+	     <ul>
+	       <li>Verse numbers are detected and filtered out of the lyric lines</li>
+	       <li>Isolated punctuations marks (as in French) are combined with the preceding lyric syllable</li>
+	       <li>Support for the rehearsal marks</li>
+	       <li>Support for BARITONE, MEZZO_SOPRANO and SOPRANO clefs</li>
+	       <li>Additional book processing switch to accept braced parts without internal bar connections</li>
+	     </ul>
+       <p>Project</p>
+       <ul>
+         <li>Audiveris for Windows is now available on the Scoop Extras bucket</li>
+       </ul>
+    </description>
+    </release>
     <release version="5.9" date="2025-12-10" urgency="low" type="stable">
       <description>
 	      <p>User Interface</p>

@@ -98,6 +98,14 @@ of the [DIVIO] Documentation System, around four different functions:
 - [Explanation](./explanation/README.md) -- How it works
     - Steps internals
 
+## Handbook navigation
+
+- The left column of the display is an interactive table of content.
+- The very first line of every page offers a "Search Audiveris Pages" field.
+We can simply type a word or two there to get pointers to the relevant locations.
+For example, typing "5.10" will list all the documentation sections impacted by the 5.10 release.
+- The next line presents a clickable path to the page at hand within the handbook hierarchy.
+- At the very end of every page, there is a "Back to top" link, pointing to the top of the page.
 
 [AGPL]:     https://en.wikipedia.org/wiki/GNU_Affero_General_Public_License
 [DIVIO]:    https://docs.divio.com/documentation-system/

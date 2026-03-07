@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -55,6 +55,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -208,7 +210,9 @@ public class AboutAction
         // Manual injection
         resources.injectComponents(panel);
 
-        ((JLabel) Topic.version.comp).setText(WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD);
+        ((JLabel) Topic.version.comp).setText(WellKnowns.TOOL_REF);
+
+        ((JLabel) Topic.commit.comp).setText(WellKnowns.TOOL_BUILD);
 
         ((JLabel) Topic.classes.comp).setText(WellKnowns.CLASS_CONTAINER.toString());
 
@@ -239,6 +243,11 @@ public class AboutAction
             }
         }
         ((JLabel) Topic.ocrFolder.comp).setText(ocr.toString());
+
+        final SortedSet<String> installed = TesseractOCR.getInstance().getSupportedLanguages();
+        final String languages = installed.isEmpty() ? "<none>"
+                : installed.stream().collect(Collectors.joining(","));
+        ((JLabel) Topic.ocrLanguages.comp).setText(languages);
 
         ((JLabel) Topic.javaVendor.comp).setText(System.getProperty("java.vendor"));
 
@@ -357,6 +366,8 @@ public class AboutAction
         description(new JLabel()),
         /** Current version */
         version(new JLabel()),
+        /** Precise commit */
+        commit(new JLabel()),
         /** Precise classes */
         classes(new JLabel()),
         /** Link to web site */
@@ -367,8 +378,10 @@ public class AboutAction
         license(new JLabel()),
         /** OCR version */
         ocr(new JLabel()),
-        /** OCR version */
+        /** OCR folder */
         ocrFolder(new JLabel()),
+        /** OCR languages */
+        ocrLanguages(new JLabel()),
         /** Java vendor */
         javaVendor(new JLabel()),
         /** Java version */

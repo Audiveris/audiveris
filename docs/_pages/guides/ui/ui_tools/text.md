@@ -7,7 +7,7 @@ nav_order: 13
 # Text
 {: .no_toc }
 {: .d-inline-block }
-updated for 5.6
+updated for 5.10
 {: .label .label-green}
 
 The recognition of textual elements is delegated to the Tesseract OCR library.
@@ -50,9 +50,9 @@ don't require the setting of any specific option.
 
 The OCR can also be launched manually on a glyph(s) selection by pressing one of the
 buttons provided in the `Texts` palette of the Shape board:
-* The `text` button
 * The `lyric` button,
-* The `metronome` button,
+* The `text` button,
+* The `metronome` button.
 
 ![](../../../assets/images/Texts_palette.png)
 
@@ -84,7 +84,10 @@ We can manually modify any of these informations.
   The sentence ___content___ is simply defined as the concatenation of the contents of its words members.
   Except for the case of `Metronome` -- which mixes text and music characters --
   we __cannot__ modify a sentence content directly, but rather via each of its words members.
-  
+
+  Since release 5.10, we can also directly modify the sentence font __attributes__ 
+  to apply them on all the contained words.
+
 ## Word editing
 
 Here is the example of an input line and the corresponding OCR result, at the end of the TEXTS step:
@@ -193,6 +196,7 @@ A sentence role can be set to any value among:
 - Rights
 - EndingNumber
 - EndingText
+- Rehearsal
 - ___Metronome___
 
 Since the 5.2 release, in all cases, we can manually modify the sentence role afterwards,
@@ -200,16 +204,54 @@ from any role to any other role.
 
 ![](../../../assets/images/sentence_role_edited.png)
 
+### Sentence attributes
+{: .d-inline-block }
+New in 5.10
+{: .label .label-yellow}
+
+The font attributes of a sentence is initially defined as the "main" attributes found in its word members.
+
+We can now conveniently modify these font attributes, *directly at the sentence level*.
+
+To do so, we first have to select the sentence, for instance by pointing to one of its words,
+and then pressing the `To Ensemble` button.
+
+The `Attributes` field is still there as for a word,
+but it now relates to the font attributes of the sentence.
+We can simply modify the attributes and commit the modifications by pressing the `Enter` key.
+
+The new font attributes of the sentence are applied transitively to each of its words.
+
 
 ### Plain sentence
 
 A "plain" sentence is any sentence which is assigned a role different
-from `Lyrics`, `ChordName` and `Metronome`.
+from `Lyrics`, `ChordName`, `Rehearsal` and `Metronome`.
 
 Following an OCR recognition (`Texts` step or manual OCR), the role of each resulting 
 _plain_ sentence is precised.
 Based on a bunch of heuristics, the engine tries to further distinguish between plain roles
 like: direction, part name , title, composer, lyricist, etc.
+
+### Rehearsal mark
+{: .d-inline-block }
+New in 5.10
+{: .label .label-yellow }
+
+![](../../../assets/images/rehearsal.png)
+
+A rehearsal mark is a short sentence, enclosed in a rectangular box.
+It is notated in the score for reference during rehearsal.
+
+Since release 5.10, the rehearsal marks are detected by the engine.  
+Note that, merely because of the enclosure, a mark is not detected and OCR'd during the `TEXTS` step,
+but during the `CURVES` step later.
+
+This mark can be edited like a plain sentence, that is word by word.
+
+It can also be manually inserted via a drag n' drop action from the `Text` shape button.  
+In that case, when the sentence role is set to `Rehearsal`,
+a suitable rectangular enclosure is automatically generated around the sentence.
 
 ### Chord name
 
@@ -243,6 +285,9 @@ For example, we can type "Bb" then press `Enter` and the chord name will be tran
 displayed as "B♭".
 
 ### Lyric line
+{: .d-inline-block }
+updated in 5.10
+{: .label .label-green}
 
 A lyric line is a sentence composed of lyric items.
 
@@ -260,6 +305,34 @@ nor is it always clear which voice is concerned.
 If a syllable is not linked to the correct chord, we can modify this link manually by dragging
 from the syllable to the suitable chord.
 This will update on-the-fly the line data (voice, verse, location).
+
+![](../../../assets/images/lyrics_numbers.png)
+
+Since the 5.10 release, the lyric words are searched for initial numbers.
+
+Such numbers, possibly followed by a period, are generally meant to indicate the verse number
+as in the example shown above.
+- This is redundant with the verse number already computed by the engine
+and exported to the MusicXML stream.
+- When singing the lyrics, we sing the syllables, not these numbers!
+- Before the 5.10 release, these numbers were taken as standard syllables
+and consequently linked to head chords.
+They were in competition with the real syllables, resulting in a number linked to a voice
+and the following syllable linked to another voice.
+
+The new policy is as follows:
+- The numbers are now recognized as such and not processed as syllables.
+- They are no longer linked to a head chord (hence their different color in the display).
+- They are not exported to the MusicXML output stream.
+
+There is a risk that a standard word be OCR'd as a number, as the "6" value
+in the center of the example above.  
+However:
+- This anomaly really stands out in the display, which is a good visual aid.
+- The primary cause is that the original accented character **`ô`** was misinterpreted by the OCR
+as a character **`6`** (even though the OCR was launched on the French language).
+- It's rather easy to manually fix the word content on the `Inter` board.
+This will automatically change the word kind from 'number' to 'syllable'.
 
 ### Metronome mark
 

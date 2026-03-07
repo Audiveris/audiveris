@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
+import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.TextFont;
 import static org.audiveris.omr.ui.symbol.TextFont.TEXT_FONT_NAME;
 import static org.audiveris.omr.util.RegexUtil.group;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Font;
 import java.awt.Rectangle;
+import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -313,6 +315,85 @@ public class FontInfo
     public static FontInfo createDefault (int fontSize)
     {
         return new FontInfo(false, false, false, false, false, false, fontSize, TEXT_FONT_NAME);
+    }
+
+    //---------------------//
+    // computeMeanFontInfo //
+    //---------------------//
+    /**
+     * Compute a mean font info, based on the provided collection of words.
+     *
+     * @param words the words to analyze
+     * @return the mean font info
+     */
+    public static FontInfo computeMeanFontInfo (Collection<? extends Word> words)
+    {
+        if (words.isEmpty()) {
+            logger.info("No word to compute font information");
+            return null;
+        }
+
+        int charCount = 0; // Number of (representative) characters
+        int boldCount = 0; // Number of rep chars with bold attribute
+        int italicCount = 0; // Number of rep chars with italic attribute
+        int serifCount = 0; // Number of rep chars with serif attribute
+        int monospaceCount = 0; // Number of rep chars with monospace attribute
+        int smallcapsCount = 0; // Number of rep chars with smallcaps attribute
+        int underlinedCount = 0; // Number of rep chars with underlined attribute
+        float sizeTotal = 0; // Total of font sizes on rep chars
+
+        for (Word word : words) {
+            final int length = word.getValue().length();
+
+            // Discard one-char words, they are not reliable
+            if (length > 1) {
+                final FontInfo info = word.getFontInfo();
+                final OmrFont font = new TextFont(info);
+                final int fontSize = font.computeSize(word.getValue(), word.getBounds().getSize());
+                sizeTotal += (fontSize * length);
+                charCount += length;
+
+                if (info.isBold) {
+                    boldCount += length;
+                }
+
+                if (info.isItalic) {
+                    italicCount += length;
+                }
+
+                if (info.isUnderlined) {
+                    underlinedCount += length;
+                }
+
+                if (info.isMonospaced) {
+                    monospaceCount += length;
+                }
+
+                if (info.isSerif) {
+                    serifCount += length;
+                }
+
+                if (info.isSmallcaps) {
+                    smallcapsCount += length;
+                }
+            }
+        }
+
+        if (charCount > 0) {
+            final int quorum = charCount / 2;
+            return new FontInfo(
+                    boldCount >= quorum, // isBold,
+                    italicCount >= quorum, // isItalic,
+                    underlinedCount >= quorum, // isUnderlined,
+                    monospaceCount >= quorum, // isMonospaced,
+                    serifCount >= quorum, // isSerif,
+                    smallcapsCount >= quorum, // isSmallcaps,
+                    (int) Math.rint((double) sizeTotal / charCount),
+                    "DummyFont");
+        } else {
+            // We have no representative data, let's use the first word
+            return words.iterator().next().getFontInfo();
+        }
     }
 
     //--------//

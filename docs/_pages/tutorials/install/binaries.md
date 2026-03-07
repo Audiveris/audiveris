@@ -7,8 +7,8 @@ parent: Installation
 # Installing binaries
 {: .no_toc }
 {: .d-inline-block }
-Updated in 5.9
-{: .label .label-green }
+updated in 5.10
+{: .label .label-green}
 
 ---
 Table of contents
@@ -23,16 +23,24 @@ Since version 5.5, Audiveris provides installers for Windows, for Linux and for 
 These installers are based on the same structure:
 1. The application comes with its own Java Runtime Environment (JRE).  
 Therefore, there is no need for the user to install a specific JRE.
-2. The application comes with *no* pre-installed OCR languages,
-but offers a [runtime dialog box](../../guides/main/languages.md) allowing the user to install
-any desired OCR language(s).  
-The application is then responsible for picking up the right version of the language files
+2. The application comes with ***no*** pre-installed OCR languages,
+but rather offers a [runtime dialog box](../../guides/main/languages.md)
+allowing the user to later install any desired OCR language(s).  
+The application is then responsible for picking up the right model and version of the language files
 on the Tesseract site and for installing them in the user environment.
 
-The installers files can be downloaded from the assets of a recent release 
-available on the Audiveris [releases page](https://github.com/Audiveris/audiveris/releases).
+The installers files can be manually downloaded from the assets of a recent release 
+available on the Audiveris [releases page](https://github.com/Audiveris/audiveris/releases)
+and then run locally to install the application.
 
-The name of each installer file is formatted as:
+There are other ways, perhaps more convenient, to install the application.
+They are described later in this chapter:
+- For Windows, one can use [winget](#windows-community-repository)
+or [scoop](#windows-scoop-extras) which, behind the scene, retrieve the Windows installers,
+- For Linux, one can use [flatpak](#linuxflatpak-installer) which uses a specific installer.
+
+On the Audiveris [releases page](https://github.com/Audiveris/audiveris/releases),
+the installers file names are formatted as:
 ```
  Audiveris-<version>-<OS>-<Architecture>
 ```
@@ -73,22 +81,15 @@ as detailed in the following sections.
 Once the application is launched, OCR languages can be downloaded directly from within the Audiveris application.
 See the [OCR languages](../../guides/main/languages.md) section.
 
-Beside these installers, Audiveris used to provide an additional installer
--- actually a **Linux/Flatpak** package -- also with a suitable JRE included.
-This package can be installed directly from the
-[Flathub](https://flathub.org/apps/org.audiveris.audiveris) site.  
-However, the future of this Flatpak package is not clear, for lack of skill and/or manpower. 
+## Windows Community Repository
 
-## Windows community repository
-{: .d-inline-block }
-New in 5.9
-{: .label .label-yellow }
-
-Thanks to [Matthew Watkins suggestion](https://github.com/Audiveris/audiveris/issues/868),
-Audiveris is now available on the Windows community repository.
+Since release 5.9 and thanks to [Matthew Watkins suggestion](https://github.com/Audiveris/audiveris/issues/868),
+Audiveris is available on the Windows community repository.
 
 Anybody can try this command in a terminal window:
-> winget show Audiveris
+```
+winget show Audiveris
+```
 
 which gives (as of this writing):
 ```
@@ -151,8 +152,71 @@ Found Audiveris [audiveris.org.Audiveris]
 Starting package uninstall...
 Successfully uninstalled
 ```
+## Windows Scoop Extras
+{: .d-inline-block }
+New in 5.10
+{: .label .label-yellow }
+
+Since the 5.10 release, 
+following [ResurFace382500000 request](https://github.com/Audiveris/audiveris/issues/876),
+Audiveris is published on the [Scoop Extras bucket](https://github.com/ScoopInstaller/Extras),
+making it available via this command-line installer.
+
+### Installation
+
+From a Windows terminal, enter these commands:
+
+```sh
+# (If you have not yet added the Extras bucket)
+scoop bucket add extras
+
+# Searching for audiveris
+scoop search audiveris
+```
+then
+```sh
+# This installs audiveris from the Extras bucket
+scoop install audiveris
+```
+To check installation:
+```sh
+# Check that audiveris now appears in the list of installed applications
+scoop list
+```
+
+### Running
+
+```sh
+# Print version and exit
+audiveris -version
+```
+```sh
+# Print command line help and exit
+audiveris -help
+```
+```sh
+# Transcribe a score in batch
+audiveris -batch -transcribe <some_image_file>
+```
+```sh
+# Launch the audiveris GUI
+audiveris
+```
+```sh
+# Launch the audiveris GUI on some file (image or .omr file)
+audiveris <some_file>
+```
+
+### Uninstallation
+
+```sh
+# That's all folks!
+scoop uninstall audiveris
+```
 
 ## Windows installer
+
+This describes the manual installation, starting from a downloaded installer file.
 
 ### Installation
 

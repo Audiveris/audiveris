@@ -7,9 +7,6 @@ nav_order: 2
 
 # Preferences
 {: .no_toc }
-{: .d-inline-block }
-Updated in 5.9
-{: .label .label-green }
 
 The {{ site.tools_preferences }} pull-down menu opens this dialog, 
 focused on on the handling of a few user preferences.  
@@ -28,9 +25,7 @@ Table of contents
 ---
 
 ## Standard processing options
-{: .d-inline-block }
-New in 5.9
-{: .label .label-yellow }
+(Since 5.9)
 
 These options impact the way the engine can work, especially for demanding scores.
 - The **SWAPPED_SHEETS** option determines whether the engine should save a sheet to disk

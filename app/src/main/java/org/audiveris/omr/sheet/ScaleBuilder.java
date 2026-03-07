@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -853,7 +853,7 @@ public class ScaleBuilder
                 final String yLabel = "Runs counts - total:" + blackFunction.getArea()
                         + " - Beam quorum:" + getBeamQuorum();
                 final ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
-                blackFinder.plot(plotter, true, 0, maxBlack).display(new Point(20, 20));
+                blackFinder.plot(plotter, true, "Black", 0, maxBlack).display(new Point(20, 20));
             } catch (Throwable ex) {
                 logger.warn("Error in plotting black", ex);
             }
@@ -866,7 +866,7 @@ public class ScaleBuilder
                 final String yLabel = "Runs counts";
                 final ChartPlotter plotter = new ChartPlotter(title, xLabel, yLabel);
                 comboMax = Math.min((comboMax * 3) / 2, sheet.getWidth() - 1); // Add some margin
-                comboFinder.plot(plotter, true, 0, comboMax).display(new Point(80, 80));
+                comboFinder.plot(plotter, true, "Combo", 0, comboMax).display(new Point(80, 80));
             } catch (Throwable ex) {
                 logger.warn("Error in plotting combo", ex);
             }
