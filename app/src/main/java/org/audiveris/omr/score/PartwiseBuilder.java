@@ -1637,7 +1637,9 @@ public class PartwiseBuilder
                             metro.getNote().toMusicXml()));
                         
                         // Update current tempo for this part
-                        partCurrentTempo.put(current.logicalPart.getPid(), metro.getQuartersPerMinute());
+                        partCurrentTempo.put(
+                                current.logicalPart.getPid(),
+                                (double) metro.getQuartersPerMinute());
                     } catch (Exception ex) {
                         logger.warn("Error collecting tempo info for note mapping", ex);
                     }
@@ -2119,26 +2121,42 @@ public class PartwiseBuilder
                         int sheetNum = current.page.getSheet().getStub().getNumber();
                         int sysIdx = current.page.getSystems().indexOf(current.system);
                         
-                        // Calculate measure bounds
-                        Integer left = measure.getLeft();
-                        Integer right = measure.getRight();
-                        if (left != null && right != null) {
-                            List<Staff> staves = measure.getPart().getStaves();
-                            if (!staves.isEmpty()) {
-                                Staff firstStaff = staves.get(0);
-                                Staff lastStaff = staves.get(staves.size() - 1);
-                                int top = firstStaff.getFirstLine().yAt(left);
-                                int bottom = lastStaff.getLastLine().yAt(left);
-                                Rectangle measureBounds = new Rectangle(left, top, right - left, bottom - top);
-                                
-                                // Collect staff info
-                                List<NoteMapping.StaffInfo> staffInfos = new ArrayList<>();
-                                for (Staff staff : staves) {
-                                    int staffIdx = staff.getIndexInPart();
-                                    int staffTop = staff.getFirstLine().yAt(left);
-                                    int staffBottom = staff.getLastLine().yAt(left);
-                                    staffInfos.add(new NoteMapping.StaffInfo(staffIdx, staffTop, staffBottom));
-                                }
+                        // Calculate measure bounds using public staff-aware geometry.
+                        List<Staff> staves = measure.getPart().getStaves();
+                        if (!staves.isEmpty()) {
+                            int left = Integer.MAX_VALUE;
+                            int right = Integer.MIN_VALUE;
+                            int top = Integer.MAX_VALUE;
+                            int bottom = Integer.MIN_VALUE;
+
+                            List<NoteMapping.StaffInfo> staffInfos = new ArrayList<>();
+                            for (Staff staff : staves) {
+                                final int staffLeft = measure.getAbscissa(LEFT, staff);
+                                final int staffRight = measure.getAbscissa(RIGHT, staff);
+                                final int staffTop = Math.min(
+                                        staff.getFirstLine().yAt(staffLeft),
+                                        staff.getFirstLine().yAt(staffRight));
+                                final int staffBottom = Math.max(
+                                        staff.getLastLine().yAt(staffLeft),
+                                        staff.getLastLine().yAt(staffRight));
+
+                                left = Math.min(left, staffLeft);
+                                right = Math.max(right, staffRight);
+                                top = Math.min(top, staffTop);
+                                bottom = Math.max(bottom, staffBottom);
+
+                                staffInfos.add(new NoteMapping.StaffInfo(
+                                        staff.getIndexInPart(),
+                                        staffTop,
+                                        staffBottom));
+                            }
+
+                            if (left <= right && top <= bottom) {
+                                Rectangle measureBounds = new Rectangle(
+                                        left,
+                                        top,
+                                        right - left,
+                                        bottom - top);
                                 
                                 // Get cumulative time offset for this measure
                                 Integer cumulativeOffset = partCumulativeTimeOffsets.get(partId);
@@ -2170,10 +2188,10 @@ public class PartwiseBuilder
                                 }
                                 
                                 noteMapping.addMeasure(new NoteMapping.MeasureInfo(
-                                    partId, measureNum, sheetNum, sysIdx,
-                                    cumulativeOffset, cumulativeSeconds,
-                                    measureDurInDivisions, measureDurSeconds,
-                                    measureBounds, staffInfos));
+                                        partId, measureNum, sheetNum, sysIdx,
+                                        cumulativeOffset, cumulativeSeconds,
+                                        measureDurInDivisions, measureDurSeconds,
+                                        measureBounds, staffInfos));
                             }
                         }
                     } catch (Exception ex) {
@@ -2493,7 +2511,9 @@ public class PartwiseBuilder
                 currentTempo = 120.0;
             }
             int divisions = current.page.simpleDurationOf(Rational.QUARTER);
-            double timeOffsetSeconds = ((cumulativeOffset + timeOffset) * 60.0) / (divisions * currentTempo);
+            int measureCumulativeTimeOffset = cumulativeOffset;
+            double timeOffsetSeconds =
+                    ((measureCumulativeTimeOffset + timeOffset) * 60.0) / (divisions * currentTempo);
             double durationSeconds = (duration * 60.0) / (divisions * currentTempo);
 
             // Tied duration (follow tie chain forward)
@@ -2563,8 +2583,9 @@ public class PartwiseBuilder
                 noteIndexInChord, sheetNumber, systemIndex, isRest, isGrace, isMeasureRest,
                 isTiedStart, isTiedStop, step, octave, alter, absolutePitch, integerPitch,
                 expectedFrequency, noteType, dots, stemDirection, beamGroupId, timeOffset,
-                duration, timeOffsetSeconds, durationSeconds, tiedDuration, tiedDurationSeconds,
-                bounds, center, chordBounds, staffTopY, staffBottomY);
+                duration, measureCumulativeTimeOffset, timeOffsetSeconds, durationSeconds,
+                tiedDuration, tiedDurationSeconds, bounds, center, chordBounds, staffTopY,
+                staffBottomY);
 
             noteMapping.addNote(entry);
 
@@ -3524,7 +3545,7 @@ public class PartwiseBuilder
             isFirst.measure = true;
 
             // Collect system info for note mapping
-            if (noteMapping != null) {
+            if (noteMapping != null && isFirst.part) {
                 try {
                     Rectangle sysBounds = system.getBounds();
                     if (sysBounds != null) {

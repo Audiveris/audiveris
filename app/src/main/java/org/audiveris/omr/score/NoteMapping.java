@@ -144,6 +144,56 @@ public class NoteMapping
     }
 
     /**
+     * Report the divisions per quarter note.
+     *
+     * @return the divisions value
+     */
+    public int getDivisions ()
+    {
+        return divisions;
+    }
+
+    /**
+     * Report the collected sheet entries.
+     *
+     * @return immutable view on sheet entries
+     */
+    public List<SheetInfo> getSheets ()
+    {
+        return List.copyOf(sheets);
+    }
+
+    /**
+     * Report the collected system entries.
+     *
+     * @return immutable view on system entries
+     */
+    public List<SystemInfo> getSystems ()
+    {
+        return List.copyOf(systems);
+    }
+
+    /**
+     * Report the collected measure entries.
+     *
+     * @return immutable view on measure entries
+     */
+    public List<MeasureInfo> getMeasures ()
+    {
+        return List.copyOf(measures);
+    }
+
+    /**
+     * Report the collected note entries.
+     *
+     * @return immutable view on note entries
+     */
+    public List<NoteEntry> getNotes ()
+    {
+        return List.copyOf(notes);
+    }
+
+    /**
      * Check if this mapping is empty.
      *
      * @return true if there are no notes
@@ -301,6 +351,9 @@ public class NoteMapping
             sb.append("      \"beamGroupId\": ").append(n.beamGroupId != null ? n.beamGroupId : "null").append(",\n");
             sb.append("      \"timeOffset\": ").append(n.timeOffset).append(",\n");
             sb.append("      \"duration\": ").append(n.duration).append(",\n");
+            sb.append("      \"measureCumulativeTimeOffset\": ")
+                    .append(n.measureCumulativeTimeOffset)
+                    .append(",\n");
             sb.append("      \"timeOffsetSeconds\": ").append(n.timeOffsetSeconds).append(",\n");
             sb.append("      \"durationSeconds\": ").append(n.durationSeconds).append(",\n");
             sb.append("      \"tiedDuration\": ").append(n.tiedDuration).append(",\n");
@@ -575,6 +628,7 @@ public class NoteMapping
         // Time
         public final int timeOffset;
         public final int duration;
+        public final int measureCumulativeTimeOffset;
         public final double timeOffsetSeconds;
         public final double durationSeconds;
         public final int tiedDuration;
@@ -593,10 +647,10 @@ public class NoteMapping
                          boolean isTiedStart, boolean isTiedStop, String step, int octave,
                          int alter, int absolutePitch, int integerPitch, double expectedFrequency,
                          String noteType, int dots, int stemDirection, Integer beamGroupId,
-                         int timeOffset, int duration, double timeOffsetSeconds,
-                         double durationSeconds, int tiedDuration, double tiedDurationSeconds,
-                         Rectangle bounds, Point center, Rectangle chordBounds, int staffTopY,
-                         int staffBottomY)
+                         int timeOffset, int duration, int measureCumulativeTimeOffset,
+                         double timeOffsetSeconds, double durationSeconds, int tiedDuration,
+                         double tiedDurationSeconds, Rectangle bounds, Point center,
+                         Rectangle chordBounds, int staffTopY, int staffBottomY)
         {
             this.noteIndex = noteIndex;
             this.globalNoteIndex = globalNoteIndex;
@@ -624,6 +678,7 @@ public class NoteMapping
             this.beamGroupId = beamGroupId;
             this.timeOffset = timeOffset;
             this.duration = duration;
+            this.measureCumulativeTimeOffset = measureCumulativeTimeOffset;
             this.timeOffsetSeconds = timeOffsetSeconds;
             this.durationSeconds = durationSeconds;
             this.tiedDuration = tiedDuration;

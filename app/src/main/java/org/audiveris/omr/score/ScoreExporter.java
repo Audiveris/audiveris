@@ -171,6 +171,9 @@ public class ScoreExporter
         
         // Export note mapping to JSON file
         exportNoteMapping(path);
+
+        // Export normalized geometry sidecar for viewer overlays
+        exportGeometrySidecar(path);
     }
 
     //---------------------//
@@ -206,6 +209,41 @@ public class ScoreExporter
             logger.info("Note mapping exported to {}", jsonPathStr);
         } catch (Exception ex) {
             logger.warn("Could not export note mapping", ex);
+        }
+    }
+
+    //------------------------//
+    // exportGeometrySidecar //
+    //------------------------//
+    /**
+     * Export the normalized geometry sidecar alongside the MusicXML file.
+     *
+     * @param musicXmlPath the path to the MusicXML file
+     */
+    private void exportGeometrySidecar (Path musicXmlPath)
+    {
+        if (lastNoteMapping == null || lastNoteMapping.isEmpty()) {
+            return;
+        }
+
+        try {
+            final String pathStr = musicXmlPath.toString();
+            final String jsonPathStr;
+
+            if (pathStr.endsWith(".mxl")) {
+                jsonPathStr = pathStr.substring(0, pathStr.length() - 4) + ".geometry.sidecar.json";
+            } else if (pathStr.endsWith(".xml")) {
+                jsonPathStr = pathStr.substring(0, pathStr.length() - 4) + ".geometry.sidecar.json";
+            } else {
+                jsonPathStr = pathStr + ".geometry.sidecar.json";
+            }
+
+            final Path inputPath = (score.getBook() != null) ? score.getBook().getInputPath() : null;
+            final String sidecarJson = GeometrySidecarExporter.buildJson(lastNoteMapping, inputPath, musicXmlPath);
+            java.nio.file.Files.writeString(java.nio.file.Path.of(jsonPathStr), sidecarJson);
+            logger.info("Geometry sidecar exported to {}", jsonPathStr);
+        } catch (Exception ex) {
+            logger.warn("Could not export geometry sidecar", ex);
         }
     }
 }

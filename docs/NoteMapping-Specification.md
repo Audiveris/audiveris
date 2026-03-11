@@ -2,7 +2,12 @@
 
 ## Overview
 
-When Audiveris exports a MusicXML file, it simultaneously generates a `.mapping.json` file that maps every MusicXML `<note>` element to its pixel position on the original sheet image. This enables powerful features:
+When Audiveris exports a MusicXML file, it simultaneously generates:
+
+- a raw `.mapping.json` file that maps every MusicXML `<note>` element to pixel positions on the source raster
+- a normalized `.geometry.sidecar.json` companion that reshapes the same data into `page -> system -> measure -> note`
+
+The raw mapping enables powerful features:
 
 1. **Playback highlighting** — Highlight notes/measures on the original image during MusicXML playback
 2. **Voice filtering** — Highlight only the voice/part being played
@@ -10,9 +15,14 @@ When Audiveris exports a MusicXML file, it simultaneously generates a `.mapping.
 
 ## File Format
 
-The mapping file is named by replacing the MusicXML file extension with `.mapping.json`:
+The raw mapping file is named by replacing the MusicXML file extension with `.mapping.json`:
 - `score.xml` → `score.mapping.json`
 - `score.mxl` → `score.mapping.json`
+
+The normalized geometry companion is named by replacing the MusicXML file extension with
+`.geometry.sidecar.json`:
+- `score.xml` → `score.geometry.sidecar.json`
+- `score.mxl` → `score.geometry.sidecar.json`
 
 The file contains a single JSON object with the following top-level fields:
 
@@ -26,6 +36,25 @@ The file contains a single JSON object with the following top-level fields:
   "systems": [...],
   "measures": [...],
   "notes": [...]
+}
+```
+
+The companion sidecar uses normalized page coordinates and is intended for PDF/image overlay
+renderers. Its top-level structure is:
+
+```json
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-03-11T00:00:00.000Z",
+  "engine": "audiveris-omr",
+  "source": {...},
+  "coordinateSpace": {
+    "canonical": "page-normalized",
+    "origin": "top-left",
+    "axes": "x-right-y-down"
+  },
+  "pages": [...],
+  "playback": {...}
 }
 ```
 
@@ -203,10 +232,17 @@ where 69 is the MIDI number for A4 (440 Hz).
 |-------|------|-------------|
 | `timeOffset` | integer | Offset within measure (divisions) |
 | `duration` | integer | Note duration (divisions), 0 for grace notes |
+| `measureCumulativeTimeOffset` | integer | Start of containing measure from beginning of piece (divisions) |
 | `timeOffsetSeconds` | number | Absolute time from start of piece (seconds) |
 | `durationSeconds` | number | Note duration (seconds) |
 | `tiedDuration` | integer | Total duration including tied notes (divisions) |
 | `tiedDurationSeconds` | number | Total duration including tied notes (seconds) |
+
+Stable absolute note start can be reconstructed as:
+
+```text
+absoluteStartDivision = measureCumulativeTimeOffset + timeOffset
+```
 
 For tied notes:
 - `isTiedStart = true`: `tiedDuration` includes this note and all following tied notes
