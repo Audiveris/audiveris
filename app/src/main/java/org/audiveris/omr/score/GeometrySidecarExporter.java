@@ -298,7 +298,7 @@ public final class GeometrySidecarExporter
             }
 
             final Integer voice = parseInteger(note.voice);
-            final Integer midiPitch = note.isRest ? null : note.absolutePitch;
+            final Integer midiPitch = note.isRest ? null : computeMidiPitch(note);
             final int absoluteStartDiv = note.measureCumulativeTimeOffset + note.timeOffset;
             final String baseKey = note.partId + "|" + note.voice + "|" + absoluteStartDiv + "|" +
                     note.duration + "|" + (midiPitch != null ? midiPitch : "rest");
@@ -343,6 +343,30 @@ public final class GeometrySidecarExporter
         }
 
         return result;
+    }
+
+    private static Integer computeMidiPitch (NoteMapping.NoteEntry note)
+    {
+        if ((note == null) || (note.step == null)) {
+            return null;
+        }
+
+        final int pitchClass = switch (note.step.toUpperCase(Locale.ROOT)) {
+            case "C" -> 0;
+            case "D" -> 2;
+            case "E" -> 4;
+            case "F" -> 5;
+            case "G" -> 7;
+            case "A" -> 9;
+            case "B" -> 11;
+            default -> -1;
+        };
+
+        if (pitchClass < 0) {
+            return null;
+        }
+
+        return ((note.octave + 1) * 12) + pitchClass + note.alter;
     }
 
     private static List<SystemState> buildSystemStates (int pageNumber,
