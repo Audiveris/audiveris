@@ -58,6 +58,16 @@ renderers. Its top-level structure is:
 }
 ```
 
+`playback.noteRefs` is emitted in exported MusicXML playable-note order:
+
+- rests are excluded
+- the array is ordered by the original MusicXML `<note>` traversal order
+- `musicXmlNoteOrdinal` is the 0-based ordinal in that traversal
+- `playbackIndex` is currently identical to `musicXmlNoteOrdinal`
+
+This allows viewer clients to bind PDF highlights directly from parsed MusicXML note order,
+without rebuilding a secondary timeline key.
+
 ## Coordinate System
 
 All pixel coordinates are relative to the **original sheet image** (not the MusicXML coordinate system):
@@ -207,15 +217,19 @@ Array of note entries. This is the core data for note-to-pixel mapping. Each ent
 | `step` | string or null | Note step: "C", "D", "E", "F", "G", "A", "B" (null for rests) |
 | `octave` | integer | Octave number (0 for rests) |
 | `alter` | integer | Alteration: -2 (double flat), -1 (flat), 0 (natural), 1 (sharp), 2 (double sharp) |
-| `absolutePitch` | integer | MIDI pitch number (0-127, 0 for rests) |
+| `absolutePitch` | integer | Audiveris absolute pitch coordinate (diatonic staff pitch, 0 for rests) |
 | `integerPitch` | integer | Staff pitch position |
 | `expectedFrequency` | number | Expected frequency in Hz (0.0 for rests) |
+
+`absolutePitch` is an Audiveris internal pitch coordinate. It should not be consumed as MIDI.
+When a standard MIDI note number is needed, compute it from `step + octave + alter`, or use the
+normalized sidecar `semantic.midiPitch` field.
 
 The `expectedFrequency` is calculated using the standard formula:
 ```
 frequency = 440.0 * 2^((absolutePitch - 69) / 12)
 ```
-where 69 is the MIDI number for A4 (440 Hz).
+where the exporter currently reuses `absolutePitch` for its internal pitch/frequency heuristic.
 
 #### Duration/Type Fields
 
