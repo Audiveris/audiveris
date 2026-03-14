@@ -604,6 +604,8 @@ public final class GeometrySidecarExporter
             final NoteState note = playable.get(index);
             sb.append(indent).append("    {\n");
             sb.append(indent).append("      \"noteId\": ").append(jsonString(note.noteId)).append(",\n");
+            sb.append(indent).append("      \"playbackIndex\": ").append(index).append(",\n");
+            sb.append(indent).append("      \"musicXmlNoteOrdinal\": ").append(index).append(",\n");
             sb.append(indent).append("      \"semantic\": {\n");
             sb.append(indent).append("        \"partId\": ").append(jsonString(note.partId)).append(",\n");
             sb.append(indent).append("        \"voice\": ").append(note.voice != null ? note.voice : "null").append(",\n");
