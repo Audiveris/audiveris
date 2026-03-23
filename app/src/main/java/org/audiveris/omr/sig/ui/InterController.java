@@ -80,10 +80,12 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeCustomInter;
+import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -1928,19 +1930,32 @@ public class InterController
             final SlurInter slur = (SlurInter) source;
             final HeadInter head = (HeadInter) target;
             final HorizontalSide side = (head.getCenter().x < slur.getCenter().x) ? LEFT : RIGHT;
-            final SlurHeadRelation existingRel = slur.getHeadRelation(side);
-            final SlurInter extension = slur.getExtension(side);
 
+            final SlurHeadRelation existingRel = slur.getHeadRelation(side);
             if (existingRel != null) {
                 toRemove.add(existingRel);
             }
 
+            final SlurInter extension = slur.getExtension(side);
             if (extension != null) {
                 seq.add(
                         new DisconnectTask(
                                 (side == RIGHT) ? slur : extension,
                                 (side == RIGHT) ? extension : slur,
                                 ConnectionTask.Kind.SLUR_CONNECTION));
+            }
+        }
+
+        if (relation instanceof ChordWedgeRelation) {
+            // This relation is declared multi-source & single-target
+            // But is single source (chord) for each given horizontal side
+            final AbstractChordInter chord = (AbstractChordInter) source;
+            final WedgeInter wedge = (WedgeInter) target;
+            final HorizontalSide side = (chord.getCenter().x < wedge.getCenter().x) ? LEFT : RIGHT;
+            final ChordWedgeRelation existingRel = wedge.getChordRelation(side);
+
+            if (existingRel != null) {
+                toRemove.add(existingRel);
             }
         }
 

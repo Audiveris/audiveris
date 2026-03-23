@@ -110,7 +110,7 @@ public class ChordWedgeRelation
     public boolean isSingleSource ()
     {
         // A wedge can have one chord on left and one chord on right
-        // TODO: make sure there is only one chord on each side
+        // But we have to make sure that there is only one chord on each horizontal side
         return false;
     }
 

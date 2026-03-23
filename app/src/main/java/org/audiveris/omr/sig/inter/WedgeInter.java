@@ -34,6 +34,7 @@ import org.audiveris.omr.sheet.ui.ObjectUIModel;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.InterEditor;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
@@ -267,7 +268,7 @@ public class WedgeInter
     // getSpread //
     //-----------//
     /**
-     * Report vertical gap between ending points or provided side.
+     * Report vertical gap between ending points on the provided horizontal side.
      *
      * @param side provided horizontal side
      * @return vertical gap in pixels
@@ -285,7 +286,7 @@ public class WedgeInter
     // getChord //
     //----------//
     /**
-     * Report the chord linked to this wedge on the provided side.
+     * Report the chord linked to this wedge on the provided horizontal side.
      *
      * @param side the provided side
      * @return the linked chord, if any, otherwise null
@@ -293,12 +294,34 @@ public class WedgeInter
     public AbstractChordInter getChord (HorizontalSide side)
     {
         if (sig != null) {
-            for (org.audiveris.omr.sig.relation.Relation rel : sig.edgesOf(this)) {
+            for (Relation rel : sig.edgesOf(this)) {
                 if (rel instanceof ChordWedgeRelation chordWedgeRelation) {
                     if (chordWedgeRelation.getSide() == side) {
                         return (AbstractChordInter) sig.getOppositeInter(this, rel);
                     }
                 }
+            }
+        }
+
+        return null;
+    }
+
+    //-----------------//
+    //getChordRelation //
+    //-----------------//
+    /**
+     * Report the relation to chord, if any, on the specified side.
+     *
+     * @param side the desired side
+     * @return the relation found or null
+     */
+    public ChordWedgeRelation getChordRelation (HorizontalSide side)
+    {
+        for (Relation rel : sig.getRelations(this, ChordWedgeRelation.class)) {
+            final ChordWedgeRelation cwRel = (ChordWedgeRelation) rel;
+
+            if (cwRel.getSide() == side) {
+                return cwRel;
             }
         }
 
@@ -315,15 +338,15 @@ public class WedgeInter
         final Line2D topLine = getLine1();
         final List<Link> links = new ArrayList<>();
 
-        for (HorizontalSide side : HorizontalSide.values()) {
-            final Point2D end = (side == HorizontalSide.LEFT) ? topLine.getP1() : topLine.getP2();
+        for (HorizontalSide hSide : HorizontalSide.values()) {
+            final Point2D end = (hSide == HorizontalSide.LEFT) ? topLine.getP1() : topLine.getP2();
             MeasureStack stack = system.getStackAt(end);
 
             if (stack == null) {
                 // Perhaps a bit beyond staff limit abscissa?
                 final double xMargin = scale.toPixels(constants.stackAbscissaMargin);
                 final Point2D end2 = new Point2D.Double(
-                        end.getX() + ((side == HorizontalSide.LEFT) ? xMargin : -xMargin),
+                        end.getX() + ((hSide == HorizontalSide.LEFT) ? xMargin : -xMargin),
                         end.getY());
                 stack = system.getStackAt(end2);
             }
@@ -332,17 +355,38 @@ public class WedgeInter
                 continue;
             }
 
-            final AbstractChordInter chordAbove = stack.getStandardChordAbove(end, null);
-
-            if (chordAbove != null) {
-                links.add(new Link(chordAbove, new ChordWedgeRelation(side), false));
-            } else {
-                final AbstractChordInter chordBelow = stack.getStandardChordBelow(end, null);
-
-                if (chordBelow != null) {
-                    links.add(new Link(chordBelow, new ChordWedgeRelation(side), false));
+            if (staff != null) {
+                // Look for chord within that staff only
+                final double yStaff = staff.getMidLine().yAt(end.getX());
+                if (yStaff <= end.getY()) {
+                    final AbstractChordInter chordAbove = stack.getStandardChordAbove(end, null);
+                    if (chordAbove != null) {
+                        links.add(new Link(chordAbove, new ChordWedgeRelation(hSide), false));
+                    } else {
+                        logger.debug("No chord above for {} {}", this, hSide);
+                    }
                 } else {
-                    logger.debug("No chord for {} {}", this, side);
+                    final AbstractChordInter chordBelow = stack.getStandardChordBelow(end, null);
+                    if (chordBelow != null) {
+                        links.add(new Link(chordBelow, new ChordWedgeRelation(hSide), false));
+                    } else {
+                        logger.debug("No chord below for {} {}", this, hSide);
+                    }
+                }
+            } else {
+                // Look above, then below
+                final AbstractChordInter chordAbove = stack.getStandardChordAbove(end, null);
+
+                if (chordAbove != null) {
+                    links.add(new Link(chordAbove, new ChordWedgeRelation(hSide), false));
+                } else {
+                    final AbstractChordInter chordBelow = stack.getStandardChordBelow(end, null);
+
+                    if (chordBelow != null) {
+                        links.add(new Link(chordBelow, new ChordWedgeRelation(hSide), false));
+                    } else {
+                        logger.debug("No chord for {} {}", this, hSide);
+                    }
                 }
             }
         }
@@ -604,11 +648,10 @@ public class WedgeInter
     public static class Impacts
             extends GradeImpacts
     {
-        private static final String[] NAMES = new String[]
-        { "s1", "s2", "closedDy", "openDy", "openBias", "width" };
+        private static final String[] NAMES = new String[] { "s1", "s2", "closedDy", "openDy",
+                "openBias", "width" };
 
-        private static final double[] WEIGHTS = new double[]
-        { 1, 1, 1, 1, 1, 1 };
+        private static final double[] WEIGHTS = new double[] { 1, 1, 1, 1, 1, 1 };
 
         public Impacts (double s1,
                         double s2,
