@@ -115,6 +115,8 @@ This triggers the action defined
 in file [.github/workflows/publish-winget.yml](../.github/workflows/publish-winget.yml)
 and named "Publish on Windows repository".
 
+The action uses the secret named `WINGET_PAT`.
+
 The action does in sequence:
 1. Download the latest version of `wingetcreate.exe`
 2. Retrieve the descriptor of Audiveris latest release
@@ -123,6 +125,7 @@ The action does in sequence:
 
 A pull request like [this one](https://github.com/microsoft/winget-pkgs/pull/347694) is automatically posted on the `github/microsoft/winget-pkgs` repository,
 waiting for someone to review and approve it.
+
 
 
 ## Publishing on Scoop Extras bucket
@@ -194,5 +197,37 @@ According to the [Scoop contributing documentation](https://github.com/ScoopInst
 If it's a new manifest, use <app name>: Add version <version>.  
 If it's an update to an existing manifest, use <app name>@<version>: <small description>.
 ```
+
+## Personal Access Tokens
+
+To submit PR via workflow actions, we need a personal access token.
+- `publish-winget.yml` uses `secrets.WINGET_PAT`
+- `flatpak.yml` uses `secrets.FLATPAK_PAT` (or perhaps `secrets.FLATHUB_TOKEN` ?)
+
+### Create
+
+On github site:
+- Click on user icon, top right, `Open user navigation menu`
+- Select `Settings`
+- Select `Developer settings` at the very bottom
+- Personal access tokens
+- Tokens (classic)
+- Generate new token (classic), for general use
+- Note field: enter a name for this token, e.g. FLATHUB_TOKEN
+- Select scopes (`repo` and `workflow`)
+- Click on button `Generate token`
+- Copy the token value to the clipboard
+
+### Save
+
+To save the token value on Audiveris site, [https://github.com/Audiveris/audiveris](https://github.com/Audiveris/audiveris):
+- Repository Settings
+- Secrets and variables
+- Actions
+- Repository secrets
+- Click on button `New repository secret`
+- Name: typically FLATHUB_TOKEN 
+- Secret: Insert the token value from the clipboard
+- Press button `Add secret`
 
 
