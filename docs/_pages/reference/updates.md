@@ -30,6 +30,9 @@ Table of contents
   - Ability to set font attributes at a sentence level to apply them to all its member words.
   - Better text word resizing, keeping a constant height/width ratio.
   - Better drag n' drop for all clefs.
+  - Ability to manually mark/unmark any system as a movement start via the System context menu,
+    for cases where automatic indentation detection cannot identify score boundaries
+    (e.g., exercise books, anthologies).
 - Engine
   - Verse numbers are detected and filtered out of the lyric lines.
   - Isolated punctuations marks (as in French) are combined with the preceding lyric syllable.

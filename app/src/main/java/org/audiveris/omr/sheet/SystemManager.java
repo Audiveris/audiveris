@@ -249,6 +249,26 @@ public class SystemManager
         return true;
     }
 
+    //--------------//
+    // rebuildPages //
+    //--------------//
+    /**
+     * Clear and rebuild pages and pageRefs based on current system indentation flags,
+     * then update the book scores accordingly.
+     * <p>
+     * This is used after a user manually toggles a system's indentation.
+     */
+    public void rebuildPages ()
+    {
+        final SheetStub stub = sheet.getStub();
+        stub.clearPageRefs();
+        sheet.clearPages();
+        allocatePages();
+        stub.getBook().updateScores(stub);
+
+        reportResults();
+    }
+
     //-------------------//
     // computeSystemArea //
     //-------------------//
