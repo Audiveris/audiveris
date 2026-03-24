@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -79,7 +80,6 @@ public class ClefInter
             Shape.G_CLEF,
             1.0,
             null,
-            +2.0,
             ClefKind.TREBLE);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -105,17 +105,15 @@ public class ClefInter
      * @param shape the possible shape
      * @param grade the interpretation quality
      * @param staff the related staff
-     * @param pitch pitch position
      * @param kind  clef kind
      */
     private ClefInter (Glyph glyph,
                        Shape shape,
                        Double grade,
                        Staff staff,
-                       Double pitch,
                        ClefKind kind)
     {
-        super(glyph, null, shape, grade, staff, pitch);
+        super(glyph, null, shape, grade, staff, kind == null ? null : (double) kind.pitch);
         this.kind = kind;
     }
 
@@ -128,7 +126,7 @@ public class ClefInter
     public ClefInter (Shape shape,
                       Double grade)
     {
-        this(null, shape, grade, null, null, null);
+        this(null, shape, grade, null, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -217,16 +215,21 @@ public class ClefInter
 
             if (targetPitch != null) {
                 // Adjust the ordinate
+                final Rectangle box = getBounds();
+                final double halfHeight = box.height / 2.0;
                 final double pitchOffset = getAreaPitchOffset(shape);
-                dropLocation.y = (int) Math.rint(
-                        staff.pitchToOrdinate(center.x, targetPitch - pitchOffset));
-
+                final double newCenterY = staff.pitchToOrdinate(
+                        center.getX(),
+                        targetPitch - pitchOffset);
+                box.y = (int) Math.rint(newCenterY - halfHeight);
+                setBounds(box);
+                setPitch((double) targetPitch); // Force target pitch
+                dropLocation = GeoUtil.center(box);
                 modified = true;
 
                 if (kindIsMutable(shape)) {
                     // Precise the clef kind
-                    center.y = dropLocation.y;
-                    kind = kindOf(center, shape, staff);
+                    kind = kindOf(targetPitch, shape, staff);
                 }
             }
 
@@ -353,14 +356,15 @@ public class ClefInter
      */
     private int octaveOf (double pitchPosition)
     {
-        final int intPitch = (int) Math.rint(pitchPosition);
+        // @formatter:off
+        final int intPitch = (int)Math.rint(pitchPosition);
 
         return switch (shape) {
             case G_CLEF, G_CLEF_SMALL, PERCUSSION_CLEF -> (34 - intPitch) / 7;
             case G_CLEF_8VA -> ((34 - intPitch) / 7) + 1;
             case G_CLEF_8VB -> ((34 - intPitch) / 7) - 1;
             case C_CLEF -> ((28 + (int) Math.rint(this.pitch)) - intPitch) / 7;
-            case F_CLEF, F_CLEF_SMALL ->    ((24  + (int) Math.rint(this.pitch)) - intPitch) / 7;
+            case F_CLEF, F_CLEF_SMALL -> ((24  + (int) Math.rint(this.pitch)) - intPitch) / 7;
             case F_CLEF_8VA -> ((22 - intPitch) / 7) + 1;
             case F_CLEF_8VB -> ((22 - intPitch) / 7) - 1;
 
@@ -369,6 +373,7 @@ public class ClefInter
                 yield 0; // To keep compiler happy
             }
         };
+        // @formatter:on
     }
 
     //--------//
@@ -415,7 +420,22 @@ public class ClefInter
      */
     public ClefInter replicate (Staff targetStaff)
     {
-        return new ClefInter(null, shape, getGrade(), targetStaff, pitch, kind);
+        return new ClefInter(null, shape, getGrade(), targetStaff, kind);
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    /**
+     * This overriding method simply sets the bounds, <b>without re-computing the clef pitch</b>.
+     *
+     * @param bounds
+     */
+    @Override
+    public void setBounds (Rectangle bounds)
+    {
+        // Just set bounds, without recomputing the pitch!
+        this.bounds = (bounds != null) ? new Rectangle(bounds) : null;
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
@@ -486,20 +506,19 @@ public class ClefInter
             default -> null;
 
             case G_CLEF, G_CLEF_SMALL, G_CLEF_8VA, G_CLEF_8VB -> //
-                    new ClefInter(glyph, shape, grade, staff, 2.0, ClefKind.TREBLE);
+                    new ClefInter(glyph, shape, grade, staff, ClefKind.TREBLE);
 
             case C_CLEF, F_CLEF, F_CLEF_SMALL -> {
                 final Point2D center = glyph.getCenter2D();
-                final ClefKind kind = kindOf(center,shape,staff);
-                final int roundedPitch = ClefInter.getTargetPitch(shape, center, staff);
-                yield new ClefInter(glyph, shape, grade, staff, (double) roundedPitch, kind);
+                final ClefKind kind = kindOf(center, shape, staff); // TODO: check this!
+                yield new ClefInter(glyph, shape, grade, staff, kind);
             }
 
             case F_CLEF_8VA, F_CLEF_8VB -> //
-                    new ClefInter(glyph, shape, grade, staff, -2.0, ClefKind.BASS);
+                    new ClefInter(glyph, shape, grade, staff, ClefKind.BASS);
 
             case PERCUSSION_CLEF -> //
-                    new ClefInter(glyph, shape, grade, staff, 0.0, ClefKind.PERCUSSION);
+                    new ClefInter(glyph, shape, grade, staff, ClefKind.PERCUSSION);
         };
     }
 
@@ -613,6 +632,36 @@ public class ClefInter
             case fClef -> ClefKind.BASS;
             case unpitchedPercussionClef1 -> ClefKind.PERCUSSION;
             default -> throw new IllegalArgumentException("No ClefKind for " + omrShape);
+        };
+    }
+
+    //--------//
+    // kindOf //
+    //--------//
+    /**
+     * Guess the clef kind, based on shape and pitch.
+     *
+     * @param pitch target pitch
+     * @param shape clef shape
+     * @param staff the containing staff
+     * @return the precise clef kind
+     */
+    public static ClefKind kindOf (int pitch,
+                                   Shape shape,
+                                   Staff staff)
+    {
+        if (staff.isTablature()) {
+            return null;
+        }
+
+        return switch (shape) {
+            case G_CLEF, G_CLEF_SMALL, G_CLEF_8VA, G_CLEF_8VB -> ClefKind.TREBLE;
+            case C_CLEF -> cKindOf(pitch);
+            case F_CLEF, F_CLEF_SMALL -> fKindOf(pitch);
+            case F_CLEF_8VA, F_CLEF_8VB -> ClefKind.BASS;
+
+            case PERCUSSION_CLEF -> ClefKind.PERCUSSION;
+            default -> null;
         };
     }
 
@@ -787,12 +836,12 @@ public class ClefInter
                                 targetPitch - pitchOffset);
                         latestBounds.y = (int) Math.rint(newCenterY - halfHeight);
                         clef.setBounds(latestBounds);
+                        clef.setPitch((double) targetPitch); // Force target pitch
 
                         if (kindIsMutable(shape)) {
                             // Adjust precise kind
-                            final Point2D newCenter = new Point2D.Double(center.getX(), newCenterY);
                             final ClefKind oldKind = clef.kind;
-                            clef.kind = kindOf(newCenter, clef.shape, staff);
+                            clef.kind = kindOf(targetPitch, clef.shape, staff);
 
                             if (clef.kind != oldKind) {
                                 staff.getSystem().getSheet().getInterIndex().publish(clef);

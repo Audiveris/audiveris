@@ -745,7 +745,7 @@ public class ClefBuilder
 
         // Sheet scale dependent
         //----------------------
-        //
+
         final int maxClefEnd;
 
         final int beltMargin;
@@ -756,7 +756,7 @@ public class ClefBuilder
 
         // Staff scale dependent
         //----------------------
-        //
+
         final int aboveStaff;
 
         final int belowStaff;
