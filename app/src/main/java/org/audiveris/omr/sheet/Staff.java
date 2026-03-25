@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,6 +42,7 @@ import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
@@ -1060,6 +1061,42 @@ public class Staff
     public StaffHeader getHeader ()
     {
         return header;
+    }
+
+    //-----------------//
+    // getHeaderInters //
+    //-----------------//
+    /**
+     * Collect inters that belong to staff header.
+     *
+     * @return the header inters
+     */
+    public List<Inter> getHeaderInters ()
+    {
+        final List<Inter> inters = new ArrayList<>();
+
+        if (isTablature()) {
+            return inters;
+        }
+
+        if (header.clef != null) {
+            inters.add(header.clef);
+        }
+
+        if (header.key != null) {
+            inters.add(header.key);
+            inters.addAll(header.key.getMembers());
+        }
+
+        if (header.time != null) {
+            inters.add(header.time);
+
+            if (header.time instanceof InterEnsemble interEnsemble) {
+                inters.addAll(interEnsemble.getMembers());
+            }
+        }
+
+        return inters;
     }
 
     //----------------//

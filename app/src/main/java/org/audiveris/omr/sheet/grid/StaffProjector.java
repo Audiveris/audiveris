@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -662,7 +662,7 @@ public class StaffProjector
         // Multiple rest: check white spaces beyond serif core
         if (addedChunk != 0) {
             if (fullHeightData.whiteRatio < constants.minWhiteRatioBeyondVerticalSerif.getValue()) {
-                logger.info(
+                logger.debug(
                         "Too high serif for multiple rest in Staff#{} at x:{}",
                         staff.getId(),
                         xMid);

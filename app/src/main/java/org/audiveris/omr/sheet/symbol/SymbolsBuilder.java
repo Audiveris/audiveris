@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -88,9 +88,6 @@ public class SymbolsBuilder
     /** Shape classifier to use. */
     private final Classifier classifier = ShapeClassifier.getInstance();
 
-    //    /** Shape second classifier to use. */
-    //    private final Classifier classifier2 = ShapeClassifier.getSecondInstance();
-    //
     /** Companion factory for symbols inters. */
     private final InterFactory factory;
 

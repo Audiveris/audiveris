@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -399,7 +399,7 @@ public abstract class StubDependent
                 return;
             }
 
-            SheetStub stub = stubEvent.getData();
+            final SheetStub stub = stubEvent.getData();
 
             // Update stubAvailable
             setStubAvailable(stub != null);
@@ -449,7 +449,7 @@ public abstract class StubDependent
             // Update sheet properties
             if ((stub != null) && stub.hasSheet()) {
                 final Sheet sheet = stub.getSheet();
-                InterController ctrl = sheet.getInterController();
+                final InterController ctrl = sheet.getInterController();
                 setUndoable(ctrl.canUndo());
                 setRedoable(ctrl.canRedo());
                 updateProperties(sheet);

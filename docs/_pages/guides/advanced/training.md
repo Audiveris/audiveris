@@ -15,7 +15,7 @@ ignore this training section.
 However, if the score(s) we want to transcribe use some specific music font significantly different
 from the provided examples, we may consider training the classifier to better fit our case.
 
-Let's make sure we have enabled the `SAMPLES` topic in the {{ site.tools_advanced }} menu,
+First, let's make sure we have enabled the `SAMPLES` topic in the {{ site.tools_advanced }} menu,
 and restarted the application to take this advanced topic into account in all UI corners.
 
 Then, we will need a bunch of training samples (a sample is basically a glyph and a shape).
@@ -41,12 +41,17 @@ by its `Repository → Train classifier` menu.
 
 Here we can launch and monitor the training of the classifier neural network.
 
-The `Select` button makes a new random selection among the samples of the global repository.
+1. The `Select` button makes a new random selection among the samples of the global repository.
 
-The `Reset` button builds a new network from scratch (forgetting any previous training).
+2. The `Reset` button builds a new network from scratch (forgetting any previous training).
 
-The `Train` button launches a training of the current network
+3. The `Train` button launches a training of the current network
 (which is either the initially-trained one, or a brand new one if `Reset` was hit).
+
+Advice:  
+When training on new shapes, it is recommended to first reset the network before launching the training,
+so that all samples be given the same 'chance'.  
+A second training can then be launched (with no reset this time) to further train the network, but beware of overfitting.
 
 Note that training hyper-parameters cannot be directly modified on this interface.
 If really needed, we can use the {{ site.tools_constants }} menu and search for `BasicClassifier`.

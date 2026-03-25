@@ -39,9 +39,6 @@ Here are two examples of such histograms:
     which corresponds to the typical beam thickness (12 pixels in this example).
 
 ## Beam thickness
-{: .d-inline-block }
-new in 5.3
-{: .label .label-yellow }
 
 The Audiveris OMR engine, in its BEAMS step, makes a pretty good processing of beams
 -- when it knows the typical beam thickness in the sheet at hand.

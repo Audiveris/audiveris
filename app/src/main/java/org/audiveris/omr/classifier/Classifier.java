@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -25,9 +25,6 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.SystemInfo;
 
-//
-//import org.deeplearning4j.optimize.api.IterationListener;
-//
 import java.util.Collection;
 import java.util.EnumSet;
 
@@ -90,6 +87,13 @@ public interface Classifier
                            int count,
                            double minGrade,
                            EnumSet<Condition> conditions);
+
+    /**
+     * Report the total count of epochs run so far.
+     *
+     * @return the total count so far
+     */
+    int getEpochsTotal ();
 
     /**
      * Report the underlying glyph descriptor

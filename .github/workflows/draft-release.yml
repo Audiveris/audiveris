@@ -17,7 +17,7 @@ jobs:
           - os: ubuntu-latest
           - os: ubuntu-22.04    # fix for issue #805 libasound2t64 is required but not found
           - os: macos-latest    # for Apple Silicon (arm64) support
-          - os: macos-13        # for legacy Intel (x64) hardware support
+          - os: macos-15-intel  # for legacy Intel (x64) hardware support
           - os: windows-latest
             option: ""          # without console
           - os: windows-latest
@@ -35,19 +35,13 @@ jobs:
           all: true
 
       - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           java-version: ${{ steps.all.outputs.theMinJavaVersion }}
           distribution: zulu
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: tiTree on ${{ matrix.os }}
-        run: ./gradlew tiTree jpackage
-
-      - name: tiOrder on ${{ matrix.os }}
-        run: ./gradlew tiOrder jpackage
 
       - name: Build installer on ${{ matrix.os }} option ${{ matrix.option }}
         run: ./gradlew --info jpackage -Poption=${{ matrix.option }}
@@ -105,7 +99,7 @@ jobs:
           all: true
 
       - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           java-version: ${{ steps.all.outputs.theMinJavaVersion }}
           distribution: zulu
@@ -172,7 +166,7 @@ jobs:
       - name: Download (old) macos installer
         uses: actions/download-artifact@v4
         with:
-          name: installer-macos-13
+          name: installer-macos-15-intel
           path: ./artifacts
 
       - name: Download handbook PDF

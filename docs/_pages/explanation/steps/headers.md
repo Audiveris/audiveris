@@ -70,6 +70,9 @@ There may be several (mutually exclusive) acceptable clefs.
 They are registered in the system SIG and kept for the time being.
 
 ### Key candidates
+{: .d-inline-block }
+updated in 5.8
+{: .label .label-green}
 
 A key signature is a sequence of consistent alterations (all sharps or all flats or none) in a
 predefined order (FCGDAEB for sharps, BEADGCF for flats).

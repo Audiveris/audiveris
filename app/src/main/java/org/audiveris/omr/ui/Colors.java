@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -145,7 +145,7 @@ public abstract class Colors
     public static final Color SCORE_PHYSICALS = new Color(0x806040);
 
     /** frame: lyric text. */
-    public static final Color SCORE_LYRICS = Color.BLUE;
+    public static final Color SCORE_LYRICS = Color.GRAY;
 
     /** Unknown shape. */
     public static final Color SHAPE_UNKNOWN = Color.LIGHT_GRAY;

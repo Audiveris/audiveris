@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -53,6 +53,8 @@ public class MusicalSymbols
             case AUGMENTATION_DOT -> ints(0xF02E);
 
             ///case BACK_TO_BACK_REPEAT_SIGN -> ints(0xE042); // composed
+            case BOW_DOWN -> ints(0xF0B3);
+            case BOW_UP -> ints(0xF0B2);
             ///case BRACE -> ints(0xE000); // 0xF0A7 + OxF0EA top + down
             ///case BRACKET -> ints(0xE002); // Composed with serifs
             case BREATH_MARK -> ints(0xF02C);

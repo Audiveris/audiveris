@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -235,6 +235,7 @@ public enum Shape
     ACCENT,
     TENUTO,
     STACCATISSIMO,
+    STACCATISSIMO_BELOW,
     MARCATO,
     MARCATO_BELOW,
     ARPEGGIATO,
@@ -261,6 +262,7 @@ public enum Shape
     DYNAMICS_FFF("Fortississimo"),
     DYNAMICS_MF("Mezzo forte"),
     DYNAMICS_FP("FortePiano"),
+    DYNAMICS_FZ("Forzando"),
     DYNAMICS_SF("Subito forte"),
     DYNAMICS_SFZ("Sforzando"),
 
@@ -280,6 +282,12 @@ public enum Shape
     //
     TUPLET_THREE("3"),
     TUPLET_SIX("6"),
+
+    //
+    // Techniques ---
+    //
+    BOW_DOWN("stringsDownBow"),
+    BOW_UP("stringsUpBow"),
     PEDAL_MARK("Pedal down"),
     PEDAL_UP_MARK("Pedal downup"),
 
@@ -878,7 +886,8 @@ public enum Shape
     public boolean isBelow ()
     {
         return switch (this) {
-            case FERMATA_BELOW, MARCATO_BELOW, PEDAL_MARK, PEDAL_UP_MARK, SLUR_BELOW -> true;
+            case FERMATA_BELOW, MARCATO_BELOW, PEDAL_MARK, PEDAL_UP_MARK, //
+                    STACCATISSIMO_BELOW, SLUR_BELOW -> true;
             default -> false;
         };
     }

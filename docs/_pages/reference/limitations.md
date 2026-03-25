@@ -15,49 +15,18 @@ with the current release.
 Apart from these cases, you can file a bug report or a request for enhancement on
 [https://github.com/Audiveris/audiveris/issues](https://github.com/Audiveris/audiveris/issues).
 
+{: .highlight }
+Nota: There used to be a section on "*Natural signs in key signature*" and a section on "*Key signature change*"
+to report limitations on these topics.
+Starting with the 5.8 release, these limitations no longer exist.
+See details on the [Key Signature](../guides/ui/ui_tools/key.md) chapter.
+
 ---
 Table of contents
 {: .no_toc .text-epsilon }
 1. TOC
 {:toc}
 ---
-
-## Natural signs in key signature
-
-![](../assets/images/hybrid_key.png)
-
-In the current data model, a key signature is assumed to contain only sharp signs or only flat signs.
-There is no room in them yet for natural signs.
-
-Such natural signs are just "courtesy" signs for the reader, and can be ignored by OMR.
-
-Note however that, since the current engine expects sharps-only or flats-only signatures,
-the simple presence of natural signs will likely impede correct key recognition.
-In this case, we will have to manually enter the correct key (without the naturals).
-
-Since 5.3, we can manually insert a natural-only key signature, a kind of "cancel key".
-See this capability detailed in the [Naturals section](../guides/ui/ui_tools/key.md#naturals).
-
-## Key signature change
-
-![](../assets/images/curtesy_key.png)
-
-A key signature generally appears at the beginning of a staff, within what Audiveris calls the staff
-"header" (a sequence of: clef, optional key signature, optional time signature).
-Generally, the engine correctly handles a key signature in the header, simply because it knows
-precisely where to look.
-
-But later down the staff, a key change may appear.
-And this new key is not yet handled by the engine.
-
-Such a change often appear in a "courtesy measure", located at the end of the staff and containing no
-music note.
-The purpose of a courtesy measure is simply to warn the human reader that a new key will occur at
-the next system start.
-It is thus harmless for the OMR engine to ignore this warning.
-
-Apart from this courtesy case, the user may have to manually enter the missing key change on every
-staff.
 
 ## Opposed Stems
 

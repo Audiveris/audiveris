@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -190,6 +190,23 @@ public class AlterInter
         };
     }
 
+    //----------------//
+    // getAlteredHead //
+    //----------------//
+    /**
+     * Report the head altered by this accidental.
+     *
+     * @return the altered head, otherwise null
+     */
+    public HeadInter getAlteredHead ()
+    {
+        for (Relation rel : sig.getRelations(this, AlterHeadRelation.class)) {
+            return (HeadInter) sig.getOppositeInter(this, rel);
+        }
+
+        return null;
+    }
+
     //------------//
     // getDetails //
     //------------//
@@ -206,6 +223,9 @@ public class AlterInter
         return sb.toString();
     }
 
+    //------------------//
+    // getMeasuredPitch //
+    //------------------//
     /**
      * @return the measuredPitch
      */
@@ -467,9 +487,9 @@ public class AlterInter
         double geoPitch = staff.pitchPositionOf(center);
 
         // Pitch offset for flat-based alterations
-        if ((omrShape == OmrShape.keyFlat) || (omrShape == OmrShape.accidentalFlat)
-                || (omrShape == OmrShape.accidentalDoubleFlat)
-                || (omrShape == OmrShape.accidentalFlatSmall)) {
+        if ((omrShape == OmrShape.keyFlat) //
+                || (omrShape == OmrShape.accidentalFlat)
+                || (omrShape == OmrShape.accidentalDoubleFlat)) {
             geoPitch += getAreaPitchOffset(Shape.FLAT);
         }
 

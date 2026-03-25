@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,6 +32,14 @@ import static org.audiveris.omr.glyph.Shape.*;
 public class BravuraSymbols
         extends Symbols
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    /** Code for 1-line symbol. */
+    public static final int[] LINE_CODE = ints(0xe010);
+
+    /** Code for the 5-line staff symbol. */
+    public static final int[] STAFF_CODE = ints(0xe01a);
+
     //~ Methods ------------------------------------------------------------------------------------
 
     @Override
@@ -49,6 +57,8 @@ public class BravuraSymbols
             case AUGMENTATION_DOT -> ints(0xE044);
 
             case BACK_TO_BACK_REPEAT_SIGN -> ints(0xE042);
+            case BOW_DOWN -> ints(0xE610);
+            case BOW_UP -> ints(0xE612);
             case BRACE -> ints(0xE000);
             case BRACKET -> ints(0xE002);
             case BRACKET_LOWER_SERIF -> ints(0xE004);
@@ -85,8 +95,8 @@ public class BravuraSymbols
             //        case DYNAMICS_FFFF -> ints(0xE531);
             //        case DYNAMICS_FFFFF -> ints(0xE532);
             //        case DYNAMICS_FFFFFF -> ints(0xE533);
-            //        case DYNAMICS_FZ -> ints(0xE535);
             case DYNAMICS_FP -> ints(0xE534);
+            case DYNAMICS_FZ -> ints(0xE535);
             case DYNAMICS_MF -> ints(0xE52D);
             case DYNAMICS_MP -> ints(0xE52C);
             case DYNAMICS_P -> ints(0xE520);
@@ -199,6 +209,7 @@ public class BravuraSymbols
             case SHARP -> ints(0xE262);
             case SIXTEENTH_NOTE_UP, METRO_SIXTEENTH -> ints(0xE1D9);
             case STACCATISSIMO -> ints(0xE4A6);
+            case STACCATISSIMO_BELOW -> ints(0xE4A7);
             case STACCATO -> ints(0xE4A2);
             case STAFF_LINES -> ints(0xE01A);
             case STEM -> ints(0xE210);

@@ -20,13 +20,68 @@ Table of contents
 - TOC
 {:toc}
 ---
+
+## 5.10
+(March 2026)
+
+- User Interface
+  - Option to skip user confirmation on multiple delete
+  - Better rendering of dialog about new release content
+  - Ability to set font attributes at a sentence level to apply them to all its member words.
+  - Better text word resizing, keeping a constant height/width ratio.
+  - Better drag n' drop for all clefs.
+- Engine
+  - Verse numbers are detected and filtered out of the lyric lines.
+  - Isolated punctuations marks (as in French) are combined with the preceding lyric syllable.
+  - Support for the rehearsal marks.
+  - Support for BARITONE, MEZZO_SOPRANO and SOPRANO clefs.
+  - Additional book processing switch to accept braced parts without internal bar connections.
+- Project
+  - Audiveris for Windows is now available on the Scoop Extras bucket
+
+## 5.9
+(December 2025)
+
+- User Interface
+  - The Preferences dialog let the user select new processing options.
+- Engine
+  - Ability to automatically swap a sheet from memory to disk once it has been processed.
+  - Ability to process all systems of a sheet in parallel.
+  - Support for Cyrillic OCR'd characters.
+  - Better handling of staves that exhibit non-regular vertical spacing between lines.
+  - Support for the Staccatissimo below shape.
+- Project
+  - Publication of Audiveris on the Windows Community repository via WinGet command.
+
+
+## 5.8
+(November 2025)
+
+- User Interface
+  - Improved key editor to build key signature from its members
+  - Improved staff editor that inserts intermediate defining points where needed by staff extension
+  - Improved ending editor that can resize the ending legs.
+- Engine
+  - Support for key signature changes
+  - Support for strings techniques of up bow and down bow
+  - Multi-measure rests can survive the lack of a recognized measure count
+- Project
+  - Use of 'macos-15-intel' instead of 'macos-13' runner to build the installer for macOS Intel
+  - Flatpak to catch up with OS installers
+  - Revamped the book/sheet annotations meant for training an external model
+- Java
+  - Upgrade to Java 25 and Gradle 9.1
+
 ## 5.7
 (September 2025)
 
 - User Interface
   - Support for CJK (Chinese, Japanese, Korean) characters  
+  - The Preferences and Constants dialogs now scale correctly with font size changing
+  - Ability to print out the detailed steps durations for a sheet processing
 - Engine
   - Correct handling of void regions in small note head templates
+  - Improved computation of voices distances, resulting in better voices assignment
 - Project
   - Additional Windows installer provided with console, useful for launch messages
   - All installers now come with a max heap set at 8GB

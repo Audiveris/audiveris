@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -67,6 +67,7 @@ import org.audiveris.omr.sig.inter.MetronomeInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.MusicWordInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
+import org.audiveris.omr.sig.inter.RehearsalInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -1457,8 +1458,8 @@ public abstract class SheetPainter
         public void visit (KeyInter key)
         {
             // Normally, key ensemble is painted via its alter members
-            // But for a manual key, there are no members available, so we paint the symbol
-            if (key.isManual()) {
+            // But for a manual key, if there are no members available we paint the symbol
+            if (key.isManual() && key.getMembers().isEmpty()) {
                 final Rectangle bounds = key.getBounds();
 
                 if (bounds != null) {
@@ -1601,6 +1602,15 @@ public abstract class SheetPainter
         @Override
         public void visit (SentenceInter sentence)
         {
+            if (sentence instanceof RehearsalInter rehearsal) {
+                // Draw the enclosure if any
+                final Rectangle enclosure = rehearsal.getEnclosure();
+                if (enclosure != null) {
+                    setColor(rehearsal);
+                    g.setStroke(curveStroke);
+                    g.draw(enclosure);
+                }
+            }
             //            final FontInfo lineMeanFont = sentence.getMeanFont();
             //            for (Inter member : sentence.getMembers()) {
             //                WordInter word = (WordInter) member;

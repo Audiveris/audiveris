@@ -1,0 +1,41 @@
+
+name: Publish on Windows repository
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  winget:
+    name: Publish winget package
+    runs-on: windows-latest
+    steps:
+      - name: Submit package to Windows repository
+        run: |
+          # Download WingetCreate
+          Invoke-WebRequest https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+          
+          # Retrieve the descriptor of Audiveris latest release
+          $latest = Invoke-RestMethod 'https://api.github.com/repos/Audiveris/audiveris/releases/latest'
+          $tag_name = $latest.tag_name
+          echo "=== tag_name is $tag_name"
+          
+          # Retrieve all Windows installers among the release assets
+          $installers = $latest.assets | Where-Object -Property name -match '.msi'
+          echo "=== installers:"
+          $installers
+          
+          # Retrieve the download URL of the (first) Windows installer
+          $installerUrl = $installers | Select -ExpandProperty browser_download_url -First 1
+          echo "=== installerUrl is $installerUrl"
+          
+          # Update and submit the manifest
+          echo "=== updating manifest..."
+          .\wingetcreate.exe update audiveris.org.Audiveris --submit --version $latest.tag_name --urls $installerUrl --token ${{ secrets.WINGET_PAT }}
+          echo "=== manifest updated and submitted!"

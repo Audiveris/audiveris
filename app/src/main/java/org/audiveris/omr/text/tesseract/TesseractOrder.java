@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -331,7 +331,7 @@ public class TesseractOrder
                 // Start of line?
                 if (it.IsAtBeginningOf(RIL_TEXTLINE)) {
                     line = new TextLine(sheet);
-                    logger.debug("{} {}", label, line);
+                    logger.debug("{} Beginning a line", label);
                     lines.add(line);
                 }
 
@@ -340,7 +340,9 @@ public class TesseractOrder
                     final FontInfo fontInfo = getFont(it);
 
                     if (fontInfo == null) {
-                        logger.debug("No font info on {}", label);
+                        final String val = it.GetUTF8Text(RIL_WORD).getString(UTF8);
+                        final Rectangle box = getBoundingBox(it, RIL_WORD);
+                        logger.debug("{} No font info for \"{}\" at (shifted) {}", label, val, box);
                         nextLevel = RIL_WORD; // skip words without font info
 
                         continue;
@@ -365,7 +367,7 @@ public class TesseractOrder
                         it.GetUTF8Text(RIL_SYMBOL).getString(UTF8));
             } while (it.Next(nextLevel));
 
-            lines.removeIf( (l) -> l.getValue().equals(" "));
+            lines.removeIf(l -> l.getValue().isBlank());
 
             return lines;
         } catch (UnsupportedEncodingException ex) {

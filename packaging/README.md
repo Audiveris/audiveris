@@ -105,3 +105,129 @@ At this point in time, the release is now fully visible and even referenced as t
 Something like that:
 
 ![](./assets/latest-release.png)
+
+## Publishing on Windows Community repository
+
+Once the release draft has been edited and published as the latest release on GitHub,
+a new Latest Release is defined in Audiveris repository.
+
+This triggers the action defined
+in file [.github/workflows/publish-winget.yml](../.github/workflows/publish-winget.yml)
+and named "Publish on Windows repository".
+
+The action uses the secret named `WINGET_PAT`.
+
+The action does in sequence:
+1. Download the latest version of `wingetcreate.exe`
+2. Retrieve the descriptor of Audiveris latest release
+3. Retrieve the download URL of the (first) Windows installer among the release assets
+4. Use `wingetcreate.exe` to update and submit the winget manifest for Audiveris
+
+A pull request like [this one](https://github.com/microsoft/winget-pkgs/pull/347694) is automatically posted on the `github/microsoft/winget-pkgs` repository,
+waiting for someone to review and approve it.
+
+
+
+## Publishing on Scoop Extras bucket
+
+### Automated update
+Once the release draft has been edited and published as the latest release on GitHub,
+a new Latest Release is defined in Audiveris repository.
+
+"Automagically", the related Scoop manifest will shortly get updated on Scoop Extras bucket,
+thanks to the "***autoupdate***" feature within this manifest.  
+Scoop documentation is not very clear on this, but my understanding is that, at some pace, 
+the installers referenced in Scoop manifests are checked and updated if needed.
+
+Therefore, there is nothing to do manually.  
+The rest of this section is useful only to write the *very first* manifest version.
+
+### Manual first version
+
+The file `.github/workflows/build-scoop.yml` defines a GitHub action to be run manually.
+The purpose of this action is to build a Scoop manifest that references the Audiveris latest release.
+The sole artifact of this action can be downloaded at the provided URL:
+
+![](./assets/scoop-artifact-download.png)
+
+The downloaded archive `scoop-manifest.zip` contains the file `audiveris.json` which is the Scoop manifest.
+
+Here is the example of the `audiveris.json` for the 5.10.0 release:
+```json
+{
+    "version": "5.10.0",
+    "description": "Optical Music Recognition",
+    "homepage": "https://github.com/Audiveris/audiveris",
+    "license": "AGPL-3.0-or-later",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/Audiveris/audiveris/releases/download/5.10.0/Audiveris-5.10.0-windowsConsole-x86_64.msi",
+            "hash": "sha256:74857d40a41dd5ce5b2f419dc1c6a844f58e542a2b2454e658956ad1aca33953"
+        }
+    },
+    "extract_dir": "Audiveris",
+    "bin": "Audiveris.exe",
+    "shortcuts": [
+        [
+            "Audiveris.exe",
+            "Audiveris"
+        ]
+    ],
+    "checkver": {
+        "github": "https://github.com/Audiveris/audiveris"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/Audiveris/audiveris/releases/download/$version/Audiveris-$version-windowsConsole-x86_64.msi"
+            }
+        }
+    }
+}
+```
+
+Note that this manifest references the Windows installer with the "Console" option
+for a good scoop integration.
+
+According to the [Scoop contributing documentation](https://github.com/ScoopInstaller/.github/blob/main/.github/CONTRIBUTING.md), we can now:
+1. Fork the Scoop **Extras** repository at [https://github.com/ScoopInstaller/Extras](https://github.com/ScoopInstaller/Extras)
+2. Add the `audiveris.json` file into the `bucket` folder
+3. Submit a pull request, with a specific title:
+```
+If it's a new manifest, use <app name>: Add version <version>.  
+If it's an update to an existing manifest, use <app name>@<version>: <small description>.
+```
+
+## Personal Access Tokens
+
+To submit PR via workflow actions, we need a personal access token.
+- `publish-winget.yml` uses `secrets.WINGET_PAT`
+- `flatpak.yml` uses `secrets.FLATPAK_PAT` (or perhaps `secrets.FLATHUB_TOKEN` ?)
+
+### Create
+
+On github site:
+- Click on user icon, top right, `Open user navigation menu`
+- Select `Settings`
+- Select `Developer settings` at the very bottom
+- Personal access tokens
+- Tokens (classic)
+- Generate new token (classic), for general use
+- Note field: enter a name for this token, e.g. FLATHUB_TOKEN
+- Select scopes (`repo` and `workflow`)
+- Click on button `Generate token`
+- Copy the token value to the clipboard
+
+### Save
+
+To save the token value on Audiveris site, [https://github.com/Audiveris/audiveris](https://github.com/Audiveris/audiveris):
+- Repository Settings
+- Secrets and variables
+- Actions
+- Repository secrets
+- Click on button `New repository secret`
+- Name: typically FLATHUB_TOKEN 
+- Secret: Insert the token value from the clipboard
+- Press button `Add secret`
+
+

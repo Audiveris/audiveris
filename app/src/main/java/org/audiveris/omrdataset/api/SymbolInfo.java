@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -207,39 +207,39 @@ public class SymbolInfo
         return scale;
     }
 
-    /**
-     * Report the name, if any, for a small version of the provided shape
-     *
-     * @param omrShape the provided shape
-     * @return the shape for small version, or null
-     */
-    private OmrShape getSmallShape (OmrShape omrShape)
-    {
-        return switch (omrShape) {
-            // Clefs (change)
-            case cClefAlto -> OmrShape.cClefAltoChange;
-            case cClefTenor -> OmrShape.cClefTenorChange;
-            case fClef -> OmrShape.fClefChange;
-            case gClef -> OmrShape.gClefChange;
-
-            // Accidentals
-            case accidentalFlat -> OmrShape.accidentalFlatSmall;
-            case accidentalNatural -> OmrShape.accidentalNaturalSmall;
-            case accidentalSharp -> OmrShape.accidentalSharpSmall;
-
-            // Flags
-            case flag8thUp -> OmrShape.flag8thUpSmall;
-            case flag8thDown -> OmrShape.flag8thDownSmall;
-
-            // Note heads
-            case noteheadBlack -> OmrShape.noteheadBlackSmall;
-            case noteheadHalf -> OmrShape.noteheadHalfSmall;
-            case noteheadWhole -> OmrShape.noteheadWholeSmall;
-            case noteheadDoubleWhole -> OmrShape.noteheadDoubleWholeSmall;
-
-            case null, default -> null;
-        };
-    }
+    //    /**
+    //     * Report the name, if any, for a small version of the provided shape
+    //     *
+    //     * @param omrShape the provided shape
+    //     * @return the shape for small version, or null
+    //     */
+    //    private OmrShape getSmallShape (OmrShape omrShape)
+    //    {
+    //        return switch (omrShape) {
+    //            // Clefs (change)
+    //            case cClefAlto -> OmrShape.cClefAltoChange;
+    //            case cClefTenor -> OmrShape.cClefTenorChange;
+    //            case fClef -> OmrShape.fClefChange;
+    //            case gClef -> OmrShape.gClefChange;
+    //
+    //            // Accidentals
+    //            case accidentalFlat -> OmrShape.accidentalFlatSmall;
+    //            case accidentalNatural -> OmrShape.accidentalNaturalSmall;
+    //            case accidentalSharp -> OmrShape.accidentalSharpSmall;
+    //
+    //            // Flags
+    //            case flag8thUp -> OmrShape.flag8thUpSmall;
+    //            case flag8thDown -> OmrShape.flag8thDownSmall;
+    //
+    //            // Note heads
+    //            case noteheadBlack -> OmrShape.noteheadBlackSmall;
+    //            case noteheadHalf -> OmrShape.noteheadHalfSmall;
+    //            case noteheadWhole -> OmrShape.noteheadWholeSmall;
+    //            case noteheadDoubleWhole -> OmrShape.noteheadDoubleWholeSmall;
+    //
+    //            case null, default -> null;
+    //        };
+    //    }
 
     /**
      * Report whether symbol is invalid.
@@ -309,17 +309,17 @@ public class SymbolInfo
         return sb.toString();
     }
 
-    /**
-     * If there is a special name for a smaller version of this symbol, use it.
-     */
-    public void useSmallName ()
-    {
-        OmrShape smallShape = getSmallShape(omrShape);
-
-        if (smallShape != null) {
-            setOmrShape(smallShape);
-        }
-    }
+    //    /**
+    //     * If there is a special name for a smaller version of this symbol, use it.
+    //     */
+    //    public void useSmallName ()
+    //    {
+    //        OmrShape smallShape = getSmallShape(omrShape);
+    //
+    //        if (smallShape != null) {
+    //            setOmrShape(smallShape);
+    //        }
+    //    }
 
     //~ Inner Classes ------------------------------------------------------------------------------
 

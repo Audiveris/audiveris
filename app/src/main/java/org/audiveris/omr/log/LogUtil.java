@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -149,7 +149,7 @@ public abstract class LogUtil
         fileAppender.start();
         root.addAppender(fileAppender);
 
-        initMessage("LogUtil. Logging to " + logPath);
+        initMessage("Logging to file " + logPath);
     }
 
     //----------------//
@@ -213,27 +213,26 @@ public abstract class LogUtil
             Path configPath = Paths.get(loggingProp).toAbsolutePath();
 
             if (Files.exists(configPath)) {
-                // Everything seems OK, let LogBack use the config file
-                initMessage("LogUtil. Configuration found " + configPath);
+                initMessage("Logging configuration found at " + configPath);
 
                 return;
             } else {
-                // initMessage("LogUtil. File " + configPath + " does not exist.");
+                /// initMessage("LogUtil. File " + configPath + " does not exist.");
             }
         } else {
-            // initMessage("LogUtil. Property " + LOGBACK_LOGGING_KEY + " not defined, skipped.");
+            /// initMessage("LogUtil. Property " + LOGBACK_LOGGING_KEY + " not defined, skipped.");
         }
 
         // 2/ Look for well-known location (user Audiveris config folder)
         Path configPath = CONFIG_FOLDER.resolve(LOGBACK_FILE_NAME).toAbsolutePath();
 
         if (Files.exists(configPath)) {
-            initMessage("LogUtil. Configuration found " + configPath);
+            initMessage("Logging configuration found at " + configPath);
             System.setProperty(LOGBACK_LOGGING_KEY, configPath.toString());
 
             return;
         } else {
-            // initMessage("LogUtil. No " + configPath + ", skipped.");
+            /// initMessage("LogUtil. No " + configPath + ", skipped.");
         }
 
         // 3/ Look for suitable file within 'res' folder or resource
@@ -256,12 +255,12 @@ public abstract class LogUtil
             }
 
             if (Files.exists(localPath)) {
-                initMessage("LogUtil. Configuration found " + configUri);
+                initMessage("Logging configuration found at " + configUri);
                 System.setProperty(LOGBACK_LOGGING_KEY, localPath.toString());
 
                 return;
             } else {
-                // initMessage("LogUtil. No " + localPath + ", skipped.");
+                /// initMessage("LogUtil. No " + localPath + ", skipped.");
             }
         } catch (IOException ex) {
             ex.printStackTrace();

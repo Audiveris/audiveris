@@ -6,6 +6,9 @@ parent: Installation
 ---
 # Installing from binaries
 {: .no_toc }
+{: .d-inline-block }
+updated in 5.10
+{: .label .label-green}
 
 ---
 Table of contents
@@ -14,9 +17,6 @@ Table of contents
 {:toc}
 ---
 ## Installers
-{: .d-inline-block }
-new in 5.5
-{: .label .label-yellow }
 
 Since version 5.5, Audiveris has provided installers for Windows, Linux and macOS.
 
@@ -32,7 +32,14 @@ on the Tesseract site and for installing them in the user environment.
 The installers can be downloaded from the assets section of a recent release
 available on the Audiveris [releases page](https://github.com/Audiveris/audiveris/releases).
 
-The name of each installer file is formatted as:
+There are other ways, perhaps more convenient, to install the application.
+They are described later in this chapter:
+- For Windows, one can use [winget](#windows-community-repository)
+or [scoop](#windows-scoop-extras) which, behind the scene, retrieve the Windows installers,
+- For Linux, one can use [flatpak](#linuxflatpak-installer) which uses a specific installer.
+
+On the Audiveris [releases page](https://github.com/Audiveris/audiveris/releases),
+the installers file names are formatted as:
 ```
  Audiveris-<version>-<OS>-<Architecture>
 ```
@@ -73,12 +80,142 @@ as detailed in the following sections.
 Once the application is launched, OCR languages can be downloaded directly from within the Audiveris application.
 See the [OCR languages](../../guides/main/languages.md) section.
 
-Audiveris used to provide a **Linux/Flatpak** package which can be installed directly from the
-[Flathub](https://flathub.org/apps/org.audiveris.audiveris) site.
-However, the future of this Flatpak package is not clear, due to a lack of skill and/or manpower.
+## Windows Community Repository
 
+Since release 5.9 and thanks to [Matthew Watkins suggestion](https://github.com/Audiveris/audiveris/issues/868),
+Audiveris is available on the Windows community repository.
 
-## Windows
+Anybody can try this command in a terminal window:
+```
+winget show Audiveris
+```
+
+which gives (as of this writing):
+```
+Version: 5.8.1
+Publisher: audiveris.org
+Description: Optical Music Recognition
+License: AGPLv3
+Installer:
+  Installer Type: wix
+  Installer Locale: en-US
+  Installer Url: https://github.com/Audiveris/audiveris/releases/download/5.8.1/Audiveris-5.8.1-windows
+-x86_64.msi
+  Installer SHA256: 0bafcdf120a7c4bece0edc95f295611493c4550a7fa3b67108f880ec25b18716
+  Offline Distribution Supported: true
+```
+
+### Installation
+
+In a terminal window, enter this command:
+> winget install Audiveris
+
+which gives (after being prompted for confirmation by the User Account Control):
+```
+Found Audiveris [audiveris.org.Audiveris] Version 5.8.1
+This application is licensed to you by its owner.
+Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.
+Downloading https://github.com/Audiveris/audiveris/releases/download/5.8.1/Audiveris-5.8.1-windows-x86_64.msi
+  ██████████████████████████████  68.0 MB / 68.0 MB
+Successfully verified installer hash
+Starting package install...
+Successfully installed
+```
+Note: The WinGet command references the Audiveris Windows installation file available in the release resources on GitHub.
+However, running WinGet does not raise any additional questions regarding unrecognized app,
+the license agreement, the installation folder, or shortcuts.
+
+There is no shortcut in the start menu, just a shortcut on the desktop.
+
+### Running
+
+The application can be launched in different ways:
+
+| Way  | Illustration |
+| :--- | :---         |
+| Double-clicking on the Audiveris icon located on Windows **desktop** | ![](../../assets/images/windows_desktop_shortcut.png) |
+| Entering Audiveris in the Windows **search area** and selecting an action | ![](../../assets/images/windows_search_area.png) |
+| Double-clicking on a **`.omr` file**, since the `.omr` file extension (which represents a  Book) has been associated with Audiveris application | ![](../../assets/images/windows_book_file.png) |
+| In a terminal window, entering a **command**  refering to the program location | "C:\Program Files\Audiveris\Audiveris.exe" `<potential arguments>` |
+ 
+Again, since the application is installed by WinGet, it will not generate any alerts from the antivirus.
+
+### Uninstallation
+
+In a terminal window, enter this command:
+> winget uninstall Audiveris
+
+This will give (after being prompted for confirmation by the User Account Control):
+```
+Found Audiveris [audiveris.org.Audiveris]
+Starting package uninstall...
+Successfully uninstalled
+```
+## Windows Scoop Extras
+{: .d-inline-block }
+New in 5.10
+{: .label .label-yellow }
+
+Since the 5.10 release, 
+following [ResurFace382500000 request](https://github.com/Audiveris/audiveris/issues/876),
+Audiveris is published on the [Scoop Extras bucket](https://github.com/ScoopInstaller/Extras),
+making it available via this command-line installer.
+
+### Installation
+
+From a Windows terminal, enter these commands:
+
+```sh
+# (If you have not yet added the Extras bucket)
+scoop bucket add extras
+
+# Searching for audiveris
+scoop search audiveris
+```
+then
+```sh
+# This installs audiveris from the Extras bucket
+scoop install audiveris
+```
+To check installation:
+```sh
+# Check that audiveris now appears in the list of installed applications
+scoop list
+```
+
+### Running
+
+```sh
+# Print version and exit
+audiveris -version
+```
+```sh
+# Print command line help and exit
+audiveris -help
+```
+```sh
+# Transcribe a score in batch
+audiveris -batch -transcribe <some_image_file>
+```
+```sh
+# Launch the audiveris GUI
+audiveris
+```
+```sh
+# Launch the audiveris GUI on some file (image or .omr file)
+audiveris <some_file>
+```
+
+### Uninstallation
+
+```sh
+# That's all folks!
+scoop uninstall audiveris
+```
+
+## Windows installer
+
+This describes the manual installation, starting from a downloaded installer file.
 
 ### Installation
 
@@ -231,12 +368,15 @@ Since the app is not signed, macOS will block it by default. To allow it to run,
 1. **Launch the App**
     - Go to your **Applications** folder and double-click `Audiveris.app`.
     - You’ll likely see a warning: *"“Audiveris” cannot be opened because it is from an unidentified developer."*
+    - On MacOS Tahoe, you will see a screen as below.  Press "Done"
+    - <img width="275" height="288" alt="Image" src="https://github.com/user-attachments/assets/e77482ad-0203-4181-a975-764dd64770f6" />
 
 2. **Adjust Privacy Settings**
     - Open **System Preferences** (or **System Settings** on macOS Ventura and later):
         - Click the Apple menu (&#63743;) > **System Preferences** > **Security & Privacy** > **General** tab.
     - At the bottom, you’ll see a message: *“Audiveris” was blocked from use because it is not from an identified developer.*
     - Click **"Open Anyway"** to allow the app to run.
+    - <img width="700" height="119" alt="Image" src="https://github.com/user-attachments/assets/b9c5801e-a271-4891-9e41-65fe0eb4e1bd" />
 
 3. **Launch the App Again**
     - Double-click `Audiveris.app` again. You may see one final prompt asking for confirmation—click **"Open"**.

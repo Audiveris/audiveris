@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -32,6 +32,7 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.NumberInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
 import org.audiveris.omr.sig.inter.PedalInter;
@@ -254,7 +255,7 @@ public class SymbolsLinker
                         link.applyTo(os);
                     }
                 } else {
-                    logger.info("No chord linked to {}", os);
+                    logger.info("No chord linked to {} at {}", os, os.getCenter());
                 }
             } catch (Exception ex) {
                 logger.warn("Error in linkOctaveShifts for {} {}", os, ex.toString(), ex);
@@ -364,5 +365,8 @@ public class SymbolsLinker
         linkTuplets();
         linkOctaveShifts();
         linkNumbers();
+
+        // Check for any key signature change (before "abnormal" alters are removed)
+        KeyInter.lookupCandidates(system);
     }
 }

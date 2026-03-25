@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,6 +22,8 @@
 package org.audiveris.omr.jaxb.facade;
 
 import org.audiveris.omr.util.Jaxb;
+
+import org.junit.Ignore;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -42,6 +44,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *
  * @author Hervé Bitteur
  */
+@Ignore
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
 public class MyClass

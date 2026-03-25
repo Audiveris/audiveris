@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -220,7 +220,7 @@ public class StepMenu
                         try {
                             LogUtil.start(stub);
 
-                            boolean ok = stub.reachStep(step, true);
+                            stub.reachStep(step, true);
                             logger.info("End of sheet step {}", stub.getLatestStep());
                         } finally {
                             LogUtil.stopStub();
@@ -265,7 +265,7 @@ public class StepMenu
         public void displayState (SheetStub stub,
                                   boolean isIdle)
         {
-            StepAction action = (StepAction) getAction();
+            final StepAction action = (StepAction) getAction();
 
             if ((stub == null) || !stub.isValid()) {
                 setState(false);

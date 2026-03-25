@@ -128,3 +128,38 @@ Populate the book sample repository with samples derived from relevant inters of
 Populate a Zip archive with images and symbol annotations derived from inters of this sheet only.
 
 (needs the ``ANNOTATIONS`` advanced topic)
+
+## Print watch
+
+On the console, print out the detailed durations of the steps run on the sheet.
+
+```
+StopWatch "chula"
+-----------------------------------
+   ms      % Task
+-----------------------------------
+  213   0.7% LOAD
+  756   2.7% BINARY
+  316   1.1% SCALE
+ 3615  12.7% GRID
+ 1855   6.5% HEADERS
+  920   3.2% STEM_SEEDS
+ 5028  17.6% BEAMS
+  518   1.8% LEDGERS
+ 6710  23.5% HEADS
+ 1851   6.5% STEMS
+  321   1.1% REDUCTION
+    1   0.0% CUE_BEAMS
+ 1719   6.0% TEXTS
+  106   0.4% MEASURES
+  442   1.6% CHORDS
+ 2193   7.7% CURVES
+  715   2.5% SYMBOLS
+  411   1.4% LINKS
+  662   2.3% RHYTHMS
+  159   0.6% PAGE
+-----------------------------------
+28511 100.0% Total
+```
+
+(needs the ``SPECIFIC_ITEMS`` advanced topic)

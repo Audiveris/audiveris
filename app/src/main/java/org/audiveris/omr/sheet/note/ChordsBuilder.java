@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -27,6 +27,7 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
@@ -61,6 +62,7 @@ import org.audiveris.omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -350,6 +352,8 @@ public class ChordsBuilder
         final ProcessingSwitches switches = system.getSheet().getStub().getProcessingSwitches();
         final boolean multiWhole = switches.getValue(ProcessingSwitch.multiWholeHeadChords);
         final int maxDeltaPitch = constants.maxDeltaPitch.getValue();
+        final Scale scale = system.getSheet().getScale();
+        final int maxHorizontalGap = scale.toPixels(constants.maxHorizontalGap);
 
         Collections.sort(wholeHeads, Inters.byCenterOrdinate);
 
@@ -378,8 +382,12 @@ public class ChordsBuilder
                         break; // Vertical gap is too large, this is the end for current chord
                     }
 
-                    // Check horizontal fit
-                    if (GeoUtil.xOverlap(chord.getBounds(), h2.getBounds()) > 0) {
+                    // Check horizontal fit: direct overlap or very close horizontally
+                    final Rectangle bChord = chord.getBounds();
+                    final Rectangle b2 = h2.getBounds();
+                    final boolean xMatch = GeoUtil.xGap(bChord, b2) <= maxHorizontalGap;
+
+                    if (xMatch) {
                         chord.addMember(h2);
                         p1 = p2;
                     }
@@ -552,7 +560,11 @@ public class ChordsBuilder
     {
         private final Constant.Integer maxDeltaPitch = new Constant.Integer(
                 "pitch",
-                7,
+                12,
                 "Maximum delta pitch between two wholes in the same chord");
+
+        private final Scale.Fraction maxHorizontalGap = new Scale.Fraction(
+                0.5,
+                "Maximum horizontal gap between two wholes in the same chord");
     }
 }

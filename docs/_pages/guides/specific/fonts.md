@@ -21,10 +21,10 @@ Table of contents
 
 ## Music fonts
 
-Before 5.3 release, only one music font family was used (**Musical Symbols** font initially,
+Before the 5.3 release, only one music font family was used (**Musical Symbols** font initially,
 later replaced by **Bravura** font for SMuFL compliance).
 
-Since 5.3 release, we can tell Audiveris which music font family to use by default,
+Since the 5.3 release, we can tell Audiveris which music font family to use by default,
 or for a given book or sheet.
 
 ### Head symbols
@@ -32,14 +32,14 @@ or for a given book or sheet.
 This choice is key for **head symbols**, since the OMR engine uses a *template matching* technique to
 detect them during the HEADS step.
 
-Here below are samples of just two significant head shapes -- black head and cross head --
+Here below are samples of most significant head shapes 
 for each of the available music font families
-(**Bravura** (the default), **Leland**, **Finale Jazz** and **Jazz Perc**).  
+(**Bravura** (the default), **Leland**, **Primus**, **Finale Jazz** and **Jazz Perc**).  
 Pictures are magnified 4 times for a better reading:
 
-| Shape / Font Family | Bravura | Leland | Finale Jazz | Jazz Perc |
-| :---:|  :---:|  :---:|  :---:|  :---:|
-| **Black Head** <br> and <br> **Cross Head**  | ![](../../assets/images/heads_bravura.png)| ![](../../assets/images/heads_leland.png)| ![](../../assets/images/heads_finale_jazz.png)| ![](../../assets/images/heads_jazz_perc.png)|
+| Head / Font-Family | Bravura | Leland | Primus | Finale Jazz | Jazz Perc |
+| :---|  :---:|  :---:|  :---:|  :---:| :---:|
+| **CrossHead** <br><br>  **BlackHead** <br><br>  **VoidHead** <br><br>  **WholeHead**  | ![](../../assets/images/heads_bravura.png)| ![](../../assets/images/heads_leland.png)| ![](../../assets/images/heads_primus.png)| ![](../../assets/images/heads_finale_jazz.png)| ![](../../assets/images/heads_jazz_perc.png)|
 
 The head templates are built upon a specific font:
 - its family is the user-selected music font family,
@@ -48,8 +48,10 @@ The head templates are built upon a specific font:
 {: .important }
 Due to the way template matching works, it is essential to carefully check the match
 between the input score image and the selected font family.
-- The major difference is between _standard_ fonts (`Bravura` and `Leland`) and _jazz_ fonts
+- The major difference is between _standard_ fonts (`Bravura`, `Leland`, `Primus`) and _jazz_ fonts 
 (`Finale Jazz` and `Jazz Perc`), especially for all the cross-like shapes.
+- Within the _standard_ fonts, `Primus` heads are the most narrow ones,
+especially for the whole-head shape.
 - Within the jazz fonts, `Finale Jazz` and `Jazz Perc` differ mainly by their width,
 and the impact on template matching is more visible on oval-like shapes.
 
@@ -87,9 +89,6 @@ The current family hierarchy is as follows:[^musical_symbols]
 ```
 
 ## Text fonts
-{: .d-inline-block }
-modified in 5.6
-{: .label .label-green}
 
 Texts recognition is less sensitive to font family, compared to music symbols recognition.  
 The main reason is that Audiveris delegates texts recognition to Tesseract OCR.[^ocr_font]

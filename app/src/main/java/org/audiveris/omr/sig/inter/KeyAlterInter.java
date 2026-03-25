@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -30,8 +30,7 @@ import org.audiveris.omr.sig.ui.InterEditor;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class <code>KeyAlterInter</code> is an Alteration inter which is part of a key
- * signature.
+ * Class <code>KeyAlterInter</code> is an Alteration inter which is part of a key signature.
  * <p>
  * Its shape can be:
  * <ul>
@@ -53,7 +52,7 @@ public class KeyAlterInter
      */
     private KeyAlterInter ()
     {
-        super((Glyph) null, null, 0.0, null, null, null);
+        super(null, null, 0.0, null, null, null);
     }
 
     /**
@@ -65,15 +64,33 @@ public class KeyAlterInter
      * @param staff         the related staff
      * @param pitch         the pitch value WRT staff
      * @param measuredPitch the measured pitch
+     * @see ShapeSet#KeyValidShapes
      */
     public KeyAlterInter (Glyph glyph,
                           Shape shape,
                           Double grade,
                           Staff staff,
-                          double pitch,
-                          double measuredPitch)
+                          Double pitch,
+                          Double measuredPitch)
     {
         super(glyph, shape, grade, staff, pitch, measuredPitch);
+    }
+
+    /**
+     * Convenient constructor meant for conversion from an AlterInter.
+     *
+     * @param alter the source alter
+     */
+    public KeyAlterInter (AlterInter alter)
+    {
+        this(
+                alter.glyph,
+                alter.shape,
+                alter.getGrade(),
+                alter.staff,
+                alter.pitch,
+                alter.getMeasuredPitch());
+        bounds = alter.getBounds();
     }
 
     //~ Methods ------------------------------------------------------------------------------------

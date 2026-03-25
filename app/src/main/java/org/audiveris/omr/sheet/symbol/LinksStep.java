@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -124,6 +124,10 @@ public class LinksStep
     {
         final StopWatch watch = new StopWatch("LinksStep doSystem #" + system.getId());
 
+        // Fill each measure with all detected clef(s) and key if any
+        // Because key change detection requires access to effective clef and key
+        new MeasureFiller(system).process();
+
         watch.start("SymbolsLinker");
         new SymbolsLinker(system).process();
 
@@ -170,23 +174,26 @@ public class LinksStep
                     final SystemInfo system = inter.getSig().getSystem();
 
                     switch (inter) {
-                    case LyricItemInter item -> {
-                        if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
-                            final int profile = Math.max(item.getProfile(), system.getProfile());
-                            item.mapToChord(profile);
+                        case LyricItemInter item -> {
+                            if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
+                                final int profile = Math.max(
+                                        item.getProfile(),
+                                        system.getProfile());
+                                item.mapToChord(profile);
+                            }
                         }
-                    }
-                    case SentenceInter sentence -> {
-                        if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
-                            sentence.link(system);
-                        } else if (task instanceof SentenceRoleTask roleTask) {
-                            sentence.unlink((opKind == OpKind.UNDO) //
-                                    ? roleTask.getNewRole()
-                                    : roleTask.getOldRole());
-                            sentence.link(system);
+                        case SentenceInter sentence -> {
+                            if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
+                                sentence.link(system);
+                            } else if (task instanceof SentenceRoleTask roleTask) {
+                                sentence.unlink(
+                                        (opKind == OpKind.UNDO) //
+                                                ? roleTask.getNewRole()
+                                                : roleTask.getOldRole());
+                                sentence.link(system);
+                            }
                         }
-                    }
-                    default -> {}
+                        default -> {}
                     }
                 }
             }

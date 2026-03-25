@@ -6,9 +6,6 @@ parent: Main features
 ---
 # OCR languages
 {: .no_toc }
-{: .d-inline-block }
-new policy in 5.4
-{: .label .label-yellow }
 
 Audiveris delegates text recognition to the Tesseract OCR library.
 

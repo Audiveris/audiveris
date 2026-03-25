@@ -1,0 +1,76 @@
+name: Build scoop manifest
+
+on:
+#  release:
+#    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build-manifest:
+    name: Build manifest
+    runs-on: windows-latest
+    steps:
+      - name: Create manifest
+        run: |
+          # Retrieve the descriptor of Audiveris latest release
+          $latest = Invoke-RestMethod 'https://api.github.com/repos/Audiveris/audiveris/releases/latest'
+          $tag_name = $latest.tag_name
+          echo "=== tag_name is $tag_name"
+
+          # Retrieve all Windows installers among the release assets
+          $winInstallers = $latest.assets | Where-Object -Property name -match '.msi'
+
+          # Choose the Console installer
+          $installer = $winInstallers | Where-Object -Property name -match 'Console'
+          echo "=== installer:"
+          $installer
+          
+          # Retrieve the download URL and hash
+          $installerUrl = $installer | Select -ExpandProperty browser_download_url
+          echo "=== installerUrl is $installerUrl"
+          $installerHash = $installer | Select -ExpandProperty digest
+          echo "=== installerHash is $installerHash"
+
+          # Generate manifest for scoop
+          $obj = [ordered] @{
+            "version" = "$tag_name"
+            "description" = "Optical Music Recognition"
+            "homepage" = "https://github.com/Audiveris/audiveris"
+            "license" = "AGPL-3.0-or-later"
+            "architecture" = [ordered] @{
+                "64bit" = [ordered] @{
+                  "url" = "$installerUrl"
+                  "hash" = "$installerHash"
+                }
+              }
+            "extract_dir" = "Audiveris"
+            "bin" = "Audiveris.exe"
+            "shortcuts" = @(
+              ,@("Audiveris.exe","Audiveris")
+            )
+            "checkver" = @{
+                "github" = "https://github.com/Audiveris/audiveris"
+            }
+            "autoupdate" = @{
+              "architecture" = @{
+                "64bit" = @{
+                  "url" = 'https://github.com/Audiveris/audiveris/releases/download/$version/Audiveris-$version-windowsConsole-x86_64.msi'
+                }
+              }
+            }
+          }
+
+          # Convert object to JSON pretty-formatted
+          $json = $obj | ConvertTo-Json -Depth 6 | jq --indent 4 .
+
+          # Save to file
+          $json | Set-Content -Path audiveris.json
+          
+      - name: Upload manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: scoop-manifest.zip
+          path: audiveris.json
+          compression-level: 0
+          overwrite: true
+          

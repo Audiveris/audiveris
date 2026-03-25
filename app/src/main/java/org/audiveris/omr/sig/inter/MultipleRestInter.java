@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -116,6 +116,17 @@ public class MultipleRestInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-----------------//
+    // canStayAbnormal //
+    //-----------------//
+    @Override
+    public boolean canStayAbnormal ()
+    {
+        // We allow this MultipleRestInter to survive, even when the related measure count
+        // could not be automatically recognized.
+        return true;
     }
 
     //---------------//

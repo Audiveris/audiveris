@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.jaxb.table;
 
+import org.junit.Ignore;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -33,6 +35,7 @@ import javax.xml.bind.annotation.XmlValue;
  *
  * @author Hervé Bitteur
  */
+@Ignore
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "run-table")
 public class Table
@@ -91,6 +94,7 @@ public class Table
     //-------------//
     // RunSequence //
     //-------------//
+    @Ignore
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlRootElement(name = "runs")
     public static class RunSequence

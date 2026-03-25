@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -59,7 +59,7 @@ public class AugmentationRelation
 
     private static final Logger logger = LoggerFactory.getLogger(AugmentationRelation.class);
 
-    private static final double[] OUT_WEIGHTS = new double[]
+    private static final double[] OUT_WEIGHTS = new double[] //
     { constants.xOutWeight.getValue(), constants.yWeight.getValue() };
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -200,6 +200,14 @@ public class AugmentationRelation
         return (Scale.Fraction) constants.getConstant(constants.yGapMax, profile);
     }
 
+    //--------------------//
+    // getRestHeightRatio //
+    //--------------------//
+    public static Constant.Ratio getRestHeightRatio ()
+    {
+        return constants.restHeightRatio;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------//
@@ -240,5 +248,9 @@ public class AugmentationRelation
         private final Constant.Ratio yWeight = new Constant.Ratio(
                 1,
                 "Relative impact weight for yGap");
+
+        private final Constant.Ratio restHeightRatio = new Constant.Ratio(
+                0.45,
+                "Height margin ratio given to a rest");
     }
 }

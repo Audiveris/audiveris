@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -30,8 +30,44 @@ import org.audiveris.omr.constant.ConstantSet;
  *
  * @author Hervé Bitteur
  */
-abstract class AdvancedTopics
+public abstract class AdvancedTopics
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    public static final Constants constants = new Constants();
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    /**
+     * Report whether we should swap out any processed sheet.
+     *
+     * @return true if so
+     */
+    public static boolean swapProcessedSheets ()
+    {
+        return constants.swapProcessedSheets.isSet();
+    }
+
+    /**
+     * Report whether we should process systems of a sheet in parallel.
+     *
+     * @return true if so
+     */
+    public static boolean processSystemsInParallel ()
+    {
+        return constants.processSystemsInParallel.isSet();
+    }
+
+    /**
+     * Report whether a multiple delete is allowed without user confirmation
+     *
+     * @return true if so
+     */
+    public static boolean allowMultipleDelete ()
+    {
+        return constants.multipleDelete.isSet();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------//
@@ -40,6 +76,18 @@ abstract class AdvancedTopics
     public static class Constants
             extends ConstantSet
     {
+        final Constant.Boolean swapProcessedSheets = new Constant.Boolean(
+                true,
+                "Automatic swap out of sheets once they are processed");
+
+        final Constant.Boolean processSystemsInParallel = new Constant.Boolean(
+                false,
+                "Systems processed in parallel for relevant steps");
+
+        final Constant.Boolean multipleDelete = new Constant.Boolean(
+                false,
+                "Multiple delete without user confirmation");
+
         final Constant.Boolean useSamples = new Constant.Boolean(
                 false,
                 "Handling of samples repositories and classifier");
@@ -60,6 +108,8 @@ abstract class AdvancedTopics
                 false,
                 "Specific items shown in sheet view");
 
-        final Constant.Boolean useDebug = new Constant.Boolean(false, "Support for debug features");
+        final Constant.Boolean useDebug = new Constant.Boolean( //
+                false,
+                "Support for debug features");
     }
 }

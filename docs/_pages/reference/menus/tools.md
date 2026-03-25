@@ -17,9 +17,6 @@ Table of contents
 ---
 
 ## Install languages
-{: .d-inline-block }
-new in 5.4
-{: .label .label-yellow }
 
 Open a dialog to select and download additional OCR languages. 
 See [OCR languages](../../guides/main/languages.md#getting-additional-languages).

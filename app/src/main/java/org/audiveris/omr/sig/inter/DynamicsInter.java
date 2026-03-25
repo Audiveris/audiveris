@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -27,6 +27,8 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.sheet.ProcessingSwitch;
+import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -95,8 +97,8 @@ public class DynamicsInter
         sigs.put(Shape.DYNAMICS_FP, "fp"); // Forte then piano
         sigs.put(Shape.DYNAMICS_SF, "sf"); // Subito forte: suddenly strong
         sigs.put(Shape.DYNAMICS_SFZ, "sfz"); // Sforzando: sudden accent
+        sigs.put(Shape.DYNAMICS_FZ, "fz"); // Forzando
 
-        //        sigs.put(Shape.DYNAMICS_FZ, "fz");
         //        sigs.put(Shape.DYNAMICS_RF, "rf");
         //        sigs.put(Shape.DYNAMICS_RFZ, "rfz");
         //        sigs.put(Shape.DYNAMICS_SF, "sf");
@@ -115,9 +117,9 @@ public class DynamicsInter
         shapes.put("ff", Shape.DYNAMICS_FF);
         shapes.put("fff", Shape.DYNAMICS_FFF);
         shapes.put("fp", Shape.DYNAMICS_FP);
+        shapes.put("fz", Shape.DYNAMICS_FZ);
         shapes.put("sfz", Shape.DYNAMICS_SFZ);
 
-        //        shapes.put("fz", Shape.DYNAMICS_FZ);
         //        shapes.put("rf", Shape.DYNAMICS_RF);
         //        shapes.put("rfz", Shape.DYNAMICS_RFZ);
         //        shapes.put("sf", Shape.DYNAMICS_SF);
@@ -140,17 +142,15 @@ public class DynamicsInter
         sounds.put(Shape.DYNAMICS_FFF, 144);
 
         sounds.put(Shape.DYNAMICS_FP, 100); // ???
+        sounds.put(Shape.DYNAMICS_FZ, 100); // ???
         sounds.put(Shape.DYNAMICS_SFZ, 100); // ???
 
-        //        sounds.put(Shape.DYNAMICS_FP, "fp");
-        //        sounds.put(Shape.DYNAMICS_FZ, "fz");
         //        sounds.put(Shape.DYNAMICS_RF, "rf");
         //        sounds.put(Shape.DYNAMICS_RFZ, "rfz");
         //        sounds.put(Shape.DYNAMICS_SF, "sf");
         //        sounds.put(Shape.DYNAMICS_SFFZ, "sffz");
         //        sounds.put(Shape.DYNAMICS_SFP, "sfp");
         //        sounds.put(Shape.DYNAMICS_SFPP, "sfpp");
-        //        sounds.put(Shape.DYNAMICS_SFZ, "sfz");
     }
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -254,6 +254,8 @@ public class DynamicsInter
     //------------//
     /**
      * Look up system for a potential link.
+     * <p>
+     * The strategy depends on book/sheet parameters 'dynamicsAboveStaff' and 'dynamicsBelowStaff'.
      *
      * @param system containing system
      * @return link or null
@@ -278,11 +280,23 @@ public class DynamicsInter
         final Rectangle widenedBounds = getBounds();
         widenedBounds.grow(maxXGap, 0);
 
+        // Book/sheet parameters
+        final ProcessingSwitches switches = system.getSheet().getStub().getProcessingSwitches();
+        final boolean aboveStaff = switches.getValue(ProcessingSwitch.dynamicsAboveStaff);
+        final boolean belowStaff = switches.getValue(ProcessingSwitch.dynamicsBelowStaff);
+
         for (VerticalSide side : VerticalSide.values()) {
-            final boolean lookAbove = side == VerticalSide.TOP;
-            AbstractChordInter chord = lookAbove ? stack.getStandardChordAbove(
-                    center,
-                    widenedBounds) : stack.getStandardChordBelow(center, widenedBounds);
+            if (side == VerticalSide.TOP && !aboveStaff) {
+                continue;
+            }
+
+            if (side == VerticalSide.BOTTOM && !belowStaff) {
+                continue;
+            }
+
+            AbstractChordInter chord = (side == VerticalSide.TOP) //
+                    ? stack.getStandardChordAbove(center, widenedBounds)
+                    : stack.getStandardChordBelow(center, widenedBounds);
 
             if ((chord == null) || chord instanceof RestChordInter) {
                 continue;
@@ -292,7 +306,7 @@ public class DynamicsInter
 
             // If chord is mirrored, select the closest vertically
             if (chord.getMirror() != null) {
-                double dyMirror = GeoUtil.yGap(widenedBounds, chord.getMirror().getBounds());
+                final double dyMirror = GeoUtil.yGap(widenedBounds, chord.getMirror().getBounds());
 
                 if (dyMirror < dyChord) {
                     dyChord = dyMirror;
@@ -307,7 +321,9 @@ public class DynamicsInter
             // Check vertical distance between element and chord
             if (dyChord > maxDy) {
                 // Check vertical distance between element and staff
-                final Staff chordStaff = lookAbove ? chord.getBottomStaff() : chord.getTopStaff();
+                final Staff chordStaff = (side == VerticalSide.TOP) //
+                        ? chord.getBottomStaff()
+                        : chord.getTopStaff();
                 final double dyStaff = chordStaff.gapTo(widenedBounds);
 
                 if (dyStaff > maxDy) {

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,6 +22,8 @@
 package org.audiveris.omr.math;
 
 import org.audiveris.omr.util.WrappedInteger;
+
+import org.junit.Ignore;
 
 import junit.framework.*;
 
@@ -70,6 +72,7 @@ public class InjectionSolverTest
     {
     }
 
+    @Ignore
     public static class MyDistance
             implements InjectionSolver.Distance
     {

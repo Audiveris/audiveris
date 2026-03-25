@@ -19,9 +19,10 @@ plugins {
 
 def app         = project(':app')
 def appDir      = app.projectDir
-def flathubDir  = new File(project.projectDir.getAbsolutePath() + "/flathub")
+def flathubPath = project.findProperty('flathubDir') ?: "../org.audiveris.audiveris"
+def flathubDir  = new File(flathubPath).isAbsolute()? new File(flathubPath) : new File(rootDir, flathubPath)
 
-// SHA1 computation
+// SHA1 computation (no longer used, could be removed)
 // Stolen from https://gist.github.com/dagezi/9594839#file-calcsha1-gradle
 // 'file' argument must be a File object.
 def calcSha1(file) 
@@ -71,7 +72,10 @@ task genManifest {
     description = "Generate manifest from template"
 
     doLast {
-        println "flatpak. Generating manifest"
+        println "flatpak. Generating manifest in " + flathubDir
+        def commit = app.ext.commit
+        println "flatpak. commit: $commit"
+
         copy {
             from('dev/org.audiveris.audiveris.template.yml') {
                 def binding = [:]
@@ -79,7 +83,7 @@ task genManifest {
                 binding.GRADLE_URL = "$gradleUrl"
                 binding.GRADLE_NAME = "$gradleName"
                 binding.GRADLE_SHA256 = wrapperProps.getProperty("distributionSha256Sum")
-                binding.COMMIT = "$app.ext.commit"
+                binding.COMMIT = "$commit"
                 expand(binding)
             }
             into(flathubDir)
@@ -95,7 +99,7 @@ task initFlathub {
     dependsOn('genManifest')
 
     doLast {
-        println "flatpak. Copying resources to flathub"
+        println "flatpak. Copying resources to " + flathubDir
         copy {
             from('res')
             into(flathubDir)

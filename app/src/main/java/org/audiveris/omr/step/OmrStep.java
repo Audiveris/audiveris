@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -230,5 +230,18 @@ public enum OmrStep
     public static OmrStep last ()
     {
         return values()[values().length - 1];
+    }
+
+    //--------------//
+    // lastParallel //
+    //--------------//
+    /**
+     * Report the last step for which sheets can be processed in parallel.
+     *
+     * @return the last parallel step
+     */
+    public static OmrStep lastParallel ()
+    {
+        return LINKS;
     }
 }

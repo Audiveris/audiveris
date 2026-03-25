@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -315,6 +315,15 @@ public abstract class AbstractInter
         if (sig == null) {
             logger.error("Marshalling an inter with no sig " + this);
         }
+    }
+
+    //-----------------//
+    // canStayAbnormal //
+    //-----------------//
+    @Override
+    public boolean canStayAbnormal ()
+    {
+        return false;
     }
 
     //---------------//
@@ -1139,9 +1148,8 @@ public abstract class AbstractInter
         }
 
         // Ensemble <--> that?
-        if (this instanceof InterEnsemble) {
-            final InterEnsemble thisEnsemble = (InterEnsemble) this;
-            final List<? extends Inter> members = thisEnsemble.getMembers();
+        if (this instanceof InterEnsemble ensemble) {
+            final List<? extends Inter> members = ensemble.getMembers();
 
             if (members.contains(that)) {
                 return false;

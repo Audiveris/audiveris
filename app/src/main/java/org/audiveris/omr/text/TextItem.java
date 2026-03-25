@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -37,8 +37,15 @@ public abstract class TextItem
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Lowercase vowel characters. */
-    private static final char[] VOWELS = "aeiouy".toCharArray();
+    /** Lowercase vowel characters. Accents? Cyrillic? */
+    private static final int[] VOWELS = new int[] { //
+            0x0061, // a
+            0x0065, // e
+            0x0069, // i
+            0x006F, // o
+            0x0075, // u
+            0x0079 // y
+    };
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -125,9 +132,9 @@ public abstract class TextItem
      */
     public boolean hasVowell ()
     {
-        String lowerCaseValue = getValue().toLowerCase();
+        final String lowerCaseValue = getValue().toLowerCase();
 
-        for (char v : VOWELS) {
+        for (int v : VOWELS) {
             if (lowerCaseValue.indexOf(v) != -1) {
                 return true;
             }

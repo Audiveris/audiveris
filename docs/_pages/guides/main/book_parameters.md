@@ -65,15 +65,10 @@ The `OK` button completes the dialog, while the `Apply` button keeps the dialog 
 ### General
 
 * **Music font**  
-We can choose a specific music font between ``Bravura``, ``Finale Jazz`` or ``Jazz Perc``.  
+We can choose a specific music font between `Bravura`, `Leland`, `Primus`, `Finale Jazz` or `Jazz Perc`.  
 This decision is especially important for head recognition which is based on a font
 template matching technique.  
 See the specific [Music Font](../specific/fonts.md#music-fonts) section.
-
-* **Text font**  
-The text font has no impact on recognition, but can provide a more faithful output.
-We can adjust the text font between
-``Sans Serif``, ``Serif`` and ``Finale Jazz Text``.
 
 * **Input quality**  
 This item allows adapting the OCR engine behavior to the expected quality of the input image between
@@ -81,7 +76,7 @@ This item allows adapting the OCR engine behavior to the expected quality of the
 
 ### OCR languages
 
-Define the specification of dominant languages for OCR'd text
+This defines the specification of dominant languages for OCR'd text
 (note that we can select several languages)
 
 ### Binarization
@@ -95,8 +90,8 @@ image at hand.
 We can also adjust the related numbers.
 Playing with the `global` threshold is easy, but modifying the parameters of the `adaptive` filter
 is not recommended.  
-In fact, the default `adaptive` filter seems to give good results in all cases, therefore this
-parameter is kept only for potential use on a specific case.
+In fact, the default `adaptive` filter seems to give good results in all cases,
+therefore the `global` alternative is kept only for potential use on a specific case.
   
 ### Scaling specifications
 
@@ -134,32 +129,55 @@ Note in this example that:
 * Presence of 5-line unpitched percussion staves
 * Presence of 6-line guitar tablatures
 
-### Processing
+### Items
+{: .d-inline-block }
+updated for 5.10
+{: .label .label-green}
 
-In some cases, supporting a rather rare feature may imply collateral damage, the small note heads
-are an example of such a tricky feature.
+This sections lists items which can be processed or ignored by the engine,
+depending on whether the checkbox on the right is ticked or not.
+
+In some cases, supporting a rather rare feature may imply collateral damage,
+the small note heads are an example of such a tricky feature.
 So it is safer to use them only when we have to.
-
-  * Keep loaded gray images
-  * Use of system indentation
-  * Potential presence of small note heads
-  * Potential presence of small beams
-  * Potential presence of cross note heads
-  * Potential presence of tremolos
-  * Potential presence of fingering digits
-  * Potential presence of frets roman digits (I, II, III, IV...)
-  * Potential presence of plucking (p, i, m, a)
-  * Potential presence of partial whole rests
-  * Potential presence of multi-whole head chords
-  * Potential presence of chord names
-  * Potential presence of lyrics
-  * Potential presence of lyrics even located above staff  
-  * Potential presence of articulations
-  * Link augmentation dot to both shared heads
-  * Support for implicit tuplets
 
 {: .highlight }
 A switch can disable a feature for the OMR automatic recognition,
 but in most cases the feature remains available for manual user actions.
+
+* Potential presence of small note heads
+* Potential presence of small beams
+* Potential presence of cross note heads
+* Potential presence of tremolos
+* Potential presence of fingering digits
+* Potential presence of frets roman digits (I, II, III, IV...)
+* Potential presence of plucking (p, i, m, a)
+* Potential presence of partial whole rests
+* Potential presence of multi whole-head chords
+* Potential presence of chord names
+* Potential presence of lyrics
+* Potential presence of lyrics, even located above staff  
+* Potential presence of articulations
+* Potential presence of dynamics located above staff
+{: .d-inline-block }
+New in 5.10
+{: .label .label-yellow }
+* Potential presence of dynamics located below staff
+{: .d-inline-block }
+New in 5.10
+{: .label .label-yellow }
+
+### Processing
+
+* Keep loaded gray images
+* Use of system indentation
+* Link augmentation dot to both shared heads
+* Accept disconnected braced parts:  
+{: .d-inline-block }
+New in 5.10
+{: .label .label-yellow }
+  - Typically, within the same part, the staves are connected by a brace and internal barlines.
+  - This switch relaxes the requirement on internal barlines connections.
+* Support for implicit tuplets
 
 

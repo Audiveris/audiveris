@@ -21,10 +21,7 @@ to be immediately expended _in situ_ (the text file is assumed to contain one ar
 
 CLI syntax is displayed as follows when the `-help` argument is present:
 
-```
-Audiveris Version:
-   5.4
-
+```bash
 Syntax:
     audiveris [OPTIONS] [--] [INPUT_FILES]
 
@@ -32,27 +29,24 @@ Syntax:
     Content of file to be extended in line
 
 Options:
- -help                                            : Display general help then stop
- -batch                                           : Run with no graphic user interface
- -sheets int[]                                    : Select sheet numbers and ranges (1 4-5)
- -transcribe                                      : Transcribe whole book
- -step [LOAD | BINARY | SCALE | GRID | HEADERS |  : Define a specific target step
- STEM_SEEDS | BEAMS | LEDGERS | HEADS | STEMS |
- REDUCTION | CUE_BEAMS | TEXTS | MEASURES |
- CHORDS | CURVES | SYMBOLS | LINKS | RHYTHMS |
- PAGE]
- -force                                           : Force step/transcribe re-processing
- -output <output-folder>                          : Define base output folder
- -playlist <file.xml>                             : Build a compound book from playlist
- -export                                          : Export MusicXML
- -print                                           : Print out book
- -constant key=value                              : Define an application constant
- -upgrade                                         : Upgrade whole book file
- -save                                            : In batch, save book on every successful step
- -swap                                            : Swap out every sheet after its processing
- -run <qualified-class-name>                      : (advanced) Run provided class on valid sheets
- -sample                                          : (advanced) Sample all book symbols
- -annotate                                        : (advanced) Annotate book symbols
+ -batch                      : Run with no graphic user interface
+ -constant key=value         : Define an application constant
+ -export                     : Export MusicXML
+ -force                      : Force step/transcribe re-processing
+ -help                       : Display general help then stop
+ -output <output-folder>     : Define base output folder
+ -playlist <file.xml>        : Build a compound book from playlist
+ -print                      : Print out book
+ -save                       : In batch, save book on every successful step
+ -sheets int[]               : Select sheet numbers and ranges (1 4-5)
+ -step <step>                : Define a specific target step
+ -swap                       : Swap out every sheet after its processing
+ -transcribe                 : Transcribe whole book
+ -upgrade                    : Upgrade whole book file
+ -version                    : Display version then stop
+ -run <qualified-class-name> : (advanced) Run provided class on valid sheets
+ -sample                     : (advanced) Sample all book symbols
+ -annotate                   : (advanced) Annotate all book symbols
 
 Input file extensions:
     .omr        : book file  (input/output)
@@ -90,6 +84,14 @@ They are presented here in alphabetical order.
 
 Launches Audiveris without any Graphic User Interface.
 
+### -constant KEY=VALUE
+
+Specifies the value of one application constant: [^option]  
+- KEY being the *fully qualified* name of the constant,  
+- VALUE being the value to assign.
+
+This is the CLI equivalent of the GUI pull-down menu {{ site.tools_constants }}.
+
 ### -export
 
 Exports each book music as a MusicXML file.
@@ -103,14 +105,6 @@ This option is effective only when a target step is specified
 ### -help
 
 Displays the arguments summary as printed above, then exits.
-
-### -constant KEY=VALUE
-
-Specifies the value of one application constant: [^option]  
-- KEY being the *fully qualified* name of the constant,  
-- VALUE being the value to assign.
-
-This is the CLI equivalent of the GUI pull-down menu {{ site.tools_constants }}.
 
 ### -output DIRNAME
 
@@ -138,7 +132,7 @@ Exports each book music as a PDF file.
 
 ### -save
 
-Saves each book OMR data to its `.omr` project file as soon as a sheet step is processed
+Saves each book OMR data to its `.omr` project file as soon as a sheet ***step*** is processed
 successfully.
 
 This option is effective only in `-batch` mode.
@@ -155,7 +149,8 @@ This option is meant to initially open the book on a specific sheet, or to restr
 to some sheets.
 If no sheet IDs are specified, all (valid) sheets are concerned.
 
-Sheet IDs apply to all books referenced on the command line.
+Beware that specifying sheet IDs would apply to ***all books*** referenced on the command line.
+Therefore, it is generally more relevant to use these sheet IDs on one book at a time.
 
 ### -step STEPNAME
 
@@ -168,9 +163,34 @@ For any given sheet, if the target step has already been reached, no further pro
 However, if the `-force` option is present, this sheet will be reset to BINARY and then processed
 again to the target step.
 
+### -swap
+
+Swaps out every sheet to disk once it has been processed.
+
+This is especially useful when processing a book containing many sheets.
+
 ### -transcribe
 
 Transcribes each book.
+
+### -upgrade
+
+Applied to an 'old' book file (a `.omr` file), this command upgrades -- if needed --
+all book/sheets internal data.
+
+### -version
+
+Prints the program version and exits.
+```
+Audiveris
+- Version:      5.10.0
+- Commit:       7cd25598ed15dcf1fd041ab60c1e7543f55588d4
+- OS:           Windows 10 10.0
+- Architecture: amd64
+- Java VM:      Java HotSpot(TM) 64-Bit Server VM (build 25+37-LTS-3491, mixed mode, sharing)
+- OCR Engine:   Tesseract OCR, version 5.5.1
+```
+
 
 ### `--`
 
@@ -190,22 +210,6 @@ For any other extension, the file is considered as an image input file.
 ## Advanced Arguments
 
 These arguments are made available for the advanced user.
-
-### -annotate
-
-For each book, populates a Zip archive with images and symbol annotations derived from book `Inter`
-instances.
-
-These annotations are meant to populate a dataset for training future Audiveris 6.x new classifiers
-(Page and/or Patch).
-
-
-### -sample
-
-Populates each book sample repository with samples derived from the book `Inter` instances.
-
-A book-level repository can be later merged into the global Audiveris sample repository in order
-to prepare a training of Audiveris 5.x Glyph classifier.
 
 ### -run CLASS_NAME
 Runs the specified Java class on each valid sheet.
@@ -236,5 +240,22 @@ public abstract class RunClass
     public abstract void process ();
 }
 ```
+
+### -sample
+
+Populates each book sample repository with samples derived from the book `Inter` instances.
+
+A book-level repository can be later merged into the global Audiveris sample repository in order
+to prepare a training of the Audiveris Glyph classifier.
+
+See details on the [Training](../advanced/training.md) section.
+
+### -annotate
+
+For each book, populates a Zip archive with images and symbol annotations derived from book `Inter`
+instances.
+
+These annotations are meant to populate a dataset for training potential global classifiers.
+
 
 [^option]: `-constant` is a better name than the  old `-option`, but both names are supported.

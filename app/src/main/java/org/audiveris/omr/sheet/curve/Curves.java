@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -156,6 +156,11 @@ public class Curves
         watch.start("buildEndings");
         endingsBuilder.buildEndings();
 
+        // Build rehearsals out of segments
+        RehearsalsBuilder rehearsalsBuilder = new RehearsalsBuilder(this);
+        watch.start("buildRehearsals");
+        rehearsalsBuilder.buildRehearsals();
+
         if (constants.printWatch.isSet()) {
             watch.print();
         }
@@ -279,8 +284,7 @@ public class Curves
             if (!points.isEmpty()) {
                 logger.info("Curve break points: {}", points);
             }
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) {}
 
         return points;
     }

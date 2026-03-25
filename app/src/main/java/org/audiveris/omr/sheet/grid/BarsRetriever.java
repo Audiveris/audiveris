@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -42,6 +42,7 @@ import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -1755,7 +1756,7 @@ public class BarsRetriever
     // isTrueBraceGroup //
     //------------------//
     /**
-     * Check whether the provided group corresponds to a 1-instrument part
+     * Check whether the provided brace group corresponds to a 1-instrument part
      * (such as a piano part).
      * Braced staves represent a single part when the count of braced staves is 2 (to be improved?)
      * and they are internally connected but not connected to external staves.
@@ -1781,8 +1782,11 @@ public class BarsRetriever
         final Staff lastStaff = staffManager.getStaff(lastId - 1);
 
         return !isPartConnected(firstStaff, TOP) // Not connected above
-                && isPartConnected(firstStaff, BOTTOM) // Internally connected
-                && !isPartConnected(lastStaff, BOTTOM); // Not connected below
+                && !isPartConnected(lastStaff, BOTTOM) // Not connected below
+                && (isPartConnected(firstStaff, BOTTOM) // Either internally connected
+                        || // Or accept lack of internal connection
+                        sheet.getStub().getProcessingSwitches().getValue(
+                                ProcessingSwitch.disconnectedBracedParts));
     }
 
     //------------------//
@@ -2676,6 +2680,10 @@ public class BarsRetriever
         private final Constant.Boolean forceSeparateParts = new Constant.Boolean(
                 false,
                 "Should we force all staves to use separate parts?");
+
+        private final Constant.Boolean connectionMandatory = new Constant.Boolean(
+                true,
+                "Is bar connection mandatory for a true brace group?");
 
         private final Scale.Fraction minSeparateStaffGutter = new Scale.Fraction(
                 2.5,

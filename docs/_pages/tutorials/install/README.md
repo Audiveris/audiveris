@@ -8,9 +8,6 @@ nav_order: 1
 # Installation
 
 ## Using installers
-{: .d-inline-block }
-new in 5.5
-{: .label .label-yellow }
 
 A 64-bit installer is provided for **Windows**, **macOS** and **Linux**.
 

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -981,7 +981,9 @@ public class MeasureStack
      * Report the count of measures indicated by a multiple rest if any.
      *
      * @param multipleRests all multiple rests in this system
-     * @return the count of measures if found or null
+     * @return the count of measures if found,
+     *         0 if the stack contains a multiple rest with no count detected or provided,
+     *         null if the stack contains no multiple rest
      */
     public Integer getMultipleMeasureCount (Collection<Inter> multipleRests)
     {
@@ -997,7 +999,7 @@ public class MeasureStack
                 final MeasureCountInter measureCount = multipleRest.getMeasureCount();
 
                 if (measureCount == null) {
-                    return null;
+                    return 0; // Not null
                 }
 
                 return measureCount.getValue();

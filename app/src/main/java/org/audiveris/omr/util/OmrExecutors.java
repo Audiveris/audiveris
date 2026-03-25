@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -223,7 +223,7 @@ public class OmrExecutors
                 "Should we print out current environment?");
 
         private final Constant.Boolean useParallelism = new Constant.Boolean(
-                false, //true, // Disabled for the time being
+                true,
                 "Should we use parallelism when we have several processors?");
 
         private final Constant.Integer graceDelay = new Constant.Integer(

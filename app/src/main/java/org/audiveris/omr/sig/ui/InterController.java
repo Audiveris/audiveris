@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -57,6 +57,7 @@ import org.audiveris.omr.sheet.ui.StaffEditor;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNumberInter;
+import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BraceInter;
@@ -66,19 +67,25 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterPair;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.KeyAlterInter;
+import org.audiveris.omr.sig.inter.KeyInter;
+import org.audiveris.omr.sig.inter.KeyInter.KeyConfig;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MetronomeInter;
 import org.audiveris.omr.sig.inter.OctaveShiftInter;
+import org.audiveris.omr.sig.inter.RehearsalInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeCustomInter;
+import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -99,6 +106,7 @@ import org.audiveris.omr.text.TextBuilder;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.text.TextWord;
+import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import static org.audiveris.omr.ui.selection.MouseMovement.PRESSING;
 import org.audiveris.omr.ui.selection.SelectionHint;
@@ -135,6 +143,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import static java.util.Collections.emptySet;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -218,12 +227,40 @@ public class InterController
             @Override
             protected void build ()
             {
+                // If replacing a HeadInter, salvage its AugmentationRelation if any
+                final List<UITask> recoveredTasks = new ArrayList<>();
+                if (inter instanceof org.audiveris.omr.sig.inter.HeadInter) {
+                    final SIGraph sig = inter.getStaff().getSystem().getSig();
+                    final List<Inter> intersected = sig.intersectedInters(inter.getBounds());
+
+                    for (Inter comp : intersected) {
+                        if ((comp != inter) //
+                                && (comp.getGlyph() == inter.getGlyph())
+                                && (comp instanceof HeadInter)) {
+                            for (Relation rel : sig.incomingEdgesOf(comp)) {
+                                if (rel instanceof AugmentationRelation) {
+                                    final Inter dot = sig.getEdgeSource(rel);
+                                    recoveredTasks.add(
+                                            new LinkTask(
+                                                    sig,
+                                                    dot,
+                                                    inter,
+                                                    new AugmentationRelation()));
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // If glyph is used by another inter, delete this other inter
                 removeCompetitors(inter, inter.getGlyph(), seq);
 
                 // Addition task and other related tasks (additions, links) if any
                 final WrappedBoolean cancel = new WrappedBoolean(false);
                 seq.addAll(inter.preAdd(cancel, toPublish));
+
+                // Re-apply salvaged links
+                seq.addAll(recoveredTasks);
 
                 if (cancel.isSet()) {
                     seq.setCancelled(true);
@@ -293,7 +330,7 @@ public class InterController
 
                 // Convert to absolute lines (and the underlying word glyphs)
                 final TextBuilder textBuilder = new TextBuilder(system, shape);
-                final List<TextLine> glyphLines = textBuilder.processGlyph(
+                final List<TextLine> glyphLines = textBuilder.processBuffer(
                         buffer,
                         relativeLines,
                         glyph.getTopLeft());
@@ -426,6 +463,62 @@ public class InterController
 
         ghost.setStaff(staff);
         addInter(ghost);
+    }
+
+    //----------//
+    // buildKey //
+    //----------//
+    /**
+     * Build a key signature from the provided (AlterInter) members.
+     *
+     * @param system    the containing system
+     * @param members   the members of the future key
+     * @param keyConfig the precise key configuration
+     */
+    @UIThread
+    public void buildKey (SystemInfo system,
+                          List<Inter> members,
+                          KeyConfig keyConfig)
+    {
+        final SIGraph sig = system.getSig();
+        final List<AlterInter> alters = new ArrayList<>();
+        members.forEach(m -> alters.add((AlterInter) m));
+        Collections.sort(alters, Inters.byFullCenterAbscissa);
+        final Staff staff = alters.get(0).getStaff();
+
+        new CtrlTask(DO, "buildKey")
+        {
+            @Override
+            protected void build ()
+            {
+                // Convert each AlterInter to KeyAlterInter
+                List<KeyAlterInter> members = new ArrayList<>();
+                alters.forEach(alter -> members.add(new KeyAlterInter(alter)));
+
+                // Remove old alters
+                alters.forEach(alter -> seq.add(new RemovalTask(alter)));
+
+                // Add new members
+                members.forEach(m -> seq.add(new AdditionTask(sig, m, m.getBounds(), emptySet())));
+
+                // Create key and link members
+                final List<Link> links = new ArrayList<>();
+                final KeyInter key = new KeyInter(1.0, keyConfig.fifths, keyConfig.shape);
+                key.setManual(true);
+                key.setStaff(staff);
+                members.forEach(m -> links.add(new Link(m, new Containment(), true)));
+                seq.add(new AdditionTask(sig, key, null, links));
+            }
+
+            @Override
+            protected void publish ()
+            {
+                if (toPublish.value != null) {
+                    sheet.getInterIndex().publish(toPublish.value);
+                }
+            }
+        }.execute();
+
     }
 
     //-----------//
@@ -711,6 +804,31 @@ public class InterController
                         }
                     }
 
+                    case Rehearsal -> {
+                        // Convert to rehearsal mark, with an enclosure
+                        final RehearsalInter rehearsal = new RehearsalInter(sentence);
+                        final Staff stf = system.getStaffAtOrBelow(sentence.getCenter());
+                        rehearsal.setStaff((stf != null) ? stf : sentence.getStaff());
+                        rehearsal.setManual(true);
+                        seq.add(
+                                new AdditionTask(
+                                        sig,
+                                        rehearsal,
+                                        rehearsal.getBounds(),
+                                        Collections.emptyList()));
+
+                        // Migrate the members from sentence to rehearsal
+                        final List<Inter> members = sentence.getMembers();
+
+                        // Remove former sentence (and its links to members)
+                        seq.add(new RemovalTask(sentence));
+
+                        for (Inter member : members) {
+                            member.setManual(true);
+                            seq.add(new LinkTask(sig, rehearsal, member, new Containment()));
+                        }
+                    }
+
                     default -> {
                         // Convert to SentenceInter if so needed
                         final SentenceInter finalSentence;
@@ -773,6 +891,35 @@ public class InterController
             protected void publish ()
             {
                 sheet.getInterIndex().publish(!sentence.isRemoved() ? sentence : null);
+            }
+        }.execute();
+    }
+
+    //--------------------------//
+    // changeSentenceAttributes //
+    //--------------------------//
+    /**
+     * Change the font attributes for a whole sentence.
+     *
+     * @param sentence the sentence to modify
+     * @param newAttrs the new font attributes
+     */
+    @UIThread
+    public void changeSentenceAttributes (final SentenceInter sentence,
+                                          final String newAttrs)
+    {
+        new CtrlTask(DO, "changeSentenceAttributes")
+        {
+            @Override
+            protected void build ()
+            {
+                seq.add(new SentenceAttributesTask(sentence, newAttrs));
+            }
+
+            @Override
+            protected void publish ()
+            {
+                sheet.getInterIndex().publish(sentence);
             }
         }.execute();
     }
@@ -1258,7 +1405,7 @@ public class InterController
     // linkMultiple //
     //--------------//
     /**
-     * Add a relation between inters.
+     * Add relations.
      *
      * @param sig  the containing SIG
      * @param strs the list of SourceTargetRelation to add
@@ -1783,19 +1930,32 @@ public class InterController
             final SlurInter slur = (SlurInter) source;
             final HeadInter head = (HeadInter) target;
             final HorizontalSide side = (head.getCenter().x < slur.getCenter().x) ? LEFT : RIGHT;
-            final SlurHeadRelation existingRel = slur.getHeadRelation(side);
-            final SlurInter extension = slur.getExtension(side);
 
+            final SlurHeadRelation existingRel = slur.getHeadRelation(side);
             if (existingRel != null) {
                 toRemove.add(existingRel);
             }
 
+            final SlurInter extension = slur.getExtension(side);
             if (extension != null) {
                 seq.add(
                         new DisconnectTask(
                                 (side == RIGHT) ? slur : extension,
                                 (side == RIGHT) ? extension : slur,
                                 ConnectionTask.Kind.SLUR_CONNECTION));
+            }
+        }
+
+        if (relation instanceof ChordWedgeRelation) {
+            // This relation is declared multi-source & single-target
+            // But is single source (chord) for each given horizontal side
+            final AbstractChordInter chord = (AbstractChordInter) source;
+            final WedgeInter wedge = (WedgeInter) target;
+            final HorizontalSide side = (chord.getCenter().x < wedge.getCenter().x) ? LEFT : RIGHT;
+            final ChordWedgeRelation existingRel = wedge.getChordRelation(side);
+
+            if (existingRel != null) {
+                toRemove.add(existingRel);
             }
         }
 
@@ -2447,9 +2607,11 @@ public class InterController
                 return;
             }
 
-            if ((inters.size() == 1) || OMR.gui.displayConfirmation(
-                    "Do you confirm this multiple deletion?",
-                    "Deletion of " + inters.size() + " inters")) {
+            if ((inters.size() == 1) //
+                    || AdvancedTopics.allowMultipleDelete() //
+                    || OMR.gui.displayConfirmation(
+                            "Do you confirm this multiple deletion?",
+                            "Deletion of " + inters.size() + " inters")) {
                 removeInters(inters);
             }
         }

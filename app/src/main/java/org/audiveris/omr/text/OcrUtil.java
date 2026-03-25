@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -142,7 +142,7 @@ public abstract class OcrUtil
 
         Collections.sort(lines, TextLine.byOrdinate(sheet.getSkew()));
 
-        lines.forEach(line -> line.getWords().forEach(word -> word.adjustFontSize()));
+        lines.forEach(line -> line.getWords().forEach(word -> word.adjustFont()));
 
         if (logger.isDebugEnabled()) {
             TextLine.dump("Raw OCR'd lines:", lines, constants.dumpWords.isSet());

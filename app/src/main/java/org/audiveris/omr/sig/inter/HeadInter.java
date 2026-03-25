@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -351,7 +351,7 @@ public class HeadInter
      */
     public int getAlteration (Integer fifths)
     {
-        return HeadInter.this.getAlteration(fifths, true);
+        return getAlteration(fifths, true);
     }
 
     //---------------//
@@ -1452,11 +1452,9 @@ public class HeadInter
     public static class Impacts
             extends GradeImpacts
     {
-        private static final String[] NAMES = new String[]
-        { "dist" };
+        private static final String[] NAMES = new String[] { "dist" };
 
-        private static final double[] WEIGHTS = new double[]
-        { 1 };
+        private static final double[] WEIGHTS = new double[] { 1 };
 
         public Impacts (double dist)
         {

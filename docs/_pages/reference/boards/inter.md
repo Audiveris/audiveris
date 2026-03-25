@@ -59,8 +59,9 @@ For a word inter, the modifiable word textual content.
 
 ## (sentence)
 (output)  
-For a sentence inter, the _non-modifiable_ sentence textual content.
-Modifications can be performed at word level only.
+For a sentence inter, the _non-modifiable_ sentence textual content.  
+Except for the [Metronome](../../guides/specific/metronome.md) case, 
+the modifications of a sentence textual content can be performed only at the word level.
 
 ## (sentence role)
 (input/output)  
@@ -68,8 +69,8 @@ Role of the sentence (such as Direction, PartName, Rights, Lyrics, ...).
 
 ![](../../assets/images/role_board.png)
 
-Nota: `Lyrics` is such a specific sentence role that it cannot be changed in an existing `Inter`.
-Instead, a new (lyrics) inter is created automatically.
+Nota: The `Lyrics` and `Metronome` sentence roles are so specific that when they are changed,
+a new inter instance is transparently created to replace the previous one.
 
 ## (lyrics)
 ![](../../assets/images/lyrics_data.png)

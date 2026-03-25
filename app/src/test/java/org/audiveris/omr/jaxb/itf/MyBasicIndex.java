@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,6 +22,8 @@
 package org.audiveris.omr.jaxb.itf;
 
 import org.audiveris.omr.util.Jaxb;
+
+import org.junit.Ignore;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,6 +43,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * @author Hervé Bitteur
  * @param <E>
  */
+@Ignore
 @XmlRootElement
 public class MyBasicIndex<E extends MyEntity>
 {
@@ -120,12 +123,11 @@ public class MyBasicIndex<E extends MyEntity>
      *
      * @param <E> the specific entity type
      */
+    @Ignore
     private static class Snap<E extends MyAbstractEntity>
     {
-        @XmlElements({
-            @XmlElement(name = "glyph", type = MyGlyph.class),
-            @XmlElement(name = "symbol", type = MySymbol.class)
-        })
+        @XmlElements({ @XmlElement(name = "glyph", type = MyGlyph.class),
+                @XmlElement(name = "symbol", type = MySymbol.class) })
         ArrayList<E> list; // Flat list of entities (each with its embedded id)
     }
 
@@ -135,12 +137,13 @@ public class MyBasicIndex<E extends MyEntity>
      *
      * @param <E> the specific entity type
      */
+    @Ignore
     private static class HashMapAdapter<E extends MyAbstractEntity>
             extends XmlAdapter<Snap<E>, ConcurrentHashMap<Integer, E>>
     {
         @Override
         public Snap<E> marshal (ConcurrentHashMap<Integer, E> map)
-                throws Exception
+            throws Exception
         {
             Snap<E> snap = new Snap<E>();
             snap.list = new ArrayList<E>(map.values());
@@ -150,7 +153,7 @@ public class MyBasicIndex<E extends MyEntity>
 
         @Override
         public ConcurrentHashMap<Integer, E> unmarshal (Snap<E> snap)
-                throws Exception
+            throws Exception
         {
             ConcurrentHashMap<Integer, E> map = new ConcurrentHashMap<Integer, E>();
 

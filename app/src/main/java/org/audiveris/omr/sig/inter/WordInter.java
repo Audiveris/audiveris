@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -37,6 +37,7 @@ import org.audiveris.omr.text.FontAttributes;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.text.TextWord;
+import org.audiveris.omr.text.Word;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.TextFont;
@@ -77,6 +78,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "word")
 public class WordInter
         extends AbstractInter
+        implements Word
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -416,14 +418,6 @@ public class WordInter
         return tasks;
     }
 
-    //-------------//
-    // setFontInfo //
-    //-------------//
-    public void setFontInfo (FontInfo fontInfo)
-    {
-        this.fontInfo = fontInfo;
-    }
-
     //-------------------//
     // setFontAttributes //
     //-------------------//
@@ -437,16 +431,20 @@ public class WordInter
     public void setFontAttributes (String newAttrs)
     {
         try {
-            final FontAttributes decoded = FontAttributes.decode(newAttrs.toUpperCase());
-
-            // Keeping the same bounds, update the font size if needed
-            final TextFont textFont = TextFont.getBestFont(decoded, fontInfo.pointSize);
-            final int fontSize = textFont.computeSize(getValue(), getBounds().getSize());
-
-            fontInfo = new FontInfo(decoded, fontSize, textFont.getFontName());
+            // Keeping the same bounds, adjust the font size and name
+            final FontAttributes attrs = FontAttributes.decode(newAttrs.toUpperCase());
+            fontInfo = FontInfo.adjustedTextFont(attrs, fontInfo.pointSize, value, getBounds());
         } catch (Exception ex) {
             logger.warn("Invalid font attributes: {}", newAttrs);
         }
+    }
+
+    //-------------//
+    // setFontInfo //
+    //-------------//
+    public void setFontInfo (FontInfo fontInfo)
+    {
+        this.fontInfo = fontInfo;
     }
 
     //-------------//
@@ -520,6 +518,7 @@ public class WordInter
             model = new Model(word.getValue(), word.getLocation(), word.getFontInfo());
 
             final Rectangle box = word.getBounds();
+            final double hw = (double) box.height / box.width; // Ratio of Height vs Width
 
             middle = new Point2D.Double(box.x + (box.width / 2.0), box.y + (box.height / 2.0));
             right = new Point2D.Double(box.x + box.width, box.y + (box.height / 2.0));
@@ -555,6 +554,7 @@ public class WordInter
 
                     // Data
                     box.width += dx;
+                    box.height = (int) Math.rint(hw * box.width); // To respect h/w ratio
 
                     if (box.width > 0) {
                         final WordInter word = (WordInter) getInter();
@@ -590,6 +590,10 @@ public class WordInter
             word.freeze();
 
             inter.setBounds(null);
+            final Inter sentence = inter.getEnsemble();
+            if (sentence != null) {
+                sentence.invalidateCache();
+            }
             super.doit(); // No more glyph
         }
 
@@ -602,6 +606,10 @@ public class WordInter
             word.fontInfo = originalModel.fontInfo;
 
             inter.setBounds(null);
+            final Inter sentence = inter.getEnsemble();
+            if (sentence != null) {
+                sentence.invalidateCache();
+            }
             super.undo();
         }
     }

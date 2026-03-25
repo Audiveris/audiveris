@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -717,7 +717,7 @@ public class ClefBuilder
                 "Minimum weight for a glyph part");
 
         private final Scale.Fraction maxPartGap = new Scale.Fraction(
-                1.0,
+                0.75,
                 "Maximum distance between two parts of a single clef symbol");
 
         private final Scale.Fraction maxGlyphHeight = new Scale.Fraction(
@@ -745,7 +745,7 @@ public class ClefBuilder
 
         // Sheet scale dependent
         //----------------------
-        //
+
         final int maxClefEnd;
 
         final int beltMargin;
@@ -756,7 +756,7 @@ public class ClefBuilder
 
         // Staff scale dependent
         //----------------------
-        //
+
         final int aboveStaff;
 
         final int belowStaff;

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -110,7 +110,7 @@ public class ChordWedgeRelation
     public boolean isSingleSource ()
     {
         // A wedge can have one chord on left and one chord on right
-        // TODO: make sure there is only one chord on each side
+        // But we have to make sure that there is only one chord on each horizontal side
         return false;
     }
 

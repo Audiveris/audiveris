@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -91,6 +91,15 @@ public interface Inter
      * This is meant for additional inter house keeping.
      */
     void added ();
+
+    /**
+     * Report whether the inter can survive, even if abnormal.
+     * This is meant for inters, which should not be deleted by reduction even if abnormal.
+     * The {@link MultipleRestInter} should be kept even without a recognized count.
+     *
+     * @return true if so
+     */
+    boolean canStayAbnormal ();
 
     /**
      * Run checks to detect if this inter is abnormal.

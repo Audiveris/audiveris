@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -30,6 +30,7 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.TremoloInter;
+import org.audiveris.proxymusic.AboveBelow;
 import org.audiveris.proxymusic.AccidentalText;
 import org.audiveris.proxymusic.AccidentalValue;
 import org.audiveris.proxymusic.BarStyle;
@@ -152,8 +153,8 @@ public abstract class MusicXML
         //        detached-legato | staccatissimo | spiccato |
         //        scoop | plop | doit | falloff | breath-mark |
         //        caesura | stress | unstress | other-articulation)*)>
-        ObjectFactory factory = new ObjectFactory();
-        EmptyPlacement ep = factory.createEmptyPlacement();
+        final ObjectFactory factory = new ObjectFactory();
+        final EmptyPlacement ep = factory.createEmptyPlacement();
 
         return switch (shape) {
             case DOT_set, STACCATO -> factory.createArticulationsStaccato(ep);
@@ -170,6 +171,10 @@ public abstract class MusicXML
             }
             case TENUTO -> factory.createArticulationsTenuto(ep);
             case STACCATISSIMO -> factory.createArticulationsStaccatissimo(ep);
+            case STACCATISSIMO_BELOW -> {
+                ep.setPlacement(AboveBelow.BELOW);
+                yield factory.createArticulationsStaccatissimo(ep);
+            }
             case BREATH_MARK -> {
                 BreathMark breathMark = factory.createBreathMark();
                 breathMark.setValue("comma");
@@ -203,7 +208,7 @@ public abstract class MusicXML
             //        case DYNAMICS_FFFFF -> factory.createDynamicsFffff(empty);
             //        case DYNAMICS_FFFFFF ->factory.createDynamicsFfffff(empty);
             case DYNAMICS_FP -> factory.createDynamicsFp(empty);
-            //        case DYNAMICS_FZ -> factory.createDynamicsFz(empty);
+            case DYNAMICS_FZ -> factory.createDynamicsFz(empty);
             case DYNAMICS_MF -> factory.createDynamicsMf(empty);
             case DYNAMICS_MP -> factory.createDynamicsMp(empty);
             case DYNAMICS_P -> factory.createDynamicsP(empty);

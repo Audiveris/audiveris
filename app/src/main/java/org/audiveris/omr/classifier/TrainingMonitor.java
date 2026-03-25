@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -49,9 +49,11 @@ public interface TrainingMonitor //        extends IterationListener
     /**
      * Call-back at end of iteration period.
      *
-     * @param iteration iteration number
-     * @param score     current loss value
+     * @param epochsCount total count of epochs so far
+     * @param iteration   iteration number
+     * @param score       current loss value
      */
-    public void iterationPeriodDone (int iteration,
+    public void iterationPeriodDone (int epochsCount,
+                                     int iteration,
                                      double score);
 }

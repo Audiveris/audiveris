@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -234,6 +234,7 @@ public abstract class Symbols
         // Decorated symbols
         symbolMap.put(ACCENT, new ArticulationSymbol(ACCENT, family()));
         symbolMap.put(STACCATISSIMO, new ArticulationSymbol(STACCATISSIMO, family()));
+        symbolMap.put(STACCATISSIMO_BELOW, new ArticulationSymbol(STACCATISSIMO_BELOW, family()));
         symbolMap.put(STACCATO, new ArticulationSymbol(STACCATO, family()));
         symbolMap.put(MARCATO, new ArticulationSymbol(MARCATO, family()));
         symbolMap.put(MARCATO_BELOW, new ArticulationSymbol(MARCATO_BELOW, family()));

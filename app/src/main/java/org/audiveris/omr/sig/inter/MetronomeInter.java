@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -939,7 +939,7 @@ public class MetronomeInter
             ctx.noteWord = line.getWords().get(equalIndex);
             ctx.charIndex = ctx.noteWord.getValue().indexOf(noteStr);
 
-            if (ctx.charIndex == -1) {
+            if (ctx.charIndex == -1 && equalIndex > 0) {
                 // Note not found, let's look in the word before
                 ctx.noteWord = line.getWords().get(equalIndex - 1);
                 ctx.charIndex = ctx.noteWord.getValue().indexOf(noteStr);
@@ -1146,10 +1146,12 @@ public class MetronomeInter
                 }
 
                 // Stuff after note?
-                final String content = word.getValue();
-                final int nextIndex = ctx.charIndex + ctx.charCount;
-                if (content.length() > nextIndex) {
-                    created.add(extractText(glyphIndex, word, nextIndex, content.length()));
+                if (ctx.charCount != null) {
+                    final int nextIndex = ctx.charIndex + ctx.charCount;
+                    final String content = word.getValue();
+                    if (content.length() > nextIndex) {
+                        created.add(extractText(glyphIndex, word, nextIndex, content.length()));
+                    }
                 }
             } else { // This is just a plain word
                 final WordInter wi = new WordInter(word);

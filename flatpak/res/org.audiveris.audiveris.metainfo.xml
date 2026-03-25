@@ -33,6 +33,7 @@
   <url type="bugtracker">https://github.com/Audiveris/audiveris/issues</url>
   <url type="help">https://audiveris.github.io/audiveris/_pages/handbook/</url>
   <url type="contact">https://github.com/Audiveris/audiveris/discussions</url>
+  <url type="vcs-browser">https://github.com/Audiveris/audiveris</url>
   <screenshots>
     <screenshot type="default">
       <image>https://github.com/Audiveris/docs/blob/master/images/Dichterliebe01.png</image>
@@ -56,8 +57,129 @@
     </screenshot>
   </screenshots>
   <launchable type="desktop-id">org.audiveris.audiveris.desktop</launchable>
-  <developer_name>Hervé Bitteur et al.</developer_name>
+  <developer id="org.audiveris"><name>Hervé Bitteur et al.</name></developer>
   <releases>
+    <release version="5.10" date="2026-03-07" urgency="low" type="stable">
+      <description>
+	      <p>User Interface</p>
+	      <ul>
+	        <li>Ability to set font attributes at a sentence level to apply them to all its member words</li>
+	        <li>Better text word resizing, keeping a constant height/width ratio</li>
+	        <li>Better drag n' drop for all clefs</li>
+	      </ul>
+	     <p>Engine</p>
+	     <ul>
+	       <li>Verse numbers are detected and filtered out of the lyric lines</li>
+	       <li>Isolated punctuations marks (as in French) are combined with the preceding lyric syllable</li>
+	       <li>Support for the rehearsal marks</li>
+	       <li>Support for BARITONE, MEZZO_SOPRANO and SOPRANO clefs</li>
+	       <li>Additional book processing switch to accept braced parts without internal bar connections</li>
+	     </ul>
+       <p>Project</p>
+       <ul>
+         <li>Audiveris for Windows is now available on the Scoop Extras bucket</li>
+       </ul>
+    </description>
+    </release>
+    <release version="5.9" date="2025-12-10" urgency="low" type="stable">
+      <description>
+	      <p>User Interface</p>
+	      <ul>
+	        <li>The Preferences dialog let the user select new processing options</li>
+	      </ul>
+	     <p>Engine</p>
+	     <ul>
+	       <li>Ability to automatically swap a sheet from memory to disk once it has been processed</li>
+	       <li>Ability to process all systems of a sheet in parallel</li>
+	       <li>Support for Cyrillic OCR'd characters</li>
+	       <li>Better handling of staves that exhibit non-regular vertical spacing between lines</li>
+	       <li>Support for the Staccatissimo below shape</li>
+	     </ul>
+       <p>Project</p>
+       <ul>
+         <li>Publication of Audiveris on the Windows Community repository via WinGet command</li>
+       </ul>
+    </description>
+    </release>
+    <release version="5.8.1" date="2025-11-22" urgency="low" type="stable">
+      <description>
+		<p>Bug fixes</p>
+		<ul>
+		  <li>Fix issues with the key signature change feature in 5.8.0. </li>
+		</ul>
+      </description>
+    </release>
+    <release version="5.8" date="2025-11-17" urgency="low" type="stable">
+      <description>
+	      <p>User Interface</p>
+	      <ul>
+	        <li>Improved key editor to build key signature from its members</li>
+	        <li>Improved staff editor that inserts intermediate defining points where needed by staff extension</li>
+	        <li>Improved ending editor that can resize the ending legs</li>
+	      </ul>
+	     <p>Engine</p>
+	     <ul>
+	       <li>Support for key signature changes</li>
+	       <li>Support for strings techniques of up bow and down bow</li>
+	       <li>Multi-measure rests can survive the lack of a recognized measure count</li>
+	     </ul>
+       <p>Project</p>
+       <ul>
+         <li>Use of macos-15-intel instead of macos-13 runner to build the installer for macOS Intel</li>
+         <li>Flatpak to catch up with OS installers</li>
+         <li>Revamped the book/sheet annotations meant for training an external model</li>
+       </ul>
+       <p>Java</p>
+       <ul>
+         <li>Upgrade to Java 25 and Gradle 9.1</li>
+      </ul>
+    </description>
+    </release>
+    <release version="5.7" date="2025-09-06" urgency="low" type="stable">
+      <description>
+	<p>User Interface</p>
+	<ul>
+	  <li>Support for CJK (Chinese, Japanese, Korean) characters</li>
+	</ul>
+	<p>Engine</p>
+	<ul>
+	  <li>Correct handling of void regions in small note head
+	  templates</li>
+	</ul>
+    </description>
+    </release>
+    <release version="5.6" date="2025-05-15" urgency="low" type="stable">
+      <description>
+	<p>User Interface</p>
+	<ul>
+	  <li>Logical parts editor: manual selection of MIDI program for any
+	  logical part</li>
+	  <li>Inter board: editing of word attributes</li>
+	</ul>
+	<p>Engine</p>
+	<ul>
+	  <li>Use of OCR’d word attributes to determine the text font family
+	  and style for any text word</li>
+	  <li>Abandon of the manual selection of text font at
+	  global/book/sheet levels</li>
+	  <li>Addition of Primus font into the collection of music fonts</li>
+	</ul>
+      </description>
+    </release>
+    <release version="5.5" date="2025-04-15" urgency="low" type="stable">
+      <description>
+	<p>Project</p>
+	<ul>
+	  <li>Use of jpackage/jlink utilities to build a JRE-included
+	  installer. Contributed by Fabio Marques.</li>
+	  <li>Use of GitHub workflows to generate installers for Windows, Linux
+	  and macOS.</li>
+	  <li>Abandon of the old JRE-free Windows installer</li>
+	  <li>Generalized use of GitHub workflows to publish Audiveris releases
+	  assets (installers, sources, docs)</li>
+	</ul>
+      </description>
+    </release>
     <release version="5.4" date="2024-12-25" urgency="low"
 	     type="stable">
       <description>

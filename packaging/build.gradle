@@ -91,12 +91,16 @@ tasks.register('customJre', Exec) {
     onlyIf('custom-jre folder does not exist yet') {
         !file('build/custom-jre').exists()
     }
+
+    // module jdk.zipfs provides the implementation of the zip file system provider
+    // module jdk.crypto.ec fixes javax.net.ssl.SSLHandshakeException
+    // module jdk.unsupported is needed by pdfbox which calls jdk.internal.ref.Cleaner
     commandLine "jlink",\
         "--output", "build/custom-jre",\
         "--no-header-files",\
         "--no-man-pages",\
         "--strip-debug",\
-        "--add-modules", "java.base,java.datatransfer,java.desktop,java.xml,java.naming,jdk.zipfs,jdk.crypto.ec"
+        "--add-modules", "java.base,java.datatransfer,java.desktop,java.xml,java.naming,jdk.zipfs,jdk.crypto.ec,jdk.unsupported"
 }
 
 tasks.register('macImagemagick', Exec) {
@@ -193,6 +197,8 @@ tasks.jpackage {
     mainClass           = app.ext.mainClass
 
     fileAssociations    = files(layout.projectDirectory.file("dev/omr.properties"))
+
+    // REMINDER: Check consistency with "applicationDefaultJvmArgs" in file app/build.gradle
     javaOptions         = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
                            "--enable-native-access=ALL-UNNAMED",
                            "-Dfile.encoding=UTF-8",

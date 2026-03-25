@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2025. All rights reserved.
+//  Copyright © Audiveris 2026. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -46,9 +46,11 @@ import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sheet.stem.StemScaler;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.OmrStep;
+import org.audiveris.omr.step.StepPause;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.ViewParameters;
+import static org.audiveris.omr.ui.action.AdvancedTopics.swapProcessedSheets;
 import org.audiveris.omr.ui.util.OmrFileFilter;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.util.UserOpt;
@@ -1044,7 +1046,7 @@ public class BookActions
         final SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            stub.printWatch();
+            stub.printWatch(true);
         }
     }
 
@@ -2080,19 +2082,6 @@ public class BookActions
         return paths;
     }
 
-    //---------------------//
-    // swapProcessedSheets //
-    //---------------------//
-    /**
-     * Report whether we should swap out any processed sheet.
-     *
-     * @return true if so
-     */
-    public static boolean swapProcessedSheets ()
-    {
-        return constants.swapProcessedSheets.isSet();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
 
     //---------------//
@@ -2149,10 +2138,6 @@ public class BookActions
         private final Constant.Boolean preOpenBookParameters = new Constant.Boolean(
                 false,
                 "Automatically open book parameters dialog at book creation?");
-
-        private final Constant.Boolean swapProcessedSheets = new Constant.Boolean(
-                false,
-                "Automatically swap out sheets once they are processed?");
     }
 
     //----------------//
@@ -2224,7 +2209,9 @@ public class BookActions
                     sheet.getStub().reachStep(OmrStep.PAGE, false);
                     sheet.export(sheetExportPath);
                 }
-            } catch (Throwable ex) {
+            } catch (StepPause sp) {
+                logger.info("ExportSheetTask stopped by user.");
+            } catch (Exception ex) {
                 logger.warn("Error in ExportSheetTask {}", ex.toString(), ex);
             } finally {
                 LogUtil.stopStub();

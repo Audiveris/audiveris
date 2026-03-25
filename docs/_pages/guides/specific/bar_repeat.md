@@ -6,9 +6,6 @@ nav_order: 5
 ---
 # Bar Repeat
 {: .no_toc }
-{: .d-inline-block }
-since 5.3
-{: .label }
 
 A "bar repeat" sign indicates that preceding written measures must be repeated exactly.
 
