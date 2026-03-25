@@ -939,7 +939,7 @@ public class MetronomeInter
             ctx.noteWord = line.getWords().get(equalIndex);
             ctx.charIndex = ctx.noteWord.getValue().indexOf(noteStr);
 
-            if (ctx.charIndex == -1) {
+            if (ctx.charIndex == -1 && equalIndex > 0) {
                 // Note not found, let's look in the word before
                 ctx.noteWord = line.getWords().get(equalIndex - 1);
                 ctx.charIndex = ctx.noteWord.getValue().indexOf(noteStr);
