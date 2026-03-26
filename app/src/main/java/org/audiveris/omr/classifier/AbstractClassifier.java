@@ -33,27 +33,18 @@ import org.audiveris.omr.math.PoorManAlgebra.Nd4j;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.util.StopWatch;
-import org.audiveris.omr.util.ZipFileSystem;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import static java.nio.file.StandardOpenOption.CREATE;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-
-import javax.xml.bind.JAXBException;
 
 /**
  * Class <code>AbstractClassifier</code> is an abstract basis for all Classifier
