@@ -429,7 +429,7 @@ public class ClefInter
     /**
      * This overriding method simply sets the bounds, <b>without re-computing the clef pitch</b>.
      *
-     * @param bounds
+     * @param bounds the clef bounds
      */
     @Override
     public void setBounds (Rectangle bounds)
