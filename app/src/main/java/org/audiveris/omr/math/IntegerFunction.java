@@ -88,7 +88,9 @@ public class IntegerFunction
     public void addValue (int x,
                           int delta)
     {
-        values[x - xMin] += delta;
+        if (x >= xMin && x <= xMax) {
+            values[x - xMin] += delta;
+        }
     }
 
     //--------//
@@ -453,6 +455,8 @@ public class IntegerFunction
     public void setValue (int x,
                           int y)
     {
-        values[x - xMin] = y;
+        if (x >= xMin && x <= xMax) {
+            values[x - xMin] = y;
+        }
     }
 }
