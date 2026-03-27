@@ -23,7 +23,7 @@ def app = project(':app')
 
 // Central location for application version
 // REMINDER: Also update the "audiveris_functional_version" in docs/_config.yml
-project.version = '5.10.1'
+project.version = '5.10.2'
 println "version: ${project.version}"
 
 // Central location for the specific versions of tesseract dependencies
