@@ -91,7 +91,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import javax.swing.Icon;
@@ -157,21 +156,8 @@ public class ShapeBoard
     /** Unicode value for black up-pointing triangle sign: {@value}. */
     private static final String BACK = "\u25B2";
 
-    /** Map first typed char to selected shape set. */
-    private static final Map<Character, ShapeSet> setMap = new HashMap<>();
-
-    /** Reverse of setMap. */
-    private static final Map<ShapeSet, Character> reverseSetMap = new HashMap<>();
-
-    /** Map 2-char typed string to selected shape. */
-    private static final Map<String, Shape> shapeMap = new HashMap<>();
-
-    /** Reverse of shapeMap. */
-    private static final Map<Shape, String> reverseShapeMap = new HashMap<>();
-
     static {
-        populateCharMaps();
-        populateReverseCharMaps();
+        ShapeShortcuts.loadAllConfigurations();
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -402,7 +388,7 @@ public class ShapeBoard
                     button.addActionListener(setListener);
                     button.setBorderPainted(false);
 
-                    final Character shortcut = reverseSetMap.get(set);
+                    final Character shortcut = ShapeShortcuts.getReverseSetMap().get(set);
                     button.setToolTipText(set.getName() + standardized(shortcut));
                     panel.add(button);
 
@@ -519,7 +505,7 @@ public class ShapeBoard
         closeSet();
 
         // First character (set)
-        ShapeSet set = setMap.get(c);
+        ShapeSet set = ShapeShortcuts.getSetMap().get(c);
 
         if (set == null) {
             return false;
@@ -757,7 +743,7 @@ public class ShapeBoard
     public void processString (String str)
     {
         if (isSelected()) {
-            final Shape shape = shapeMap.get(str);
+            final Shape shape = ShapeShortcuts.getShapeMap().get(str);
             logger.debug("shape:{}", shape);
 
             if (shape != null) {
@@ -942,76 +928,6 @@ public class ShapeBoard
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
-
-    //------------------//
-    // populateCharMaps //
-    //------------------//
-    /**
-     * Define the two-char bindings for shape selection.
-     */
-    private static void populateCharMaps ()
-    {
-        char c;
-
-        setMap.put(c = 'a', ShapeSet.Accidentals);
-        shapeMap.put("" + c + 'f', Shape.FLAT);
-        shapeMap.put("" + c + 'n', Shape.NATURAL);
-        shapeMap.put("" + c + 's', Shape.SHARP);
-
-        setMap.put(c = 'b', ShapeSet.BeamsEtc);
-        shapeMap.put("" + c + 'f', Shape.BEAM);
-        shapeMap.put("" + c + 'h', Shape.BEAM_HOOK);
-        shapeMap.put("" + c + '3', Shape.TUPLET_THREE);
-
-        setMap.put(c = 'd', ShapeSet.Dynamics);
-        shapeMap.put("" + c + 'p', Shape.DYNAMICS_P);
-        shapeMap.put("" + c + 'm', Shape.DYNAMICS_MF);
-        shapeMap.put("" + c + 'f', Shape.DYNAMICS_F);
-
-        setMap.put(c = 'f', ShapeSet.Flags);
-        shapeMap.put("" + c + 'u', Shape.FLAG_1);
-        shapeMap.put("" + c + 'd', Shape.FLAG_1_DOWN);
-
-        setMap.put(c = 'h', ShapeSet.HeadsAndDot);
-        shapeMap.put("" + c + 'w', Shape.WHOLE_NOTE);
-        shapeMap.put("" + c + 'v', Shape.NOTEHEAD_VOID);
-        shapeMap.put("" + c + 'b', Shape.NOTEHEAD_BLACK);
-        shapeMap.put("" + c + 'd', Shape.AUGMENTATION_DOT);
-        shapeMap.put("" + c + 'h', Shape.HALF_NOTE_UP);
-        shapeMap.put("" + c + 'q', Shape.QUARTER_NOTE_UP);
-
-        setMap.put(c = 'r', ShapeSet.Rests);
-        shapeMap.put("" + c + '1', Shape.WHOLE_REST);
-        shapeMap.put("" + c + '2', Shape.HALF_REST);
-        shapeMap.put("" + c + '4', Shape.QUARTER_REST);
-        shapeMap.put("" + c + '8', Shape.EIGHTH_REST);
-
-        setMap.put(c = 't', ShapeSet.Texts);
-        shapeMap.put("" + c + 'l', Shape.LYRICS);
-        shapeMap.put("" + c + 't', Shape.TEXT);
-        shapeMap.put("" + c + 'm', Shape.METRONOME);
-
-        setMap.put(c = 'p', ShapeSet.Physicals);
-        shapeMap.put("" + c + 'a', Shape.SLUR_ABOVE);
-        shapeMap.put("" + c + 'b', Shape.SLUR_BELOW);
-        shapeMap.put("" + c + 's', Shape.STEM);
-    }
-
-    //-------------------------//
-    // populateReverseCharMaps //
-    //-------------------------//
-    private static void populateReverseCharMaps ()
-    {
-        // Build reverse of setMap
-        for (Entry<Character, ShapeSet> entry : setMap.entrySet()) {
-            reverseSetMap.put(entry.getValue(), entry.getKey());
-        }
-
-        // Build reverse of shapeMap
-        for (Entry<String, Shape> entry : shapeMap.entrySet()) {
-            reverseShapeMap.put(entry.getValue(), entry.getKey());
-        }
-    }
 
     //---------//
     // rowSpec //
@@ -1818,7 +1734,7 @@ public class ShapeBoard
             setIcon(decoSymbol.getTinyVersion());
             setName(decoSymbol.getShape().toString());
 
-            final String shortcut = reverseShapeMap.get(decoSymbol.getShape());
+            final String shortcut = ShapeShortcuts.getReverseShapeMap().get(decoSymbol.getShape());
             setToolTipText(decoSymbol.getTip() + standardized(shortcut));
 
             setBorderPainted(true);
