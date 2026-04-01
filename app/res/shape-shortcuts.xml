@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    Default keyboard shortcuts for shape assignments.
+
+    Each <set> defines a shape family selected by its 'key' character.
+    Each <shape> within a set defines a specific shape selected by its 'key' character.
+    The full shortcut is the set key followed by the shape key (e.g., "af" for FLAT).
+
+    To customize, copy this file to your Audiveris config folder and edit as desired.
+-->
+<shape-shortcuts>
+
+    <set name="Accidentals" key="a">
+        <shape name="FLAT" key="f"/>
+        <shape name="NATURAL" key="n"/>
+        <shape name="SHARP" key="s"/>
+    </set>
+
+    <set name="BeamsEtc" key="b">
+        <shape name="BEAM" key="f"/>
+        <shape name="BEAM_HOOK" key="h"/>
+        <shape name="TUPLET_THREE" key="3"/>
+    </set>
+
+    <set name="Dynamics" key="d">
+        <shape name="DYNAMICS_P" key="p"/>
+        <shape name="DYNAMICS_MF" key="m"/>
+        <shape name="DYNAMICS_F" key="f"/>
+    </set>
+
+    <set name="Flags" key="f">
+        <shape name="FLAG_1" key="u"/>
+        <shape name="FLAG_1_DOWN" key="d"/>
+    </set>
+
+    <set name="HeadsAndDot" key="h">
+        <shape name="WHOLE_NOTE" key="w"/>
+        <shape name="NOTEHEAD_VOID" key="v"/>
+        <shape name="NOTEHEAD_BLACK" key="b"/>
+        <shape name="AUGMENTATION_DOT" key="d"/>
+        <shape name="HALF_NOTE_UP" key="h"/>
+        <shape name="QUARTER_NOTE_UP" key="q"/>
+    </set>
+
+    <set name="Rests" key="r">
+        <shape name="WHOLE_REST" key="1"/>
+        <shape name="HALF_REST" key="2"/>
+        <shape name="QUARTER_REST" key="4"/>
+        <shape name="EIGHTH_REST" key="8"/>
+    </set>
+
+    <set name="Texts" key="t">
+        <shape name="LYRICS" key="l"/>
+        <shape name="TEXT" key="t"/>
+        <shape name="METRONOME" key="m"/>
+    </set>
+
+    <set name="Physicals" key="p">
+        <shape name="SLUR_ABOVE" key="a"/>
+        <shape name="SLUR_BELOW" key="b"/>
+        <shape name="STEM" key="s"/>
+    </set>
+
+</shape-shortcuts>
