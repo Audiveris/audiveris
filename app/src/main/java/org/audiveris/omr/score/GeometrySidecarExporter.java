@@ -591,21 +591,38 @@ public final class GeometrySidecarExporter
         sb.append(indent).append("  \"advisoryTiming\": true,\n");
         sb.append(indent).append("  \"noteRefs\": [\n");
 
-        final List<NoteState> playable = new ArrayList<>();
+        final List<NoteState> playableInXmlOrder = new ArrayList<>();
         for (NoteState note : notes) {
-            if (!note.isRest) {
-                playable.add(note);
+            if (isPlayable(note)) {
+                playableInXmlOrder.add(note);
             }
         }
 
-        playable.sort(Comparator.comparingInt(note -> note.globalNoteIndex));
+        playableInXmlOrder.sort(Comparator.comparingInt(note -> note.globalNoteIndex));
 
-        for (int index = 0; index < playable.size(); index++) {
-            final NoteState note = playable.get(index);
+        final Map<String, Integer> nextOrdinalByPart = new HashMap<>();
+        final Map<String, Integer> playableOrdinalByNoteId = new HashMap<>();
+        for (NoteState note : playableInXmlOrder) {
+            final int nextOrdinal = nextOrdinalByPart.getOrDefault(note.partId, 0);
+            playableOrdinalByNoteId.put(note.noteId, nextOrdinal);
+            nextOrdinalByPart.put(note.partId, nextOrdinal + 1);
+        }
+
+        final List<NoteState> playableInPlaybackOrder = new ArrayList<>(playableInXmlOrder);
+        playableInPlaybackOrder.sort(
+                Comparator.comparingLong((NoteState note) -> note.startMs)
+                        .thenComparing(note -> note.partId)
+                        .thenComparingInt(GeometrySidecarExporter::voiceSortKey)
+                        .thenComparingInt(note -> playableOrdinalByNoteId.getOrDefault(note.noteId, 0))
+                        .thenComparingInt(note -> note.globalNoteIndex));
+
+        for (int index = 0; index < playableInPlaybackOrder.size(); index++) {
+            final NoteState note = playableInPlaybackOrder.get(index);
+            final int musicXmlNoteOrdinal = playableOrdinalByNoteId.getOrDefault(note.noteId, 0);
             sb.append(indent).append("    {\n");
             sb.append(indent).append("      \"noteId\": ").append(jsonString(note.noteId)).append(",\n");
             sb.append(indent).append("      \"playbackIndex\": ").append(index).append(",\n");
-            sb.append(indent).append("      \"musicXmlNoteOrdinal\": ").append(index).append(",\n");
+            sb.append(indent).append("      \"musicXmlNoteOrdinal\": ").append(musicXmlNoteOrdinal).append(",\n");
             sb.append(indent).append("      \"semantic\": {\n");
             sb.append(indent).append("        \"partId\": ").append(jsonString(note.partId)).append(",\n");
             sb.append(indent).append("        \"voice\": ").append(note.voice != null ? note.voice : "null").append(",\n");
@@ -623,7 +640,7 @@ public final class GeometrySidecarExporter
             sb.append(indent).append("        \"confidence\": \"advisory\"\n");
             sb.append(indent).append("      }\n");
             sb.append(indent).append("    }");
-            if (index < playable.size() - 1) {
+            if (index < playableInPlaybackOrder.size() - 1) {
                 sb.append(",");
             }
             sb.append("\n");
@@ -631,6 +648,25 @@ public final class GeometrySidecarExporter
 
         sb.append(indent).append("  ]\n");
         sb.append(indent).append("}");
+    }
+
+    private static boolean isPlayable (NoteState note)
+    {
+        return (note != null) && !note.isRest && (note.midiPitch != null);
+    }
+
+    private static int voiceSortKey (NoteState note)
+    {
+        if (note == null) {
+            return Integer.MAX_VALUE;
+        }
+
+        if (note.voice != null) {
+            return note.voice;
+        }
+
+        final Integer parsed = parseInteger(note.voiceRaw);
+        return (parsed != null) ? parsed : Integer.MAX_VALUE;
     }
 
     private static String systemId (int sheetNumber,

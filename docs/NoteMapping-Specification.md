@@ -58,15 +58,18 @@ renderers. Its top-level structure is:
 }
 ```
 
-`playback.noteRefs` is emitted in exported MusicXML playable-note order:
+`playback.noteRefs` carries two distinct binding orders for viewer clients:
 
-- rests are excluded
-- the array is ordered by the original MusicXML `<note>` traversal order
-- `musicXmlNoteOrdinal` is the 0-based ordinal in that traversal
-- `playbackIndex` is currently identical to `musicXmlNoteOrdinal`
+- rests and notes without a resolvable MIDI pitch are excluded
+- `musicXmlNoteOrdinal` is the 0-based playable-note ordinal **within the same `partId`**
+  in exported MusicXML traversal order
+- `playbackIndex` is the 0-based flattened playback order, currently sorted by
+  `timingMs.start -> semantic.partId -> semantic.voice -> musicXmlNoteOrdinal`
 
-This allows viewer clients to bind PDF highlights directly from parsed MusicXML note order,
-without rebuilding a secondary timeline key.
+This lets clients choose between:
+
+- direct per-part MusicXML note binding via `partId + musicXmlNoteOrdinal`
+- flattened playback binding via `playbackIndex`
 
 ## Coordinate System
 
@@ -190,7 +193,7 @@ Array of note entries. This is the core data for note-to-pixel mapping. Each ent
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `noteIndex` | integer | Per-part note sequence number (0-based) |
+| `noteIndex` | integer | Per-part note sequence number (0-based, includes rests) |
 | `globalNoteIndex` | integer | Global note sequence across all parts (0-based) |
 | `partId` | string | Part identifier (e.g., "P1") |
 | `measureNumber` | string | Measure number |
