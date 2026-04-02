@@ -1570,19 +1570,59 @@ public class PartwiseBuilder
                             : AboveBelow.BELOW);
             // Metronome?
             if (sentence instanceof MetronomeInter metro) {
+                final BeatUnitInter.Note beatUnitNote = metro.getNote();
+                final String bpmText = metro.getBpmText();
+                if ((beatUnitNote == null) || bpmText.isBlank()) {
+                    logger.warn(
+                            "Incomplete metronome export fallback for {} in {} (beatUnitNote={}, bpmText={}, quartersPerMinute={})",
+                            sentence,
+                            current.page,
+                            beatUnitNote,
+                            bpmText,
+                            null);
+                    appendDirectionWords(directionType, sentence, content, location, staff);
+                    current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+
+                    return;
+                }
+
+                final Integer quartersPerMinute;
+                try {
+                    quartersPerMinute = metro.getQuartersPerMinute();
+                } catch (Exception ex) {
+                    logger.warn(
+                            "Invalid metronome quarter-tempo fallback for {} in {} (beatUnitNote={}, bpmText={})",
+                            sentence,
+                            current.page,
+                            beatUnitNote,
+                            bpmText);
+                    appendDirectionWords(directionType, sentence, content, location, staff);
+                    current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+
+                    return;
+                }
+
+                if ((quartersPerMinute == null) || (quartersPerMinute <= 0)) {
+                    logger.warn(
+                            "Incomplete metronome export fallback for {} in {} (beatUnitNote={}, bpmText={}, quartersPerMinute={})",
+                            sentence,
+                            current.page,
+                            beatUnitNote,
+                            bpmText,
+                            quartersPerMinute);
+                    appendDirectionWords(directionType, sentence, content, location, staff);
+                    current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+
+                    return;
+                }
+
                 final Metronome metronome = factory.createMetronome();
 
                 // Tempo text indication?
                 final String tempoText = metro.getTempoText();
                 if (!tempoText.isBlank()) {
                     // NOTA: Tempo text is put in a separate directionType element
-                    final FormattedTextId pmWords = factory.createFormattedTextId();
-                    pmWords.setValue(tempoText);
-                    pmWords.setDefaultY(yOf(location, staff));
-                    pmWords.setRelativeX(
-                            toTenths(location.getX() - current.note.getCenterLeft().x));
-                    setFontInfo(pmWords, sentence);
-                    directionType.getWordsOrSymbol().add(pmWords);
+                    appendDirectionWords(directionType, sentence, tempoText, location, staff);
 
                     directionType = factory.createDirectionType();
                     direction.getDirectionType().add(directionType);
@@ -1593,17 +1633,16 @@ public class PartwiseBuilder
                 }
 
                 // Note symbol
-                final BeatUnitInter.Note note = metro.getNote();
-                metronome.setBeatUnit(note.toMusicXml());
+                metronome.setBeatUnit(beatUnitNote.toMusicXml());
 
                 // Dotted symbol?
-                if (note.hasDot()) {
+                if (beatUnitNote.hasDot()) {
                     metronome.getBeatUnitDot().add(factory.createEmpty());
                 }
 
                 // BPM text
                 final PerMinute perMinute = factory.createPerMinute();
-                perMinute.setValue(metro.getBpmText());
+                perMinute.setValue(bpmText);
                 metronome.setPerMinute(perMinute);
 
                 if (metro.hasParentheses()) {
@@ -1614,7 +1653,7 @@ public class PartwiseBuilder
 
                 // Sound tempo based on metronome value
                 final Sound sound = factory.createSound();
-                sound.setTempo(new BigDecimal(metro.getQuartersPerMinute()));
+                sound.setTempo(new BigDecimal(quartersPerMinute));
                 direction.setSound(sound);
 
                 // Collect tempo info for note mapping
@@ -1633,31 +1672,19 @@ public class PartwiseBuilder
                             current.logicalPart.getPid(),
                             current.pmMeasure.getNumber(),
                             timeOffsetInDivisions,
-                            metro.getQuartersPerMinute(),
-                            metro.getNote().toMusicXml()));
+                            quartersPerMinute,
+                            beatUnitNote.toMusicXml()));
                         
                         // Update current tempo for this part
                         partCurrentTempo.put(
                                 current.logicalPart.getPid(),
-                                (double) metro.getQuartersPerMinute());
+                                (double) quartersPerMinute);
                     } catch (Exception ex) {
                         logger.warn("Error collecting tempo info for note mapping", ex);
                     }
                 }
             } else {
-                final FormattedTextId pmWords = factory.createFormattedTextId();
-                pmWords.setValue(content);
-
-                // default-y
-                pmWords.setDefaultY(yOf(location, staff));
-
-                // relative-x
-                pmWords.setRelativeX(toTenths(location.getX() - current.note.getCenterLeft().x));
-
-                // Font information
-                setFontInfo(pmWords, sentence);
-
-                directionType.getWordsOrSymbol().add(pmWords);
+                appendDirectionWords(directionType, sentence, content, location, staff);
             }
 
             // Everything is now OK
@@ -1665,6 +1692,27 @@ public class PartwiseBuilder
         } catch (Exception ex) {
             logger.warn("Error visiting {} in {}", sentence, current.page, ex);
         }
+    }
+
+    private void appendDirectionWords (DirectionType directionType,
+                                       SentenceInter sentence,
+                                       String content,
+                                       Point2D location,
+                                       Staff staff)
+    {
+        final FormattedTextId pmWords = factory.createFormattedTextId();
+        pmWords.setValue(content);
+
+        // default-y
+        pmWords.setDefaultY(yOf(location, staff));
+
+        // relative-x
+        pmWords.setRelativeX(toTenths(location.getX() - current.note.getCenterLeft().x));
+
+        // Font information
+        setFontInfo(pmWords, sentence);
+
+        directionType.getWordsOrSymbol().add(pmWords);
     }
 
     //-----------------//
