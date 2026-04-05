@@ -1347,8 +1347,7 @@ public class MetronomeInter
                 0.0,
                 null);
 
-        for (int i = 0; i < evalNb; i++) {
-            final Evaluation eval = evals[i];
+        for (Evaluation eval : evals) {
             final Note note = noteOf(eval.shape);
 
             if (note != null) {
