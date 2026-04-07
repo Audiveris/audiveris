@@ -158,8 +158,7 @@ public class StickFactory
         final Set<Section> members = fil.getMembers();
         final Set<Section> stickers = new LinkedHashSet<>();
 
-        for (boolean reverse : new boolean[]
-        { true, false }) {
+        for (boolean reverse : new boolean[] { true, false }) {
             for (Section s : members) {
                 LinkedSection ls = (LinkedSection) s;
 
@@ -496,8 +495,7 @@ public class StickFactory
 
             // Look on source side, then on target side
             SideLoop:
-            for (boolean reverse : new boolean[]
-            { true, false }) {
+            for (boolean reverse : new boolean[] { true, false }) {
                 if (TRUE.equals(finished.get(reverse))) {
                     continue;
                 }

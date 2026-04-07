@@ -1564,6 +1564,8 @@ public class SystemInfo
         // sections
         hSections.addAll(systemBelow.hSections);
         vSections.addAll(systemBelow.vSections);
+        Collections.sort(hSections, Section.byFullPosition);
+        Collections.sort(vSections, Section.byFullPosition);
 
         // bottom, deltaY, left, top, width
         updateCoordinates();
