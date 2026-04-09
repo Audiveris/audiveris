@@ -264,6 +264,7 @@ public class SystemManager
         stub.clearPageRefs();
         sheet.clearPages();
         allocatePages();
+        stub.getBook().clearScores();
         stub.getBook().updateScores(stub);
 
         reportResults();
