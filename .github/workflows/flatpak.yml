@@ -84,6 +84,7 @@ jobs:
     needs: java-dependencies
     env:
       GH_TOKEN: ${{ secrets.FLATHUB_TOKEN }}
+      BASE_BRANCH: ${{ secrets.BASE_BRANCH }}
 
     steps:
       - name: Download flathub content
@@ -102,7 +103,9 @@ jobs:
           git config --global user.email 'flatpak-pr@audiveris.org'
 
           # Which flathub branch to create PR for
-          if [[ "${{ github.event_name }}" = release ]]; then
+          if [[ "$BASE_BRANCH" ]]; then
+            BASE=$BASE_BRANCH
+          elif [[ "${{ github.event_name }}" = release ]]; then
             BASE=master
           else
             BASE=beta
