@@ -1602,6 +1602,27 @@ public class InterController
         }.execute();
     }
 
+    //---------------------//
+    // toggleIndentation   //
+    //---------------------//
+    /**
+     * Toggle the indentation (movement start) flag on the provided system.
+     *
+     * @param system the system to toggle
+     */
+    @UIThread
+    public void toggleIndentation (final SystemInfo system)
+    {
+        new CtrlTask(DO, "toggleIndentation")
+        {
+            @Override
+            protected void build ()
+            {
+                seq.add(new SystemIndentTask(system));
+            }
+        }.execute();
+    }
+
     //----------------//
     // partitionHeads //
     //----------------//
