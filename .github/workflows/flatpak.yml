@@ -124,7 +124,9 @@ jobs:
           gh repo clone https://github.com/flathub/org.audiveris.audiveris \
             flathub
           cd flathub
-          git switch -c "$BASE" "origin/$BASE"
+          if [[ "$BASE" != master ]]; then
+              git switch -c "$BASE" "origin/$BASE"
+          fi
           git remote -v
           git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/flathub/org.audiveris.audiveris
           git remote -v
