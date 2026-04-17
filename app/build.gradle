@@ -163,6 +163,8 @@ application {
     // Arg 2: Enable native access
     // Arg 3: Enable HiDPI/display scaling support for Linux Wayland (GNOME, KDE)
     //
+    // Arg 3: Enable HiDPI/display scaling support for Linux Wayland (GNOME, KDE)
+    //
     applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
                                  "--enable-native-access=ALL-UNNAMED",
                                  "-Dsun.java2d.uiScale.enabled=true"]
