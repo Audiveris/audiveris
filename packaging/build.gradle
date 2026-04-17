@@ -201,6 +201,7 @@ tasks.jpackage {
     // REMINDER: Check consistency with "applicationDefaultJvmArgs" in file app/build.gradle
     javaOptions         = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
                            "--enable-native-access=ALL-UNNAMED",
+                           "-Dsun.java2d.uiScale.enabled=true",
                            "-Dfile.encoding=UTF-8",
                            "-Xms512m",
                            "-Xmx8G"]
