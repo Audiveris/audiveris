@@ -206,6 +206,11 @@ public abstract class WellKnowns
         disableMediaLib();
     }
 
+    static {
+        /** Enable HiDPI scaling support on Linux Wayland. */
+        enableHiDpiScaling();
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /** Not meant to be instantiated. */
@@ -265,6 +270,82 @@ public abstract class WellKnowns
             System.setProperty(KEY, "true");
         }
     }
+
+    //--------------------//
+    // enableHiDpiScaling //
+    //--------------------//
+    private static void enableHiDpiScaling ()
+    {
+        if (!LINUX || System.getProperty("sun.java2d.uiScale") != null) {
+            return;
+        }
+
+        // Manual override via GDK_SCALE
+        String gdkScale = System.getenv("GDK_SCALE");
+        if (gdkScale != null && !gdkScale.isEmpty()) {
+            try {
+                System.setProperty("sun.java2d.uiScale", gdkScale);
+                return;
+            } catch (Exception ignored) {
+            }
+        }
+
+        // Auto-detect monitor scaling via GDK
+        try {
+            int scale = getGdkMaxScale();
+            if (scale > 1) {
+                System.setProperty("sun.java2d.uiScale", String.valueOf(scale));
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    //------------------//
+    // getGdkMaxScale   //
+    //------------------//
+    private static int getGdkMaxScale ()
+    {
+        try {
+            // Load GTK library via JNA
+            com.sun.jna.Native.register("gtk-3");
+
+            // Initialize GTK (required before any GTK/GDK calls)
+            if (!gtk_init_check(null, null)) {
+                return 0;
+            }
+
+            // Get default display
+            com.sun.jna.Pointer display = gdk_display_get_default();
+            if (display == null) {
+                return 0;
+            }
+
+            // Get number of monitors and find maximum scale
+            int nMonitors = gdk_display_get_n_monitors(display);
+            int maxScale = 0;
+
+            for (int i = 0; i < nMonitors; i++) {
+                com.sun.jna.Pointer monitor = gdk_display_get_monitor(display, i);
+                if (monitor != null) {
+                    int scale = gdk_monitor_get_scale_factor(monitor);
+                    if (scale > maxScale) {
+                        maxScale = scale;
+                    }
+                }
+            }
+
+            return maxScale;
+        } catch (Exception ex) {
+            return 0;
+        }
+    }
+
+    // GTK/GDK native function declarations
+    private static native boolean gtk_init_check(com.sun.jna.ptr.IntByReference argc, com.sun.jna.ptr.PointerByReference argv);
+    private static native com.sun.jna.Pointer gdk_display_get_default();
+    private static native int gdk_display_get_n_monitors(com.sun.jna.Pointer display);
+    private static native com.sun.jna.Pointer gdk_display_get_monitor(com.sun.jna.Pointer display, int num);
+    private static native int gdk_monitor_get_scale_factor(com.sun.jna.Pointer monitor);
 
     //--------------//
     // ensureLoaded //
