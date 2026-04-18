@@ -145,7 +145,8 @@ dependencies {
         'org.jgrapht:jgrapht-core:1.5.2',
         'org.kohsuke:github-api:1.330',
         'org.reflections:reflections:0.10.2',
-        'org.slf4j:slf4j-api:2.0.17'
+        'org.slf4j:slf4j-api:2.0.17',
+        'net.java.dev.jna:jna:5.14.0'
     )
 
     runtimeOnly(
@@ -220,8 +221,11 @@ application {
     // WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
     // WARNING: Restricted methods will be blocked in a future release unless native access is enabled
     //
+    // Arg 3: Enable HiDPI/display scaling support for Linux Wayland (GNOME, KDE)
+    //
     applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
-                                 "--enable-native-access=ALL-UNNAMED"]
+                                 "--enable-native-access=ALL-UNNAMED",
+                                 "-Dsun.java2d.uiScale.enabled=true"]
 }
 
 // Perhaps no longer needed?
