@@ -231,7 +231,6 @@ public class ScaleBuilder
         final int maxHeight = Math.min(
                 largerInterline - blackPeak.min / 2,
                 (int) Math.rint(constants.beamMaxFraction.getValue() * largerInterline));
-        final double beamRatio = constants.beamRangeRatio.getValue();
 
         // Beam measurement
         final int quorum = histoKeeper.getBeamQuorum();
@@ -249,13 +248,14 @@ public class ScaleBuilder
         }
 
         // Beam guess
-        ///beamGuess = (int) Math.rint(maxHeight * beamRatio);
-        beamGuess = (minHeight + maxHeight) / 2;
+        final double beamRatio = constants.beamRangeRatio.getValue();
+        beamGuess = minHeight + (int) Math.rint(beamRatio * (maxHeight - minHeight));
         if (verbose) {
             logger.info(
                     String.format(
-                            "Beam  guessed height: %2d -- mid of [%d..%d]",
+                            "Beam  guessed height: %2d -- %.2f of [%d..%d] range",
                             beamGuess,
+                            beamRatio,
                             minHeight,
                             maxHeight));
         }
@@ -503,7 +503,7 @@ public class ScaleBuilder
                 "Maximum ratio of line thickness over interline");
 
         private final Constant.Ratio beamMinFraction = new Constant.Ratio(
-                0.275,
+                0.45,
                 "Minimum ratio between beam height and interline");
 
         private final Constant.Ratio beamMaxFraction = new Constant.Ratio(
@@ -515,7 +515,7 @@ public class ScaleBuilder
                 "Minimum ratio of runs for beam height measurement (quorum)");
 
         private final Constant.Ratio beamRangeRatio = new Constant.Ratio(
-                0.5,
+                0.25,
                 "Ratio of beam possible height range for guess");
 
         private final Constant.Integer beamMaxDiff = new Constant.Integer(
@@ -532,7 +532,7 @@ public class ScaleBuilder
                 "Maximum black length, as ratio of image height");
 
         private final Constant.Ratio minCountRatio = new Constant.Ratio(
-                0.5,
+                0.4,
                 "Minimum significant count, as ratio of highest count");
     }
 
