@@ -59,7 +59,7 @@ import javax.xml.stream.XMLStreamException;
  * Default shortcuts are loaded from system resource {@code shape-shortcuts.xml}.
  * User can override them by placing a custom {@code shape-shortcuts.xml} in the config folder.
  *
- * @author Audiveris
+ * @author Gal Shacham
  */
 public abstract class ShapeShortcuts
 {
@@ -94,11 +94,11 @@ public abstract class ShapeShortcuts
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    //--------//
+    //----------------//
     // getJaxbContext //
-    //--------//
+    //----------------//
     private static JAXBContext getJaxbContext ()
-            throws JAXBException
+        throws JAXBException
     {
         // Local copy to avoid race
         JAXBContext ctx = jaxbContext;
@@ -116,9 +116,9 @@ public abstract class ShapeShortcuts
         return ctx;
     }
 
-    //---------//
+    //-----------//
     // getSetMap //
-    //---------//
+    //-----------//
     /**
      * Report the map from initial character to shape set.
      *
@@ -129,9 +129,9 @@ public abstract class ShapeShortcuts
         return setMap;
     }
 
-    //---------//
+    //------------------//
     // getReverseSetMap //
-    //---------//
+    //------------------//
     /**
      * Report the reverse map from shape set to initial character.
      *
@@ -142,9 +142,9 @@ public abstract class ShapeShortcuts
         return reverseSetMap;
     }
 
-    //---------//
+    //-------------//
     // getShapeMap //
-    //---------//
+    //-------------//
     /**
      * Report the map from 2-char string to shape.
      *
@@ -155,9 +155,9 @@ public abstract class ShapeShortcuts
         return shapeMap;
     }
 
-    //---------//
+    //--------------------//
     // getReverseShapeMap //
-    //---------//
+    //--------------------//
     /**
      * Report the reverse map from shape to 2-char string.
      *
@@ -168,9 +168,9 @@ public abstract class ShapeShortcuts
         return reverseShapeMap;
     }
 
-    //------------------------//
+    //-----------------------//
     // loadAllConfigurations //
-    //------------------------//
+    //-----------------------//
     /**
      * Load shortcuts from system resource, then optionally override with user config.
      */
@@ -204,11 +204,11 @@ public abstract class ShapeShortcuts
         buildReverseMaps();
     }
 
-    //---------//
+    //-------------------//
     // loadConfiguration //
-    //---------//
+    //-------------------//
     private static void loadConfiguration (URI uri)
-            throws IOException, JAXBException
+        throws IOException, JAXBException
     {
         try (InputStream is = uri.toURL().openStream()) {
             final ShortcutList list = (ShortcutList) Jaxb.unmarshal(is, getJaxbContext());
@@ -259,9 +259,9 @@ public abstract class ShapeShortcuts
         }
     }
 
-    //---------------------//
+    //-------------------//
     // saveUserShortcuts //
-    //---------------------//
+    //-------------------//
     /**
      * Save the current shortcut configuration to user config folder.
      */
@@ -278,9 +278,9 @@ public abstract class ShapeShortcuts
         }
     }
 
-    //--------------------//
+    //-------------------//
     // buildShortcutList //
-    //--------------------//
+    //-------------------//
     private static ShortcutList buildShortcutList ()
     {
         final ShortcutList list = new ShortcutList();

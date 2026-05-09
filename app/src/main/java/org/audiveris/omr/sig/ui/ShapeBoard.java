@@ -216,9 +216,6 @@ public class ShapeBoard
     /** History of recently used shapes. Scope: book */
     private final ShapeHistory shapeHistory;
 
-    //    /** The custom pane of shapes, if any. Scope: user */
-    //    private CustomPane customPane;
-
     /** The custom set of shapes, if any. Scope: user */
     private CustomSet customSet = null;
 
@@ -273,6 +270,7 @@ public class ShapeBoard
         dropAdapter.addDropListener(dropListener);
         shapeHistory = new ShapeHistory();
         globalPanel = buildAllPanels();
+        customSet = new CustomSet();
 
         if (Preferences.Topic.CUSTOM_SHAPE_SET.isSet()) {
             trashCan = buildTrashCan();
