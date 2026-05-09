@@ -136,7 +136,7 @@ public class SheetPath
                 final Integer sheetNumber = Integer.decode(sheetString);
 
                 return new SheetPath(bookPath, sheetNumber);
-            } catch (Throwable ex) {
+            } catch (NumberFormatException ex) {
                 logger.warn("Illegal SheetPath {}, trying as a standard path.", str, ex);
 
                 return new SheetPath(Paths.get(str));

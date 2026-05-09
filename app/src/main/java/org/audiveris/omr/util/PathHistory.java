@@ -33,7 +33,7 @@ import java.nio.file.Paths;
  * @author Hervé Bitteur
  */
 public class PathHistory
-        extends AbstractHistory<Path>
+        extends AbstractNameHistory<Path>
 {
     //~ Constructors -------------------------------------------------------------------------------
 

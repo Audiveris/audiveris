@@ -32,10 +32,10 @@ public class GhostDropEvent<A>
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The drop location with respect to screen */
+    /** The drop location with respect to screen. */
     private final ScreenPoint screenPoint;
 
-    /** The action carried by the drop event */
+    /** The action carried by the drop event. */
     private final A action;
 
     //~ Constructors -------------------------------------------------------------------------------

@@ -35,6 +35,7 @@ import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.SheetEditor;
 import org.audiveris.omr.sheet.ui.SheetEditor.SheetKeyListener;
 import org.audiveris.omr.ui.Board;
+import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.dnd.AbstractGhostDropListener;
 import org.audiveris.omr.ui.dnd.GhostDropAdapter;
@@ -51,11 +52,17 @@ import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.TextFamily;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.ui.util.SeparablePopupMenu;
+import static org.audiveris.omr.ui.util.UIPredicates.isContextWanted;
 import org.audiveris.omr.ui.util.WrapLayout;
 import org.audiveris.omr.ui.view.RubberPanel;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.ui.view.Zoom;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.PersistentStringSet;
+
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +71,7 @@ import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -79,9 +87,6 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -89,33 +94,47 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 /**
- * Class <code>ShapeBoard</code> hosts a palette of shapes for insertion and assignment of
+ * Class <code>ShapeBoard</code> hosts palettes of shapes for insertion and assignment of
  * inter.
  * <p>
- * Shapes are gathered and presented in separate sets.
+ * Shapes are gathered and presented in various sets:
  * <ol>
- * <li>The <b>history</b> panel, always present but perhaps empty, caches the latest shapes
+ * <li>The <b>history</b> panel caches the latest shapes
  * actually used.
- * <li>The <b>global</b> panel allows to choose among shape sets.
- * It is then dynamically replaced by the selected set panel.
- * <li>A <b>set</b> panel is dedicated to the shapes of the selected set.
- * The user can always quit this set panel and go back to the global panel.
+ * <li>The <b>global</b> panel allows to choose among the predefined shape sets.
+ * <li>A <b>custom set</b> panel handles some shapes the user is mostly interested in.
+ * <li>A <b>set</b> panel is dedicated to the shapes of a selected predefined set.
+ * The user can always close this set panel.
  * </ol>
- * User gestures:
+ * User gestures from the history panel or the custom set panel or a predefined set panel:
  * <ul>
- * <li>Direct insertion is performed by<b> drag n' drop</b> from ShapeBoard (history panel or set
- * panel) to the target location in sheet view</li>
- * <li>Assignment of the currently selected glyph is performed by a <b>double-click</b> on proper
- * shape button (in history panel or set panel)</li>
+ * <li>Direct insertion is performed by<b> drag n' drop</b> from the shape button
+ * to the target location in sheet view.
+ * <li>Assignment of the currently selected glyph is performed by a <b>double-click</b> on a
+ * shape button.
+ * </ul>
+ * Specific aspects of the custom set panel:
+ * <ul>
+ * <li>The content of the custom set is defined by user's choices.
+ * It persists between application runs and does not depend on the current book or sheet.
+ * <li>A <b>drag n' drop</b> from a predefined set will insert a shape into the custom set.
+ * <li>A <b>drag n' drop</b> within the custom set will modify the order in the custom set.
+ * <li>A <b>drag n' drop</b> from the custom set to the trash can will remove the shape.
+ * <li>A right-click on the trash can will offer to clear the whole custom set.
  * </ul>
  * Keyboard mapping:
  * <p>
@@ -131,6 +150,9 @@ public class ShapeBoard
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeBoard.class);
+
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(ShapeBoard.class);
 
     /** Unicode value for black up-pointing triangle sign: {@value}. */
     private static final String BACK = "\u25B2";
@@ -199,14 +221,23 @@ public class ShapeBoard
         }
     };
 
-    /** The global panel. */
+    /** The global panel. Scope: application */
     private final Panel globalPanel;
 
     /** Map of set panels, indexed by shapeSet. */
     private final Map<ShapeSet, Panel> setPanels = new HashMap<>();
 
-    /** History of recently used shapes. */
+    /** History of recently used shapes. Scope: book */
     private final ShapeHistory shapeHistory;
+
+    //    /** The custom pane of shapes, if any. Scope: user */
+    //    private CustomPane customPane;
+
+    /** The custom set of shapes, if any. Scope: user */
+    private CustomSet customSet;
+
+    /** The trash pane. */
+    private CustomTrash trashPane;
 
     /** Current set panel. */
     private Panel currentSetPanel;
@@ -256,6 +287,9 @@ public class ShapeBoard
         dropAdapter.addDropListener(dropListener);
         shapeHistory = new ShapeHistory();
         globalPanel = buildAllPanels();
+        //        customPane = new CustomPane();
+        customSet = new CustomSet();
+        trashPane = new CustomTrash();
 
         defineLayout();
     }
@@ -316,7 +350,7 @@ public class ShapeBoard
      */
     public void addToHistory (Shape shape)
     {
-        shapeHistory.add(shape);
+        shapeHistory.add(shape, 0);
     }
 
     //-------------//
@@ -480,10 +514,7 @@ public class ShapeBoard
             currentSetPanel.setVisible(false);
         }
 
-        globalPanel.setVisible(true);
-
         resizeBoard();
-        globalPanel.requestFocusInWindow();
     }
 
     //--------------//
@@ -491,17 +522,18 @@ public class ShapeBoard
     //--------------//
     private void defineLayout ()
     {
-        final FormLayout layout = new FormLayout(
-                "pref",
-                "pref," + Panel.getFieldInterline() + ",pref");
+        // Rows: historyPanel, globalPanel, customPanel, customTrash, currentSetPanel
+        final FormLayout layout = new FormLayout("pref", rowSpec(5));
         final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
         getBody().setName("ShapeBody");
 
         builder.addRaw(shapeHistory.panel).xy(1, 1);
         builder.addRaw(globalPanel).xy(1, 3);
+        builder.addRaw(customSet.panel).xy(1, 5);
+        builder.addRaw(trashPane).xy(1, 7);
 
         for (Panel sp : setPanels.values()) {
-            builder.addRaw(sp).xy(1, 3); // Global panel and all set panels overlap!
+            builder.addRaw(sp).xy(1, 9); // All these set panels overlap!
             sp.setVisible(false);
         }
     }
@@ -510,7 +542,7 @@ public class ShapeBoard
     // filteredShapes //
     //----------------//
     /**
-     * A hack to filter shapes according to processing switches.
+     * A hack to filter shapes according to the current values of processing switches.
      *
      * @param set the set of shapes to filter
      * @return the shapes kept
@@ -555,7 +587,7 @@ public class ShapeBoard
     /**
      * Report the recent shapes.
      *
-     * @return list of most recent shapes
+     * @return copy of the list of most recent shapes
      */
     public List<Shape> getHistory ()
     {
@@ -592,14 +624,19 @@ public class ShapeBoard
      * We take into account the JSplitPane size, the divider location and size and all
      * the insets of ancestors until the JSplitPane included.
      *
-     * @return the available width
+     * @return the available width, perhaps null
      */
-    private int getSplitSpace ()
+    private Integer getSplitSpace ()
     {
         final JComponent comp = getComponent();
 
         synchronized (comp.getTreeLock()) {
             final JSplitPane sp = getSplitContainer();
+
+            if (sp == null) {
+                return null;
+            }
+
             int space = sp.getSize().width;
             space -= sp.getDividerSize();
 
@@ -712,7 +749,11 @@ public class ShapeBoard
     @Override
     public void resizeBoard ()
     {
-        final int space = getSplitSpace();
+        final Integer space = getSplitSpace();
+
+        if (space == null) {
+            return;
+        }
 
         // Resize all visible panels in this board
         if (globalPanel.isVisible()) {
@@ -721,6 +762,10 @@ public class ShapeBoard
 
         if (shapeHistory.panel.isVisible()) {
             shapeHistory.panel.setSize(space, 1);
+        }
+
+        if (customSet.panel.isVisible()) {
+            customSet.panel.setSize(space, 1);
         }
 
         for (Panel panel : setPanels.values()) {
@@ -738,13 +783,15 @@ public class ShapeBoard
     /**
      * Display the selected set panel.
      *
-     * @param fPanel the provided set panel
+     * @param setPanel the provided set panel
      */
-    private void selectSet (Panel fPanel)
+    private void selectSet (Panel setPanel)
     {
-        globalPanel.setVisible(false);
+        if (currentSetPanel != null) {
+            currentSetPanel.setVisible(false);
+        }
 
-        currentSetPanel = fPanel;
+        currentSetPanel = setPanel;
         currentSetPanel.setVisible(true);
         resizeBoard();
         currentSetPanel.requestFocusInWindow();
@@ -791,11 +838,15 @@ public class ShapeBoard
      * <ul>
      * <li>Perhaps a new music font family or a new text font family
      * <li>Perhaps new filtered shapes according to effective processing switches.
+     * <li>Perhaps the customSet has been modified from somewhere else
      * </ul>
      */
     @Override
     public void update ()
     {
+        // Reload customSet from its persistent state, and update it
+        customSet.update();
+
         final MusicFamily musicFamily = sheet.getStub().getMusicFamily();
         final TextFamily textFamily = sheet.getStub().getTextFamily();
 
@@ -838,10 +889,7 @@ public class ShapeBoard
     private void updateAllPanels ()
     {
         updatePanel(globalPanel);
-
-        for (Panel setPanel : setPanels.values()) {
-            updatePanel(setPanel);
-        }
+        setPanels.values().forEach( (sp) -> updatePanel(sp));
     }
 
     //-------------//
@@ -850,10 +898,10 @@ public class ShapeBoard
     private void updatePanel (Panel panel)
     {
         for (Component comp : panel.getComponents()) {
-            if (comp instanceof ShapeButton shapeButton) {
-                shapeButton.update();
-            } else if (comp instanceof Panel p) {
-                updatePanel(p);
+            switch (comp) {
+                case ShapeButton shapeButton -> shapeButton.update();
+                case Panel p -> updatePanel(p); // Recursively
+                default -> {}
             }
         }
     }
@@ -863,6 +911,9 @@ public class ShapeBoard
     //------------------//
     // populateCharMaps //
     //------------------//
+    /**
+     * Define the two-char bindings for shape selection.
+     */
     private static void populateCharMaps ()
     {
         char c;
@@ -927,6 +978,30 @@ public class ShapeBoard
         }
     }
 
+    //---------//
+    // rowSpec //
+    //---------//
+    /**
+     * Build a row specification.
+     *
+     * @param rows the number of logical rows
+     * @return the string specification
+     */
+    static String rowSpec (int rows)
+    {
+        final StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < rows; i++) {
+            if (i != 0) {
+                sb.append(",").append(Panel.getFieldInterline()).append(",");
+            }
+
+            sb.append("pref");
+        }
+
+        return sb.toString();
+    }
+
     //--------------//
     // standardized //
     //--------------//
@@ -963,7 +1038,7 @@ public class ShapeBoard
     /**
      * Populate a panel with buttons presented in a rectangular table.
      */
-    public class ButtonsTable
+    private class ButtonsTable
     {
         protected final int cols;
 
@@ -1034,21 +1109,6 @@ public class ShapeBoard
 
             return sb.toString();
         }
-
-        protected String rowSpec (int rows)
-        {
-            final StringBuilder sb = new StringBuilder();
-
-            for (int i = 0; i < rows; i++) {
-                if (i != 0) {
-                    sb.append(",").append(Panel.getFieldInterline()).append(",");
-                }
-
-                sb.append("pref");
-            }
-
-            return sb.toString();
-        }
     }
 
     //-----------//
@@ -1057,10 +1117,256 @@ public class ShapeBoard
     private static class Constants
             extends ConstantSet
     {
+        private final Constant.String customSetShapes = new Constant.String(
+                "",
+                "Comma-separated list of shapes in the user custom set");
+
         private final Constant.Integer maxHistoryLength = new Constant.Integer(
                 "shapes",
                 8,
                 "Maximum number of shapes kept in history");
+    }
+
+    //-----------//
+    // CustomSet //
+    //-----------//
+    /**
+     * This class handles the specific set of user-chosen shapes.
+     */
+    private class CustomSet
+            extends DynamicSet
+    {
+        public CustomSet ()
+        {
+            super("custom", constants.customSetShapes, null);
+            panel.setBackground(Colors.CUSTOM_SET_BACKGROUND);
+            panel.setVisible(true);
+        }
+
+        public void drop (Point localPt)
+        {
+            final Shape shape = dnd.getGhost().getShape();
+            final Component component = panel.getComponentAt(localPt);
+            final List<Shape> shapes = getShapes();
+            final int index = shapes.indexOf(shape);
+
+            if (component instanceof ShapeButton shapeButton) {
+                final Shape targetShape = shapeButton.getShape();
+                final int targetIndex = shapes.indexOf(targetShape);
+
+                // Beware if the shape is already in the set and located before the target
+                // because the existing shape will first be removed
+                if (index != -1 && index < targetIndex) {
+                    add(shape, targetIndex - 1); // Insert at adjusted target index
+                } else {
+                    add(shape, targetIndex); // Insert just before this target
+                }
+            } else {
+                // Insert at end
+                if (index != -1) {
+                    // The existing shape will first be removed
+                    add(shape, shapes.size() - 1);
+                } else {
+                    add(shape, shapes.size());
+                }
+            }
+        }
+
+        @Override
+        public void update ()
+        {
+            // Update the list of shape buttons
+            reload();
+            panel.removeAll();
+            addButtons(panel, getShapes());
+
+            super.update(); // Standard update of buttons font
+        }
+    }
+
+    //-------------//
+    // CustomTrash //
+    //-------------//
+    /**
+     * Handles the trash can for the custom set.
+     */
+    private class CustomTrash
+            extends Panel
+    {
+        final Panel panel = new Panel();
+
+        final JLabel trashCan;
+
+        public CustomTrash ()
+        {
+            panel.setBackground(Color.ORANGE);
+            panel.setNoInsets();
+
+            // Trash icon
+            final String resourceName = resources.getString("trash.smallIcon");
+            final Icon icon = new ImageIcon(ShapeBoard.class.getResource(resourceName));
+            final String tip = resources.getString("trash.shortDescription");
+
+            /** The trash can. */
+            trashCan = new JLabel(icon);
+            trashCan.setToolTipText(tip);
+            panel.add(trashCan);
+
+            setNoInsets();
+            setLayout(new BorderLayout());
+            add(panel, BorderLayout.LINE_END);
+
+            final MouseAdapter adapter = new MyMouseAdapter();
+            trashCan.addMouseListener(adapter);
+        }
+    }
+
+    //------------//
+    // DynamicSet //
+    //------------//
+    /**
+     * A set of shapes, where we can dynamically add or remove shapes.
+     */
+    private abstract class DynamicSet
+            extends PersistentStringSet
+    {
+        protected final Panel panel = new Panel();
+
+        public DynamicSet (String name,
+                           Constant.String constant,
+                           Integer maxCount)
+        {
+            super(
+                    name,
+                    ",",
+                    constant,
+                    maxCount,
+                    (s1,
+                     s2) -> s1.equals(s2));
+            panel.setNoInsets();
+            panel.setName(name);
+            panel.setVisible(false);
+            panel.setLayout(new WrapLayout(FlowLayout.LEADING));
+
+            panel.addKeyListener(keyListener);
+
+            addButtons(panel, getShapes());
+            resizeBoard();
+        }
+
+        /**
+         * Insert a shape.
+         *
+         * @param shape the shape to insert
+         * @param index target index
+         */
+        public void add (final Shape shape,
+                         final int index)
+        {
+            try {
+                if (!SwingUtilities.isEventDispatchThread()) {
+                    SwingUtilities.invokeAndWait( () -> add(shape, index)); // To be run from EDT
+                } else {
+                    super.add(index, shape.name());
+
+                    // Regenerate the buttons
+                    panel.removeAll();
+                    addButtons(panel, getShapes());
+
+                    if (isSelected()) {
+                        panel.setVisible(true);
+                        resizeBoard();
+                    }
+                }
+            } catch (Exception ex) {
+                logger.warn("Exception {}", ex.getMessage(), ex);
+            }
+        }
+
+        protected void adjustList ()
+        {
+            // Void by default
+        }
+
+        /**
+         * Remove all shapes.
+         */
+        public void clear ()
+        {
+            try {
+                if (!SwingUtilities.isEventDispatchThread()) {
+                    SwingUtilities.invokeAndWait( () -> clear()); // To be run from EDT
+                } else {
+                    logger.info("Removing all shapes");
+                    super.clear();
+                    panel.removeAll();
+
+                    if (isSelected()) {
+                        panel.setVisible(true);
+                        resizeBoard();
+                    }
+
+                    panel.repaint();
+                }
+            } catch (Exception ex) {
+                logger.warn("Exception {}", ex.getMessage(), ex);
+            }
+        }
+
+        protected List<Shape> getShapes ()
+        {
+            return getElements().stream().map(s -> Shape.valueOf(s)).toList();
+        }
+
+        /**
+         * Remove a shape.
+         *
+         * @param shape the shape to remove
+         */
+        public void remove (final Shape shape)
+        {
+            try {
+                if (!SwingUtilities.isEventDispatchThread()) {
+                    SwingUtilities.invokeAndWait( () -> remove(shape)); // To be run from EDT
+                } else {
+                    logger.debug("Removing {}", shape);
+                    super.remove(shape.name());
+
+                    // Regenerate the buttons
+                    panel.removeAll();
+                    addButtons(panel, getShapes());
+
+                    if (isSelected()) {
+                        panel.setVisible(true);
+                        resizeBoard();
+                    }
+
+                    panel.repaint();
+                }
+            } catch (Exception ex) {
+                logger.warn("Exception {}", ex.getMessage(), ex);
+            }
+        }
+
+        /**
+         * Update each button according to the new font family.
+         */
+        public void update ()
+        {
+            for (Component comp : panel.getComponents()) {
+                final ShapeButton button = (ShapeButton) comp;
+                final Shape shape = button.getShape();
+                final ShapeSymbol symbol = getTinyDecoratedSymbol(shape);
+
+                if (symbol != null) {
+                    button.setIcon(symbol);
+                } else {
+                    logger.warn("No button symbol for {}", shape);
+                }
+            }
+
+            panel.repaint();
+        }
     }
 
     //-------------//
@@ -1073,7 +1379,7 @@ public class ShapeBoard
      * except for last two rows dedicated to augmentation dot plus compound notes then playing signs
      *
      * @param panel  the containing panel
-     * @param shapes he filtered shapes to display
+     * @param shapes the filtered shapes to display
      */
     private class HeadButtons
             extends ButtonsTable
@@ -1283,24 +1589,29 @@ public class ShapeBoard
         @Override
         public void dropped (GhostDropEvent<Shape> e)
         {
-            Shape shape = e.getAction();
+            final Shape shape = e.getAction();
 
             if (dnd != null) {
                 if (shape != Shape.NON_DRAGGABLE) {
-                    ScreenPoint screenPoint = e.getDropLocation();
+                    final ScreenPoint screenPoint = e.getDropLocation();
 
-                    // The (zoomed) sheet view
-                    ScrollView scrollView = sheet.getStub().getAssembly().getSelectedScrollView();
-
-                    if (screenPoint.isInComponent(scrollView.getComponent().getViewport())) {
-                        RubberPanel view = scrollView.getView();
-                        Point localPt = screenPoint.getLocalPoint(view);
-                        view.getZoom().unscale(localPt);
-
-                        dnd.drop(localPt);
-
-                        // Update history
-                        addToHistory(dnd.getGhost().getShape());
+                    // Check the custom pane and trash
+                    if (screenPoint.isInComponent(customSet.panel)) {
+                        final Point localPt = screenPoint.getLocalPoint(customSet.panel);
+                        customSet.drop(localPt);
+                    } else if (screenPoint.isInComponent(trashPane.trashCan)) {
+                        customSet.remove(shape);
+                    } else {
+                        // Check the (zoomed) sheet view
+                        final ScrollView scrollView = sheet.getStub().getAssembly()
+                                .getSelectedScrollView();
+                        if (screenPoint.isInComponent(scrollView.getComponent().getViewport())) {
+                            final RubberPanel view = scrollView.getView();
+                            final Point localPt = screenPoint.getLocalPoint(view);
+                            view.getZoom().unscale(localPt);
+                            dnd.drop(localPt);
+                            addToHistory(dnd.getGhost().getShape()); // Update history
+                        }
                     }
                 }
             }
@@ -1358,8 +1669,8 @@ public class ShapeBoard
                 final OmrGlassPane glass = (OmrGlassPane) glassPane;
 
                 // The (zoomed) sheet view
-                ScrollView scrollView = sheet.getStub().getAssembly().getSelectedScrollView();
-                Component component = scrollView.getComponent().getViewport();
+                final ScrollView scrollView = sheet.getStub().getAssembly().getSelectedScrollView();
+                final Component component = scrollView.getComponent().getViewport();
 
                 if (screenPoint.isInComponent(component)) {
                     // We are over sheet view (our target)
@@ -1400,6 +1711,24 @@ public class ShapeBoard
                         SwingUtilities.convertPointToScreen(pt, view);
                         screenPoint = new ScreenPoint(pt.x, pt.y);
                     }
+                } else if (screenPoint.isInComponent(customSet.panel)) {
+                    if (customSet.panel != prevComponent.get()) {
+                        if (shape.isDraggable()) {
+                            if (dnd == null) {
+                                // Set payload
+                                dnd = new InterDnd(
+                                        InterFactory.createManual(shape, sheet),
+                                        sheet,
+                                        button.getSymbol());
+                            }
+
+                            glass.setInterDnd(dnd);
+                        } else {
+                            glass.setInterDnd(null);
+                        }
+
+                        prevComponent = new WeakReference<>(customSet.panel);
+                    }
                 } else if (prevComponent.get() != null) {
                     // No longer on a droppable target, reuse initial image & size
                     glass.setOverTarget(false);
@@ -1421,13 +1750,53 @@ public class ShapeBoard
         }
     }
 
+    //----------------//
+    // MyMouseAdapter //
+    //----------------//
+    /**
+     * Sub-classed to offer mouse interaction to empty the whole custom set
+     */
+    private class MyMouseAdapter
+            extends MouseAdapter
+            implements ActionListener
+    {
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            customSet.clear();
+        }
+
+        @Override
+        public void mousePressed (MouseEvent e)
+        {
+            if (isContextWanted(e)) {
+                JPopupMenu popup = new SeparablePopupMenu();
+
+                // A title for this menu
+                final JMenuItem head = new JMenuItem("Trash can");
+                head.setHorizontalAlignment(SwingConstants.CENTER);
+                head.setEnabled(false);
+                popup.add(head);
+
+                popup.addSeparator();
+
+                final JMenuItem item = new JMenuItem("Clear");
+                item.addActionListener(this);
+                item.setToolTipText("Empty the whole custom set");
+                popup.add(item);
+
+                popup.show(trashPane.panel, e.getX(), e.getY());
+            }
+        }
+    }
+
     //-------------//
     // ShapeButton //
     //-------------//
     /**
      * A button dedicated to a shape.
      */
-    public class ShapeButton
+    private class ShapeButton
             extends JButton
     {
         // Symbol to be passed to DnD, standard size, perhaps decorated
@@ -1484,61 +1853,12 @@ public class ShapeBoard
      * way to reuse of a shape recently selected.
      */
     private class ShapeHistory
+            extends DynamicSet
     {
-        /** Shapes recently used, ordered from most to less recent. */
-        private final List<Shape> shapes = new ArrayList<>();
-
-        private final Panel panel = new Panel();
 
         public ShapeHistory ()
         {
-            panel.setNoInsets();
-            panel.setName("history");
-            panel.setVisible(false);
-            panel.setLayout(new WrapLayout(FlowLayout.LEADING));
-
-            panel.addKeyListener(keyListener);
-        }
-
-        /**
-         * Insert a shape in history.
-         * <p>
-         * This dynamically modifies the display of recently used shapes, and thus must be performed
-         * from EDT (and not from a background thread).
-         *
-         * @param shape the most recent shape
-         */
-        public void add (final Shape shape)
-        {
-            if (!SwingUtilities.isEventDispatchThread()) {
-                try {
-                    SwingUtilities.invokeAndWait( () -> add(shape));
-                } catch (InterruptedException | InvocationTargetException ex) {
-                    logger.warn("invokeAndWait error", ex);
-                }
-            } else {
-                shapes.remove(shape); // Remove duplicate if any
-                shapes.add(0, shape); // Insert at beginning of the list
-
-                // Check for maximum length
-                while (shapes.size() > constants.maxHistoryLength.getValue()) {
-                    shapes.remove(shapes.size() - 1);
-                }
-
-                // Regenerate the buttons
-                panel.removeAll();
-                addButtons(panel, shapes);
-
-                if (isSelected()) {
-                    panel.setVisible(true);
-                    resizeBoard();
-                }
-            }
-        }
-
-        public List<Shape> getShapes ()
-        {
-            return Collections.unmodifiableList(shapes);
+            super("history", null, constants.maxHistoryLength.getValue());
         }
 
         /**
@@ -1553,26 +1873,6 @@ public class ShapeBoard
                     return;
                 }
             }
-        }
-
-        /**
-         * Update each history button according to the new font family.
-         */
-        public void update ()
-        {
-            for (Component comp : panel.getComponents()) {
-                final ShapeButton button = (ShapeButton) comp;
-                final Shape shape = button.getShape();
-                final ShapeSymbol symbol = getTinyDecoratedSymbol(shape);
-
-                if (symbol != null) {
-                    button.setIcon(symbol);
-                } else {
-                    logger.warn("History. No button symbol for {}", shape);
-                }
-            }
-
-            panel.repaint();
         }
     }
 }
