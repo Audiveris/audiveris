@@ -175,6 +175,7 @@ public abstract class Preferences
                             + ",1dlu,pref" // Topic
                             + ",1dlu,pref" // Topic
                             + ",1dlu,pref" // Topic
+                            + ",1dlu,pref" // Topic
                             + ",1dlu,pref"); // Topic
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
             int r = 0;
@@ -664,6 +665,7 @@ public abstract class Preferences
         MULTIPLE_DELETE(AdvancedTopics.constants.multipleDelete),
 
         // Advanced
+        CUSTOM_SHAPE_SET(AdvancedTopics.constants.useCustomSet),
         SAMPLES(AdvancedTopics.constants.useSamples),
         ANNOTATIONS(AdvancedTopics.constants.useAnnotations),
         PLOTS(AdvancedTopics.constants.usePlots),
