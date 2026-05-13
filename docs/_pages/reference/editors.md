@@ -76,9 +76,6 @@ Please refer to [Part merge](../guides/ui/ui_tools/part.md) section for such Bra
 * A side handle moves the side in any direction, **snapping** the beam side on any stem nearby.
 
 ## Clef editor
-{: .d-inline-block }
-updated in 5.10
-{: .label .label-green}
 
 There is only one (central) handle which can be moved:
 - Horizontally within the lateral limits of the containing staff
@@ -112,9 +109,6 @@ as shown below for an `F_CLEF` example:
 ![](../assets/images/F_clef_baritone.png)
 
 ## Ending editor
-{: .d-inline-block }
-updated in 5.8
-{: .label .label-green}
 
 ![](../assets/images/ending_edited.png)
 

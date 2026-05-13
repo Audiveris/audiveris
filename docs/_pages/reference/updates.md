@@ -21,6 +21,14 @@ Table of contents
 {:toc}
 ---
 
+## 5.11
+(???? 2026)
+
+- User Interface
+  - Support for a user personal shape set in the shape board
+- Engine
+- Project
+
 ## 5.10
 (March 2026)
 
