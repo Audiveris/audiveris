@@ -488,6 +488,10 @@ public class EditorMenu
                 return;
             }
 
+            if (system.getPage() == null) {
+                return;
+            }
+
             if (system.getPage().getScore() == null) {
                 return;
             }
