@@ -264,7 +264,7 @@ public class SIGraph
                 throw new RuntimeException("No common interpretation");
             }
 
-            if (ratio > 1) {
+            if ((ratio > 1) && (partner.getGrade()) != null) {
                 partners.add(partner);
                 partnerContrib.put(partner, partner.getGrade() * (ratio - 1));
             }
@@ -281,7 +281,9 @@ public class SIGraph
                 contribution += partnerContrib.get(partner);
             }
 
-            bestCg = Math.max(bestCg, GradeUtil.contextual(inter.getGrade(), contribution));
+            if (inter.getGrade() != null) {
+                bestCg = Math.max(bestCg, GradeUtil.contextual(inter.getGrade(), contribution));
+            }
         }
 
         return bestCg;
