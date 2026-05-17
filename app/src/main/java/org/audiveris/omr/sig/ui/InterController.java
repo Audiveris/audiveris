@@ -216,8 +216,15 @@ public class InterController
     //----------//
     /**
      * Add one inter.
+     * <p>
+     * If a HeadInter is replacing a HeadInter, we must salvage items of the to-be-replaced head:
+     * <ul>
+     * <li>the AugmentationRelation if any
+     * <li>the SlurHeadRelation(s) if any
+     * <li>the containing HeadChordInter if any
+     * </ul>
      *
-     * @param inter the inter to add (staff and bounds are already set)
+     * @param inter the inter to add (staff and bounds are already set).
      */
     @UIThread
     public void addInter (final Inter inter)
@@ -227,8 +234,9 @@ public class InterController
             @Override
             protected void build ()
             {
-                // If replacing a HeadInter, salvage its AugmentationRelation if any
                 final List<UITask> recoveredTasks = new ArrayList<>();
+                HeadInter headCompetitor = null;
+
                 if (inter instanceof org.audiveris.omr.sig.inter.HeadInter) {
                     final SIGraph sig = inter.getStaff().getSystem().getSig();
                     final List<Inter> intersected = sig.intersectedInters(inter.getBounds());
@@ -236,16 +244,18 @@ public class InterController
                     for (Inter comp : intersected) {
                         if ((comp != inter) //
                                 && (comp.getGlyph() == inter.getGlyph())
-                                && (comp instanceof HeadInter)) {
-                            for (Relation rel : sig.incomingEdgesOf(comp)) {
+                                && (comp instanceof HeadInter head)) {
+                            headCompetitor = head;
+
+                            for (Relation rel : sig.incomingEdgesOf(head)) {
                                 if (rel instanceof AugmentationRelation) {
                                     final Inter dot = sig.getEdgeSource(rel);
-                                    recoveredTasks.add(
-                                            new LinkTask(
-                                                    sig,
-                                                    dot,
-                                                    inter,
-                                                    new AugmentationRelation()));
+                                    final Relation newRel = new AugmentationRelation();
+                                    recoveredTasks.add(new LinkTask(sig, dot, inter, newRel));
+                                } else if (rel instanceof SlurHeadRelation) {
+                                    final Inter slur = sig.getEdgeSource(rel);
+                                    final Relation newRel = new SlurHeadRelation();
+                                    recoveredTasks.add(new LinkTask(sig, slur, inter, newRel));
                                 }
                             }
                         }
@@ -253,13 +263,29 @@ public class InterController
                 }
 
                 // If glyph is used by another inter, delete this other inter
+                // (This may include the removal of the containing chord of the other inter)
                 removeCompetitors(inter, inter.getGlyph(), seq);
 
                 // Addition task and other related tasks (additions, links) if any
                 final WrappedBoolean cancel = new WrappedBoolean(false);
                 seq.addAll(inter.preAdd(cancel, toPublish));
 
-                // Re-apply salvaged links
+                // Make sure the containing chord of headCompetitor, if any, is not removed
+                if ((inter instanceof HeadInter) && (headCompetitor != null)) {
+                    final HeadChordInter chord = headCompetitor.getChord();
+
+                    if (chord != null) {
+                        for (Iterator<UITask> it = seq.getTasks().iterator(); it.hasNext();) {
+                            final UITask task = it.next();
+
+                            if ((task instanceof RemovalTask removal) && (removal.inter == chord)) {
+                                it.remove();
+                            }
+                        }
+                    }
+                }
+
+                // Re-apply the salvaged links
                 seq.addAll(recoveredTasks);
 
                 if (cancel.isSet()) {
