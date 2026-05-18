@@ -6,6 +6,9 @@ nav_order: 1
 ---
 # `Inter` addition
 {: .no_toc }
+{: .d-inline-block }
+updated for 5.11
+{: .label .label-green}
 
 In the Audiveris data model, an `Inter` instance represents an interpretation, that is a candidate
 likely to become a musical symbol in the end.
@@ -111,7 +114,7 @@ Nothing can be dragged from this catalog, we must first select a shape set:
 ![](../../../assets/images/shape_board.png)
 
 ### Entering a shape set
-Pressing a shape set button replaces the catalog view by a specific palette dedicated to
+Pressing a shape set button opens a specific palette dedicated to
 the selected shape set.
 For example, pressing on the ``ClefsAndShifts`` set button gives:
 
@@ -160,8 +163,8 @@ Once dropped, such a compound shape is replaced by two separate Inters
 We can then later edit each "part" separately, for example to modify the stem length.
 And we can add flags to the stem.
 
-### Exiting a shape set
-To leave the specific set palette and go back to the catalog view, we can:
+### Closing a shape set
+To close a specific set palette, we can:
 
 * Click on the "triangle-up" sign located on the left side of the set palette,
 
@@ -241,7 +244,7 @@ If not, no glyph gets assigned, but the shape cache now presents our selected sh
 position, ready for further use (via double-click, drag & drop or repetitive input).
 
 
-### Shortcuts table
+### Predefined shortcuts table
 
 Only sets and shapes that are used rather often are supported.
 
@@ -255,3 +258,93 @@ Only sets and shapes that are used rather often are supported.
 |**p** |physicals   | **a** (slur above), **b** (slur below), **s** (stem)
 |**r** |rests       | **1**, **2**, **4**, **8** (full, half, quarter, eighth)
 |**t** |texts       | **l** (lyrics), **t** (text), **m** (metronome)
+
+### Configurable shortcuts table
+{: .d-inline-block }
+New in 5.11
+{: .label .label-yellow }
+
+Since release 5.11, we can redefine or augment the table of shortcuts.
+
+The default mapping is defined by the `shape-shortcuts.xml` file located in the Audiveris `app/res` folder.
+Its content is listed in the appendix.
+
+As an end user, we can author a similar `shape-shortcuts.xml` and place it in the Audiveris user `config` folder.
+
+At the next restart, the program will first load its predefined *default* table, then 
+load the *user* table if found in the user `config` folder.
+
+# Appendix
+
+Here below is the content of the ``shape-shortcuts.xml`` file provided in the Audiveris ``app/res``
+application folder.
+
+Remember the end user can still override some default definitions
+via a similar ``shape-shortcuts.xml`` file to be located in the user ``config`` folder.
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    Default keyboard shortcuts for shape assignments.
+
+    Each <set> defines a shape family selected by its 'key' character.
+    Each <shape> within a set defines a specific shape selected by its 'key' character.
+    The full shortcut is the set key followed by the shape key (e.g., "af" for FLAT).
+
+    To customize, copy this file to your Audiveris config folder and edit as desired.
+-->
+<shape-shortcuts>
+
+    <set name="Accidentals" key="a">
+        <shape name="FLAT" key="f"/>
+        <shape name="NATURAL" key="n"/>
+        <shape name="SHARP" key="s"/>
+    </set>
+
+    <set name="BeamsEtc" key="b">
+        <shape name="BEAM" key="f"/>
+        <shape name="BEAM_HOOK" key="h"/>
+        <shape name="TUPLET_THREE" key="3"/>
+    </set>
+
+    <set name="Dynamics" key="d">
+        <shape name="DYNAMICS_P" key="p"/>
+        <shape name="DYNAMICS_MF" key="m"/>
+        <shape name="DYNAMICS_F" key="f"/>
+    </set>
+
+    <set name="Flags" key="f">
+        <shape name="FLAG_1" key="u"/>
+        <shape name="FLAG_1_DOWN" key="d"/>
+    </set>
+
+    <set name="HeadsAndDot" key="h">
+        <shape name="WHOLE_NOTE" key="w"/>
+        <shape name="NOTEHEAD_VOID" key="v"/>
+        <shape name="NOTEHEAD_BLACK" key="b"/>
+        <shape name="AUGMENTATION_DOT" key="d"/>
+        <shape name="HALF_NOTE_UP" key="h"/>
+        <shape name="QUARTER_NOTE_UP" key="q"/>
+    </set>
+
+    <set name="Rests" key="r">
+        <shape name="WHOLE_REST" key="1"/>
+        <shape name="HALF_REST" key="2"/>
+        <shape name="QUARTER_REST" key="4"/>
+        <shape name="EIGHTH_REST" key="8"/>
+    </set>
+
+    <set name="Texts" key="t">
+        <shape name="LYRICS" key="l"/>
+        <shape name="TEXT" key="t"/>
+        <shape name="METRONOME" key="m"/>
+    </set>
+
+    <set name="Physicals" key="p">
+        <shape name="SLUR_ABOVE" key="a"/>
+        <shape name="SLUR_BELOW" key="b"/>
+        <shape name="STEM" key="s"/>
+    </set>
+
+</shape-shortcuts>
+```
