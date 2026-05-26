@@ -246,7 +246,8 @@ public final class StaffBarlineInter
     {
         return switch (getMembers().size()) {
             case 0 -> NONE;
-            case 1 -> (getLeftBar().getShape() == Shape.THIN_BARLINE) ? REGULAR : HEAVY;
+            case 1 -> (getLeftBar().getShape() == Shape.THICK_BARLINE) ? HEAVY :
+                      (getLeftBar().getShape() == Shape.THIN_BARLINE) ? REGULAR : NONE;
             case 2 -> (getLeftBar().getShape() == Shape.THIN_BARLINE) //
                     ? ((getRightBar().getShape() == Shape.THIN_BARLINE) ? LIGHT_LIGHT : LIGHT_HEAVY)
                     : ((getRightBar().getShape() == Shape.THIN_BARLINE) ? HEAVY_LIGHT
@@ -1116,6 +1117,7 @@ public final class StaffBarlineInter
     private Style toStyle (Shape shape)
     {
         return switch (shape) {
+            case DUMMY_BARLINE -> Style.NONE;
             case THIN_BARLINE -> Style.REGULAR;
             case THICK_BARLINE -> Style.HEAVY;
             case DOUBLE_BARLINE -> Style.LIGHT_LIGHT;
