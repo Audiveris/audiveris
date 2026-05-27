@@ -1550,7 +1550,7 @@ public class LinesRetriever
             extends ConstantSet
     {
         private final Constant.Boolean purgeCrossingChunks = new Constant.Boolean(
-                true,
+                false,
                 "Should we purge the staff lines from crossing curves");
 
         private final Constant.Ratio topRatioForSlope = new Constant.Ratio(
@@ -1610,6 +1610,10 @@ public class LinesRetriever
 
         // Constants specified WRT mean interline
         // --------------------------------------
+
+        private final Scale.Fraction minCrossingOffset = new Scale.Fraction(
+                10.0,
+                "Minimum abscissa offset to process crossing items");
 
         private final Scale.Fraction minRunLength = new Scale.Fraction(
                 0.25,
@@ -1682,7 +1686,8 @@ public class LinesRetriever
      * It detects and remove the chunks in line filaments
      * that are likely to correspond to crossing curves.
      * <p>
-     * The strategy is based on the abnormal slopes of these chunks.
+     * The strategy is based on the abnormal slopes of these chunks
+     * and is excluded from the potential header area.
      */
     private class LinesInspector
     {
@@ -1692,9 +1697,14 @@ public class LinesRetriever
         // Abnormal slope
         final double minChunkSlope = constants.minChunkSlope.getValue();
 
+        // Initial margin
+        final int minOffset = scale.toPixels(constants.minCrossingOffset);
+
         public void process ()
         {
             for (Staff staff : staffManager.getStaves()) {
+                final int xMin = staff.getAbscissa(LEFT) + minOffset;
+
                 for (LineInfo line : staff.getLines()) {
                     final StaffFilament fil = (StaffFilament) line;
                     toRemove.clear();
@@ -1706,6 +1716,10 @@ public class LinesRetriever
                     for (Section section : fil.getMembers()) {
                         logger.debug("    {} {}", section, section.getBounds());
                         final Rectangle box = section.getBounds();
+
+                        if (box.x < xMin) {
+                            continue; // Avoid the potential header region
+                        }
 
                         if (box.x > xEnd) {
                             check(chunk); // End the current chunk, if any
