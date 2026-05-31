@@ -131,7 +131,9 @@ public class Trainer
 
         // Specific ending if stand alone
         if (!standAlone) {
-            frame = defineLayout(new JFrame());
+            frame = new JFrame();
+            UIUtil.addResizeWorkaround(frame);
+            frame = defineLayout(frame);
         } else {
             INSTANCE = this;
         }

@@ -209,7 +209,9 @@ public class SampleBrowser
             sampleListing = new SampleListing(this, repository);
             connectSelectors(true);
 
-            frame = defineLayout(new JFrame());
+            frame = new JFrame();
+            UIUtil.addResizeWorkaround(frame);
+            frame = defineLayout(frame);
             frame.setTitle(repository.toString());
             frame.addWindowListener(new ClosingAdapter());
             OmrGui.getApplication().show(frame);

@@ -42,6 +42,8 @@ import static java.awt.Frame.ICONIFIED;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -64,6 +66,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
@@ -108,6 +111,44 @@ public abstract class UIUtil
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
+
+    //----------------------//
+    // addResizeWorkaround //
+    //----------------------//
+    /**
+     * Add a ComponentListener to the provided frame to force revalidation on resize.
+     * This is a workaround for resizing issues in some tiling window managers (e.g. niri).
+     *
+     * @param frame the frame to be guarded
+     */
+    public static void addResizeWorkaround (final JFrame frame)
+    {
+        frame.addComponentListener(new ComponentAdapter()
+        {
+            @Override
+            public void componentResized (ComponentEvent e)
+            {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Component resized: {} size: {}", frame.getName(), frame.getSize());
+                }
+
+                SwingUtilities.invokeLater( () -> {
+                    // Force complete re-layout of the frame hierarchy
+                    frame.getRootPane().revalidate();
+                    frame.getContentPane().revalidate();
+                    frame.invalidate();
+                    frame.validate();
+                    frame.getContentPane().validate();
+                    frame.repaint();
+
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Workaround applied to {}. ContentPane size: {}",
+                                     frame.getName(), frame.getContentPane().getSize());
+                    }
+                });
+            }
+        });
+    }
 
     //--------------------//
     // adjustDefaultFonts //
