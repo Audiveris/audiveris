@@ -29,6 +29,8 @@ app/bin/*
 app/data
 dist/*
 config/run.properties
+app/data
+app/data/*
 data/args
 data/args/*
 data/benches

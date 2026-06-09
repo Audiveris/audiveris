@@ -1313,9 +1313,8 @@ public class MeasureStack
                     final Rectangle chordBounds = chord.getBounds();
 
                     if ((area == null) || //
-                            ((GeoUtil.xOverlap(chordBounds, area) > 0) && (GeoUtil.yOverlap(
-                                    chordBounds,
-                                    area) < 0))) {
+                            ((GeoUtil.xOverlap(chordBounds, area) > 0) && //
+                                    (GeoUtil.yOverlap(chordBounds, area) < 0))) {
                         final Point head = chord.getHeadLocation();
 
                         if ((head != null) && (head.y > point.getY())) {
