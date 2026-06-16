@@ -297,7 +297,11 @@ public final class StaffBarlineInter
             bounds = Entities.getBounds(getMembers());
         }
 
-        return new Rectangle(bounds);
+        // A StaffBarline with no members yields a null bounds; 'new Rectangle(null)'
+        // would then throw a NPE (notably during marshalling, via the inherited
+        // beforeMarshal() -> getBounds()). Returning null here is consistent with
+        // AbstractInter.getBounds(), which is allowed to return null.
+        return (bounds != null) ? new Rectangle(bounds) : null;
     }
 
     //--------------------//
