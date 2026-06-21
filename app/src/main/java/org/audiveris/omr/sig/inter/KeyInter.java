@@ -1177,6 +1177,15 @@ public class KeyInter
 
         final ClefKind clefKind = clef.getKind();
 
+        // A key signature is meaningful only for a pitched clef of a known kind.
+        // Percussion clefs (and any clef with no usable kind) carry no key signature and are
+        // absent from the pitches maps. Bail out cleanly here rather than later dereferencing
+        // a null pitches array (see issue #893).
+        if (!SHARP_PITCHES_MAP.containsKey(clefKind)) {
+            logger.debug("No key signature applicable for clef {} before {}", clef, firstAlter);
+            return null;
+        }
+
         Integer cancelFifths = null; // Used only for a cancel key
 
         // Determine target pitches to check vertical position
