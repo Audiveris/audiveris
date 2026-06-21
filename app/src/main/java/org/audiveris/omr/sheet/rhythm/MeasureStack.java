@@ -1491,7 +1491,24 @@ public class MeasureStack
         // Extrapolate, using skew, from single staff
         final Skew skew = system.getSkew();
         final Measure measure = getMeasureAt(staff);
+
+        // Guard against missing geometry on a messy sheet (e.g. a time signature
+        // with no reliable reference point, frequent in heavily-skewed scans):
+        // a null point/measure/border must not abort the whole SYMBOLS step. The
+        // guard paths are logged (not silent) so problematic sheets stay visible.
+        if ((point == null) || (skew == null) || (measure == null)) {
+            logger.debug("getXOffset: missing geometry (point={}, skew={}, measure={})"
+                    + " in stack {}", point, skew, measure, this);
+            return 0;
+        }
+
         final Point2D left = measure.getSidePoint(HorizontalSide.LEFT, staff);
+
+        if (left == null) {
+            logger.debug("getXOffset: no left side point for staff {} in stack {}",
+                    staff, this);
+            return 0;
+        }
 
         return skew.deskewed(point).getX() - skew.deskewed(left).getX();
     }
