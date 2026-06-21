@@ -67,6 +67,8 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -577,6 +579,9 @@ public class MainGui
 
         frame = getMainFrame();
         frame.setName("AudiverisMainFrame"); // For SAF life cycle
+
+        // Workaround for resizing issues in some tiling window managers (e.g. niri)
+        UIUtil.addResizeWorkaround(frame);
 
         stubsController = StubsController.getInstance();
         stubsController.subscribe(this);

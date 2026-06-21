@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -156,6 +157,7 @@ public class ShapeColorChooser
     {
         if (frame == null) {
             frame = new JFrame();
+            UIUtil.addResizeWorkaround(frame);
             frame.setName("ShapeColorChooserFrame");
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
