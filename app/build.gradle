@@ -9,93 +9,40 @@
 //--------------------------------------------------------------------------------------------------
 
 plugins {
+    id 'audiveris-commons'
     id 'application'
 
     // Needed to retrieve all dependencies for flatpak
-    id 'io.github.jwharm.flatpak-gradle-generator' version '1.7.0'
+    id 'io.github.jwharm.flatpak-gradle-generator' version '1.8.0'
 }
 
-//------------
-// Properties
-//------------
+//------------//
+// Properties //
+//------------//
+
+ext.tessVersion = '5.5.2'
+ext.leptVersion = '1.87.0'
+ext.jcppVersion = '1.5.13'
 
 def app = project(':app')
-
-// Central location for application version
-// REMINDER: Also update the "audiveris_functional_version" in docs/_config.yml
-project.version = '5.11.0'
-println "version: ${project.version}"
-
-// Central location for the specific versions of tesseract dependencies
-ext.jcppVersion     = '1.5.12'
-ext.leptVersion     = '1.85.0'
-ext.tessVersion     = '5.5.1'
-
-// Name of host OS
-ext.hostOSName   = System.getProperty('os.name').toLowerCase()\
-                     .startsWith('mac os x') ? 'macosx' :\
-                     System.getProperty('os.name').split(' ')[0].toLowerCase()
-
-// Version of host OS
-ext.hostOSVersion = System.getProperty('os.version')
-println "hostOSVersion: ${ext.hostOSVersion}"
-
-// Architecture of host OS
-// This mapping is required to adapt values of os.name and os.arch
-// to the conventions used by Javacpp's dependencies
-ext.hostOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86", "x86":"x86",
-                    "amd64":"x86_64", "x86-64":"x86_64", "x86_64":"x86_64", 
-                    "arm":"armhf",
-                    "aarch64":"arm64"]\
-                   [System.getProperty('os.arch').toLowerCase()]
-
-// Full host OS identification as "name-arch"
-ext.hostOS       = "${ext.hostOSName}-${ext.hostOSArch}"
-println "hostOS: ${ext.hostOS}"
-
-// Architecture of target OS
-if (project.hasProperty('targetOS')) {
-    println "property targetOS: " + project.property('targetOS')
-    ext.targetOS = project.property('targetOS')
-} else {
-    ext.targetOS = ext.hostOS
-}
-println "targetOS: ${ext.targetOS}"
-
-// Handling of Java version
-ext.theMinJavaVersion = project.property('theMinJavaVersion')
-println "theMinJavaVersion: $theMinJavaVersion"
-
-java {
-    sourceCompatibility = JavaLanguageVersion.of(theMinJavaVersion)
-}
-
-// No longer needed, but kept for potential future use (like batch integration test)
-ext.tessdataTag     = project.property('theTessdataTag')
-println "theTessdataTag: $tessdataTag"
-
-ext.programName     = rootProject.name
-ext.programId       = rootProject.name.toLowerCase()
-ext.programVersion  = "$project.version"
-ext.companyName     = "$programName Ltd."
-ext.companyId       = "${programName}Ltd"
 
 // Name of Java main class. 
 // The caller may have set the property on the gradle command line via a -PmainClass=foobar
 if (project.hasProperty('mainClass')) {
-    println "property mainClass: " + project.property('mainClass')
+    logger.info("property mainClass: {}", project.property('mainClass'))
     ext.mainClass = project.property('mainClass')
 } else {
     ext.mainClass = ext.programName
 }
+logger.info("app mainclass: {}", ext.mainClass)
 
-//--------------
-// Dependencies
-//--------------
+//--------------//
+// Repositories //
+//--------------//
 
 repositories {
     if (project.hasProperty("isFlatpak") && project.getProperty("isFlatpak") == "true") {
-        logger.info("repositories. isFlatpak set")
+        logger.warn("repositories. isFlatpak set")
         maven { // Only the offline repository
             name = 'Offline repository for flatpak'
             url = '../dependencies'                // TODO: check this!
@@ -114,49 +61,54 @@ repositories {
     }
 }
 
+//--------------//
+// Dependencies //
+//--------------//
+
 dependencies {
     implementation(
-        'args4j:args4j:2.33',
-        'ch.qos.logback:logback-classic:1.4.14',
-        'com.github.jai-imageio:jai-imageio-core:1.4.0',
-        'com.github.jai-imageio:jai-imageio-jpeg2000:1.4.0',
-        'com.itextpdf:itextpdf:5.5.13.2',
-        'com.jgoodies:jgoodies-forms:1.9.0',
-        'com.jgoodies:jgoodies-looks:2.7.0',
-        'com.sun.xml.bind:jaxb-core:2.3.0.1',
-        'com.sun.xml.bind:jaxb-impl:2.3.1',
-        'gov.nist.math:jama:1.0.3',
-        'javax.media:jai-core:1.1.3',
-        'javax.xml.bind:jaxb-api:2.3.1',
-        'net.imagej:ij:1.54p',
-        'net.jcip:jcip-annotations:1.0',
-        'org.apache.directory.studio:org.apache.commons.io:2.4',
-        'org.apache.pdfbox:jbig2-imageio:3.0.4',
-        'org.apache.pdfbox:pdfbox:3.0.6',
-        'org.apache.pdfbox:pdfbox-io:3.0.6',
-        'org.audiveris:proxymusic:4.0.3',
-        'org.bushe:eventbus:1.4',
-        "org.bytedeco:javacpp:${jcppVersion}",
-        "org.bytedeco:leptonica:${leptVersion}-${jcppVersion}",
-        "org.bytedeco:tesseract:${tessVersion}-${jcppVersion}",
-        'org.commonmark:commonmark:0.27.0',
-        'org.jdesktop.bsaf:bsaf:1.9.2',
-        'org.jfree:jfreechart:1.5.6',
-        'org.jgrapht:jgrapht-core:1.5.2',
-        'org.kohsuke:github-api:1.330',
-        'org.reflections:reflections:0.10.2',
-        'org.slf4j:slf4j-api:2.0.17',
-        'net.java.dev.jna:jna:5.14.0'
+        "args4j:args4j:2.33",
+        "ch.qos.logback:logback-classic:1.4.14",
+        "com.github.jai-imageio:jai-imageio-core:1.4.0",
+        "com.github.jai-imageio:jai-imageio-jpeg2000:1.4.0",
+        "com.itextpdf:itextpdf:5.5.13.2",
+        "com.jgoodies:jgoodies-forms:1.9.0",
+        "com.jgoodies:jgoodies-looks:2.7.0",
+        "com.sun.xml.bind:jaxb-core:2.3.0.1",
+        "com.sun.xml.bind:jaxb-impl:2.3.1",
+        "gov.nist.math:jama:1.0.3",
+        "javax.media:jai-core:1.1.3",
+        "javax.xml.bind:jaxb-api:2.3.1",
+        "net.imagej:ij:1.54p",
+        "net.java.dev.jna:jna:5.14.0",
+        "net.jcip:jcip-annotations:1.0",
+        "org.apache.directory.studio:org.apache.commons.io:2.4",
+        "org.apache.pdfbox:jbig2-imageio:3.0.4",
+        "org.apache.pdfbox:pdfbox-io:3.0.6",
+        "org.apache.pdfbox:pdfbox:3.0.6",
+        "org.audiveris:proxymusic:4.0.3",
+        "org.bushe:eventbus:1.4",
+        "org.bytedeco:javacpp:$jcppVersion",
+        "org.bytedeco:leptonica:$leptVersion-$jcppVersion",
+        "org.bytedeco:tesseract:$tessVersion-$jcppVersion",
+        "org.commonmark:commonmark:0.27.0",
+        "org.jdesktop.bsaf:bsaf:1.9.2",
+        "org.jfree:jfreechart:1.5.6",
+        "org.jgrapht:jgrapht-core:1.5.2",
+        "org.kohsuke:github-api:1.330",
+        "org.reflections:reflections:0.10.2",
+        "org.slf4j:slf4j-api:2.0.17",
     )
 
     runtimeOnly(
-        "org.bytedeco:leptonica:${leptVersion}-${jcppVersion}:${app.ext.targetOS}",
-        "org.bytedeco:tesseract:${tessVersion}-${jcppVersion}:${app.ext.targetOS}"
+        "com.sun.xml.bind:jaxb-impl:2.3.1",
+        "org.bytedeco:leptonica:$leptVersion-$jcppVersion:$targetOS",
+        "org.bytedeco:tesseract:$tessVersion-$jcppVersion:$targetOS",
     )
 
     testImplementation(
-        'junit:junit:4.13.2',
-        'org.jgrapht:jgrapht-ext:1.5.2'
+        "junit:junit:4.13.2",
+        "org.jgrapht:jgrapht-ext:1.5.2",
     )
 }
 
@@ -164,15 +116,15 @@ dependencies {
 if (targetOS == "linux-x86_64") {
     dependencies {
         runtimeOnly(
-            "org.bytedeco:leptonica:${leptVersion}-${jcppVersion}:linux-arm64",
-            "org.bytedeco:tesseract:${tessVersion}-${jcppVersion}:linux-arm64"
+            "org.bytedeco:leptonica:$leptVersion-$jcppVersion:linux-arm64",
+            "org.bytedeco:tesseract:$tessVersion-$jcppVersion:linux-arm64",
         )
     }
 }
 
-//------------
-// SourceSets
-//------------
+//------------//
+// SourceSets //
+//------------//
 
 sourceSets {
     main {
@@ -198,48 +150,22 @@ sourceSets {
     }
 }
 
-test {
-    // Test classes not meant for Junit
-    exclude '**/org/audiveris/omr/jaxb/basic/**'
-    exclude '**/org/audiveris/omr/jaxb/facade/**'
-}
-
-//-------
-// Tasks
-//-------
+//-------//
+// Tasks //
+//-------//
 
 application {
-    mainClass = "$app.ext.mainClass"
+    mainClass = project.mainClass
     
     // REMINDER: the same arguments should be copied into the "javaOptions" of packaging/build.gradle
     //
     // Arg 1: Needed to circumvent the limitations brought by Java 9 and above (the JigSaw cuts)
-    //
-    // Arg 2: WARNING: A restricted method in java.lang.System has been called
-    // WARNING: java.lang.System::load has been called by org.bytedeco.javacpp.Loader in an unnamed module
-    // (file:/C:/Users/herve/.gradle/caches/modules-2/files-2.1/org.bytedeco/javacpp/1.5.12/d37e3e9c7f3e3a9e492c245e62fd358611889e04/javacpp-1.5.12.jar)
-    // WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
-    // WARNING: Restricted methods will be blocked in a future release unless native access is enabled
-    //
+    // Arg 2: Enable native access
     // Arg 3: Enable HiDPI/display scaling support for Linux Wayland (GNOME, KDE)
     //
     applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
                                  "--enable-native-access=ALL-UNNAMED",
                                  "-Dsun.java2d.uiScale.enabled=true"]
-}
-
-// Perhaps no longer needed?
-[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
-
-// Useful for turning on deprecation warnings
-// Just uncomment the appropriate option
-allprojects {
-    tasks.withType(JavaCompile).tap {
-        configureEach {
-            options.compilerArgs << "-Xlint:deprecation"
-            options.compilerArgs << "-Xlint:unchecked"
-        }
-    }
 }
 
 // Run default configuration.
@@ -250,13 +176,13 @@ tasks.run {
 
     // Retrieve JVM arguments from jvmLineArgs property if any
     if (project.hasProperty("jvmLineArgs")) {
-        println "run. jvmLineArgs: ${jvmLineArgs}"
+        logger.warn("run. jvmLineArgs: {}", jvmLineArgs)
         jvmArgs jvmLineArgs.split(',')
     }
 
     // Retrieve CLI arguments from cmdLineArgs property if any
     if (project.hasProperty("cmdLineArgs")) {
-        println "run. cmdLineArgs: ${cmdLineArgs}"
+        logger.warn("run. cmdLineArgs: {}", cmdLineArgs)
         args cmdLineArgs.split(',')
     }
 }
@@ -264,7 +190,7 @@ tasks.run {
 // Generate application.jar
 jar {
     // override default output archive name
-    archiveFileName = "${programId}.jar"
+    archiveFileName = programId + ".jar"
 
     exclude ("**/doc-files/**")
 
@@ -276,13 +202,19 @@ jar {
     }
 
     manifest {
-        attributes 'Built-By': app.ext.companyName
-        attributes 'Specification-Title': app.ext.programName
-        attributes 'Specification-Vendor': app.ext.companyName
+        attributes 'Built-By': companyName
+        attributes 'Specification-Title': programName
+        attributes 'Specification-Vendor': companyName
         attributes 'Specification-Version': project.version
         attributes 'Implementation-Version': project.version
-        attributes 'Main-Class': app.ext.mainClass
+        attributes 'Main-Class': mainClass
     }
+}
+
+test {
+    // Test classes not meant for Junit
+    exclude '**/org/audiveris/omr/jaxb/basic/**'
+    exclude '**/org/audiveris/omr/jaxb/facade/**'
 }
 
 // Retrieve hash of the latest commit from Git
@@ -294,9 +226,9 @@ tasks.register('getCommit', Exec) {
     standardOutput = new ByteArrayOutputStream()
 
     doLast {
-        def commit = standardOutput.toString().replaceAll('\n', '')
-        logger.info("app. New commit: {}", commit)
-        app.ext.commit = commit
+        def newCommit = standardOutput.toString().replaceAll('\n', '')
+        logger.info("app. New commit: {}", newCommit)
+        app.ext.commit = newCommit
     }
 }
 
@@ -324,9 +256,9 @@ tasks.register('checkCommit') {
         if (cache.exists()) {
             def props = new Properties()
             cache.withInputStream { props.load(it) }
-            app.ext.oldCommit = props.getProperty('commit')
-            logger.info("app. Old commit: {}", app.ext.oldCommit)
-            if (!app.ext.oldCommit.equals(app.ext.commit)) {
+            ext.oldCommit = props.getProperty('commit')
+            logger.info("app. Old commit: {}", ext.oldCommit)
+            if (!ext.oldCommit.equals(app.ext.commit)) {
                 app.ext.commitChanged = 'true'
             }
         } else {
@@ -334,7 +266,7 @@ tasks.register('checkCommit') {
             app.ext.commitChanged = 'true'
         }
 
-        // Always cache the last commit value
+        // Always cache the latest commit value
         def properties = new Properties()
         properties.setProperty('commit', app.ext.commit)
 
@@ -355,21 +287,21 @@ tasks.register('generateProgramId') {
 
     def outputDir = file("build/generated-src/org/audiveris/omr")
     def className = "ProgramId"
-    def gSrc = new File(outputDir, "${className}.java")
+    def gSrc = new File(outputDir, className +".java")
 
     doLast {
         outputDir.exists() || outputDir.mkdirs()
         gSrc.write("package org.audiveris.omr;\n\n")
         gSrc.append("/**\n * Class {@code $className} provides full program identification.\n")
         gSrc.append(" * This code has been automatically generated by Gradle.\n */\n")
-        gSrc.append("public abstract class $className {")
+        gSrc.append("public interface $className {")
 
         app.ext.programBuild = app.ext.commit
-        ["company_name", "company_id", "program_name", "program_id", "program_version", "program_build", "tessdata_tag"].each { str ->
+        ["company_name", "company_id", "program_name", "program_id", "program_version", "program_build"].each { str ->
             def strParts = str.split("_")
             def propName = strParts[0] + strParts[1].capitalize()
             gSrc.append("\n    /** Precise ${strParts[0]} ${strParts[1]}: {@value} */")
-            gSrc.append("\n    public static final String ${str.toUpperCase(Locale.ROOT)} = \"${app.ext."${propName}"}\";\n")
+            gSrc.append("\n    public static final String ${str.toUpperCase(Locale.ROOT)} = \"${app.ext."$propName"}\";\n")
         }
 
         gSrc.append("}\n")
@@ -405,17 +337,17 @@ test {
 // Defining 'debug' task allows to set its arguments later   
 tasks.register('debug', JavaExec) {
     dependsOn('classes')
-    mainClass = "$app.ext.mainClass"
+    mainClass = mainClass
     classpath = sourceSets.main.runtimeClasspath
     debug true
 }
 
-//---------------
-// Documentation
-//---------------
+//---------------//
+// Documentation //
+//---------------//
 
 javadoc {
-    title = "${app.ext.programName}-${project.version} API"
+    title = "$programName-$version API"
     options.overview('src/main/java/overview.html')
 
     // Copy images from src to javadoc hierarchy
@@ -439,9 +371,9 @@ if (JavaVersion.current().isJava8Compatible()) {
     }
 }
 
-//---------
-// Flatpak
-//---------
+//---------//
+// Flatpak //
+//---------//
 
 // Configure the flatpakGradleGenerator plugin task
 def depsFile = file('build/dependencies.json')
@@ -465,9 +397,9 @@ artifacts {
     sharedConfiguration(depsFile)
 }
 
-//-----------
-// Utilities
-//-----------
+//-----------//
+// Utilities //
+//-----------//
 
 // Ability to include private tasks (such as save)
 fileTree("$projectDir/private").include('*.gradle').each { file ->
@@ -482,7 +414,7 @@ tasks.register('printTemplates', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 
     if (project.hasProperty("cmdLineArgs")) {
-        println "printTemplates. cmdLineArgs: "+ project.property('cmdLineArgs')
-        args(project.property('cmdLineArgs').split())
+        logger.warn("printTemplates. cmdLineArgs: {}", cmdLineArgs)
+        args(cmdLineArgs.split())
     }
 }

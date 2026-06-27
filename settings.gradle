@@ -35,8 +35,6 @@ include 'flatpak'
 if (startParameter.projectProperties['isFlatpak'] == 'true') {
     println "Initialization. isFlatpak is set, skipping useless subprojects"
 } else {
-    println "Initialization. isFlatpak is not set"
-
     // Documentation
     include 'docs'
 
