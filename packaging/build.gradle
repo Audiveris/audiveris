@@ -94,15 +94,18 @@ tasks.register('customJre', Exec) {
         !file('build/custom-jre').exists()
     }
 
-    // module jdk.zipfs provides the implementation of the zip file system provider
-    // module jdk.crypto.ec fixes javax.net.ssl.SSLHandshakeException
-    // module jdk.unsupported is needed by pdfbox which calls jdk.internal.ref.Cleaner
+    // module jdk.accessibility for Assistive Technologies
+    // module jdk.crypto.ec     fixes javax.net.ssl.SSLHandshakeException
+    // module jdk.localedata    for locales other than US locale
+    // module jdk.unsupported   is needed by pdfbox which calls jdk.internal.ref.Cleaner
+    // module jdk.zipfs         provides the implementation of the zip file system provider
     commandLine "jlink",\
         "--output", "build/custom-jre",\
         "--no-header-files",\
         "--no-man-pages",\
         "--strip-debug",\
-        "--add-modules", "java.base,java.datatransfer,java.desktop,java.xml,java.naming,jdk.zipfs,jdk.crypto.ec,jdk.unsupported"
+        "--add-modules", "java.base,java.datatransfer,java.desktop,java.naming,java.xml" +
+         ",jdk.accessibility" +",jdk.crypto.ec,jdk.localedata,jdk.unsupported,jdk.zipfs"
 }
 
 tasks.register('macImagemagick', Exec) {

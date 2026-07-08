@@ -50,6 +50,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * Class <code>Main</code> is the main class for OMR application.
@@ -213,6 +214,14 @@ public class Main
         if (!cli.isBatchMode()) {
             // Log all events to LogPane
             LogUtil.addGuiAppender();
+        }
+
+        // List of Java modules?
+        if (constants.showAllJavaModules.isSet()) {
+            logger.info(
+                    "Java modules:\n{}",
+                    ModuleLayer.boot().modules().stream().map(Module::getName) //
+                            .sorted().collect(Collectors.joining("\n")));
         }
 
         // Locale to be used in the whole application?
@@ -432,6 +441,10 @@ public class Main
     private static class Constants
             extends ConstantSet
     {
+        private final Constant.Boolean showAllJavaModules = new Constant.Boolean(
+                false,
+                "Should we show all Java modules?");
+
         private final Constant.Boolean showEnvironment = new Constant.Boolean(
                 true,
                 "Should we show environment?");
