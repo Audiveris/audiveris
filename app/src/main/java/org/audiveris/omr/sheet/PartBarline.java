@@ -135,6 +135,10 @@ public class PartBarline
      */
     public EndingInter getEnding (HorizontalSide side)
     {
+        if (staffBarlines.isEmpty()) {
+            return null;
+        }
+
         final StaffBarlineInter sb = staffBarlines.get(0);
 
         return sb.getEnding(side);

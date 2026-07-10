@@ -721,10 +721,12 @@ public class SIGraph
     {
         Set<Relation> relations = new LinkedHashSet<>();
 
-        for (Relation rel : edgesOf(inter)) {
-            for (Class classe : classes) {
-                if (classe.isInstance(rel)) {
-                    relations.add(rel);
+        if (!inter.isRemoved()) {
+            for (Relation rel : edgesOf(inter)) {
+                for (Class classe : classes) {
+                    if (classe.isInstance(rel)) {
+                        relations.add(rel);
+                    }
                 }
             }
         }
@@ -747,9 +749,11 @@ public class SIGraph
     {
         Set<Relation> relations = new LinkedHashSet<>();
 
-        for (Relation rel : edgesOf(inter)) {
-            if (classe.isInstance(rel)) {
-                relations.add(rel);
+        if (!inter.isRemoved()) {
+            for (Relation rel : edgesOf(inter)) {
+                if (classe.isInstance(rel)) {
+                    relations.add(rel);
+                }
             }
         }
 
@@ -769,9 +773,11 @@ public class SIGraph
     {
         List<Support> supports = new ArrayList<>();
 
-        for (Relation rel : edgesOf(inter)) {
-            if (rel instanceof Support) {
-                supports.add((Support) rel);
+        if (!inter.isRemoved()) {
+            for (Relation rel : edgesOf(inter)) {
+                if (rel instanceof Support) {
+                    supports.add((Support) rel);
+                }
             }
         }
 
