@@ -1430,11 +1430,11 @@ public class PeakGraph
                 "Max abscissa shift for brace alignment");
 
         private final Scale.Fraction maxConnectionGap = new Scale.Fraction(
-                2.0,
+                1.0, // Was 2.0,
                 "Max vertical gap when connecting bar lines");
 
         private final Constant.Ratio maxConnectionWhiteRatio = new Constant.Ratio(
-                0.35,
+                0.25, // Was 0.35,
                 "Max white ratio when connecting bar lines");
 
         private final Constant.Ratio minConnectionGrade = new Constant.Ratio(
