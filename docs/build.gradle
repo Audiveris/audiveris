@@ -4,13 +4,16 @@
 //                              : d o c s / b u i l d . g r a d l e                               //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
+//
+// This "docs" sub-project handles the building of the PDF version of the Audiveris handbook.
+//
+//--------------------------------------------------------------------------------------------------
 
 plugins {
     // Mainly for the clean task
     id 'base'
 }
 
-// Generate a PDF version of handbook
 tasks.register('deletePdf', Delete) {
     delete "build/pdf"
 }

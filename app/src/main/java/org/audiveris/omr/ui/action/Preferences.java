@@ -327,7 +327,7 @@ public abstract class Preferences
             final String tip = resources.getString(className + ".localeBox.toolTipText");
 
             // Define localeBox
-            localeBox = new JComboBox<>(locales.toArray(new Locale[locales.size()]));
+            localeBox = new JComboBox<>(locales.toArray(Locale[]::new));
             localeBox.addActionListener(this);
 
             // Layout
