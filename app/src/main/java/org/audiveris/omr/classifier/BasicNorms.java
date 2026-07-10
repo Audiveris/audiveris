@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                  T r a i n i n g M o n i t o r                                 //
+//                                       B a s i c N o r m s                                      //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -21,36 +21,35 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
-//
-//import org.deeplearning4j.optimize.api.IterationListener;
-//
+import org.audiveris.omr.math.PoorManAlgebra.INDArray;
+
 /**
- * Monitoring interface about the training status of a classifier.
+ * Class <code>BasicNorms</code> encapsulates the means and standard deviations of glyph features.
+ *
+ * @author Hervé Bitteur
  */
-public interface TrainingMonitor //        extends IterationListener
-
+public class BasicNorms
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
+
+    /** Features means. */
+    public final INDArray means;
+
+    /** Features standard deviations. */
+    public final INDArray stds;
+
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Report the number of iterations in a period.
+     * Creates a new <code>Norms</code> object.
      *
-     * @return number of iterations between reporting
+     * @param means
+     * @param stds
      */
-    public int getIterationPeriod ();
-
-    /**
-     * Call-back at end of iteration period.
-     *
-     * @param epochsCount          total count of epochs so far
-     * @param iteration            iteration number
-     * @param score                current loss value
-     * @param hiddenSquaredWeights sum of squared weights for hidden layer
-     * @param outputSquaredWeights sum of squared weights for output layer
-     */
-    public void iterationPeriodDone (int epochsCount,
-                                     int iteration,
-                                     double score,
-                                     double hiddenSquaredWeights,
-                                     double outputSquaredWeights);
+    public BasicNorms (INDArray means,
+                       INDArray stds)
+    {
+        this.means = means;
+        this.stds = stds;
+    }
 }

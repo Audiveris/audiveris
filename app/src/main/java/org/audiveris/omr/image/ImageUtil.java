@@ -26,10 +26,13 @@ import org.audiveris.omr.WellKnowns;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ByteLookupTable;
 import java.awt.image.ColorModel;
+import java.awt.image.LookupOp;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.File;
@@ -92,6 +95,31 @@ public abstract class ImageUtil
         }
 
         return img;
+    }
+
+    //----------//
+    // inverted //
+    //----------//
+    /**
+     * Return the inverted colors of an image.
+     *
+     * @param source the source image
+     * @return image with inverted colors
+     */
+    public static BufferedImage inverted (BufferedImage source)
+    {
+        final BufferedImage image = new BufferedImage(
+                source.getWidth(),
+                source.getHeight(),
+                source.getType());
+        final byte[] inverser = new byte[256];
+        for (int i = 0; i < 256; i++)
+            inverser[i] = (byte) (255 - i);
+        final ByteLookupTable table = new ByteLookupTable(0, inverser);
+        final LookupOp inversion = new LookupOp(table, null);
+        inversion.filter(source, image);
+
+        return image;
     }
 
     //---------------//
@@ -248,8 +276,7 @@ public abstract class ImageUtil
         final WritableRaster raster = img.getRaster();
 
         // We use luminance value based on standard RGB combination
-        final double[] weights =
-        { 0.114d, 0.587d, 0.299d };
+        final double[] weights = { 0.114d, 0.587d, 0.299d };
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -265,6 +292,42 @@ public abstract class ImageUtil
         }
 
         return img;
+    }
+
+    //---------//
+    // rotated //
+    //---------//
+    /**
+     * Rotate an image.
+     *
+     * @param img     the source image
+     * @param degrees the rotation angle, specified in degrees
+     * @return the rotated image
+     */
+    public static BufferedImage rotated (BufferedImage img,
+                                         double degrees)
+    {
+        final double rads = Math.toRadians(degrees);
+        final double sin = Math.abs(Math.sin(rads));
+        final double cos = Math.abs(Math.cos(rads));
+
+        final int width = img.getWidth();
+        final int height = img.getHeight();
+
+        final int newWidth = (int) Math.floor(width * cos + height * sin);
+        final int newHeight = (int) Math.floor(height * cos + width * sin);
+
+        final AffineTransform at = new AffineTransform();
+        at.translate((newWidth - width) / 2.0, (newHeight - height) / 2.0);
+        at.rotate(rads, width / 2.0, height / 2.0);
+
+        final BufferedImage rotated = new BufferedImage(newWidth, newHeight, img.getType());
+        final Graphics2D g2d = rotated.createGraphics();
+        g2d.setTransform(at);
+        g2d.drawImage(img, 0, 0, null);
+        g2d.dispose();
+
+        return rotated;
     }
 
     //------------//

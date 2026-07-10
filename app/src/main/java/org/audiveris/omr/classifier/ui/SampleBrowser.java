@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
+import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.BasicClassifier;
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
@@ -125,6 +126,11 @@ public class SampleBrowser
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    static {
+        // We need class WellKnowns to be elaborated before anything else (when in standalone mode)
+        WellKnowns.ensureLoaded();
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(SampleBrowser.class);
 
     /** The unique class instance. */
@@ -134,8 +140,7 @@ public class SampleBrowser
     private static boolean standAlone = false;
 
     /** Events that can be published on the local sample service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]
-    { EntityListEvent.class };
+    private static final Class<?>[] eventsAllowed = new Class<?>[] { EntityListEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -209,9 +214,7 @@ public class SampleBrowser
             sampleListing = new SampleListing(this, repository);
             connectSelectors(true);
 
-            frame = new JFrame();
-            UIUtil.addResizeWorkaround(frame);
-            frame = defineLayout(frame);
+            frame = defineLayout(new JFrame());
             frame.setTitle(repository.toString());
             frame.addWindowListener(new ClosingAdapter());
             OmrGui.getApplication().show(frame);
@@ -461,15 +464,19 @@ public class SampleBrowser
         //        boardsPane.addBoard(
         //                new SampleEvaluationBoard(sampleController, DeepClassifier.getInstance()));
         //
-        JSplitPane centerPane =
-                new JSplitPane(VERTICAL_SPLIT, sheetSelector, boardsPane.getComponent());
+        JSplitPane centerPane = new JSplitPane(
+                VERTICAL_SPLIT,
+                sheetSelector,
+                boardsPane.getComponent());
         centerPane.setBorder(null);
         centerPane.setOneTouchExpandable(true);
         centerPane.setName("centerPane");
 
         // Right
-        JSplitPane rightPane =
-                new JSplitPane(VERTICAL_SPLIT, sampleListing, sampleContext.getComponent());
+        JSplitPane rightPane = new JSplitPane(
+                VERTICAL_SPLIT,
+                sampleListing,
+                sampleContext.getComponent());
         rightPane.setBorder(null);
         rightPane.setOneTouchExpandable(true);
         rightPane.setName("rightPane");
@@ -538,12 +545,15 @@ public class SampleBrowser
             shapeSet.add(sample.getShape().getPhysicalShape());
         }
 
-        shapeSelector.populateWith(shapeSet);
-        shapeSelector.select(shapeSet);
+        final List<Shape> shapes = new ArrayList<>(shapeSet);
+        Collections.sort(shapes, Shape.byName);
+
+        shapeSelector.populateWith(shapes);
+        shapeSelector.select(shapes);
 
         // Populate samples
         List<Sample> sorted = new ArrayList<>(samples);
-        Collections.sort(sorted, Sample.byPhysicalShape); // Ordered by physical shape for listing
+        Collections.sort(sorted, Sample.byShapeName);
         sampleListing.populateWith(sorted);
 
         connectSelectors(true); // Re-enable standard triggers: sheets -> shapes -> samples
@@ -1263,7 +1273,10 @@ public class SampleBrowser
                 shapeSet.addAll(repository.getShapes(desc));
             }
 
-            populateWith(shapeSet);
+            final List<Shape> selection = new ArrayList<>(shapeSet);
+            Collections.sort(selection, Shape.byName);
+
+            populateWith(selection);
         }
 
         /**
@@ -1276,7 +1289,7 @@ public class SampleBrowser
             {
                 super("ShapePopup");
 
-                ApplicationActionMap actionMap =
+                ApplicationActionMap actionMap = //
                         OmrGui.getApplication().getContext().getActionMap(SampleBrowser.this);
                 add(new JMenuItem(actionMap.get("removeShapes")));
             }
@@ -1329,7 +1342,7 @@ public class SampleBrowser
             {
                 super("SheetPopup");
 
-                ApplicationActionMap actionMap =
+                ApplicationActionMap actionMap = //
                         OmrGui.getApplication().getContext().getActionMap(SampleBrowser.this);
                 add(new JMenuItem(actionMap.get("removeSheets")));
                 add(new JMenuItem(actionMap.get("validateSheets")));

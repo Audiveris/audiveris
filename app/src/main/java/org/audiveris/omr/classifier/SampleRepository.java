@@ -75,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -406,7 +407,7 @@ public class SampleRepository
             sample = SymbolSample.create(shape, symbol, font, STANDARD_INTERLINE);
             sample.setSymbol(true);
         } else {
-            logger.info("{} family, no artificial sample for {}", family, shape);
+            logger.debug("{} family, no artificial sample for {}", family, shape);
         }
 
         return sample;
@@ -448,7 +449,7 @@ public class SampleRepository
             sample = SymbolSample.create(shape, textSymbol, font, STANDARD_INTERLINE);
             sample.setSymbol(true);
         } else {
-            logger.info("{} family, no artificial sample for {}", family, shape);
+            logger.debug("{} family, no artificial sample for {}", family, shape);
         }
 
         return sample;
@@ -1737,15 +1738,17 @@ public class SampleRepository
      * In the 'train' collection, no shape collection can contain more than maxShapeSampleCount
      * samples.
      *
-     * @param train    output to be populated by train samples
-     * @param test     output to be populated by test samples
-     * @param minCount minimum sample count per shape (for test)
-     * @param maxCount maximum sample count per shape (for train and test)
+     * @param train         output to be populated by train samples
+     * @param test          output to be populated by test samples
+     * @param trainRatio    ratio for train
+     * @param maxTrainCount maximum sample count per shape (for train)
+     * @param maxTestCount  maximum sample count per shape (for test)
      */
     public void splitTrainAndTest (List<Sample> train,
                                    List<Sample> test,
-                                   int minCount,
-                                   int maxCount)
+                                   double trainRatio,
+                                   int maxTrainCount,
+                                   int maxTestCount)
     {
         // Flag redundant font-based samples as such
         checkFontSamples();
@@ -1759,7 +1762,7 @@ public class SampleRepository
                 continue;
             }
 
-            Shape physicalShape = sample.getShape().getPhysicalShape();
+            final Shape physicalShape = sample.getShape().getPhysicalShape();
             List<Sample> list = shapeSamples.get(physicalShape);
 
             if (list == null) {
@@ -1769,14 +1772,32 @@ public class SampleRepository
             list.add(sample);
         }
 
-        for (List<Sample> list : shapeSamples.values()) {
-            Collections.shuffle(list);
-            train.addAll(list.subList(0, Math.min(list.size(), maxCount)));
+        // Now, dispatch into train & test (or none)
+        final Random random = constants.reproducibleSplit.isSet() ? new Random(123) : new Random();
+
+        for (Entry<Shape, List<Sample>> entry : shapeSamples.entrySet()) {
+            final List<Sample> list = entry.getValue();
+            Collections.shuffle(list, random);
 
             final int size = list.size();
-            final int i1 = Math.max(0, size - minCount);
-            final int i2 = Math.max(maxCount, size - maxCount);
-            test.addAll(list.subList(Math.min(i1, i2), size));
+            switch (size) {
+                case 0 -> logger.warn("No sample for {}", entry.getKey());
+                case 1 -> {
+                    train.addAll(list);
+                    logger.warn("No testing sample for {}", entry.getKey());
+                }
+                default -> {
+                    // train
+                    final int trainDesired = (int) Math.floor(trainRatio * size);
+                    final int trainActual = Math.min(trainDesired, maxTrainCount);
+                    train.addAll(list.subList(0, trainActual));
+
+                    // test
+                    final int testDesired = (int) Math.ceil((1.0 - trainRatio) * size);
+                    final int testActual = Math.min(testDesired, maxTestCount);
+                    test.addAll(list.subList(size - testActual, size));
+                }
+            }
         }
 
         logger.info("Train: {}, Test: {}", train.size(), test.size());
@@ -2014,6 +2035,10 @@ public class SampleRepository
         private final Constant.Boolean printSampleCounts = new Constant.Boolean(
                 false,
                 "Should we print out the count of samples per shape?");
+
+        private final Constant.Boolean reproducibleSplit = new Constant.Boolean(
+                false,
+                "Should we enforce reproducibility of train/test split?");
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------

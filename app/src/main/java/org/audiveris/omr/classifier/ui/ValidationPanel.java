@@ -180,8 +180,9 @@ public class ValidationPanel
                 Trainer.FIELD_WIDTH);
         final FormBuilder builder = FormBuilder.create().layout(layout).panel(component);
 
+        int r = 1; // -------------------------
+
         // Validation title & progress bar
-        int r = 1;
         final String title = "Validation [" + setName + " set]";
         builder.addSeparator(title).xyw(1, r, 3);
         builder.addRaw(progressBar).xyw(5, r, 7);

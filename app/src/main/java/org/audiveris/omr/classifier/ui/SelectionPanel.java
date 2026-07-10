@@ -64,7 +64,7 @@ import javax.swing.event.ChangeListener;
  *
  * @author Hervé Bitteur
  */
-class SelectionPanel
+public class SelectionPanel
         implements SampleSource, SampleRepository.LoadListener, ChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -237,9 +237,10 @@ class SelectionPanel
 
             setTotalSamples(repository.getAllSamples().size());
 
-            final int minCount = constants.minShapeSampleCount.getValue();
-            final int maxCount = constants.maxShapeSampleCount.getValue();
-            repository.splitTrainAndTest(trains, tests, minCount, maxCount);
+            final double trainRatio = constants.trainRatio.getValue();
+            final int maxTrainCount = constants.maxTrainCount.getValue();
+            final int maxTestCount = constants.maxTestCount.getValue();
+            repository.splitTrainAndTest(trains, tests, trainRatio, maxTrainCount, maxTestCount);
             nbTrainSamples.setText(Integer.toString(trains.size()));
             nbTestSamples.setText(Integer.toString(tests.size()));
             progressBar.setValue(progressBar.getMaximum());
@@ -299,12 +300,12 @@ class SelectionPanel
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    //------------------------//
-    // getMinShapeSampleCount //
-    //------------------------//
-    public static int getMinShapeSampleCount ()
+    //------------------//
+    // getMinTrainCount //
+    //------------------//
+    public static int getMinTrainCount ()
     {
-        return constants.minShapeSampleCount.getValue();
+        return constants.minTrainCount.getValue();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -315,15 +316,24 @@ class SelectionPanel
     private static class Constants
             extends ConstantSet
     {
-        private final Constant.Integer maxShapeSampleCount = new Constant.Integer(
+        private final Constant.Integer minTrainCount = new Constant.Integer(
+                "samples",
+                10,
+                "Minimum sample count per shape for training");
+
+        private final Constant.Integer maxTrainCount = new Constant.Integer(
                 "samples",
                 150,
                 "Maximum sample count per shape for training");
 
-        private final Constant.Integer minShapeSampleCount = new Constant.Integer(
+        private final Constant.Integer maxTestCount = new Constant.Integer(
                 "samples",
-                10,
-                "Minimum sample count per shape for training");
+                50,
+                "Maximum sample count per shape for testing");
+
+        private final Constant.Ratio trainRatio = new Constant.Ratio(
+                0.8,
+                "Ratio of samples for training");
     }
 
     private class ParamAction

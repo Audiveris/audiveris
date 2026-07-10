@@ -129,7 +129,10 @@ public abstract class UIUtil
             public void componentResized (ComponentEvent e)
             {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Component resized: {} size: {}", frame.getName(), frame.getSize());
+                    logger.debug(
+                            "Component resized: {} size: {}",
+                            frame.getName(),
+                            frame.getSize());
                 }
 
                 SwingUtilities.invokeLater( () -> {
@@ -142,8 +145,10 @@ public abstract class UIUtil
                     frame.repaint();
 
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Workaround applied to {}. ContentPane size: {}",
-                                     frame.getName(), frame.getContentPane().getSize());
+                        logger.debug(
+                                "Workaround applied to {}. ContentPane size: {}",
+                                frame.getName(),
+                                frame.getContentPane().getSize());
                     }
                 });
             }

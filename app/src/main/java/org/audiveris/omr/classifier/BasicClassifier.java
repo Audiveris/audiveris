@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
+import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -30,24 +31,37 @@ import org.audiveris.omr.math.NeuralNetwork;
 import org.audiveris.omr.math.PoorManAlgebra.DataSet;
 import org.audiveris.omr.math.PoorManAlgebra.INDArray;
 import org.audiveris.omr.math.PoorManAlgebra.Nd4j;
+import org.audiveris.omr.util.ChartPlotter;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.UriUtil;
+import org.audiveris.omr.util.ZipFileSystem;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.commons.io.FileUtils;
+import org.jfree.data.xy.XYSeries;
+
+import java.awt.Color;
+import java.awt.Point;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import static java.nio.file.StandardOpenOption.CREATE;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -63,7 +77,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Hervé Bitteur
  */
 public class BasicClassifier
-        extends AbstractClassifier<NeuralNetwork>
+        extends AbstractClassifier<NeuralNetwork, BasicNorms>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -72,18 +86,33 @@ public class BasicClassifier
     private static final Logger logger = LoggerFactory.getLogger(BasicClassifier.class);
 
     /** Classifier file name. */
-    public static final String FILE_NAME = "basic-classifier.zip";
+    public static final String MODEL_FILE_NAME = "basic-classifier.zip";
 
     /** Model entry name. */
     public static final String MODEL_ENTRY_NAME = "model.xml";
 
+    /** Entry name for mean values. */
+    public static final String MEANS_ENTRY_NAME = "means.bin";
+
+    /** Entry name for mean XML values. */
+    public static final String MEANS_XML_ENTRY_NAME = "means.xml";
+
+    /** Entry name for standard deviation values. */
+    public static final String STDS_ENTRY_NAME = "stds.bin";
+
+    /** Entry name for standard deviation XML values. */
+    public static final String STDS_XML_ENTRY_NAME = "stds.xml";
+
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The underlying (old) neural network. */
-    private NeuralNetwork model;
+    /** The underlying neural network. */
+    private Network network;
 
-    /** Training listener, if any. */
-    private TrainingMonitor listener;
+    /** Training listeners, if any. */
+    private final Set<TrainingMonitor> listeners = new LinkedHashSet<>();
+
+    /** Specific listener to feed the training charts. */
+    private ChartListener chartListener = null;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -95,10 +124,15 @@ public class BasicClassifier
         descriptor = new MixGlyphDescriptor();
 
         // Unmarshal from user or default data, if compatible
-        model = load(FILE_NAME);
+        network = load(MODEL_FILE_NAME);
 
-        if (model == null) {
-            model = createNetwork();
+        if (network == null) {
+            network = new Network();
+            network.model = createModel();
+        }
+
+        if (constants.dumpNetwork.isSet()) {
+            network.model.dump();
         }
     }
 
@@ -110,13 +144,13 @@ public class BasicClassifier
     @Override
     public void addListener (TrainingMonitor listener)
     {
-        this.listener = listener;
+        listeners.add(listener);
     }
 
-    //---------------//
-    // createNetwork //
-    //---------------//
-    private NeuralNetwork createNetwork ()
+    //-------------//
+    // createModel //
+    //-------------//
+    private NeuralNetwork createModel ()
     {
         // Get a brand new one (not trained)
         logger.info("Creating a brand new {}", getName());
@@ -131,7 +165,7 @@ public class BasicClassifier
                 ShapeSet.getPhysicalShapeNames(), // Output labels
                 constants.learningRate.getValue(),
                 constants.momentum.getValue(),
-                getMaxEpochs());
+                constants.lambda.getValue());
     }
 
     //----------------//
@@ -140,21 +174,43 @@ public class BasicClassifier
     @Override
     public int getEpochsTotal ()
     {
-        return model.getEpochsTotal();
+        return network.model.getEpochsTotal();
+    }
+
+    //-----------//
+    // getLambda //
+    //-----------//
+    @Override
+    public double getLambda ()
+    {
+        return network.model.getLambda();
+    }
+
+    //-----------------//
+    // getLearningRate //
+    //-----------------//
+    @Override
+    public double getLearningRate ()
+    {
+        return network.model.getLearningRate();
     }
 
     //--------------//
     // getMaxEpochs //
     //--------------//
-    /**
-     * Selector on the maximum number of training epochs.
-     *
-     * @return the upper limit on epochs counter
-     */
     @Override
     public int getMaxEpochs ()
     {
         return constants.maxEpochs.getValue();
+    }
+
+    //-------------//
+    // getMomentum //
+    //-------------//
+    @Override
+    public double getMomentum ()
+    {
+        return network.model.getMomentum();
     }
 
     //---------//
@@ -163,7 +219,7 @@ public class BasicClassifier
     @Override
     public final String getName ()
     {
-        return "Glyph Classifier";
+        return "Basic Classifier";
     }
 
     //-----------------------//
@@ -185,7 +241,7 @@ public class BasicClassifier
         }
 
         double[] outs = new double[SHAPE_COUNT];
-        model.run(ins, null, outs);
+        network.model.run(ins, null, outs);
 
         for (int s = 0; s < SHAPE_COUNT; s++) {
             evals[s] = new Evaluation(values[s], outs[s]);
@@ -199,7 +255,7 @@ public class BasicClassifier
     //--------------//
     @Override
     protected boolean isCompatible (NeuralNetwork model,
-                                    Norms norms)
+                                    BasicNorms norms)
     {
         if (!Arrays.equals(model.getInputLabels(), descriptor.getFeatureLabels())) {
             if (logger.isDebugEnabled()) {
@@ -224,6 +280,88 @@ public class BasicClassifier
         return true;
     }
 
+    //------//
+    // load //
+    //------//
+    @Override
+    protected Network load (String... fileNames)
+    {
+        final String modelFileName = fileNames[0];
+
+        // First, try user data, if any, in local train folder
+        logger.debug("AbstractClassifier. Trying user data");
+
+        final Path path = getTrainFolder().resolve(modelFileName);
+
+        if (Files.exists(path)) {
+            try {
+                final Path root = ZipFileSystem.open(path);
+                final NeuralNetwork model = loadModel(root);
+                final BasicNorms norms = loadNorms(root);
+                root.getFileSystem().close();
+
+                if (!isCompatible(model, norms)) {
+                    final String msg = "Incompatible classifier user data in " + path
+                            + ", trying default data";
+                    logger.warn(msg);
+                } else {
+                    // Tell user we are not using the default
+                    logger.info("Local classifier data found at {}", path);
+
+                    return new Network(model, norms); // Normal exit
+                }
+            } catch (Exception ex) {
+                logger.warn("Load error {}", ex.toString(), ex);
+            }
+        }
+
+        // Second, use default data (in program RES folder)
+        logger.debug("AbstractClassifier. Trying default data");
+
+        final URI uri = UriUtil.toURI(WellKnowns.RES_URI, modelFileName);
+
+        try {
+            // Must be a path to a true zip *file*
+            final Path zipPath;
+            logger.debug("uri={}", uri);
+
+            if (uri.toString().startsWith("jar:")) {
+                // We have a .zip within a .jar
+                // Quick fix: copy the .zip into a separate temp file
+                // TODO: investigate a better solution!
+                File tmpFile = Files.createTempFile("AbstractClassifier-", ".tmp").toFile();
+                logger.debug("tmpFile={}", tmpFile);
+                tmpFile.deleteOnExit();
+
+                try (InputStream is = uri.toURL().openStream()) {
+                    FileUtils.copyInputStreamToFile(is, tmpFile);
+                }
+                zipPath = tmpFile.toPath();
+            } else {
+                zipPath = Paths.get(uri);
+            }
+
+            final Path root = ZipFileSystem.open(zipPath);
+            final NeuralNetwork model = loadModel(root);
+            final BasicNorms norms = loadNorms(root);
+            root.getFileSystem().close();
+
+            //            if (!isCompatible(model, norms)) {
+            //                final String msg = "Obsolete classifier default data in " + uri
+            //                        + ", please retrain from scratch";
+            //                logger.warn(msg);
+            //            } else {
+            //                logger.debug("Classifier data loaded from default uri {}", uri);
+            //
+            return new Network(model, norms); // Normal exit
+            //            }
+        } catch (Exception ex) {
+            logger.warn("Load error on {} {}", uri, ex.toString(), ex);
+        }
+
+        return null; // Failure
+    }
+
     //-----------//
     // loadModel //
     //-----------//
@@ -244,14 +382,14 @@ public class BasicClassifier
     /**
      * {@inheritDoc}.
      * <p>
-     * Rather than binary we use XML format.
+     * We use XML format.
      *
      * @param root the root path to file system
-     * @return the loaded Norms instance, or exception is thrown
+     * @return the loaded BasicNorms instance, or exception is thrown
      * @throws Exception if anything goes wrong
      */
     @Override
-    protected Norms loadNorms (Path root)
+    protected BasicNorms loadNorms (Path root)
         throws Exception
     {
         final JAXBContext jaxbContext = JAXBContext.newInstance(MyVector.class);
@@ -263,7 +401,7 @@ public class BasicClassifier
         final Path meansEntry = root.resolve(MEANS_XML_ENTRY_NAME);
 
         if (meansEntry != null) {
-            try (InputStream is = Files.newInputStream(meansEntry); // READ by default
+            try (InputStream is = Files.newInputStream(meansEntry);
                     BufferedInputStream bis = new BufferedInputStream(is)) {
                 MyVector vector = (MyVector) um.unmarshal(bis);
                 means = Nd4j.create(vector.data);
@@ -274,7 +412,7 @@ public class BasicClassifier
         final Path stdsEntry = root.resolve(STDS_XML_ENTRY_NAME);
 
         if (stdsEntry != null) {
-            try (InputStream is = Files.newInputStream(stdsEntry); // READ by default
+            try (InputStream is = Files.newInputStream(stdsEntry);
                     BufferedInputStream bis = new BufferedInputStream(is)) {
                 MyVector vector = (MyVector) um.unmarshal(bis);
                 stds = Nd4j.create(vector.data);
@@ -285,7 +423,7 @@ public class BasicClassifier
         if ((means != null) && (stds != null)) {
             logger.debug("Classifier loaded XML norms.");
 
-            return new Norms(means, stds);
+            return new BasicNorms(means, stds);
         }
 
         return null;
@@ -301,8 +439,8 @@ public class BasicClassifier
      */
     private void normalize (INDArray features)
     {
-        features.subiRowVector(norms.means);
-        features.diviRowVector(norms.stds);
+        features.subiRowVector(network.norms.means);
+        features.diviRowVector(network.norms.stds);
     }
 
     //-------//
@@ -311,22 +449,45 @@ public class BasicClassifier
     @Override
     public void reset ()
     {
-        model = createNetwork();
+        network.model = createModel();
+
+        if (constants.dumpNetwork.isSet()) {
+            network.model.dump();
+        }
+
+        if (chartListener != null) {
+            chartListener.reset();
+        }
     }
 
-    //--------------//
-    // setMaxEpochs //
-    //--------------//
-    /**
-     * Modify the upper limit on the number of epochs for the training process.
-     *
-     * @param maxEpochs new value for epochs limit
-     */
+    //-----------//
+    // setLambda //
+    //-----------//
     @Override
-    public void setMaxEpochs (int maxEpochs)
+    public void setLambda (double lambda)
     {
-        model.setEpochs(maxEpochs);
-        constants.maxEpochs.setValue(maxEpochs);
+        network.model.setLambda(lambda);
+        logger.info("Lambda set to {}", lambda);
+    }
+
+    //-----------------//
+    // setLearningRate //
+    //-----------------//
+    @Override
+    public void setLearningRate (double learningRate)
+    {
+        network.model.setLearningRate(learningRate);
+        logger.info("Learning set to {}", learningRate);
+    }
+
+    //-------------//
+    // setMomentum //
+    //-------------//
+    @Override
+    public void setMomentum (double momentum)
+    {
+        network.model.setMomentum(momentum);
+        logger.info("Momentum set to {}", momentum);
     }
 
     //------//
@@ -335,7 +496,31 @@ public class BasicClassifier
     @Override
     public void stop ()
     {
-        model.stop();
+        network.model.stop();
+    }
+
+    //-------//
+    // store //
+    //-------//
+    @Override
+    protected void store ()
+        throws Exception
+    {
+        final Path trainFolder = getTrainFolder(true);
+        final Path path = trainFolder.resolve(MODEL_FILE_NAME);
+
+        try {
+            final Path root = ZipFileSystem.create(path); // Delete if already exists
+
+            storeModel(root);
+            storeNorms(root);
+
+            root.getFileSystem().close();
+
+            logger.info("{} data stored to {}", getName(), path);
+        } catch (Exception ex) {
+            logger.warn("Error storing {} {}", getName(), ex.toString(), ex);
+        }
     }
 
     //------------//
@@ -349,7 +534,7 @@ public class BasicClassifier
 
         try (OutputStream bos = new BufferedOutputStream(
                 Files.newOutputStream(modelPath, CREATE))) {
-            model.marshal(bos);
+            network.model.marshal(bos);
             bos.flush();
         }
 
@@ -359,13 +544,6 @@ public class BasicClassifier
     //------------//
     // storeNorms //
     //------------//
-    /**
-     * {@inheritDoc}.
-     * <p>
-     * Rather than binary, we use XML format.
-     *
-     * @throws Exception if anything goes wrong
-     */
     @Override
     protected void storeNorms (Path root)
         throws Exception
@@ -375,13 +553,13 @@ public class BasicClassifier
         final Path stds = root.resolve(STDS_XML_ENTRY_NAME);
 
         try (OutputStream bos = new BufferedOutputStream(Files.newOutputStream(means, CREATE))) {
-            MyVector vector = new MyVector(norms.means);
+            MyVector vector = new MyVector(network.norms.means);
             Jaxb.marshal(vector, bos, jaxbContext);
             bos.flush();
         }
 
         try (OutputStream bos = new BufferedOutputStream(Files.newOutputStream(stds, CREATE))) {
-            MyVector vector = new MyVector(norms.stds);
+            MyVector vector = new MyVector(network.norms.stds);
             Jaxb.marshal(vector, bos, jaxbContext);
             bos.flush();
         }
@@ -392,7 +570,8 @@ public class BasicClassifier
     //-------//
     @SuppressWarnings("unchecked")
     @Override
-    public void train (Collection<Sample> samples)
+    public void train (Collection<Sample> samples,
+                       int epochs)
     {
         logger.info("Training on {} samples", samples.size());
 
@@ -400,6 +579,10 @@ public class BasicClassifier
             logger.warn("No sample to retrain neural classifier");
 
             return;
+        }
+
+        if (chartListener == null) {
+            addListener(chartListener = new ChartListener());
         }
 
         final StopWatch watch = new StopWatch("train");
@@ -417,10 +600,10 @@ public class BasicClassifier
 
         // Record mean and standard deviation for every feature
         watch.start("norms");
-        norms = new Norms(features.mean(0), features.std(0));
-        norms.stds.addi(Nd4j.scalar(Nd4j.EPS_THRESHOLD)); // Safer, to avoid later division by 0
-        logger.debug("means:{}", norms.means);
-        logger.debug("stds:{}", norms.stds);
+        network.norms = new BasicNorms(features.mean(0), features.std(0));
+        network.norms.stds.addi(Nd4j.scalar(Nd4j.EPS_THRESHOLD)); // To avoid later division by 0
+        logger.debug("means:{}", network.norms.means);
+        logger.debug("stds:{}", network.norms.stds);
         watch.start("normalize");
         normalize(features);
 
@@ -458,10 +641,14 @@ public class BasicClassifier
         }
 
         // Train
-        model.train(inputs, desiredOutputs, listener, listener.getIterationPeriod());
+        network.model.train(inputs, desiredOutputs, listeners, epochs);
 
         // Store
-        store(FILE_NAME);
+        try {
+            store();
+        } catch (Exception ex) {
+            logger.warn("Error storing {} {}", getName(), ex.getMessage(), ex);
+        }
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
@@ -481,12 +668,75 @@ public class BasicClassifier
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
+    //---------------//
+    // ChartListener //
+    //---------------//
+    /**
+     * A listener meant to feed the training charts.
+     */
+    private static class ChartListener
+            implements TrainingMonitor
+    {
+        XYSeries scoreSeries;
+
+        XYSeries hiddenSeries;
+
+        XYSeries outputSeries;
+
+        ChartPlotter scorePlotter;
+
+        ChartPlotter weightsPlotter;
+
+        public ChartListener ()
+        {
+            reset();
+        }
+
+        @Override
+        public int getIterationPeriod ()
+        {
+            return constants.internalIterPeriod.getValue();
+        }
+
+        @Override
+        public void iterationPeriodDone (int epochsCount,
+                                         int iteration,
+                                         double score,
+                                         double hiddenSquaredWeights,
+                                         double outputSquaredWeights)
+        {
+            scoreSeries.add(epochsCount, score);
+            hiddenSeries.add(epochsCount, hiddenSquaredWeights);
+            outputSeries.add(epochsCount, outputSquaredWeights);
+        }
+
+        public final void reset ()
+        {
+            scoreSeries = new XYSeries("Score", false);
+            hiddenSeries = new XYSeries("Hidden", false);
+            outputSeries = new XYSeries("Output", false);
+            scorePlotter = new ChartPlotter("Score", "Epochs", "Score");
+            weightsPlotter = new ChartPlotter("Weights", "Epochs", "Weights");
+
+            scorePlotter.add(scoreSeries, Color.red);
+            scorePlotter.display("Score chart", new Point(50, 50));
+
+            weightsPlotter.add(hiddenSeries, Color.green);
+            weightsPlotter.add(outputSeries, Color.blue);
+            weightsPlotter.display("Weights  chart", new Point(100, 100));
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
     private static class Constants
             extends ConstantSet
     {
+        private final Constant.Boolean dumpNetwork = new Constant.Boolean(
+                false,
+                "Should we print out the network parameters?");
+
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
@@ -495,14 +745,27 @@ public class BasicClassifier
                 0.5,
                 "Initial weight amplitude");
 
-        private final Constant.Ratio learningRate = new Constant.Ratio(0.1, "Learning Rate");
+        private final Constant.Ratio learningRate = new Constant.Ratio( //
+                0.1,
+                "Learning Rate");
+
+        private final Constant.Ratio momentum = new Constant.Ratio( //
+                0.9,
+                "Training momentum");
+
+        private final Constant.Ratio lambda = new Constant.Ratio( //
+                0.0001,
+                "Regularization factor");
 
         private final Constant.Integer maxEpochs = new Constant.Integer(
                 "Epochs",
-                500,
-                "Maximum number of epochs in training");
+                100,
+                "Number of epochs in training session");
 
-        private final Constant.Ratio momentum = new Constant.Ratio(0.2, "Training momentum");
+        private final Constant.Integer internalIterPeriod = new Constant.Integer(
+                "Internal iteration period",
+                1,
+                "Period to trigger the internal listener");
     }
 
     //---------------//

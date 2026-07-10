@@ -62,6 +62,11 @@ public class Sample
             s1.getShape().getPhysicalShape().ordinal(),
             s2.getShape().getPhysicalShape().ordinal());
 
+    /** For comparing Sample instances by alphabetical shape name. */
+    public static final Comparator<Sample> byShapeName = (s1,
+                                                          s2) -> //
+    s1.getShape().name().compareTo(s2.getShape().name());
+
     /** For comparing Sample instances by normalized width. */
     public static final Comparator<Sample> byNormalizedWidth = (s1,
                                                                 s2) -> //
