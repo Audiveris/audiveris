@@ -1964,7 +1964,7 @@ public class Book
                                     stub.swapSheet(); // Save sheet & global book info to disk
                                 }
 
-                                return null;
+                                return true; // Fixes issue #960
                             } finally {
                                 stub.printWatch(false);
                                 LogUtil.stopStub();
