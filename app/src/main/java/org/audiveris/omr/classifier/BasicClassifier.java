@@ -277,6 +277,10 @@ public class BasicClassifier
             return false;
         }
 
+        if (model.getLearningRate() == 0) {
+            return false;
+        }
+
         return true;
     }
 
