@@ -22,7 +22,6 @@
 package org.audiveris.omr.classifier.ui;
 
 import org.audiveris.omr.classifier.GlyphDescriptor;
-import org.audiveris.omr.classifier.ImgGlyphDescriptor;
 import org.audiveris.omr.classifier.MixGlyphDescriptor;
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleRepository;
@@ -383,9 +382,9 @@ public class SelectionPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            GlyphDescriptor imgDesc = new ImgGlyphDescriptor();
-            imgDesc.export("train", getTrainSamples(), true);
-            imgDesc.export("test", getTestSamples(), false);
+            //            GlyphDescriptor imgDesc = new ImgGlyphDescriptor();
+            //            imgDesc.export("train", getTrainSamples(), true);
+            //            imgDesc.export("test", getTestSamples(), false);
 
             GlyphDescriptor mixDesc = new MixGlyphDescriptor();
             mixDesc.export("train", getTrainSamples(), true);

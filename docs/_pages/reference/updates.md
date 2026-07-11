@@ -22,16 +22,27 @@ Table of contents
 ---
 
 ## 5.11
-(???? 2026)
+(July 2026)
 
 - User Interface
   - Support for a user personal shape set in the shape board. Suggested by [manderpe]
-  - Support for a user-defined table of shape shortcuts. Contributed by [Gal Shacham]
+  - Support for a configurable table of keyboard shortcuts.
+  See [this doc](../guides/ui/ui_tools/add_inter.md#configurable-shortcuts-table). Contributed by [Gal Shacham]
 - Engine
+  - Added an L2 (Ridge) regularization to the implementation of the glyph classifier to prevent overfitting
   - Better handling of staff lines with very different thicknesses
   - Smarter staff line removal in case of crossing curves
   - User option to link dynamics to staff above or below. Contributed by [Pepper Pancoast]
   - Enable HiDPI scaling on Linux Wayland. Contributed by [Martin Wilck]
+  - Fix on window resizing issues. Contributed by [aha917]
+  - Fix on parallel processing of multi-sheet books. Contributed by [Youngmin Yoo]
+  - Fix on export of imperfect scans. Contributed by [Samit Mohnot]
+  - Fix on percussion/unknown clefs. Contributed by [tshidisoo]
+  - Plus minor fixes...
+- Project
+  - The installers (for Windows, for Linux, for macOS) now include the Java modules
+  `jdk.localedata` for locales other than the US locale (such as the FR locale)
+  and `jdk.accessibility` for Assistive Technologies
 
 ## 5.10
 (March 2026)
@@ -332,7 +343,7 @@ Table of contents
   - Symbols: The symbols bitmap definitions (in the /symbol folder) have been refined with at least a 16-pixel interline definition, resulting in better display notably in score view.
   - Tiff: Images are forwarded to Tesseract OCR by memory, avoiding temporary files
 
-
+[aha917]:                 https://github.com/aha917
 [Baruch Hoffart]:         https://github.com/Bacchushlg
 [Brian Boe]:              https://github.com/brian-math
 [Fabio Marques]:          https://github.com/fbmrqs
@@ -348,3 +359,6 @@ Table of contents
 [qnach]:                  https://github.com/qnach
 [Ram Kromberg]:           https://github.com/RamKromberg
 [ResurFace382500000]:     https://github.com/ResurFace382500000
+[Samit Mohnot]:           https://github.com/AnotherSamWithADream
+[tshidisoo]:              https://github.com/tshidisoo
+[Youngmin Yoo]:           https://github.com/recrack
