@@ -366,12 +366,6 @@ public class BarlineInter
             return;
         }
 
-        final StaffBarlineInter sb = getStaffBarline();
-
-        if (sb != null) {
-            sb.removeMember(this);
-        }
-
         if (staff != null) {
             staff.removeBarline(this);
         }

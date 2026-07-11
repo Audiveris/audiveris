@@ -97,12 +97,11 @@ public class GhostGlassPane
      */
     protected Rectangle getImageBounds (Point localPoint)
     {
-        Rectangle rect = new Rectangle(localPoint);
+        final Rectangle rect = new Rectangle(localPoint);
         rect.grow(draggedImage.getWidth() / 2, draggedImage.getHeight() / 2);
 
-        if (draggedImage instanceof SymbolImage) {
-            SymbolImage symbolImage = (SymbolImage) draggedImage;
-            Point refPoint = symbolImage.getRefPoint();
+        if (draggedImage instanceof SymbolImage symbolImage) {
+            final Point refPoint = symbolImage.getRefPoint();
 
             if (refPoint != null) {
                 rect.translate(-refPoint.x, -refPoint.y);
@@ -136,16 +135,12 @@ public class GhostGlassPane
             return;
         }
 
-        Graphics2D g2 = (Graphics2D) g;
+        final Graphics2D g2 = (Graphics2D) g;
 
         // Use composition with display underneath
-        if (overTarget) {
-            g2.setComposite(targetComposite);
-        } else {
-            g2.setComposite(nonTargetComposite);
-        }
+        g2.setComposite(overTarget ? targetComposite : nonTargetComposite);
 
-        Rectangle rect = getImageBounds(localPoint);
+        final Rectangle rect = getImageBounds(localPoint);
         g2.drawImage(draggedImage, null, rect.x, rect.y);
     }
 
@@ -176,8 +171,8 @@ public class GhostGlassPane
         // Anything to repaint since last time the point was set?
         if (draggedImage != null) {
             // Bounds of new scene to paint
-            Rectangle newSceneBounds = getSceneBounds(localPoint);
-            Rectangle dirty = new Rectangle(newSceneBounds);
+            final Rectangle newSceneBounds = getSceneBounds(localPoint);
+            final Rectangle dirty = new Rectangle(newSceneBounds);
 
             // Bounds of previous scene if any
             if (prevSceneBounds != null) {

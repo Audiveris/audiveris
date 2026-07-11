@@ -1964,7 +1964,7 @@ public class Book
                                     stub.swapSheet(); // Save sheet & global book info to disk
                                 }
 
-                                return null;
+                                return true; // Fixes issue #960
                             } finally {
                                 stub.printWatch(false);
                                 LogUtil.stopStub();
@@ -2041,7 +2041,7 @@ public class Book
                         } catch (Exception ex) {
                             // Exception raised on stub
                             // Let processing continue for the other stubs
-                            logger.warn("Error processing stub");
+                            logger.warn("Error processing stub {}", ex.getMessage(), ex);
                             someFailure = true;
                         } finally {
                             stub.printWatch(false);

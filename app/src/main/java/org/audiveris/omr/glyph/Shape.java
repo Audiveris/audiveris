@@ -37,6 +37,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -471,6 +472,7 @@ public enum Shape
     //
     // Bars ---
     //
+    DUMMY_BARLINE("Dummy bar line"),
     THIN_BARLINE("Thin bar line"),
     THIN_CONNECTOR("Connector between thin barlines", Colors.SCORE_FRAME),
     THICK_BARLINE("Thick bar line"),
@@ -481,7 +483,7 @@ public enum Shape
     REVERSE_FINAL_BARLINE("Thick / Thin bar line"),
     LEFT_REPEAT_SIGN("Thick / Thin bar line + Repeat dots"),
     RIGHT_REPEAT_SIGN("Repeat dots + Thin / Thick bar line"),
-    BACK_TO_BACK_REPEAT_SIGN("Repeat dots + Thin / Thick / Thin + REPEAT_DOTS"),
+    BACK_TO_BACK_REPEAT_SIGN("Repeat dots + Thin / Thick / Thin  + Repeat dots"),
     ENDING("Alternate ending"),
     ENDING_WRL("Alternate ending with right leg"),
 
@@ -545,8 +547,11 @@ public enum Shape
     public static final Shape LAST_PHYSICAL_SHAPE = CLUTTER;
 
     /** A comparator based on shape name. */
-    public static final Comparator<Shape> alphaComparator = (o1,
-                                                             o2) -> o1.name().compareTo(o2.name());
+    public static final Comparator<Shape> byName = (o1,
+                                                    o2) -> o1.name().compareTo(o2.name());
+
+    /** The list of trainable shapes, sorted alphabetically. */
+    public static final List<Shape> ALPHA_TRAINABLES = buildAlphaTrainables();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -1097,5 +1102,26 @@ public enum Shape
         for (String str : names) {
             System.out.println(str);
         }
+    }
+
+    //----------------------//
+    // buildAlphaTrainables //
+    //----------------------//
+    /**
+     * Build the list of trainable shapes, sorted by name.
+     *
+     * @return the sorted list of trainable shapes
+     */
+    private static List<Shape> buildAlphaTrainables ()
+    {
+        final List<Shape> list = new ArrayList<>();
+
+        for (Shape shape : EnumSet.range(Shape.values()[0], LAST_PHYSICAL_SHAPE)) {
+            list.add(shape);
+        }
+
+        Collections.sort(list, byName);
+
+        return list;
     }
 }

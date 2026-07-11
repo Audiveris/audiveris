@@ -192,6 +192,9 @@ public abstract class Colors
     /** Background of a MusicPane. */
     public static final Color MUSIC_PANE_BACKGROUND = new Color(255, 255, 240);
 
+    /** Background of the custom set panel. */
+    public static final Color CUSTOM_SET_BACKGROUND = new Color(230, 255, 230);
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /**

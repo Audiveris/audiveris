@@ -246,7 +246,8 @@ public final class StaffBarlineInter
     {
         return switch (getMembers().size()) {
             case 0 -> NONE;
-            case 1 -> (getLeftBar().getShape() == Shape.THIN_BARLINE) ? REGULAR : HEAVY;
+            case 1 -> (getLeftBar().getShape() == Shape.THICK_BARLINE) ? HEAVY :
+                      (getLeftBar().getShape() == Shape.THIN_BARLINE) ? REGULAR : NONE;
             case 2 -> (getLeftBar().getShape() == Shape.THIN_BARLINE) //
                     ? ((getRightBar().getShape() == Shape.THIN_BARLINE) ? LIGHT_LIGHT : LIGHT_HEAVY)
                     : ((getRightBar().getShape() == Shape.THIN_BARLINE) ? HEAVY_LIGHT
@@ -296,7 +297,11 @@ public final class StaffBarlineInter
             bounds = Entities.getBounds(getMembers());
         }
 
-        return new Rectangle(bounds);
+        // A StaffBarline with no members yields a null bounds; 'new Rectangle(null)'
+        // would then throw a NPE (notably during marshalling, via the inherited
+        // beforeMarshal() -> getBounds()). Returning null here is consistent with
+        // AbstractInter.getBounds(), which is allowed to return null.
+        return (bounds != null) ? new Rectangle(bounds) : null;
     }
 
     //--------------------//
@@ -1116,6 +1121,7 @@ public final class StaffBarlineInter
     private Style toStyle (Shape shape)
     {
         return switch (shape) {
+            case DUMMY_BARLINE -> Style.NONE;
             case THIN_BARLINE -> Style.REGULAR;
             case THICK_BARLINE -> Style.HEAVY;
             case DOUBLE_BARLINE -> Style.LIGHT_LIGHT;

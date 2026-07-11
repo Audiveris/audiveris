@@ -30,6 +30,7 @@ import org.audiveris.omr.ui.field.LSpinner;
 import org.audiveris.omr.ui.field.SpinnerUtil;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UILookAndFeel;
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -252,7 +253,9 @@ public class SymbolRipper
 
         // Global layout
         if (!standAlone) {
-            frame = defineLayout(new JFrame("Symbol Ripper"));
+            frame = new JFrame("Symbol Ripper");
+            UIUtil.addResizeWorkaround(frame);
+            frame = defineLayout(frame);
             OmrGui.getApplication().show(frame);
         }
     }

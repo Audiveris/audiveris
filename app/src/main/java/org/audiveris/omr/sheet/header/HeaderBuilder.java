@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.header;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -45,6 +46,7 @@ import org.slf4j.LoggerFactory;
 import org.jfree.data.xy.XYSeries;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 
 /**
@@ -143,8 +145,19 @@ public class HeaderBuilder
             BarlineInter leftBar = staff.getSideBarline(LEFT);
 
             if (leftBar == null) {
-                // No left bar line found, so use the beginning abscissa of lines
-                staff.setHeader(new StaffHeader(staff.getAbscissa(LEFT)));
+                // No left barline found, so use the beginning abscissa of lines
+                final int xLeft = staff.getAbscissa(LEFT);
+                staff.setHeader(new StaffHeader(xLeft));
+
+                // Place a dummy barline there
+                final int x1 = xLeft;
+                final int y1 = staff.getFirstLine().yAt(xLeft);
+                final int y2 = staff.getLastLine().yAt(xLeft);
+                leftBar = new BarlineInter(null, Shape.DUMMY_BARLINE, 1.0, null, 0.0);
+                system.getSig().addVertex(leftBar);
+                leftBar.setBounds(new Rectangle(xLeft, y1, 1, y2 - y1));
+                leftBar.setStaff(staff);
+                staff.addBarline(leftBar);
             } else {
                 // Retrieve all bar lines grouped at beginning of staff
                 // And pick up the last (right-most) barline in the group

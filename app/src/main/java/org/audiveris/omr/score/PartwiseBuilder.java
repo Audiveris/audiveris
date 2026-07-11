@@ -36,8 +36,6 @@ import static org.audiveris.omr.score.MusicXML.*;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
-import org.audiveris.omr.sheet.ProcessingSwitch;
-import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
@@ -99,7 +97,6 @@ import org.audiveris.omr.sig.relation.ChordPauseRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
-import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
 import org.audiveris.omr.sig.relation.OctaveShiftChordRelation;
@@ -1237,9 +1234,11 @@ public class PartwiseBuilder
                             (location == RightLeftMiddle.RIGHT) ? RightLeftMiddle.RIGHT
                                     : RightLeftMiddle.LEFT);
 
-                    BarStyleColor barStyleColor = factory.createBarStyleColor();
-                    barStyleColor.setValue(barStyleOf(style, location));
-                    pmBarline.setBarStyle(barStyleColor);
+                    if (style != null) {
+                        BarStyleColor barStyleColor = factory.createBarStyleColor();
+                        barStyleColor.setValue(barStyleOf(style, location));
+                        pmBarline.setBarStyle(barStyleColor);
+                    }
 
                     switch (location) {
                         case LEFT, MIDDLE -> {
@@ -1701,7 +1700,9 @@ public class PartwiseBuilder
                 dot = new Point(box.x + (box.width / 2), box.y + box.height);
             }
 
-            pmFermata.setDefaultY(yOf(dot, current.note.getStaff()));
+            if (current.note != null) {
+                pmFermata.setDefaultY(yOf(dot, current.note.getStaff()));
+            }
 
             // Type
             pmFermata.setType(
@@ -3714,16 +3715,19 @@ public class PartwiseBuilder
             }
 
             // Sort by time offset, and for same offset, ensure START (LEFT) comes before STOP (RIGHT)
-            Collections.sort(events, (w1, w2) -> {
-                int cmp = w1.timeOffset.compareTo(w2.timeOffset);
-                if (cmp != 0) {
-                    return cmp;
-                }
-                if (w1.side == w2.side) {
-                    return 0;
-                }
-                return (w1.side == LEFT) ? -1 : 1;
-            });
+            Collections.sort(
+                    events,
+                    (w1,
+                     w2) -> {
+                        int cmp = w1.timeOffset.compareTo(w2.timeOffset);
+                        if (cmp != 0) {
+                            return cmp;
+                        }
+                        if (w1.side == w2.side) {
+                            return 0;
+                        }
+                        return (w1.side == LEFT) ? -1 : 1;
+                    });
 
             it = events.listIterator();
         }

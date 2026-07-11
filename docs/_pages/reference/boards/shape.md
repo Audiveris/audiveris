@@ -6,10 +6,17 @@ nav_order: 7
 ---
 # Shape board
 {: .no_toc :}
+{: .d-inline-block }
+updated for 5.11
+{: .label .label-green}
 
 This board allows to handle about 200 different shapes.  
 To this end, the shapes are organized into some 20 shape-sets,
 and each shape-set is presented in a dedicated palette.
+
+Since the 5.11 release, in addition to these predefined shape-sets, 
+we can populate a *custom* shape-set to ease and speed up the frequent
+selection of a few shapes.
 
 ---
 Table of contents
@@ -22,8 +29,6 @@ Table of contents
 
 ![](../../assets/images/shape_board.png)
 
-The shape board initially displays the catalog of all shape-sets.
-
 In the picture above, we can see:
 - Accidentals, Articulations, Attributes, Barlines, BeamsAndTuplets,
   Clefs, Dynamics, Flags, Holds,
@@ -32,12 +37,15 @@ In the picture above, we can see:
 - Texts, Physicals.
 
 From this catalog, displayed with a dark background, no action like a drag n' drop can be launched.
-The purpose of the catalog is only to choose a shape-set.
+The purpose of the catalog is only to choose one of the predefined shape-sets.
 
-## One shape-set palette
+Changes brought by the 5.11 release:
+- Before: we had to frequently switch between the catalog of shape-sets and the selected shape-set.
+- After: the catalog is always displayed to allow direct selection of any predefined shape-set.
 
-Clicking on a shape-set button replaces the global catalog by the selected shape-set,
-presented in a dedicated palette.  
+## A predefined shape-set palette
+
+Clicking on a shape-set button in the catalog displays the content of the selected shape-set.  
 For example, clicking on the ``HeadsAndDot`` button will display the ``HeadsAndDot`` palette,
 whose content adapts to the book at hand:
 
@@ -53,18 +61,65 @@ See the [Drums](../../guides/specific/drums.md) chapter for further details.
 From any shape palette we can:
 * Assign a shape to the current glyph, via a double-click on the proper shape button;
 * Initiate a drag & drop action, by pressing the proper shape button and dragging it
-to the desired location in sheet.
+to the desired location in sheet -- or even to the new custom palette (see next section)
 
-To leave the current palette and return to the global shape-set catalog,
+To close the current pre-defined palette,
 we press the `ESCAPE` key or click on the ``up`` (&#x25B2;) button.
 
+## The custom shape-set
+{: .d-inline-block }
+New in 5.11
+{: .label .label-yellow }
+
+In addition to the predefined shape-sets, we now have the ability to define a custom shape-set,
+gathering the shapes we are most interested in.
+
+We can dynamically add, remove, reorder shapes in this set.
+It does not depend on the current book or sheet and it persists between the application runs.  
+We thus can speak of a *personal* shape-set. 
+
+The handling of the custom shape-set depends on the new `CUSTOM_SHAPE_SET` advanced topic
+available in the [Preferences](../../guides/main/preferences.md) dialog.
+This topic is enabled by default.
+
+### Shape addition
+
+![](../../assets/images/customset_addition.png)
+
+To add a shape into the custom set, we simply drag a shape button from a predefined palette
+and drop it on the custom palette
+(the palette with a pale green background, with a trash can on its upper left corner).
+
+![](../../assets/images/customset_filled.png)
+
+If we drop precisely on some "old" button, the "new" button will be inserted just before the "old" one.
+Otherwise, the "new" button will be inserted at the end of the set.
+
+In both cases, any existing button with the same shape will first be removed,
+so there can't remain any duplicate.  
+Thus, dragging and dropping *from and to* the custom palette is an easy way to reorder the buttons in the custom set.
+
+### Shape removal
+
+Dropping a shape on the "Trash Can" will remove that shape from the custom set
+-- whether the drag was initiated from the custom set or from a predefined set.
+
+![](../../assets/images/customset_removal.png)
+
+To empty the whole custom set, we use a right-click on the "Trash Can" button,
+and press the "Clear" item in the popup menu.
+
+![](../../assets/images/customset_clear.png)
+
 ## Recently used shapes
+
 The shapes most recently used (by whatever means) always appear at the top of the shape board,
+displayed in reverse chronological order,
 making them easily available for a direct reuse.
 
 ![](../../assets/images/shape_cache.png)
 
-## Palettes contents
+## Predefined palettes
 
 | Palette name      | Palette content |
 | :---              | :---       |

@@ -72,12 +72,20 @@ In the vast majority of cases, there is exactly one page per sheet.
 
 The exceptions are as follows:
 1. When an _indented system_ appears anywhere in a sheet,
-  it indicates the beginning of a new movement/score.  
+  it indicates the beginning of a new movement/score.
   This sheet, as in the picture above, then contains two pages or more,
   if the indented system is not the first one in the sheet.
-2. When a sheet is _invalid_ (i.e. containing no music), it contains no page.  
+2. When a sheet is _invalid_ (i.e. containing no music), it contains no page.
   Moreover, an invalid sheet is considered as a _score break_:
    - It ends the last score in the previous valid sheet, if any.
    - The next valid sheet, if any, will start another score,
      even if it does not start with an indented system.
+
+## Manual movement boundaries
+
+In some cases (exercise books, anthologies, hymnals), multiple pieces may share the same page
+without any visual indentation between them.
+When the automatic indentation detection cannot identify these boundaries, you can manually
+mark any system as a movement start via the right-click
+[System context menu](../../guides/ui/ui_tools/system.md#movement-start).
 

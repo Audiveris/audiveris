@@ -77,7 +77,7 @@ public class OmrGlassPane
 
         if ((interDnd != null) && overTarget) {
             // Use inter decorations, etc (this depends on staff reference availability)
-            Rectangle box = interDnd.getSceneBounds();
+            final Rectangle box = interDnd.getSceneBounds();
 
             if (box != null) {
                 rect.add(targetTransform.createTransformedShape(box).getBounds());
@@ -86,8 +86,8 @@ public class OmrGlassPane
 
         // To cope with curve thickness, not taken into account in inter bounds
         if (targetTransform != null) {
-            double ratio = targetTransform.getScaleX();
-            int margin = (int) Math.ceil((ratio * Curves.DEFAULT_THICKNESS) / 2.0);
+            final double ratio = targetTransform.getScaleX();
+            final int margin = (int) Math.ceil((ratio * Curves.DEFAULT_THICKNESS) / 2.0);
             rect.grow(margin, margin);
         }
 
@@ -110,14 +110,14 @@ public class OmrGlassPane
             return;
         }
 
-        Graphics2D g2 = (Graphics2D) g;
+        final Graphics2D g2 = (Graphics2D) g;
 
         if (overTarget) {
             // Use composition with display underneath
             g2.setComposite(targetComposite);
 
             if ((interDnd == null) || !interDnd.hasReference()) {
-                Rectangle rect = getImageBounds(localPoint);
+                final Rectangle rect = getImageBounds(localPoint);
                 g2.drawImage(draggedImage, null, rect.x, rect.y);
             } else {
                 // Draw (w/ proper transform) staff reference, inter, decorations
@@ -131,7 +131,7 @@ public class OmrGlassPane
         } else {
             g2.setComposite(nonTargetComposite);
 
-            Rectangle rect = getImageBounds(localPoint);
+            final Rectangle rect = getImageBounds(localPoint);
             g2.drawImage(draggedImage, null, rect.x, rect.y);
         }
     }

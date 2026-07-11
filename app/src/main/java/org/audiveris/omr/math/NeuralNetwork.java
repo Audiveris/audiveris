@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.Objects;
 
 import javax.xml.bind.JAXBContext;
@@ -49,13 +50,8 @@ import javax.xml.stream.XMLStreamException;
  * network, with one input layer, one hidden layer and one output layer.
  * The transfer function is the sigmoid.
  * <p>
- * <b>NOTA</b>: This class has been resurrected until a dl4j solution is found.
- * <p>
  * This neuralNetwork class can be stored on disk in XML form (through the {@link #marshal} and
  * {@link #unmarshal} methods).
- * <p>
- * The class also allows in-memory {@link #backup} and {@link #restore} operation, mainly used to
- * save the most efficient weight values during the network training.
  *
  * @author Hervé Bitteur
  */
@@ -72,6 +68,9 @@ public class NeuralNetwork
 
     //~ Instance fields ----------------------------------------------------------------------------
 
+    // Persistent data
+    //----------------
+
     /** Size of input layer. */
     @XmlAttribute(name = "input-size")
     private final int inputSize;
@@ -83,6 +82,18 @@ public class NeuralNetwork
     /** Size of output layer. */
     @XmlAttribute(name = "output-size")
     private final int outputSize;
+
+    /** Learning Rate parameter. */
+    @XmlAttribute(name = "learning-rate")
+    private double learningRate;
+
+    /** Momentum for faster convergence. */
+    @XmlAttribute(name = "momentum")
+    private double momentum;
+
+    /** L2 regularization factor. */
+    @XmlAttribute(name = "lambda")
+    private double lambda;
 
     /** Total count of epochs run so far. */
     @XmlAttribute(name = "epochs-total")
@@ -106,14 +117,8 @@ public class NeuralNetwork
     @XmlElement(name = "row")
     private double[][] outputWeights;
 
-    /** Default learning Rate parameter. */
-    private transient volatile double learningRate = 0.40;
-
-    /** Default momentum for faster convergence. */
-    private transient volatile double momentum = 0.25;
-
-    /** Default number of epochs when training. */
-    private transient volatile int epochs = 10;
+    // Transient data
+    //---------------
 
     /** To trigger training stop. */
     private transient volatile boolean stopping = false;
@@ -131,8 +136,7 @@ public class NeuralNetwork
     }
 
     /**
-     * Create a neural network, with specified number of cells in each
-     * layer, and default values.
+     * Create a neural network, with specified number of cells in each layer, and default values.
      *
      * @param inputSize    number of cells in input layer
      * @param hiddenSize   number of cells in hidden layer
@@ -140,18 +144,27 @@ public class NeuralNetwork
      * @param amplitude    amplitude (less than or = 1.0) for initial random values
      * @param inputLabels  array of labels for input cells, perhaps empty
      * @param outputLabels array of labels for output cells, perhaps empty
+     * @param learningRate learning rate factor
+     * @param momentum     momentum from last adjustment
+     * @param lambda       L2 regularization factor
      */
     public NeuralNetwork (int inputSize,
                           int hiddenSize,
                           int outputSize,
                           double amplitude,
                           String[] inputLabels,
-                          String[] outputLabels)
+                          String[] outputLabels,
+                          double learningRate,
+                          double momentum,
+                          double lambda)
     {
         // Cache parameters
         this.inputSize = inputSize;
         this.hiddenSize = hiddenSize;
         this.outputSize = outputSize;
+        this.learningRate = learningRate;
+        this.momentum = momentum;
+        this.lambda = lambda;
 
         // Allocate weights (from input) to hidden layer
         // +1 for bias
@@ -178,84 +191,33 @@ public class NeuralNetwork
         }
 
         logger.debug("Network created");
-    }
 
-    /**
-     * Create a neural network, with specified number of cells in each
-     * layer, and specific parameters
-     *
-     * @param inputSize    number of cells in input layer
-     * @param hiddenSize   number of cells in hidden layer
-     * @param outputSize   number of cells in output layer
-     * @param amplitude    amplitude (less than or = 1.0) for initial random values
-     * @param inputLabels  array of labels for input cells, perhaps empty
-     * @param outputLabels array of labels for output cells, perhaps empty
-     * @param learningRate learning rate factor
-     * @param momentum     momentum from last adjustment
-     * @param epochs       number of epochs in training
-     */
-    public NeuralNetwork (int inputSize,
-                          int hiddenSize,
-                          int outputSize,
-                          double amplitude,
-                          String[] inputLabels,
-                          String[] outputLabels,
-                          double learningRate,
-                          double momentum,
-                          int epochs)
-    {
-        this(inputSize, hiddenSize, outputSize, amplitude, inputLabels, outputLabels);
-
-        // Cache parameters
-        this.learningRate = learningRate;
-        this.momentum = momentum;
-        this.epochs = epochs;
+        logger.info(
+                String.format(
+                        "Initial complexity, hiddenW2: %.1f outputW2: %.1f",
+                        w2(hiddenWeights),
+                        w2(outputWeights)));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
-    //--------//
-    // backup //
-    //--------//
-    /**
-     * Return a backup of the internal memory of this network.
-     * Generally used right after network creation to save the initial
-     * conditions.
-     *
-     * @return an opaque copy of the network memory
-     */
-    public Backup backup ()
-    {
-        logger.debug("Network memory backup");
-
-        return new Backup(hiddenWeights, outputWeights);
-    }
 
     //------//
     // dump //
     //------//
     /**
-     * Dumps the network
+     * Dump the network parameters.
      */
     public void dump ()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Network%n"));
-        sb.append(String.format("LearningRate = %f%n", learningRate));
-        sb.append(String.format("Momentum     = %f%n", momentum));
-        sb.append(String.format("Epochs       = %d%n", epochs));
-        sb.append(String.format("EpochsCount  = %d%n", epochsTotal));
-
-        // Input
-        sb.append(String.format("%nInputs  : %d cells%n", inputSize));
-
-        // Hidden
-        sb.append(dumpOfMatrix(hiddenWeights));
-        sb.append(String.format("%nHidden  : %d cells%n", hiddenSize));
-
-        // Output
-        sb.append(dumpOfMatrix(outputWeights));
-        sb.append(String.format("%nOutputs : %d cells%n", outputSize));
+        final StringBuilder sb = new StringBuilder() //
+                .append(String.format("Network%n")) //
+                .append(String.format("   Input        : %d cells%n", inputSize)) //
+                .append(String.format("   Hidden       : %d cells%n", hiddenSize)) //
+                .append(String.format("   Output       : %d cells%n", outputSize)) //
+                .append(String.format("   LearningRate : %f%n", learningRate)) //
+                .append(String.format("   Momentum     : %f%n", momentum)) //
+                .append(String.format("   Lambda       : %f%n", lambda)) //
+                .append(String.format("   EpochsTotal  : %d%n", epochsTotal));
 
         logger.info(sb.toString());
     }
@@ -297,7 +259,8 @@ public class NeuralNetwork
     // forward //
     //---------//
     /**
-     * Re-entrant method.
+     * Computation of the outputs of a layer, based on its inputs, weights
+     * and activation function.
      *
      * @param ins     input cells
      * @param weights applied weights
@@ -310,9 +273,9 @@ public class NeuralNetwork
         double sum;
         double[] ws;
 
-        for (int o = outs.length - 1; o >= 0; o--) {
+        for (int io = outs.length - 1; io >= 0; io--) {
             sum = 0;
-            ws = weights[o];
+            ws = weights[io];
 
             for (int i = ins.length - 1; i >= 0; i--) {
                 sum += (ws[i + 1] * ins[i]);
@@ -321,7 +284,7 @@ public class NeuralNetwork
             // Bias
             sum += ws[0];
 
-            outs[o] = sigmoid(sum);
+            outs[io] = sigmoid(sum);
 
             ///outs[o] = relu(sum);
         }
@@ -379,6 +342,45 @@ public class NeuralNetwork
         return inputSize;
     }
 
+    //-----------//
+    // getLambda //
+    //-----------//
+    /**
+     * Get the regularization factor.
+     *
+     * @return the L2 coefficient
+     */
+    public double getLambda ()
+    {
+        return lambda;
+    }
+
+    //-----------------//
+    // getLearningRate //
+    //-----------------//
+    /**
+     * Get the learning rate.
+     *
+     * @return the learning rate to use for each iteration
+     */
+    public double getLearningRate ()
+    {
+        return learningRate;
+    }
+
+    //-------------//
+    // getMomentum //
+    //-------------//
+    /**
+     * Get the momentum value.
+     *
+     * @return the fraction of previous move to be reported on the next correction
+     */
+    public double getMomentum ()
+    {
+        return momentum;
+    }
+
     //-----------------//
     // getOutputLabels //
     //-----------------//
@@ -423,44 +425,32 @@ public class NeuralNetwork
         logger.debug("Network marshalled");
     }
 
+    //------//
+    // relu //
+    //------//
+    /**
+     * Rectified linear unit.
+     *
+     * @param val argument
+     * @return value at val
+     */
     private double relu (double val)
     {
         return Math.max(0, val);
     }
 
+    /**
+     * First derivative of {@link relu} function.
+     *
+     * @param val argument
+     * @return derivative value at val
+     */
+    //---------//
+    // reluDif //
+    //---------//
     private double reluDif (double val)
     {
         return (val >= 0) ? 1 : 0;
-    }
-
-    //---------//
-    // restore //
-    //---------//
-    /**
-     * Restore the internal memory of a Network, from a previous Backup.
-     * This does not reset the current parameters such as learning rate, momentum, maxError or
-     * epochs.
-     *
-     * @param backup a backup previously made
-     */
-    public void restore (Backup backup)
-    {
-        // Check parameter
-        if (backup == null) {
-            throw new IllegalArgumentException("Backup is null");
-        }
-
-        // Make sure backup is compatible with this neural network
-        if ((backup.hiddenWeights.length != hiddenSize)
-                || (backup.hiddenWeights[0].length != (inputSize + 1))
-                || (backup.outputWeights.length != outputSize)
-                || (backup.outputWeights[0].length != (hiddenSize + 1))) {
-            throw new IllegalArgumentException("Incompatible backup");
-        }
-
-        logger.debug("Network memory restore");
-        this.hiddenWeights = cloneMatrix(backup.hiddenWeights);
-        this.outputWeights = cloneMatrix(backup.outputWeights);
     }
 
     //-----//
@@ -469,12 +459,11 @@ public class NeuralNetwork
     /**
      * Run the neural network on an array of input values, and return the
      * computed output values.
-     * This method writes into the hiddens buffer.
      *
      * @param inputs  the provided input values
      * @param hiddens provided buffer for hidden values, or null
-     * @param outputs preallocated array for the computed output values, or null if not already
-     *                allocated
+     * @param outputs pre-allocated array for the computed output values,
+     *                or null if not already allocated
      * @return the computed output values
      */
     public double[] run (double[] inputs,
@@ -516,16 +505,16 @@ public class NeuralNetwork
     }
 
     //-----------//
-    // setEpochs //
+    // setLambda //
     //-----------//
     /**
-     * Set the number of epochs for training the network with a given input.
+     * Set the regularization factor.
      *
-     * @param epochs number of epochs
+     * @param lambda the L2 coefficient (typically 0.0001)
      */
-    public void setEpochs (int epochs)
+    public void setLambda (double lambda)
     {
-        this.epochs = epochs;
+        this.lambda = lambda;
     }
 
     //-----------------//
@@ -569,6 +558,15 @@ public class NeuralNetwork
         return 1.0d / (1.0d + Math.exp(-val));
     }
 
+    //------------//
+    // sigmoidDif //
+    //------------//
+    /**
+     * First derivative of {@link sigmoid} function.
+     *
+     * @param val argument
+     * @return derivative at val
+     */
     private double sigmoidDif (double val)
     {
         return val * (1 - val);
@@ -578,7 +576,7 @@ public class NeuralNetwork
     // stop //
     //------//
     /**
-     *
+     * Record the need to stop.
      */
     public void stop ()
     {
@@ -593,13 +591,13 @@ public class NeuralNetwork
      *
      * @param inputs         the provided patterns of values for input cells
      * @param desiredOutputs the corresponding desired values for output cells
-     * @param listener       listener to be kept informed
-     * @param iterPeriod     period for iteration notification
+     * @param listeners      listeners to be kept informed
+     * @param epochs         number of training epochs
      */
     public void train (double[][] inputs,
                        double[][] desiredOutputs,
-                       TrainingMonitor listener,
-                       int iterPeriod)
+                       Collection<TrainingMonitor> listeners,
+                       int epochs)
     {
         stopping = false;
 
@@ -609,6 +607,7 @@ public class NeuralNetwork
 
         final int patterns = inputs.length;
         final long startTime = System.currentTimeMillis();
+        final double multiplier = 1.0 - (learningRate * lambda); // For L2 regularization
 
         // Allocate needed arrays
         final double[] gottenOutputs = new double[outputSize];
@@ -617,40 +616,32 @@ public class NeuralNetwork
         final double[][] hiddenDeltas = createMatrix(hiddenSize, inputSize + 1, 0);
         final double[][] outputDeltas = createMatrix(outputSize, hiddenSize + 1, 0);
         final double[] hiddens = new double[hiddenSize];
-        int iter = 0;
 
-        for (int ie = 1; ie <= epochs; ie++) {
-            iter++; // For this old engine, iter = epoch
+        for (int epoch = 1; epoch <= epochs; epoch++) {
             epochsTotal++;
 
-            if (listener != null) {
-                listener.epochStarted(ie);
-            }
-
-            // Loop on all input patterns
+            // Loop on every pattern (batch size = 1)
             for (int ip = 0; ip < patterns; ip++) {
                 // Run the network with input values and current weights
                 run(inputs[ip], hiddens, gottenOutputs);
 
                 // Compute the output layer error terms
                 for (int io = outputSize - 1; io >= 0; io--) {
-                    double out = gottenOutputs[io];
-                    double dif = desiredOutputs[ip][io] - out;
-                    ///outputGrads[io] = dif * out * (1 - out); // Sigmoid'
-                    outputGrads[io] = dif * sigmoidDif(out); // Sigmoid'
-                    ///outputGrads[io] = dif * reluDif(out); // ReLU'
+                    final double out = gottenOutputs[io];
+                    final double delta = desiredOutputs[ip][io] - out;
+                    outputGrads[io] = delta * sigmoidDif(out); // Sigmoid'
+                    ///outputGrads[io] = delta * reluDif(out); // ReLU'
                 }
 
                 // Compute the hidden layer error terms
                 for (int ih = hiddenSize - 1; ih >= 0; ih--) {
                     double sum = 0;
-                    double hid = hiddens[ih];
+                    final double hid = hiddens[ih];
 
-                    for (int o = outputSize - 1; o >= 0; o--) {
-                        sum += (outputGrads[o] * outputWeights[o][ih + 1]);
+                    for (int io = outputSize - 1; io >= 0; io--) {
+                        sum += (outputGrads[io] * outputWeights[io][ih + 1]);
                     }
 
-                    ///hiddenGrads[h] = sum * hid * (1 - hid); // Sigmoid'
                     hiddenGrads[ih] = sum * sigmoidDif(hid); // Sigmoid'
                     ///hiddenGrads[h] = sum * reluDif(hid); // ReLU'
                 }
@@ -658,51 +649,73 @@ public class NeuralNetwork
                 // Update the output weights
                 for (int io = outputSize - 1; io >= 0; io--) {
                     for (int ih = hiddenSize - 1; ih >= 0; ih--) {
-                        double dw = (learningRate * outputGrads[io] * hiddens[ih]) + (momentum
-                                * outputDeltas[io][ih + 1]);
+                        final double dw = (learningRate * outputGrads[io] * hiddens[ih]) //
+                                + (momentum * outputDeltas[io][ih + 1]);
                         outputWeights[io][ih + 1] += dw;
+                        outputWeights[io][ih + 1] *= multiplier; // Regularization
                         outputDeltas[io][ih + 1] = dw;
                     }
 
                     // Bias
-                    double dw = (learningRate * outputGrads[io]) + (momentum * outputDeltas[io][0]);
+                    final double dw = (learningRate * outputGrads[io]) //
+                            + (momentum * outputDeltas[io][0]);
                     outputWeights[io][0] += dw;
+                    outputWeights[io][0] *= multiplier; // Regularization
                     outputDeltas[io][0] = dw;
                 }
 
                 // Update the hidden weights
                 for (int ih = hiddenSize - 1; ih >= 0; ih--) {
                     for (int i = inputSize - 1; i >= 0; i--) {
-                        double dw = (learningRate * hiddenGrads[ih] * inputs[ip][i]) + (momentum
-                                * hiddenDeltas[ih][i + 1]);
+                        final double dw = (learningRate * hiddenGrads[ih] * inputs[ip][i]) //
+                                + (momentum * hiddenDeltas[ih][i + 1]);
                         hiddenWeights[ih][i + 1] += dw;
+                        hiddenWeights[ih][i + 1] *= multiplier; // Regularization
                         hiddenDeltas[ih][i + 1] = dw;
                     }
 
                     // Bias
-                    double dw = (learningRate * hiddenGrads[ih]) + (momentum * hiddenDeltas[ih][0]);
+                    final double dw = (learningRate * hiddenGrads[ih]) //
+                            + (momentum * hiddenDeltas[ih][0]);
                     hiddenWeights[ih][0] += dw;
+                    hiddenWeights[ih][0] *= multiplier; // Regularization
                     hiddenDeltas[ih][0] = dw;
                 }
             }
 
-            if (listener != null) {
-                if ((iter % iterPeriod) == 0) {
-                    double mse = 0d; // Mean Squared Error
+            Double mse = null; // Mean Squared Error
+            Double hw2 = null; // Hidden squared weights
+            Double ow2 = null; // Output squared weights
 
-                    for (int ip = 0; ip < patterns; ip++) {
-                        final double[] patternDesiredOutputs = desiredOutputs[ip];
-                        run(inputs[ip], hiddens, gottenOutputs);
+            for (TrainingMonitor listener : listeners) {
+                if ((epoch % listener.getIterationPeriod()) == 0) {
+                    if (mse == null) {
+                        mse = 0d;
 
-                        for (int o = outputSize - 1; o >= 0; o--) {
-                            double out = gottenOutputs[o];
-                            double dif = patternDesiredOutputs[o] - out;
-                            mse += (dif * dif);
+                        for (int ip = 0; ip < patterns; ip++) {
+                            run(inputs[ip], hiddens, gottenOutputs);
+
+                            final double[] patternDesiredOutputs = desiredOutputs[ip];
+
+                            for (int io = outputSize - 1; io >= 0; io--) {
+                                final double out = gottenOutputs[io];
+                                final double dif = patternDesiredOutputs[io] - out;
+                                mse += (dif * dif);
+                            }
                         }
+
+                        mse /= patterns;
                     }
 
-                    mse /= patterns;
-                    listener.iterationPeriodDone(epochsTotal, iter, mse);
+                    if (hw2 == null) {
+                        hw2 = w2(hiddenWeights);
+                    }
+
+                    if (ow2 == null) {
+                        ow2 = w2(outputWeights);
+                    }
+
+                    listener.iterationPeriodDone(epochsTotal, epoch, mse, hw2, ow2);
                 }
             }
 
@@ -717,38 +730,38 @@ public class NeuralNetwork
         final long dur = System.currentTimeMillis() - startTime;
         logger.info(
                 String.format(
-                        "Duration %,d seconds, %d iterations on %d patterns",
+                        "Duration %,d seconds, %d epochs on %d patterns",
                         dur / 1000,
                         epochs,
                         patterns));
         stopping = false;
     }
 
-    //~ Static Methods -----------------------------------------------------------------------------
-
-    //-------------//
-    // cloneMatrix //
-    //-------------//
+    //----//
+    // w2 //
+    //----//
     /**
-     * Create a clone of the provided matrix.
+     * Compute the sum of squared weights of a layer.
      *
-     * @param matrix the matrix to clone
-     * @return the clone
+     * @param weights the layer weights
+     * @return the sum of square weights
      */
-    private static double[][] cloneMatrix (double[][] matrix)
+    private double w2 (double[][] weights)
     {
-        final int rowNb = matrix.length;
-        final int colNb = matrix[0].length;
+        double sum = 0d;
 
-        double[][] clone = new double[rowNb][];
+        for (int io = weights.length - 1; io >= 0; io--) {
+            final double[] ww = weights[io];
 
-        for (int row = rowNb - 1; row >= 0; row--) {
-            clone[row] = new double[colNb];
-            System.arraycopy(matrix[row], 0, clone[row], 0, colNb);
+            for (int ii = ww.length - 1; ii >= 0; ii--) {
+                sum += ww[ii] * ww[ii];
+            }
         }
 
-        return clone;
+        return sum;
     }
+
+    //~ Static Methods -----------------------------------------------------------------------------
 
     //--------------//
     // createMatrix //
@@ -765,10 +778,10 @@ public class NeuralNetwork
                                             int colNb,
                                             double amplitude)
     {
-        double[][] matrix = new double[rowNb][];
+        final double[][] matrix = new double[rowNb][];
 
         for (int row = rowNb - 1; row >= 0; row--) {
-            double[] vector = new double[colNb];
+            final double[] vector = new double[colNb];
             matrix[row] = vector;
 
             for (int col = colNb - 1; col >= 0; col--) {
@@ -807,39 +820,14 @@ public class NeuralNetwork
     public static NeuralNetwork unmarshal (InputStream in)
         throws JAXBException
     {
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
-        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
+        final Unmarshaller um = getJaxbContext().createUnmarshaller();
+        final NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
         logger.debug("Network unmarshalled");
 
         return nn;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-
-    //--------//
-    // Backup //
-    //--------//
-    /**
-     * Class <code>Backup</code> is an opaque class that encapsulates a
-     * snapshot of a NeuralNetwork internal memory (its weights).
-     * A Backup instance can only be obtained through the use of {@link #backup}
-     * method of a NeuralNetwork.
-     * A Backup instance is the needed parameter for a NeuralNetwork {@link #restore} action.
-     */
-    public static class Backup
-    {
-        private double[][] hiddenWeights;
-
-        private double[][] outputWeights;
-
-        // Private constructor
-        private Backup (double[][] hiddenWeights,
-                        double[][] outputWeights)
-        {
-            this.hiddenWeights = cloneMatrix(hiddenWeights);
-            this.outputWeights = cloneMatrix(outputWeights);
-        }
-    }
 
     //-------------//
     // StringArray //

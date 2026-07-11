@@ -88,6 +88,10 @@ public abstract class AdvancedTopics
                 false,
                 "Multiple delete without user confirmation");
 
+        final Constant.Boolean useCustomSet = new Constant.Boolean(
+                true,
+                "Handling of a personal set of shapes");
+
         final Constant.Boolean useSamples = new Constant.Boolean(
                 false,
                 "Handling of samples repositories and classifier");

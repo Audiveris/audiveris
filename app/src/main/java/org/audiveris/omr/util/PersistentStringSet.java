@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                         N a m e S e t                                          //
+//                              P e r s i s t e n t S t r i n g S e t                             //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -24,40 +24,37 @@ package org.audiveris.omr.util;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.ui.util.AbstractMenuListener;
 
+import net.jcip.annotations.ThreadSafe;
+
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
-import net.jcip.annotations.ThreadSafe;
-
 /**
- * Class <code>NameSet</code> encapsulates the handling of a list of names,
+ * Class <code>PersistentStringSet</code> handles a persistent list of strings,
  * a typical use is a history of file names.
  * <p>
- * Actually, rather than a set, it is a list where the most recently used
- * are kept at the head of the list.
- * There are no equivalent names left in the set.
+ * Actually, rather than a set, it is a list where no equivalent strings are left.
  * <p>
- * The NameSet can additionally be used to dynamically generate and handle a menu.
+ * The PersistentStringSet can additionally be used to dynamically generate and handle a menu
+ * of the contained strings.
  * </p>
+ * Persistency is implemented by the optional use of an application constant.
  *
  * @author Hervé Bitteur
  */
 @ThreadSafe
-public class NameSet
+public class PersistentStringSet
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    /** Separator. */
-    private static final String SEPARATOR = ";";
-
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Global name for this set. */
@@ -66,13 +63,16 @@ public class NameSet
     /** Backing constant. */
     private final Constant.String constant;
 
-    /** List of names in this set. */
-    private final List<String> names = new ArrayList<>();
+    /** List of strings in this set. */
+    private final List<String> strings = new ArrayList<>();
 
-    /** Max number of names in this set. */
-    private final int maxNameCount;
+    /** The separator between two strings. */
+    private final String separator;
 
-    /** To check names equivalence. */
+    /** If not null, maximum number of elements in this set. */
+    private final Integer maxCount;
+
+    /** To check strings equivalence. */
     private final PairPredicate<String> predicate;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -80,27 +80,26 @@ public class NameSet
     /**
      * Creates a new set of names, with some customizing parameters.
      *
-     * @param setName      global name for this set
-     * @param constant     the backing constant string
-     * @param maxNameCount maximum number of elements in this name set
-     * @param predicate    predicate to test names equivalence
+     * @param setName   global name for this set
+     * @param separator the separator between two string entities
+     * @param constant  the backing constant string, or null
+     * @param maxCount  maximum number of elements in this name set, or null
+     * @param predicate predicate to test elements equivalence
      */
-    public NameSet (String setName,
-                    Constant.String constant,
-                    int maxNameCount,
-                    PairPredicate<String> predicate)
+    public PersistentStringSet (String setName,
+                                String separator,
+                                Constant.String constant,
+                                Integer maxCount,
+                                PairPredicate<String> predicate)
     {
         this.setName = setName;
+        this.separator = separator;
         this.constant = constant;
-        this.maxNameCount = maxNameCount;
+        this.maxCount = maxCount;
         this.predicate = predicate;
 
-        // Retrieve the list of names already in the set
-        String[] vals = constant.getValue().split(SEPARATOR);
-
-        if (!vals[0].isEmpty()) {
-            names.addAll(Arrays.asList(vals));
-        }
+        // Retrieve the list of strings already in the set
+        reload();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -109,27 +108,45 @@ public class NameSet
     // add //
     //-----//
     /**
-     * Insert a (perhaps new) name at the head of the list.
-     * If the name was already in the list, it is moved to the head.
+     * Insert a (perhaps new) string at some location index in the list.
+     * If the string was already in the list, it is first removed.
      *
-     * @param name Name to be inserted in the set
+     * @param index targeted index in the list
+     * @param str   string to be inserted in the list
      */
-    public synchronized void add (String name)
+    public synchronized void add (int index,
+                                  String str)
     {
-        if ((name == null) || (name.isEmpty())) {
+        if ((str == null) || (str.isEmpty())) {
             return;
         }
 
         // Remove duplicate or equivalent if any
-        remove(name);
+        remove(str);
 
-        // Insert the name at the beginning of the list
-        names.add(0, name);
+        // Insert the name at the targeted index
+        strings.add(index, str);
 
-        // Check for maximum length
-        while (names.size() > maxNameCount) {
-            names.remove(names.size() - 1);
+        // Check for maximum length?
+        if (maxCount != null) {
+            while (strings.size() > maxCount) {
+                strings.remove(strings.size() - 1);
+            }
         }
+
+        // Update the constant accordingly
+        updateConstant();
+    }
+
+    //-------//
+    // clear //
+    //-------//
+    /**
+     * Empty the set.
+     */
+    public synchronized void clear ()
+    {
+        strings.clear();
 
         // Update the constant accordingly
         updateConstant();
@@ -139,18 +156,18 @@ public class NameSet
     // feedMenu //
     //----------//
     /**
-     * Feed a menu with the dynamic content of this NameSet.
+     * Feed a menu with the dynamic content of this PersistentStringSet.
      *
      * @param menu         the menu to be fed, if null it is allocated by this method
      * @param itemListener the listener to be called on item selection
-     * @return the menu properly dynamized
+     * @return the menu properly populated
      */
     public JMenu feedMenu (JMenu menu,
                            final ActionListener itemListener)
     {
         final JMenu finalMenu = (menu != null) ? menu : new JMenu(setName);
 
-        MenuListener menuListener = new AbstractMenuListener()
+        final MenuListener menuListener = new AbstractMenuListener()
         {
             @Override
             public void menuSelected (MenuEvent e)
@@ -159,8 +176,8 @@ public class NameSet
                 finalMenu.removeAll();
 
                 // Rebuild the whole list of menu items on the fly
-                synchronized (NameSet.this) {
-                    for (String f : names) {
+                synchronized (PersistentStringSet.this) {
+                    for (String f : strings) {
                         JMenuItem menuItem = new JMenuItem(f);
                         menuItem.addActionListener(itemListener);
                         finalMenu.add(menuItem);
@@ -189,7 +206,20 @@ public class NameSet
             return null;
         }
 
-        return names.get(0);
+        return strings.get(0);
+    }
+
+    //-------------//
+    // getElements //
+    //-------------//
+    /**
+     * Report a view on the contained elements.
+     *
+     * @return non modifiable list of the elements
+     */
+    public synchronized List<String> getElements ()
+    {
+        return Collections.unmodifiableList(strings);
     }
 
     //---------//
@@ -202,25 +232,41 @@ public class NameSet
      */
     public synchronized boolean isEmpty ()
     {
-        return names.isEmpty();
+        return strings.isEmpty();
+    }
+
+    //--------//
+    // reload //
+    //--------//
+    /** Reload the strings from the underlying constant, if any. */
+    public synchronized void reload ()
+    {
+        if (constant != null) {
+            strings.clear();
+            final String[] vals = constant.getValue().split(separator);
+
+            if (!vals[0].isEmpty()) {
+                strings.addAll(Arrays.asList(vals));
+            }
+        }
     }
 
     //--------//
     // remove //
     //--------//
     /**
-     * Remove a given name from the list
+     * Remove a given string from the list
      *
-     * @param name the name to remove
+     * @param str the string to remove
      * @return true if actually found and removed
      */
-    public synchronized boolean remove (String name)
+    public synchronized boolean remove (String str)
     {
         // If the ref (or an equivalent ref) exists in the list, it is removed
-        for (Iterator<String> it = names.iterator(); it.hasNext();) {
-            final String f = it.next();
+        for (Iterator<String> it = strings.iterator(); it.hasNext();) {
+            final String s = it.next();
 
-            if (predicate.test(name, f)) {
+            if (predicate.test(str, s)) {
                 it.remove();
                 updateConstant();
 
@@ -234,18 +280,14 @@ public class NameSet
     //----------------//
     // updateConstant //
     //----------------//
+    /**
+     * Update the underlying application constant.
+     */
     private void updateConstant ()
     {
-        StringBuilder buf = new StringBuilder(1_024);
-
-        for (String n : names) {
-            if (buf.length() > 0) {
-                buf.append(SEPARATOR);
-            }
-
-            buf.append(n);
+        if (constant != null) {
+            final String str = strings.stream().collect(Collectors.joining(separator));
+            constant.setStringValue(str);
         }
-
-        constant.setStringValue(buf.toString());
     }
 }

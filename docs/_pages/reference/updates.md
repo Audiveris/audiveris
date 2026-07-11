@@ -21,6 +21,29 @@ Table of contents
 {:toc}
 ---
 
+## 5.11
+(July 2026)
+
+- User Interface
+  - Support for a user personal shape set in the shape board. Suggested by [manderpe]
+  - Support for a configurable table of keyboard shortcuts.
+  See [this doc](../guides/ui/ui_tools/add_inter.md#configurable-shortcuts-table). Contributed by [Gal Shacham]
+- Engine
+  - Added an L2 (Ridge) regularization to the implementation of the glyph classifier to prevent overfitting
+  - Better handling of staff lines with very different thicknesses
+  - Smarter staff line removal in case of crossing curves
+  - User option to link dynamics to staff above or below. Contributed by [Pepper Pancoast]
+  - Enable HiDPI scaling on Linux Wayland. Contributed by [Martin Wilck]
+  - Fix on window resizing issues. Contributed by [aha917]
+  - Fix on parallel processing of multi-sheet books. Contributed by [Youngmin Yoo]
+  - Fix on export of imperfect scans. Contributed by [Samit Mohnot]
+  - Fix on percussion/unknown clefs. Contributed by [tshidisoo]
+  - Plus minor fixes...
+- Project
+  - The installers (for Windows, for Linux, for macOS) now include the Java modules
+  `jdk.localedata` for locales other than the US locale (such as the FR locale)
+  and `jdk.accessibility` for Assistive Technologies
+
 ## 5.10
 (March 2026)
 
@@ -30,6 +53,9 @@ Table of contents
   - Ability to set font attributes at a sentence level to apply them to all its member words.
   - Better text word resizing, keeping a constant height/width ratio.
   - Better drag n' drop for all clefs.
+  - Ability to manually mark/unmark any system as a movement start via the System context menu,
+    for cases where automatic indentation detection cannot identify score boundaries
+    (e.g., exercise books, anthologies). Contributed by [Gal Shacham]
 - Engine
   - Verse numbers are detected and filtered out of the lyric lines.
   - Isolated punctuations marks (as in French) are combined with the preceding lyric syllable.
@@ -37,7 +63,7 @@ Table of contents
   - Support for BARITONE, MEZZO_SOPRANO and SOPRANO clefs.
   - Additional book processing switch to accept braced parts without internal bar connections.
 - Project
-  - Audiveris for Windows is now available on the Scoop Extras bucket
+  - Audiveris for Windows is now available on the Scoop Extras bucket. Suggested by [ResurFace382500000]
 
 ## 5.9
 (December 2025)
@@ -47,11 +73,11 @@ Table of contents
 - Engine
   - Ability to automatically swap a sheet from memory to disk once it has been processed.
   - Ability to process all systems of a sheet in parallel.
-  - Support for Cyrillic OCR'd characters.
+  - Support for Cyrillic OCR'd characters. Suggested by [Larry]
   - Better handling of staves that exhibit non-regular vertical spacing between lines.
   - Support for the Staccatissimo below shape.
 - Project
-  - Publication of Audiveris on the Windows Community repository via WinGet command.
+  - Publication of Audiveris on the Windows Community repository via WinGet command. Suggested by [Matthew Watkins]
 
 
 ## 5.8
@@ -76,7 +102,7 @@ Table of contents
 (September 2025)
 
 - User Interface
-  - Support for CJK (Chinese, Japanese, Korean) characters  
+  - Support for CJK (Chinese, Japanese, Korean) characters. Suggested by [qnach]
   - The Preferences and Constants dialogs now scale correctly with font size changing
   - Ability to print out the detailed steps durations for a sheet processing
 - Engine
@@ -317,12 +343,22 @@ Table of contents
   - Symbols: The symbols bitmap definitions (in the /symbol folder) have been refined with at least a 16-pixel interline definition, resulting in better display notably in score view.
   - Tiff: Images are forwarded to Tesseract OCR by memory, avoiding temporary files
 
-
+[aha917]:                 https://github.com/aha917
 [Baruch Hoffart]:         https://github.com/Bacchushlg
 [Brian Boe]:              https://github.com/brian-math
 [Fabio Marques]:          https://github.com/fbmrqs
+[Gal Shacham]:            https://github.com/galshacham
 [Jan-Willem Harmannij]:   https://github.com/jwharm
+[Larry]:                  https://github.com/Laarryy
+[manderpe]:               https://github.com/manderpe
 [Martin Wilck]:           https://github.com/mwilck
-[Maxim Poliakovski]:      maximumspatium@googlemail.com
+[Matthew Watkins]:        https://github.com/matthewpwatkins
+[Maxim Poliakovski]:      https://github.com/maximumspatium
 [Michael Porter]:         https://github.com/mgporter
+[Pepper Pancoast]:        https://github.com/drtootsie
+[qnach]:                  https://github.com/qnach
 [Ram Kromberg]:           https://github.com/RamKromberg
+[ResurFace382500000]:     https://github.com/ResurFace382500000
+[Samit Mohnot]:           https://github.com/AnotherSamWithADream
+[tshidisoo]:              https://github.com/tshidisoo
+[Youngmin Yoo]:           https://github.com/recrack

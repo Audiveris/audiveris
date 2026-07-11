@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                          H i s t o r y                                         //
+//                              A b s t r a c t N a m e H i s t o r y                             //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -35,21 +35,25 @@ import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
 
 /**
- * Class <code>AbstractHistory</code> handles a limited history of entities.
+ * Class <code>AbstractNameHistory</code> handles a persistent history of named entities,
+ * typically file paths or sheet paths, for which we also remember the last containing folder.
  *
  * @param <E> entity type
  * @author Hervé Bitteur
  */
-public abstract class AbstractHistory<E>
+public abstract class AbstractNameHistory<E>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractHistory.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractNameHistory.class);
+
+    /** Separator between names. */
+    private static final String SEPARATOR = ";";
 
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Underlying list of names. */
-    protected final NameSet nameSet;
+    protected final PersistentStringSet nameSet;
 
     /** Name of last folder used, if any. */
     protected final Constant.String folderConstant;
@@ -60,7 +64,7 @@ public abstract class AbstractHistory<E>
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a new <code>AbstractHistory</code> object.
+     * Creates a new <code>AbstractNameHistory</code> object.
      *
      * @param name           a name for this history instance
      * @param constant       backing constant on disk
@@ -68,13 +72,13 @@ public abstract class AbstractHistory<E>
      * @param maxSize        maximum entities in history
      * @param predicate      predicate to test names equivalence
      */
-    public AbstractHistory (String name,
-                            Constant.String constant,
-                            Constant.String folderConstant,
-                            int maxSize,
-                            PairPredicate<String> predicate)
+    public AbstractNameHistory (String name,
+                                Constant.String constant,
+                                Constant.String folderConstant,
+                                int maxSize,
+                                PairPredicate<String> predicate)
     {
-        nameSet = new NameSet(name, constant, maxSize, predicate);
+        nameSet = new PersistentStringSet(name, SEPARATOR, constant, maxSize, predicate);
         this.folderConstant = folderConstant;
     }
 
@@ -90,9 +94,9 @@ public abstract class AbstractHistory<E>
      */
     public void add (E entity)
     {
-        nameSet.add(encode(entity));
+        nameSet.add(0, encode(entity));
 
-        Path parent = getParent(entity);
+        final Path parent = getParent(entity);
 
         if ((parent != null) && (folderConstant != null)) {
             folderConstant.setStringValue(parent.toAbsolutePath().toString());

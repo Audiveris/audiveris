@@ -6,9 +6,6 @@ parent: Installation
 ---
 # Installing from binaries
 {: .no_toc }
-{: .d-inline-block }
-updated in 5.10
-{: .label .label-green}
 
 ---
 Table of contents
@@ -152,9 +149,6 @@ Starting package uninstall...
 Successfully uninstalled
 ```
 ## Windows Scoop Extras
-{: .d-inline-block }
-New in 5.10
-{: .label .label-yellow }
 
 Since the 5.10 release, 
 following [ResurFace382500000 request](https://github.com/Audiveris/audiveris/issues/876),

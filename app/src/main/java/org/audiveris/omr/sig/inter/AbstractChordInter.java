@@ -224,9 +224,17 @@ public abstract class AbstractChordInter
             // Augmentation dot(s)?
             countDots();
 
-            // Staff for rest chord
+            // Rest chord?
             if (this instanceof RestChordInter) {
-                setStaff(getNotes().get(0).getStaff());
+                // Staff
+                final RestInter rest = (RestInter) getNotes().get(0);
+                setStaff(rest.getStaff());
+
+                // Time offset set to zero for measure-long rest chord
+                final Shape restShape = rest.getShape();
+                if (staff.getSystem().isMeasureRestShape(restShape)) {
+                    setAndPushTime(Rational.ZERO);
+                }
             }
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);

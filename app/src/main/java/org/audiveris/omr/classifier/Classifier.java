@@ -103,11 +103,32 @@ public interface Classifier
     GlyphDescriptor getGlyphDescriptor ();
 
     /**
+     * Selector on the regularization parameter.
+     *
+     * @return the current value of regularization parameter
+     */
+    double getLambda ();
+
+    /**
+     * Selector on the learning rate parameter.
+     *
+     * @return the current value of learning rate
+     */
+    double getLearningRate ();
+
+    /**
      * Selector on the maximum number of training epochs.
      *
      * @return the upper limit on epochs counter
      */
     int getMaxEpochs ();
+
+    /**
+     * Selector on the momentum parameter.
+     *
+     * @return the current value of momentum
+     */
+    double getMomentum ();
 
     /**
      * Report the declared name of this classifier.
@@ -131,15 +152,6 @@ public interface Classifier
      * Use a threshold on glyph weight, to tell if the provided glyph is just {@link
      * Shape#NOISE} or a real glyph.
      *
-     * @param weight the <b>normalized</b> glyph weight
-     * @return true if not noise, false otherwise
-     */
-    boolean isBigEnough (double weight);
-
-    /**
-     * Use a threshold on glyph weight, to tell if the provided glyph is just {@link
-     * Shape#NOISE} or a real glyph.
-     *
      * @param glyph     the glyph to be checked
      * @param interline the relevant scaling interline
      * @return true if not noise, false otherwise
@@ -147,24 +159,40 @@ public interface Classifier
     boolean isBigEnough (Glyph glyph,
                          int interline);
 
-    //    /**
-    //     * Remove a training listener
-    //     *
-    //     * @param listener listener to unregister
-    //     */
-    //    void removeListener (IterationListener listener);
-    //
+    /**
+     * Use a threshold on glyph weight, to tell if the provided glyph is just {@link
+     * Shape#NOISE} or a real glyph.
+     *
+     * @param weight the <b>normalized</b> glyph weight
+     * @return true if not noise, false otherwise
+     */
+    boolean isBigEnough (double weight);
+
     /**
      * Recreate a classifier from scratch.
      */
     void reset ();
 
     /**
-     * Setter on the maximum number of training epochs.
+     * Setter on the regularization parameter.
      *
-     * @param maxEpochs the upper limit on epochs counter
+     * @param lambda the new value for regularization
      */
-    void setMaxEpochs (int maxEpochs);
+    void setLambda (double lambda);
+
+    /**
+     * Setter on the learning rate parameter.
+     *
+     * @param learningRate the new value for learning rate
+     */
+    void setLearningRate (double learningRate);
+
+    /**
+     * Setter on the momentum parameter.
+     *
+     * @param momentum the new value for momentum
+     */
+    void setMomentum (double momentum);
 
     /**
      * Stop the on-going training.
@@ -175,8 +203,10 @@ public interface Classifier
      * Train the network using the provided collection of shape samples.
      *
      * @param samples the provided collection of shapes samples
+     * @param epochs  the number of training epochs
      */
-    void train (Collection<Sample> samples);
+    void train (Collection<Sample> samples,
+                int epochs);
 
     //~ Enumerations -------------------------------------------------------------------------------
 

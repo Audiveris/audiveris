@@ -184,7 +184,7 @@ class SampleListing
     /**
      * Empty and regenerate the whole content of SampleListing.
      *
-     * @param samples the whole sequence of samples to display (assumed to be ordered by shape)
+     * @param samples the whole sequence of samples to display (ordered by shape name)
      */
     void populateWith (List<Sample> samples)
     {
@@ -248,8 +248,8 @@ class SampleListing
      */
     private void sortBy (Comparator<Sample> comparator)
     {
-        final Sample currentSample =
-                (Sample) browser.getSampleController().getGlyphService().getSelectedEntity();
+        final Sample currentSample = (Sample) browser.getSampleController().getGlyphService()
+                .getSelectedEntity();
         final ShapePane shapePane = getShapePane(currentSample.getShape());
         final List<Sample> samples = Collections.list(shapePane.model.elements());
         Collections.sort(samples, comparator);
@@ -279,7 +279,7 @@ class SampleListing
             }
         }
 
-        Collections.sort(allSamples, Sample.byShape);
+        Collections.sort(allSamples, Sample.byShapeName);
         populateWith(allSamples);
     }
 
@@ -639,8 +639,9 @@ class SampleListing
             add(list, BorderLayout.CENTER);
 
             // Support for delete key
-            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                    .put(KeyStroke.getKeyStroke("DELETE"), "RemoveAction");
+            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                    KeyStroke.getKeyStroke("DELETE"),
+                    "RemoveAction");
             getActionMap().put("RemoveAction", new RemoveAction());
 
             // ShapePane popup inherited from scrollablePanel parent
@@ -751,25 +752,22 @@ class SampleListing
         public void actionPerformed (ActionEvent e)
         {
             // To avoid repetitive grade computing, we save grade into GradedSample entities
-            final Sample currentSample =
-                    (Sample) browser.getSampleController().getGlyphService().getSelectedEntity();
+            // NOTE: we consider the grade of PHYSICAL shape
+            final Sample currentSample = (Sample) browser.getSampleController().getGlyphService()
+                    .getSelectedEntity();
             final ShapePane shapePane = getShapePane(currentSample.getShape());
             final List<GradedSample> list = new ArrayList<>();
 
-            logger.info("Computing grades...");
-
             for (Enumeration<Sample> en = shapePane.model.elements(); en.hasMoreElements();) {
-                Sample sample = en.nextElement();
-                Evaluation[] evals =
-                        classifier.getNaturalEvaluations(sample, sample.getInterline());
-                double grade = evals[sample.getShape().ordinal()].grade;
+                final Sample sample = en.nextElement();
+                final Evaluation[] evals = classifier.getNaturalEvaluations(
+                        sample,
+                        sample.getInterline());
+                final double grade = evals[sample.getShape().getPhysicalShape().ordinal()].grade;
                 list.add(new GradedSample(sample, grade));
             }
 
-            logger.info("All grades computed.");
-
             Collections.sort(list, GradedSample.byReverseGrade);
-            logger.info("Samples sorted.");
 
             shapePane.model.clear();
 

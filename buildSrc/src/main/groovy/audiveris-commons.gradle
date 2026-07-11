@@ -1,0 +1,84 @@
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//              b u i l d S r c / a u d i v e r i s - c o m m o n s . g r a d l e                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+//
+// Conventions than can be shared by Audiveris sub-projects
+//
+//--------------------------------------------------------------------------------------------------
+
+plugins {
+    id 'java'
+}
+
+//------------//
+// Properties //
+//------------//
+
+// Central location for application version
+// REMINDER: Also update the "audiveris_functional_version" in docs/_config.yml
+project.version = '5.11.0'
+logger.info("version: {}", project.version)
+
+// Name of host OS
+ext.hostOSName   = System.getProperty('os.name').toLowerCase()\
+                     .startsWith('mac os x') ? 'macosx' :\
+                     System.getProperty('os.name').split(' ')[0].toLowerCase()
+
+// Version of host OS
+ext.hostOSVersion = System.getProperty('os.version')
+logger.info("hostOSVersion: {}", ext.hostOSVersion)
+
+// Architecture of host OS
+// This mapping is required to adapt values of os.name and os.arch
+// to the conventions used by Javacpp's dependencies
+ext.hostOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86", "x86":"x86",
+                    "amd64":"x86_64", "x86-64":"x86_64", "x86_64":"x86_64", 
+                    "arm":"armhf",
+                    "aarch64":"arm64"]\
+                   [System.getProperty('os.arch').toLowerCase()]
+
+// Full host OS identification as "name-arch"
+ext.hostOS       = "${ext.hostOSName}-${ext.hostOSArch}"
+logger.info("hostOS: {}", ext.hostOS)
+
+// Architecture of target OS
+if (project.hasProperty('targetOS')) {
+    logger.info("property targetOS: {}", project.property('targetOS'))
+    ext.targetOS = project.property('targetOS')
+} else {
+    ext.targetOS = ext.hostOS
+}
+logger.info("targetOS: {}", ext.targetOS)
+
+// Program and company ids
+ext.programName     = rootProject.name
+ext.programId       = rootProject.name.toLowerCase()
+ext.programVersion  = project.version
+ext.companyName     = programName + " Ltd."
+ext.companyId       = programName + "Ltd"
+
+//------//
+// Java //
+//------//
+
+// Perhaps no longer needed?
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+// Useful for turning on deprecation warnings
+// Just uncomment the appropriate option
+allprojects {
+    tasks.withType(JavaCompile).tap {
+        configureEach {
+            options.compilerArgs << "-Xlint:deprecation"
+            // options.compilerArgs << "-Xlint:unchecked"
+        }
+    }
+}
+
+// Java version
+logger.info("theMinJavaVersion: {}", theMinJavaVersion)
+java {
+    sourceCompatibility = JavaLanguageVersion.of(theMinJavaVersion)
+}

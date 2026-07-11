@@ -25,9 +25,6 @@ Table of contents
 ---
 
 ## Standard processing options
-{: .d-inline-block }
-updated for 5.10
-{: .label .label-green}
 
 These options impact the way the engine can work, especially for demanding scores.
 - The **SWAPPED_SHEETS** option determines whether the engine should save a sheet to disk
@@ -86,9 +83,16 @@ As of this writing, the available locales are:
 The new locale is applied at the next restart.
 
 ## Advanced options
+{: .d-inline-block }
+updated for 5.11
+{: .label .label-green}
 
  Each of these options can gather several related features.
 
+- **CUSTOM_SHAPE_SET** deals with the user customized shape set.
+{: .d-inline-block }
+New in 5.11
+{: .label .label-yellow }
 - **SAMPLES** deals with sample repositories and classifier training.
 - **ANNOTATIONS** deals with the production of symbol annotations.
 - **PLOTS** deals with the display of plots for scale, stem, staff or header projections.

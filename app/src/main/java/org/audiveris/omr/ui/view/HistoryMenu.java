@@ -23,7 +23,7 @@ package org.audiveris.omr.ui.view;
 
 import org.audiveris.omr.sheet.ui.BookActions.LoadBookTask;
 import org.audiveris.omr.ui.OmrGui;
-import org.audiveris.omr.util.AbstractHistory;
+import org.audiveris.omr.util.AbstractNameHistory;
 import org.audiveris.omr.util.SheetPath;
 
 import org.jdesktop.application.ResourceMap;
@@ -51,7 +51,7 @@ public class HistoryMenu
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Underlying path history. */
-    protected final AbstractHistory history;
+    protected final AbstractNameHistory history;
 
     /** Task class launched on selected path. */
     protected final Class<? extends LoadBookTask> pathTaskClass;
@@ -67,7 +67,7 @@ public class HistoryMenu
      * @param history       the underlying path history
      * @param pathTaskClass the task launched to process the selected path
      */
-    public HistoryMenu (AbstractHistory history,
+    public HistoryMenu (AbstractNameHistory history,
                         Class<? extends LoadBookTask> pathTaskClass)
     {
         this.history = history;

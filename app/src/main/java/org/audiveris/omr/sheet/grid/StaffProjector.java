@@ -1706,7 +1706,7 @@ public class StaffProjector
         private final Scale.Fraction maxBarWidth = new Scale.Fraction(1.5, "Maximum bar width");
 
         private final Scale.Fraction maxLeftExtremum = new Scale.Fraction(
-                0.15,
+                1.0, // Was 0.15
                 "Maximum length between actual lines left end and left ending bar");
 
         private final Scale.Fraction maxRightExtremum = new Scale.Fraction(

@@ -32,6 +32,9 @@ Table of contents
 ---
 
 ## Trainer Dialog {#trainer}
+{: .d-inline-block }
+updated for 5.11
+{: .label .label-green}
 
 This dialog is dedicated to the training of Audiveris basic classifier (a glyph classifier).
 It is launched via the pull-down menu {{ site.tools_train }} or, from the global repository,
@@ -41,7 +44,8 @@ by its `Repository → Train classifier` menu.
 
 Here we can launch and monitor the training of the classifier neural network.
 
-1. The `Select` button makes a new random selection among the samples of the global repository.
+1. The `Select` button makes a new random selection among the samples of the global repository.  
+[The `Store` button can store the selection as `.csv` files for any *external* use. Today, Audiveris makes no use of them].
 
 2. The `Reset` button builds a new network from scratch (forgetting any previous training).
 
@@ -51,13 +55,34 @@ Here we can launch and monitor the training of the classifier neural network.
 Advice:  
 When training on new shapes, it is recommended to first reset the network before launching the training,
 so that all samples be given the same 'chance'.  
-A second training can then be launched (with no reset this time) to further train the network, but beware of overfitting.
+If desired, a second training can then be launched (with no reset this time) to further train the network.
 
-Note that training hyper-parameters cannot be directly modified on this interface.
-If really needed, we can use the {{ site.tools_constants }} menu and search for `BasicClassifier`.
-There we can set amplitude, learningRate, momentum and maxEpochs parameters.
+Since the 5.11 release, the training hyper-parameters can be directly modified on this interface before launching the training:
+
+| Parameter                  | Typical value |
+| :---                       | :---          |
+| Learning rate              | 0.1           |
+| Momentum                   | 0.9           |
+| Lambda (L2 regularization) | 0.0001        |
 
 The `Stop` button allows to stop the training before the maxEpochs count has been reached.
+
+## Monitoring
+{: .d-inline-block }
+new in 5.11
+{: .label .label-yellow}
+
+With the 5.11 release, the implementation of the basic classifier has been improved
+to include an L2 regularization to prevent any overfitting.  
+This (Ridge) regularization works by keeping low the sum of the squared weights.
+
+When the training is launched, two charts are displayed and continuously updated:
+- The chart of score (mean square error on the training set):
+![](../../assets/images/classifier_score_chart.png)
+
+- The chart of the sum of squared weights for the hidden layer and the output layer:
+![](../../assets/images/classifier_weights_chart.png)
+
 
 ## Validation
 

@@ -130,9 +130,6 @@ Note in this example that:
 * Presence of 6-line guitar tablatures
 
 ### Items
-{: .d-inline-block }
-updated for 5.10
-{: .label .label-green}
 
 This sections lists items which can be processed or ignored by the engine,
 depending on whether the checkbox on the right is ticked or not.
@@ -159,23 +156,14 @@ but in most cases the feature remains available for manual user actions.
 * Potential presence of lyrics, even located above staff  
 * Potential presence of articulations
 * Potential presence of dynamics located above staff
-{: .d-inline-block }
-New in 5.10
-{: .label .label-yellow }
 * Potential presence of dynamics located below staff
-{: .d-inline-block }
-New in 5.10
-{: .label .label-yellow }
 
 ### Processing
 
 * Keep loaded gray images
 * Use of system indentation
 * Link augmentation dot to both shared heads
-* Accept disconnected braced parts:  
-{: .d-inline-block }
-New in 5.10
-{: .label .label-yellow }
+* Accept disconnected braced parts (since 5.10): 
   - Typically, within the same part, the staves are connected by a brace and internal barlines.
   - This switch relaxes the requirement on internal barlines connections.
 * Support for implicit tuplets

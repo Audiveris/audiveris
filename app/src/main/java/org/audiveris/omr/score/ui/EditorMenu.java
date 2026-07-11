@@ -488,6 +488,10 @@ public class EditorMenu
                 return;
             }
 
+            if (system.getPage() == null) {
+                return;
+            }
+
             if (system.getPage().getScore() == null) {
                 return;
             }
@@ -914,10 +918,13 @@ public class EditorMenu
 
         private final MergeAction mergeAction = new MergeAction();
 
+        private final ToggleIndentAction toggleIndentAction = new ToggleIndentAction();
+
         SystemMenu ()
         {
             super("System");
             add(new JMenuItem(mergeAction));
+            add(new JMenuItem(toggleIndentAction));
         }
 
         @Override
@@ -938,6 +945,7 @@ public class EditorMenu
             }
 
             mergeAction.update();
+            toggleIndentAction.update();
         }
 
         /**
@@ -1020,6 +1028,47 @@ public class EditorMenu
                     boolean isLast = system == systems.get(systems.size() - 1);
                     boolean gridDone = sheet.getStub().getLatestStep().compareTo(OmrStep.GRID) >= 0;
                     setEnabled(!isLast && gridDone);
+                }
+            }
+        }
+
+        /**
+         * Toggle indentation (movement start) on the current system.
+         */
+        private class ToggleIndentAction
+                extends AbstractAction
+        {
+            ToggleIndentAction ()
+            {
+                putValue(SHORT_DESCRIPTION, "Toggle whether this system starts a new movement");
+            }
+
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                final String label = system.isIndented() ? "unmark" : "mark";
+
+                if (OMR.gui.displayConfirmation(
+                        "About to " + label + " system #" + system.getId()
+                                + " as a movement start. Do you confirm?")) {
+                    sheet.getInterController().toggleIndentation(system);
+                }
+            }
+
+            private void update ()
+            {
+                if (system == null) {
+                    setEnabled(false);
+                    putValue(NAME, "Toggle movement start");
+                } else {
+                    boolean gridDone = sheet.getStub().getLatestStep().compareTo(OmrStep.GRID) >= 0;
+                    setEnabled(gridDone);
+
+                    if (system.isIndented()) {
+                        putValue(NAME, "Unmark as movement start");
+                    } else {
+                        putValue(NAME, "Mark as movement start");
+                    }
                 }
             }
         }

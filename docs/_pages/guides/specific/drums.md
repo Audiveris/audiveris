@@ -6,9 +6,6 @@ nav_order: 1
 ---
 # Drums
 {: .no_toc }
-{: .d-inline-block }
-updated for 5.4
-{: .label .label-green}
 
 We owe many thanks to [Brian Boe] for his decisive contribution to this long-awaited functionality.
 

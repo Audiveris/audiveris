@@ -6,6 +6,9 @@ on:
 
 permissions:
   contents: write
+  
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # Build an installer for each OS
@@ -25,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Retrieve Gradle properties
         uses: BrycensRanch/read-properties-action@v1
@@ -41,14 +44,14 @@ jobs:
           distribution: zulu
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Build installer on ${{ matrix.os }} option ${{ matrix.option }}
         run: ./gradlew --info jpackage -Poption=${{ matrix.option }}
 
       - name: Upload installer
         id: upload-installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: installer-${{ matrix.os }}${{ matrix.option }}
           path: packaging/build/dist/*
@@ -61,7 +64,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install PrinceXML
         run: |
@@ -76,7 +79,7 @@ jobs:
         run: ls -l ./docs/build/pdf
         
       - name: Upload handbook PDF
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: handbook
           path: ./docs/build/pdf/*.pdf
@@ -89,7 +92,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Retrieve Gradle properties
         uses: BrycensRanch/read-properties-action@v1
@@ -105,7 +108,7 @@ jobs:
           distribution: zulu
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         
       - name: Install xsltproc
         run: |
@@ -118,7 +121,7 @@ jobs:
 
       - name: Upload schema doc
         id: upload-schema-doc
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: schema-doc
           path: schemas/build/distributions/*
@@ -131,52 +134,52 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download ubuntu latest installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: installer-ubuntu-latest
           path: ./artifacts
 
       - name: Download ubuntu 22.04 installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: installer-ubuntu-22.04
           path: ./artifacts
 
       - name: Download windows installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: installer-windows-latest
           path: ./artifacts
 
       - name: Download windows installer with Console option
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: installer-windows-latestConsole
           path: ./artifacts
 
       - name: Download macos installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: installer-macos-latest
           path: ./artifacts
 
       - name: Download (old) macos installer
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: installer-macos-15-intel
           path: ./artifacts
 
       - name: Download handbook PDF
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: handbook
           path: ./artifacts
 
       - name: Download schema doc
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: schema-doc
           path: ./artifacts

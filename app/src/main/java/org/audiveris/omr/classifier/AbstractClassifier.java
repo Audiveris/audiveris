@@ -33,33 +33,18 @@ import org.audiveris.omr.math.PoorManAlgebra.Nd4j;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.util.StopWatch;
-import org.audiveris.omr.util.UriUtil;
-import org.audiveris.omr.util.ZipFileSystem;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import static java.nio.file.StandardOpenOption.CREATE;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-
-import javax.xml.bind.JAXBException;
 
 /**
  * Class <code>AbstractClassifier</code> is an abstract basis for all Classifier
@@ -81,29 +66,23 @@ import javax.xml.bind.JAXBException;
  * After any user training, the data is stored as the custom definition in the user local area,
  * which will be picked up first when the application is run again.
  *
- * @param <M> precise model class to be used
+ * @param <M> model class to be used
+ * @param <N> norms class to be used
  * @author Hervé Bitteur
  */
-public abstract class AbstractClassifier<M extends Object>
+public abstract class AbstractClassifier<M extends Object, N extends Object>
         implements Classifier
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    static {
+        // We need class WellKnowns to be elaborated before anything else (when in standalone mode)
+        WellKnowns.ensureLoaded();
+    }
+
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractClassifier.class);
-
-    /** Entry name for mean values. */
-    public static final String MEANS_ENTRY_NAME = "means.bin";
-
-    /** Entry name for mean XML values. */
-    public static final String MEANS_XML_ENTRY_NAME = "means.xml";
-
-    /** Entry name for standard deviation values. */
-    public static final String STDS_ENTRY_NAME = "stds.bin";
-
-    /** Entry name for standard deviation XML values. */
-    public static final String STDS_XML_ENTRY_NAME = "stds.xml";
 
     /** A special evaluation array, used to report NOISE. */
     private static final Evaluation[] noiseEvaluations = { new Evaluation(
@@ -111,9 +90,6 @@ public abstract class AbstractClassifier<M extends Object>
             Evaluation.ALGORITHM) };
 
     //~ Instance fields ----------------------------------------------------------------------------
-
-    /** Features means and standard deviations. */
-    protected Norms norms;
 
     /** Glyph features descriptor. */
     protected GlyphDescriptor descriptor;
@@ -279,6 +255,44 @@ public abstract class AbstractClassifier<M extends Object>
         }
     }
 
+    //----------------//
+    // getTrainFolder //
+    //----------------//
+    /**
+     * Report the user train folder.
+     *
+     * @return the path to user train folder (which may not exist)
+     */
+    protected Path getTrainFolder ()
+    {
+        try {
+            return getTrainFolder(false);
+        } catch (IOException cannotHappen) {
+            return null;
+        }
+    }
+
+    //----------------//
+    // getTrainFolder //
+    //----------------//
+    /**
+     * Report the user train folder, after creating it if required.
+     *
+     * @param create true for creating the folder if needed
+     * @return the path to user train folder
+     * @throws IOException
+     */
+    protected Path getTrainFolder (boolean create)
+        throws IOException
+    {
+        if (create && !Files.exists(WellKnowns.TRAIN_FOLDER)) {
+            Files.createDirectories(WellKnowns.TRAIN_FOLDER);
+            logger.info("Created directory {}", WellKnowns.TRAIN_FOLDER);
+        }
+
+        return WellKnowns.TRAIN_FOLDER;
+    }
+
     //-------------//
     // isBigEnough //
     //-------------//
@@ -310,7 +324,7 @@ public abstract class AbstractClassifier<M extends Object>
      * @return true if engine is usable and found compatible
      */
     protected abstract boolean isCompatible (M model,
-                                             Norms norms);
+                                             N norms);
 
     //------//
     // load //
@@ -319,188 +333,53 @@ public abstract class AbstractClassifier<M extends Object>
      * Load model and norms from the most suitable classifier data files.
      * If user files do not exist or cannot be unmarshalled, the default files are used.
      *
-     * @param fileName file name for classifier data
-     * @return the model loaded
+     * @param fileNames names for model file and for optional norms file
+     * @return the network loaded (model + norms)
      */
-    protected M load (String fileName)
-    {
-        // First, try user data, if any, in local EVAL folder
-        logger.debug("AbstractClassifier. Trying user data");
-
-        {
-            final Path path = WellKnowns.TRAIN_FOLDER.resolve(fileName);
-
-            if (Files.exists(path)) {
-                try {
-                    Path root = ZipFileSystem.open(path);
-                    logger.debug("loadModel...");
-
-                    M model = loadModel(root);
-                    logger.debug("loadNorms...");
-                    norms = loadNorms(root);
-                    logger.debug("loaded.");
-                    root.getFileSystem().close();
-
-                    if (!isCompatible(model, norms)) {
-                        final String msg = "Incompatible classifier user data in " + path
-                                + ", trying default data";
-                        logger.warn(msg);
-                    } else {
-                        // Tell user we are not using the default
-                        logger.info("Local classifier data found at {}", path);
-
-                        return model; // Normal exit
-                    }
-                } catch (Exception ex) {
-                    logger.warn("Load error {}", ex.toString(), ex);
-                    norms = null;
-                }
-            }
-        }
-
-        // Second, use default data (in program RES folder)
-        logger.debug("AbstractClassifier. Trying default data");
-
-        final URI uri = UriUtil.toURI(WellKnowns.RES_URI, fileName);
-
-        try {
-            // Must be a path to a true zip *file*
-            final Path zipPath;
-            logger.debug("uri={}", uri);
-
-            if (uri.toString().startsWith("jar:")) {
-                // We have a .zip within a .jar
-                // Quick fix: copy the .zip into a separate temp file
-                // TODO: investigate a better solution!
-                File tmpFile = Files.createTempFile("AbstractClassifier-", ".tmp").toFile();
-                logger.debug("tmpFile={}", tmpFile);
-                tmpFile.deleteOnExit();
-
-                try (InputStream is = uri.toURL().openStream()) {
-                    FileUtils.copyInputStreamToFile(is, tmpFile);
-                }
-                zipPath = tmpFile.toPath();
-            } else {
-                zipPath = Paths.get(uri);
-            }
-
-            final Path root = ZipFileSystem.open(zipPath);
-            M model = loadModel(root);
-            norms = loadNorms(root);
-            root.getFileSystem().close();
-
-            if (!isCompatible(model, norms)) {
-                final String msg = "Obsolete classifier default data in " + uri
-                        + ", please retrain from scratch";
-                logger.warn(msg);
-            } else {
-                logger.debug("Classifier data loaded from default uri {}", uri);
-
-                return model; // Normal exit
-            }
-        } catch (Exception ex) {
-            logger.warn("Load error on {} {}", uri, ex.toString(), ex);
-        }
-
-        norms = null; // No norms
-
-        return null; // No model
-    }
+    protected abstract Network load (String... fileNames);
 
     //-----------//
     // loadModel //
     //-----------//
     /**
-     * Load classifier model out of the provided input stream.
-     * Method to be provided by subclass.
+     * Load model using the provided input path.
      *
-     * @param root non-null root path of file system
+     * @param input path to input data
      * @return the loaded model
      * @throws Exception if something goes wrong
      */
-    protected abstract M loadModel (Path root)
+    protected abstract M loadModel (Path input)
         throws Exception;
 
     //-----------//
     // loadNorms //
     //-----------//
     /**
-     * Try to load Norms data from the provided input file.
+     * Try to load normalization data using the provided input path.
      *
-     * @param root the root path to file system
-     * @return the loaded Norms instance, or exception is thrown
-     * @throws IOException   if something goes wrong during IO operations
-     * @throws JAXBException if something goes wrong with XML deserialization
+     * @param input the path to input
+     * @return the loaded normalization
+     * @throws Exception if something goes wrong
      */
-    protected Norms loadNorms (Path root)
-        throws Exception
-    {
-        INDArray means;
-        INDArray stds = null;
-
-        final Path meansEntry = root.resolve(MEANS_ENTRY_NAME);
-
-        InputStream isMeans = Files.newInputStream(meansEntry); // READ by default
-        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(isMeans))) {
-            means = Nd4j.read(dis);
-            logger.info("means:{}", means);
-        }
-
-        final Path stdsEntry = root.resolve(STDS_ENTRY_NAME);
-
-        if (stdsEntry != null) {
-            InputStream is = Files.newInputStream(stdsEntry); // READ by default
-            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(is))) {
-                stds = Nd4j.read(dis);
-                logger.info("stds:{}", stds);
-            }
-        }
-
-        if ((means != null) && (stds != null)) {
-            return new Norms(means, stds);
-        }
-
-        throw new IllegalStateException("Norms were not found");
-    }
+    protected abstract N loadNorms (Path input)
+        throws Exception;
 
     //-------//
     // store //
     //-------//
     /**
-     * Store the engine internals, always as user files.
-     *
-     * @param fileName file name for classifier data (model &amp; norms)
+     * Store the engine internals (model and norms) always as user files.
      */
-    protected void store (String fileName)
-    {
-        final Path path = WellKnowns.TRAIN_FOLDER.resolve(fileName);
-
-        try {
-            if (!Files.exists(WellKnowns.TRAIN_FOLDER)) {
-                Files.createDirectories(WellKnowns.TRAIN_FOLDER);
-                logger.info("Created directory {}", WellKnowns.TRAIN_FOLDER);
-            }
-
-            Path root = ZipFileSystem.create(path); // Delete if already exists
-
-            storeModel(root);
-            storeNorms(root);
-
-            root.getFileSystem().close();
-
-            logger.info("{} data stored to {}", getName(), path);
-        } catch (Exception ex) {
-            logger.warn("Error storing {} {}", getName(), ex.toString(), ex);
-        }
-    }
+    protected abstract void store ()
+        throws Exception;
 
     //------------//
     // storeModel //
     //------------//
     /**
-     * Store the model to disk.
+     * Store the model to disk, always as user data.
      *
-     * @param modelPath path to model file
+     * @param modelPath path to model data
      * @throws Exception if something goes wrong
      */
     protected abstract void storeModel (Path modelPath)
@@ -512,26 +391,11 @@ public abstract class AbstractClassifier<M extends Object>
     /**
      * Store the norms based on training samples.
      *
-     * @param root path to root of file system
-     * @throws IOException if something goes wrong during IO operations
+     * @param normsPath path to normalization data
+     * @throws Exception if something goes wrong
      */
-    protected void storeNorms (Path root)
-        throws Exception
-    {
-        Path means = root.resolve(MEANS_ENTRY_NAME);
-        try (DataOutputStream dos = new DataOutputStream(
-                new BufferedOutputStream(Files.newOutputStream(means, CREATE)))) {
-            Nd4j.write(norms.means, dos);
-            dos.flush();
-        }
-
-        Path stds = root.resolve(STDS_ENTRY_NAME);
-        try (DataOutputStream dos = new DataOutputStream(
-                new BufferedOutputStream(Files.newOutputStream(stds, CREATE)))) {
-            Nd4j.write(norms.stds, dos);
-            dos.flush();
-        }
-    }
+    protected abstract void storeNorms (Path normsPath)
+        throws Exception;
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
@@ -550,31 +414,24 @@ public abstract class AbstractClassifier<M extends Object>
                 "Minimum normalized weight to be considered not a noise");
     }
 
-    //-------//
-    // Norms //
-    //-------//
-    /**
-     * Class that encapsulates the means and standard deviations of glyph features.
-     */
-    protected static class Norms
+    //---------//
+    // Network //
+    //---------//
+    protected class Network
     {
-        /** Features means. */
-        final INDArray means;
+        public M model;
 
-        /** Features standard deviations. */
-        final INDArray stds;
+        public N norms;
 
-        /**
-         * Creates a new <code>Norms</code> object.
-         *
-         * @param means
-         * @param stds
-         */
-        Norms (INDArray means,
-               INDArray stds)
+        public Network ()
         {
-            this.means = means;
-            this.stds = stds;
+        }
+
+        public Network (M model,
+                        N norms)
+        {
+            this.model = model;
+            this.norms = norms;
         }
     }
 }

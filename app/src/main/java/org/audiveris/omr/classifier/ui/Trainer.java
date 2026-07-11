@@ -103,10 +103,10 @@ public class Trainer
     };
 
     /** Standard width for labels in DLUs. */
-    static final String LABEL_WIDTH = "50dlu";
+    static final String LABEL_WIDTH = "70dlu";
 
     /** Standard width for fields/buttons in DLUs. */
-    static final String FIELD_WIDTH = "30dlu";
+    static final String FIELD_WIDTH = "40dlu";
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -131,7 +131,9 @@ public class Trainer
 
         // Specific ending if stand alone
         if (!standAlone) {
-            frame = defineLayout(new JFrame());
+            frame = new JFrame();
+            UIUtil.addResizeWorkaround(frame);
+            frame = defineLayout(frame);
         } else {
             INSTANCE = this;
         }
@@ -193,15 +195,22 @@ public class Trainer
     //-------------//
     // definePanel //
     //-------------//
+    /**
+     * Define a UI panel, composed of the 3 items (training, train validation, test validation),
+     * based on a given classifier.
+     *
+     * @param classifier the given classifier
+     * @return the UI panel
+     */
     private JPanel definePanel (Classifier classifier)
     {
         final String pi = Panel.getPanelInterline();
         final FormLayout layout = new FormLayout("pref", "pref," + pi + ",pref," + pi + ",pref");
-        final FormBuilder builder = FormBuilder.create().layout(layout).panel(
-                new TitledPanel(classifier.getName()));
+        final FormBuilder builder = FormBuilder.create().layout(layout) //
+                .panel(new TitledPanel(classifier.getName()));
         final Task task = new Task(classifier);
 
-        int r = 1; // --------------------------------
+        int r = 1; // -----------------------------
         builder.addRaw(new TrainingPanel(task, selectionPanel).getComponent()).xy(1, r);
 
         r += 2; // --------------------------------

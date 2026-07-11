@@ -31,7 +31,7 @@ import java.nio.file.Path;
  * @author Hervé Bitteur
  */
 public class SheetPathHistory
-        extends AbstractHistory<SheetPath>
+        extends AbstractNameHistory<SheetPath>
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -82,6 +82,14 @@ public class SheetPathHistory
     //---------------//
     // areEquivalent //
     //---------------//
+    /**
+     * To keep only the latest sheet number visited in a book, we consider that two
+     * SheetPath instances are equivalent if their book paths are identical.
+     *
+     * @param s1 a sheet path
+     * @param s2 another sheet path
+     * @return true if their book paths are identical
+     */
     private static boolean areEquivalent (String s1,
                                           String s2)
     {

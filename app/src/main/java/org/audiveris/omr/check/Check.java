@@ -249,22 +249,30 @@ public abstract class Check<C>
         }
 
         final double range = high.getValue() - low.getValue();
-        result.value = getValue(checkable);
 
-        if (covariant) {
-            if (result.value < low.getValue()) {
-                result.grade = 0;
-            } else if (result.value >= high.getValue()) {
-                result.grade = 1;
+        try {
+            result.value = getValue(checkable);
+
+            if (covariant) {
+                if (result.value < low.getValue()) {
+                    result.grade = 0;
+                } else if (result.value >= high.getValue()) {
+                    result.grade = 1;
+                } else {
+                    result.grade = GradeUtil.clamp((result.value - low.getValue()) / range);
+                }
             } else {
-                result.grade = GradeUtil.clamp((result.value - low.getValue()) / range);
+                if (result.value > high.getValue()) {
+                    result.grade = 0;
+                } else if (result.value <= low.getValue()) {
+                    result.grade = 1;
+                } else {
+                    result.grade = GradeUtil.clamp(((high.getValue() - result.value) / range));
+                }
             }
-        } else if (result.value > high.getValue()) {
+        } catch (Exception ex) {
+            logger.warn("Error running check {} on {} {}", this, checkable, ex.getMessage(), ex);
             result.grade = 0;
-        } else if (result.value <= low.getValue()) {
-            result.grade = 1;
-        } else {
-            result.grade = GradeUtil.clamp(((high.getValue() - result.value) / range));
         }
 
         return result;

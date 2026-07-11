@@ -1,11 +1,16 @@
 ---
 layout: default
-title: System merge
+title: System editing
 parent: UI tools
 nav_order: 7
 ---
-# System merge
+# System editing
 {: .no_toc }
+
+- TOC
+{:toc}
+
+## System merge
 
 In the Audiveris ``GRID`` step, detected staves are gathered into systems, based on barlines found on
 the left side of the staves.
@@ -35,3 +40,26 @@ And it's done: a connector was created between the two barline portions and the 
 portions merged.
 
 We can still undo/redo the operation.
+
+## Movement start
+
+Audiveris automatically detects movement (score) boundaries by looking at system indentation —
+an indented first system signals the start of a new movement.
+This detection is controlled by the "_Use of system indentation_" processing switch in
+Book Parameters.
+
+However, in some cases (exercise books, anthologies, hymnals), multiple pieces share the same page
+without any visual indentation between them.
+In these situations, the automatic detection cannot identify the movement boundaries.
+
+You can manually mark any system as a movement start.
+Point at the desired system, and via the right-click {{ site.popup_system }} menu
+select "_Mark as movement start_".
+
+If the system is already marked as a movement start, the menu will show
+"_Unmark as movement start_" instead, allowing you to remove the boundary.
+
+After toggling, pages and scores are automatically rebuilt.
+The book export will then produce separate MusicXML files for each movement.
+
+This operation supports undo/redo.

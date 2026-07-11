@@ -22,7 +22,6 @@
 package org.audiveris.omr.classifier.ui;
 
 import org.audiveris.omr.classifier.Sample;
-import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.classifier.TrainingMonitor;
 import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.INACTIVE;
 import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.TRAINING;
@@ -31,6 +30,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.LAST_PHYSICAL_SHAPE;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.field.LIntegerField;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.Panel;
@@ -98,22 +98,26 @@ class TrainingPanel
     /** UI panel dealing with samples selection. */
     private final SelectionPanel selectionPanel;
 
-    /** Field for maximum number of epochs to perform. */
-    private final LIntegerField maxEpochs = new LIntegerField(
-            "Max Epochs",
-            "Maximum number of epochs to perform");
+    /** Field for learning rate. */
+    private final LDoubleField learning = new LDoubleField("Learning", "Learning rate parameter");
 
-    /** Output for number of epochs performed so far. */
+    /** Field for momentum. */
+    private final LDoubleField momentum = new LDoubleField("Momentum", "Momentum parameter");
+
+    /** Field for regularization rate. */
+    private final LDoubleField lambda = new LDoubleField("Lambda", "Regularization parameter");
+
+    /** Field for number of epochs to perform. */
+    private final LIntegerField epochs = new LIntegerField("Epochs", "Number of epochs to perform");
+
+    /** Output for the total number of epochs performed so far. */
     private final LLabel epochsTotal = new LLabel("Total:", "Total epochs so far");
 
-    /** Output for number of iterations performed so far. */
+    /** Output for current epoch. */
     private final LLabel epochIndex = new LLabel("Epoch:", "Current epoch");
 
     /** Output for score on last iteration. */
     private final LLabel trainScore = new LLabel("Score:", "Score on last epoch");
-
-    /** Current epoch. */
-    private int epoch;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -147,7 +151,11 @@ class TrainingPanel
 
         task.classifier.addListener(this);
 
-        displayParams();
+        learning.setValue(task.classifier.getLearningRate());
+        momentum.setValue(task.classifier.getMomentum());
+        lambda.setValue(task.classifier.getLambda());
+
+        epochs.setValue(task.classifier.getMaxEpochs());
         inputParams();
 
         display(task.classifier.getEpochsTotal(), 0, null);
@@ -197,7 +205,7 @@ class TrainingPanel
 
         final Shape[] shapes = Shape.values();
         final int iMax = LAST_PHYSICAL_SHAPE.ordinal();
-        final int minCount = SelectionPanel.getMinShapeSampleCount();
+        final int minCount = SelectionPanel.getMinTrainCount();
         final List<Sample> newSamples = new ArrayList<>();
 
         for (int is = 0; is <= iMax; is++) {
@@ -207,7 +215,7 @@ class TrainingPanel
             if (list == null) {
                 logger.warn("Missing shape: {}", physicalShape);
             } else if (!list.isEmpty()) {
-                logger.info(String.format("%4d %s", list.size(), physicalShape));
+                logger.debug(String.format("%4d %s", list.size(), physicalShape));
                 final int size = list.size();
                 int togo = minCount - size;
                 newSamples.addAll(list);
@@ -217,8 +225,10 @@ class TrainingPanel
                     Collections.shuffle(list);
 
                     do {
-                        newSamples.addAll(list.subList(0, Math.min(size, togo)));
-                        togo -= size;
+                        final int added = Math.min(size, togo);
+                        newSamples.addAll(list.subList(0, added));
+                        logger.debug(String.format("     added %d", added));
+                        togo -= added;
                     } while (togo > 0);
                 }
             }
@@ -238,34 +248,45 @@ class TrainingPanel
         progressBar.setForeground(Colors.PROGRESS_BAR);
 
         final FormLayout layout = Panel.makeFormLayout(
-                3,
+                4,
                 3,
                 "",
                 Trainer.LABEL_WIDTH,
                 Trainer.FIELD_WIDTH);
         final FormBuilder builder = FormBuilder.create().layout(layout).panel(component);
 
-        // Evaluator Title & Progress Bar
         int r = 1; // ----------------------------
-        String title = "Training";
+
+        // Evaluator Title & Progress Bar
+        final String title = "Training";
         builder.addSeparator(title).xyw(1, r, 3);
         builder.addRaw(progressBar).xyw(5, r, 7);
 
         r += 2; // ----------------------------
 
-        builder.addRaw(new JButton(resetAction)).xy(3, r);
+        builder.addRaw(learning.getLabel()).xy(1, r);
+        builder.addRaw(learning.getField()).xy(3, r);
 
-        builder.addRaw(maxEpochs.getLabel()).xy(5, r);
-        builder.addRaw(maxEpochs.getField()).xy(7, r);
+        builder.addRaw(momentum.getLabel()).xy(5, r);
+        builder.addRaw(momentum.getField()).xy(7, r);
+
+        builder.addRaw(lambda.getLabel()).xy(9, r);
+        builder.addRaw(lambda.getField()).xy(11, r);
+
+        r += 2; // ----------------------------
+
+        builder.addRaw(new JButton(resetAction)).xy(1, r);
+        builder.addRaw(new JButton(trainAction)).xy(3, r);
+
+        builder.addRaw(epochs.getLabel()).xy(5, r);
+        builder.addRaw(epochs.getField()).xy(7, r);
 
         builder.addRaw(epochsTotal.getLabel()).xy(9, r);
         builder.addRaw(epochsTotal.getField()).xy(11, r);
 
         r += 2; // ----------------------------
 
-        builder.addRaw(new JButton(stopAction)).xy(1, r);
-
-        builder.addRaw(new JButton(trainAction)).xy(3, r);
+        builder.addRaw(new JButton(stopAction)).xy(3, r);
 
         builder.addRaw(epochIndex.getLabel()).xy(5, r);
         builder.addRaw(epochIndex.getField()).xy(7, r);
@@ -295,25 +316,17 @@ class TrainingPanel
         });
     }
 
-    //---------------//
-    // displayParams //
-    //---------------//
-    private void displayParams ()
-    {
-        maxEpochs.setValue(task.classifier.getMaxEpochs());
-    }
-
-    @Override
-    public void epochStarted (int epoch)
-    {
-        this.epoch = epoch;
-    }
-
+    //--------------//
+    // getComponent //
+    //--------------//
     public JComponent getComponent ()
     {
         return component;
     }
 
+    //--------------------//
+    // getIterationPeriod //
+    //--------------------//
     @Override
     public int getIterationPeriod ()
     {
@@ -325,46 +338,42 @@ class TrainingPanel
     //-------------//
     private void inputParams ()
     {
-        task.classifier.setMaxEpochs(maxEpochs.getValue());
+        //task.classifier.setMaxEpochs(epochs.getValue());
 
-        progressBar.setMaximum(maxEpochs.getValue());
+        if (learning.getValue() != task.classifier.getLearningRate()) {
+            task.classifier.setLearningRate(learning.getValue());
+        }
+
+        if (momentum.getValue() != task.classifier.getMomentum()) {
+            task.classifier.setMomentum(momentum.getValue());
+        }
+
+        if (lambda.getValue() != task.classifier.getLambda()) {
+            task.classifier.setLambda(lambda.getValue());
+        }
+
+        progressBar.setMaximum(epochs.getValue());
     }
 
-    //    @Override
-    //    public void invoke ()
-    //    {
-    //        invoked = true;
-    //    }
-    //
-    //    @Override
-    //    public boolean invoked ()
-    //    {
-    //        return invoked;
-    //    }
-    //
-    //        @Override
-    //        public void iterationDone (Model model,
-    //                                   int iteration)
-    //        {
-    //            iterCount++;
-    //
-    //            if ((iterCount % constants.listenerPeriod.getValue()) == 0) {
-    //                ///invoke();
-    //
-    //                final double score = model.score();
-    //                final int count = (int) iterCount;
-    //                logger.info(String.format("Score at iteration %d is %.5f", count, score));
-    //                display(epoch, count, score);
-    //            }
-    //        }
-    //
+    //---------------------//
+    // iterationPeriodDone //
+    //---------------------//
     @Override
     public void iterationPeriodDone (int total,
                                      int epoch,
-                                     double score)
+                                     double mse,
+                                     double hsw,
+                                     double osw)
     {
-        logger.info(String.format("epochsTotal:%4d epoch:%4d score: %.5f", total, epoch, score));
-        display(total, epoch, score);
+        logger.info(
+                String.format(
+                        "epochsTotal:%4d epoch:%4d mse: %.5f hiddenW2:%5.0f outputW2:%5.0f",
+                        total,
+                        epoch,
+                        mse,
+                        0.5 * hsw,
+                        0.5 * osw));
+        display(total, epoch, mse);
     }
 
     //----------------//
@@ -379,9 +388,14 @@ class TrainingPanel
     @Override
     public void propertyChange (PropertyChangeEvent evt)
     {
+        epochs.setEnabled(task.getActivity() == INACTIVE);
         resetAction.setEnabled(task.getActivity() == INACTIVE);
         trainAction.setEnabled(task.getActivity() == INACTIVE);
         stopAction.setEnabled(task.getActivity() == TRAINING);
+
+        learning.setEnabled(task.getActivity() == INACTIVE);
+        momentum.setEnabled(task.getActivity() == INACTIVE);
+        lambda.setEnabled(task.getActivity() == INACTIVE);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -394,10 +408,13 @@ class TrainingPanel
     {
         private final Constant.Integer listenerPeriod = new Constant.Integer(
                 "period",
-                10,
+                1,
                 "Period (in iterations) between listener calls");
     }
 
+    //-------------//
+    // ParamAction //
+    //-------------//
     private class ParamAction
             extends AbstractAction
     {
@@ -407,10 +424,12 @@ class TrainingPanel
         public void actionPerformed (ActionEvent e)
         {
             inputParams();
-            displayParams();
         }
     }
 
+    //-------------//
+    // ResetAction //
+    //-------------//
     protected class ResetAction
             extends AbstractAction
     {
@@ -433,6 +452,9 @@ class TrainingPanel
         }
     }
 
+    //------------//
+    // StopAction //
+    //------------//
     protected class StopAction
             extends AbstractAction
     {
@@ -449,6 +471,9 @@ class TrainingPanel
         }
     }
 
+    //-------------//
+    // TrainAction //
+    //-------------//
     protected class TrainAction
             extends AbstractAction
     {
@@ -470,7 +495,7 @@ class TrainingPanel
                     task.setActivity(TRAINING);
 
                     List<Sample> samples = selectionPanel.getTrainSamples();
-                    progressBar.setMaximum(ShapeClassifier.getInstance().getMaxEpochs());
+                    progressBar.setMaximum(epochs.getValue());
                     progressBar.setValue(0);
 
                     // Check that all trainable shapes (and only those ones) are present
@@ -478,7 +503,7 @@ class TrainingPanel
                     samples = checkPopulation(samples);
 
                     // Train on the data set
-                    task.classifier.train(samples);
+                    task.classifier.train(samples, epochs.getValue());
 
                     task.setActivity(INACTIVE);
                 }

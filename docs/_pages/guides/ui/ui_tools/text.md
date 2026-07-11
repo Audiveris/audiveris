@@ -6,9 +6,6 @@ nav_order: 13
 ---
 # Text
 {: .no_toc }
-{: .d-inline-block }
-updated for 5.10
-{: .label .label-green}
 
 The recognition of textual elements is delegated to the Tesseract OCR library.
 
@@ -205,13 +202,10 @@ from any role to any other role.
 ![](../../../assets/images/sentence_role_edited.png)
 
 ### Sentence attributes
-{: .d-inline-block }
-New in 5.10
-{: .label .label-yellow}
 
 The font attributes of a sentence is initially defined as the "main" attributes found in its word members.
 
-We can now conveniently modify these font attributes, *directly at the sentence level*.
+Since release 5.10, we can conveniently modify these font attributes, *directly at the sentence level*.
 
 To do so, we first have to select the sentence, for instance by pointing to one of its words,
 and then pressing the `To Ensemble` button.
@@ -234,9 +228,6 @@ Based on a bunch of heuristics, the engine tries to further distinguish between 
 like: direction, part name , title, composer, lyricist, etc.
 
 ### Rehearsal mark
-{: .d-inline-block }
-New in 5.10
-{: .label .label-yellow }
 
 ![](../../../assets/images/rehearsal.png)
 
@@ -285,9 +276,6 @@ For example, we can type "Bb" then press `Enter` and the chord name will be tran
 displayed as "B♭".
 
 ### Lyric line
-{: .d-inline-block }
-updated in 5.10
-{: .label .label-green}
 
 A lyric line is a sentence composed of lyric items.
 

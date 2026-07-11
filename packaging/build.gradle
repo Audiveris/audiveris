@@ -28,11 +28,13 @@
 //--------------------------------------------------------------------------------------------------
 
 plugins {
+    id 'audiveris-commons'
+
     // Mainly for the clean task
     id 'base'
 
     // Plugin which provides the jpackage task
-    id 'org.panteleyev.jpackageplugin' version '1.7.3'
+    id 'org.panteleyev.jpackageplugin' version '2.0.1'
 }
 
 import org.panteleyev.jpackage.ImageType
@@ -46,7 +48,7 @@ def appDir  = app.projectDir
 def rootDir = getRootDir()
 
 // Playing with host name, plus option if any
-ext.osname = "${app.ext.hostOSName}"
+ext.osname = hostOSName
 ext.option = ""
 
 tasks.register('linuxGetName', Exec) {
@@ -56,7 +58,7 @@ tasks.register('linuxGetName', Exec) {
     
     doLast {
         pkg.ext.osname = standardOutput.toString().toLowerCase().replaceAll('\n', '')
-        println "osname: ${pkg.ext.osname}"
+        logger.info("osname: {}", pkg.ext.osname)
     }
 }
 
@@ -67,7 +69,7 @@ tasks.register('linuxGetVersion', Exec) {
     
     doLast {
         pkg.ext.option = standardOutput.toString().replaceAll('\n', '')
-        println "Linux option: ${pkg.ext.option}"
+        logger.info("Linux option: {}", pkg.ext.option)
     }
 }
 
@@ -92,15 +94,18 @@ tasks.register('customJre', Exec) {
         !file('build/custom-jre').exists()
     }
 
-    // module jdk.zipfs provides the implementation of the zip file system provider
-    // module jdk.crypto.ec fixes javax.net.ssl.SSLHandshakeException
-    // module jdk.unsupported is needed by pdfbox which calls jdk.internal.ref.Cleaner
+    // module jdk.accessibility for Assistive Technologies
+    // module jdk.crypto.ec     fixes javax.net.ssl.SSLHandshakeException
+    // module jdk.localedata    for locales other than US locale
+    // module jdk.unsupported   is needed by pdfbox which calls jdk.internal.ref.Cleaner
+    // module jdk.zipfs         provides the implementation of the zip file system provider
     commandLine "jlink",\
         "--output", "build/custom-jre",\
         "--no-header-files",\
         "--no-man-pages",\
         "--strip-debug",\
-        "--add-modules", "java.base,java.datatransfer,java.desktop,java.xml,java.naming,jdk.zipfs,jdk.crypto.ec,jdk.unsupported"
+        "--add-modules", "java.base,java.datatransfer,java.desktop,java.naming,java.xml" +
+         ",jdk.accessibility" +",jdk.crypto.ec,jdk.localedata,jdk.unsupported,jdk.zipfs"
 }
 
 tasks.register('macImagemagick', Exec) {
@@ -188,12 +193,12 @@ tasks.jpackage {
 
     runtimeImage        = layout.buildDirectory.dir("custom-jre")
 
-    appName             = app.ext.programName
+    appName             = programName
     vendor              = "audiveris.org"
     licenseFile         = file(rootDir.toPath().resolve('LICENSE'))
     appDescription      = "Optical Music Recognition"
-    appVersion          = app.version
-    mainJar             = "${app.ext.programId}.jar"
+    appVersion          = version
+    mainJar             = programId + ".jar"
     mainClass           = app.ext.mainClass
 
     fileAssociations    = files(layout.projectDirectory.file("dev/omr.properties"))
@@ -211,9 +216,9 @@ tasks.jpackage {
     if (project.hasProperty('installerType')) {
         try {
             installerType = ImageType.valueOf(project.property('installerType').toString().toUpperCase())
-            println "installerType: " + installerType
+            logger.info("installerType: {}", installerType)
         } catch (IllegalArgumentException ex) {
-            println "Illegal installerType: " + project.property('installerType')
+            logger.error("Illegal installerType: {}", project.property('installerType'))
             throw new RuntimeException("Error: installerType should be one of " + ImageType.values())
         }
     }
@@ -228,7 +233,7 @@ tasks.jpackage {
 
         // Create a console launcher? (Useful only for errors)
         pkg.ext.option = project(':').findProperty('option')?:''
-        println "Windows option: ${pkg.ext.option}"
+        logger.info("Windows option: {}", pkg.ext.option)
         winConsole = (pkg.ext.option == "Console")
 
         // Check validity of installerType for Windows
@@ -247,7 +252,7 @@ tasks.jpackage {
         icon = layout.buildDirectory.file("Audiveris.icns")
 
         macPackageIdentifier = "org.audiveris.app"
-        macPackageName = app.ext.programName
+        macPackageName = programName
 
         // Check validity of installerType for macOS
         if (installerType != null) {
@@ -278,7 +283,7 @@ tasks.jpackage {
         def dest = destination.get().asFile
         
         fileTree(destination).each { file ->
-            println "oldFile: ${file}"
+            logger.debug("oldFile: {}", file)
 
             // Retrieve suffix
             def oldName = "${file.name}"
@@ -286,12 +291,12 @@ tasks.jpackage {
             def suffix = oldName.substring(dot)
 
             // Forge artifact new file
-            def newName = "${app.ext.programName}-${app.version}-${pkg.ext.osname}${pkg.ext.option}-${app.ext.hostOSArch}$suffix"
+            def newName = "$programName-$version-${pkg.ext.osname}${pkg.ext.option}-$hostOSArch$suffix"
             def newFile = Paths.get("$dest", newName).toFile()
-            println "newFile: ${newFile}"
+            logger.debug("newFile: {}", newFile)
 
             def result = file.renameTo(newFile)
-            println "Success: $result"
+            logger.debug("Success: {}", result)
         }
     }
 }

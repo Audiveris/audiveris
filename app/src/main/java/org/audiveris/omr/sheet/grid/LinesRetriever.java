@@ -25,10 +25,12 @@ import org.audiveris.omr.OMR;
 import static org.audiveris.omr.WellKnowns.LINE_SEPARATOR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.dynamic.Compounds;
 import org.audiveris.omr.glyph.dynamic.CurvedFilament;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.glyph.dynamic.FilamentFactory;
+import org.audiveris.omr.glyph.dynamic.SectionCompound;
 import org.audiveris.omr.lag.JunctionRatioPolicy;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Section;
@@ -534,6 +536,12 @@ public class LinesRetriever
             // Include isolated horizontal sticker sections
             watch.start("includeStickers");
             includeStickers(); // This may delete intermediate points
+
+            // Remove the crossing chunks from lines
+            if (constants.purgeCrossingChunks.isSet()) {
+                watch.start("linesInspector");
+                new LinesInspector().process();
+            }
 
             // Add intermediate points where needed (3)
             watch.start("fillHoles");
@@ -1535,9 +1543,16 @@ public class LinesRetriever
 
     //~ Inner Classes ------------------------------------------------------------------------------
 
+    //-----------//
+    // Constants //
+    //-----------//
     private static class Constants
             extends ConstantSet
     {
+        private final Constant.Boolean purgeCrossingChunks = new Constant.Boolean(
+                false,
+                "Should we purge the staff lines from crossing curves");
+
         private final Constant.Ratio topRatioForSlope = new Constant.Ratio(
                 0.1,
                 "Percentage of top filaments used to retrieve global slope");
@@ -1566,6 +1581,11 @@ public class LinesRetriever
                 0.0002,
                 "Minimum absolute slope value to be worth noting");
 
+        private final Constant.Double minChunkSlope = new Constant.Double(
+                "tangent",
+                0.04,
+                "Minimum relative slope value to signal a crossing chunk");
+
         // Constants specified WRT *maximum* line thickness (scale.getmaxFore())
         // ----------------------------------------------
 
@@ -1590,6 +1610,10 @@ public class LinesRetriever
 
         // Constants specified WRT mean interline
         // --------------------------------------
+
+        private final Scale.Fraction minCrossingOffset = new Scale.Fraction(
+                10.0,
+                "Minimum abscissa offset to process crossing items");
 
         private final Scale.Fraction minRunLength = new Scale.Fraction(
                 0.25,
@@ -1653,6 +1677,94 @@ public class LinesRetriever
         private final Constant.Boolean displayRuns = new Constant.Boolean(
                 false,
                 "Should we display all images on runs?");
+    }
+
+    //----------------//
+    // LinesInspector //
+    //----------------//
+    /**
+     * It detects and remove the chunks in line filaments
+     * that are likely to correspond to crossing curves.
+     * <p>
+     * The strategy is based on the abnormal slopes of these chunks
+     * and is excluded from the potential header area.
+     */
+    private class LinesInspector
+    {
+        // Sections to be removed from the current filament
+        final List<SectionCompound> toRemove = new ArrayList<>();
+
+        // Abnormal slope
+        final double minChunkSlope = constants.minChunkSlope.getValue();
+
+        // Initial margin
+        final int minOffset = scale.toPixels(constants.minCrossingOffset);
+
+        public void process ()
+        {
+            for (Staff staff : staffManager.getStaves()) {
+                final int xMin = staff.getAbscissa(LEFT) + minOffset;
+
+                for (LineInfo line : staff.getLines()) {
+                    final StaffFilament fil = (StaffFilament) line;
+                    toRemove.clear();
+
+                    // Organize the filament sections into chunks (vertical aggregates)
+                    SectionCompound chunk = null; // The chunk being built
+                    int xEnd = 0; // Current right abscissa of the chunk
+
+                    for (Section section : fil.getMembers()) {
+                        logger.debug("    {} {}", section, section.getBounds());
+                        final Rectangle box = section.getBounds();
+
+                        if (box.x < xMin) {
+                            continue; // Avoid the potential header region
+                        }
+
+                        if (box.x > xEnd) {
+                            check(chunk); // End the current chunk, if any
+
+                            // Start a new chunk
+                            chunk = new SectionCompound();
+                            xEnd = 0;
+                            logger.debug("     new chunk starting at x:{}", box.x);
+                        }
+
+                        chunk.addSection(section);
+                        xEnd = Math.max(xEnd, box.x + box.width - 1);
+                    }
+
+                    check(chunk); // Check the last chunk
+
+                    // Purge the filament from the detected chunk sections
+                    if (!toRemove.isEmpty()) {
+                        toRemove.forEach(c -> c.getMembers().forEach(s -> fil.removeSection(s)));
+                        fil.computeLine();
+                    }
+                }
+            }
+        }
+
+        private void check (SectionCompound chunk)
+        {
+            if (chunk == null) {
+                return;
+            }
+
+            if (chunk.getMembers().size() > 1) {
+                logger.debug("Compound {}", chunk.getMembers());
+                final Glyph glyph = chunk.toGlyph(null);
+                final Line2D gl = glyph.getCenterLine();
+                final double slope = LineUtil.getSlope(gl);
+                logger.debug("p1:{} p2:{} slope:{}", gl.getP1(), gl.getP2(), slope);
+                final double relativeSlope = slope - globalSlope;
+
+                if (Math.abs(relativeSlope) >= minChunkSlope) {
+                    logger.debug("Removing chunk with relativeSlope:{}", relativeSlope);
+                    toRemove.add(chunk);
+                }
+            }
+        }
     }
 
     //------------//
