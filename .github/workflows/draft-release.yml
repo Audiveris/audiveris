@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Retrieve Gradle properties
         uses: BrycensRanch/read-properties-action@v1
@@ -44,14 +44,14 @@ jobs:
           distribution: zulu
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Build installer on ${{ matrix.os }} option ${{ matrix.option }}
         run: ./gradlew --info jpackage -Poption=${{ matrix.option }}
 
       - name: Upload installer
         id: upload-installer
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: installer-${{ matrix.os }}${{ matrix.option }}
           path: packaging/build/dist/*
@@ -64,13 +64,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install PrinceXML
         run: |
           wget https://www.princexml.com/download/prince_16-1_ubuntu24.04_amd64.deb
           sudo apt install ./prince_16-1_ubuntu24.04_amd64.deb
           prince --version
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Generate PDF
         run: ./gradlew --info :docs:handbookPdf
@@ -79,7 +82,7 @@ jobs:
         run: ls -l ./docs/build/pdf
         
       - name: Upload handbook PDF
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: handbook
           path: ./docs/build/pdf/*.pdf
@@ -92,7 +95,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Retrieve Gradle properties
         uses: BrycensRanch/read-properties-action@v1
@@ -108,7 +111,7 @@ jobs:
           distribution: zulu
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         
       - name: Install xsltproc
         run: |
@@ -121,7 +124,7 @@ jobs:
 
       - name: Upload schema doc
         id: upload-schema-doc
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: schema-doc
           path: schemas/build/distributions/*
@@ -134,59 +137,59 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Download ubuntu latest installer
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: installer-ubuntu-latest
           path: ./artifacts
 
       - name: Download ubuntu 22.04 installer
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: installer-ubuntu-22.04
           path: ./artifacts
 
       - name: Download windows installer
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: installer-windows-latest
           path: ./artifacts
 
       - name: Download windows installer with Console option
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: installer-windows-latestConsole
           path: ./artifacts
 
       - name: Download macos installer
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: installer-macos-latest
           path: ./artifacts
 
       - name: Download (old) macos installer
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: installer-macos-15-intel
           path: ./artifacts
 
       - name: Download handbook PDF
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: handbook
           path: ./artifacts
 
       - name: Download schema doc
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: schema-doc
           path: ./artifacts
 
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

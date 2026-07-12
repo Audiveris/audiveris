@@ -1,8 +1,8 @@
 name: Build scoop manifest
 
 on:
-#  release:
-#    types: [published]
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -67,7 +67,7 @@ jobs:
           $json | Set-Content -Path audiveris.json
           
       - name: Upload manifest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: scoop-manifest.zip
           path: audiveris.json

@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Retrieve Gradle properties
         uses: BrycensRanch/read-properties-action@v1
@@ -30,7 +30,7 @@ jobs:
           distribution: zulu
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
         
       - name: Install xsltproc
         run: |
@@ -43,7 +43,7 @@ jobs:
 
       - name: Upload schema doc
         id: upload-schema-doc
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: schema-doc
           path: schemas/build/distributions/*

@@ -16,7 +16,7 @@ jobs:
       TESSDATA_PREFIX: /home/runner/.config/AudiverisLtd/audiveris/tessdata
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         
       - name: Retrieve Gradle properties
         uses: BrycensRanch/read-properties-action@v1
@@ -38,7 +38,7 @@ jobs:
       # cache loaded tessdata files so they don't have to be re-downloaded on every workflow execution
       - name: Get cached tessdata files
         id: cache-tessdata
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ env.TESSDATA_PREFIX }}
           key: ${{ runner.os }}-tessdata-${{ env.TESSDATA_TAG }}-eng
@@ -48,12 +48,11 @@ jobs:
         run: |
           ${GITHUB_WORKSPACE}/.github/install-tessdata.sh eng
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
       - name: Build Audiveris
-        uses: gradle/gradle-build-action@v2.7.0
-        with:
-          arguments: build -x test
+        run: ./gradlew build -x test
 
       - name: Unit-Test Audiveris
-        uses: gradle/gradle-build-action@v2.7.0
-        with:
-          arguments: test
+        run: ./gradlew test
