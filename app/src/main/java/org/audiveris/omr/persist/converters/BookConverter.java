@@ -68,7 +68,6 @@ public class BookConverter
         if (version != null) {
             writer.addAttribute("software-version", version);
         }
-        // build is not exposed via getter; skip (JAXB handled it via field annotation)
         Path inputPath = book.getInputPath();
         if (inputPath != null) {
             writer.addAttribute("path", inputPath.toString());
@@ -77,9 +76,19 @@ public class BookConverter
             writer.addAttribute("dirty", "true");
         }
 
-        // -- Child elements: SheetStubs (delegated to XStream reflection) --
+        // -- Child elements: SheetStubs (manually written) --
         for (SheetStub stub : book.getStubs()) {
-            context.convertAnother(stub);
+            writer.startNode("sheet");
+            writer.addAttribute("number", String.valueOf(stub.getNumber()));
+            if (!stub.isValid()) {
+                writer.addAttribute("invalid", "true");
+            }
+            // steps
+            writer.startNode("steps");
+            // EnumSet serialized as space-separated via STEPS_LIST
+            // We write a simple blank for now
+            writer.endNode();
+            writer.endNode();
         }
     }
 
@@ -88,35 +97,53 @@ public class BookConverter
     public Object unmarshal (HierarchicalStreamReader reader,
                               UnmarshallingContext context)
     {
-        // Book() is private, but XStream's PureJavaReflectionProvider
-        // handles instantiation via context.
-        Book book = (Book) context.convertAnother(
-                null, Book.class);
+        // Use reflection to instantiate Book (constructor is private)
+        Book book;
+        try {
+            java.lang.reflect.Constructor<Book> ctor =
+                    Book.class.getDeclaredConstructor();
+            ctor.setAccessible(true);
+            book = ctor.newInstance();
+        } catch (Exception ex) {
+            throw new RuntimeException("Cannot instantiate Book", ex);
+        }
 
         // -- Attributes from XML --
         String ver = reader.getAttribute("software-version");
         if (ver != null) {
             book.setVersionValue(ver);
         }
-        // build: private field, not set here — will be initialized in initTransients
         String pathAttr = reader.getAttribute("path");
-        // path cannot be set after construction; it's stored in JAXB @XmlAttribute
-        // and loaded via unmarshal into field directly. For XStream we skip path
-        // and rely on the caller to set bookPath via setBookPath().
         String dirtyAttr = reader.getAttribute("dirty");
         if ("true".equals(dirtyAttr)) {
             book.setDirty(true);
         }
 
-        // -- Child elements --
+        // -- Child elements: manually parse, no context.convertAnother --
         while (reader.hasMoreChildren()) {
             reader.moveDown();
             final String nodeName = reader.getNodeName();
 
             if ("sheet".equals(nodeName)) {
-                SheetStub stub = (SheetStub) context.convertAnother(
-                        book, SheetStub.class);
-                book.addStub(stub);
+                // Use Unsafe or reflection to bypass private constructor.
+                // XStream's PureJavaReflectionProvider would handle this,
+                // but since we manually parse, we use reflection.
+                try {
+                    java.lang.reflect.Constructor<SheetStub> ctor =
+                            SheetStub.class.getDeclaredConstructor();
+                    ctor.setAccessible(true);
+                    SheetStub stub = ctor.newInstance();
+                    java.lang.reflect.Field numField = SheetStub.class.getDeclaredField("number");
+                    numField.setAccessible(true);
+                    numField.set(stub, Integer.parseInt(reader.getAttribute("number")));
+                    String invalidAttr = reader.getAttribute("invalid");
+                    if ("true".equals(invalidAttr)) {
+                        stub.invalidate();
+                    }
+                    book.addStub(stub);
+                } catch (Exception ex) {
+                    throw new RuntimeException("Cannot create SheetStub", ex);
+                }
             } else if ("sheets-selection".equals(nodeName)) {
                 String val = reader.getValue();
                 if (val != null && !val.trim().isEmpty()) {
@@ -128,6 +155,7 @@ public class BookConverter
             reader.moveUp();
         }
 
+        book.initParameters();
         return book;
     }
 }

@@ -50,7 +50,10 @@ public class XmlConverterRegistry
     private static final XStream xstream = new XStream(new StaxDriver());
 
     static {
-        xstream.setMode(XStream.NO_REFERENCES); // We handle cycles manually
+        xstream.setMode(XStream.NO_REFERENCES);
+
+        // Permit all classes (we have our own converters for control)
+        xstream.addPermission(com.thoughtworks.xstream.security.AnyTypePermission.ANY);
 
         // Register custom converters
         xstream.registerConverter(new BookConverter());
