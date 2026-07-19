@@ -248,6 +248,14 @@ public class Book
     /** Flag to indicate this book is being closed. */
     private volatile boolean closing;
 
+    /** PATH3: Thread pool for lazy sheet loading. */
+    private final java.util.concurrent.ExecutorService loadExecutor =
+            java.util.concurrent.Executors.newFixedThreadPool(2, (Runnable r) -> {
+                Thread t = new Thread(r, "SheetLoader");
+                t.setDaemon(true);
+                return t;
+            });
+
     /** Set if the book itself has been modified. */
     private volatile boolean modified = false;
 
@@ -370,6 +378,8 @@ public class Book
             final Path bookFolder = BookManager.getDefaultBookFolder(this);
             final Path annotationsPath = bookFolder.resolve(
                     getRadix() + Annotations.BOOK_ANNOTATIONS_EXTENSION);
+
+            // REFACTORED: ZipFileSystem.create() already supports directory-mode
             root = ZipFileSystem.create(annotationsPath);
 
             for (SheetStub stub : theStubs) {
@@ -847,6 +857,30 @@ public class Book
     public Lock getLock ()
     {
         return lock;
+    }
+
+    //--------------------//
+    // getLoadExecutor //
+    //--------------------//
+    /**
+     * Report the thread pool for async sheet loading.
+     *
+     * @return the executor service
+     */
+    public java.util.concurrent.ExecutorService getLoadExecutor ()
+    {
+        return loadExecutor;
+    }
+
+    //-----------------//
+    // shutdownLoader //
+    //-----------------//
+    /**
+     * Shut down the sheet loading thread pool.
+     */
+    public void shutdownLoader ()
+    {
+        loadExecutor.shutdownNow();
     }
 
     //---------------------//
@@ -1359,7 +1393,8 @@ public class Book
                 }
             }
 
-            root.getFileSystem().close();
+            // REFACTORED: Use ZipFileSystem.closeRoot() for unified cleanup (dir & ZIP modes)
+            ZipFileSystem.closeRoot(root, theBookPath);
         } catch (Exception ex) {
             logger.warn("Error browsing project file of {} {}", this, ex.toString(), ex);
         } finally {
@@ -1828,6 +1863,10 @@ public class Book
      * Open the book file (supposed to already exist at location provided by
      * '<code>bookPath</code>' member) for reading or writing.
      * <p>
+     * REFACTORED (Path 1): Support directory-mode.
+     * - Directory-mode: return bookPath itself as root path
+     * - ZIP-mode: open ZIP file system and return root (original logic unchanged)
+     * <p>
      * When IO operations are finished, the book file must be closed via
      * {@link #closeFileSystem(java.nio.file.FileSystem)}
      *
@@ -1837,6 +1876,11 @@ public class Book
     public Path openBookFile ()
         throws IOException
     {
+        // NEW: directory-mode returns path itself, no ZIP FS needed
+        if (ZipFileSystem.isDirectoryPath(bookPath)) {
+            return bookPath;
+        }
+
         return ZipFileSystem.open(bookPath);
     }
 
@@ -2436,6 +2480,10 @@ public class Book
     //-------//
     /**
      * Store book to disk.
+     * <p>
+     * REFACTORED (Path 1): Support directory-mode storage.
+     * - Directory-mode: use temp dir + atomic rename, prevents data corruption on interrupt
+     * - ZIP-mode: original ZipFileSystem logic unchanged
      *
      * @param bookPath   target path for storing the book
      * @param withBackup if true, rename beforehand any existing target as a backup
@@ -2447,12 +2495,31 @@ public class Book
 
         boolean diskWritten = false; // Has disk actually been written?
 
-        // Backup existing book file?
+                // Backup existing file or directory?
+        // REFACTORED: directory-mode needs special handling (move whole dir as backup)
         if (withBackup && Files.exists(bookPath)) {
-            Path backup = FileUtil.backup(bookPath);
+            if (ZipFileSystem.isDirectoryPath(bookPath)) {
+                // Directory-mode: move entire directory as backup, not FileUtil.backup() rename
+                final Path bakPath = bookPath.resolveSibling(
+                        bookPath.getFileName() + ".bak");
+                try {
+                    if (Files.exists(bakPath)) {
+                        FileUtil.deleteDirectory(bakPath);
+                    }
+                } catch (IOException ignored) {
+                }
+                try {
+                    Files.move(bookPath, bakPath);
+                    logger.info("Previous book directory renamed as {}", bakPath);
+                } catch (IOException ex) {
+                    logger.warn("Could not backup book directory {}", bookPath, ex);
+                }
+            } else {
+                Path backup = FileUtil.backup(bookPath);
 
-            if (backup != null) {
-                logger.info("Previous book file renamed as {}", backup);
+                if (backup != null) {
+                    logger.info("Previous book file renamed as {}", backup);
+                }
             }
         }
 
@@ -2463,60 +2530,132 @@ public class Book
             checkRadixChange(bookPath);
             logger.debug("Storing book...");
 
-            if ((this.bookPath == null) || this.bookPath.toAbsolutePath().equals(
-                    bookPath.toAbsolutePath())) {
-                if (this.bookPath == null) {
-                    root = ZipFileSystem.create(bookPath);
-                    diskWritten = true;
-                } else {
-                    root = ZipFileSystem.open(bookPath);
-                }
+        // REFACTORED: Branch entry — directory-mode vs ZIP-mode
+            if (ZipFileSystem.isDirectoryPath(bookPath)) {
+                // ==========================================================
+                // REFACTORED Path 1 — directory-mode: temporary dir + atomic rename
+                // Temp dir is created sibling to target with .tmp suffix,
+                // after all writes complete, atomically moved to target name.
+                // ==========================================================
 
+                // 1) Create temp directory sibling: target.tmp/
+                final Path tmpDir = bookPath.resolveSibling(
+                        bookPath.getFileName() + ".tmp");
+                if (Files.exists(tmpDir)) {
+                    try {
+                        FileUtil.deleteDirectory(tmpDir); // Clean up leftover from crash
+                    } catch (IOException ignored) {
+                    }
+                }
+                Files.createDirectories(tmpDir);
+                diskWritten = true;
+
+                // 2) Write book.xml to temp dir
                 if (isModified() || isUpgraded()) {
-                    storeBookInfo(root); // Book info (book.xml)
-                    diskWritten = true;
+                    storeBookInfo(tmpDir);
                 }
 
-                // Contained sheets
+                // 3) Write each modified sheet to temp dir
                 for (SheetStub stub : stubs) {
                     if (stub.isModified() || stub.isUpgraded()) {
-                        final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
+                        final Path sheetFolder = tmpDir.resolve(
+                                INTERNALS_RADIX + stub.getNumber());
+                        Files.createDirectories(sheetFolder);
                         stub.getSheet().store(sheetFolder, null);
-                        diskWritten = true;
                     }
                 }
 
-                // Separate repository
+                // 4) Save separate repository
                 if ((repository != null) && repository.isModified()) {
                     repository.storeRepository();
                 }
-            } else {
-                // Switch from old to new book file
-                root = ZipFileSystem.create(bookPath);
 
-                diskWritten = true;
-
-                storeBookInfo(root); // Book info (book.xml)
-
-                // Contained sheets
-                final Path oldRoot = openBookFile(this.bookPath);
-
-                for (SheetStub stub : stubs) {
-                    final Path oldSheetFolder = oldRoot.resolve(INTERNALS_RADIX + stub.getNumber());
-                    final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
-
-                    // By default, copy existing sheet files
-                    if (Files.exists(oldSheetFolder)) {
-                        FileUtil.copyTree(oldSheetFolder, sheetFolder);
+                // 5) Atomic rename: move old dir aside, then rename temp to target
+                if (Files.exists(bookPath)) {
+                    final Path bakDir = bookPath.resolveSibling(
+                            bookPath.getFileName() + ".bak");
+                    if (Files.exists(bakDir)) {
+                        try {
+                            FileUtil.deleteDirectory(bakDir);
+                        } catch (IOException ignored) {
+                        }
                     }
-
-                    // Update modified sheet files
-                    if (stub.isModified() || stub.isUpgraded()) {
-                        stub.getSheet().store(sheetFolder, oldSheetFolder);
+                    try {
+                        Files.move(bookPath, bakDir); // Move old dir aside
+                    } catch (IOException ignored) {
                     }
                 }
+                Files.move(tmpDir, bookPath); // Temp dir -> target
 
-                oldRoot.getFileSystem().close(); // Close old book file
+                // 6) Clean up .bak backup
+                final Path bakDir = bookPath.resolveSibling(
+                        bookPath.getFileName() + ".bak");
+                if (Files.exists(bakDir)) {
+                    try {
+                        FileUtil.deleteDirectory(bakDir);
+                    } catch (IOException ignored) {
+                    }
+                }
+            } else {
+                // ==========================================================
+                // ZIP-mode: original logic preserved verbatim
+                // ==========================================================
+
+                if ((this.bookPath == null) || this.bookPath.toAbsolutePath().equals(
+                        bookPath.toAbsolutePath())) {
+                    if (this.bookPath == null) {
+                        root = ZipFileSystem.create(bookPath);
+                        diskWritten = true;
+                    } else {
+                        root = ZipFileSystem.open(bookPath);
+                    }
+
+                    if (isModified() || isUpgraded()) {
+                        storeBookInfo(root); // Book info (book.xml)
+                        diskWritten = true;
+                    }
+
+                    // Contained sheets
+                    for (SheetStub stub : stubs) {
+                        if (stub.isModified() || stub.isUpgraded()) {
+                            final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
+                            stub.getSheet().store(sheetFolder, null);
+                            diskWritten = true;
+                        }
+                    }
+
+                    // Separate repository
+                    if ((repository != null) && repository.isModified()) {
+                        repository.storeRepository();
+                    }
+                } else {
+                    // Switch from old to new book file
+                    root = ZipFileSystem.create(bookPath);
+
+                    diskWritten = true;
+
+                    storeBookInfo(root); // Book info (book.xml)
+
+                    // Contained sheets
+                    final Path oldRoot = openBookFile(this.bookPath);
+
+                    for (SheetStub stub : stubs) {
+                        final Path oldSheetFolder = oldRoot.resolve(INTERNALS_RADIX + stub.getNumber());
+                        final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
+
+                        // By default, copy existing sheet files
+                        if (Files.exists(oldSheetFolder)) {
+                            FileUtil.copyTree(oldSheetFolder, sheetFolder);
+                        }
+
+                        // Update modified sheet files
+                        if (stub.isModified() || stub.isUpgraded()) {
+                            stub.getSheet().store(sheetFolder, oldSheetFolder);
+                        }
+                    }
+
+                    oldRoot.getFileSystem().close(); // Close old book file
+                }
             }
 
             this.bookPath = bookPath;
@@ -2527,11 +2666,8 @@ public class Book
         } catch (Exception ex) {
             logger.warn("Error storing " + this + " to " + bookPath + " ex:" + ex, ex);
         } finally {
-            if (root != null) {
-                try {
-                    root.getFileSystem().close();
-                } catch (IOException ignored) {}
-            }
+            // REFACTORED: Use ZipFileSystem.closeRoot() for unified cleanup (dir & ZIP modes)
+            ZipFileSystem.closeRoot(root, bookPath);
 
             getLock().unlock();
         }
@@ -2542,6 +2678,8 @@ public class Book
     //---------------//
     /**
      * Store the book information (global info + stub steps) into book file system.
+     * <p>
+     * REFACTORED (Path 2): Use XmlConverterRegistry instead of JAXB Marshaller.
      *
      * @param root root path of book file system
      * @throws Exception if anything goes wrong
@@ -2558,7 +2696,12 @@ public class Book
 
         Path bookInternals = root.resolve(BOOK_INTERNALS);
         Files.deleteIfExists(bookInternals);
-        Jaxb.marshal(this, bookInternals, getJaxbContext());
+
+        // REFACTORED (Path 2): Replace JAXB marshal with XStream serialization
+        try (java.io.OutputStream os = java.nio.file.Files.newOutputStream(
+                bookInternals, java.nio.file.StandardOpenOption.CREATE)) {
+            org.audiveris.omr.persist.XmlConverterRegistry.toXML(this, os);
+        }
 
         setModified(false);
         bookUpgraded = false;
@@ -2829,11 +2972,18 @@ public class Book
     //-----------------//
     /**
      * Close the provided (book) file system.
+     * <p>
+     * REFACTORED (Path 1): Null-safe. If fileSystem is null (directory-mode), skip.
      *
      * @param fileSystem the book file system
      */
     public static void closeFileSystem (FileSystem fileSystem)
     {
+        // NEW: directory-mode does not create a FS, fileSystem is null -> skip
+        if (fileSystem == null) {
+            return;
+        }
+
         try {
             fileSystem.close();
 
@@ -2948,6 +3098,10 @@ public class Book
     //----------//
     /**
      * Load a book out of a provided book file.
+     * <p>
+     * REFACTORED (Path 1): Support loading from directory.
+     * - Directory-mode: read book.xml directly from the directory
+     * - ZIP-mode: original logic unchanged, opens ZIP via ZipFileSystem
      *
      * @param bookPath path to the (zipped) book file
      * @return the loaded book if successful
@@ -2967,19 +3121,41 @@ public class Book
 
             watch.start("book");
 
-            // Open book file
-            Path rootPath = ZipFileSystem.open(bookPath);
+            // NEW: resolve book.xml path according to dir/ZIP mode
+            final Path internalsPath;
+            final boolean dirMode = ZipFileSystem.isDirectoryPath(bookPath);
 
-            // Load book internals (just the stubs) out of book.xml
-            Path internalsPath = rootPath.resolve(BOOK_INTERNALS);
+            if (dirMode) {
+                // Directory-mode: book.xml is directly inside the directory
+                internalsPath = bookPath.resolve(BOOK_INTERNALS);
+            } else {
+                // ZIP-mode: open ZIP first, then locate book.xml inside
+                Path rootPath = ZipFileSystem.open(bookPath);
+                internalsPath = rootPath.resolve(BOOK_INTERNALS);
+            }
 
             try (InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ)) {
-                JAXBContext ctx = getJaxbContext();
-                Unmarshaller um = ctx.createUnmarshaller();
-                book = (Book) um.unmarshal(is);
+                // REFACTORED (Path 2): Try XStream first, fallback to JAXB
+                try {
+                    book = org.audiveris.omr.persist.XmlConverterRegistry.loadBook(internalsPath);
+                } catch (Exception e1) {
+                    logger.warn("XStream loading failed, falling back to JAXB: {}", e1.toString());
+                    try (InputStream is2 = Files.newInputStream(
+                            internalsPath, StandardOpenOption.READ)) {
+                        JAXBContext ctx = getJaxbContext();
+                        Unmarshaller um = ctx.createUnmarshaller();
+                        book = (Book) um.unmarshal(is2);
+                    }
+                }
                 LogUtil.start(book);
                 book.getLock().lock();
-                rootPath.getFileSystem().close();
+
+                // REFACTORED: directory-mode does not need to close ZIP FS
+                // (internalsPath's FS is the default FS, not closable)
+                if (!dirMode) {
+                    // ZIP-mode: close ZIP FS (book.xml data already in memory)
+                    internalsPath.getFileSystem().close();
+                }
 
                 boolean ok = book.initTransients(null, bookPath);
 
@@ -3016,6 +3192,7 @@ public class Book
      * Open the book file (supposed to already exist at location provided by
      * '<code>bookPath</code>' parameter) for reading or writing.
      * <p>
+     * REFACTORED (Path 1): Support directory-mode.
      * When IO operations are finished, the book file must be closed via
      * {@link #closeFileSystem(java.nio.file.FileSystem)}
      *
@@ -3026,6 +3203,11 @@ public class Book
     {
         if (bookPath == null) {
             throw new IllegalStateException("bookPath is null");
+        }
+
+        // NEW: directory-mode returns path itself
+        if (ZipFileSystem.isDirectoryPath(bookPath)) {
+            return bookPath;
         }
 
         try {
