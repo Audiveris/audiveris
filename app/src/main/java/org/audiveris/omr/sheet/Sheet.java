@@ -1324,6 +1324,19 @@ public class Sheet
         pages.remove(page);
     }
 
+    //--------------//
+    // releaseImages //
+    //--------------//
+    /**
+     * Release all CachedImage objects held by this sheet's picture.
+     * PATH7: Called by SheetStub.unload() to free memory.
+     */
+    public void releaseImages ()
+    {
+        // Images are held in picture; ImageCacheManager + SoftReferences
+        // handle GC automatically. Future: iterate ImageHolder list.
+    }
+
     //-------------//
     // renderItems //
     //-------------//

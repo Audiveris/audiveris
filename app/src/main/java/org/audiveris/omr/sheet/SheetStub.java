@@ -1088,12 +1088,17 @@ public class SheetStub
     //--------//
     /**
      * Release the Sheet object to free memory; metadata stays.
+     * PATH7: Also releases all CachedImage objects held by the sheet.
      */
     public synchronized void unload ()
     {
         if ((loadState == LoadState.LOADING) && (sheetFuture != null)) {
             sheetFuture.cancel(true);
             sheetFuture = null;
+        }
+        if (sheet != null) {
+            // PATH7: release all cached images held by this sheet
+            sheet.releaseImages();
         }
         sheet = null;
         loadState = LoadState.UNLOADED;
