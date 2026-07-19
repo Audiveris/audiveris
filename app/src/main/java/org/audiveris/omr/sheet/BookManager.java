@@ -117,9 +117,6 @@ public class BookManager
 
     private static final Constants constants = new Constants();
 
-    /** REFACTORED (Path 1): Toggle to enable directory-mode storage. */
-    private static final boolean useDirectoryStorage = false;
-
     private static final Logger logger = LoggerFactory.getLogger(BookManager.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -670,7 +667,7 @@ public class BookManager
      */
     public static boolean useDirectoryStorage ()
     {
-        return BookManager.useDirectoryStorage;
+        return org.audiveris.omr.config.AudiverisProperties.isDirectoryStorage();
     }
 
     //--------------------//

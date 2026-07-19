@@ -250,7 +250,9 @@ public class Book
 
     /** PATH3: Thread pool for lazy sheet loading. */
     private final java.util.concurrent.ExecutorService loadExecutor =
-            java.util.concurrent.Executors.newFixedThreadPool(2, (Runnable r) -> {
+            java.util.concurrent.Executors.newFixedThreadPool(
+                    org.audiveris.omr.config.AudiverisProperties.getLoadThreadPoolSize(),
+                    (Runnable r) -> {
                 Thread t = new Thread(r, "SheetLoader");
                 t.setDaemon(true);
                 return t;
