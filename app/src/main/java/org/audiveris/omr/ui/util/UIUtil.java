@@ -510,7 +510,16 @@ public abstract class UIUtil
         } else {
             final JFileChooser fc = new JFileChooser();
             fc.setApproveButtonText(title);
-            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+            // REFACTORED (Path 1): For .omr book open dialogs, use FILES_AND_DIRECTORIES
+            // so that directory-mode book projects are selectable.
+            final boolean isBookOpen = (filter instanceof OmrFileFilter)
+                    && !save
+                    && filter.getDescription() != null
+                    && filter.getDescription().toLowerCase().contains(".omr");
+            fc.setFileSelectionMode(isBookOpen
+                    ? JFileChooser.FILES_AND_DIRECTORIES
+                    : JFileChooser.FILES_ONLY);
 
             // Pre-select the directory, and potentially the file to save to
             if (startFile != null) {
@@ -602,7 +611,16 @@ public abstract class UIUtil
         } else {
             final JFileChooser fc = new JFileChooser();
             fc.setMultiSelectionEnabled(true); // MULTI-SELECTION!
-            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+            // REFACTORED (Path 1): For .omr book open dialogs, use FILES_AND_DIRECTORIES
+            // so that directory-mode book projects are selectable.
+            final boolean isBookOpen = (filter instanceof OmrFileFilter)
+                    && !save
+                    && filter.getDescription() != null
+                    && filter.getDescription().toLowerCase().contains(".omr");
+            fc.setFileSelectionMode(isBookOpen
+                    ? JFileChooser.FILES_AND_DIRECTORIES
+                    : JFileChooser.FILES_ONLY);
 
             // Pre-select the directory, and potentially the file to save to
             if (startFile != null) {

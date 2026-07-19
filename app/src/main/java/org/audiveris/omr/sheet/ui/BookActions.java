@@ -63,6 +63,7 @@ import org.audiveris.omr.util.SheetPath;
 import org.audiveris.omr.util.SheetPathHistory;
 import org.audiveris.omr.util.VoidTask;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.ZipFileSystem;
 import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Action;
@@ -836,6 +837,8 @@ public class BookActions
             if (sheetPath != null) {
                 final Path path = sheetPath.getBookPath();
 
+                // REFACTORED (Path 1): Support directory-mode book in recent list
+                // Files.exists() returns true for directories too
                 if (Files.exists(path)) {
                     return new LoadBookTask(sheetPath);
                 } else {
@@ -1239,8 +1242,11 @@ public class BookActions
         }
 
         try {
-            // Let the user select a book output file
+            // Let the user select a book output file or directory
             final Path defaultBookPath = BookManager.getDefaultSavePath(book);
+
+            // REFACTORED (Path 1): selectBookPath now offers format choice
+            // (.omr file vs directory) via selectBookSavePath
             final Path targetPath = selectBookPath(true, defaultBookPath);
             final Path ownPath = book.getBookPath();
 
@@ -1907,6 +1913,23 @@ public class BookActions
                 format(resources.getString("overwriteFile.pattern"), target));
     }
 
+    //---------------------//
+    // isValidBookDirectory //
+    //---------------------//
+    /**
+     * Check whether the provided directory is a valid directory-mode book
+     * (contains a book.xml file).
+     * <p>
+     * NEW: Path 1 UI refactor — support directory-mode book loading.
+     *
+     * @param path the path to check
+     * @return true if path is a directory containing book.xml
+     */
+    public static boolean isValidBookDirectory (Path path)
+    {
+        return Files.isDirectory(path) && Files.exists(path.resolve("book.xml"));
+    }
+
     //-----------------------//
     // preOpenBookParameters //
     //-----------------------//
@@ -1925,6 +1948,9 @@ public class BookActions
     //------------------------//
     /**
      * Let the user interactively select book/image paths for reading.
+     * <p>
+     * REFACTORED (Path 1): Added "Directories (book.xml)" filter to support
+     * selecting a directory-mode book project.
      *
      * @param startPath starting path
      * @return the array of selected paths, perhaps empty but not null
@@ -1947,6 +1973,12 @@ public class BookActions
     //----------------//
     /**
      * Let the user interactively select a book path.
+     * <p>
+     * REFACTORED (Path 1): For read mode, the dialog uses FILES_AND_DIRECTORIES
+     * so that directory-mode book projects are selectable.
+     * For write (save) mode, only .omr files are offered, matching the original
+     * behavior; directory-mode "save as" format selection is done via
+     * {@link #selectBookSavePath}.
      *
      * @param save      true for write, false for read
      * @param startPath starting path
@@ -1955,7 +1987,96 @@ public class BookActions
     public static Path selectBookPath (boolean save,
                                        Path startPath)
     {
-        return selectPath(save, startPath, filter(OMR.BOOK_EXTENSION));
+        if (save) {
+            // Save: offer format choice between .omr and directory
+            return selectBookSavePath(startPath);
+        }
+        // Load (read): use the multi-mode filter so directories are visible
+        final Path[] paths = selectBookPaths(save, startPath);
+        return (paths.length > 0) ? paths[0] : null;
+    }
+
+    //--------------------//
+    // selectBookSavePath //
+    //--------------------//
+    /**
+     * Let the user interactively choose a save format and path for the book.
+     * <p>
+     * NEW: Path 1 UI refactor — provides a filter choice dialog:
+     * - "OMR compressed project (*.omr)"
+     * - "Plain XML project directory" (user picks a directory path)
+     *
+     * @param startPath the default starting path
+     * @return the selected path (file for .omr, directory for dir-mode), or null
+     */
+    public static Path selectBookSavePath (Path startPath)
+    {
+        final OmrFileFilter omrFilter = filter(OMR.BOOK_EXTENSION);
+        final OmrFileFilter dirFilter = new OmrFileFilter(
+                "Plain XML project directory", new String[] { "" }) {
+            @Override
+            public boolean accept (java.io.File f) {
+                return f.isDirectory();
+            }
+        };
+
+        final String title = "Save Book As";
+        final java.io.File startFile = (startPath != null) ? startPath.toFile() : null;
+
+        java.io.File file = null;
+        if (org.audiveris.omr.WellKnowns.MAC_OS_X) {
+            java.awt.FileDialog fd = new java.awt.FileDialog(
+                    (java.awt.Frame) OMR.gui.getFrame(), title, java.awt.FileDialog.SAVE);
+            fd.setFilenameFilter(omrFilter);
+            fd.setDirectory(startFile != null ? startFile.getParent() : null);
+            fd.setFile(startFile != null ? startFile.getName() : null);
+            fd.setVisible(true);
+            String fileName = fd.getFile();
+            String dir = fd.getDirectory();
+            if (dir != null && fileName != null) {
+                file = new java.io.File(
+                        dir + org.audiveris.omr.WellKnowns.FILE_SEPARATOR + fileName);
+            }
+        } else {
+            final javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
+            fc.setApproveButtonText(title);
+            fc.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
+            if (startFile != null) {
+                if (startFile.isDirectory()) {
+                    fc.setCurrentDirectory(startFile);
+                } else {
+                    fc.setCurrentDirectory(startFile.getParentFile());
+                    fc.setSelectedFile(startFile);
+                }
+            }
+            // Add .omr filter as first and default
+            fc.addChoosableFileFilter(omrFilter);
+            fc.addChoosableFileFilter(dirFilter);
+            fc.setFileFilter(omrFilter);
+
+            if (title != null) {
+                fc.setDialogTitle(title);
+            }
+
+            int result = fc.showSaveDialog(OMR.gui.getFrame());
+            if (result == javax.swing.JFileChooser.APPROVE_OPTION) {
+                file = fc.getSelectedFile();
+                // If user picked the directory filter but selected a non-existent path,
+                // it is taken as a request for a new directory.
+                if (fc.getFileFilter() == dirFilter && file != null && !file.getName().isEmpty()) {
+                    // Ensure it ends without .omr extension for directory mode
+                    final Path p = file.toPath();
+                    final String name = p.getFileName().toString().toLowerCase();
+                    if (name.endsWith(".omr")) {
+                        // Strip .omr to make it a directory name
+                        final String stripped = name.substring(0, name.length() - 4);
+                        file = p.resolveSibling(stripped).toFile();
+                    }
+                }
+            }
+        }
+
+        return (file != null) ? file.toPath() : null;
     }
 
     //-----------------//
@@ -1963,6 +2084,9 @@ public class BookActions
     //-----------------//
     /**
      * Let the user interactively select book paths.
+     * <p>
+     * REFACTORED (Path 1): The file chooser uses FILES_AND_DIRECTORIES so that
+     * directory-mode books (directories containing book.xml) are selectable.
      *
      * @param save      true for write, false for read
      * @param startPath starting path
@@ -1971,6 +2095,7 @@ public class BookActions
     public static Path[] selectBookPaths (boolean save,
                                           Path startPath)
     {
+        // Use the custom OmrFileFilter that accepts both .omr and directories
         return selectPaths(save, startPath, filter(OMR.BOOK_EXTENSION));
     }
 
@@ -2007,6 +2132,9 @@ public class BookActions
     //------------//
     /**
      * Let the user interactively select a path.
+     * <p>
+     * REFACTORED (Path 1): When reading, directories containing a book.xml
+     * (directory-mode book projects) are now accepted.
      *
      * @param save      true for write, false for read
      *                  (for read, path will be checked to exist and not be a directory)
@@ -2033,7 +2161,11 @@ public class BookActions
             return null;
         }
 
+        // REFACTORED: directory-mode book projects (dirs containing book.xml) are valid
         if (Files.isDirectory(path)) {
+            if (isValidBookDirectory(path)) {
+                return path; // Valid directory-mode book
+            }
             logger.warn(format(resources.getString("isDirectory.pattern"), path));
             return null;
         }
@@ -2046,6 +2178,9 @@ public class BookActions
     //-------------//
     /**
      * Let the user interactively select an array of paths.
+     * <p>
+     * REFACTORED (Path 1): When reading, directories containing a book.xml
+     * (directory-mode book projects) are now accepted.
      *
      * @param save      true for write, false for read
      *                  (for read, path will be checked to exist and not be a directory)
@@ -2074,6 +2209,10 @@ public class BookActions
             }
 
             if (Files.isDirectory(path)) {
+                // REFACTORED (Path 1): Accept directory-mode book projects
+                if (isValidBookDirectory(path)) {
+                    continue; // Valid directory-mode book, accept it
+                }
                 logger.warn(format(resources.getString("isDirectory.pattern"), path));
                 return new Path[0];
             }
@@ -2363,8 +2502,12 @@ public class BookActions
                 try {
                     final String ext = FileUtil.getExtension(path.getFileName());
 
+                    // REFACTORED (Path 1): Support directory-mode book loading
                     if (ext.equalsIgnoreCase(OMR.BOOK_EXTENSION)) {
-                        // Book file
+                        // Book file (.omr)
+                        book = OMR.engine.loadBook(path);
+                    } else if (Files.isDirectory(path) && isValidBookDirectory(path)) {
+                        // Directory-mode book (contains book.xml)
                         book = OMR.engine.loadBook(path);
                     } else {
                         // Assumed image file

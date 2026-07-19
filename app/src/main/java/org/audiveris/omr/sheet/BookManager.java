@@ -564,6 +564,8 @@ public class BookManager
     //--------------------//
     /**
      * Report the file path to which the book should be saved.
+     * <p>
+     * REFACTORED (Path 1): directory-mode returns directory path (no .omr extension).
      *
      * @param book the book to store
      * @return the default book path for save
@@ -574,7 +576,15 @@ public class BookManager
             return book.getBookPath();
         }
 
-        return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.BOOK_EXTENSION);
+        final Path folder = getDefaultBookFolder(book);
+        final String radix = book.getRadix();
+
+        // NEW: directory-mode returns directory path, ZIP-mode returns .omr file path
+        if (useDirectoryStorage()) {
+            return folder.resolve(radix); // return directory path
+        }
+
+        return folder.resolve(radix + OMR.BOOK_EXTENSION);
     }
 
     //--------------------//
@@ -645,6 +655,19 @@ public class BookManager
     public static boolean useCompression ()
     {
         return constants.useCompression.getValue();
+    }
+
+    //-----------------------//
+    // useDirectoryStorage //
+    //-----------------------//
+    /**
+     * NEW: Path 1 refactor — whether to use directory storage mode (instead of .omr ZIP file).
+     *
+     * @return true = directory tree storage, false = ZIP package storage (original)
+     */
+    public static boolean useDirectoryStorage ()
+    {
+        return org.audiveris.omr.config.AudiverisProperties.isDirectoryStorage();
     }
 
     //--------------------//
@@ -718,6 +741,11 @@ public class BookManager
         private final Constant.Boolean useInputBookFolder = new Constant.Boolean(
                 true,
                 "Should we store book outputs next to book input?");
+
+        // NEW: Path 1 refactor — use directory storage (instead of .omr ZIP file)
+        private final Constant.Boolean useDirectoryStorage = new Constant.Boolean(
+                false, // default false for backward compatibility
+                "Should we store book data as a directory tree (rather than a .omr ZIP file)?");
 
         private final Constant.String baseFolder = new Constant.String(
                 WellKnowns.DEFAULT_BASE_FOLDER.toString(),
