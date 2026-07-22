@@ -51,6 +51,19 @@ public class LComboBox<E>
      * Create an editable labeled combo with provided
      * characteristics.
      *
+     * @param name  the component name, to be later used for resources injection
+     * @param items the items handled by the combo
+     */
+    public LComboBox (String name,
+                      E[] items)
+    {
+        super(name, new JComboBox<>(items));
+    }
+
+    /**
+     * Create an editable labeled combo with provided
+     * characteristics.
+     *
      * @param label the string to be used as label text
      * @param tip   the related tool tip text
      * @param items the items handled by the combo

@@ -42,6 +42,18 @@ public class LTextField
      * Creates a new LTextField object.
      *
      * @param editable Specifies whether this field will be editable
+     * @param name     the component name, to be later used for resources injection
+     */
+    public LTextField (boolean editable,
+                       String name)
+    {
+        this(editable, name, FIELD_WIDTH);
+    }
+
+    /**
+     * Creates a new LTextField object.
+     *
+     * @param editable Specifies whether this field will be editable
      * @param label    the string to be used as label text
      * @param tip      the related tool tip text
      */
@@ -50,6 +62,30 @@ public class LTextField
                        String tip)
     {
         this(editable, label, tip, FIELD_WIDTH);
+    }
+
+    /**
+     * Creates a new LTextField object.
+     *
+     * @param editable Specifies whether this field will be editable
+     * @param name     the component name, to be later used for resources injection
+     * @param width    the field width in characters
+     */
+    public LTextField (boolean editable,
+                       String name,
+                       int width)
+    {
+        super(name, new JTextField(width));
+
+        final JTextField textField = getField();
+        textField.setEditable(editable);
+
+        if (!editable) {
+            textField.setFocusable(false);
+            textField.setBorder(null);
+        }
+
+        textField.setHorizontalAlignment(JTextField.CENTER);
     }
 
     /**
@@ -88,6 +124,16 @@ public class LTextField
                        String tip)
     {
         this(false, label, tip);
+    }
+
+    /**
+     * Creates a new non-editable LTextField object.
+     *
+     * @param name the component name, to be later used for resources injection
+     */
+    public LTextField (String name)
+    {
+        this(false, name);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

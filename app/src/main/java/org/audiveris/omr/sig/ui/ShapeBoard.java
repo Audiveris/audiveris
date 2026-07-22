@@ -261,7 +261,7 @@ public class ShapeBoard
                        SheetEditor sheetEditor,
                        boolean selected)
     {
-        super(Board.SHAPE, null, null, selected, false, false, false);
+        super(BoardDesc.SHAPE, null, null, selected, false, false, false);
         this.sheet = sheet;
 
         keyListener = sheetEditor.getSheetKeyListener();

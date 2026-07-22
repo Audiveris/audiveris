@@ -31,6 +31,9 @@ import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,26 +62,29 @@ public class PixelBoard
 
     private static final Logger logger = LoggerFactory.getLogger(PixelBoard.class);
 
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(PixelBoard.class);
+
     /** Events this board is interested in. */
-    private static final Class<?>[] eventsRead = new Class<?>[]
-    { LocationEvent.class, PixelEvent.class };
+    private static final Class<?>[] eventsRead = new Class<?>[] { LocationEvent.class,
+            PixelEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Pixel level. */
-    protected final LIntegerField level = new LIntegerField(false, "Level", "Pixel level");
+    protected final LIntegerField level = new LIntegerField(false, "level");
 
     /** Abscissa of upper Left point. */
-    private final LIntegerField x = new LIntegerField("X", "Abscissa of upper left corner");
+    private final LIntegerField x = new LIntegerField("x");
 
     /** Ordinate of upper Left point. */
-    private final LIntegerField y = new LIntegerField("Y", "Ordinate of upper left corner");
+    private final LIntegerField y = new LIntegerField("y");
 
     /** Width of rectangle. */
-    private final LIntegerField width = new LIntegerField("Width", "Width of rectangle");
+    private final LIntegerField width = new LIntegerField("width");
 
     /** Height of rectangle. */
-    private final LIntegerField height = new LIntegerField("Height", "Height of rectangle");
+    private final LIntegerField height = new LIntegerField("height");
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -101,7 +107,14 @@ public class PixelBoard
     public PixelBoard (Sheet sheet,
                        boolean selected)
     {
-        super(Board.PIXEL, sheet.getLocationService(), eventsRead, selected, false, false, false);
+        super(
+                BoardDesc.PIXEL,
+                sheet.getLocationService(),
+                eventsRead,
+                selected,
+                false,
+                false,
+                false);
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
@@ -129,7 +142,7 @@ public class PixelBoard
         //                });
         final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
 
-        int r = 1; // --------------------------------
+        int r = 1; // -----------------------------
 
         builder.addRaw(level.getLabel()).xy(1, r);
         builder.addRaw(level.getField()).xy(3, r);
@@ -146,6 +159,9 @@ public class PixelBoard
 
         builder.addRaw(height.getLabel()).xy(9, r);
         builder.addRaw(height.getField()).xy(11, r);
+
+        // Resources injection
+        resources.injectComponents(getComponent());
     }
 
     //---------------------//

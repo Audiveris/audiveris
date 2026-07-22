@@ -118,6 +118,8 @@ public enum ProcessingSwitch
             poorInputMode,
             smallWholeHeads);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying boolean constant. */
     private final Constant.Boolean constant;
 

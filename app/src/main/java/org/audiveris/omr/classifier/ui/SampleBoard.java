@@ -27,15 +27,18 @@ import org.audiveris.omr.classifier.SheetContainer.Descriptor;
 import org.audiveris.omr.classifier.ui.SampleController.AssignAction;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.PixelCount;
+import org.audiveris.omr.ui.field.LDoubleField;
+import org.audiveris.omr.ui.field.LIntegerField;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.util.Panel;
 
+import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationAction;
+import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +65,9 @@ public class SampleBoard
 
     private static final Logger logger = LoggerFactory.getLogger(SampleBoard.class);
 
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(SampleBoard.class);
+
     private static final String DBL_FORMAT = "%.3f"; // Format for double output
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -72,28 +78,28 @@ public class SampleBoard
     private final SampleRepository repository;
 
     /** Sheet name. */
-    private final LLabel sheetName = new LLabel("Sheet:", "Containing sheet");
+    private final LLabel sheetName = new LLabel("sheetName");
 
     /** Field for interline. */
-    private final LLabel iLine = new LLabel("iLine:", "Interline value in pixels");
+    private final LIntegerField iLine = new LIntegerField(false, "iLine");
 
     /** Glyph characteristics : normalized weight. */
-    private final LLabel weight = new LLabel("Weight:", "Normalized weight");
+    private final LDoubleField weight = new LDoubleField(false, "weight", DBL_FORMAT);
 
     /** Glyph characteristics : normalized width. */
-    private final LLabel width = new LLabel("Width:", "Normalized width");
+    private final LDoubleField width = new LDoubleField(false, "width", DBL_FORMAT);
 
     /** Glyph characteristics : normalized height. */
-    private final LLabel height = new LLabel("Height:", "Normalized height");
+    private final LDoubleField height = new LDoubleField(false, "height", DBL_FORMAT);
 
     /** Staff-based pitch. */
-    private final LLabel pitch = new LLabel("Pitch:", "Staff-based pitch");
+    private final LDoubleField pitch = new LDoubleField(false, "pitch", DBL_FORMAT);
 
     /** Shape icon. */
     private final JLabel shapeIcon = new JLabel();
 
     /** Shape name. */
-    private final LLabel shapeField = new LLabel("Shape:", "Shape for this sample");
+    private final LLabel shape = new LLabel("shape");
 
     /** The (re)assign button. (used as location for popup menu) */
     private JButton assignButton;
@@ -114,7 +120,7 @@ public class SampleBoard
     public SampleBoard (SampleController controller)
     {
         super(
-                Board.SAMPLE,
+                BoardDesc.SAMPLE,
                 controller.getGlyphService(),
                 true,
                 false,
@@ -172,12 +178,12 @@ public class SampleBoard
 
         r += 2; // --------------------------------
 
-        builder.addRaw(shapeField.getLabel()).xy(5, r);
-        builder.addRaw(shapeField.getField()).xyw(7, r, 5);
+        builder.addRaw(shape.getLabel()).xyw(4, r, 2);
+        builder.addRaw(shape.getField()).xyw(7, r, 5);
 
         r += 2; // --------------------------------
 
-        builder.addRaw(iLine.getLabel()).xy(5, r);
+        builder.addRaw(iLine.getLabel()).xyw(4, r, 2);
         builder.addRaw(iLine.getField()).xy(7, r);
 
         builder.addRaw(width.getLabel()).xy(9, r);
@@ -185,7 +191,7 @@ public class SampleBoard
 
         r += 2; // --------------------------------
 
-        builder.addRaw(weight.getLabel()).xy(5, r);
+        builder.addRaw(weight.getLabel()).xyw(4, r, 2);
         builder.addRaw(weight.getField()).xy(7, r);
 
         builder.addRaw(height.getLabel()).xy(9, r);
@@ -195,6 +201,9 @@ public class SampleBoard
 
         builder.addRaw(pitch.getLabel()).xy(9, r);
         builder.addRaw(pitch.getField()).xy(11, r);
+
+        // Injection
+        resources.injectComponents(getComponent());
     }
 
     //---------------//
@@ -222,13 +231,13 @@ public class SampleBoard
         final Sample sample = sampleListEvent.getEntity();
 
         // Shape text and icon
-        Shape shape = (sample != null) ? sample.getShape() : null;
+        final Shape sampleShape = (sample != null) ? sample.getShape() : null;
 
-        if (shape != null) {
-            shapeField.setText(shape.toString());
-            shapeIcon.setIcon(shape.getDecoratedSymbol(MusicFamily.Bravura));
+        if (sampleShape != null) {
+            shape.setText(sampleShape.toString());
+            shapeIcon.setIcon(sampleShape.getDecoratedSymbol(MusicFamily.Bravura));
         } else {
-            shapeField.setText("");
+            shape.setText("");
             shapeIcon.setIcon(null);
         }
 
@@ -238,12 +247,12 @@ public class SampleBoard
             final int interline = sample.getInterline();
             iLine.setText(Integer.toString(interline));
 
-            weight.setText(String.format(DBL_FORMAT, sample.getNormalizedWeight(interline)));
-            width.setText(String.format(DBL_FORMAT, (double) sample.getWidth() / interline));
-            height.setText(String.format(DBL_FORMAT, (double) sample.getHeight() / interline));
+            weight.setValue(sample.getNormalizedWeight(interline));
+            width.setValue((double) sample.getWidth() / interline);
+            height.setValue((double) sample.getHeight() / interline);
 
             if (sample.getPitch() != null) {
-                pitch.setText(String.format(DBL_FORMAT, sample.getPitch()));
+                pitch.setValue(sample.getPitch());
             } else {
                 pitch.setText("");
             }

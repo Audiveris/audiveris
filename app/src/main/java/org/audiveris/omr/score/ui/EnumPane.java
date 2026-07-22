@@ -62,7 +62,7 @@ public class EnumPane<T, E extends Enum<E>>
                      E[] values,
                      ResourceMap resources)
     {
-        super(resources.getString(tag + "Pane.title"));
+        super(resources.getString(tag + "Pane.text"));
 
         title.setToolTipText(resources.getString(tag + "Pane.toolTipText"));
 

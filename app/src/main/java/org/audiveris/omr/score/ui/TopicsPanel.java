@@ -134,8 +134,8 @@ public class TopicsPanel
             }
         }
 
-        FormLayout layout = new FormLayout(colSpec, Panel.makeRows(logicalRowCount));
-        FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
+        final FormLayout layout = new FormLayout(colSpec, Panel.makeRows(logicalRowCount));
+        final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
         int r = 1;
 
         for (XactTopic topic : topics) {

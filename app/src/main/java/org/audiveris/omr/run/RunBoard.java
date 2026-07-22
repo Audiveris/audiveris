@@ -29,6 +29,9 @@ import org.audiveris.omr.ui.selection.RunEvent;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +39,7 @@ import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * Class <code>RunBoard</code> is dedicated to display of Run information.
+ * Class <code>RunBoard</code> is dedicated to the display of Run information.
  *
  * @author Hervé Bitteur
  */
@@ -47,23 +50,19 @@ public class RunBoard
 
     private static final Logger logger = LoggerFactory.getLogger(RunBoard.class);
 
-    /** Events this entity is interested in */
-    private static final Class<?>[] eventClasses = new Class<?>[]
-    { RunEvent.class };
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(RunBoard.class);
+
+    /** Events this entity is interested in. */
+    private static final Class<?>[] eventClasses = new Class<?>[] { RunEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Field for run length */
-    private final LIntegerField rLength = new LIntegerField(
-            false,
-            "Length",
-            "Length of run in pixels");
+    /** Field for run length. */
+    private final LIntegerField rLength = new LIntegerField(false, "rLength");
 
-    /** Field for run start */
-    private final LIntegerField rStart = new LIntegerField(
-            false,
-            "Start",
-            "Pixel coordinate at start of run");
+    /** Field for run start. */
+    private final LIntegerField rStart = new LIntegerField(false, "rStart");
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -89,10 +88,9 @@ public class RunBoard
                      boolean selected)
     {
         super(
-                Board.RUN.name + ((runTable.getOrientation() == Orientation.VERTICAL) ? " Vert"
-                        : " Hori"),
-                Board.RUN.position + ((runTable.getOrientation() == Orientation.VERTICAL) ? 100
-                        : 0),
+                (runTable.getOrientation() == Orientation.VERTICAL) //
+                        ? BoardDesc.RUN_VERT
+                        : BoardDesc.RUN_HORI,
                 runTable.getRunService(),
                 eventClasses,
                 selected,
@@ -117,8 +115,11 @@ public class RunBoard
         builder.addRaw(rStart.getLabel()).xy(1, r);
         builder.addRaw(rStart.getField()).xy(3, r);
 
-        builder.addRaw(rLength.getLabel()).xy(5, r);
+        builder.addRaw(rLength.getLabel()).xyw(4, r, 2);
         builder.addRaw(rLength.getField()).xy(7, r);
+
+        // Resources injection
+        resources.injectComponents(getComponent());
     }
 
     //---------//

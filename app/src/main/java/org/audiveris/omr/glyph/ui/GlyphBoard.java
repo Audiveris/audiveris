@@ -23,7 +23,6 @@ package org.audiveris.omr.glyph.ui;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
-import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
@@ -75,12 +74,9 @@ public class GlyphBoard
     public GlyphBoard (EntityService<Glyph> glyphService,
                        boolean selected)
     {
-        super(Board.GLYPH, glyphService, selected);
+        super(BoardDesc.GLYPH, glyphService, selected);
 
         this.controller = null;
-
-        groupField.setHorizontalAlignment(SwingConstants.CENTER);
-        groupField.setToolTipText(resources.getString("groupField.toolTipText"));
 
         defineLayout();
     }
@@ -96,12 +92,9 @@ public class GlyphBoard
     public GlyphBoard (GlyphsController controller,
                        boolean selected)
     {
-        super(Board.GLYPH, controller.getGlyphService(), selected);
+        super(BoardDesc.GLYPH, controller.getGlyphService(), selected);
 
         this.controller = controller;
-
-        groupField.setHorizontalAlignment(SwingConstants.CENTER);
-        groupField.setToolTipText(resources.getString("groupField.toolTipText"));
 
         defineLayout();
     }
@@ -119,6 +112,11 @@ public class GlyphBoard
         int r = 1; // --------------------------------
 
         builder.addRaw(groupField).xyw(5, r, 3);
+
+        groupField.setHorizontalAlignment(SwingConstants.CENTER);
+
+        groupField.setName("groupField");
+        resources.injectComponents(getComponent());
     }
 
     //---------------//

@@ -47,17 +47,31 @@ public class LField<C extends JComponent>
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
+     * Creates a named LField object.
+     *
+     * @param name  the component name, to be later used for resources injection
+     * @param field the field instance
+     */
+    public LField (String name,
+                   C field)
+    {
+        this.label = new JLabel((String) null, SwingConstants.RIGHT);
+        this.field = field;
+        setName(name);
+    }
+
+    /**
      * Creates a new LField object.
      *
-     * @param label the string to be used as label text
+     * @param text  the string to be used as label text
      * @param tip   the related tool tip text
      * @param field the field instance
      */
-    public LField (String label,
+    public LField (String text,
                    String tip,
                    C field)
     {
-        this.label = new JLabel(label, SwingConstants.RIGHT);
+        this.label = new JLabel(text, SwingConstants.RIGHT);
         this.field = field;
 
         if (tip != null) {
@@ -116,10 +130,10 @@ public class LField<C extends JComponent>
      *
      * @param name name radix
      */
-    public void setName (String name)
+    public final void setName (String name)
     {
-        label.setName(name + "Label");
-        field.setName(name + "Field");
+        label.setName(name);
+        field.setName(name + ".field");
     }
 
     //------------//

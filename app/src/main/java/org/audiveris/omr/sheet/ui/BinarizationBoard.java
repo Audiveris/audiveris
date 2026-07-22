@@ -36,7 +36,6 @@ import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.field.LCheckBox;
 import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.field.LIntegerField;
-import org.audiveris.omr.ui.field.LRadioButton;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import static org.audiveris.omr.ui.selection.MouseMovement.PRESSING;
@@ -45,6 +44,9 @@ import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
+
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,12 +59,16 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Locale;
 
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JRadioButton;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -90,51 +96,40 @@ public class BinarizationBoard
 
     private static final Logger logger = LoggerFactory.getLogger(BinarizationBoard.class);
 
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(BinarizationBoard.class);
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The related sheet. */
     private final Sheet sheet;
 
-    /** Radio button to select adaptive filter. */
-    private final LRadioButton adaptiveFilterRadioButton = new LRadioButton(
-            "Use adaptive filter (recommended)",
-            "Converts a pixel to black and white by looking at its surrounding pixels");
+    /** Radio button to select the adaptive filter. */
+    private final JRadioButton adaptiveFilter = new JRadioButton();
 
-    /** Radio button to select global filter. */
-    private final LRadioButton globalFilterRadioButton = new LRadioButton(
-            "Use global filter",
-            "Converts to black and white by using one threshold value for the entire image");
+    /** Radio button to select the global filter. */
+    private final JRadioButton globalFilter = new JRadioButton();
 
     /** Input field for global filter's threshold. */
-    private final LIntegerField globalThresholdValue = new LIntegerField(
-            "Threshold",
-            "Gray threshold");
+    private final LIntegerField globalThreshold = new LIntegerField("globalThreshold");
 
     /** Input field for adaptive filter's mean. */
-    private final LDoubleField adaptiveMeanValue = new LDoubleField(
-            "Mean coef",
-            "Coefficient for mean value",
-            "%.2f");
+    private final LDoubleField adaptiveMean = new LDoubleField(true, "adaptiveMean", "%.2f");
 
     /** Input field for adaptive filter's standard deviation. */
-    private final LDoubleField adaptiveStdDevValue = new LDoubleField(
-            "Std Dev coef",
-            "Coefficient for standard deviation value",
-            "%.2f");
+    private final LDoubleField adaptiveStdDev = new LDoubleField(true, "adaptiveStdDev", "%.2f");
 
     /** Apply button. */
-    private final JButton applyButton = new JButton("Apply (enter)");
+    private final JButton apply = new JButton();
 
     /** Reset button. */
-    private final JButton resetButton = new JButton("Reset");
+    private final JButton reset = new JButton();
 
     /** Apply to all pages button. */
-    private final JButton applyToWholeBook = new JButton("Apply to whole book");
+    private final JButton applyToWholeBook = new JButton();
 
     /** Checkbox for overwriting sheets. */
-    private final LCheckBox overwriteCheckbox = new LCheckBox(
-            "Overwrite sheets?",
-            "When applying to the whole book, overwrite individual sheets' binarization settings");
+    private final LCheckBox overwrite = new LCheckBox("overwrite");
 
     /** Reference to the last filter used on this board. */
     private FilterDescriptor previousFilter;
@@ -145,7 +140,7 @@ public class BinarizationBoard
     private Boolean noGraySource;
 
     /** Label for when no gray source image is present. */
-    private final JLabel noGraySourceLabel = new JLabel("No gray image available for binarization");
+    private final JLabel noGraySourceLabel = new JLabel();
 
     /** True if this sheet is part of a book with multiple sheets. */
     private final boolean isMultiSheetBook;
@@ -159,48 +154,42 @@ public class BinarizationBoard
      */
     public BinarizationBoard (Sheet sheet)
     {
-        super(Board.BINARIZATION, sheet.getLocationService(), null, false, false, false, false);
+        super(BoardDesc.BINARIZATION, sheet.getLocationService(), null, false, false, false, false);
 
         this.sheet = sheet;
 
         isMultiSheetBook = sheet.getStub().getBook().isMultiSheet();
         previousFilter = sheet.getStub().getBook().getBinarizationParam().getSpecific();
 
-        applyButton.setToolTipText("Apply the filter & settings on the sheet gray image");
-        applyButton.addActionListener(this);
+        apply.addActionListener(this);
 
-        resetButton.setToolTipText("Reset to the default filter & settings for this sheet");
-        resetButton.addActionListener(this);
+        reset.addActionListener(this);
 
-        applyToWholeBook.setToolTipText("Define this filter & settings for the whole book");
         applyToWholeBook.addActionListener(this);
 
-        noGraySourceLabel.setToolTipText(
-                "There is no source image available to run binarization on");
-
-        adaptiveMeanValue.getField().getDocument().addDocumentListener(
+        adaptiveMean.getField().getDocument().addDocumentListener(
                 new LFieldValidater(
-                        adaptiveMeanValue,
+                        adaptiveMean,
                         AdaptiveDescriptor.MINMEAN,
                         AdaptiveDescriptor.MAXMEAN));
-        adaptiveStdDevValue.getField().getDocument().addDocumentListener(
+        adaptiveStdDev.getField().getDocument().addDocumentListener(
                 new LFieldValidater(
-                        adaptiveStdDevValue,
+                        adaptiveStdDev,
                         AdaptiveDescriptor.MINSTDDEV,
                         AdaptiveDescriptor.MAXSTDDEV));
-        globalThresholdValue.getField().getDocument().addDocumentListener(
+        globalThreshold.getField().getDocument().addDocumentListener(
                 new LFieldValidater(
-                        globalThresholdValue,
+                        globalThreshold,
                         GlobalDescriptor.MINTHRESHOLD,
                         GlobalDescriptor.MAXTHRESHOLD));
 
-        adaptiveFilterRadioButton.addActionListener(this);
-        globalFilterRadioButton.addActionListener(this);
+        adaptiveFilter.addActionListener(this);
+        globalFilter.addActionListener(this);
 
         // Make radio buttons act as one group
         final ButtonGroup imageButtonGroup = new ButtonGroup();
-        imageButtonGroup.add(adaptiveFilterRadioButton.getField());
-        imageButtonGroup.add(globalFilterRadioButton.getField());
+        imageButtonGroup.add(adaptiveFilter);
+        imageButtonGroup.add(globalFilter);
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
@@ -224,11 +213,11 @@ public class BinarizationBoard
     @Override
     public void actionPerformed (ActionEvent e)
     {
-        if (e.getSource() == applyButton) {
+        if (e.getSource() == apply) {
             applyAndRunFilter();
         } else if (e.getSource() == applyToWholeBook) {
             // Optionally erase every sheet's specific binarization setting
-            if (overwriteCheckbox.getField().isSelected()) {
+            if (overwrite.getField().isSelected()) {
                 sheet.getStub().getBook().getStubs().forEach( (stub) -> {
                     stub.getBinarizationFilterParam().setSpecific(null);
                 });
@@ -240,7 +229,7 @@ public class BinarizationBoard
             // Run binarization for this sheet only
             runBinarizationFilter(sheet);
 
-        } else if (e.getSource() == resetButton) {
+        } else if (e.getSource() == reset) {
             if (isMultiSheetBook) {
                 FilterDescriptor resetFilterDesc = sheet.getStub().getBook().getBinarizationParam()
                         .getValue();
@@ -260,10 +249,10 @@ public class BinarizationBoard
 
             runBinarizationFilter(sheet);
 
-        } else if (e.getSource() == adaptiveFilterRadioButton.getField()) {
+        } else if (e.getSource() == adaptiveFilter) {
             showAdaptiveFilterInput();
             applyAndRunFilter();
-        } else if (e.getSource() == globalFilterRadioButton.getField()) {
+        } else if (e.getSource() == globalFilter) {
             showGlobalFilterInput();
             applyAndRunFilter();
         }
@@ -296,35 +285,35 @@ public class BinarizationBoard
      */
     private void applyFilterSettings (FilterParam filterParam)
     {
-        if (adaptiveFilterRadioButton.getField().isSelected()) {
-            double mean = adaptiveMeanValue.getValue();
-            double stdDev = adaptiveStdDevValue.getValue();
+        if (adaptiveFilter.isSelected()) {
+            double mean = adaptiveMean.getValue();
+            double stdDev = adaptiveStdDev.getValue();
 
             if (mean < AdaptiveDescriptor.MINMEAN || mean > AdaptiveDescriptor.MAXMEAN) {
                 mean = Math.max(
                         Math.min(mean, AdaptiveDescriptor.MAXMEAN),
                         AdaptiveDescriptor.MINMEAN);
-                adaptiveMeanValue.setValue(mean);
+                adaptiveMean.setValue(mean);
             }
 
             if (stdDev < AdaptiveDescriptor.MINSTDDEV || stdDev > AdaptiveDescriptor.MAXSTDDEV) {
                 stdDev = Math.max(
                         Math.min(stdDev, AdaptiveDescriptor.MAXSTDDEV),
                         AdaptiveDescriptor.MINSTDDEV);
-                adaptiveStdDevValue.setValue(stdDev);
+                adaptiveStdDev.setValue(stdDev);
             }
 
             filterParam.setSpecific(new AdaptiveDescriptor(mean, stdDev));
 
-        } else if (globalFilterRadioButton.getField().isSelected()) {
-            int threshold = globalThresholdValue.getValue();
+        } else if (globalFilter.isSelected()) {
+            int threshold = globalThreshold.getValue();
 
             if (threshold < GlobalDescriptor.MINTHRESHOLD
                     || threshold > GlobalDescriptor.MAXTHRESHOLD) {
                 threshold = Math.max(
                         Math.min(threshold, GlobalDescriptor.MAXTHRESHOLD),
                         GlobalDescriptor.MINTHRESHOLD);
-                globalThresholdValue.setValue(threshold);
+                globalThreshold.setValue(threshold);
             }
 
             filterParam.setSpecific(new GlobalDescriptor(threshold));
@@ -380,41 +369,49 @@ public class BinarizationBoard
         builder.addRaw(noGraySourceLabel).xyw(2, r, 8);
         r += 2;
 
-        builder.addRaw(adaptiveFilterRadioButton.getField()).xy(1, r);
-        builder.addRaw(adaptiveFilterRadioButton.getLabel()).xyw(3, r, 6);
-        adaptiveFilterRadioButton.getLabel().setHorizontalAlignment(SwingConstants.LEFT);
+        builder.addRaw(adaptiveFilter).xyw(1, r, 8);
+        adaptiveFilter.setHorizontalAlignment(SwingConstants.LEFT);
 
         r += 2; // --------------------------------
 
-        builder.addRaw(globalFilterRadioButton.getField()).xy(1, r);
-        builder.addRaw(globalFilterRadioButton.getLabel()).xyw(3, r, 6);
-        globalFilterRadioButton.getLabel().setHorizontalAlignment(SwingConstants.LEFT);
+        builder.addRaw(globalFilter).xyw(1, r, 8);
+        globalFilter.setHorizontalAlignment(SwingConstants.LEFT);
 
         r += 2; // --------------------------------
 
-        builder.addRaw(globalThresholdValue.getLabel()).xyw(1, r, 3);
-        builder.addRaw(globalThresholdValue.getField()).xy(5, r);
+        builder.addRaw(globalThreshold.getLabel()).xyw(1, r, 3);
+        builder.addRaw(globalThreshold.getField()).xy(5, r);
 
         // Overlapping line
-        builder.addRaw(adaptiveMeanValue.getLabel()).xyw(1, r, 3);
-        builder.addRaw(adaptiveMeanValue.getField()).xy(5, r);
+        builder.addRaw(adaptiveMean.getLabel()).xyw(1, r, 3);
+        builder.addRaw(adaptiveMean.getField()).xy(5, r);
 
-        builder.addRaw(adaptiveStdDevValue.getLabel()).xyw(7, r, 3);
-        builder.addRaw(adaptiveStdDevValue.getField()).xy(11, r);
+        builder.addRaw(adaptiveStdDev.getLabel()).xyw(7, r, 3);
+        builder.addRaw(adaptiveStdDev.getField()).xy(11, r);
 
         r += 2; // --------------------------------
 
-        builder.addRaw(applyButton).xyw(1, r, 4);
-        builder.addRaw(resetButton).xyw(7, r, 4);
+        builder.addRaw(apply).xyw(1, r, 4);
+        builder.addRaw(reset).xyw(7, r, 4);
 
         if (isMultiSheetBook) {
             r += 2; // ----------------------------
 
             builder.addRaw(applyToWholeBook).xyw(1, r, 4);
 
-            builder.addRaw(overwriteCheckbox.getField()).xyw(5, r, 1);
-            builder.addRaw(overwriteCheckbox.getLabel()).xyw(7, r, 3);
+            overwrite.getField().setHorizontalAlignment(SwingConstants.RIGHT);
+            builder.addRaw(overwrite.getField()).xyw(5, r, 1);
+            builder.addRaw(overwrite.getLabel()).xyw(7, r, 5);
         }
+
+        // Resources injection
+        adaptiveFilter.setName("adaptiveFilter");
+        globalFilter.setName("globalFilter");
+        apply.setName("apply");
+        reset.setName("reset");
+        applyToWholeBook.setName("applyToWholeBook");
+        noGraySourceLabel.setName("noGraySourceLabel");
+        resources.injectComponents(getComponent());
     }
 
     //--------------//
@@ -459,21 +456,21 @@ public class BinarizationBoard
     {
         switch (desc) {
             case AdaptiveDescriptor ad -> {
-                adaptiveMeanValue.setValue(ad.meanCoeff);
-                adaptiveStdDevValue.setValue(ad.stdDevCoeff);
-                adaptiveFilterRadioButton.getField().setSelected(true);
+                adaptiveMean.setValue(ad.meanCoeff);
+                adaptiveStdDev.setValue(ad.stdDevCoeff);
+                adaptiveFilter.setSelected(true);
 
-                globalThresholdValue.setValue(GlobalDescriptor.getDefaultThreshold());
+                globalThreshold.setValue(GlobalDescriptor.getDefaultThreshold());
 
                 showAdaptiveFilterInput();
 
             }
             case GlobalDescriptor gd -> {
-                globalThresholdValue.setValue(gd.threshold);
-                globalFilterRadioButton.getField().setSelected(true);
+                globalThreshold.setValue(gd.threshold);
+                globalFilter.setSelected(true);
 
-                adaptiveMeanValue.setValue(AdaptiveDescriptor.getDefaultMeanCoeff());
-                adaptiveStdDevValue.setValue(AdaptiveDescriptor.getDefaultStdDevCoeff());
+                adaptiveMean.setValue(AdaptiveDescriptor.getDefaultMeanCoeff());
+                adaptiveStdDev.setValue(AdaptiveDescriptor.getDefaultStdDevCoeff());
 
                 showGlobalFilterInput();
             }
@@ -497,10 +494,10 @@ public class BinarizationBoard
                                     double max)
     {
         try {
-            double value = Double.parseDouble(field.getText().trim());
+            final NumberFormat nf = NumberFormat.getInstance(Locale.getDefault());
+            final double value = nf.parse(field.getText().trim()).doubleValue();
             return value >= min && value <= max;
-
-        } catch (NumberFormatException e) {
+        } catch (ParseException e) {
             return false;
         }
     }
@@ -546,10 +543,10 @@ public class BinarizationBoard
      */
     private void showAdaptiveFilterInput ()
     {
-        adaptiveMeanValue.setVisible(true);
-        adaptiveStdDevValue.setVisible(true);
+        adaptiveMean.setVisible(true);
+        adaptiveStdDev.setVisible(true);
 
-        globalThresholdValue.setVisible(false);
+        globalThreshold.setVisible(false);
     }
 
     //-----------------------//
@@ -560,10 +557,10 @@ public class BinarizationBoard
      */
     private void showGlobalFilterInput ()
     {
-        adaptiveMeanValue.setVisible(false);
-        adaptiveStdDevValue.setVisible(false);
+        adaptiveMean.setVisible(false);
+        adaptiveStdDev.setVisible(false);
 
-        globalThresholdValue.setVisible(true);
+        globalThreshold.setVisible(true);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

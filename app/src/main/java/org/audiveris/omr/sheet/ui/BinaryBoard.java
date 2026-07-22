@@ -38,6 +38,9 @@ import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,11 +69,18 @@ public class BinaryBoard
 
     private static final Logger logger = LoggerFactory.getLogger(BinaryBoard.class);
 
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(BinaryBoard.class);
+
     /** Events this entity is interested in. */
     private static final Class<?>[] eventClasses = new Class<?>[] { LocationEvent.class };
 
     /** Format used for every double field. */
     private static final String format = "%.2f";
+
+    private static final String black = resources.getString("black");
+
+    private static final String white = resources.getString("white");
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -78,28 +88,16 @@ public class BinaryBoard
     private final Sheet sheet;
 
     /** Observed mean level in neighborhood. */
-    private final LDoubleField mean = new LDoubleField(
-            false,
-            "Observed mean",
-            "Observed mean value",
-            format);
+    private final LDoubleField mean = new LDoubleField(false, "mean", format);
 
     /** Observed standard deviation in neighborhood. */
-    private final LDoubleField stdDev = new LDoubleField(
-            false,
-            "Observed std dev",
-            "Observed standard deviation value",
-            format);
+    private final LDoubleField stdDev = new LDoubleField(false, "stdDev", format);
 
     /** Current threshold. */
-    private final LDoubleField threshold = new LDoubleField(
-            false,
-            "Threshold",
-            "Threshold, either global or locally computed",
-            format);
+    private final LDoubleField threshold = new LDoubleField(false, "threshold", format);
 
     /** Resulting color. */
-    private final LLabel color = new LLabel("Color", "Resulting binary color");
+    private final LLabel color = new LLabel("color");
 
     /** Reference to the last FilterDescriptor used on this board. */
     private FilterDescriptor previousDesc;
@@ -113,7 +111,14 @@ public class BinaryBoard
      */
     public BinaryBoard (Sheet sheet)
     {
-        super(Board.BINARY, sheet.getLocationService(), eventClasses, false, false, false, false);
+        super(
+                BoardDesc.BINARY,
+                sheet.getLocationService(),
+                eventClasses,
+                false,
+                false,
+                false,
+                false);
 
         this.sheet = sheet;
 
@@ -157,9 +162,12 @@ public class BinaryBoard
         builder.addRaw(threshold.getField()).xy(5, r);
         threshold.getField().setHorizontalAlignment(SwingConstants.RIGHT);
 
-        builder.addRaw(color.getLabel()).xy(9, r);
+        builder.addRaw(color.getLabel()).xyw(7, r, 4);
         builder.addRaw(color.getField()).xy(11, r);
         color.getField().setHorizontalAlignment(SwingConstants.RIGHT);
+
+        // Injection
+        resources.injectComponents(getComponent());
     }
 
     //---------------------//
@@ -235,7 +243,7 @@ public class BinaryBoard
 
         threshold.setValue(thresholdValue);
         final boolean isBlack = level <= thresholdValue;
-        color.setText(isBlack ? "black" : "white");
+        color.setText(isBlack ? black : white);
         color.getField().setBackground(isBlack ? Color.BLACK : Color.WHITE);
     }
 

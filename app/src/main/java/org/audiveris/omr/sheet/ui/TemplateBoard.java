@@ -78,8 +78,7 @@ public class TemplateBoard
     private static final Logger logger = LoggerFactory.getLogger(TemplateBoard.class);
 
     /** Events this entity is interested in */
-    private static final Class<?>[] eventsRead = new Class<?>[]
-    { LocationEvent.class };
+    private static final Class<?>[] eventsRead = new Class<?>[] { LocationEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -132,7 +131,14 @@ public class TemplateBoard
                           DistanceTable table,
                           SelectionService templateService)
     {
-        super(Board.TEMPLATE, sheet.getLocationService(), eventsRead, true, false, false, false);
+        super(
+                BoardDesc.TEMPLATE,
+                sheet.getLocationService(),
+                eventsRead,
+                true,
+                false,
+                false,
+                false);
         this.sheet = sheet;
         this.table = table;
         this.templateService = templateService;

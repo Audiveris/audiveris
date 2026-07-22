@@ -39,6 +39,16 @@ public class LCheckBox
     /**
      * Creates a new LCheckBox object.
      *
+     * @param name the component name, to be later used for resources injection
+     */
+    public LCheckBox (String name)
+    {
+        super(name, new JCheckBox());
+    }
+
+    /**
+     * Creates a new LCheckBox object.
+     *
      * @param label the string to be used as label text
      * @param tip   the related tool tip text
      */

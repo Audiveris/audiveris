@@ -46,6 +46,16 @@ public class LLabel
     /**
      * Creates a new <code>LLabel</code> object, with default center alignment
      *
+     * @param name the component name, to be later used for resources injection
+     */
+    public LLabel (String name)
+    {
+        this(name, JLabel.CENTER);
+    }
+
+    /**
+     * Creates a new <code>LLabel</code> object, with default center alignment
+     *
      * @param label the string to be used as label text
      * @param tip   the related tool tip text
      */
@@ -53,6 +63,19 @@ public class LLabel
                    String tip)
     {
         this(label, tip, JLabel.CENTER);
+    }
+
+    /**
+     * Creates a new <code>LLabel</code> object.
+     *
+     * @param name                the component name, to be later used for resources injection
+     * @param horizontalAlignment horizontal alignment
+     */
+    public LLabel (String name,
+                   int horizontalAlignment)
+    {
+        super(name, new JLabel());
+        getField().setHorizontalAlignment(horizontalAlignment);
     }
 
     /**

@@ -236,13 +236,12 @@ public abstract class Versions
         final Frequency frequency = constants.releaseCheckFrequency.getValue();
 
         switch (frequency) {
-        case Always -> {
-        }
-        case Daily -> next.add(Calendar.DAY_OF_MONTH, 1);
-        case Weekly -> next.add(Calendar.WEEK_OF_MONTH, 1);
-        case Monthly -> next.add(Calendar.MONTH, 1);
-        case Yearly -> next.add(Calendar.YEAR, 1);
-        case Never -> next = null;
+            case Always -> {}
+            case Daily -> next.add(Calendar.DAY_OF_MONTH, 1);
+            case Weekly -> next.add(Calendar.WEEK_OF_MONTH, 1);
+            case Monthly -> next.add(Calendar.MONTH, 1);
+            case Yearly -> next.add(Calendar.YEAR, 1);
+            case Never -> next = null;
         }
 
         logger.debug(
@@ -381,6 +380,7 @@ public abstract class Versions
         protected LLabel tag = new LLabel(JLabel.LEFT);
 
         protected LComboBox<LabeledEnum<Frequency>> polling = new LComboBox<>(
+                "polling",
                 getLocaleFrequencies());
 
         /** The JGoodies/Form layout to be used by all subclasses. */
@@ -399,7 +399,6 @@ public abstract class Versions
 
             status.setName("status");
             tag.setName("tag");
-            polling.setName("polling");
 
             paramAction = new ParamAction();
             builder = FormBuilder.create().layout(layout).panel(this);
@@ -597,7 +596,7 @@ public abstract class Versions
             defineLayout();
 
             // Trick to pre-position the scroll pane at its top left
-            javax.swing.SwingUtilities.invokeLater(() -> {
+            javax.swing.SwingUtilities.invokeLater( () -> {
                 scrollPane.getViewport().setViewPosition(new Point(0, 0));
             });
         }

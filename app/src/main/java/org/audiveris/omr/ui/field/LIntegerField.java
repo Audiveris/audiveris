@@ -26,7 +26,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
-import javax.swing.text.PlainDocument;
 
 /**
  * Class <code>LIntegerField</code> is an {@link LTextField}, whose field is meant to handle
@@ -38,6 +37,19 @@ public class LIntegerField
         extends LTextField
 {
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Create an integer labeled field
+     *
+     * @param editable tells whether the field is editable
+     * @param name     the component name, to be later used for resources injection
+     */
+    public LIntegerField (boolean editable,
+                          String name)
+    {
+        super(editable, name);
+        setFilter();
+    }
 
     /**
      * Create an integer labeled field
@@ -58,6 +70,21 @@ public class LIntegerField
      * Create an integer labeled field
      *
      * @param editable tells whether the field is editable
+     * @param name     the component name, to be later used for resources injection
+     * @param width    field width in characters
+     */
+    public LIntegerField (boolean editable,
+                          String name,
+                          int width)
+    {
+        super(editable, name, width);
+        setFilter();
+    }
+
+    /**
+     * Create an integer labeled field
+     *
+     * @param editable tells whether the field is editable
      * @param label    string to be used as label text
      * @param tip      related tool tip text
      * @param width    field width in characters
@@ -68,6 +95,17 @@ public class LIntegerField
                           int width)
     {
         super(editable, label, tip, width);
+        setFilter();
+    }
+
+    /**
+     * Create a (constant) integer labeled field
+     *
+     * @param name the component name, to be later used for resources injection
+     */
+    public LIntegerField (String name)
+    {
+        super(true, name);
         setFilter();
     }
 
@@ -111,7 +149,8 @@ public class LIntegerField
     /**
      * Adds the filter to the input field's document.
      */
-    private void setFilter () {
+    private void setFilter ()
+    {
         AbstractDocument doc = (AbstractDocument) getField().getDocument();
         doc.setDocumentFilter(new IntFilter());
     }
@@ -129,18 +168,22 @@ public class LIntegerField
         getField().setText(Integer.toString(val));
     }
 
-
     //~ Inner Classes ------------------------------------------------------------------------------
 
-    /** 
+    /**
      * Intercepts input in the LIntegerField and disallows input that would
      * result in an invalid int.
      */
-    private class IntFilter extends DocumentFilter
+    private class IntFilter
+            extends DocumentFilter
     {
         @Override
-        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
-            throws BadLocationException {
+        public void insertString (FilterBypass fb,
+                                  int offset,
+                                  String string,
+                                  AttributeSet attr)
+            throws BadLocationException
+        {
             Document doc = fb.getDocument();
             StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
             sb.insert(offset, string);
@@ -152,8 +195,13 @@ public class LIntegerField
         }
 
         @Override
-        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
-          throws BadLocationException {
+        public void replace (FilterBypass fb,
+                             int offset,
+                             int length,
+                             String text,
+                             AttributeSet attrs)
+            throws BadLocationException
+        {
             Document doc = fb.getDocument();
             StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
             sb.replace(offset, offset + length, text);
@@ -161,10 +209,11 @@ public class LIntegerField
             if (test(sb.toString())) {
                 super.replace(fb, offset, length, text, attrs);
             }
-            
+
         }
 
-        private boolean test(String text) {
+        private boolean test (String text)
+        {
             try {
                 Integer.parseInt(text);
                 return true;

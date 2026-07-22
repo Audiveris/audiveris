@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.dynamic;
 
-import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.selection.EntityService;
 
@@ -44,6 +43,6 @@ public class FilamentBoard
     public FilamentBoard (EntityService<Filament> service,
                           boolean selected)
     {
-        super(Board.FILAMENT, service, selected);
+        super(BoardDesc.FILAMENT, service, selected);
     }
 }

@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.field;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
@@ -42,6 +45,8 @@ public class LDoubleField
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(LDoubleField.class);
+
     /** Default format for display in the field : {@value} */
     public static final String DEFAULT_FORMAT = "%.5f";
 
@@ -54,6 +59,22 @@ public class LDoubleField
     private final String format;
 
     //~ Constructors -------------------------------------------------------------------------------
+
+    /**
+     * Create a double labeled field with proper characteristics.
+     *
+     * @param editable tells whether the field must be editable
+     * @param name     the component name, to be later used for resources injection
+     * @param format   specific display format, if any
+     */
+    public LDoubleField (boolean editable,
+                         String name,
+                         String format)
+    {
+        super(editable, name);
+        this.format = format;
+        setFilter();
+    }
 
     /**
      * Create a double labeled field with proper characteristics.
@@ -77,14 +98,36 @@ public class LDoubleField
      * Create a double labeled field with proper characteristics.
      *
      * @param editable tells whether the field must be editable
-     * @param label    string for the label text
-     * @param tip      related tool tip text
+     * @param name     the component name, to be later used for resources injection
      */
     public LDoubleField (boolean editable,
-                         String label,
-                         String tip)
+                         String name)
     {
-        this(editable, label, tip, null);
+        this(editable, name, null);
+    }
+
+    //    /**
+    //     * Create a double labeled field with proper characteristics.
+    //     *
+    //     * @param editable tells whether the field must be editable
+    //     * @param label    string for the label text
+    //     * @param tip      related tool tip text
+    //     */
+    //    public LDoubleField (boolean editable,
+    //                         String label,
+    //                         String tip)
+    //    {
+    //        this(editable, label, tip, null);
+    //    }
+
+    /**
+     * Create an (initially) editable double labeled field with proper characteristics.
+     *
+     * @param name the component name, to be later used for resources injection
+     */
+    public LDoubleField (String name)
+    {
+        this(name, null);
     }
 
     /**
@@ -130,7 +173,12 @@ public class LDoubleField
         if (str.length() == 0) {
             return 0.0;
         } else {
-            return Double.parseDouble(str);
+            try {
+                return NumberFormat.getInstance(Locale.getDefault()).parse(str).doubleValue();
+            } catch (ParseException ex) {
+                logger.warn("ParseException on {}", str);
+                return Double.NaN;
+            }
         }
     }
 
@@ -211,7 +259,7 @@ public class LDoubleField
             final StringBuilder sb = new StringBuilder(doc.getText(0, doc.getLength()));
             sb.replace(offset, offset + length, text);
 
-            if (test(sb.toString())) {
+            if (sb.isEmpty() || test(sb.toString())) {
                 super.replace(fb, offset, length, text, attrs);
             }
         }

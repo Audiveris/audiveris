@@ -24,7 +24,8 @@ package org.audiveris.omr.lag.ui;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.run.Orientation;
-import org.audiveris.omr.ui.Board;
+import static org.audiveris.omr.ui.Board.BoardDesc.SECTION_HORI;
+import static org.audiveris.omr.ui.Board.BoardDesc.SECTION_VERT;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.field.LIntegerField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
@@ -54,40 +55,29 @@ public class SectionBoard
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(SectionBoard.class);
 
+    private static final String horizontal = resources.getString("horizontal");
+
+    private static final String vertical = resources.getString("vertical");
+
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Underlying lag */
+    /** Underlying lag. */
     protected final Lag lag;
 
     /** Field for left abscissa. */
-    private final LIntegerField x = new LIntegerField(
-            false,
-            resources.getString("x.text"),
-            resources.getString("x.toolTipText"));
+    private final LIntegerField x = new LIntegerField(false, "x");
 
     /** Field for top ordinate. */
-    private final LIntegerField y = new LIntegerField(
-            false,
-            resources.getString("y.text"),
-            resources.getString("y.toolTipText"));
+    private final LIntegerField y = new LIntegerField(false, "y");
 
     /** Field for width. */
-    private final LIntegerField width = new LIntegerField(
-            false,
-            resources.getString("width.text"),
-            resources.getString("width.toolTipText"));
+    private final LIntegerField width = new LIntegerField(false, "width");
 
     /** Field for height. */
-    private final LIntegerField height = new LIntegerField(
-            false,
-            resources.getString("height.text"),
-            resources.getString("height.toolTipText"));
+    private final LIntegerField height = new LIntegerField(false, "height");
 
     /** Field for weight. */
-    private final LIntegerField weight = new LIntegerField(
-            false,
-            resources.getString("weight.text"),
-            resources.getString("weight.toolTipText"));
+    private final LIntegerField weight = new LIntegerField(false, "weight");
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -101,13 +91,7 @@ public class SectionBoard
                          boolean selected)
     {
         super(
-                new Desc(
-                        Board.SECTION.name + ((lag.getOrientation() == Orientation.VERTICAL)
-                                ? " Vert"
-                                : " Hori"),
-                        Board.SECTION.position + ((lag.getOrientation() == Orientation.VERTICAL)
-                                ? 100
-                                : 0)),
+                (lag.getOrientation() == Orientation.VERTICAL) ? SECTION_VERT : SECTION_HORI,
                 lag.getEntityService(),
                 selected);
 
@@ -145,6 +129,8 @@ public class SectionBoard
 
         builder.addRaw(height.getLabel()).xy(9, r);
         builder.addRaw(height.getField()).xy(11, r);
+
+        resources.injectComponents(getComponent());
     }
 
     //-----------------------//

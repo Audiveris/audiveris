@@ -97,38 +97,9 @@ public abstract class Board
     public static final int MIN_BOARD_WIDTH = UIUtil.adjustedSize(
             constants.minBoardWidth.getValue());
 
-    // Predefined boards names with preferred display positions
-    public static final Desc PIXEL = new Desc("Pixel", 100);
-
-    public static final Desc BINARIZATION = new Desc("Binarization filter", 125);
-
-    public static final Desc BINARY = new Desc("Binary pixel", 150);
-
-    public static final Desc RUN = new Desc("Run", 200);
-
-    public static final Desc SECTION = new Desc("Section", 250);
-
-    public static final Desc FILAMENT = new Desc("Filament", 300);
-
-    public static final Desc SAMPLE = new Desc("Sample", 400);
-
-    public static final Desc GLYPH = new Desc("Glyph", 500);
-
-    public static final Desc INTER = new Desc("Inter", 550);
-
-    public static final Desc TEMPLATE = new Desc("Template", 575);
-
-    public static final Desc FOCUS = new Desc("Focus", 600);
-
-    public static final Desc SHAPE = new Desc("Shape", 700);
-
-    public static final Desc EVAL = new Desc("Eval", 800);
-
-    public static final Desc CHECK = new Desc("Check", 900);
-
     /** To sort boards by their position. */
-    public static final Comparator<Board> byPosition = (Board b1,
-                                                        Board b2) -> Integer.compare(
+    public static final Comparator<Board> byPosition = (b1,
+                                                        b2) -> Integer.compare(
                                                                 b1.position,
                                                                 b2.position);
 
@@ -194,40 +165,8 @@ public abstract class Board
                   boolean useVip,
                   boolean useDump)
     {
-        this(
-                desc.name,
-                desc.position,
-                selectionService,
-                eventsRead,
-                selected,
-                useCount,
-                useVip,
-                useDump);
-    }
-
-    /**
-     * Create a board, with (dynamic) name and position.
-     *
-     * @param name             a name assigned to the board
-     * @param position         the preferred position within BoardsPane display
-     * @param selectionService the related selection service for input and output
-     * @param eventsRead       the collection of event classes to observe
-     * @param selected         true to pre-select the board
-     * @param useCount         true for a count field
-     * @param useVip           true for a VIP label and field
-     * @param useDump          true for a dump button
-     */
-    public Board (String name,
-                  int position,
-                  SelectionService selectionService,
-                  Class[] eventsRead,
-                  boolean selected,
-                  boolean useCount,
-                  boolean useVip,
-                  boolean useDump)
-    {
-        this.name = name;
-        this.position = position;
+        this.name = desc.getName();
+        this.position = desc.getPosition();
         this.selectionService = selectionService;
         this.eventsRead = eventsRead;
         this.selected = selected;
@@ -606,19 +545,91 @@ public abstract class Board
     /**
      * A way to describe a board kind.
      */
-    public static class Desc
+    public static interface Desc
     {
-        /** Default name for this board. */
+        /**
+         * Default name for this board.
+         *
+         * @return the board name
+         */
+        String getName ();
+
+        /**
+         * Preferred position within its containing BoardsPane.
+         *
+         * @return the board vertical position
+         */
+        int getPosition ();
+    }
+
+    //-----------//
+    // BasicDesc //
+    //-----------//
+    public static class BasicDesc
+            implements Desc
+    {
         public final String name;
 
-        /** Preferred position within its containing BoardsPane. */
         public final int position;
 
-        public Desc (String name,
-                     int position)
+        public BasicDesc (String name,
+                          int position)
         {
             this.name = name;
             this.position = position;
+        }
+
+        @Override
+        public String getName ()
+        {
+            return name;
+        }
+
+        @Override
+        public int getPosition ()
+        {
+            return position;
+        }
+    }
+
+    //-----------//
+    // BoardDesc //
+    //-----------//
+    /** Predefined boards descriptors. */
+    public static enum BoardDesc implements Desc
+    {
+        PIXEL,
+        BINARIZATION,
+        BINARY,
+        RUN_HORI,
+        RUN_VERT,
+        SECTION_HORI,
+        FILAMENT,
+        SECTION_VERT,
+        SAMPLE,
+        GLYPH,
+        INTER,
+        TEMPLATE,
+        SHAPE,
+        EVAL,
+        CHECK;
+
+        private String name; // Cached
+
+        @Override
+        public String getName ()
+        {
+            if (name == null) {
+                name = resources.getString(name());
+            }
+
+            return name;
+        }
+
+        @Override
+        public int getPosition ()
+        {
+            return 10 * (1 + ordinal());
         }
     }
 
@@ -645,10 +656,8 @@ public abstract class Board
                 boolean withDump)
         {
             count = withCount ? new JLabel("") : null;
-            vip = withVip ? new LCheckBox(
-                    resources.getString("vip.text"),
-                    resources.getString("vip.toolTipText")) : null;
-            dump = withDump ? new JButton("Dump") : null;
+            vip = withVip ? new LCheckBox("vip") : null;
+            dump = withDump ? new JButton() : null;
 
             defineLayout();
         }
@@ -679,6 +688,13 @@ public abstract class Board
             if (count != null) {
                 builder.addRaw(count).xy(1, 1, "right, center");
             }
+
+            // Injection
+            if (dump != null) {
+                dump.setName("dump");
+            }
+
+            resources.injectComponents(this);
         }
     }
 }

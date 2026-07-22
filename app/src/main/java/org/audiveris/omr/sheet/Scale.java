@@ -29,6 +29,9 @@ import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.param.ConstantBasedParam;
 import org.audiveris.omr.util.param.Param;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,6 +152,9 @@ public class Scale
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Scale.class);
+
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(Scale.class);
 
     public static final Param<Integer> defaultInterlineSpecification = new ConstantBasedParam<>(
             constants.defaultInterlineSpecification,
@@ -1304,27 +1310,26 @@ public class Scale
      */
     public static enum Item
     {
-        line("Line thickness"),
-        interline("Interline"),
-        smallInterline("Small interline"),
-        beam("Beam thickness"),
-        smallBeam("Small beam thickness"),
-        stem("Stem thickness");
+        line,
+        interline,
+        smallInterline,
+        beam,
+        smallBeam,
+        stem;
 
-        private final String description;
-
-        Item (String description)
-        {
-            this.description = description;
-        }
+        private String description; // Cached
 
         /**
          * Report item description
          *
-         * @return description
+         * @return the item description
          */
         public String getDescription ()
         {
+            if (description == null) {
+                description = resources.getString(name());
+            }
+
             return description;
         }
     }

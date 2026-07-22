@@ -52,25 +52,13 @@ public class SymbolGlyphBoard
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Glyph characteristics : normalized weight. */
-    private final LDoubleField weight = new LDoubleField(
-            false,
-            resources.getString("weight.text"),
-            resources.getString("weight.toolTipText"),
-            "%.3f");
+    private final LDoubleField weight = new LDoubleField(false, "weight", "%.3f");
 
     /** Glyph characteristics : normalized width. */
-    private final LDoubleField width = new LDoubleField(
-            false,
-            resources.getString("width.text"),
-            resources.getString("width.toolTipText"),
-            "%.3f");
+    private final LDoubleField width = new LDoubleField(false, "width", "%.3f");
 
     /** Glyph characteristics : normalized height. */
-    private final LDoubleField height = new LDoubleField(
-            false,
-            resources.getString("height.text"),
-            resources.getString("height.toolTipText"),
-            "%.3f");
+    private final LDoubleField height = new LDoubleField(false, "height", "%.3f");
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -117,6 +105,8 @@ public class SymbolGlyphBoard
 
         builder.addRaw(height.getLabel()).xy(9, r);
         builder.addRaw(height.getField()).xy(11, r);
+
+        resources.injectComponents(getComponent());
     }
 
     //-----------------------//

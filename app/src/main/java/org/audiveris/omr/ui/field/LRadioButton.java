@@ -39,11 +39,21 @@ public class LRadioButton
     /**
      * Creates a new LRadioButton object.
      *
+     * @param name the component name, to be later used for resources injection
+     */
+    public LRadioButton (String name)
+    {
+        super(name, new JRadioButton());
+    }
+
+    /**
+     * Creates a new LRadioButton object.
+     *
      * @param label the string to be used as label text
      * @param tip   the related tool tip text
      */
     public LRadioButton (String label,
-                      String tip)
+                         String tip)
     {
         super(label, tip, new JRadioButton());
     }

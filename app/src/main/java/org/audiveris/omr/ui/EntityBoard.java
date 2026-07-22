@@ -155,7 +155,6 @@ public class EntityBoard<E extends Entity>
         // Dump
         if (useDump) {
             dump = getDumpButton();
-            dump.setToolTipText(resources.getString("dump.toolTipText"));
             dump.setEnabled(false);
             dump.addActionListener(this);
         }

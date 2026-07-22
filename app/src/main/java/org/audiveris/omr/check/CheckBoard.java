@@ -67,8 +67,7 @@ public class CheckBoard<C>
                        Class[] eventList)
     {
         super(
-                name,
-                Board.CHECK.position,
+                new BasicDesc(name, BoardDesc.CHECK.getPosition()),
                 selectionService,
                 eventList,
                 false, // Selected
