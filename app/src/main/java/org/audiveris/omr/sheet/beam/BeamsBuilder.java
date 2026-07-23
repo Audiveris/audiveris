@@ -42,6 +42,7 @@ import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
 import static org.audiveris.omr.sheet.ProcessingSwitch.smallBeams;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.ScaleItem;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.stem.HeadLinker;
@@ -233,10 +234,10 @@ public class BeamsBuilder
         final Scale scale = sheet.getScale();
 
         // Select parameters for standard items
-        stdParams = new ItemParameters(scale, scale.getItemValue(Scale.Item.beam), false);
+        stdParams = new ItemParameters(scale, scale.getItemValue(ScaleItem.beam), false);
 
         // Select parameters for small items?
-        Integer smallHeight = scale.getItemValue(Scale.Item.smallBeam);
+        Integer smallHeight = scale.getItemValue(ScaleItem.smallBeam);
         if (smallHeight == null && sheet.getStub().getProcessingSwitches().getValue(smallBeams)) {
             smallHeight = (int) Math.rint(scale.getBeamThickness() * getCueBeamRatio());
         }

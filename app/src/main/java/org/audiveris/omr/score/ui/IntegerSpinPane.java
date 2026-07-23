@@ -53,7 +53,7 @@ public class IntegerSpinPane<T>
                             SpinData spinData,
                             ResourceMap resources)
     {
-        super(resources.getString(tag + "Pane.title"));
+        super(resources.getString(tag + "Pane.text"));
         title.setToolTipText(resources.getString(tag + "Pane.toolTipText"));
         this.spinData = spinData;
     }
@@ -86,8 +86,7 @@ public class IntegerSpinPane<T>
     {
         try {
             spinData.spinner.commitEdit();
-        } catch (ParseException ignored) {
-        }
+        } catch (ParseException ignored) {}
 
         return (int) spinData.spinner.getValue();
     }

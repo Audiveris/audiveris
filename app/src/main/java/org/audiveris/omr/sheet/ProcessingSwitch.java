@@ -23,6 +23,9 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.constant.Constant;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import java.util.EnumSet;
 
 /**
@@ -83,6 +86,12 @@ public enum ProcessingSwitch
     smallVoidHeads(null),
     smallWholeHeads(null);
 
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    /** Resource injection. */
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(ProcessingSwitch.class);
+
     /**
      * The switches currently supported.
      */
@@ -120,7 +129,7 @@ public enum ProcessingSwitch
 
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Underlying boolean constant. */
+    /** The underlying boolean constant. */
     private final Constant.Boolean constant;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -148,5 +157,25 @@ public enum ProcessingSwitch
     public Constant.Boolean getConstant ()
     {
         return constant;
+    }
+
+    //---------//
+    // getText //
+    //---------//
+    public String getText ()
+    {
+        // Priority is given to text in resources file if any
+        final String desc = resources.getString(name() + ".text");
+
+        // Fallback using constant description text
+        return (desc != null) ? desc : constant.getDescription();
+    }
+
+    //--------//
+    // getTip //
+    //--------//
+    public String getTip ()
+    {
+        return resources.getString(name() + ".toolTipText");
     }
 }

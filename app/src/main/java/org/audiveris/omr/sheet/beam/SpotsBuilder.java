@@ -40,6 +40,7 @@ import org.audiveris.omr.sheet.ProcessingSwitch;
 import static org.audiveris.omr.sheet.ProcessingSwitch.smallBeams;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.ScaleItem;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -125,13 +126,13 @@ public class SpotsBuilder
 
             // Select smaller value between main beam thickness and second beam thickness
             final Scale scale = sheet.getScale();
-            Integer beam = scale.getItemValue(Scale.Item.beam);
+            Integer beam = scale.getItemValue(ScaleItem.beam);
 
             if (beam == null) {
                 throw new RuntimeException("No scale information on beam thickness");
             }
 
-            Integer beam2 = scale.getItemValue(Scale.Item.smallBeam);
+            Integer beam2 = scale.getItemValue(ScaleItem.smallBeam);
             if (beam2 == null && sheet.getStub().getProcessingSwitches().getValue(smallBeams)) {
                 beam2 = (int) Math.rint(beam * BeamsBuilder.getCueBeamRatio());
             }
@@ -269,8 +270,7 @@ public class SpotsBuilder
                 String.format("%.1f", diameter),
                 String.format("%.1f", radius));
 
-        final int[] seOffset =
-        { 0, 0 };
+        final int[] seOffset = { 0, 0 };
         final StructureElement se = new StructureElement(0, 1, radius, seOffset);
         new MorphoProcessor(se).close(buffer);
     }

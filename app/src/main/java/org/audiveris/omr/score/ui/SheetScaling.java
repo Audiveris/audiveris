@@ -22,7 +22,7 @@
 package org.audiveris.omr.score.ui;
 
 import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.sheet.Scale.Item;
+import org.audiveris.omr.sheet.ScaleItem;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.util.param.Param;
 
@@ -70,7 +70,7 @@ public class SheetScaling
     private Scale scale;
 
     /** Map of scaling parameters. */
-    private final EnumMap<Item, ScalingParam> scalings = new EnumMap<>(Item.class);
+    private final EnumMap<ScaleItem, ScalingParam> scalings = new EnumMap<>(ScaleItem.class);
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -89,7 +89,7 @@ public class SheetScaling
 
         final XactTopic topic = new XactTopic(resources.getString("Scaling.text"));
 
-        for (Item key : Item.values()) {
+        for (ScaleItem key : ScaleItem.values()) {
             ScalingParam ip = scalings.get(key);
 
             if (ip == null) {
@@ -182,7 +182,7 @@ public class SheetScaling
     //------------------//
     private void populateScalings ()
     {
-        for (Item key : Item.values()) {
+        for (ScaleItem key : ScaleItem.values()) {
             scalings.put(key, new ScalingParam(key));
         }
     }
@@ -199,11 +199,11 @@ public class SheetScaling
             extends IntegerPane
     {
         /** The scale item handled by this ScaledPane. */
-        final Scale.Item key;
+        final ScaleItem key;
 
-        ScaledPane (Scale.Item key)
+        ScaledPane (ScaleItem key)
         {
-            super(description(key), "", null);
+            super(key.getText(), null, key.getTip());
             this.key = key;
         }
 
@@ -230,7 +230,7 @@ public class SheetScaling
             return r + 2;
         }
 
-        public Scale.Item getKey ()
+        public ScaleItem getKey ()
         {
             return key;
         }
@@ -240,17 +240,17 @@ public class SheetScaling
         {
             return 1;
         }
-
-        private static String description (Scale.Item key)
-        {
-            String desc = resources.getString("Item." + key + ".toolTipText");
-
-            if (desc != null) {
-                return desc;
-            }
-
-            return key.getDescription();
-        }
+        //
+        //        private static String description (Scale.Item key)
+        //        {
+        //            String desc = resources.getString("Item." + key + ".toolTipText");
+        //
+        //            if (desc != null) {
+        //                return desc;
+        //            }
+        //
+        //            return key.getText();
+        //        }
     }
 
     //--------------//
@@ -262,9 +262,9 @@ public class SheetScaling
     private class ScalingParam
             extends Param<Integer>
     {
-        public final Item key;
+        public final ScaleItem key;
 
-        ScalingParam (Item key)
+        ScalingParam (ScaleItem key)
         {
             super(sheet);
             this.key = key;
@@ -302,7 +302,7 @@ public class SheetScaling
                 }
 
                 scale.setItemValue(key, specific);
-                logger.info(key.getDescription() + " set to {}", scale.getItemValue(key));
+                logger.info(key.getText() + " set to {}", scale.getItemValue(key));
 
                 return true;
             }

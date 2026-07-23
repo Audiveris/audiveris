@@ -557,7 +557,7 @@ public class BookParameters
 
         FilterPane ()
         {
-            super(resources.getString("FilterPane.title"));
+            super(resources.getString("FilterPane.text"));
 
             // ComboBox for filter kind
             kindCombo.setToolTipText(resources.getString("FilterPane.kindCombo.toolTipText"));
@@ -794,7 +794,7 @@ public class BookParameters
 
         public SwitchPane (ProcessingSwitch key)
         {
-            super(textOf(key), tipOf(key));
+            super(key.getText(), key.getTip());
             this.key = key;
         }
 
@@ -882,20 +882,6 @@ public class BookParameters
             }
 
             return false; // This statement should never be reached!
-        }
-
-        private static String textOf (ProcessingSwitch key)
-        {
-            // Priority is given to text in resources file if any
-            final String desc = resources.getString("Switch." + key + ".text");
-
-            // Fallback using constant description text
-            return (desc != null) ? desc : key.getConstant().getDescription();
-        }
-
-        private static String tipOf (ProcessingSwitch key)
-        {
-            return resources.getString("Switch." + key + ".toolTipText");
         }
     }
 
