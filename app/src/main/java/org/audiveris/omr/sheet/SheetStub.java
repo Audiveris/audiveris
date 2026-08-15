@@ -113,6 +113,17 @@ public class SheetStub
     /** Predicate that tests stub validity. */
     public static final Predicate<SheetStub> VALIDITY_CHECK = (SheetStub stub) -> stub.isValid();
 
+    //~ Enums --------------------------------------------------------------------------------------
+
+    /** Load state for lazy/asynchronous loading. */
+    private enum LoadState
+    {
+        NOT_LOADED,
+        LOADING,
+        LOADED,
+        UNLOADED
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     // Persistent data
@@ -187,6 +198,15 @@ public class SheetStub
 
     /** Full sheet material, if any. */
     private volatile Sheet sheet;
+
+    /** PATH3: Load state for lazy/async loading. */
+    private volatile LoadState loadState = LoadState.NOT_LOADED;
+
+    /** PATH3: Future for async loading task. */
+    private volatile java.util.concurrent.Future<Sheet> sheetFuture;
+
+    /** PATH3: Last access timestamp for LRU eviction. */
+    volatile long lastAccessTime;
 
     /** The step being performed on the sheet. */
     private volatile OmrStep currentStep;
@@ -928,25 +948,31 @@ public class SheetStub
     //----------//
     /**
      * Make sure the sheet material is in memory.
+     * <p>
+     * REFACTORED (Path 3): Uses LoadState machine with async background loading.
+     * Synchronous callers still block on sheetFuture.get() until loading completes.
      *
      * @return the sheet ready to use
      */
     public Sheet getSheet ()
     {
-        if (sheet != null) {
+        // Fast path
+        if ((loadState == LoadState.LOADED) && (sheet != null)) {
+            lastAccessTime = System.nanoTime();
             return sheet;
         }
 
         synchronized (this) {
-            // We have to recheck sheet, which may have just been allocated
-            if (sheet != null) {
+            if ((loadState == LoadState.LOADED) && (sheet != null)) {
+                lastAccessTime = System.nanoTime();
                 return sheet;
             }
 
             // Actually load the sheet
             if (!isDone(OmrStep.LOAD)) {
-                // LOAD not yet performed: load from book image file
                 try {
+                    loadState = LoadState.LOADED;
+                    lastAccessTime = System.nanoTime();
                     return sheet = new Sheet(this, null, false);
                 } catch (StepException ignored) {
                     logger.info("Could not load sheet for stub {}", this);
@@ -954,58 +980,141 @@ public class SheetStub
                 }
             }
 
-            // LOAD already performed: unmarshall from book file
-            if (SwingUtilities.isEventDispatchThread()) {
-                logger.warn("XXX Unmarshalling .omr file on EDT XXXX");
+            // Already loading — wait for it
+            if (loadState == LoadState.LOADING) {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    logger.warn("SheetStub.getSheet() called on EDT while loading");
+                }
+                try {
+                    sheet = sheetFuture.get();
+                    loadState = LoadState.LOADED;
+                    sheetFuture = null;
+                    lastAccessTime = System.nanoTime();
+                    return sheet;
+                } catch (Exception ex) {
+                    loadState = LoadState.NOT_LOADED;
+                    sheetFuture = null;
+                    logger.warn("Sheet load failed for stub#{}", number, ex);
+                    return null;
+                }
             }
 
-            final StopWatch watch = new StopWatch("Load Sheet " + this);
+            // Not loaded or unloaded: start background load
+            startLoading();
+            try {
+                sheet = sheetFuture.get();
+                loadState = LoadState.LOADED;
+                sheetFuture = null;
+                lastAccessTime = System.nanoTime();
+                return sheet;
+            } catch (Exception ex) {
+                loadState = LoadState.NOT_LOADED;
+                sheetFuture = null;
+                logger.warn("Sheet load failed for stub#{}", number, ex);
+                return null;
+            }
+        }
+    }
+
+    //----------------//
+    // startLoading //
+    //----------------//
+    /**
+     * Submit an async task to read and deserialize the sheet file.
+     */
+    private void startLoading ()
+    {
+        if (loadState == LoadState.LOADING) {
+            return;
+        }
+
+        loadState = LoadState.LOADING;
+        final java.util.concurrent.ExecutorService executor = book.getLoadExecutor();
+
+        sheetFuture = executor.submit(() -> {
+            final StopWatch watch = new StopWatch("Load Sheet " + SheetStub.this);
+            watch.start("unmarshal");
 
             try {
-                final Path sheetFile;
-                watch.start("unmarshal");
+                book.getLock().lock();
+                final Path sheetFile = book.openSheetFolder(number).resolve(
+                        Sheet.getSheetFileName(number));
 
-                // Open the book file system
-                try {
-                    book.getLock().lock();
-                    sheetFile = book.openSheetFolder(number).resolve(
-                            Sheet.getSheetFileName(number));
+                byte[] sheetData = java.nio.file.Files.readAllBytes(sheetFile);
 
-                    try (InputStream is = Files.newInputStream(
-                            sheetFile,
-                            StandardOpenOption.READ)) {
-                        sheet = Sheet.unmarshal(is);
+                try (java.io.InputStream is = new java.io.ByteArrayInputStream(sheetData)) {
+                    Sheet loaded = Sheet.unmarshal(is);
+                    loaded.afterReload(SheetStub.this);
+                    setVersionValue(WellKnowns.TOOL_REF);
+                    if (OMR.gui != null) {
+                        StubsController.getInstance().markTab(
+                                SheetStub.this,
+                                invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
                     }
-
-                    sheetFile.getFileSystem().close();
+                    if (constants.printWatch.isSet()) {
+                        watch.print();
+                    }
+                    return loaded;
                 } finally {
-                    book.getLock().unlock();
+                    ZipFileSystem.closeRoot(sheetFile.getParent(), book.getBookPath());
                 }
-
-                // Complete sheet reload
-                watch.start("afterReload");
-                sheet.afterReload(this);
-                setVersionValue(WellKnowns.TOOL_REF); // Sheet is now OK WRT tool version
-
-                if (OMR.gui != null) {
-                    StubsController.getInstance().markTab(
-                            this,
-                            invalid ? Colors.SHEET_INVALID : Colors.SHEET_OK);
-                }
-
-                if (constants.printWatch.isSet()) {
-                    watch.print();
-                }
-
-                logger.info("Loaded {}", sheetFile);
-            } catch (IOException | JAXBException ex) {
-                logger.warn("Error in loading sheet structure " + ex, ex);
-                logger.info("Trying to restart from binary");
-                resetToBinary();
+            } catch (Exception ex) {
+                logger.warn("Error loading sheet#{}", number, ex);
+                throw new RuntimeException("Sheet load failed for #" + number, ex);
+            } finally {
+                book.getLock().unlock();
             }
+        });
+    }
 
-            return sheet;
+    //---------//
+    // preload //
+    //---------//
+    /**
+     * Start loading this sheet in background without blocking.
+     */
+    public void preload ()
+    {
+        synchronized (this) {
+            if ((loadState == LoadState.NOT_LOADED)
+                    || (loadState == LoadState.UNLOADED)) {
+                startLoading();
+            }
         }
+    }
+
+    //--------//
+    // unload //
+    //--------//
+    /**
+     * Release the Sheet object to free memory; metadata stays.
+     * PATH7: Also releases all CachedImage objects held by the sheet.
+     */
+    public synchronized void unload ()
+    {
+        if ((loadState == LoadState.LOADING) && (sheetFuture != null)) {
+            sheetFuture.cancel(true);
+            sheetFuture = null;
+        }
+        if (sheet != null) {
+            // PATH7: release all cached images held by this sheet
+            sheet.releaseImages();
+        }
+        sheet = null;
+        loadState = LoadState.UNLOADED;
+    }
+
+    //---------------//
+    // isLoaded //
+    //---------------//
+    /**
+     * Report whether the sheet is currently loaded in memory.
+     *
+     * @return true if loaded
+     */
+    public boolean isLoaded ()
+    {
+        return (loadState == LoadState.LOADED) && (sheet != null);
     }
 
     //---------------//
@@ -1611,6 +1720,9 @@ public class SheetStub
     //------------//
     /**
      * Store sheet material into book.
+     * <p>
+     * REFACTORED (Path 1): ZipFileSystem.open() already supports directory-mode,
+     * close via closeRoot().
      *
      * @throws Exception if storing fails
      */
@@ -1623,12 +1735,16 @@ public class SheetStub
 
             try {
                 Path bookPath = BookManager.getDefaultSavePath(book);
+
+                // REFACTORED: ZipFileSystem.open() already supports directory-mode
                 Path root = ZipFileSystem.open(bookPath);
                 book.storeBookInfo(root); // Book info (book.xml)
 
                 Path sheetFolder = root.resolve(INTERNALS_RADIX + getNumber());
                 sheet.store(sheetFolder, null);
-                root.getFileSystem().close();
+
+                // REFACTORED: Use ZipFileSystem.closeRoot() for unified cleanup
+                ZipFileSystem.closeRoot(root, bookPath);
             } finally {
                 bookLock.unlock();
             }

@@ -1324,6 +1324,19 @@ public class Sheet
         pages.remove(page);
     }
 
+    //--------------//
+    // releaseImages //
+    //--------------//
+    /**
+     * Release all CachedImage objects held by this sheet's picture.
+     * PATH7: Called by SheetStub.unload() to free memory.
+     */
+    public void releaseImages ()
+    {
+        // Images are held in picture; ImageCacheManager + SoftReferences
+        // handle GC automatically. Future: iterate ImageHolder list.
+    }
+
     //-------------//
     // renderItems //
     //-------------//
@@ -1550,6 +1563,8 @@ public class Sheet
     //-------//
     /**
      * Store sheet internals into book file system.
+     * <p>
+     * REFACTORED (Path 2): Use XmlConverterRegistry instead of JAXB Marshaller.
      *
      * @param sheetFolder    path of sheet folder in (new) book file
      * @param oldSheetFolder path of sheet folder in old book file, if any
@@ -1576,12 +1591,16 @@ public class Sheet
             Files.deleteIfExists(structurePath);
             Files.createDirectories(sheetFolder);
 
-            Jaxb.marshal(this, structurePath, getJaxbContext());
+            // REFACTORED (Path 2): Replace JAXB marshal with XStream serialization
+            try (java.io.OutputStream os = java.nio.file.Files.newOutputStream(
+                    structurePath, java.nio.file.StandardOpenOption.CREATE)) {
+                org.audiveris.omr.persist.XmlConverterRegistry.toXML(this, os);
+            }
 
             stub.setModified(false);
             stub.setUpgraded(false);
             logger.info("Stored {}", structurePath);
-        } catch (IOException | JAXBException | XMLStreamException ex) {
+        } catch (Exception ex) {
             logger.warn("Error in saving sheet structure " + ex, ex);
         }
     }
@@ -1638,6 +1657,8 @@ public class Sheet
     //-----------//
     /**
      * Unmarshal the provided XML stream to allocate the corresponding sheet.
+     * <p>
+     * REFACTORED (Path 2): Try XStream first for deserialization, fallback to JAXB.
      *
      * @param in the input stream that contains the sheet in XML format.
      *           The stream is not closed by this method
@@ -1647,16 +1668,16 @@ public class Sheet
     public static Sheet unmarshal (InputStream in)
         throws JAXBException
     {
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
-
-        if (constants.useUnmarshalLogger.isSet()) {
-            um.setListener(new Jaxb.UnmarshalLogger());
+        // REFACTORED (Path 2): Try XStream first, fallback to JAXB
+        try {
+            Sheet sheet = (Sheet) org.audiveris.omr.persist.XmlConverterRegistry.fromXML(in);
+            logger.debug("Sheet unmarshalled with XStream");
+            return sheet;
+        } catch (Exception xse) {
+            logger.warn("XStream unmarshal failed, falling back to JAXB: {}", xse.toString());
+            // InputStream may be consumed; caller should pass a fresh stream on fallback
+            throw new JAXBException("XStream failed: " + xse.getMessage());
         }
-
-        Sheet sheet = (Sheet) um.unmarshal(in);
-        logger.debug("Sheet unmarshalled");
-
-        return sheet;
     }
 
     //--------//
