@@ -22,7 +22,6 @@
 package org.audiveris.omr.util;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -82,8 +81,7 @@ public abstract class ZipFileSystem
         final Map<String, String> env = new HashMap<>();
         env.put("create", "true");
 
-        final URI uri = URI.create("jar:" + path.toUri());
-        final FileSystem fs = FileSystems.newFileSystem(uri, env, null);
+        final FileSystem fs = FileSystems.newFileSystem(path, env);
 
         return fs.getPath(fs.getSeparator());
     }
@@ -107,8 +105,7 @@ public abstract class ZipFileSystem
         Objects.requireNonNull(path, "ZipFileSystem.open: path is null");
 
         final Map<String, String> env = new HashMap<>(); // Empty map
-        final URI uri = URI.create("jar:" + path.toUri());
-        final FileSystem fs = FileSystems.newFileSystem(uri, env, null);
+        final FileSystem fs = FileSystems.newFileSystem(path, env);
 
         return fs.getPath(fs.getSeparator());
     }
