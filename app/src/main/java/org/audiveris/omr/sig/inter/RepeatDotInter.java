@@ -128,13 +128,14 @@ public class RepeatDotInter
     public Rectangle getDotLuBox (SystemInfo system,
                                   int profile)
     {
-        final Scale scale = system.getSheet().getScale();
         final int dotPitch = getIntegerPitch();
         final Rectangle dotLuBox = getBounds();
 
+        // The staff's own interline: on a small staff the pair sits closer than the sheet's.
+        //
         // TODO: Perhaps we could grow dotLuBox based on profile level?
         //
-        dotLuBox.y -= (scale.getInterline() * dotPitch);
+        dotLuBox.y -= (staff.getSpecificInterline() * dotPitch);
 
         return dotLuBox;
     }
