@@ -217,10 +217,33 @@ public class ClefBuilder
             bestMap = getBestMap(false);
         }
 
-        // Register the remaining clef candidates
-        if (!bestMap.isEmpty()) {
+        // Register the remaining candidates, unless none of them is really a clef: the
+        // header is erased before symbols are read, so a clef found on the first note
+        // column of a staff that prints none takes that music with it.
+        if (!bestMap.isEmpty() && bestGrade(bestMap) >= constants.minRegisteredGrade
+                .getValue()) {
             registerClefs(bestMap.values());
         }
+    }
+
+    //-----------//
+    // bestGrade //
+    //-----------//
+    /**
+     * Report the best grade among the clef candidates.
+     *
+     * @param bestMap the candidate clefs, per kind
+     * @return the highest grade, 0 if there is none
+     */
+    private static double bestGrade (Map<ClefKind, ClefInter> bestMap)
+    {
+        double best = 0;
+
+        for (ClefInter clef : bestMap.values()) {
+            best = Math.max(best, clef.getGrade());
+        }
+
+        return best;
     }
 
     //------------//
@@ -732,6 +755,10 @@ public class ClefBuilder
                 "none",
                 3,
                 "Maximum acceptable rank in clef evaluation");
+
+        private final Constant.Ratio minRegisteredGrade = new Constant.Ratio(
+                0.65,
+                "Minimum grade for a staff header clef to be kept at all");
     }
 
     //------------//
