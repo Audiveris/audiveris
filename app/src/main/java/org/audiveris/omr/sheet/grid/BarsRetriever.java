@@ -1224,6 +1224,7 @@ public class BarsRetriever
         for (SystemInfo system : sheet.getSystems()) {
             List<BarColumn> columns = columnMap.get(system);
             BarColumn startColumn = null; // Last full column (within same group as first full)
+            final List<BarColumn> startGroup = new ArrayList<>(); // Whole starting group
 
             for (int i = 0; i < columns.size(); i++) {
                 final BarColumn column = columns.get(i);
@@ -1241,6 +1242,7 @@ public class BarsRetriever
 
                     if (column.isFullyConnected()) {
                         startColumn = column;
+                        startGroup.add(column);
                     }
                 }
             }
@@ -1249,19 +1251,25 @@ public class BarsRetriever
                 logger.debug("{} candidate startColumn: {}", system, startColumn);
 
                 StaffPeak[] startPeaks = startColumn.getPeaks();
+                StaffPeak[] firstPeaks = startGroup.get(0).getPeaks();
 
-                for (StaffPeak peak : startPeaks) {
+                for (int ip = 0; ip < startPeaks.length; ip++) {
+                    final StaffPeak peak = startPeaks[ip];
                     final Staff staff = peak.getStaff();
 
                     if (!staff.isOneLineStaff()) {
                         int xLeft = staff.getAbscissa(LEFT); // Based on long line chunks only
 
-                        // Check column is not too far right into staff
-                        if ((peak.getStart() - xLeft) > params.maxLinesLeftToStartBar) {
-                            if (peak.isVip() || logger.isDebugEnabled()) {
+                        // Not too far right into staff, measured from the group's first
+                        // bar: the long line chunks begin inside the group, so its last
+                        // bar is always too far right.
+                        final StaffPeak first = firstPeaks[ip];
+
+                        if ((first.getStart() - xLeft) > params.maxLinesLeftToStartBar) {
+                            if (first.isVip() || logger.isDebugEnabled()) {
                                 logger.info(
                                         "start {} too far inside staff#{}",
-                                        peak,
+                                        first,
                                         staff.getId());
                             }
 
@@ -1284,11 +1292,17 @@ public class BarsRetriever
                     }
                 }
 
-                // Use start column as left limit
-                for (StaffPeak peak : startColumn.getPeaks()) {
-                    Staff staff = peak.getStaff();
-                    staff.setAbscissa(LEFT, peak.getStop());
-                    peak.setStaffEnd(LEFT);
+                // The whole group is the staff end, so purgeLeftPeaks keeps it.
+                for (BarColumn column : startGroup) {
+                    for (StaffPeak peak : column.getPeaks()) {
+                        peak.setStaffEnd(LEFT);
+                    }
+                }
+
+                // The staff starts inside the group's first bar, where retrieveSideBars
+                // looks for it and HeaderBuilder begins.
+                for (StaffPeak peak : startGroup.get(0).getPeaks()) {
+                    peak.getStaff().setAbscissa(LEFT, peak.getStop());
                 }
             } else if (system.isMultiStaff()) {
                 logger.warn("No startColumn found for multi-staff {}", system);
