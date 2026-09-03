@@ -164,7 +164,7 @@ public class Page
     /**
      * Browse this page to determine the global page duration divisor.
      * <p>
-     * TODO: Here we retrieve divisor for the page. We could work on each part only.
+     * TODO: Here we retrieve divisor for the page. We could work on each part separately.
      *
      * @return the page duration divisor
      */
@@ -173,13 +173,18 @@ public class Page
         try {
             final SortedSet<Rational> durations = new TreeSet<>();
 
+            // We must make sure that a quarter can be expressed with the chosen division value
+            // Because the MusicXML division value is stated as the duration of one quarter (1/4)
+            durations.add(Rational.QUARTER);
+
             // Collect duration values for each standard chord in this page
             for (SystemInfo system : getSystems()) {
                 for (MeasureStack stack : system.getStacks()) {
                     for (AbstractChordInter chord : stack.getStandardChords()) {
                         try {
-                            final Rational duration = chord.isMeasureRest() ? stack
-                                    .getExpectedDuration() : chord.getDuration();
+                            final Rational duration = chord.isMeasureRest() //
+                                    ? stack.getExpectedDuration()
+                                    : chord.getDuration();
 
                             if (duration != null) {
                                 durations.add(duration);
@@ -193,26 +198,12 @@ public class Page
                 }
             }
 
-            // Compute greatest duration divisor for the page
-            Rational[] durationArray = durations.toArray(new Rational[durations.size()]);
-            Rational divisor = Rational.gcd(durationArray);
+            // Compute the greatest duration divisor for the page
+            final Rational[] durationArray = durations.toArray(Rational[]::new);
+            final Rational divisor = Rational.gcd(durationArray);
+            logger.info("durations={} gcd={}", Arrays.deepToString(durationArray), divisor);
 
-            int chosen = divisor.den;
-
-            // We must make sure that a quarter can be expressed with the chosen division value
-            // Because the MusicXML division value is stated as the duration of a quarter (1/4)
-            while (chosen < 4) {
-                chosen = 4 * chosen;
-            }
-
-            logger.debug(
-                    "{} durations={} gcd={} divisions={}",
-                    this,
-                    Arrays.deepToString(durationArray),
-                    divisor,
-                    chosen);
-
-            return chosen;
+            return divisor.den;
         } catch (Exception ex) {
             logger.warn(getClass().getSimpleName() + " Error visiting " + this, ex);
 
@@ -333,7 +324,6 @@ public class Page
     {
         if (durationDivisor == null) {
             durationDivisor = computeDurationDivisor();
-            logger.debug("{} durationDivisor: {}", this, durationDivisor);
         }
 
         return durationDivisor;
@@ -720,11 +710,7 @@ public class Page
      */
     public int simpleDurationOf (Rational value)
     {
-        final int divisions = getDurationDivisor();
-        final int duration = value.num * (divisions / value.den);
-        logger.trace("value: {} duration: {} divisions: {}", value, duration, divisions);
-
-        return duration;
+        return (value.num * getDurationDivisor()) / value.den;
     }
 
     //----------//
