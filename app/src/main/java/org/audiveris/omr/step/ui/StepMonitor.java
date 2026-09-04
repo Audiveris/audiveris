@@ -118,7 +118,7 @@ public class StepMonitor
             setBar(constants.ratio.getValue());
 
             if (constants.useIndeterminate.isSet()) {
-                bar.setIndeterminate(true);
+                SwingUtilities.invokeLater( () -> bar.setIndeterminate(true));
             }
         } else {
             if (actives > 0) {
@@ -127,7 +127,7 @@ public class StepMonitor
 
             if (actives <= 0) {
                 setBar(0);
-                bar.setIndeterminate(false);
+                SwingUtilities.invokeLater( () -> bar.setIndeterminate(false));
             }
         }
     }

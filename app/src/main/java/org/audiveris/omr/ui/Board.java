@@ -671,7 +671,7 @@ public abstract class Board
             sb.append(",").append(Panel.getFieldInterval()).append(",12dlu,").append(
                     Panel.getLabelInterval()).append(",10dlu");
             // dump button
-            sb.append(",").append(Panel.getFieldInterval()).append(",35dlu");
+            sb.append(",").append(Panel.getFieldInterval()).append(",pref");
 
             final FormLayout layout = new FormLayout(sb.toString(), "pref");
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);

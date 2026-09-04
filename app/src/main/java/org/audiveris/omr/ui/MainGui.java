@@ -425,6 +425,12 @@ public class MainGui
     {
         logger.debug("MainGui. 1/initialize");
 
+        // Select proper fonts names and sizes.
+        // NOTA: This must take place after the look and feel has been set (see Application.create()),
+        // since installing a look and feel (FlatLaf in particular) overwrites these UIManager font
+        // entries with its own defaults.
+        UIUtil.adjustDefaultFonts();
+
         // Launch background pre-loading tasks?
         if (constants.preloadCostlyPackages.isSet()) {
             ShapeClassifier.preload();
