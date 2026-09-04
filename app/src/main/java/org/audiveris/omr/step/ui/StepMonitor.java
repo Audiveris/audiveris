@@ -49,6 +49,9 @@ public class StepMonitor
 
     private static final Logger logger = LoggerFactory.getLogger(StepMonitor.class);
 
+    /** Text displayed when no step activity is going on. */
+    private static final String READY_TEXT = "READY";
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Progress bar for actions performed on sheet. */
@@ -65,11 +68,10 @@ public class StepMonitor
      */
     public StepMonitor ()
     {
-        bar.setToolTipText("On going Step activity");
+        bar.setToolTipText("Current step activity");
         bar.setStringPainted(true);
-        displayAnimation(false);
-        bar.setString("");
         bar.setForeground(Colors.PROGRESS_BAR);
+        displayAnimation(false);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -128,6 +130,7 @@ public class StepMonitor
             if (actives <= 0) {
                 setBar(0);
                 SwingUtilities.invokeLater( () -> bar.setIndeterminate(false));
+                SwingUtilities.invokeLater( () -> bar.setString(READY_TEXT));
             }
         }
     }
