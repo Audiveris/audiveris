@@ -62,40 +62,12 @@ public class UILookAndFeel
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    // Available Themes:
+    // Available Look & Feel classes (see com.formdev.flatlaf):
     //
-    // AbstractSkyTheme
-    // BrownSugar
-    // Colors
-    // DarkStar
-    // DesertBlue
-    // DesertBluer
-    // DesertGreen
-    // DesertRed
-    // DesertYellow
-    // ExperienceBlue
-    // ExperienceGreen
-    // Silver
-    // SkyBlue
-    // SkyBluer
-    // SkyBluerTahoma
-    // SkyGreen
-    // SkyKrupp
-    // SkyPink
-    // SkyRed
-    // SkyYellow
-    //         try {
-    //             // Available Look & Feel:
-    //             //
-    //             // WindowsLookAndFeel
-    //             // PlasticLookAndFeel
-    //             // Plastic3DLookAndFeel
-    //             // PlasticXPLookAndFeel
-    //             PlasticLookAndFeel.setMyCurrentTheme(new SkyKrupp());
-    //             UIManager.setLookAndFeel(new Plastic3DLookAndFeel());
-    //         } catch (Exception ex) {
-    //             ex.printStackTrace();
-    //         }
+    // FlatLightLaf
+    // FlatDarkLaf
+    // FlatIntelliJLaf
+    // FlatDarculaLaf
     //-------//
     // setUI //
     //-------//
@@ -108,8 +80,6 @@ public class UILookAndFeel
      */
     public static void setUI (String className)
     {
-        com.jgoodies.looks.Options.setUseNarrowButtons(true);
-
         try {
             if (className != null) {
                 UIManager.setLookAndFeel(className);
@@ -133,7 +103,7 @@ public class UILookAndFeel
             extends ConstantSet
     {
         private final Constant.String lookAndFeel = new Constant.String(
-                "com.jgoodies.looks.plastic.Plastic3DLookAndFeel",
+                "com.formdev.flatlaf.FlatLightLaf",
                 "Full class path to the desired UI Look & Feel");
     }
 }
