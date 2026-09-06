@@ -32,7 +32,6 @@ import org.audiveris.omr.text.tesseract.Languages;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.MainGui;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
@@ -248,9 +247,6 @@ public class Main
 
         if (!cli.isBatchMode()) {
             logger.debug("Running in interactive mode");
-
-            // Select proper fonts names and sizes
-            UIUtil.adjustDefaultFonts();
 
             logger.debug("Main. Launching MainGui");
             Application.launch(MainGui.class, args);
