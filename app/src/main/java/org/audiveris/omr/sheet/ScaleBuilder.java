@@ -223,14 +223,15 @@ public class ScaleBuilder
             return;
         }
 
-        final int largerInterline = interlineKey != null ? interlineKey
-                : (comboPeak2 == null) ? comboPeak.main : Math.max(comboPeak.main, comboPeak2.main);
+        // The beam range is sized on the sheet's own interline: a larger staff size the sheet
+        // is not scaled on would lift the range above the beams most of the page draws
+        final int mainInterline = (interlineKey != null) ? interlineKey : comboPeak.main;
         final int minHeight = Math.max(
                 blackPeak.max,
-                (int) Math.rint(constants.beamMinFraction.getValue() * largerInterline));
+                (int) Math.rint(constants.beamMinFraction.getValue() * mainInterline));
         final int maxHeight = Math.min(
-                largerInterline - blackPeak.min / 2,
-                (int) Math.rint(constants.beamMaxFraction.getValue() * largerInterline));
+                mainInterline - blackPeak.min / 2,
+                (int) Math.rint(constants.beamMaxFraction.getValue() * mainInterline));
 
         // Beam measurement
         final int quorum = histoKeeper.getBeamQuorum();
@@ -388,8 +389,13 @@ public class ScaleBuilder
         computeBeamKeys(true); // -> beamGuess, beamKey, beamKey2
 
         if (beamKey2 != null) {
-            beamScale = new BeamScale(Math.max(beamKey, beamKey2), false);
-            smallBeamScale = new BeamScale(Math.min(beamKey, beamKey2), false);
+            // A beam is drawn in proportion to its staff, so the thicker key belongs to the
+            // larger interline, which is not necessarily the sheet's own
+            final boolean mainIsLarger = interlineScale.main >= smallInterlineScale.main;
+            final int thicker = Math.max(beamKey, beamKey2);
+            final int thinner = Math.min(beamKey, beamKey2);
+            beamScale = new BeamScale(mainIsLarger ? thicker : thinner, false);
+            smallBeamScale = new BeamScale(mainIsLarger ? thinner : thicker, false);
         } else if (beamKey != null) {
             beamScale = new BeamScale(beamKey, false);
         } else if (beamGuess != null) {
@@ -406,27 +412,30 @@ public class ScaleBuilder
     //-------------------//
     // getInterlineScale //
     //-------------------//
+    /**
+     * Report the scale of the dominant interline population.
+     * <p>
+     * Combo peaks arrive sorted by decreasing count, so <code>comboPeak</code> is the size most
+     * of the sheet is engraved at, whether or not it is the larger of the two.
+     *
+     * @return the main interline scale
+     */
     private InterlineScale getInterlineScale ()
     {
-        if ((comboPeak2 == null) || (comboPeak2.main < comboPeak.main)) {
-            return new InterlineScale(comboPeak);
-        } else {
-            return new InterlineScale(comboPeak2);
-        }
+        return new InterlineScale(comboPeak);
     }
 
     //------------------------//
     // getSmallInterlineScale //
     //------------------------//
+    /**
+     * Report the scale of the minority interline population, if any.
+     *
+     * @return the small interline scale, or null
+     */
     private InterlineScale getSmallInterlineScale ()
     {
-        if (comboPeak2 == null) {
-            return null;
-        }
-
-        final Range peak = (comboPeak2.main < comboPeak.main) ? comboPeak2 : comboPeak;
-
-        return new InterlineScale(peak);
+        return (comboPeak2 != null) ? new InterlineScale(comboPeak2) : null;
     }
 
     //---------------//

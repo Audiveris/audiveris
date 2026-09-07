@@ -218,9 +218,9 @@ public class LinesRetriever
 
         if (smallClustersRetriever != null) {
             allClusters.addAll(smallClustersRetriever.getClusters());
-            smallInterline = Math.min(
-                    clustersRetriever.getInterline(),
-                    smallClustersRetriever.getInterline());
+
+            // The second pass is the small one, whichever of the two sizes is the larger
+            smallInterline = smallClustersRetriever.getInterline();
         }
 
         // Discard false 1-line clusters
@@ -271,7 +271,7 @@ public class LinesRetriever
 
             staffManager.addStaff(staff);
 
-            // Flag small staff if any (smaller height than others)
+            // Flag small staff if any (the sheet's minority interline)
             if ((smallInterline != null) && (smallInterline == cluster.getInterline())) {
                 staff.setSmall();
             }
