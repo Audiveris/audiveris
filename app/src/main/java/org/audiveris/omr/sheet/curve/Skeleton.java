@@ -555,8 +555,8 @@ public class Skeleton
         /**
          * In the provided image, erase the areas that lie too far from staves.
          * <p>
-         * We define an area as large as image, then remove enlarged staves areas, and finally print
-         * the remaining area with white color.
+         * We define an area as large as image, then remove enlarged staves areas and the
+         * gaps between them, and finally print the remaining area with white color.
          */
         public void eraseDistantRegions ()
         {
@@ -564,6 +564,7 @@ public class Skeleton
             final int maxDx = scale.toPixels(constants.maxDxFromStaff);
             final int maxDy = scale.toPixels(constants.maxDyFromStaff);
             final Area sheetArea = new Area(new Rectangle(buffer.getWidth(), buffer.getHeight()));
+            final List<Rectangle> kept = new ArrayList<>();
 
             for (Staff staff : sheet.getStaffManager().getStaves()) {
                 Rectangle staffRect = null;
@@ -584,9 +585,30 @@ public class Skeleton
                 }
 
                 staffRect.grow(maxDx, maxDy);
+                kept.add(staffRect);
+            }
 
-                Area staffArea = new Area(staffRect);
-                sheetArea.subtract(staffArea);
+            // Keep the gap between two consecutive staves whole: whatever is drawn
+            // there belongs to one of them, and maxDyFromStaff can stop short of it.
+            final List<Rectangle> gaps = new ArrayList<>();
+
+            for (int i = 1; i < kept.size(); i++) {
+                final Rectangle above = kept.get(i - 1);
+                final Rectangle below = kept.get(i);
+                final int top = above.y + above.height;
+                final int height = below.y - top;
+
+                if (height > 0) {
+                    final Rectangle span = new Rectangle(above);
+                    span.add(below);
+                    gaps.add(new Rectangle(span.x, top, span.width, height));
+                }
+            }
+
+            kept.addAll(gaps);
+
+            for (Rectangle rect : kept) {
+                sheetArea.subtract(new Area(rect));
             }
 
             g.fill(sheetArea);
