@@ -16,12 +16,12 @@ Table of contents
 {:toc}
 ---
 
-## Recent inputs
+## Recent files
 
 Gives a list of the most recent image input files.
 A click on the file name opens the file as source image.
 
-## Input
+## Import files
 
 Opens a dialog box allowing to select the image or pdf-file that shall be transcribed.
 The dialog pre-selects the folder from where the last input image file was loaded.
