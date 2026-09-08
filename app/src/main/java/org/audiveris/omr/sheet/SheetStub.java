@@ -328,8 +328,31 @@ public class SheetStub
     @SuppressWarnings("unused")
     private void beforeMarshal (Marshaller m)
     {
-        if ((parameters != null) && parameters.prune()) {
+        // Prune a disposable copy, never the live object: prune() is
+        // destructive (it nulls default-valued fields, and reports whether
+        // the structure became empty). When stubs are stored in parallel
+        // (see the processAllStubsInParallel book option), the live object
+        // is read by other threads while a marshal is in progress, so it
+        // must not be mutated here. The copy only lives for the duration of
+        // the marshal: the written XML is exactly the same as before, and
+        // afterMarshal restores the original from parametersMirror.
+        if (parameters == null) {
+            return;
+        }
+
+        final SheetParams copy = parameters.duplicate();
+
+        if (copy == null) {
+            // Should never happen: keep the previous behaviour
+            if (parameters.prune()) {
+                parameters = null;
+            }
+        }
+        else if (copy.prune()) {
             parameters = null;
+        }
+        else {
+            parameters = copy;
         }
     }
 
@@ -591,7 +614,13 @@ public class SheetStub
      */
     public BarlineHeight.MyParam getBarlineHeightParam ()
     {
-        return parameters.barlineSpecification;
+        // The live parameters may be temporarily nulled or swapped by a
+        // concurrent beforeMarshal (see the processAllStubsInParallel book
+        // option); fall back to the unpruned mirror, so concurrent readers
+        // never see a transient null value.
+        final SheetParams p = (parameters != null) ? parameters : parametersMirror;
+        final var r = (p != null) ? p.barlineSpecification : null;
+        return (r != null) ? r : ((parametersMirror != null) ? parametersMirror.barlineSpecification : null);
     }
 
     //----------------------//
@@ -607,7 +636,13 @@ public class SheetStub
     //---------------------------//
     public IntegerParam getBeamSpecificationParam ()
     {
-        return parameters.beamSpecification;
+        // The live parameters may be temporarily nulled or swapped by a
+        // concurrent beforeMarshal (see the processAllStubsInParallel book
+        // option); fall back to the unpruned mirror, so concurrent readers
+        // never see a transient null value.
+        final SheetParams p = (parameters != null) ? parameters : parametersMirror;
+        final var r = (p != null) ? p.beamSpecification : null;
+        return (r != null) ? r : ((parametersMirror != null) ? parametersMirror.beamSpecification : null);
     }
 
     //-----------------------//
@@ -623,7 +658,13 @@ public class SheetStub
     //----------------------------//
     public FilterParam getBinarizationFilterParam ()
     {
-        return parameters.binarizationFilter;
+        // The live parameters may be temporarily nulled or swapped by a
+        // concurrent beforeMarshal (see the processAllStubsInParallel book
+        // option); fall back to the unpruned mirror, so concurrent readers
+        // never see a transient null value.
+        final SheetParams p = (parameters != null) ? parameters : parametersMirror;
+        final var r = (p != null) ? p.binarizationFilter : null;
+        return (r != null) ? r : ((parametersMirror != null) ? parametersMirror.binarizationFilter : null);
     }
 
     //---------//
@@ -709,7 +750,13 @@ public class SheetStub
      */
     public InputQualityParam getInputQualityParam ()
     {
-        return parameters.inputQuality;
+        // The live parameters may be temporarily nulled or swapped by a
+        // concurrent beforeMarshal (see the processAllStubsInParallel book
+        // option); fall back to the unpruned mirror, so concurrent readers
+        // never see a transient null value.
+        final SheetParams p = (parameters != null) ? parameters : parametersMirror;
+        final var r = (p != null) ? p.inputQuality : null;
+        return (r != null) ? r : ((parametersMirror != null) ? parametersMirror.inputQuality : null);
     }
 
     //---------------------------//
@@ -725,7 +772,13 @@ public class SheetStub
     //--------------------------------//
     public IntegerParam getInterlineSpecificationParam ()
     {
-        return parameters.interlineSpecification;
+        // The live parameters may be temporarily nulled or swapped by a
+        // concurrent beforeMarshal (see the processAllStubsInParallel book
+        // option); fall back to the unpruned mirror, so concurrent readers
+        // never see a transient null value.
+        final SheetParams p = (parameters != null) ? parameters : parametersMirror;
+        final var r = (p != null) ? p.interlineSpecification : null;
+        return (r != null) ? r : ((parametersMirror != null) ? parametersMirror.interlineSpecification : null);
     }
 
     //----------------//
@@ -802,7 +855,13 @@ public class SheetStub
      */
     public MusicFamily.MyParam getMusicFamilyParam ()
     {
-        return parameters.musicFamily;
+        // The live parameters may be temporarily nulled or swapped by a
+        // concurrent beforeMarshal (see the processAllStubsInParallel book
+        // option); fall back to the unpruned mirror, so concurrent readers
+        // never see a transient null value.
+        final SheetParams p = (parameters != null) ? parameters : parametersMirror;
+        final var r = (p != null) ? p.musicFamily : null;
+        return (r != null) ? r : ((parametersMirror != null) ? parametersMirror.musicFamily : null);
     }
 
     //----------------//
@@ -875,7 +934,13 @@ public class SheetStub
      */
     public Param<String> getOcrLanguagesParam ()
     {
-        return parameters.ocrLanguages;
+        // The live parameters may be temporarily nulled or swapped by a
+        // concurrent beforeMarshal (see the processAllStubsInParallel book
+        // option); fall back to the unpruned mirror, so concurrent readers
+        // never see a transient null value.
+        final SheetParams p = (parameters != null) ? parameters : parametersMirror;
+        final var r = (p != null) ? p.ocrLanguages : null;
+        return (r != null) ? r : ((parametersMirror != null) ? parametersMirror.ocrLanguages : null);
     }
 
     //-------------//
@@ -901,7 +966,13 @@ public class SheetStub
      */
     public ProcessingSwitches getProcessingSwitches ()
     {
-        return parameters.switches;
+        // The live parameters may be temporarily nulled or swapped by a
+        // concurrent beforeMarshal (see the processAllStubsInParallel book
+        // option); fall back to the unpruned mirror, so concurrent readers
+        // never see a transient null value.
+        final SheetParams p = (parameters != null) ? parameters : parametersMirror;
+        final var r = (p != null) ? p.switches : null;
+        return (r != null) ? r : ((parametersMirror != null) ? parametersMirror.switches : null);
     }
 
     //------------//
@@ -1048,7 +1119,13 @@ public class SheetStub
      */
     public TextFamily.MyParam getTextFamilyParam ()
     {
-        return parameters.textFamily;
+        // The live parameters may be temporarily nulled or swapped by a
+        // concurrent beforeMarshal (see the processAllStubsInParallel book
+        // option); fall back to the unpruned mirror, so concurrent readers
+        // never see a transient null value.
+        final SheetParams p = (parameters != null) ? parameters : parametersMirror;
+        final var r = (p != null) ? p.textFamily : null;
+        return (r != null) ? r : ((parametersMirror != null) ? parametersMirror.textFamily : null);
     }
 
     //------------//
