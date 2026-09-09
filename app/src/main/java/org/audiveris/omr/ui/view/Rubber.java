@@ -47,6 +47,9 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import static java.awt.event.InputEvent.BUTTON1_DOWN_MASK;
+import static java.awt.event.InputEvent.BUTTON2_DOWN_MASK;
+import static java.awt.event.InputEvent.BUTTON3_DOWN_MASK;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
@@ -144,6 +147,10 @@ public class Rubber
 
     // To ease debugging
     private final int id;
+
+    // Set as soon as a mouse drag (score panning) is detected for the current gesture, and reset
+    // only when every mouse button has been released.
+    private boolean dragInProgress = false;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -402,6 +409,8 @@ public class Rubber
         setCursor(e);
 
         if (isDragWanted(e)) {
+            dragInProgress = true;
+
             final Rectangle vr = component.getVisibleRect();
             vr.setBounds(
                     (vr.x + rawRect.x) - e.getX(),
@@ -449,7 +458,9 @@ public class Rubber
 
         setCursor(e);
 
-        if (!isDragWanted(e)) {
+        if (isDragWanted(e)) {
+            dragInProgress = true;
+        } else {
             if (isAdditionWanted(e)) {
                 if (isContextWanted(e)) {
                     mouseMonitor.contextAdded(getCenter(), PRESSING);
@@ -479,14 +490,22 @@ public class Rubber
             return;
         }
 
+        // Check if any other mouse buttons are still pressed.
+        final boolean noButtonLeft = (e.getModifiersEx()
+                & (BUTTON1_DOWN_MASK | BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK)) == 0;
+
         try {
             if (isRezoomWanted(e)) {
                 updateSize(e);
                 mouseMonitor.rectangleZoomed(rect, RELEASING);
-            } else if (isDragWanted(e)) {
-                Rectangle vr = component.getVisibleRect();
-                rawRect.setBounds(vr.x + (vr.width / 2), vr.y + (vr.height / 2), 0, 0);
-                normalize();
+            } else if (dragInProgress) {
+                // We were (or still are) panning: releasing one of the two buttons must not
+                // be mistaken for a single right-click, so wait until all buttons are up.
+                if (noButtonLeft) {
+                    Rectangle vr = component.getVisibleRect();
+                    rawRect.setBounds(vr.x + (vr.width / 2), vr.y + (vr.height / 2), 0, 0);
+                    normalize();
+                }
             } else if (isAdditionWanted(e)) {
                 if (isContextWanted(e)) {
                     mouseMonitor.contextAdded(getCenter(), RELEASING);
@@ -502,6 +521,10 @@ public class Rubber
                 } else {
                     mouseMonitor.pointSelected(getCenter(), RELEASING);
                 }
+            }
+
+            if (noButtonLeft) {
+                dragInProgress = false;
             }
 
             e.getComponent().setCursor(Cursor.getDefaultCursor());
