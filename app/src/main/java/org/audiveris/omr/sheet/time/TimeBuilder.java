@@ -313,6 +313,20 @@ public abstract class TimeBuilder
         return timeInter;
     }
 
+    //---------//
+    // canVeto //
+    //---------//
+    /**
+     * Report whether an overlapping neighbor is entitled to discard a time candidate.
+     *
+     * @param neighbor the overlapping inter
+     * @return true if the neighbor may win over the time candidate
+     */
+    protected boolean canVeto (Inter neighbor)
+    {
+        return true;
+    }
+
     //-----------------//
     // settleConflicts //
     //-----------------//
@@ -337,7 +351,9 @@ public abstract class TimeBuilder
                 final Inter neighbor = itn.next();
 
                 if (neighbor.overlaps(time)) {
-                    if (neighbor.getGrade() <= timeGrade) {
+                    if (!canVeto(neighbor)) {
+                        itn.remove();
+                    } else if (neighbor.getGrade() <= timeGrade) {
                         if (neighbor.isVip()) {
                             logger.info("VIP Deleting {} overlapping {}", neighbor, time);
                         }
