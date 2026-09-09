@@ -36,6 +36,7 @@ import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.StubEvent;
 import org.audiveris.omr.ui.util.WaitingTask;
+import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.OmrExecutors;
 
 import org.slf4j.Logger;
@@ -362,7 +363,14 @@ public class StubsController
                     if (stub == selected) {
                         // Tell the selected assembly that it now has the focus
                         // (to display stub related boards and error pane)
-                        stub.getAssembly().assemblySelected();
+                        SheetAssembly assembly = stub.getAssembly();
+                        assembly.assemblySelected();
+
+                        // Apply fit-to-width on initial display
+                        ScrollView scrollView = assembly.getSelectedScrollView();
+                        if (scrollView != null) {
+                            scrollView.fitWidth();
+                        }
 
                         // Stub status
                         BookActions.getInstance().updateProperties(stub.getSheet());
