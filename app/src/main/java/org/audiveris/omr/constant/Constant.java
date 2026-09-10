@@ -604,6 +604,7 @@ public abstract class Constant<E>
     public static class Date
             extends Constant<java.util.Date>
     {
+        /** Shared formatter; SimpleDateFormat is not thread-safe, hence the synchronization. */
         private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
                 "dd-MMM-yyyy",
                 Locale.US);
@@ -625,7 +626,9 @@ public abstract class Constant<E>
         protected java.util.Date decode (java.lang.String str)
         {
             try {
-                return DATE_FORMAT.parse(str);
+                synchronized (DATE_FORMAT) {
+                    return DATE_FORMAT.parse(str);
+                }
             } catch (ParseException ex) {
                 logger.error("Error parsing {}", str, ex);
 
@@ -647,7 +650,9 @@ public abstract class Constant<E>
         public static java.util.Date decodeDate (java.lang.String str)
         {
             try {
-                return DATE_FORMAT.parse(str);
+                synchronized (DATE_FORMAT) {
+                    return DATE_FORMAT.parse(str);
+                }
             } catch (ParseException ex) {
                 logger.error("Error parsing {}", str, ex);
 
@@ -657,7 +662,9 @@ public abstract class Constant<E>
 
         public static java.lang.String encode (java.util.Date date)
         {
-            return DATE_FORMAT.format(date);
+            synchronized (DATE_FORMAT) {
+                return DATE_FORMAT.format(date);
+            }
         }
     }
 
