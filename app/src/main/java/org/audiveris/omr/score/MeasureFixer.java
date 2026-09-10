@@ -21,9 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.PartBarline;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
@@ -54,6 +57,8 @@ import java.util.List;
 public class MeasureFixer
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureFixer.class);
 
@@ -159,7 +164,11 @@ public class MeasureFixer
     // isRealStart //
     //-------------//
     /**
-     * Check for a stack in second position, while following an empty stack
+     * Check for a stack in second position, while following a header stack.
+     * <p>
+     * A header is the clef, the key and the time and nothing after them. Where a bar
+     * of staff follows them, the stack is a measure, however little was recognised
+     * in it.
      *
      * @param stack the stack to check
      * @return true if so
@@ -168,7 +177,21 @@ public class MeasureFixer
     {
         final int im = stack.getSystem().getStacks().indexOf(stack);
 
-        return (im == 1) && isEmpty(prevStack);
+        if ((im != 1) || !isEmpty(prevStack)) {
+            return false;
+        }
+
+        final SystemInfo system = stack.getSystem();
+        final StaffHeader header = system.getFirstStaff().getHeader();
+
+        if (header == null) {
+            return true;
+        }
+
+        final Scale scale = system.getSheet().getScale();
+
+        return (prevStack.getRight() - header.stop) < scale.toPixels(
+                constants.minWidthAfterHeader);
     }
 
     //--------------------//
@@ -363,5 +386,18 @@ public class MeasureFixer
 
         // Side effect: remember the numeric value as last id
         lastId = id;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Scale.Fraction minWidthAfterHeader = new Scale.Fraction(
+                7.0,
+                "Minimum staff width past the header for the first stack to be a measure");
     }
 }
