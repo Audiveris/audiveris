@@ -144,6 +144,27 @@ public class PartBarline
         return sb.getEnding(side);
     }
 
+    //----------------//
+    // getRepeatCount //
+    //----------------//
+    /**
+     * Report the number of passes printed for this barline, such as "x4".
+     *
+     * @return the repeat count, or null if none
+     */
+    public Integer getRepeatCount ()
+    {
+        for (StaffBarlineInter sb : staffBarlines) {
+            final Integer count = sb.getRepeatCount();
+
+            if (count != null) {
+                return count;
+            }
+        }
+
+        return null;
+    }
+
     //-------------//
     // getFermatas //
     //-------------//

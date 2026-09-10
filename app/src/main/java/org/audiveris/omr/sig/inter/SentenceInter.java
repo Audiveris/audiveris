@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
@@ -33,6 +34,7 @@ import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.RepeatCountRelation;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextLine;
@@ -94,6 +96,8 @@ public class SentenceInter
         implements InterEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SentenceInter.class);
 
@@ -498,6 +502,18 @@ public class SentenceInter
                         sig.addEdge(link.partner, this, link.relation);
                     }
                 }
+
+                case RepeatCount -> {
+                    // Look for the right repeat barline this count applies to
+                    final Link link = lookupRepeatBarLink(system);
+
+                    if ((link != null) && (null == sig.getRelation(
+                            link.partner,
+                            this,
+                            RepeatCountRelation.class))) {
+                        sig.addEdge(link.partner, this, link.relation);
+                    }
+                }
             }
 
             // Roles UnknownRole, Title, Number, Creator*, Rights stand by themselves
@@ -530,6 +546,61 @@ public class SentenceInter
         }
 
         return null;
+    }
+
+    //---------------------//
+    // lookupRepeatBarLink //
+    //---------------------//
+    /**
+     * Try to detect the right repeat barline that this repeat count applies to.
+     * <p>
+     * The count is printed just above or just below the barline, so the search window is kept
+     * well below the vertical gap between two systems.
+     *
+     * @param system surrounding system
+     * @return detected link or null
+     */
+    public Link lookupRepeatBarLink (SystemInfo system)
+    {
+        final Scale scale = system.getSheet().getScale();
+        final int maxDx = scale.toPixels(constants.maxRepeatCountDx);
+        final int maxDy = scale.toPixels(constants.maxRepeatCountDy);
+        final Point2D textCenter = getCenter2D();
+
+        StaffBarlineInter bestBar = null;
+        double bestDx = Double.MAX_VALUE;
+
+        for (Inter inter : system.getSig().inters(StaffBarlineInter.class)) {
+            final StaffBarlineInter bar = (StaffBarlineInter) inter;
+
+            if (!bar.isRightRepeat()) {
+                continue;
+            }
+
+            final Rectangle barBox = bar.getBounds();
+            final double dx = Math.abs(textCenter.getX() - (barBox.x + (barBox.width / 2.0)));
+
+            if (dx > maxDx) {
+                continue;
+            }
+
+            final double dy = Math.max(
+                    0,
+                    Math.max(
+                            barBox.y - textCenter.getY(),
+                            textCenter.getY() - (barBox.y + barBox.height)));
+
+            if (dy > maxDy) {
+                continue;
+            }
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestBar = bar;
+            }
+        }
+
+        return (bestBar != null) ? new Link(bestBar, new RepeatCountRelation(), false) : null;
     }
 
     //--------//
@@ -581,12 +652,16 @@ public class SentenceInter
     @Override
     public Collection<Link> searchLinks (SystemInfo system)
     {
-        if (role != TextRole.EndingNumber && role != TextRole.EndingText) {
-            return super.searchLinks(system);
-        }
+        // Look for the entity this sentence annotates
+        final Link link;
 
-        // Look for a suitable EndingInter
-        final Link link = lookupEndingLink(system);
+        switch (role) {
+            case EndingNumber, EndingText -> link = lookupEndingLink(system);
+            case RepeatCount -> link = lookupRepeatBarLink(system);
+            case null, default -> {
+                return super.searchLinks(system);
+            }
+        }
 
         return (link != null) ? Collections.singleton(link) : Collections.emptySet();
     }
@@ -680,6 +755,9 @@ public class SentenceInter
                 case EndingNumber, EndingText -> //
                         sig.getRelations(this, EndingSentenceRelation.class).forEach(
                                 rel -> sig.removeEdge(rel));
+
+                case RepeatCount -> sig.getRelations(this, RepeatCountRelation.class).forEach(
+                        rel -> sig.removeEdge(rel));
             }
         } catch (Exception ex) {
             logger.warn("Error in unlink for {} {}", this, ex.toString(), ex);
@@ -706,5 +784,22 @@ public class SentenceInter
                 line.getRole());
 
         return sentence;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Scale.Fraction maxRepeatCountDx = new Scale.Fraction(
+                3.0,
+                "Maximum abscissa shift between a right repeat and its repeat count");
+
+        private final Scale.Fraction maxRepeatCountDy = new Scale.Fraction(
+                6.0,
+                "Maximum ordinate gap between a right repeat and its repeat count");
     }
 }

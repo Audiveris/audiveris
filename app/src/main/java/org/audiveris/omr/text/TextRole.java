@@ -32,6 +32,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.MetronomeInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
@@ -80,6 +81,8 @@ public enum TextRole
     EndingText,
     /** Rehearsal mark, such as "Verse 1". */
     Rehearsal,
+    /** Repeat count, such as "x4" or "4x". */
+    RepeatCount,
     /** Metronome mark, such as "quarter = value". */
     Metronome;
 
@@ -137,6 +140,14 @@ public enum TextRole
 
         if (box == null) {
             return null;
+        }
+
+        // A single word such as "x4" or "4x" is a repeat count, whatever its location.
+        // Two words are refused, because on a drum staff a cross note head reads as an "x"
+        // and could pair with any number that OCR put on the same line.
+        if ((line.getWords().size() == 1) //
+                && (StaffBarlineInter.repeatCountOf(line.getValue()) != null)) {
+            return RepeatCount;
         }
 
         final Point2D boxCenter = GeoUtil.center2D(box);
