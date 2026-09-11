@@ -86,6 +86,7 @@ import java.util.function.Predicate;
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -158,9 +159,18 @@ public class SheetStub
     /**
      * All SheetStub parameters, editable via the BookParameters dialog.
      * This structure replaces the deprecated individual Param instances.
+     * <p>
+     * This live structure is populated by {@link #afterUnmarshal} and is never touched by JAXB
+     * afterwards, so that it can be read at any time, even while the book is being stored.
+     */
+    private SheetParams parameters;
+
+    /**
+     * Pruned copy of {@link #parameters}, limited to the params with a specific value.
+     * It exists only while this object is being marshalled or unmarshalled.
      */
     @XmlElement(name = "parameters")
-    private SheetParams parameters;
+    private SheetParams xmlParameters;
 
     /**
      * This is the sequence of steps already performed on this sheet.
@@ -199,9 +209,6 @@ public class SheetStub
 
     /** Related assembly instance, if any. */
     private SheetAssembly assembly;
-
-    /** A trick to keep parameters intact, even when nullified at marshal time. */
-    private SheetParams parametersMirror;
 
     // Deprecated persistent data
     //---------------------------
@@ -319,7 +326,18 @@ public class SheetStub
     @SuppressWarnings("unused")
     private void afterMarshal (Marshaller m)
     {
-        parameters = parametersMirror.duplicate();
+        xmlParameters = null;
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller u,
+                                 Object parent)
+    {
+        parameters = xmlParameters;
+        xmlParameters = null;
     }
 
     //---------------//
@@ -328,8 +346,12 @@ public class SheetStub
     @SuppressWarnings("unused")
     private void beforeMarshal (Marshaller m)
     {
-        if ((parameters != null) && parameters.prune()) {
-            parameters = null;
+        // Marshal a pruned copy, so that the live parameters remain available to the other
+        // threads (sheets may be processed in parallel while the book is being stored)
+        xmlParameters = (parameters != null) ? parameters.duplicate() : null;
+
+        if ((xmlParameters != null) && xmlParameters.prune()) {
+            xmlParameters = null;
         }
     }
 
@@ -1551,9 +1573,6 @@ public class SheetStub
 
         // 2/ set parents
         parameters.setParents(book);
-
-        // 3/ set parametersMirror
-        parametersMirror = parameters.duplicate();
     }
 
     //---------------//
