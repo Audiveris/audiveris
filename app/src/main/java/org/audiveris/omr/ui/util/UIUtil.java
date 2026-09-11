@@ -21,9 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.ui.util;
 
-import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+
+import com.formdev.flatlaf.util.SystemFileChooser;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -35,9 +36,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.FileDialog;
 import java.awt.Font;
-import java.awt.Frame;
 import static java.awt.Frame.ICONIFIED;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -60,7 +59,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -321,77 +319,24 @@ public abstract class UIUtil
                                          File startDir,
                                          String title)
     {
-        final OmrFileFilter filter = new OmrFileFilter("Directories", new String[] {})
-        {
-            @Override
-            public boolean accept (File f)
-            {
-                return (f.isDirectory());
-            }
-        };
-
         File dir = null;
 
-        if (WellKnowns.MAC_OS_X) {
-            if ((parent == null) && (org.audiveris.omr.OMR.gui != null)) {
-                parent = org.audiveris.omr.OMR.gui.getFrame();
-            }
+        final SystemFileChooser fc = new SystemFileChooser();
+        fc.setFileSelectionMode(SystemFileChooser.DIRECTORIES_ONLY);
 
-            Component parentFrame = parent;
+        // Pre-select the directory
+        if (startDir != null) {
+            fc.setCurrentDirectory(startDir);
+        }
 
-            if (parentFrame != null) {
-                while (parentFrame.getParent() != null) {
-                    parentFrame = parentFrame.getParent();
-                }
-            }
+        if (title != null) {
+            fc.setDialogTitle(title);
+        }
 
-            try {
-                final FileDialog fd = new FileDialog((Frame) parentFrame);
+        int result = save ? fc.showSaveDialog(parent) : fc.showOpenDialog(parent);
 
-                if (startDir != null) {
-                    fd.setDirectory(startDir.getPath());
-                }
-
-                fd.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
-                fd.setFilenameFilter(filter);
-
-                if (title == null) {
-                    title = save ? "Saving: " : "Loading: ";
-                    title += filter.getDescription();
-                }
-
-                fd.setTitle(title);
-                fd.setVisible(true);
-
-                final String dirName = fd.getDirectory();
-
-                if (dirName != null) {
-                    dir = new File(dirName);
-                }
-            } catch (ClassCastException e) {
-                logger.warn("no ancestor is Frame");
-            }
-        } else {
-            final JFileChooser fc = new JFileChooser();
-            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-            // Pre-select the directory
-            if (startDir != null) {
-                fc.setCurrentDirectory(startDir);
-            }
-
-            fc.addChoosableFileFilter(filter);
-            fc.setFileFilter(filter);
-
-            if (title != null) {
-                fc.setDialogTitle(title);
-            }
-
-            int result = save ? fc.showSaveDialog(parent) : fc.showOpenDialog(parent);
-
-            if (result == JFileChooser.APPROVE_OPTION) {
-                dir = fc.getSelectedFile();
-            }
+        if (result == SystemFileChooser.APPROVE_OPTION) {
+            dir = fc.getSelectedFile();
         }
 
         return dir;
@@ -422,12 +367,41 @@ public abstract class UIUtil
         }
     }
 
+    //--------------//
+    // toFileFilter //
+    //--------------//
+    /**
+     * Convert the provided OMR filter to a SystemFileChooser-compatible file name
+     * extension filter.
+     *
+     * @param filter the OMR filter to convert
+     * @return the equivalent SystemFileChooser filter, or null if filter has no extension
+     */
+    private static SystemFileChooser.FileNameExtensionFilter toFileFilter (OmrFileFilter filter)
+    {
+        final String[] extensions = filter.getExtensions();
+
+        if (extensions.length == 0) {
+            return null;
+        }
+
+        final String[] bareExtensions = new String[extensions.length];
+
+        for (int i = 0; i < extensions.length; i++) {
+            final String ext = extensions[i];
+            bareExtensions[i] = ext.startsWith(".") ? ext.substring(1) : ext;
+        }
+
+        return new SystemFileChooser.FileNameExtensionFilter(
+                filter.getDescription(),
+                bareExtensions);
+    }
+
     //-------------//
     // fileChooser //
     //-------------//
     /**
-     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
-     * platform.
+     * Let the user select a file, using the operating system native file dialog.
      *
      * @param save      true for a SAVE dialog, false for a LOAD dialog
      * @param parent    the parent component for the dialog, if any
@@ -447,8 +421,7 @@ public abstract class UIUtil
     // fileChooser //
     //-------------//
     /**
-     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
-     * platform.
+     * Let the user select a file, using the operating system native file dialog.
      *
      * @param save      true for a SAVE dialog, false for a LOAD dialog
      * @param parent    the parent component for the dialog, if any
@@ -465,76 +438,36 @@ public abstract class UIUtil
     {
         File file = null;
 
-        if (WellKnowns.MAC_OS_X) {
-            if ((parent == null) && (org.audiveris.omr.OMR.gui != null)) {
-                parent = org.audiveris.omr.OMR.gui.getFrame();
+        final SystemFileChooser fc = new SystemFileChooser();
+        fc.setApproveButtonText(title);
+        fc.setFileSelectionMode(SystemFileChooser.FILES_ONLY);
+
+        // Pre-select the directory, and potentially the file to save to
+        if (startFile != null) {
+            if (startFile.isDirectory()) {
+                fc.setCurrentDirectory(startFile);
+            } else {
+                File parentFile = startFile.getParentFile();
+                fc.setCurrentDirectory(parentFile);
+                fc.setSelectedFile(startFile);
             }
+        }
 
-            Component parentFrame = parent;
+        final SystemFileChooser.FileNameExtensionFilter fnef = toFileFilter(filter);
 
-            if (parentFrame != null) {
-                while (parentFrame.getParent() != null) {
-                    parentFrame = parentFrame.getParent();
-                }
-            }
+        if (fnef != null) {
+            fc.addChoosableFileFilter(fnef);
+            fc.setFileFilter(fnef);
+        }
 
-            try {
-                final FileDialog fd = new FileDialog((Frame) parentFrame);
+        if (title != null) {
+            fc.setDialogTitle(title);
+        }
 
-                if (startFile != null) {
-                    fd.setDirectory(
-                            startFile.isDirectory() ? startFile.getPath() : startFile.getParent());
-                }
+        int result = save ? fc.showSaveDialog(parent) : fc.showOpenDialog(parent);
 
-                fd.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
-                fd.setFilenameFilter(filter);
-
-                if (title == null) {
-                    title = save ? "Saving: " : "Loading: ";
-                    title += filter.getDescription();
-                }
-
-                fd.setTitle(title);
-                fd.setVisible(true);
-
-                String fileName = fd.getFile();
-                String dir = fd.getDirectory();
-
-                if ((dir != null) && (fileName != null)) {
-                    String fullName = dir + WellKnowns.FILE_SEPARATOR + fileName;
-                    file = new File(fullName);
-                }
-            } catch (ClassCastException e) {
-                logger.warn("no ancestor is Frame");
-            }
-        } else {
-            final JFileChooser fc = new JFileChooser();
-            fc.setApproveButtonText(title);
-            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-            // Pre-select the directory, and potentially the file to save to
-            if (startFile != null) {
-                if (startFile.isDirectory()) {
-                    fc.setCurrentDirectory(startFile);
-                } else {
-                    File parentFile = startFile.getParentFile();
-                    fc.setCurrentDirectory(parentFile);
-                    fc.setSelectedFile(startFile);
-                }
-            }
-
-            fc.addChoosableFileFilter(filter);
-            fc.setFileFilter(filter);
-
-            if (title != null) {
-                fc.setDialogTitle(title);
-            }
-
-            int result = save ? fc.showSaveDialog(parent) : fc.showOpenDialog(parent);
-
-            if (result == JFileChooser.APPROVE_OPTION) {
-                file = fc.getSelectedFile();
-            }
+        if (result == SystemFileChooser.APPROVE_OPTION) {
+            file = fc.getSelectedFile();
         }
 
         return file;
@@ -544,8 +477,7 @@ public abstract class UIUtil
     // filesChooser //
     //--------------//
     /**
-     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
-     * platform.
+     * Let the user select several files, using the operating system native file dialog.
      *
      * @param save      true for a SAVE dialog, false for a LOAD dialog
      * @param parent    the parent component for the dialog, if any
@@ -562,71 +494,36 @@ public abstract class UIUtil
     {
         File[] files = new File[0];
 
-        if (WellKnowns.MAC_OS_X) {
-            if ((parent == null) && (org.audiveris.omr.OMR.gui != null)) {
-                parent = org.audiveris.omr.OMR.gui.getFrame();
+        final SystemFileChooser fc = new SystemFileChooser();
+        fc.setMultiSelectionEnabled(true); // MULTI-SELECTION!
+        fc.setFileSelectionMode(SystemFileChooser.FILES_ONLY);
+
+        // Pre-select the directory, and potentially the file to save to
+        if (startFile != null) {
+            if (startFile.isDirectory()) {
+                fc.setCurrentDirectory(startFile);
+            } else {
+                File parentFile = startFile.getParentFile();
+                fc.setCurrentDirectory(parentFile);
+                fc.setSelectedFile(startFile);
             }
+        }
 
-            Component parentFrame = parent;
+        final SystemFileChooser.FileNameExtensionFilter fnef = toFileFilter(filter);
 
-            if (parentFrame != null) {
-                while (parentFrame.getParent() != null) {
-                    parentFrame = parentFrame.getParent();
-                }
-            }
+        if (fnef != null) {
+            fc.addChoosableFileFilter(fnef);
+            fc.setFileFilter(fnef);
+        }
 
-            try {
-                final FileDialog fd = new FileDialog((Frame) parentFrame);
-                fd.setMultipleMode(true); // MULTI-SELECTION!
+        if (title != null) {
+            fc.setDialogTitle(title);
+        }
 
-                if (startFile != null) {
-                    fd.setDirectory(
-                            startFile.isDirectory() ? startFile.getPath() : startFile.getParent());
-                }
+        int result = save ? fc.showSaveDialog(parent) : fc.showOpenDialog(parent);
 
-                fd.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
-                fd.setFilenameFilter(filter);
-
-                if (title == null) {
-                    title = save ? "Saving: " : "Loading: ";
-                    title += filter.getDescription();
-                }
-
-                fd.setTitle(title);
-                fd.setVisible(true);
-
-                files = fd.getFiles();
-            } catch (ClassCastException e) {
-                logger.warn("no ancestor is Frame");
-            }
-        } else {
-            final JFileChooser fc = new JFileChooser();
-            fc.setMultiSelectionEnabled(true); // MULTI-SELECTION!
-            fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-            // Pre-select the directory, and potentially the file to save to
-            if (startFile != null) {
-                if (startFile.isDirectory()) {
-                    fc.setCurrentDirectory(startFile);
-                } else {
-                    File parentFile = startFile.getParentFile();
-                    fc.setCurrentDirectory(parentFile);
-                    fc.setSelectedFile(startFile);
-                }
-            }
-
-            fc.addChoosableFileFilter(filter);
-            fc.setFileFilter(filter);
-
-            if (title != null) {
-                fc.setDialogTitle(title);
-            }
-
-            int result = save ? fc.showSaveDialog(parent) : fc.showOpenDialog(parent);
-
-            if (result == JFileChooser.APPROVE_OPTION) {
-                files = fc.getSelectedFiles();
-            }
+        if (result == SystemFileChooser.APPROVE_OPTION) {
+            files = fc.getSelectedFiles();
         }
 
         return files;
@@ -763,8 +660,7 @@ public abstract class UIUtil
     // pathChooser //
     //-------------//
     /**
-     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
-     * platform.
+     * Let the user select a file path, using the operating system native file dialog.
      *
      * @param save      true for a SAVE dialog, false for a LOAD dialog
      * @param parent    the parent component for the dialog, if any
@@ -784,8 +680,7 @@ public abstract class UIUtil
     // pathChooser //
     //-------------//
     /**
-     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
-     * platform.
+     * Let the user select a file path, using the operating system native file dialog.
      *
      * @param save      true for a SAVE dialog, false for a LOAD dialog
      * @param parent    the parent component for the dialog, if any
@@ -813,8 +708,7 @@ public abstract class UIUtil
     // pathsChooser //
     //--------------//
     /**
-     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
-     * platform.
+     * Let the user select a file path, using the operating system native file dialog.
      *
      * @param save      true for a SAVE dialog, false for a LOAD dialog
      * @param parent    the parent component for the dialog, if any
@@ -834,8 +728,7 @@ public abstract class UIUtil
     // pathsChooser //
     //--------------//
     /**
-     * A replacement for standard JFileChooser, to allow better look and feel on the Mac
-     * platform.
+     * Let the user select a file path, using the operating system native file dialog.
      *
      * @param save      true for a SAVE dialog, false for a LOAD dialog
      * @param parent    the parent component for the dialog, if any
