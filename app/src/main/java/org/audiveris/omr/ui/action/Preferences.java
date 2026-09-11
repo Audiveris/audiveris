@@ -360,25 +360,21 @@ public abstract class Preferences
     {
         protected final JCheckBox box;
 
-        private final JLabel name;
-
         private final JLabel desc;
 
         public OutputPane ()
         {
-            box = new JCheckBox();
-            box.addActionListener(this);
-
             final String className = getClass().getSimpleName();
-            name = new JLabel(resources.getString(className + ".text"));
             desc = new JLabel(resources.getString(className + ".desc"));
-            name.setToolTipText(resources.getString(className + ".toolTipText"));
+
+            box = new JCheckBox(resources.getString(className + ".text"));
+            box.addActionListener(this);
+            box.setToolTipText(resources.getString(className + ".toolTipText"));
 
             // Layout
             final FormLayout layout = new FormLayout(columnSpecs, "pref");
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
-            builder.addRaw(box).xy(1, 1);
-            builder.addRaw(name).xy(3, 1);
+            builder.addRaw(box).xyw(1, 1, 3);
             builder.addRaw(desc).xy(5, 1);
         }
 
@@ -387,7 +383,6 @@ public abstract class Preferences
         {
             super.setEnabled(enabled);
             box.setEnabled(enabled);
-            name.setEnabled(enabled);
             desc.setEnabled(enabled);
         }
     }
@@ -734,15 +729,14 @@ public abstract class Preferences
                 desc = topic.getDescription();
             }
 
-            final JCheckBox box = new JCheckBox();
+            final JCheckBox box = new JCheckBox(topicName);
             box.addActionListener(this);
             box.setSelected(topic.isSet());
 
             // Layout
             final FormLayout layout = new FormLayout(columnSpecs, "fill:pref");
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
-            builder.addRaw(box).xy(1, 1);
-            builder.addRaw(new JLabel(topicName)).xy(3, 1);
+            builder.addRaw(box).xyw(1, 1, 3);
             builder.addRaw(new JLabel(desc)).xy(5, 1);
         }
 
