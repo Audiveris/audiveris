@@ -1346,6 +1346,14 @@ public class SIGraph
             logger.info("VIP removeVertex {}", inter);
         }
 
+        // A relation removal can cascade and take another edge of this vertex, which the
+        // inherited removeVertex does not expect: it snapshots the edge set up front.
+        for (Relation relation : new ArrayList<>(edgesOf(inter))) {
+            if (containsEdge(relation)) {
+                removeEdge(relation);
+            }
+        }
+
         return super.removeVertex(inter);
     }
 
