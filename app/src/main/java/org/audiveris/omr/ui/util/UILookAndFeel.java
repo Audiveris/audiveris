@@ -94,6 +94,19 @@ public class UILookAndFeel
         }
     }
 
+    //--------------//
+    // getThemeName //
+    //--------------//
+    /**
+     * Get the current theme name as a string.
+     *
+     * @return the full class name of the current look and feel
+     */
+    public static String getThemeName ()
+    {
+        return constants.lookAndFeel.getValue();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------//

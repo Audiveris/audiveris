@@ -51,6 +51,7 @@ import org.audiveris.omr.ui.selection.StubEvent;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.ModelessOptionPane;
 import org.audiveris.omr.ui.util.SeparableMenu;
+import org.audiveris.omr.ui.util.UILookAndFeel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.WeakPropertyChangeListener;
@@ -424,6 +425,9 @@ public class MainGui
     protected void initialize (String[] args)
     {
         logger.debug("MainGui. 1/initialize");
+
+        // Apply UI theme from preferences before other UI initialization
+        UILookAndFeel.setUI(null);
 
         // Select proper fonts names and sizes.
         // NOTA: This must take place after the look and feel has been set (see Application.create()),

@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.ui.util.UILookAndFeel;
 import org.audiveris.omr.util.LabeledEnum;
 
 import org.jdesktop.application.Application;
@@ -169,7 +170,7 @@ public abstract class Preferences
                     "6dlu" // Title height
                             + ",pref" // Scaling
                             + ",1dlu,pref" // Locale
-                            + ",1dlu,pref" // Topic
+                            + ",1dlu,pref" // Theme
                             + ",1dlu,pref" // Topic
                             + ",1dlu,pref" // Topic
                             + ",1dlu,pref" // Topic
@@ -185,6 +186,9 @@ public abstract class Preferences
 
             // Locale
             builder.addRaw(new LocalePane()).xy(1, r += 2);
+
+            // Theme selection
+            builder.addRaw(new ThemePane()).xy(1, r += 2);
 
             // Advanced switches
             for (Topic topic : Topic.values()) {
@@ -751,6 +755,64 @@ public abstract class Preferences
         {
             final JCheckBox box = (JCheckBox) e.getSource();
             topic.set(box.isSelected());
+        }
+    }
+
+    //-----------//
+    // ThemePane //
+    //-----------//
+    /**
+     * Handling of theme selection.
+     */
+    private static class ThemePane
+            extends Panel
+            implements ActionListener
+    {
+        private final JComboBox<String> themeBox;
+
+        public ThemePane ()
+        {
+            final String className = getClass().getSimpleName();
+            final String tip = resources.getString(className + ".titledBorder.text");
+
+            // Define themeBox
+            themeBox = new JComboBox<>(new String[] {
+                    "Light",
+                    "Dark"
+            });
+            themeBox.addActionListener(this);
+
+            // Layout
+            final FormLayout layout = new FormLayout(columnSpecs, "fill:pref");
+            final FormBuilder builder = FormBuilder.create().layout(layout).panel(this);
+            builder.addRaw(themeBox).xyw(1, 1, 3);
+            builder.addRaw(new JLabel(tip)).xy(5, 1);
+
+            // Set current value
+            String currentTheme = UILookAndFeel.getThemeName();
+            if ("com.formdev.flatlaf.FlatDarkLaf".equals(currentTheme)) {
+                themeBox.setSelectedIndex(1);
+            } else {
+                themeBox.setSelectedIndex(0);
+            }
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            String selectedTheme = (String) themeBox.getSelectedItem();
+            if ("Dark".equals(selectedTheme)) {
+                UILookAndFeel.setUI("com.formdev.flatlaf.FlatDarkLaf");
+            } else {
+                UILookAndFeel.setUI("com.formdev.flatlaf.FlatLightLaf");
+            }
+        }
+
+        @Override
+        public void setEnabled (boolean enabled)
+        {
+            super.setEnabled(enabled);
+            themeBox.setEnabled(enabled);
         }
     }
 }
