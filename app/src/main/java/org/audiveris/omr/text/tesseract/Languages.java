@@ -421,8 +421,8 @@ public class Languages
             final List<String> codes = remoteData.codes;
             final ScrollablePanel panel = new ScrollablePanel();
 
-            // JGoodies columns:           code        checkbox        fullName
-            final String colSpec = "right:50dlu,5dlu,center:10dlu,5dlu,left:200dlu";
+            // JGoodies columns:           code        checkbox
+            final String colSpec = "right:50dlu,5dlu,left:200dlu";
 
             final FormLayout layout = new FormLayout(colSpec, Panel.makeRows(codes.size()));
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(panel);
@@ -433,7 +433,6 @@ public class Languages
                 line.label.setHorizontalAlignment(SwingConstants.LEFT);
                 builder.addRaw(line.label).xy(1, r);
                 builder.addRaw(line.box).xy(3, r);
-                builder.addRaw(line.fullName).xy(5, r);
                 r += 2;
             }
 
@@ -495,7 +494,7 @@ public class Languages
         // LangLine //
         //----------//
         /**
-         * A label (code) followed by a check box and a fullName label.
+         * A label (code) followed by a checkbox with the language name.
          */
         private class LangLine
                 implements ActionListener
@@ -504,21 +503,17 @@ public class Languages
 
             public final JCheckBox box;
 
-            public final JLabel fullName;
-
             public LangLine (String code)
             {
                 label = new JLabel(code);
                 final String fn = DEFINED_LANGUAGES.fullNameOf(code);
 
                 if (fn != null) {
-                    box = new JCheckBox();
+                    box = new JCheckBox(fn);
                     box.setToolTipText(boxTip);
-                    fullName = new JLabel(fn);
 
                     label.setEnabled(true);
                     box.setEnabled(true);
-                    fullName.setEnabled(true);
 
                     if (getSupportedLanguages().contains(code)) {
                         box.setSelected(true);
@@ -528,7 +523,6 @@ public class Languages
                 } else {
                     logger.debug("Skipping {}", code);
                     box = null;
-                    fullName = null;
 
                     label.setEnabled(false);
                 }
