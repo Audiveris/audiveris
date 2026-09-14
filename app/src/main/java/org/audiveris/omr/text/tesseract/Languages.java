@@ -423,9 +423,6 @@ public class Languages
 
             // JGoodies columns:           code        checkbox        fullName
             final String colSpec = "right:50dlu,5dlu,center:10dlu,5dlu,left:200dlu";
-            final int perLine = 19;
-            final int height = codes.size() * perLine;
-            panel.setPreferredSize(new Dimension(320, height));
 
             final FormLayout layout = new FormLayout(colSpec, Panel.makeRows(codes.size()));
             final FormBuilder builder = FormBuilder.create().layout(layout).panel(panel);
