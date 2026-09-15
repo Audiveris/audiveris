@@ -702,6 +702,31 @@ public class LineCluster
         return sb.toString();
     }
 
+    //----------//
+    // outerGap //
+    //----------//
+    /**
+     * Report the vertical gap between an outermost line of the cluster and its
+     * immediate neighbour, measured at the cluster abscissa where both are defined.
+     *
+     * @param atTop true for the top pair, false for the bottom pair
+     * @return the gap in pixels
+     */
+    private double outerGap (boolean atTop)
+    {
+        final List<StaffFilament> ordered = new ArrayList<>(lines.values());
+        final StaffFilament outer = atTop ? ordered.get(0) : ordered.get(ordered.size() - 1);
+        final StaffFilament inner = atTop ? ordered.get(1) : ordered.get(ordered.size() - 2);
+
+        // Both lines are defined here, which the cluster edges cannot guarantee
+        final double x = Math.max(
+                Math.max(outer.getStartPoint().getX(), inner.getStartPoint().getX()),
+                Math.min(outer.getStopPoint().getX(), inner.getStopPoint().getX()));
+
+        return Math.abs(inner.getPositionAt(x, Orientation.HORIZONTAL)
+                                - outer.getPositionAt(x, Orientation.HORIZONTAL));
+    }
+
     //------//
     // trim //
     //------//
@@ -739,8 +764,27 @@ public class LineCluster
 
             final StaffFilament line; // Which line to remove?
 
-            // Pick up line with lower true length
-            if (topWL < botWL) {
+            // A staff's lines are equidistant, so an outer line standing at the wrong
+            // distance from its neighbour is the intruder, whatever its length. Length
+            // alone only tells ledgers apart; it says nothing about a long line such as
+            // a wedge arm running below the staff.
+            final double topGap = outerGap(true);
+            final double botGap = outerGap(false);
+            final double topOff = Math.abs(topGap - interlineScale.main);
+            final double botOff = Math.abs(botGap - interlineScale.main);
+            final double slack = interlineScale.max - interlineScale.min;
+
+            final boolean removeTop;
+
+            if (Math.abs(topOff - botOff) > slack) {
+                // One end is measurably worse spaced than the other
+                removeTop = topOff > botOff;
+            } else {
+                // Equally spaced ends: pick up line with lower true length
+                removeTop = topWL < botWL;
+            }
+
+            if (removeTop) {
                 line = top;
                 removed.add(lines.remove(lines.firstKey()));
             } else {
