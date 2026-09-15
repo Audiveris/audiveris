@@ -912,7 +912,8 @@ public final class StaffBarlineInter
 
             case 3 -> true; // Style should be LIGHT_HEAVY_LIGHT
 
-            default -> false;
+            // The dots spell the repeat; the bar count only decides thin against thick.
+            default -> size > 0;
         };
     }
 
@@ -960,7 +961,8 @@ public final class StaffBarlineInter
 
             case 3 -> true; // Style should be LIGHT_HEAVY_LIGHT
 
-            default -> false;
+            // The dots spell the repeat; the bar count only decides thin against thick.
+            default -> size > 0;
         };
     }
 
