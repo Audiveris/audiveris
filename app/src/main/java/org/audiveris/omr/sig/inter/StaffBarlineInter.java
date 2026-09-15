@@ -51,6 +51,7 @@ import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.RepeatCountRelation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.UITask;
@@ -78,6 +79,8 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -112,6 +115,13 @@ public final class StaffBarlineInter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
+
+    /** Pattern of a printed repeat count, such as "x4" or "4x". */
+    private static final Pattern REPEAT_COUNT = Pattern.compile(
+            "(?:(?<prefix>\\d{1,2}) ?[xX])|(?:[xX] ?(?<suffix>\\d{1,2}))");
+
+    /** Smallest meaningful number of passes. */
+    private static final int MIN_REPEAT_COUNT = 2;
 
     private static final Logger logger = LoggerFactory.getLogger(StaffBarlineInter.class);
 
@@ -372,6 +382,28 @@ public final class StaffBarlineInter
 
             if (ebRel.getEndingSide() == side) {
                 return (EndingInter) sig.getOppositeInter(this, rel);
+            }
+        }
+
+        return null;
+    }
+
+    //----------------//
+    // getRepeatCount //
+    //----------------//
+    /**
+     * Report the number of passes printed for this barline, such as "x4".
+     *
+     * @return the repeat count, or null if none
+     */
+    public Integer getRepeatCount ()
+    {
+        for (Relation rel : sig.getRelations(this, RepeatCountRelation.class)) {
+            final SentenceInter sentence = (SentenceInter) sig.getOppositeInter(this, rel);
+            final Integer count = repeatCountOf(sentence.getValue());
+
+            if (count != null) {
+                return count;
             }
         }
 
@@ -1175,6 +1207,38 @@ public final class StaffBarlineInter
     public static Scale.Fraction getMaxStaffBarlineShift ()
     {
         return constants.maxStaffBarlineShift;
+    }
+
+    //---------------//
+    // repeatCountOf //
+    //---------------//
+    /**
+     * Parse the provided text as a repeat count, such as "x4" or "4x".
+     * <p>
+     * A bare number is rejected on purpose, because an ending number or a measure number
+     * would then be read as a count.
+     * A bare "x" is rejected as well, because it is a cross note head on a drum staff.
+     *
+     * @param value the text to parse, perhaps null
+     * @return the count value, or null if the text is not a repeat count
+     */
+    public static Integer repeatCountOf (String value)
+    {
+        if (value == null) {
+            return null;
+        }
+
+        final Matcher matcher = REPEAT_COUNT.matcher(value.trim());
+
+        if (!matcher.matches()) {
+            return null;
+        }
+
+        final String digits = (matcher.group("prefix") != null) ? matcher.group("prefix")
+                : matcher.group("suffix");
+        final int count = Integer.parseInt(digits);
+
+        return (count >= MIN_REPEAT_COUNT) ? count : null;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

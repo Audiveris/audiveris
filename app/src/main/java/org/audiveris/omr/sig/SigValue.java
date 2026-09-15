@@ -142,6 +142,7 @@ import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.OctaveShiftChordRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.RepeatCountRelation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
 import org.audiveris.omr.sig.relation.SameTimeRelation;
@@ -450,6 +451,7 @@ public class SigValue
                 @XmlElementRef(type = NextInVoiceRelation.class),
                 @XmlElementRef(type = NoExclusion.class),
                 @XmlElementRef(type = OctaveShiftChordRelation.class),
+                @XmlElementRef(type = RepeatCountRelation.class),
                 @XmlElementRef(type = RepeatDotBarRelation.class),
                 @XmlElementRef(type = RepeatDotPairRelation.class),
                 @XmlElementRef(type = SameTimeRelation.class),
