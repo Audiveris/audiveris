@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.MeasureCountInter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
@@ -39,6 +41,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MultipleRestCountRelation
         extends Support
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
+
     //~ Methods ------------------------------------------------------------------------------------
 
     //-------//
@@ -52,6 +58,15 @@ public class MultipleRestCountRelation
 
         final MeasureCountInter count = (MeasureCountInter) e.getEdgeTarget();
         count.checkAbnormal();
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    @Override
+    protected double getTargetCoeff ()
+    {
+        return constants.countSupportCoeff.getValue();
     }
 
     //----------------//
@@ -89,5 +104,18 @@ public class MultipleRestCountRelation
         if (!count.isRemoved()) {
             count.checkAbnormal();
         }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Constant.Ratio countSupportCoeff = new Constant.Ratio(
+                5,
+                "Value for measure count coeff in support formula");
     }
 }
