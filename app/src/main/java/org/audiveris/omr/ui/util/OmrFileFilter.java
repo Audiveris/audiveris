@@ -139,6 +139,19 @@ public class OmrFileFilter
         return accept(new File(dir, name));
     }
 
+    //---------------//
+    // getExtensions //
+    //---------------//
+    /**
+     * Report the array of accepted file extensions.
+     *
+     * @return the accepted extensions
+     */
+    public String[] getExtensions ()
+    {
+        return extensions.clone();
+    }
+
     //----------------//
     // getDescription //
     //----------------//
