@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Random;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -763,6 +764,29 @@ public class NeuralNetwork
 
     //~ Static Methods -----------------------------------------------------------------------------
 
+    /**
+     * Source of the initial weights.
+     * <p>
+     * Unseeded by default, which is what it has always been: every network starts from
+     * different weights and lands in a different local optimum. Seed it through
+     * {@link #setSeed(long)} to train the same network twice.
+     */
+    private static Random random = new Random();
+
+    //---------//
+    // setSeed //
+    //---------//
+    /**
+     * Fix the initial weights, so that training on the same samples twice gives the
+     * same network.
+     *
+     * @param seed the seed the weights start from
+     */
+    public static void setSeed (long seed)
+    {
+        random = new Random(seed);
+    }
+
     //--------------//
     // createMatrix //
     //--------------//
@@ -785,7 +809,7 @@ public class NeuralNetwork
             matrix[row] = vector;
 
             for (int col = colNb - 1; col >= 0; col--) {
-                vector[col] = amplitude * (1.0 - (2 * Math.random()));
+                vector[col] = amplitude * (1.0 - (2 * random.nextDouble()));
             }
         }
 

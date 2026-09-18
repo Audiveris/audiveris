@@ -62,6 +62,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
@@ -85,6 +86,12 @@ public class BasicClassifier
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BasicClassifier.class);
+
+    /**
+     * Seed of the initial weights and the sample order when reproducibility is enforced,
+     * the same one the train/test split uses.
+     */
+    private static final int REPRODUCIBLE_SEED = 123;
 
     /** Classifier file name. */
     public static final String MODEL_FILE_NAME = "basic-classifier.zip";
@@ -155,6 +162,14 @@ public class BasicClassifier
     {
         // Get a brand new one (not trained)
         logger.info("Creating a brand new {}", getName());
+
+        // Weights are random, so two trainings on the same samples give two different
+        // networks. Seeding them is part of what makes a run repeatable; the sample
+        // order in train() and the split in SampleRepository are the rest.
+        if (ShapeClassifier.enforceReproducibility()) {
+            NeuralNetwork.setSeed(REPRODUCIBLE_SEED);
+            logger.info("Initial weights seeded for reproducibility");
+        }
 
         // We allocate a hidden layer with as many cells as the output layer
         return new NeuralNetwork(
@@ -594,9 +609,13 @@ public class BasicClassifier
         final StopWatch watch = new StopWatch("train");
         watch.start("shuffle");
 
-        // Shuffle the collection of samples
+        // Shuffle the collection of samples. The order the samples arrive in moves
+        // the network as much as its initial weights do, so a seed has to fix both
+        // for a training run to be repeatable.
         final List<Sample> newSamples = new ArrayList<>(samples);
-        Collections.shuffle(newSamples);
+        Collections.shuffle(newSamples, ShapeClassifier.enforceReproducibility()
+                ? new Random(REPRODUCIBLE_SEED)
+                : new Random());
 
         // Build raw dataset
         watch.start("getRawDataSet");
@@ -772,6 +791,7 @@ public class BasicClassifier
                 "Internal iteration period",
                 1,
                 "Period to trigger the internal listener");
+
     }
 
     //---------------//
