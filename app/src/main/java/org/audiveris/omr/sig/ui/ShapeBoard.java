@@ -498,6 +498,11 @@ public class ShapeBoard
     {
         if (currentSetPanel != null) {
             currentSetPanel.setVisible(false);
+            currentSetPanel = null;
+        }
+
+        if (selectedSetTitle != null) {
+            selectedSetTitle.setVisible(false);
         }
 
         resizeBoard();
@@ -532,6 +537,7 @@ public class ShapeBoard
 
         row += 2;
         selectedSetTitle = new CollapsibleTitleLabel("", null);
+        selectedSetTitle.setVisible(false); // Hide until a set is selected
         builder.addRaw(selectedSetTitle).xy(1, row);
         row += 2;
         for (Panel sp : setPanels.values()) {
@@ -799,6 +805,7 @@ public class ShapeBoard
         // Update the title to show the set name
         if (selectedSetTitle != null) {
             selectedSetTitle.updateTitle(setPanel.getName());
+            selectedSetTitle.setVisible(true);
         }
 
         resizeBoard();
@@ -1757,6 +1764,7 @@ public class ShapeBoard
         public void updateTitle (String newTitle)
         {
             this.currentTitle = newTitle;
+            this.isExpanded = true;
             updateDisplay(newTitle);
         }
 
