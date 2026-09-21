@@ -257,12 +257,13 @@ public abstract class OmrFont
     /**
      * Cache the provided font into the global font cache.
      *
+     * @param key  the key for the cache (the fontName)
      * @param font the font to cache
      */
-    protected static void cacheFont (Font font)
+    protected static void cacheFont (String key,
+                                     Font font)
     {
-        final String key = font.getName().replaceAll(" ", "");
-        logger.debug("Caching font: {} key:{}", font, key);
+        logger.debug("Caching key: \"{}\" font: {}", key, font);
         Map<Integer, Font> sizeMap = fontCache.get(key);
 
         if (sizeMap == null) {
@@ -307,7 +308,7 @@ public abstract class OmrFont
                     logger.debug("Found file {}", fileName);
                     final Font font = Font.createFont(Font.TRUETYPE_FONT, input).deriveFont(
                             (float) size);
-                    cacheFont(font);
+                    cacheFont(fontName, font);
 
                     final boolean added = ge.registerFont(font);
                     logger.debug("Created custom font: {} added:{}", font, added);
@@ -323,7 +324,7 @@ public abstract class OmrFont
 
         // Finally, try a platform font
         final Font font = new Font(fontName, Font.PLAIN, size);
-        cacheFont(font);
+        cacheFont(fontName, font);
         logger.debug("Using platform font: {}", font.getFamily());
 
         return font;
@@ -342,11 +343,10 @@ public abstract class OmrFont
     private static Font getCachedFont (String fontName,
                                        int size)
     {
-        final String key = fontName.replaceAll(" ", "");
-        final Map<Integer, Font> sizeMap = fontCache.get(key);
+        final Map<Integer, Font> sizeMap = fontCache.get(fontName);
 
         if (sizeMap == null) {
-            logger.debug("No sizeMap for {}", key);
+            logger.debug("No sizeMap for {}", fontName);
             return null;
         }
 
@@ -366,11 +366,10 @@ public abstract class OmrFont
      */
     private static Font getCachedFontAnySize (String fontName)
     {
-        final String key = fontName.replaceAll(" ", "");
-        final Map<Integer, Font> sizeMap = fontCache.get(key);
+        final Map<Integer, Font> sizeMap = fontCache.get(fontName);
 
         if (sizeMap == null || sizeMap.isEmpty()) {
-            logger.debug("Null or empty sizeMap for {}", key);
+            logger.debug("Null or empty sizeMap for {}", fontName);
             return null;
         }
 

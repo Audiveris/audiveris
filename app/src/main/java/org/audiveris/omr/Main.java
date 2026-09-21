@@ -31,7 +31,6 @@ import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.text.tesseract.Languages;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.MainGui;
-import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
@@ -260,9 +259,6 @@ public class Main
 
             // Check OCR languages
             Languages.getInstance().checkSupport();
-
-            // Check MusicFont is loaded
-            MusicFont.checkMusicFont();
 
             // Run the required tasks, if any (and remember if at least one task failed)
             final boolean failure = runBatchTasks();

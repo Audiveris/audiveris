@@ -531,11 +531,11 @@ public class TemplateFactory
 
         logger.info("minPointSize:{} maxPointSize:{}", min, max);
 
-        MusicFont.populateAllSymbols();
-
         final TemplateFactory factory = TemplateFactory.getInstance();
 
         for (MusicFamily family : MusicFamily.values()) {
+            family.getSymbols().getSymbol(Shape.NOTEHEAD_BLACK); // Just to populate symbols
+
             for (int pointSize = min; pointSize <= max; pointSize++) {
                 factory.getCatalog(family, pointSize);
             }

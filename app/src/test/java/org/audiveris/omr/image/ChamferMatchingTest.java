@@ -24,7 +24,6 @@ package org.audiveris.omr.image;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.ui.symbol.MusicFamily;
-import org.audiveris.omr.ui.symbol.MusicFont;
 
 import org.junit.Test;
 
@@ -101,9 +100,6 @@ public class ChamferMatchingTest
     public void testMatch ()
     {
         System.out.println("match");
-
-        // Make sure all music family symbols are loaded
-        MusicFont.checkMusicFont();
 
         Template template = TemplateFactory.getInstance().getCatalog(MusicFamily.Bravura, 56)
                 .getTemplate(Shape.NOTEHEAD_BLACK);

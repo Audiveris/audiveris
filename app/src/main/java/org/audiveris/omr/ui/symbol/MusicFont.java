@@ -503,32 +503,6 @@ public class MusicFont
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    //----------------//
-    // checkMusicFont //
-    //----------------//
-    /**
-     * Check whether we have been able to load MusicFont data.
-     *
-     * @return true if OK
-     */
-    public static boolean checkMusicFont ()
-    {
-        populateAllSymbols();
-
-        //        if (baseMusicFont.getFamily().equals("Dialog")) {
-        //            String msg = FONT_NAME + " font not found." + " Please install " + FONT_NAME;
-        //            logger.error(msg);
-        //
-        //            if (OMR.gui != null) {
-        //                OMR.gui.displayError(msg);
-        //            }
-        //
-        //            return false;
-        //        }
-        //
-        return true;
-    }
-
     //-------------//
     // getBaseFont //
     //-------------//
@@ -646,11 +620,12 @@ public class MusicFont
     public static MusicFont getMusicFont (MusicFamily family,
                                           int size)
     {
-        Font font = getFont(family.getFontName(), family.getFileName(), Font.PLAIN, size);
+        final String fontName = family.getFontName();
+        Font font = getFont(fontName, family.getFileName(), Font.PLAIN, size);
 
         if (!(font instanceof MusicFont)) {
             font = new MusicFont(font);
-            cacheFont(font);
+            cacheFont(fontName, font);
         }
 
         return (MusicFont) font;
@@ -672,19 +647,6 @@ public class MusicFont
         }
 
         return new String(codes, 0, codes.length);
-    }
-
-    //--------------------//
-    // populateAllSymbols //
-    //--------------------//
-    /**
-     * Complete Family and Symbols elaboration.
-     */
-    public static void populateAllSymbols ()
-    {
-        for (MusicFamily family : MusicFamily.values()) {
-            family.symbols.populateSymbols();
-        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

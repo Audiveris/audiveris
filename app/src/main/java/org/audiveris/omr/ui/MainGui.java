@@ -48,7 +48,6 @@ import org.audiveris.omr.ui.action.ActionManager;
 import org.audiveris.omr.ui.action.Actions;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.StubEvent;
-import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.ModelessOptionPane;
 import org.audiveris.omr.ui.util.SeparableMenu;
 import org.audiveris.omr.ui.util.UILookAndFeel;
@@ -540,9 +539,6 @@ public class MainGui
         // Weakly listen to OmrGui Actions parameters
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
         GuiActions.getInstance().addPropertyChangeListener(weak);
-
-        // Check MusicFont is loaded
-        MusicFont.checkMusicFont();
 
         // Just in case we already have messages pending
         notifyLog();

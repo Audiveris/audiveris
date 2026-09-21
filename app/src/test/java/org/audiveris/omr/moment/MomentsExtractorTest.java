@@ -62,8 +62,6 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
         final MusicFont font = MusicFont.getBaseFont(MusicFamily.Bravura, DEFAULT_INTERLINE);
         final TextFont textFont = TextFont.getBaseFont(TextFamily.Serif, DEFAULT_INTERLINE);
 
-        MusicFont.populateAllSymbols();
-
         for (Shape shape : ShapeSet.allPhysicalShapes) {
             ShapeSymbol symbol = font.getSymbol(shape);
 

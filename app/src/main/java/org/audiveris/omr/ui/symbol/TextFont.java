@@ -243,11 +243,12 @@ public class TextFont
     public static TextFont getTextFont (TextFamily family,
                                         int size)
     {
-        Font font = getFont(family.getFontName(), family.getFileName(), Font.PLAIN, size);
+        final String fontName = family.getFontName();
+        Font font = getFont(fontName, family.getFileName(), Font.PLAIN, size);
 
         if (!(font instanceof TextFont)) {
             font = new TextFont(font);
-            cacheFont(font);
+            cacheFont(fontName, font);
         }
 
         return (TextFont) font;

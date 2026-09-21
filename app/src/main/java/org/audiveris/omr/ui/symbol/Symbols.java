@@ -123,6 +123,12 @@ public abstract class Symbols
      */
     public ShapeSymbol getSymbol (Shape shape)
     {
+        // Lazy elaboration of symbolMap
+        if (symbolMap.isEmpty()) {
+            logger.debug("Populating symbols for {}", family());
+            populateSymbols();
+        }
+
         // First, try a prepopulated symbol
         final ShapeSymbol symbol = symbolMap.get(shape);
         if (symbol != null) {
