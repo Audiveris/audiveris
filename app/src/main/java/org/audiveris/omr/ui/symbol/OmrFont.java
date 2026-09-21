@@ -92,8 +92,11 @@ public abstract class OmrFont
             RATIO_METRO,
             RATIO_METRO);
 
-    /** Default color for images. */
+    /** Default color for images (templates, dragged symbols, score items). */
     public static final Color defaultImageColor = Colors.DEFAULT_IMAGE_COLOR;
+
+    /** Default color for UI icons. */
+    public static final Color defaultIconColor = Colors.DEFAULT_ICON_COLOR;
 
     /** Needed for font size computation. */
     public static final FontRenderContext frc = new FontRenderContext(null, true, true);
