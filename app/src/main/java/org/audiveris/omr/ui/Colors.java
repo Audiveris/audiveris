@@ -193,8 +193,8 @@ public abstract class Colors
     /** Background of a MusicPane. */
     public static final Color MUSIC_PANE_BACKGROUND = new Color(255, 255, 240);
 
-    /** Background of the custom set panel. */
-    public static final Color CUSTOM_SET_BACKGROUND = new Color(230, 255, 230);
+    /** Default color for image elements. */
+    public static final Color DEFAULT_IMAGE_COLOR;
 
     /** Colors for logging levels */
     public static final Color LOG_ERROR = Color.RED;
@@ -211,11 +211,13 @@ public abstract class Colors
             LOG_WARNING = Color.CYAN;
             LOG_INFO = Color.WHITE;
             LOG_OTHER = Color.LIGHT_GRAY;
+            DEFAULT_IMAGE_COLOR = Color.WHITE;
         } else {
             SHEET_OK = Color.BLACK;
             LOG_WARNING = Color.BLUE;
             LOG_INFO = Color.BLACK;
             LOG_OTHER = Color.GRAY;
+            DEFAULT_IMAGE_COLOR = Color.BLACK;
         }
     }
 
