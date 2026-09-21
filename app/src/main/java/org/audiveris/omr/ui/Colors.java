@@ -22,6 +22,7 @@
 package org.audiveris.omr.ui;
 
 import java.awt.Color;
+import org.audiveris.omr.ui.util.UILookAndFeel;
 
 /**
  * Class <code>Colors</code> gathers in one place the various colors used by
@@ -163,7 +164,7 @@ public abstract class Colors
     public static final Color SHEET_NOT_OK = Color.RED;
 
     /** Color for OK sheet tab. */
-    public static final Color SHEET_OK = Color.BLACK;
+    public static final Color SHEET_OK;
 
     /** Time slot. */
     public static final Color SLOT = new Color(192, 192, 192, alpha);
@@ -194,6 +195,29 @@ public abstract class Colors
 
     /** Background of the custom set panel. */
     public static final Color CUSTOM_SET_BACKGROUND = new Color(230, 255, 230);
+
+    /** Colors for logging levels */
+    public static final Color LOG_ERROR = Color.RED;
+    public static final Color LOG_WARNING;
+    public static final Color LOG_INFO;
+    public static final Color LOG_OTHER;
+
+    static {
+        // Initialize colors based on current FlatLaf theme
+        String themeName = UILookAndFeel.getThemeName();
+
+        if (themeName != null && themeName.contains("Dark")) {
+            SHEET_OK = Color.WHITE;
+            LOG_WARNING = Color.CYAN;
+            LOG_INFO = Color.WHITE;
+            LOG_OTHER = Color.LIGHT_GRAY;
+        } else {
+            SHEET_OK = Color.BLACK;
+            LOG_WARNING = Color.BLUE;
+            LOG_INFO = Color.BLACK;
+            LOG_OTHER = Color.GRAY;
+        }
+    }
 
     //~ Constructors -------------------------------------------------------------------------------
 

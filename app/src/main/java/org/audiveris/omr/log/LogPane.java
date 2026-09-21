@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.util.SeparablePopupMenu;
 import static org.audiveris.omr.ui.util.UIPredicates.isContextWanted;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.ui.Colors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,13 +136,13 @@ public class LogPane
     private Color getLevelColor (Level level)
     {
         if (level.isGreaterOrEqual(Level.ERROR)) {
-            return Color.RED;
+            return Colors.LOG_ERROR;
         } else if (level.isGreaterOrEqual(Level.WARN)) {
-            return Color.BLUE;
+                return Colors.LOG_WARNING;
         } else if (level.isGreaterOrEqual(Level.INFO)) {
-            return Color.BLACK;
-        } else {
-            return Color.GRAY;
+                return Colors.LOG_INFO;
+            } else {
+                return Colors.LOG_OTHER;
         }
     }
 
