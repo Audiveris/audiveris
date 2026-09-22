@@ -256,12 +256,20 @@ public abstract class OmrFont
     //-----------//
     /**
      * Cache the provided font into the global font cache.
+     * <p>
+     * The cache key must be the nominal font name originally requested (e.g. "Bravura"), the
+     * same name {@link #getCachedFont} will later look up. It must NOT be derived from the
+     * font object's own {@link Font#getName()}, which for a font loaded from a TrueType/OpenType
+     * file reflects the name embedded in the file itself (e.g. "Bravura Regular") and can differ
+     * from the nominal family name -- a mismatch that used to make every lookup miss the cache.
      *
-     * @param font the font to cache
+     * @param fontName nominal font name this font was requested under
+     * @param font     the font to cache
      */
-    protected static void cacheFont (Font font)
+    protected static void cacheFont (String fontName,
+                                     Font font)
     {
-        final String key = font.getName().replaceAll(" ", "");
+        final String key = fontName.replaceAll(" ", "");
         logger.debug("Caching font: {} key:{}", font, key);
         Map<Integer, Font> sizeMap = fontCache.get(key);
 
@@ -307,7 +315,7 @@ public abstract class OmrFont
                     logger.debug("Found file {}", fileName);
                     final Font font = Font.createFont(Font.TRUETYPE_FONT, input).deriveFont(
                             (float) size);
-                    cacheFont(font);
+                    cacheFont(fontName, font);
 
                     final boolean added = ge.registerFont(font);
                     logger.debug("Created custom font: {} added:{}", font, added);
@@ -323,7 +331,7 @@ public abstract class OmrFont
 
         // Finally, try a platform font
         final Font font = new Font(fontName, Font.PLAIN, size);
-        cacheFont(font);
+        cacheFont(fontName, font);
         logger.debug("Using platform font: {}", font.getFamily());
 
         return font;
@@ -350,9 +358,7 @@ public abstract class OmrFont
             return null;
         }
 
-        final Font font = sizeMap.get(size);
-
-        return font;
+        return sizeMap.get(size);
     }
 
     //----------------------//
@@ -404,6 +410,7 @@ public abstract class OmrFont
 
             if (any != null) {
                 font = any.deriveFont((float) size);
+                cacheFont(fontName, font);
             }
 
             if (font == null) {

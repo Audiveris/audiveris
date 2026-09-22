@@ -650,7 +650,7 @@ public class MusicFont
 
         if (!(font instanceof MusicFont)) {
             font = new MusicFont(font);
-            cacheFont(font);
+            cacheFont(family.getFontName(), font);
         }
 
         return (MusicFont) font;

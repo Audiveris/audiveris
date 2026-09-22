@@ -247,7 +247,7 @@ public class TextFont
 
         if (!(font instanceof TextFont)) {
             font = new TextFont(font);
-            cacheFont(font);
+            cacheFont(family.getFontName(), font);
         }
 
         return (TextFont) font;

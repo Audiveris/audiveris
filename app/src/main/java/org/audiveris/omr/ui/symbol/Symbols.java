@@ -129,10 +129,14 @@ public abstract class Symbols
             return symbol;
         }
 
-        // Second, try a code-based symbol dynamically built
+        // Second, try a code-based symbol dynamically built -- cached on first build, since
+        // building it (and later decorating it) is not free, and this method can otherwise be
+        // called repeatedly for the same shape (e.g. once per known shape, to populate a menu).
         final int[] codes = getCode(shape);
         if (codes != null) {
-            return new CodedSymbol(shape, family(), codes);
+            final ShapeSymbol built = new CodedSymbol(shape, family(), codes);
+            symbolMap.put(shape, built);
+            return built;
         }
 
         // None
