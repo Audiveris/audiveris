@@ -811,10 +811,13 @@ public class ResidualBeamBuilder
                         + " the previous 1.0 interline tolerance)");
 
         private final Scale.Fraction maxTipDistanceForSuspicion = new Scale.Fraction(
-                0.8,
+                1.05,
                 "Maximum distance from a stem's outer/tail tip for one of its heads to count as"
-                        + " sitting \"at the tip\". Confirmed on a real score: the spurious head's"
-                        + " center sat about 0.6 interline from the tip");
+                        + " sitting \"at the tip\". Confirmed on real scores: spurious heads whose"
+                        + " centers sat about 0.6 and 1.0 interlines from the tip (the latter a"
+                        + " genuine 16th-note double-beam pair, otherwise identical in shape to"
+                        + " the already-handled cases, that the previous 0.8 interline ceiling"
+                        + " missed)");
 
         private final Scale.Fraction minHeadGapForSuspicion = new Scale.Fraction(
                 1.5,
