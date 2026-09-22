@@ -403,6 +403,7 @@ public abstract class OmrFont
 
             if (any != null) {
                 font = any.deriveFont((float) size);
+                cacheFont(fontName, font); // Cache the size-derived font
             }
 
             if (font == null) {
