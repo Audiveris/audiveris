@@ -349,11 +349,19 @@ public class ResidualBeamBuilder
         final double yLeft = tipY(leftStem, suspect.tailSide);
         final double yRight = tipY(rightStem, suspect.tailSide);
 
-        // The beam's median must reach each stem's own centerline (not just stop at the facing
-        // edge used for the ink-scan bounds above) -- BeamStemRelation.checkLink expects the
-        // stem to sit at/within the beam's own x-range, with only a small out-gap tolerance.
-        final double xLeftCenter = leftStem.getCenter().x;
-        final double xRightCenter = rightStem.getCenter().x;
+        // The beam's median must reach past each stem's own centerline -- not just stop exactly
+        // at it -- because BeamStemRelation.checkLink's out-gap tolerance is tight (a fraction of
+        // an interline) and a median ending exactly on the centerline leaves only half the stem's
+        // own width as margin, a knife's-edge amount a real, organically-detected beam (whose
+        // median reaches the glyph's actual ink edge, past the stem) never has to contend with.
+        final double margin = scale.toPixelsDouble(constants.medianEndExtension);
+        final double xLeftCenter0 = leftStem.getCenter().x;
+        final double xRightCenter0 = rightStem.getCenter().x;
+        final double slope = (yRight - yLeft) / (xRightCenter0 - xLeftCenter0);
+        final double xLeftCenter = xLeftCenter0 - margin;
+        final double xRightCenter = xRightCenter0 + margin;
+        final double yLeftExt = yLeft - (slope * margin);
+        final double yRightExt = yRight + (slope * margin);
 
         final Integer typicalHeight = scale.getBeamThickness();
         final double height = (typicalHeight != null) ? typicalHeight
@@ -366,8 +374,8 @@ public class ResidualBeamBuilder
             return false; // Never fabricate a beam from an empty/near-empty gap
         }
 
-        final Point2D left = new Point2D.Double(xLeftCenter, yLeft);
-        final Point2D right = new Point2D.Double(xRightCenter, yRight);
+        final Point2D left = new Point2D.Double(xLeftCenter, yLeftExt);
+        final Point2D right = new Point2D.Double(xRightCenter, yRightExt);
         final Line2D median = new Line2D.Double(left, right);
         final BeamInter beam = new BeamInter(
                 constants.recoveredBeamGrade.getValue(),
@@ -552,13 +560,16 @@ public class ResidualBeamBuilder
             extends ConstantSet
     {
         private final Scale.Fraction maxStemPairXGap = new Scale.Fraction(
-                2.5,
+                3.2,
                 "Maximum gap between two stems' facing edges to consider pairing them for a"
                         + " residual beam -- this is the distance between two adjacent NOTE"
                         + " STEMS in a beamed group (roughly a note-spacing), not to be confused"
                         + " with BeamsBuilder's own much smaller maxItemXGap (0.5), which bounds"
-                        + " gaps within a single beam item's own ink. Confirmed on a real score:"
-                        + " the real facing-edge gap was about 1.9 interlines");
+                        + " gaps within a single beam item's own ink. Confirmed on real scores:"
+                        + " facing-edge gaps of about 1.9 and 2.9 interlines, the latter matching"
+                        + " this same score's own organically-detected same-beat stem spacing"
+                        + " (an existing, correctly-linked beam elsewhere on the same sheet spans"
+                        + " stems at the identical ~2.9 interline gap)");
 
         private final Scale.Fraction maxTipYTolerance = new Scale.Fraction(
                 1.0,
@@ -583,6 +594,14 @@ public class ResidualBeamBuilder
         private final Scale.Fraction beamHeightFraction = new Scale.Fraction(
                 0.5,
                 "Fallback beam height, used only if Scale#getBeamThickness is unavailable");
+
+        private final Scale.Fraction medianEndExtension = new Scale.Fraction(
+                0.25,
+                "How far past each stem's own centerline the recovered beam's median is extended"
+                        + " -- comfortably beyond BeamStemRelation's own tight out-gap tolerance"
+                        + " (a fraction of an interline), matching how an organically-detected"
+                        + " beam's median reaches the glyph's actual ink edge rather than stopping"
+                        + " exactly on the stem");
 
         private final Constant.Ratio bandMargin = new Constant.Ratio(
                 0.6,
@@ -611,11 +630,13 @@ public class ResidualBeamBuilder
                         + " staying conservative, since it is not backed by classifier confidence");
 
         private final Constant.Ratio headEvictionGradeCeiling = new Constant.Ratio(
-                0.55,
+                0.70,
                 "A suspect head is evicted once a beam is recovered over it only if its own grade"
-                        + " is at or below this ceiling. Confirmed on a real score: the spurious"
-                        + " head that motivated this whole pass graded 0.487, clearly below every"
-                        + " genuine nearby head (0.65-0.80+) -- this ceiling sits safely between"
-                        + " the two, as a sanity net against evicting a real head on a coincidence");
+                        + " is at or below this ceiling. Confirmed on two independent real cases"
+                        + " (both verified against the actual score, not just the classifier):"
+                        + " spurious heads graded 0.487 and 0.661 -- the classifier can be fairly"
+                        + " confident in a wrong guess, so this ceiling is set with real margin"
+                        + " above the higher of the two, while every genuine head observed nearby"
+                        + " in either case still scored 0.72+, leaving a real gap on both sides");
     }
 }
