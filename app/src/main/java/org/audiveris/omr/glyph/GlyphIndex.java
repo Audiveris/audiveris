@@ -89,8 +89,13 @@ public class GlyphIndex
     /** Underlying index to weak glyphs. */
     private final WeakGlyphIndex weakIndex = new WeakGlyphIndex();
 
-    /** Collection of original glyph instances, non sorted. */
-    private final ConcurrentHashMap<WeakGlyph, WeakGlyph> originals = new ConcurrentHashMap<>();
+    /**
+     * Collection of original glyph instances, non sorted.
+     * <p>
+     * These references are strong on purpose: held weakly, an entry could be collected between
+     * two identical glyphs and the second one would then be given an ID of its own.
+     */
+    private final ConcurrentHashMap<Glyph, Glyph> originals = new ConcurrentHashMap<>();
 
     /** Selection service, if any. */
     private GlyphService glyphService;
@@ -399,9 +404,7 @@ public class GlyphIndex
      */
     public synchronized Glyph registerOriginal (Glyph glyph)
     {
-        final WeakGlyph weak = new WeakGlyph(glyph);
-        final WeakGlyph orgWeak = originals.putIfAbsent(weak, weak);
-        final Glyph orgGlyph = (orgWeak != null) ? orgWeak.get() : null;
+        final Glyph orgGlyph = originals.putIfAbsent(glyph, glyph);
 
         if (orgGlyph == null) {
             privateRegister(glyph);
@@ -409,7 +412,7 @@ public class GlyphIndex
             return glyph;
         } else {
             logger.debug("Reuse original {}", orgGlyph);
-            weakIndex.insert(orgWeak); // Safer if original has been removed from index
+            weakIndex.insert(new WeakGlyph(orgGlyph)); // Safer if original left the index
 
             return orgGlyph;
         }
@@ -458,9 +461,8 @@ public class GlyphIndex
         }
 
         for (Glyph glyph : glyphs) {
-            WeakGlyph weak = new WeakGlyph(glyph);
-            weakIndex.insert(weak);
-            originals.putIfAbsent(weak, weak);
+            weakIndex.insert(new WeakGlyph(glyph));
+            originals.putIfAbsent(glyph, glyph);
         }
     }
 
