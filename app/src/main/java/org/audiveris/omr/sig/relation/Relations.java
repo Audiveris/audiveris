@@ -147,6 +147,7 @@ public abstract class Relations
         map(EndingInter.class, EndingBarRelation.class, BarlineInter.class); // Old
         map(EndingInter.class, EndingBarRelation.class, StaffBarlineInter.class);
         map(EndingInter.class, EndingSentenceRelation.class, SentenceInter.class);
+        map(StaffBarlineInter.class, RepeatCountRelation.class, SentenceInter.class);
 
         map(FermataInter.class, FermataBarRelation.class, BarlineInter.class); // Old
         map(FermataInter.class, FermataBarRelation.class, StaffBarlineInter.class);
