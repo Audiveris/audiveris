@@ -55,7 +55,10 @@ import java.util.Set;
 
 /**
  * Class <code>ResidualBeamBuilder</code> recovers a beam that {@link SpotsBuilder} never even
- * produced a candidate glyph for, and evicts the spurious note head its ink got mistaken for.
+ * produced a candidate glyph for. Two distinct symptoms are handled, sharing all of the actual
+ * recovery machinery ({@link #scanBands}, {@link BeamStemRelation#checkLink}, group creation):
+ * the dropped ink sometimes gets misread downstream as a spurious note head (evicted on success),
+ * and sometimes leaves no trace anywhere at all (nothing to evict -- see {@link #findBareCandidate}).
  * <p>
  * {@link SpotsBuilder}'s spot pipeline (strip stem-width runs from the binary "no-staff" image,
  * blur, morphologically close with a disk sized for a <b>typical</b> beam, then a single global
@@ -97,6 +100,16 @@ import java.util.Set;
  * plausibly be that spurious head, or any band fails its own grade/link validation, nothing is
  * created at all -- a beam left behind alongside a kept head, or only one of two required beams,
  * would be a new inconsistency, not a fix.
+ * <p>
+ * The second symptom -- a completely clean pair of single-headed stems, with no spurious head
+ * anywhere to raise suspicion -- cannot be found by looking at heads at all. Confirmed on a real
+ * score: such a pair's stems show no reliable geometric tell either (in particular, stem free
+ * length is indistinguishable from an ordinary unbeamed note's). {@link #findBareCandidate} pairs
+ * such stems by geometry alone (widened tolerances, since there is no corroborating signal to
+ * offset the wider net), and relies entirely on {@link #scanBands}' grey-ink evidence -- the same
+ * gate used for the spurious-head case -- to decide whether a beam actually belongs there. A wider
+ * trigger is safe specifically because the acceptance gate is unchanged: the grey evidence
+ * requirement never gets more permissive just because more candidates reach it.
  */
 public class ResidualBeamBuilder
 {
@@ -161,7 +174,7 @@ public class ResidualBeamBuilder
                 continue; // Already paired (and possibly already recovered) as someone's neighbor
             }
 
-            final StemInter neighbor = findNeighbor(suspect, stems, resolved);
+            final StemInter neighbor = findNeighbor(suspect, stems, resolved, false);
 
             if (neighbor == null) {
                 continue;
@@ -169,6 +182,41 @@ public class ResidualBeamBuilder
 
             if (attemptRecovery(suspect, neighbor)) {
                 resolved.add(suspect.stem);
+                resolved.add(neighbor);
+            }
+        }
+
+        // Second pass: completely clean, single-headed "bare" stems left unresolved above. There
+        // is no spurious head here to raise suspicion -- the missing-beam ink was simply dropped
+        // by SpotsBuilder with nothing downstream ever claiming it -- so pairing is geometry-only
+        // and scanBands' grey-ink evidence is the sole acceptance gate (see attemptRecovery).
+        final List<Suspect> bareCandidates = new ArrayList<>();
+
+        for (StemInter stem : stems) {
+            if (resolved.contains(stem)) {
+                continue;
+            }
+
+            final Suspect bare = findBareCandidate(stem);
+
+            if (bare != null) {
+                bareCandidates.add(bare);
+            }
+        }
+
+        for (Suspect bare : bareCandidates) {
+            if (resolved.contains(bare.stem)) {
+                continue;
+            }
+
+            final StemInter neighbor = findNeighbor(bare, stems, resolved, true);
+
+            if (neighbor == null) {
+                continue;
+            }
+
+            if (attemptRecovery(bare, neighbor)) {
+                resolved.add(bare.stem);
                 resolved.add(neighbor);
             }
         }
@@ -245,6 +293,47 @@ public class ResidualBeamBuilder
         return null;
     }
 
+    //-------------------//
+    // findBareCandidate //
+    //-------------------//
+    /**
+     * Check whether the given stem is a completely clean, single-headed, beam-less, flag-less
+     * stem -- the "no trace at all" case, where the missing-beam ink was dropped by
+     * {@link SpotsBuilder} with nothing downstream ever claiming it. Unlike {@link #findSuspect},
+     * there is no spurious head to corroborate the guess: geometry only picks a candidate pair,
+     * and {@link #scanBands}' grey-ink evidence (via {@link #attemptRecovery}) is what actually
+     * decides whether a beam gets created.
+     *
+     * @param stem the stem to check
+     * @return a headless suspect description, or null if this stem is not a bare candidate
+     */
+    private Suspect findBareCandidate (StemInter stem)
+    {
+        if (!stem.getBeams().isEmpty()) {
+            return null;
+        }
+
+        final SIGraph sig = stem.getSig();
+
+        if (!sig.getRelations(stem, FlagStemRelation.class).isEmpty()) {
+            return null;
+        }
+
+        final int dir = stem.computeDirection();
+
+        if (dir == 0) {
+            return null;
+        }
+
+        if (stem.getHeads().size() != 1) {
+            return null; // Excludes chords and the already-handled spurious-second-head case
+        }
+
+        final VerticalSide tailSide = (dir < 0) ? VerticalSide.TOP : VerticalSide.BOTTOM;
+
+        return new Suspect(stem, null, tailSide);
+    }
+
     //--------------//
     // findNeighbor //
     //--------------//
@@ -252,14 +341,18 @@ public class ResidualBeamBuilder
      * Look for a stem geometrically compatible with the suspect stem: close facing edges, a
      * matching outer tip level, and no beam or flag of its own already explaining ink there.
      *
-     * @param suspect  the suspect stem/head pair
-     * @param stems    every stem in the system
-     * @param resolved stems already paired by an earlier suspect in this pass
+     * @param suspect          the suspect stem/head pair
+     * @param stems            every stem in the system
+     * @param resolved         stems already paired by an earlier suspect in this pass
+     * @param requireSingleHeadOther for a bare-candidate pair, require the other stem to also be
+     *                         single-headed (both sides need to independently qualify -- there is
+     *                         no spurious head on either side to corroborate the pairing)
      * @return the compatible neighbor stem, or null if none qualifies
      */
     private StemInter findNeighbor (Suspect suspect,
                                     List<StemInter> stems,
-                                    Set<StemInter> resolved)
+                                    Set<StemInter> resolved,
+                                    boolean requireSingleHeadOther)
     {
         final int maxXGap = scale.toPixels(constants.maxStemPairXGap);
         final int maxYTol = scale.toPixels(constants.maxTipYTolerance);
@@ -273,6 +366,10 @@ public class ResidualBeamBuilder
             if ((other == suspect.stem) || resolved.contains(other) || !other.getBeams()
                     .isEmpty() || !system.getSig().getRelations(other, FlagStemRelation.class)
                             .isEmpty()) {
+                continue;
+            }
+
+            if (requireSingleHeadOther && (other.getHeads().size() != 1)) {
                 continue;
             }
 
@@ -316,22 +413,25 @@ public class ResidualBeamBuilder
     //-----------------//
     /**
      * Verify grey ink between the two stems and, if present, build and link the recovered beam,
-     * then evict the spurious head that motivated the search. Aborts before touching the sig at
-     * all if the suspect head's own grade is too good to plausibly be that spurious head -- a
-     * beam left behind alongside a kept head would be a new inconsistency, not a fix.
+     * then (for a spurious-head suspect) evict the head that motivated the search. Aborts before
+     * touching the sig at all if the suspect head's own grade is too good to plausibly be that
+     * spurious head -- a beam left behind alongside a kept head would be a new inconsistency, not
+     * a fix. For a bare pair (no head at all), this eviction gate simply does not apply.
      *
-     * @param suspect  the suspect stem/head pair
+     * @param suspect  the suspect stem/head pair, or a headless bare-pair candidate
      * @param neighbor the paired neighbor stem
      * @return true if a beam was actually recovered
      */
     private boolean attemptRecovery (Suspect suspect,
                                      StemInter neighbor)
     {
-        if (suspect.head.getGrade() > constants.headEvictionGradeCeiling.getValue()) {
+        if ((suspect.head != null)
+                && (suspect.head.getGrade() > constants.headEvictionGradeCeiling.getValue())) {
             // The whole premise of this recovery is that the suspect head is spurious ink that
             // really belongs to the beam. If it grades too well to plausibly be that, creating a
             // beam here anyway would leave both a beam and a (kept) head explaining the same
             // ink -- a new inconsistency, not a fix -- so abort before touching the sig at all.
+            // (A bare pair has no head at all, so this gate simply doesn't apply to it.)
             return false;
         }
 
@@ -436,7 +536,10 @@ public class ResidualBeamBuilder
             candidate.leftLink.applyTo(candidate.beam);
             candidate.rightLink.applyTo(candidate.beam);
             group.addMember(candidate.beam);
-            evicted |= evictHead(candidate.beam, suspect.head);
+
+            if (suspect.head != null) {
+                evicted |= evictHead(candidate.beam, suspect.head);
+            }
         }
 
         logger.info(
@@ -444,9 +547,10 @@ public class ResidualBeamBuilder
                 candidates.size(),
                 leftStem.getId(),
                 rightStem.getId(),
-                evicted ? (", evicted spurious head " + suspect.head)
-                        : (" -- spurious head " + suspect.head + " was not actually covered,"
-                                + " left alone"));
+                (suspect.head == null) ? " (bare pair, no head to evict)"
+                        : (evicted ? (", evicted spurious head " + suspect.head)
+                                : (" -- spurious head " + suspect.head + " was not actually"
+                                        + " covered, left alone")));
 
         return true;
     }
@@ -595,15 +699,19 @@ public class ResidualBeamBuilder
     // Suspect //
     //---------//
     /**
-     * A stem carrying a head close to its outer/tail tip yet far from its primary head.
+     * A stem flagged as one side of a candidate residual-beam pair: either a stem carrying a
+     * spurious head close to its outer/tail tip yet far from its primary head ({@code head} set),
+     * or a completely clean, single-headed bare stem paired by geometry and confirmed only by
+     * grey ink ({@code head} null -- nothing to evict).
      */
     private static class Suspect
     {
         final StemInter stem;
 
+        /** The spurious head to evict on success, or null for a bare (headless-trigger) pair. */
         final HeadInter head;
 
-        /** Which end of the stem (its tail, away from the primary head) the suspect head is near. */
+        /** Which end of the stem (its tail, away from the primary head) the beam attaches at. */
         final VerticalSide tailSide;
 
         Suspect (StemInter stem,
@@ -618,7 +726,9 @@ public class ResidualBeamBuilder
         @Override
         public String toString ()
         {
-            return "Suspect{head#" + head.getId() + " tailSide=" + tailSide + "}";
+            return "Suspect{stem#" + stem.getId()
+                    + ((head != null) ? (" head#" + head.getId()) : " bare")
+                    + " tailSide=" + tailSide + "}";
         }
     }
 
@@ -677,23 +787,28 @@ public class ResidualBeamBuilder
             extends ConstantSet
     {
         private final Scale.Fraction maxStemPairXGap = new Scale.Fraction(
-                3.2,
+                4.6,
                 "Maximum gap between two stems' facing edges to consider pairing them for a"
                         + " residual beam -- this is the distance between two adjacent NOTE"
                         + " STEMS in a beamed group (roughly a note-spacing), not to be confused"
                         + " with BeamsBuilder's own much smaller maxItemXGap (0.5), which bounds"
                         + " gaps within a single beam item's own ink. Confirmed on real scores:"
-                        + " facing-edge gaps of about 1.9 and 2.9 interlines, the latter matching"
-                        + " this same score's own organically-detected same-beat stem spacing"
-                        + " (an existing, correctly-linked beam elsewhere on the same sheet spans"
-                        + " stems at the identical ~2.9 interline gap)");
+                        + " facing-edge gaps of about 1.9 and 2.9 interlines (the latter matching"
+                        + " this same score's own organically-detected same-beat stem spacing,"
+                        + " an existing correctly-linked beam spanning stems at the identical"
+                        + " ~2.9 interline gap), and a bare-pair case at 4.27 interlines -- this"
+                        + " coarse pre-filter is not itself the acceptance gate (scanBands' grey"
+                        + " evidence and BeamStemRelation#checkLink are), so widening it only"
+                        + " admits more candidates to be actually checked");
 
         private final Scale.Fraction maxTipYTolerance = new Scale.Fraction(
-                1.0,
+                1.2,
                 "Maximum y-difference between two stems' outer tips to treat them as spanned by"
                         + " one beam -- generous enough to allow for a sloped/diagonal beam over"
-                        + " a typical stem-pair gap. Confirmed on a real score: the real"
-                        + " (sloped) difference was about 0.7 interline");
+                        + " a typical stem-pair gap. Confirmed on real scores: sloped differences"
+                        + " of about 0.7 and 1.09 interlines (the latter a spurious-head suspect"
+                        + " pair that was otherwise correctly identified but fell 1 pixel outside"
+                        + " the previous 1.0 interline tolerance)");
 
         private final Scale.Fraction maxTipDistanceForSuspicion = new Scale.Fraction(
                 0.8,
