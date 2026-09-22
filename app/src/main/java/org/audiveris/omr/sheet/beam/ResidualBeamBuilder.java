@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -47,6 +48,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,12 +84,19 @@ import java.util.Set;
  * attached to that stem at all, it looks for a geometrically compatible neighboring stem --
  * horizontal extent bounded by the two stems themselves (median reaching each stem's own
  * centerline, exactly as {@link BeamStemRelation#checkLink} expects of any real beam-stem
- * attachment; the narrower gap between their facing edges is what actually gets scanned for ink)
- * -- confirms real ink is actually present there in the grey source (never fabricating a beam from
- * an empty gap), and only then reconstructs the beam and evicts the spurious head whose area it
- * now explains. The recovery is all-or-nothing: if the suspect head's own grade turns out too
- * good to plausibly be that spurious head, nothing is created at all -- a beam left behind
- * alongside a kept head would be a new inconsistency, not a fix.
+ * attachment; the narrower gap between their facing edges is what actually gets scanned for ink).
+ * <p>
+ * Critically, the ink between the two stems is not always a single beam: a genuine 16th-note beam
+ * pair merges into what looks, at first glance, like one over-thick stroke, but a raw grey-scale
+ * profile through it reveals two distinct dark bands with a real gap between them -- confirmed on
+ * a real score. {@link #scanBands} measures this directly (never fabricating a beam from an empty
+ * gap) and reconstructs however many bands are actually present -- one beam, or two stacked beams
+ * sharing a fresh {@link BeamGroupInter} -- rather than always averaging the ink into a single
+ * beam, which would silently halve the note value (16th read as 8th). The recovery is
+ * all-or-nothing across every band found: if the suspect head's own grade turns out too good to
+ * plausibly be that spurious head, or any band fails its own grade/link validation, nothing is
+ * created at all -- a beam left behind alongside a kept head, or only one of two required beams,
+ * would be a new inconsistency, not a fix.
  */
 public class ResidualBeamBuilder
 {
@@ -370,50 +379,69 @@ public class ResidualBeamBuilder
         final ByteProcessor grey = system.getSheet().getPicture().getSource(
                 Picture.SourceKey.GRAY);
 
-        if ((grey == null) || !hasRealInk(grey, xLeft, xRight, yLeft, yRight, height)) {
-            return false; // Never fabricate a beam from an empty/near-empty gap
-        }
-
-        final Point2D left = new Point2D.Double(xLeftCenter, yLeftExt);
-        final Point2D right = new Point2D.Double(xRightCenter, yRightExt);
-        final Line2D median = new Line2D.Double(left, right);
-        final BeamInter beam = new BeamInter(
-                constants.recoveredBeamGrade.getValue(),
-                median,
-                height);
-
-        if (beam.getGrade() < BeamInter.getMinGrade()) {
+        if (grey == null) {
             return false;
         }
 
-        final int profile = system.getProfile();
-        final Link leftLink = BeamStemRelation.checkLink(
-                beam,
-                leftStem,
-                suspect.tailSide,
-                scale,
-                profile);
-        final Link rightLink = BeamStemRelation.checkLink(
-                beam,
-                rightStem,
-                suspect.tailSide,
-                scale,
-                profile);
+        final List<Band> bands = scanBands(grey, xLeft, xRight, yLeft, yRight, height);
 
-        if ((leftLink == null) || (rightLink == null)) {
-            return false; // Real gap/consistency validation disagrees with the geometric pairing
+        if (bands.isEmpty()) {
+            return false; // Never fabricate a beam from an empty/near-empty gap
+        }
+
+        final int profile = system.getProfile();
+        final List<Candidate> candidates = new ArrayList<>();
+
+        for (Band band : bands) {
+            final Point2D left = new Point2D.Double(xLeftCenter, yLeftExt + band.offset);
+            final Point2D right = new Point2D.Double(xRightCenter, yRightExt + band.offset);
+            final Line2D median = new Line2D.Double(left, right);
+            final BeamInter beam = new BeamInter(
+                    constants.recoveredBeamGrade.getValue(),
+                    median,
+                    band.height);
+
+            if (beam.getGrade() < BeamInter.getMinGrade()) {
+                return false; // All-or-nothing: one bad band aborts the whole recovery
+            }
+
+            final Link leftLink = BeamStemRelation.checkLink(
+                    beam,
+                    leftStem,
+                    suspect.tailSide,
+                    scale,
+                    profile);
+            final Link rightLink = BeamStemRelation.checkLink(
+                    beam,
+                    rightStem,
+                    suspect.tailSide,
+                    scale,
+                    profile);
+
+            if ((leftLink == null) || (rightLink == null)) {
+                return false; // Real gap/consistency validation disagrees with this band's geometry
+            }
+
+            candidates.add(new Candidate(beam, leftLink, rightLink));
         }
 
         final SIGraph sig = system.getSig();
-        sig.addVertex(beam);
-        leftLink.applyTo(beam);
-        rightLink.applyTo(beam);
+        final BeamGroupInter group = new BeamGroupInter();
+        sig.addVertex(group);
 
-        final boolean evicted = evictHead(beam, suspect.head);
+        boolean evicted = false;
+
+        for (Candidate candidate : candidates) {
+            sig.addVertex(candidate.beam);
+            candidate.leftLink.applyTo(candidate.beam);
+            candidate.rightLink.applyTo(candidate.beam);
+            group.addMember(candidate.beam);
+            evicted |= evictHead(candidate.beam, suspect.head);
+        }
 
         logger.info(
-                "Recovered residual beam {} between stem#{} and stem#{}{}",
-                beam,
+                "Recovered {} residual beam(s) between stem#{} and stem#{}{}",
+                candidates.size(),
                 leftStem.getId(),
                 rightStem.getId(),
                 evicted ? (", evicted spurious head " + suspect.head)
@@ -424,71 +452,112 @@ public class ResidualBeamBuilder
     }
 
     //-----------//
-    // hasRealInk //
+    // scanBands //
     //-----------//
     /**
      * Scan the grey source, column by column, in the rectangle bounded by the two stems' facing
-     * edges and a vertical band around the suspected beam level, to confirm real ink is present
-     * before ever creating a beam from it.
+     * edges, to measure however many distinct dark bands (candidate beams) actually sit between
+     * them -- a genuine 16th-note beam pair merges into ink that looks, at a glance, like one
+     * over-thick stroke, but the raw grey profile still shows two separate bands with a real gap
+     * between them. Never guesses: an ambiguous profile (no band, or an implausible band height)
+     * yields no bands at all, rather than a fabricated beam.
      *
-     * @param grey   the grey source
-     * @param xLeft  left bound (right edge of the left stem)
-     * @param xRight right bound (left edge of the right stem)
-     * @param yLeft  beam level at xLeft
-     * @param yRight beam level at xRight
-     * @param height beam height, used to size the scan band
-     * @return true if enough dark ink was found, without too large a gap
+     * @param grey          the grey source
+     * @param xLeft         left bound (right edge of the left stem)
+     * @param xRight        right bound (left edge of the right stem)
+     * @param yLeft         expected single-beam level at xLeft
+     * @param yRight        expected single-beam level at xRight
+     * @param typicalHeight the sheet's typical single-beam height, used to size the scan window
+     *                      and to judge whether a found band is a plausible beam
+     * @return the bands found (empty if inconclusive), ordered by offset
      */
-    private boolean hasRealInk (ByteProcessor grey,
-                                int xLeft,
-                                int xRight,
-                                double yLeft,
-                                double yRight,
-                                double height)
+    private List<Band> scanBands (ByteProcessor grey,
+                                  int xLeft,
+                                  int xRight,
+                                  double yLeft,
+                                  double yRight,
+                                  double typicalHeight)
     {
-        final int margin = (int) Math.rint(height * constants.bandMargin.getValue());
-        final int threshold = constants.greyDarknessThreshold.getValue();
+        final List<Band> none = Collections.emptyList();
         final int width = xRight - xLeft;
 
         if (width <= 0) {
-            return false;
+            return none;
         }
 
-        int darkColumns = 0;
-        int currentGap = 0;
-        int largestGap = 0;
+        final int threshold = constants.greyDarknessThreshold.getValue();
+        final int halfWindow = (int) Math.rint(typicalHeight * constants.scanHalfWindowRatio
+                .getValue());
+
+        // Per-offset dark-column counts, offset in [-halfWindow, +halfWindow].
+        final int[] darkCounts = new int[(2 * halfWindow) + 1];
 
         for (int x = xLeft; x < xRight; x++) {
             final double ratio = (double) (x - xLeft) / width;
-            final int yCenter = (int) Math.rint(yLeft + (ratio * (yRight - yLeft)));
-            final int yTop = yCenter - margin;
-            final int yBottom = yCenter + margin;
+            final double yCenter = yLeft + (ratio * (yRight - yLeft));
 
-            boolean dark = false;
+            for (int o = -halfWindow; o <= halfWindow; o++) {
+                final int y = (int) Math.rint(yCenter + o);
 
-            for (int y = yTop; y <= yBottom; y++) {
                 if (grey.get(x, y) < threshold) {
-                    dark = true;
-
-                    break;
+                    darkCounts[o + halfWindow]++;
                 }
-            }
-
-            if (dark) {
-                darkColumns++;
-                largestGap = Math.max(largestGap, currentGap);
-                currentGap = 0;
-            } else {
-                currentGap++;
             }
         }
 
-        largestGap = Math.max(largestGap, currentGap);
+        final double minRatio = constants.minDarkColumnRatio.getValue();
+        final boolean[] dark = new boolean[darkCounts.length];
 
-        final double darkRatio = (double) darkColumns / width;
+        for (int i = 0; i < darkCounts.length; i++) {
+            dark[i] = ((double) darkCounts[i] / width) >= minRatio;
+        }
 
-        return (darkRatio >= constants.minDarkColumnRatio.getValue())
-                && (largestGap <= scale.toPixels(constants.maxCoreGap));
+        // No separate gap-bridging step: the per-offset dark ratio (aggregated across every
+        // sampled column) is already robust to column-level noise on its own -- confirmed on a
+        // real score, where the true gap between two stacked beams was only a single offset-unit
+        // wide, so any bridging tolerance wide enough to be "safe" against noise would have erased
+        // that real gap too. A single light offset between two dark runs is trusted as real.
+
+        // Extract runs of dark offsets as candidate bands.
+        final List<Band> bands = new ArrayList<>();
+        final double minHeight = typicalHeight * constants.minBandHeightRatio.getValue();
+        final double maxHeight = typicalHeight * constants.maxBandHeightRatio.getValue();
+
+        for (int i = 0; i < dark.length;) {
+            if (!dark[i]) {
+                i++;
+
+                continue;
+            }
+
+            int j = i;
+
+            while ((j < dark.length) && dark[j]) {
+                j++;
+            }
+
+            final double bandHeight = j - i;
+
+            if (bandHeight > maxHeight) {
+                // Too tall to be one beam -- genuinely ambiguous (could be a third stuck beam, or
+                // something else entirely), not a case to guess at.
+                return none;
+            } else if (bandHeight >= minHeight) {
+                final double offset = (((i + j) / 2.0) - halfWindow);
+                bands.add(new Band(offset, bandHeight));
+            }
+            // else: too short to be a real beam -- just noise (e.g. a stray dark pixel from
+            // nearby unrelated ink caught by the wide scan window), skip it rather than aborting
+            // the whole scan over it.
+
+            i = j;
+        }
+
+        if (bands.size() > 2) {
+            return none; // More structure than a single/double beam explains -- stay conservative
+        }
+
+        return bands;
     }
 
     //-----------//
@@ -553,6 +622,54 @@ public class ResidualBeamBuilder
         }
     }
 
+    //------//
+    // Band //
+    //------//
+    /**
+     * One dark band found by {@link #scanBands}, describing one candidate beam: its vertical
+     * offset from the stem-tip centerline (positive = toward the tail side) and its own measured
+     * height.
+     */
+    private static class Band
+    {
+        final double offset;
+
+        final double height;
+
+        Band (double offset,
+             double height)
+        {
+            this.offset = offset;
+            this.height = height;
+        }
+    }
+
+    //-----------//
+    // Candidate //
+    //-----------//
+    /**
+     * A validated beam ready to be added to the sig, paired with the two stem links that already
+     * passed {@link BeamStemRelation#checkLink}, so they don't need recomputing after the
+     * all-or-nothing validation loop in {@link #attemptRecovery}.
+     */
+    private static class Candidate
+    {
+        final BeamInter beam;
+
+        final Link leftLink;
+
+        final Link rightLink;
+
+        Candidate (BeamInter beam,
+                  Link leftLink,
+                  Link rightLink)
+        {
+            this.beam = beam;
+            this.leftLink = leftLink;
+            this.rightLink = rightLink;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -603,18 +720,27 @@ public class ResidualBeamBuilder
                         + " beam's median reaches the glyph's actual ink edge rather than stopping"
                         + " exactly on the stem");
 
-        private final Constant.Ratio bandMargin = new Constant.Ratio(
-                0.6,
-                "Half-height of the vertical scan band, as a ratio of beam height");
-
         private final Constant.Ratio minDarkColumnRatio = new Constant.Ratio(
                 0.6,
-                "Minimum fraction of columns, between the two stems, that must show real ink in"
-                        + " the grey source before a beam is ever created from it");
+                "Minimum fraction of sampled columns that must be dark at a given vertical offset"
+                        + " for that offset to count as part of a band");
 
-        private final Scale.Fraction maxCoreGap = new Scale.Fraction(
-                0.3,
-                "Maximum run of consecutive ink-free columns tolerated within the scanned band");
+        private final Constant.Ratio scanHalfWindowRatio = new Constant.Ratio(
+                2.2,
+                "Half-height of the vertical scan window, as a ratio of typical single-beam"
+                        + " height -- wide enough to comfortably contain two stacked beams plus a"
+                        + " gutter plus margin. Confirmed on a real score: two bands of ~6-8px each"
+                        + " (typical height 7px) separated by a ~3px gap fit well inside this");
+
+        private final Constant.Ratio minBandHeightRatio = new Constant.Ratio(
+                0.5,
+                "Minimum plausible band height, as a ratio of typical single-beam height, for a"
+                        + " dark run to be trusted as a real beam rather than noise");
+
+        private final Constant.Ratio maxBandHeightRatio = new Constant.Ratio(
+                1.8,
+                "Maximum plausible band height, as a ratio of typical single-beam height, for a"
+                        + " dark run to be trusted as one beam rather than an unreliable read");
 
         private final Constant.Integer greyDarknessThreshold = new Constant.Integer(
                 "grey level",
