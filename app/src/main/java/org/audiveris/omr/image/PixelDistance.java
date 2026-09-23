@@ -49,6 +49,9 @@ public class PixelDistance
     /** Distance. */
     public final double d;
 
+    /** How far ink may be from an expected foreground pixel and still satisfy it. */
+    public final int slack;
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
@@ -62,9 +65,26 @@ public class PixelDistance
                           int y,
                           double d)
     {
+        this(x, y, d, 0);
+    }
+
+    /**
+     * Creates a new PixelDistance object.
+     *
+     * @param x     location abscissa
+     * @param y     location ordinate
+     * @param d     measured distance at this location
+     * @param slack how far ink may be from this location and still satisfy it
+     */
+    public PixelDistance (int x,
+                          int y,
+                          double d,
+                          int slack)
+    {
         this.x = x;
         this.y = y;
         this.d = d;
+        this.slack = slack;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

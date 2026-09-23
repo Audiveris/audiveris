@@ -597,14 +597,16 @@ public class TemplateFactory
      *
      * @param shape     the given shape
      * @param family    the font family
-     * @param pointSize the font point size
+     * @param pointSize   the font point size
+     * @param strokeSlack whether the page may draw the strokes thinner than the font
      * @return the collection of testing locations
      */
     public static List<PixelDistance> retrieveKeyPoints (Shape shape,
                                                          MusicFamily family,
-                                                         int pointSize)
+                                                         int pointSize,
+                                                         boolean strokeSlack)
     {
-        return new Builder(shape, family, pointSize).processSymbol(1);
+        return new Builder(shape, family, pointSize, strokeSlack).processSymbol(1);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -623,18 +625,27 @@ public class TemplateFactory
 
         private final int pointSize;
 
+        /** Whether the strokes may be engraved thinner than the font draws them. */
+        private final boolean strokeSlack;
+
+        /** Per pixel, how far ink may be from it and still satisfy it. */
+        private int[][] slacks;
+
         /**
-         * @param shape     shape of the template
-         * @param family    the chosen MusicFont family
-         * @param pointSize precise scaling for font
+         * @param shape       shape of the template
+         * @param family      the chosen MusicFont family
+         * @param pointSize   precise scaling for font
+         * @param strokeSlack whether the page may draw the strokes thinner than the font
          */
         public Builder (Shape shape,
                         MusicFamily family,
-                        int pointSize)
+                        int pointSize,
+                        boolean strokeSlack)
         {
             this.shape = shape;
             this.family = family;
             this.pointSize = pointSize;
+            this.strokeSlack = strokeSlack;
         }
 
         /**
@@ -776,7 +787,96 @@ public class TemplateFactory
                 setHoleDistances(distances, img);
             }
 
+            if (strokeSlack) {
+                slacks = strokeSlacks(distances);
+            }
+
             return distances;
+        }
+
+        /**
+         * Report, per foreground pixel, how far ink may be from it and still satisfy it.
+         * <p>
+         * Engravings differ far more in how wide they draw a stroke than in where they run
+         * it, so a keypoint on an arm this font draws three pixels wide asks for ink a page
+         * drawing it one pixel wide never puts there. Each pixel may find its ink anywhere
+         * down the middle of its own stroke, which is where the two agree.
+         *
+         * @param distances the template distances, foreground at zero
+         * @return the slack of every pixel, zero outside the foreground
+         */
+        private int[][] strokeSlacks (DistanceTable distances)
+        {
+            final int width = distances.getWidth();
+            final int height = distances.getHeight();
+            final boolean[][] back = new boolean[width][height];
+
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    back[x][y] = distances.getValue(x, y) != 0;
+                }
+            }
+
+            // How deep inside its stroke each foreground pixel lies, and which pixels run
+            // along the middle of one
+            final DistanceTable depth = new ChamferDistance.Short().compute(back);
+            final boolean[][] middle = new boolean[width][height];
+
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    middle[x][y] = !back[x][y] && isRidge(depth, x, y);
+                }
+            }
+
+            // Each pixel may find its ink anywhere within the width of its own stroke
+            final DistanceTable toMiddle = new ChamferDistance.Short().compute(middle);
+            final int[][] slacks = new int[width][height];
+
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    if (!back[x][y]) {
+                        // How deep the pixel sits plus how far the middle is, which is the
+                        // half-width of the stroke it belongs to
+                        slacks[x][y] = depth.getValue(x, y) + toMiddle.getValue(x, y);
+                    }
+                }
+            }
+
+            return slacks;
+        }
+
+        /**
+         * Report whether no neighbour lies deeper in the stroke.
+         *
+         * @param depth distance of every pixel to the nearest background pixel
+         * @param x     pixel abscissa
+         * @param y     pixel ordinate
+         * @return true if no neighbour lies deeper in the stroke
+         */
+        private boolean isRidge (DistanceTable depth,
+                                 int x,
+                                 int y)
+        {
+            final int here = depth.getValue(x, y);
+
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dx = -1; dx <= 1; dx++) {
+                    final int nx = x + dx;
+                    final int ny = y + dy;
+
+                    if ((dx == 0 && dy == 0) //
+                            || (nx < 0) || (nx >= depth.getWidth()) //
+                            || (ny < 0) || (ny >= depth.getHeight())) {
+                        continue;
+                    }
+
+                    if (depth.getValue(nx, ny) > here) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         /**
@@ -800,7 +900,8 @@ public class TemplateFactory
                     final int dist = distances.getValue(x, y);
 
                     if (dist <= maxDist) {
-                        keyPoints.add(new PixelDistance(x, y, dist));
+                        keyPoints.add(
+                                new PixelDistance(x, y, dist, slacks == null ? 0 : slacks[x][y]));
                     }
                 }
             }
@@ -844,7 +945,8 @@ public class TemplateFactory
                     img.getWidth(),
                     img.getHeight(),
                     keyPoints,
-                    slimBounds);
+                    slimBounds,
+                    strokeSlack);
 
             // Add specific anchor points, if any
             addAnchors(tpl, slimBounds);
@@ -1060,7 +1162,12 @@ public class TemplateFactory
                     pointSize);
 
             for (Shape shape : ShapeSet.Heads) {
-                templates.put(shape, new Builder(shape, family, pointSize).buildTemplate());
+                // Crosses only. A circled head's ring lies along the arms of the cross it
+                // rings, where any slack makes the two the same shape.
+                final boolean strokes = ShapeSet.HeadsCross.contains(shape);
+                templates.put(
+                        shape,
+                        new Builder(shape, family, pointSize, strokes).buildTemplate());
             }
         }
 
