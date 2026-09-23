@@ -1265,6 +1265,10 @@ public class NoteHeadsBuilder
                 0, // Was 0.38,
                 "How much do we boost stem-less heads (always isolated)");
 
+        private final Constant.Ratio minInkHeight = new Constant.Ratio(
+                0.75,
+                "Least of a template's height a head's own ink may stand");
+
         private final Constant.Ratio crossBoost = new Constant.Ratio(
                 0.0, // Was 0.1,
                 "How much do we boost cross heads (badly recognized by template matching)");
@@ -1905,6 +1909,29 @@ public class NoteHeadsBuilder
             }
         }
 
+        //----------------//
+        // fillsItsShape  //
+        //----------------//
+        /**
+         * Report whether the ink a head was built from is as tall as the template that found it.
+         * <p>
+         * A template's distance and the glyph's own bounds part company where the match is on
+         * something else: a numeral, a fragment, the end of a stroke. Head ink is erased before
+         * the symbol step, so whatever that ink really belonged to is gone with it.
+         *
+         * @param head     the head just built
+         * @param template the template that found it
+         * @return true if its ink fills the template's height
+         */
+        private boolean fillsItsShape (HeadInter head,
+                                       Template template)
+        {
+            final int drawn = head.getBounds().height;
+            final int expected = template.getSlimBounds().height;
+
+            return drawn >= expected * constants.minInkHeight.getValue();
+        }
+
         //--------------------//
         // isWeakStemLessHead //
         //--------------------//
@@ -2056,7 +2083,7 @@ public class NoteHeadsBuilder
                 final Template template = catalog.getTemplate(inter.getShape());
                 final Glyph glyph = inter.retrieveGlyph(template, image);
 
-                if (glyph != null) {
+                if (glyph != null && fillsItsShape(inter, template)) {
                     sig.addVertex(inter);
                 } else {
                     it.remove();
@@ -2159,7 +2186,7 @@ public class NoteHeadsBuilder
                         final Template template = catalog.getTemplate(shape);
                         final Glyph glyph = head.retrieveGlyph(template, image);
 
-                        if (glyph == null) {
+                        if (glyph == null || !fillsItsShape(head, template)) {
                             continue;
                         }
 
