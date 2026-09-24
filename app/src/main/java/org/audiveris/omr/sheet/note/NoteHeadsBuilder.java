@@ -51,12 +51,14 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.score.DrumSet;
 import org.audiveris.omr.score.DrumSet.DrumInstrument;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.grid.LineInfo;
+import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
@@ -1630,7 +1632,7 @@ public class NoteHeadsBuilder
         {
             final Staff staff = line.getStaff();
 
-            if (!staff.isDrum()) {
+            if (!isUnpitched(staff)) {
                 return sheetTemplateNotesAll;
             }
 
@@ -1664,6 +1666,42 @@ public class NoteHeadsBuilder
             }
 
             return allShapes;
+        }
+
+        //-------------//
+        // isUnpitched //
+        //-------------//
+        /**
+         * Report whether a staff is to be read as unpitched, so that its head templates
+         * are limited to the motifs the drum set lists for each pitch.
+         * <p>
+         * {@link Staff#isDrum()} answers from a PERCUSSION_CLEF and a great many drum
+         * charts print none, opening straight onto the time signature. Setting
+         * {@code drumNotation} stands in for the clef that was never printed; a staff
+         * whose clef was read and is not a percussion clef stays pitched.
+         * <p>
+         * Asked here rather than inside {@code isDrum()}, which {@code ClefBuilder}
+         * consults while it is still choosing which clef shapes to look for: a true
+         * answer there would narrow the candidates to PERCUSSION_CLEF alone, and a
+         * melodic staff beside the drum one would never find its own clef.
+         *
+         * @param staff the staff to test
+         * @return true if its heads are to be looked up in the drum set
+         */
+        private boolean isUnpitched (Staff staff)
+        {
+            if (staff.isDrum()) {
+                return true;
+            }
+
+            final StaffHeader header = staff.getHeader();
+
+            if ((header != null) && (header.clef != null)) {
+                return false;
+            }
+
+            return staff.getSystem().getSheet().getStub().getProcessingSwitches()
+                    .getValue(ProcessingSwitch.drumNotation);
         }
 
         //-----------------//
