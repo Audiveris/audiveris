@@ -129,7 +129,6 @@
     <!-- w/ open sign -> foot splash -->
     <entry pitch-position="5" motif="cross"     sound="Pedal_Hi_Hat"/>
     <entry pitch-position="5" motif="circle"    sound="Open_Hi_Hat"/>
-    <entry pitch-position="5" motif="oval"      sound="Acoustic_Bass_Drum"/>
     
 <!--
     Here below is the list of not yet assigned sounds
