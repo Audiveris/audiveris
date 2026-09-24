@@ -44,6 +44,7 @@ import org.apache.commons.io.FileUtils;
 import org.jfree.data.xy.XYSeries;
 
 import java.awt.Color;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -585,7 +586,8 @@ public class BasicClassifier
             return;
         }
 
-        if (chartListener == null) {
+        // The chart listener opens Swing windows, which a headless JVM cannot.
+        if ((chartListener == null) && !GraphicsEnvironment.isHeadless()) {
             addListener(chartListener = new ChartListener());
         }
 
