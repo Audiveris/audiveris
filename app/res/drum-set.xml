@@ -79,7 +79,7 @@
     <entry pitch-position="-5" motif="circle"                         sound="Open_Hi_Hat"/>
     <entry pitch-position="-5" motif="cross"    sign="PLAYING_CLOSED" sound="Closed_Hi_Hat"/>   
     <entry pitch-position="-5" motif="cross"                          sound="Closed_Hi_Hat"/>
-    <entry pitch-position="-5" motif="diamond"                        sound="Open_Hi_Hat"/>
+    <entry pitch-position="-5" motif="diamond"                        sound="Ride_Cymbal_1"/>
 
     <!-- -4 -->
     <entry pitch-position="-4" motif="oval"     sound="High_Tom"/>
