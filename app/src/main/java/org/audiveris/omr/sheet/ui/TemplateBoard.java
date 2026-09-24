@@ -328,7 +328,7 @@ public class TemplateBoard
             final Anchor anchor = anchoredTemplate.anchor;
             final Template template = anchoredTemplate.template;
 
-            final double dist = template.evaluate(pt.x, pt.y, anchor, table);
+            final double dist = template.evaluate(pt.x, pt.y, anchor, table, false);
             evalField.setText(String.format("%.3f", dist));
 
             final double grade = Math.max(0, Grades.intrinsicRatio * Template.impactOf(dist));
