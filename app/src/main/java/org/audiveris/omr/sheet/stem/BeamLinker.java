@@ -716,14 +716,24 @@ public class BeamLinker
         purgeSeeds(list);
 
         // Try to have a stump on both beam sides
-        if (!list.isEmpty()) {
-            // Check for presence of seed on beam sides
-            for (HorizontalSide hSide : HorizontalSide.values()) {
-                Glyph seed = list.get(hSide == LEFT ? 0 : list.size() - 1);
-                final double x = LineUtil.intersection(seed.getCenterLine(), median).getX();
-                BeamPortion portion = BeamStemRelation.computeBeamPortion(beam, x, scale);
+        // Check for presence of seed on beam sides
+        for (HorizontalSide hSide : HorizontalSide.values()) {
+            if (list.isEmpty()) {
+                break;
+            }
 
-                if ((portion != null) && (portion.side() == hSide)) {
+            final Glyph seed = list.get(hSide == LEFT ? 0 : list.size() - 1);
+            final double x = LineUtil.intersection(seed.getCenterLine(), median).getX();
+            final BeamPortion portion = BeamStemRelation.computeBeamPortion(beam, x, scale);
+
+            if ((portion != null) && (portion.side() == hSide)) {
+                final Set<VerticalSide> directions = getStumpDirections(seed);
+
+                if ((directions != null) && directions.isEmpty()) {
+                    // Same rule as buildSideStump: a side stump must point out of the beam group,
+                    // else it gets no VLinker and would block the equipOrphanSides() fallback.
+                    list.remove(seed);
+                } else {
                     sideStumps.put(hSide, seed);
                 }
             }
