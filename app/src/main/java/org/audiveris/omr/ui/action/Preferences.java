@@ -23,11 +23,13 @@ package org.audiveris.omr.ui.action;
 
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
+import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.OmrStep;
+import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.util.UILookAndFeel;
@@ -43,11 +45,15 @@ import org.slf4j.LoggerFactory;
 import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -57,9 +63,13 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -135,11 +145,216 @@ public abstract class Preferences
     // show //
     //------//
     /**
-     * Display this entity.
+     * Display the preferences dialog.
+     * <p>
+     * Controls apply their effect immediately. "Cancel" reverts to the state captured
+     * when the dialog was opened. "Reset" applies the default values and refreshes the
+     * controls.
      */
     public static void show ()
     {
-        OMR.gui.displayMessage(getMessage(), resources.getString("Preferences.title"));
+        final Snapshot snapshot = takeSnapshot();
+
+        final JDialog dialog = new JDialog(
+                OMR.gui.getFrame(),
+                resources.getString("Preferences.title"),
+                true); // Modal flag
+        dialog.setName("PreferencesDialog");
+        dialog.setResizable(false);
+
+        final JPanel content = new JPanel(new BorderLayout());
+        content.add(getMessage(), BorderLayout.CENTER);
+
+        // Buttons
+        final JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        final JButton ok = new JButton(resources.getString("Preferences.ok"));
+        ok.addActionListener(e -> dialog.dispose());
+
+        final JButton cancel = new JButton(resources.getString("Preferences.cancel"));
+        cancel.addActionListener(e ->
+        {
+            restoreSnapshot(snapshot);
+            dialog.dispose();
+        });
+
+        final JButton reset = new JButton(resources.getString("Preferences.reset"));
+        reset.addActionListener(e ->
+        {
+            resetToDefaults();
+
+            // Refresh content to reflect the default values
+            content.removeAll();
+            content.add(getMessage(), BorderLayout.CENTER);
+            content.add(buttons, BorderLayout.SOUTH);
+            content.revalidate();
+            content.repaint();
+        });
+
+        buttons.add(reset);
+        buttons.add(ok);
+        buttons.add(cancel);
+        content.add(buttons, BorderLayout.SOUTH);
+
+        dialog.setContentPane(content);
+
+        // Keyboard shortcuts
+        dialog.getRootPane().setDefaultButton(ok);
+        dialog.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel");
+        dialog.getRootPane().getActionMap().put("cancel", new AbstractAction()
+        {
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                cancel.doClick();
+            }
+        });
+
+        dialog.pack();
+        OmrGui.getApplication().show(dialog);
+    }
+
+    //--------------//
+    // takeSnapshot //
+    //--------------//
+    /**
+     * Capture the current preference state, to be restored if the user cancels.
+     *
+     * @return the snapshot
+     */
+    private static Snapshot takeSnapshot ()
+    {
+        final Topic[] topics = Topic.values();
+        final boolean[] topicValues = new boolean[topics.length];
+
+        for (int i = 0; i < topics.length; i++) {
+            topicValues[i] = topics[i].isSet();
+        }
+
+        return new Snapshot(
+                topicValues,
+                StubsController.getEarlyStep(),
+                PluginsManager.defaultPluginId.getValue(),
+                BookManager.getBaseFolder(),
+                BookManager.useInputBookFolder().isSet(),
+                BookManager.useSeparateBookFolders().isSet(),
+                UIUtil.getGlobalFontRatio(),
+                Locale.getDefault(),
+                UILookAndFeel.getThemeName());
+    }
+
+    //-----------------//
+    // restoreSnapshot //
+    //-----------------//
+    /**
+     * Restore a previously captured preference state.
+     *
+     * @param snapshot the state to restore
+     */
+    private static void restoreSnapshot (Snapshot snapshot)
+    {
+        final Topic[] topics = Topic.values();
+
+        for (int i = 0; i < topics.length; i++) {
+            if (topics[i].isSet() != snapshot.topics[i]) {
+                topics[i].set(snapshot.topics[i]);
+            }
+        }
+
+        if (StubsController.getEarlyStep() != snapshot.earlyStep) {
+            StubsController.setEarlyStep(snapshot.earlyStep);
+        }
+
+        if (!snapshot.defaultPlugin.equals(PluginsManager.defaultPluginId.getValue())) {
+            PluginsManager.defaultPluginId.setSpecific(snapshot.defaultPlugin);
+        }
+
+        if (!snapshot.baseFolder.equals(BookManager.getBaseFolder())) {
+            BookManager.setBaseFolder(snapshot.baseFolder);
+        }
+
+        if (BookManager.useInputBookFolder().isSet() != snapshot.inputBookFolder) {
+            BookManager.useInputBookFolder().setValue(snapshot.inputBookFolder);
+        }
+
+        if (BookManager.useSeparateBookFolders().isSet() != snapshot.separateBookFolders) {
+            BookManager.useSeparateBookFolders().setValue(snapshot.separateBookFolders);
+        }
+
+        if (UIUtil.getGlobalFontRatio() != snapshot.fontRatio) {
+            UIUtil.setGlobalFontRatio(snapshot.fontRatio);
+        }
+
+        if (!Locale.getDefault().equals(snapshot.locale)) {
+            Main.setLocale(snapshot.locale);
+        }
+
+        if (!snapshot.theme.equals(UILookAndFeel.getThemeName())) {
+            UILookAndFeel.setUI(snapshot.theme);
+        }
+    }
+
+    //-----------------//
+    // resetToDefaults //
+    //-----------------//
+    /**
+     * Apply the default value to every preference.
+     */
+    private static void resetToDefaults ()
+    {
+        for (Topic topic : Topic.values()) {
+            topic.resetToDefault();
+        }
+
+        StubsController.setEarlyStep(OmrStep.BINARY);
+        PluginsManager.defaultPluginId.setSpecific("");
+        BookManager.setBaseFolder(WellKnowns.DEFAULT_BASE_FOLDER);
+        BookManager.useInputBookFolder().resetToSource();
+        BookManager.useSeparateBookFolders().resetToSource();
+        UIUtil.setGlobalFontRatio(1.0);
+        Main.setLocale(Locale.ENGLISH);
+        UILookAndFeel.setUI("com.formdev.flatlaf.FlatLightLaf");
+    }
+
+    //----------//
+    // Snapshot //
+    //----------//
+    /**
+     * Immutable picture of the preference state, captured when the dialog is shown.
+     */
+    private static class Snapshot
+    {
+        private final boolean[] topics;
+        private final OmrStep earlyStep;
+        private final String defaultPlugin;
+        private final Path baseFolder;
+        private final boolean inputBookFolder;
+        private final boolean separateBookFolders;
+        private final double fontRatio;
+        private final Locale locale;
+        private final String theme;
+
+        private Snapshot (boolean[] topics,
+                          OmrStep earlyStep,
+                          String defaultPlugin,
+                          Path baseFolder,
+                          boolean inputBookFolder,
+                          boolean separateBookFolders,
+                          double fontRatio,
+                          Locale locale,
+                          String theme)
+        {
+            this.topics = topics;
+            this.earlyStep = earlyStep;
+            this.defaultPlugin = defaultPlugin;
+            this.baseFolder = baseFolder;
+            this.inputBookFolder = inputBookFolder;
+            this.separateBookFolders = separateBookFolders;
+            this.fontRatio = fontRatio;
+            this.locale = locale;
+            this.theme = theme;
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -693,6 +908,11 @@ public abstract class Preferences
         public void set (boolean val)
         {
             constant.setValue(val);
+        }
+
+        public void resetToDefault ()
+        {
+            constant.resetToSource();
         }
 
         public boolean isAdvanced ()
