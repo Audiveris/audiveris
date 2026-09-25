@@ -28,14 +28,12 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
-import static org.audiveris.omr.glyph.ShapeSet.HeadMotif.*;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.SheetEditor;
 import org.audiveris.omr.sheet.ui.SheetEditor.SheetKeyListener;
 import org.audiveris.omr.ui.Board;
-import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.action.Preferences;
 import org.audiveris.omr.ui.dnd.AbstractGhostDropListener;
@@ -151,9 +149,6 @@ public class ShapeBoard
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(ShapeBoard.class);
 
-    /** Unicode value for black up-pointing triangle sign: {@value}. */
-    private static final String BACK = "\u25B2";
-
     static {
         ShapeShortcuts.loadAllConfigurations();
     }
@@ -175,13 +170,6 @@ public class ShapeBoard
         String setName = ((Component) e.getSource()).getName();
         ShapeSet set = ShapeSet.getShapeSet(setName);
         selectSet(set);
-    };
-
-    /**
-     * Called-back when a set panel is closed.
-     */
-    private final ActionListener closeListener = (ActionEvent e) -> {
-        closeSet();
     };
 
     /**
