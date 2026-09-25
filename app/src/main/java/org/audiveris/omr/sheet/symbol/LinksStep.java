@@ -25,6 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.clef.ResidualClefBuilder;
 import org.audiveris.omr.sheet.rhythm.MeasureFiller;
 import org.audiveris.omr.sig.BeamHeadCleaner;
 import org.audiveris.omr.sig.SigReducer;
@@ -103,6 +104,10 @@ public class LinksStep
                              Void context)
         throws StepException
     {
+        // Recover any mid-staff clef change missed by the general symbol search, before anything
+        // below (ties, pitch-dependent chores) reads clef state -- see ResidualClefBuilder.
+        new ResidualClefBuilder(sheet).process();
+
         // Check for ties in same staff, now that head alterations and clef changes are available
         for (SystemInfo system : sheet.getSystems()) {
             List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
