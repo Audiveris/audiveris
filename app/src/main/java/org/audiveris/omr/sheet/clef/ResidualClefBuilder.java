@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet.clef;
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.ShapeClassifier;
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
@@ -50,8 +51,10 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -80,13 +83,31 @@ import java.util.Set;
  * <p>
  * Rather than reworking that shared, general-purpose search (used by every fixed-shape symbol, not
  * just clefs), this targeted pass runs late, once the main pipeline has had its say: it looks, per
- * staff, at whatever ink is still completely unclaimed (no Inter uses it), groups that unclaimed
- * ink by simple proximity, and asks the classifier to judge each resulting group as a whole. This
- * directly implements the idea that a bigger, more complete candidate should be preferred over
- * smaller fragments of the same ink: a real symbol's pieces don't get names of their own once every
+ * staff, at whatever ink is still unclaimed (no Inter uses it), groups that ink by simple
+ * proximity, and asks the classifier to judge each resulting group as a whole. This directly
+ * implements the idea that a bigger, more complete candidate should be preferred over smaller
+ * fragments of the same ink: a real symbol's pieces don't get names of their own once every
  * *other* explanation for them has already been tried and rejected by the main pipeline, so by the
  * time this pass runs, any ink still sitting unclaimed is exactly the ink no smaller interpretation
  * ever fit well enough to claim -- the one thing left to try is the complete union.
+ * <p>
+ * "Unclaimed" is not always literal, though. Confirmed on a real score: a mid-staff clef's own ink
+ * can itself be mis-claimed by the main pipeline -- a spurious {@code STEM} plus a spurious
+ * {@code NOTEHEAD_VOID}, each graded well below any genuine note nearby (roughly 0.3-0.6, versus
+ * 0.77+ for real notes in the same area) -- which then blocks this pass from ever seeing that ink
+ * at all, since it no longer reads as unclaimed. {@link #findWeakClaimant} treats ink claimed only
+ * by such a low-grade, plausibly-clef-shaped Inter as reclaimable: it is gathered into the same
+ * candidate pool as genuinely unclaimed ink, and if the resulting compound classifies confidently
+ * as a clef, the weak claimant is evicted in favor of the recovered clef -- mirroring how
+ * {@link org.audiveris.omr.sheet.beam.ResidualBeamBuilder} evicts a spurious head once a beam is
+ * recovered over it. A strong claim (a normal, confidently-graded Inter) is never touched.
+ * <p>
+ * A reclaimed compound is not always a clean, full clef shape either: merging a handful of
+ * simplified fragments (e.g. two round blobs plus a connecting stroke -- literally the same shapes
+ * a real half note is made of) could plausibly score some other, unrelated shape as the
+ * classifier's single best guess, with the correct clef shape still a strong runner-up. Acceptance
+ * therefore searches a few ranked guesses deep for a clef-family shape, rather than requiring it
+ * to win outright -- see {@code candidateSearchDepth}.
  * <p>
  * Runs from {@link org.audiveris.omr.sheet.symbol.LinksStep#doEpilog}, sheet-wide, for the same
  * reason the accordion-registration residual recoveries there do: by this point every system's own
@@ -107,6 +128,16 @@ public class ResidualClefBuilder
             Shape.G_CLEF_SMALL,
             Shape.F_CLEF,
             Shape.F_CLEF_SMALL);
+
+    /**
+     * Shapes a weak, low-grade Inter may hold while still being reclaimable as candidate clef
+     * ink -- see {@link #findWeakClaimant}. Confirmed on a real score: a mid-staff clef's own ink
+     * fragmented into exactly these shapes (a spurious {@code STEM} plus a spurious
+     * {@code NOTEHEAD_VOID}), each graded well below any genuine note observed nearby.
+     */
+    private static final EnumSet<Shape> RECLAIMABLE_SHAPES = EnumSet.of(
+            Shape.STEM,
+            Shape.NOTEHEAD_VOID);
 
     //~ Instance fields ------------------------------------------------------------------------------
 
@@ -142,8 +173,19 @@ public class ResidualClefBuilder
     {
         final Set<SystemInfo> impactedSystems = new LinkedHashSet<>();
 
+        // Glyphs already offered to some system's candidate pool, whether that attempt recovered
+        // a clef or not -- shared across every processSystem() call in this pass. Without this,
+        // a glyph sitting in the narrow overlap between two adjacent systems' own staffVerticalMargin
+        // zones (confirmed on a real score: the gap between one system's bottom staff and the next
+        // system's top staff) gets offered a second time once the first system's attempt leaves it
+        // unclaimed -- and the classifier throws when asked to evaluate a glyph under a system it
+        // does not actually belong to, since checks run at evaluation time assume system-consistent
+        // geometry. Retrying such a glyph could never succeed differently anyway: the ink itself did
+        // not change between attempts, only which system asked.
+        final Set<Glyph> examinedGlyphs = new LinkedHashSet<>();
+
         for (SystemInfo system : sheet.getSystems()) {
-            if (processSystem(system)) {
+            if (processSystem(system, examinedGlyphs)) {
                 impactedSystems.add(system);
             }
         }
@@ -170,10 +212,13 @@ public class ResidualClefBuilder
      * a candidate cluster is assigned to the single staff whose nearest line is truly closest
      * (via {@link Staff#doubleDistanceTo}), never to every staff whose margin happens to reach it.
      *
-     * @param system the system to inspect
+     * @param system          the system to inspect
+     * @param examinedGlyphs  glyphs already offered to some system's candidate pool in this same
+     *                        {@link #process()} pass -- never offered again, see {@link #process()}
      * @return true if at least one clef was recovered
      */
-    private boolean processSystem (SystemInfo system)
+    private boolean processSystem (SystemInfo system,
+                                    Set<Glyph> examinedGlyphs)
     {
         final List<Staff> staves = system.getStaves();
 
@@ -195,6 +240,10 @@ public class ResidualClefBuilder
         final int minPartWeight = scale.toPixels(constants.minPartWeight);
         final int maxPartSide = scale.toPixels(constants.maxClefWidth);
         final List<Glyph> candidates = new ArrayList<>();
+
+        // Weak claimant (if any) behind each candidate glyph that isn't genuinely unclaimed --
+        // evicted only if the cluster it ends up part of actually recovers a clef.
+        final Map<Glyph, Inter> weakClaimants = new LinkedHashMap<>();
 
         for (Glyph glyph : sheet.getGlyphIndex().getEntities()) {
             final Rectangle gb = glyph.getBounds();
@@ -219,8 +268,21 @@ public class ResidualClefBuilder
             if (!inAnyZone) {
                 continue;
             }
-            if (isClaimedAnywhere(glyph)) {
-                continue; // Already explained by some other Inter
+
+            if (!examinedGlyphs.add(glyph)) {
+                continue; // Already offered to (and, if unclaimed, already rejected by) another system
+            }
+
+            final Inter claimant = findClaimingInter(glyph);
+
+            if (claimant != null) {
+                final Inter weak = findWeakClaimant(claimant);
+
+                if (weak == null) {
+                    continue; // Strongly claimed, or claimed by a non-reclaimable shape
+                }
+
+                weakClaimants.put(glyph, weak);
             }
 
             candidates.add(glyph);
@@ -288,37 +350,65 @@ public class ResidualClefBuilder
 
             compound = sheet.getGlyphIndex().registerOriginal(compound);
 
-            final Evaluation[] evals;
+            final double minGrade = constants.residualClefMinGrade.getValue();
+            final int depth = constants.candidateSearchDepth.getValue();
+            final Evaluation[] evals = classifier.evaluate(
+                    compound,
+                    system,
+                    depth,
+                    minGrade,
+                    EnumSet.of(Classifier.Condition.CHECKED));
 
-            try {
-                evals = classifier.evaluate(
-                        compound,
-                        system,
-                        1,
-                        constants.residualClefMinGrade.getValue(),
-                        EnumSet.of(Classifier.Condition.CHECKED));
-            } catch (Exception ex) {
+            // A clef need not be the single top guess -- see class javadoc: a reclaimed compound
+            // built from just a couple of simplified fragments (e.g. two round blobs plus a
+            // connecting stroke) can resemble a generic note shape at least as much as it
+            // resembles the clef those fragments actually came from. Take the first clef-family
+            // shape found among the top-ranked, grade-qualifying guesses.
+            Evaluation clefEval = null;
+
+            for (Evaluation eval : evals) {
+                if (CANDIDATE_SHAPES.contains(eval.shape)) {
+                    clefEval = eval;
+
+                    break;
+                }
+            }
+
+            if (clefEval == null) {
                 continue;
             }
 
-            if ((evals.length == 0) || !CANDIDATE_SHAPES.contains(evals[0].shape)) {
-                continue;
-            }
-
-            final Shape shape = evals[0].shape;
-            final double grade = Grades.intrinsicRatio * evals[0].grade;
+            final Shape shape = clefEval.shape;
+            final double grade = Grades.intrinsicRatio * clefEval.grade;
             final ClefInter clef = ClefInter.createValid(compound, shape, grade, bestStaff);
 
             if (clef == null) {
                 continue;
             }
 
+            // Only now, with a confirmed recovery, evict any weak claimant this cluster
+            // reclaimed ink from -- a rejected cluster must never evict anything.
+            final Set<Inter> evictions = new LinkedHashSet<>();
+
+            for (Glyph part : cluster) {
+                final Inter weak = weakClaimants.get(part);
+
+                if (weak != null) {
+                    evictions.add(weak);
+                }
+            }
+
+            for (Inter weak : evictions) {
+                weak.remove();
+            }
+
             system.getSig().addVertex(clef);
             logger.info(
-                    "Recovered residual clef {} in staff#{} ({})",
+                    "Recovered residual clef {} in staff#{} ({}){}",
                     clef,
                     bestStaff.getId(),
-                    evals[0]);
+                    clefEval,
+                    evictions.isEmpty() ? "" : (", evicted " + evictions));
             recovered = true;
         }
 
@@ -326,28 +416,54 @@ public class ResidualClefBuilder
     }
 
     //------------------//
-    // isClaimedAnywhere //
+    // findClaimingInter //
     //------------------//
     /**
-     * Report whether the given glyph is already used by some Inter, in any system -- checked
-     * sheet-wide (not just the glyph's own nearest system) since a glyph near a system boundary
-     * can end up claimed under a neighboring system, as confirmed with the very same trap while
-     * building the accordion-registration residual recoveries.
+     * Report the Inter, if any, that already uses the given glyph -- checked sheet-wide (not just
+     * the glyph's own nearest system) since a glyph near a system boundary can end up claimed
+     * under a neighboring system, as confirmed with the very same trap while building the
+     * accordion-registration residual recoveries.
      *
      * @param glyph the glyph to check
-     * @return true if some Inter, anywhere, already uses this glyph
+     * @return the claiming Inter, or null if the glyph is genuinely unclaimed
      */
-    private boolean isClaimedAnywhere (Glyph glyph)
+    private Inter findClaimingInter (Glyph glyph)
     {
         for (SystemInfo system : sheet.getSystems()) {
             for (Inter inter : system.getSig().vertexSet()) {
                 if (inter.getGlyph() == glyph) {
-                    return true;
+                    return inter;
                 }
             }
         }
 
-        return false;
+        return null;
+    }
+
+    //-----------------//
+    // findWeakClaimant //
+    //-----------------//
+    /**
+     * Check whether the given claiming Inter is weak and plausibly-clef-shaped enough for its
+     * glyph to still be treated as reclaimable candidate clef ink -- see the class-level javadoc.
+     *
+     * @param claimant the Inter currently claiming this glyph (never null)
+     * @return the same claimant if it qualifies as a weak, reclaimable claim, else null
+     */
+    private Inter findWeakClaimant (Inter claimant)
+    {
+        if (!RECLAIMABLE_SHAPES.contains(claimant.getShape())) {
+            return null; // Not a shape family this ink is ever expected to fragment into
+        }
+
+        final Double claimantGrade = claimant.getGrade();
+
+        if ((claimantGrade == null)
+                || (claimantGrade > constants.weakClaimGradeCeiling.getValue())) {
+            return null; // Missing grade, or confidently explained by something else -- hands off
+        }
+
+        return claimant;
     }
 
     //~ Inner Classes --------------------------------------------------------------------------------
@@ -359,19 +475,39 @@ public class ResidualClefBuilder
             extends ConstantSet
     {
         private final Evaluation.Grade residualClefMinGrade = new Evaluation.Grade(
-                0.10,
-                "Minimum grade for a residual (mid-staff) clef -- deliberately lower than the"
-                        + " general Grades#symbolMinGrade (0.15). Confirmed on real scores: even a"
-                        + " correctly, completely reassembled G_CLEF_SMALL/F_CLEF_SMALL compound"
-                        + " -- the full union of every otherwise-unclaimed connected part in its"
-                        + " neighborhood, never a fragment of it -- routinely grades only 0.14-0.17,"
-                        + " straddling the general floor by a coin flip. Safe to relax here"
-                        + " specifically because (1) this method only ever asks about the single,"
-                        + " maximal candidate for a given patch of ink, never a competing subset of"
-                        + " it, and (2) acceptance is additionally restricted to the clef family"
-                        + " alone (CANDIDATE_SHAPES) -- so a lower floor only makes this pass more"
-                        + " willing to call a shape a clef, never more willing to call it anything"
-                        + " else.");
+                0.35,
+                "Minimum grade for a residual (mid-staff) clef. A much lower floor (0.10) was"
+                        + " tried first, on the premise that even a correctly, completely"
+                        + " reassembled compound \"routinely\" grades only 0.14-0.17 -- but real"
+                        + " data (T061 Subitsky, Music for Children) contradicts that premise:"
+                        + " every genuine recovery in that book graded 0.53-0.75, while the 0.10"
+                        + " floor let through a real false positive -- a quarter rest recovered"
+                        + " as a G_CLEF, confirmed by inspecting the source image at its exact"
+                        + " bounds -- graded only 0.084, a coin flip away from that floor. This"
+                        + " restores real margin on both sides: comfortably below every genuine"
+                        + " recovery actually observed, comfortably above the confirmed false"
+                        + " positive. Restricting acceptance to the clef family alone"
+                        + " (CANDIDATE_SHAPES) still holds and is unaffected by this change.");
+
+        private final Constant.Integer candidateSearchDepth = new Constant.Integer(
+                "shapes",
+                5,
+                "How many ranked classifier guesses to search for a clef-family shape, rather"
+                        + " than requiring it to be the single best guess -- a reclaimed compound"
+                        + " built from just a couple of simplified fragments is not guaranteed to"
+                        + " have the correct clef shape as its single top guess, only somewhere"
+                        + " near the top.");
+
+        private final Evaluation.Grade weakClaimGradeCeiling = new Evaluation.Grade(
+                0.65,
+                "An Inter of a shape in RECLAIMABLE_SHAPES claiming a glyph at or below this"
+                        + " grade is treated as a weak, reclaimable claim rather than a genuine"
+                        + " explanation of that ink. Confirmed on a real score: a mid-staff"
+                        + " clef's own ink, mis-claimed by the main pipeline, produced a spurious"
+                        + " STEM (grade 0.446-0.562) and a spurious NOTEHEAD_VOID (grade"
+                        + " 0.301-0.337), while genuine notes immediately nearby in the same area"
+                        + " graded 0.77 and above -- set with real margin below the latter and"
+                        + " above the former.");
 
         private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 2.0,
