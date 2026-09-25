@@ -72,4 +72,20 @@ public class BeamInter
     {
         super(Shape.BEAM, impacts, median, height);
     }
+
+    /**
+     * Creates a new BeamInter object, positioned right away, from a plain grade rather than
+     * detailed impacts -- used when a beam is reconstructed from grey-scale evidence rather than
+     * the normal spot/template evaluation, so no per-criterion impacts are available.
+     *
+     * @param grade  quality grade
+     * @param median median beam line
+     * @param height beam height
+     */
+    public BeamInter (Double grade,
+                      Line2D median,
+                      double height)
+    {
+        super(Shape.BEAM, grade, median, height);
+    }
 }
