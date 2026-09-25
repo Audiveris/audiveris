@@ -388,6 +388,10 @@ public class ResidualBeamBuilder
                 continue;
             }
 
+            if (sharesHeadColumn(suspect, other)) {
+                continue;
+            }
+
             if (xGap < bestGap) {
                 bestGap = xGap;
                 best = other;
@@ -395,6 +399,45 @@ public class ResidualBeamBuilder
         }
 
         return best;
+    }
+
+    //------------------//
+    // sharesHeadColumn //
+    //------------------//
+    /**
+     * Check whether a head of the other stem sits in the same column as a real head of the
+     * suspect stem (its spurious head, if any, excluded).
+     * <p>
+     * Two beamed notes follow each other in time, so their heads never share a column -- heads
+     * stacked in one column make a chord. Confirmed on a real score: a flag misread as a spurious
+     * void head plus a short spurious stem, right below the note's own head, got paired with that
+     * note's real stem only 0.75 interline away (the flag's ink then passing the grey-ink check),
+     * while the tightest genuine pair observed has its two heads more than a notehead apart.
+     *
+     * @param suspect the suspect stem/head pair
+     * @param other   the candidate neighbor stem
+     * @return true if pairing them would beam two heads of the same column
+     */
+    private boolean sharesHeadColumn (Suspect suspect,
+                                      StemInter other)
+    {
+        final double minDx = scale.toPixelsDouble(constants.minHeadXDistance);
+
+        for (HeadInter head : suspect.stem.getHeads()) {
+            if (head == suspect.head) {
+                continue;
+            }
+
+            final double x = head.getCenter2D().getX();
+
+            for (HeadInter otherHead : other.getHeads()) {
+                if (Math.abs(otherHead.getCenter2D().getX() - x) < minDx) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     //------//
@@ -786,6 +829,13 @@ public class ResidualBeamBuilder
     private static class Constants
             extends ConstantSet
     {
+        private final Scale.Fraction minHeadXDistance = new Scale.Fraction(
+                0.7,
+                "Minimum horizontal distance between a real head of each of the two paired stems"
+                        + " (heads in one column make a chord, never two beamed notes)."
+                        + " Confirmed on real scores: flag-induced false pairs had their heads 0.09"
+                        + " and 0.17 interline apart, the tightest genuine pair 1.39.");
+
         private final Scale.Fraction maxStemPairXGap = new Scale.Fraction(
                 4.6,
                 "Maximum gap between two stems' facing edges to consider pairing them for a"
