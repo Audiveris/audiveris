@@ -96,6 +96,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -148,6 +149,11 @@ public class NoteHeadsBuilder
 
     /** Shapes handled by template matching. */
     private static final Set<Shape> MATCHED_SHAPES = EnumSet.noneOf(Shape.class);
+
+    /** The head a small head drawn between brackets stands for on a drum staff. */
+    private static final Map<Shape, Shape> GHOSTED = Map.of(
+            Shape.NOTEHEAD_BLACK_SMALL, Shape.NOTEHEAD_BLACK,
+            Shape.NOTEHEAD_VOID_SMALL, Shape.NOTEHEAD_VOID);
     static {
         MATCHED_SHAPES.addAll(ShapeSet.HeadsOval);
         MATCHED_SHAPES.addAll(ShapeSet.QuarterHeads);
@@ -502,6 +508,244 @@ public class NoteHeadsBuilder
         final Rectangle box = template.getSlimBoundsAt(loc.x, loc.y, anchor);
 
         return new HeadInter(box, shape, impacts, staff, pitch);
+    }
+
+    //--------------------//
+    // noteBracketedStems //
+    //--------------------//
+    /**
+     * Record how far beyond its own edge a bracketed head's stem is drawn.
+     * <p>
+     * A ghost note is a head drawn between brackets, and an engraving may draw its stem
+     * outside the closing bracket rather than against the head. Measured from the head, the
+     * stem is then a bracket's width away, far past the gap a head-stem link allows, so the
+     * head is left without a stem and discarded, and the ink of the bracket is what a stem
+     * then finds a head in.
+     * <p>
+     * A side is shifted only where a bracket stands on either side of the head, as a pair of
+     * brackets does, and a stem seed stands just beyond the bracket on that side. A head whose stem is drawn against it, inside its brackets, is
+     * left as it is: the stem beyond its bracket is then a neighbour's.
+     *
+     * @param head the head just built
+     */
+    private void noteBracketedStems (HeadInter head)
+    {
+        final Rectangle box = head.getBounds();
+
+        if (hasOwnStem(box)) {
+            return;
+        }
+
+        // Brackets come in pairs: a stroke on one side only is an accidental or a neighbour
+        final int[] edges = {box.x, (box.x + box.width) - 1};
+        final Integer[] outers = {
+                bracketOuterEdge(box, LEFT, edges[0]),
+                bracketOuterEdge(box, RIGHT, edges[1])};
+
+        if ((outers[0] == null) || (outers[1] == null)) {
+            return;
+        }
+
+        for (HorizontalSide side : HorizontalSide.values()) {
+            final int i = side.ordinal();
+
+            if (seedBeyond(box, side, outers[i])) {
+                head.setStemShift(side, Math.abs(outers[i] - edges[i]));
+            }
+        }
+    }
+
+    //------------------//
+    // bracketOuterEdge //
+    //------------------//
+    /**
+     * Report where the bracket beside a head ends on the far side, if one is drawn there.
+     * <p>
+     * A bracket is a thin stroke standing at least as tall as the head, close beside it.
+     * The distance table leaves out the staff lines, the ledgers and the stem seeds, so
+     * what ink is left beside a head is the head's own company. A stem drawn down the
+     * bracket's outer edge hides part of the bracket, its middle or a tip, so a row hidden
+     * that way counts as part of the stroke, and a row a staff line crosses says nothing.
+     * The stroke has to reach past the head above and below, and be ink on either side of
+     * the head's middle, which a stem with nothing beside it is not.
+     *
+     * @param box  the head bounds
+     * @param side which side of the head
+     * @param edge the head's own abscissa on that side
+     * @return the bracket's far abscissa, or null if no bracket is drawn there
+     */
+    private Integer bracketOuterEdge (Rectangle box,
+                                      HorizontalSide side,
+                                      int edge)
+    {
+        final int dir = (side == LEFT) ? -1 : 1;
+        final int reach = params.maxBracketGap + params.maxBracketStroke;
+        final int yMin = Math.max(0, box.y - params.bracketOverhang);
+        final int yMax = Math.min(distances.getHeight() - 1,
+                                  (box.y + box.height) - 1 + params.bracketOverhang);
+        int top = Integer.MAX_VALUE; // Extent of the stroke, seen or hidden
+        int bottom = Integer.MIN_VALUE;
+        int inkTop = Integer.MAX_VALUE; // Extent of the stroke seen
+        int inkBottom = Integer.MIN_VALUE;
+        int stroke = 0; // Rows where the stroke is seen or hidden under a stem
+        int lined = 0; // Rows a staff line or a ledger crosses
+        int outer = edge;
+
+        for (int y = yMin; y <= yMax; y++) {
+            int start = 0; // First ink out from the head
+            int end = 0; // Last ink of that run
+            int hidden = 0; // How much of the row is left out of the table
+
+            for (int k = 1; k <= reach; k++) {
+                final int x = edge + (dir * k);
+
+                if ((x < 0) || (x >= distances.getWidth())) {
+                    break;
+                }
+
+                final int value = distances.getValue(x, y);
+
+                if (value == ChamferDistance.VALUE_UNKNOWN) {
+                    // A seed or a line, which the stroke may run under
+                    hidden++;
+
+                    if (start != 0) {
+                        end = k;
+                    }
+                } else if (value == 0) {
+                    if (start == 0) {
+                        if (k > params.maxBracketGap) {
+                            break;
+                        }
+
+                        start = k;
+                    }
+
+                    end = k;
+                } else if (start != 0) {
+                    break;
+                }
+            }
+
+            if (start == 0) {
+                if (hidden == reach) {
+                    lined++; // Left out all the way across is a line, which says nothing
+                } else if (hidden > 0) {
+                    stroke++; // The stroke may be under the stem
+                    top = Math.min(top, y);
+                    bottom = Math.max(bottom, y);
+                }
+
+                continue;
+            }
+
+            // Anything thicker than a stroke is not a bracket
+            if (((end - start) + 1) > params.maxBracketStroke) {
+                return null;
+            }
+
+            stroke++;
+            top = Math.min(top, y);
+            bottom = Math.max(bottom, y);
+            inkTop = Math.min(inkTop, y);
+            inkBottom = Math.max(inkBottom, y);
+            outer = (side == LEFT) ? Math.min(outer, edge - end) : Math.max(outer, edge + end);
+        }
+
+        // The stroke stands beyond the head's own height, and is ink either side of its middle
+        final double middle = box.y + ((box.height - 1) / 2.0);
+
+        if ((top > box.y) || (bottom < ((box.y + box.height) - 1))
+                || (inkTop >= middle) || (inkBottom <= middle)) {
+            return null;
+        }
+
+        // A stroke, not a scatter of dots above and below
+        final int span = ((bottom - top) + 1) - lined;
+
+        if (stroke < (constants.minBracketCover.getValue() * span)) {
+            return null;
+        }
+
+        return outer;
+    }
+
+    //------------//
+    // hasOwnStem //
+    //------------//
+    /**
+     * Report whether a stem seed is drawn against the head itself, on either side.
+     *
+     * @param box the head bounds
+     * @return true if such a seed exists
+     */
+    private boolean hasOwnStem (Rectangle box)
+    {
+        final int yMin = box.y - params.bracketOverhang;
+        final int yMax = (box.y + box.height) - 1 + params.bracketOverhang;
+
+        for (Glyph seed : systemSeeds) {
+            final Rectangle s = seed.getBounds();
+
+            if (s.y > yMax) {
+                break; // Seeds are sorted by ordinate
+            }
+
+            if (((s.y + s.height) - 1) < yMin) {
+                continue;
+            }
+
+            final int leftGap = box.x - ((s.x + s.width) - 1);
+            final int rightGap = s.x - ((box.x + box.width) - 1);
+
+            if ((Math.abs(leftGap) <= params.maxBracketStemGap)
+                    || (Math.abs(rightGap) <= params.maxBracketStemGap)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //------------//
+    // seedBeyond //
+    //------------//
+    /**
+     * Report whether a stem seed stands just beyond a bracket or down its outer edge,
+     * level with the head.
+     *
+     * @param box   the head bounds
+     * @param side  which side of the head the bracket is on
+     * @param outer the bracket's far abscissa
+     * @return true if such a seed exists
+     */
+    private boolean seedBeyond (Rectangle box,
+                                HorizontalSide side,
+                                int outer)
+    {
+        final int yMin = box.y - params.bracketOverhang;
+        final int yMax = (box.y + box.height) - 1 + params.bracketOverhang;
+
+        for (Glyph seed : systemSeeds) {
+            final Rectangle s = seed.getBounds();
+
+            if (s.y > yMax) {
+                break; // Seeds are sorted by ordinate
+            }
+
+            if (((s.y + s.height) - 1) < yMin) {
+                continue;
+            }
+
+            final int gap = (side == LEFT) ? outer - ((s.x + s.width) - 1) : s.x - outer;
+
+            // The stem may be drawn down the bracket's outer edge, over it
+            if ((gap >= -params.maxBracketStroke) && (gap <= params.maxBracketStemGap)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //---------------//
@@ -1265,6 +1509,27 @@ public class NoteHeadsBuilder
                 0, // Was 0.38,
                 "How much do we boost stem-less heads (always isolated)");
 
+        private final Scale.Fraction maxBracketGap = new Scale.Fraction(
+                0.7,
+                "Maximum gap between a head and the bracket beside it"
+                + " (up to 0.6 round a ghost drawn at cue size)");
+
+        private final Scale.Fraction maxBracketStroke = new Scale.Fraction(
+                0.3,
+                "Maximum width of a bracket's stroke on any one row");
+
+        private final Scale.Fraction bracketOverhang = new Scale.Fraction(
+                0.35,
+                "How far above and below a head its bracket may reach");
+
+        private final Constant.Ratio minBracketCover = new Constant.Ratio(
+                0.6,
+                "Least share of its height a bracket's stroke is drawn on");
+
+        private final Scale.Fraction maxBracketStemGap = new Scale.Fraction(
+                0.15,
+                "Maximum gap between a bracket and the stem drawn beyond it");
+
         private final Constant.Ratio crossBoost = new Constant.Ratio(
                 0.0, // Was 0.1,
                 "How much do we boost cross heads (badly recognized by template matching)");
@@ -1419,6 +1684,14 @@ public class NoteHeadsBuilder
 
         final double vBarMargin;
 
+        final int maxBracketGap;
+
+        final int maxBracketStroke;
+
+        final int bracketOverhang;
+
+        final int maxBracketStemGap;
+
         /**
          * Creates a new Parameters object.
          *
@@ -1435,6 +1708,11 @@ public class NoteHeadsBuilder
             minBeamWidth = scale.toPixels(constants.minBeamWidth);
 
             vBarMargin = scale.toPixelsDouble(constants.barVerticalMargin);
+
+            maxBracketGap = scale.toPixels(constants.maxBracketGap);
+            maxBracketStroke = Math.max(1, scale.toPixels(constants.maxBracketStroke));
+            bracketOverhang = scale.toPixels(constants.bracketOverhang);
+            maxBracketStemGap = scale.toPixels(constants.maxBracketStemGap);
         }
     }
 
@@ -1664,6 +1942,51 @@ public class NoteHeadsBuilder
             }
 
             return allShapes;
+        }
+
+        //---------//
+        // asGhost //
+        //---------//
+        /**
+         * Report the head a bracketed small head stands for on a drum staff.
+         * <p>
+         * A ghost note is a head drawn between brackets, and an engraving may draw it at
+         * the size of a cue note to set it back from the heads around it. It is not a cue:
+         * it hangs off an ordinary stem and ordinary beams, and a cue-size head on a
+         * full-size beam is excluded as incompatible, which leaves whatever else the ink can
+         * be matched as, a cross built on the bracket. Read as the head it stands for, it
+         * keeps its own ink, place and grade.
+         *
+         * @param head the head just built
+         * @return the full-size head it stands for, or the head itself
+         */
+        private HeadInter asGhost (HeadInter head)
+        {
+            final Shape full = GHOSTED.get(head.getShape());
+
+            if ((full == null) || !head.getStaff().isDrum()) {
+                return head;
+            }
+
+            final Rectangle box = head.getBounds();
+
+            for (HorizontalSide side : HorizontalSide.values()) {
+                final int edge = (side == LEFT) ? box.x : (box.x + box.width) - 1;
+
+                if (bracketOuterEdge(box, side, edge) == null) {
+                    return head;
+                }
+            }
+
+            final HeadInter ghost = new HeadInter(
+                    box,
+                    full,
+                    head.getImpacts(),
+                    head.getStaff(),
+                    head.getPitch());
+            ghost.setGlyph(head.getGlyph());
+
+            return ghost;
         }
 
         //-----------------//
@@ -2051,12 +2374,15 @@ public class NoteHeadsBuilder
             heads = filterSeedConflicts(heads, competitors);
 
             // Make sure we have an underlying glyph for each head
-            for (Iterator<HeadInter> it = heads.iterator(); it.hasNext();) {
-                final HeadInter inter = it.next();
-                final Template template = catalog.getTemplate(inter.getShape());
-                final Glyph glyph = inter.retrieveGlyph(template, image);
+            for (ListIterator<HeadInter> it = heads.listIterator(); it.hasNext();) {
+                final HeadInter candidate = it.next();
+                final Template template = catalog.getTemplate(candidate.getShape());
+                final Glyph glyph = candidate.retrieveGlyph(template, image);
 
                 if (glyph != null) {
+                    final HeadInter inter = asGhost(candidate);
+                    it.set(inter);
+                    noteBracketedStems(inter);
                     sig.addVertex(inter);
                 } else {
                     it.remove();
@@ -2146,23 +2472,25 @@ public class NoteHeadsBuilder
                             }
                         }
 
-                        final HeadInter head = createInter(
+                        final HeadInter candidate = createInter(
                                 bestLoc,
                                 anchor,
                                 shape,
                                 line.getStaff(),
                                 pitch);
-                        if (head == null) {
+                        if (candidate == null) {
                             continue;
                         }
 
                         final Template template = catalog.getTemplate(shape);
-                        final Glyph glyph = head.retrieveGlyph(template, image);
+                        final Glyph glyph = candidate.retrieveGlyph(template, image);
 
                         if (glyph == null) {
                             continue;
                         }
 
+                        final HeadInter head = asGhost(candidate);
+                        noteBracketedStems(head);
                         sig.addVertex(head);
                         heads.add(head);
 

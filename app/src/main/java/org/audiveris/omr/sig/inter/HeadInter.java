@@ -134,6 +134,17 @@ public class HeadInter
     @XmlAttribute(name = "mirror")
     protected AbstractInter oldMirror;
 
+    /**
+     * How far beyond the head's left edge its stem is drawn, when a bracket stands
+     * between them.
+     */
+    @XmlAttribute(name = "stem-shift-left")
+    private Integer stemShiftLeft;
+
+    /** Same thing on the right side. */
+    @XmlAttribute(name = "stem-shift-right")
+    private Integer stemShiftRight;
+
     // Transient data
     //---------------
 
@@ -728,6 +739,9 @@ public class HeadInter
         final Scale scale = sig.getSystem().getSheet().getScale();
         final HeadSeedScale hs = scale.getHeadSeedScale();
 
+        final HorizontalSide hSide = anchor.hSide();
+        final int shift = (hSide == LEFT) ? -getStemShift(LEFT) : getStemShift(RIGHT);
+
         if (hs != null) {
             // NOTA: We use the same abscissa correction for BOTH horizontal sides
             final Double dl = hs.getDx(shape, LEFT);
@@ -745,15 +759,49 @@ public class HeadInter
             }
 
             if (dx != null) {
-                final HorizontalSide hSide = anchor.hSide();
                 final double x = (hSide == LEFT) ? headBox.x + 0.5 - dx
                         : headBox.x + headBox.width - 1 + dx;
 
-                return new Point2D.Double(x, ref.getY());
+                return new Point2D.Double(x + shift, ref.getY());
             }
         }
 
-        return ref;
+        return new Point2D.Double(ref.getX() + shift, ref.getY());
+    }
+
+    //--------------//
+    // getStemShift //
+    //--------------//
+    /**
+     * Report how far beyond this head's edge its stem is drawn on the given side.
+     *
+     * @param side the head side
+     * @return the shift in pixels, zero where the stem is drawn against the head
+     */
+    public int getStemShift (HorizontalSide side)
+    {
+        final Integer shift = (side == LEFT) ? stemShiftLeft : stemShiftRight;
+
+        return (shift == null) ? 0 : shift;
+    }
+
+    //--------------//
+    // setStemShift //
+    //--------------//
+    /**
+     * Record that this head's stem is drawn beyond a bracket on the given side.
+     *
+     * @param side  the head side
+     * @param shift how far beyond the head's edge, in pixels
+     */
+    public void setStemShift (HorizontalSide side,
+                              int shift)
+    {
+        if (side == LEFT) {
+            stemShiftLeft = shift;
+        } else {
+            stemShiftRight = shift;
+        }
     }
 
     //-----------------------//
