@@ -216,6 +216,9 @@ public class ShapeBoard
     /** Collapsible title for the history panel. */
     private CollapsibleTitleLabel historyTitle;
 
+    /** Collapsible title for the custom set panel. */
+    private CollapsibleTitleLabel customSetTitle;
+
     /** GlassPane. */
     private final GhostGlassPane glassPane = OMR.gui.getGlassPane();
 
@@ -527,7 +530,8 @@ public class ShapeBoard
 
         if (customSet != null) {
             row += 2;
-            builder.addRaw(new CollapsibleTitleLabel(resources.getString("customSet.title"), customSet.panel)).xy(1, row);
+            customSetTitle = new CollapsibleTitleLabel(resources.getString("customSet.title"), customSet.panel);
+            builder.addRaw(customSetTitle).xy(1, row);
             row += 2;
             builder.addRaw(customSet.panel).xy(1, row);
         }
@@ -1098,6 +1102,18 @@ public class ShapeBoard
         {
             super("custom", constants.customSetShapes, null, trashCan);
             panel.setVisible(true);
+        }
+
+        @Override
+        public void add (final Shape shape, final int index)
+        {
+            super.add(shape, index);
+            // Ensure the custom set title is expanded when an element is added
+            if (customSetTitle != null) {
+                customSetTitle.ensureExpanded();
+                customSetTitle.setVisible(true);
+                panel.setVisible(true);
+            }
         }
 
         public void drop (Point localPt)
@@ -1768,6 +1784,17 @@ public class ShapeBoard
             this.currentTitle = newTitle;
             this.isExpanded = true;
             updateDisplay(newTitle);
+        }
+
+        /**
+         * Ensure the title is expanded (icon ▼).
+         */
+        public void ensureExpanded ()
+        {
+            if (!isExpanded) {
+                isExpanded = true;
+                updateDisplay(currentTitle);
+            }
         }
 
         private void toggleExpanded ()
