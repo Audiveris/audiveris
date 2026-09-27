@@ -213,6 +213,9 @@ public class ShapeBoard
     /** Collapsible title for the selected set. */
     private CollapsibleTitleLabel selectedSetTitle;
 
+    /** Collapsible title for the history panel. */
+    private CollapsibleTitleLabel historyTitle;
+
     /** GlassPane. */
     private final GhostGlassPane glassPane = OMR.gui.getGlassPane();
 
@@ -507,9 +510,20 @@ public class ShapeBoard
         getBody().setName("ShapeBody");
 
         int row = 1;
-        builder.addRaw(new CollapsibleTitleLabel(resources.getString("history.title"), shapeHistory.panel)).xy(1, row);
+        historyTitle = new CollapsibleTitleLabel(resources.getString("history.title"), shapeHistory.panel);
+        historyTitle.setVisible(false); // Hide until elements are added
+        builder.addRaw(historyTitle).xy(1, row);
         row += 2;
         builder.addRaw(shapeHistory.panel).xy(1, row);
+        shapeHistory.panel.setVisible(false); // Hide until elements are added
+        // Ensure history panel visibility matches content
+        if (shapeHistory.getShapes().isEmpty()) {
+            historyTitle.setVisible(false);
+            shapeHistory.panel.setVisible(false);
+        } else {
+            historyTitle.setVisible(true);
+            shapeHistory.panel.setVisible(true);
+        }
 
         if (customSet != null) {
             row += 2;
@@ -1849,6 +1863,86 @@ public class ShapeBoard
         public ShapeHistory ()
         {
             super("history", null, constants.maxHistoryLength.getValue(), null);
+        }
+
+        @Override
+        public void add (Shape shape, int index)
+        {
+            // Avoid recursion with DynamicSet.add's invokeAndWait
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(() -> add(shape, index));
+                return;
+            }
+            // Add directly to persistent set
+            super.add(index, shape.name());
+            panel.removeAll();
+            addButtons(panel, initial, getShapes());
+            // Show history panel when first element added
+            if (historyTitle != null) {
+                historyTitle.setVisible(true);
+                panel.setVisible(true);
+                resizeBoard();
+            }
+        }
+
+        @Override
+        public void remove (Shape shape)
+        {
+            // Avoid recursion with DynamicSet.remove's invokeAndWait
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(() -> remove(shape));
+                return;
+            }
+            super.remove(shape.name());
+            panel.removeAll();
+            addButtons(panel, initial, getShapes());
+            // Hide history panel when empty
+            if (getShapes().isEmpty()) {
+                if (historyTitle != null) {
+                    historyTitle.setVisible(false);
+                    panel.setVisible(false);
+                    resizeBoard();
+                }
+            }
+        }
+
+        @Override
+        public void clear ()
+        {
+            // Avoid recursion with DynamicSet.clear's invokeAndWait
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(() -> clear());
+                return;
+            }
+            super.clear();
+            panel.removeAll();
+            addButtons(panel, initial, getShapes());
+            // Hide history panel when cleared
+            if (historyTitle != null) {
+                historyTitle.setVisible(false);
+                panel.setVisible(false);
+                resizeBoard();
+            }
+        }
+
+        @Override
+        public void update ()
+        {
+            super.update();
+            // Ensure visibility matches content
+            if (getShapes().isEmpty()) {
+                if (historyTitle != null) {
+                    historyTitle.setVisible(false);
+                    panel.setVisible(false);
+                    resizeBoard();
+                }
+            } else {
+                if (historyTitle != null) {
+                    historyTitle.setVisible(true);
+                    panel.setVisible(true);
+                    resizeBoard();
+                }
+            }
         }
 
         /**
