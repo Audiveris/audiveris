@@ -513,24 +513,29 @@ public class ShapeBoard
         getBody().setName("ShapeBody");
 
         int row = 1;
-        historyTitle = new CollapsibleTitleLabel(resources.getString("history.title"), shapeHistory.panel);
+        if (historyTitle == null) {
+            historyTitle = new CollapsibleTitleLabel(resources.getString("history.title"), shapeHistory.panel);
+        }
         historyTitle.setVisible(false); // Hide until elements are added
         builder.addRaw(historyTitle).xy(1, row);
         row += 2;
         builder.addRaw(shapeHistory.panel).xy(1, row);
         shapeHistory.panel.setVisible(false); // Hide until elements are added
-        // Ensure history panel visibility matches content
+        // Ensure history title visibility matches content, default expanded
         if (shapeHistory.getShapes().isEmpty()) {
             historyTitle.setVisible(false);
             shapeHistory.panel.setVisible(false);
         } else {
             historyTitle.setVisible(true);
-            shapeHistory.panel.setVisible(true);
+            // Panel visibility follows expanded state (default expanded)
+            shapeHistory.panel.setVisible(historyTitle.isExpanded());
         }
 
         if (customSet != null) {
             row += 2;
-            customSetTitle = new CollapsibleTitleLabel(resources.getString("customSet.title"), customSet.panel);
+            if (customSetTitle == null) {
+                customSetTitle = new CollapsibleTitleLabel(resources.getString("customSet.title"), customSet.panel);
+            }
             builder.addRaw(customSetTitle).xy(1, row);
             row += 2;
             builder.addRaw(customSet.panel).xy(1, row);
@@ -542,7 +547,9 @@ public class ShapeBoard
         builder.addRaw(globalPanel).xy(1, row);
 
         row += 2;
-        selectedSetTitle = new CollapsibleTitleLabel("", null);
+        if (selectedSetTitle == null) {
+            selectedSetTitle = new CollapsibleTitleLabel("", null);
+        }
         selectedSetTitle.setVisible(false); // Hide until a set is selected
         builder.addRaw(selectedSetTitle).xy(1, row);
         row += 2;
@@ -1750,6 +1757,11 @@ public class ShapeBoard
 
         private String currentTitle = "";
 
+        public boolean isExpanded ()
+        {
+            return isExpanded;
+        }
+
         /**
          * Create a collapsible title for a panel.
          *
@@ -1785,6 +1797,24 @@ public class ShapeBoard
             this.isExpanded = true;
             updateDisplay(newTitle);
         }
+
+        /**
+         * Collapse the title (icon ▶) without changing visibility.
+         */
+        public void collapse ()
+        {
+            if (isExpanded) {
+                isExpanded = false;
+                updateDisplay(currentTitle);
+                if (associatedPanel != null) {
+                    associatedPanel.setVisible(false);
+                }
+            }
+        }
+
+        /**
+         * Ensure the title is expanded (icon ▼) without changing visibility.
+         */
 
         /**
          * Ensure the title is expanded (icon ▼).
@@ -1904,10 +1934,14 @@ public class ShapeBoard
             super.add(index, shape.name());
             panel.removeAll();
             addButtons(panel, initial, getShapes());
-            // Show history panel when first element added
+            // Show history title and panel when first element added, preserve expanded state
             if (historyTitle != null) {
                 historyTitle.setVisible(true);
-                panel.setVisible(true);
+                // Do not force panel visibility; let toggle state control it
+                // If title is currently expanded, make panel visible
+                if (historyTitle.isExpanded()) {
+                    panel.setVisible(true);
+                }
                 resizeBoard();
             }
         }
@@ -1923,7 +1957,7 @@ public class ShapeBoard
             super.remove(shape.name());
             panel.removeAll();
             addButtons(panel, initial, getShapes());
-            // Hide history panel when empty
+            // Hide history title and panel when empty
             if (getShapes().isEmpty()) {
                 if (historyTitle != null) {
                     historyTitle.setVisible(false);
@@ -1944,7 +1978,7 @@ public class ShapeBoard
             super.clear();
             panel.removeAll();
             addButtons(panel, initial, getShapes());
-            // Hide history panel when cleared
+            // Hide history title and panel when cleared
             if (historyTitle != null) {
                 historyTitle.setVisible(false);
                 panel.setVisible(false);
@@ -1956,7 +1990,7 @@ public class ShapeBoard
         public void update ()
         {
             super.update();
-            // Ensure visibility matches content
+            // Ensure title visibility matches content, preserve expanded state
             if (getShapes().isEmpty()) {
                 if (historyTitle != null) {
                     historyTitle.setVisible(false);
@@ -1966,7 +2000,10 @@ public class ShapeBoard
             } else {
                 if (historyTitle != null) {
                     historyTitle.setVisible(true);
-                    panel.setVisible(true);
+                    // Only show panel if title is expanded
+                    if (historyTitle.isExpanded()) {
+                        panel.setVisible(true);
+                    }
                     resizeBoard();
                 }
             }
