@@ -418,6 +418,9 @@ public class NoteHeadsBuilder
                 logger.debug("Staff#{} {} overlaps", staff.getId(), overlaps);
             }
 
+            // Brackets that are the heads beside a head
+            dropNeighbourBrackets(ch);
+
             // Purge tally of discarded heads
             tally.purgeRemovedHeads();
 
@@ -530,32 +533,30 @@ public class NoteHeadsBuilder
         return new HeadInter(box, shape, impacts, staff, pitch);
     }
 
-    //--------------------//
-    // noteBracketedStems //
-    //--------------------//
+    //--------------//
+    // noteBrackets //
+    //--------------//
     /**
-     * Record how far beyond its own edge a bracketed head's stem is drawn.
+     * Record that a head is drawn between brackets, and how far beyond its own edge its
+     * stem then is.
      * <p>
-     * A ghost note is a head drawn between brackets, and an engraving may draw its stem
-     * outside the closing bracket rather than against the head. Measured from the head, the
-     * stem is then a bracket's width away, far past the gap a head-stem link allows, so the
-     * head is left without a stem and discarded, and the ink of the bracket is what a stem
-     * then finds a head in.
+     * A ghost note is a head drawn between brackets, which is what MusicXML calls a
+     * parenthesized notehead, and an engraving may draw its stem outside the closing
+     * bracket rather than against the head. Measured from the head, the stem is then a
+     * bracket's width away, far past the gap a head-stem link allows, so the head is left
+     * without a stem and discarded, and the ink of the bracket is what a stem then finds a
+     * head in.
      * <p>
-     * A side is shifted only where a bracket stands on either side of the head, as a pair of
-     * brackets does, and a stem seed stands just beyond the bracket on that side. A head whose
-     * stem is drawn against it, inside its brackets, is left as it is: the stem beyond its
-     * bracket is then a neighbour's.
+     * A head is bracketed only where a bracket stands on either side of it, as a pair of
+     * brackets does. A side is shifted only where, besides, a stem seed stands just beyond
+     * the bracket on that side. A head whose stem is drawn against it, inside its brackets,
+     * keeps its stem where it is: the stem beyond its bracket is then a neighbour's.
      *
      * @param head the head just built
      */
-    private void noteBracketedStems (HeadInter head)
+    private void noteBrackets (HeadInter head)
     {
         final Rectangle box = head.getBounds();
-
-        if (hasOwnStem(box)) {
-            return;
-        }
 
         // Brackets come in pairs: a stroke on one side only is an accidental or a neighbour
         final int[] edges = {box.x, (box.x + box.width) - 1};
@@ -567,11 +568,60 @@ public class NoteHeadsBuilder
             return;
         }
 
+        head.setParentheses(true);
+
+        if (hasOwnStem(box)) {
+            return;
+        }
+
         for (HorizontalSide side : HorizontalSide.values()) {
             final int i = side.ordinal();
 
             if (seedBeyond(box, side, outers[i])) {
                 head.setStemShift(side, Math.abs(outers[i] - edges[i]));
+            }
+        }
+    }
+
+    //-----------------------//
+    // dropNeighbourBrackets //
+    //-----------------------//
+    /**
+     * Unmark a head whose brackets are the heads beside it.
+     * <p>
+     * A row of crosses drawn close together, as a hi-hat line is, puts the arms and the stem
+     * of each neighbour where a bracket would stand, on both sides at once. A bracket is not
+     * a head, so a head with another head of its pitch within a bracket's reach and clear of
+     * it is not bracketed. A cross built on the bracket of a real ghost overlaps the ghost
+     * and does not count.
+     *
+     * @param heads the heads built for a staff
+     */
+    private void dropNeighbourBrackets (List<HeadInter> heads)
+    {
+        final int reach = params.maxBracketGap + params.maxBracketStroke;
+
+        for (HeadInter head : heads) {
+            if (!head.hasParentheses()) {
+                continue;
+            }
+
+            final Rectangle box = head.getBounds();
+            final Rectangle zone = new Rectangle(
+                    box.x - reach,
+                    box.y,
+                    box.width + (2 * reach),
+                    box.height);
+
+            for (HeadInter other : heads) {
+                final Rectangle otherBox = other.getBounds();
+
+                if ((other != head) && (other.getIntegerPitch() == head.getIntegerPitch())
+                        && zone.intersects(otherBox) && !box.intersects(otherBox)) {
+                    head.setParentheses(false);
+
+                    break;
+                }
             }
         }
     }
@@ -2573,7 +2623,7 @@ public class NoteHeadsBuilder
                 if (glyph != null && fillsItsShape(candidate, template)) {
                     final HeadInter inter = asGhost(candidate);
                     it.set(inter);
-                    noteBracketedStems(inter);
+                    noteBrackets(inter);
                     sig.addVertex(inter);
                 } else {
                     it.remove();
@@ -2690,7 +2740,7 @@ public class NoteHeadsBuilder
                         }
 
                         final HeadInter head = asGhost(candidate);
-                        noteBracketedStems(head);
+                        noteBrackets(head);
                         sig.addVertex(head);
                         heads.add(head);
 

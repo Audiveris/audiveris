@@ -65,6 +65,7 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.Jaxb;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.VerticalSide;
@@ -99,6 +100,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class <code>HeadInter</code> represents a note head, that is any head shape including
@@ -144,6 +146,11 @@ public class HeadInter
     /** Same thing on the right side. */
     @XmlAttribute(name = "stem-shift-right")
     private Integer stemShiftRight;
+
+    /** Whether the head is drawn between brackets, as a ghost note is. */
+    @XmlAttribute(name = "parentheses")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean parentheses;
 
     // Transient data
     //---------------
@@ -783,6 +790,32 @@ public class HeadInter
         final Integer shift = (side == LEFT) ? stemShiftLeft : stemShiftRight;
 
         return (shift == null) ? 0 : shift;
+    }
+
+    //----------------//
+    // hasParentheses //
+    //----------------//
+    /**
+     * Report whether this head is drawn between brackets.
+     *
+     * @return true for a parenthesized head
+     */
+    public boolean hasParentheses ()
+    {
+        return parentheses;
+    }
+
+    //----------------//
+    // setParentheses //
+    //----------------//
+    /**
+     * Record whether this head is drawn between brackets.
+     *
+     * @param parentheses true for a parenthesized head
+     */
+    public void setParentheses (boolean parentheses)
+    {
+        this.parentheses = parentheses;
     }
 
     //--------------//
