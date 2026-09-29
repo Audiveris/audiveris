@@ -112,6 +112,103 @@ public abstract class LeggedIntersBuilder
                 2 * params.maxLegXGap,
                 bottomY - segPt.y - (2 * params.legYMargin));
 
+        final List<StraightFilament> filaments = legFilaments(box, system);
+
+        // Purge filaments
+        for (Iterator<StraightFilament> it = filaments.iterator(); it.hasNext();) {
+            final StraightFilament fil = it.next();
+
+            if ((fil.getLength(VERTICAL) < params.minLegLow) //
+                    || ((fil.getStartPoint().getY() - segPt.y) > params.maxLegYGap)) {
+                it.remove();
+            }
+        }
+
+        return closest(filaments, segPt, true);
+    }
+
+    //-----------------//
+    // lookupRisingLeg //
+    //-----------------//
+    /**
+     * Look for a vertical rising from the chosen point on the horizontal segment, as the side
+     * of a box does from its bottom edge.
+     *
+     * @param segPt chosen point on segment
+     * @param topY  min ordinate for the vertical top
+     * @param system related system
+     * @return the best vertical found or null if none.
+     */
+    protected StraightFilament lookupRisingLeg (Point segPt,
+                                                int topY,
+                                                SystemInfo system)
+    {
+        final Rectangle box = new Rectangle(
+                segPt.x - params.maxLegXGap,
+                topY + params.legYMargin,
+                2 * params.maxLegXGap,
+                segPt.y - topY - (2 * params.legYMargin));
+
+        final List<StraightFilament> filaments = legFilaments(box, system);
+
+        for (Iterator<StraightFilament> it = filaments.iterator(); it.hasNext();) {
+            final StraightFilament fil = it.next();
+
+            if ((fil.getLength(VERTICAL) < params.minLegLow) //
+                    || ((segPt.y - fil.getStopPoint().getY()) > params.maxLegYGap)) {
+                it.remove();
+            }
+        }
+
+        return closest(filaments, segPt, false);
+    }
+
+    //---------//
+    // closest //
+    //---------//
+    /**
+     * Choose the filament whose end nearest to the segment is closest to the segment point.
+     *
+     * @param filaments candidates
+     * @param segPt     chosen point on segment
+     * @param fromTop   true to measure from the filament top, false from its bottom
+     * @return the closest filament, or null if none
+     */
+    private StraightFilament closest (List<StraightFilament> filaments,
+                                      Point segPt,
+                                      boolean fromTop)
+    {
+        StraightFilament bestFil = null;
+        double bestDistSq = Double.MAX_VALUE;
+
+        for (StraightFilament filament : filaments) {
+            Point2D end = fromTop ? filament.getStartPoint() : filament.getStopPoint();
+            double dx = end.getX() - segPt.getX();
+            double dy = end.getY() - segPt.getY();
+            double distSq = (dx * dx) + (dy * dy);
+
+            if ((bestFil == null) || (bestDistSq > distSq)) {
+                bestDistSq = distSq;
+                bestFil = filament;
+            }
+        }
+
+        return bestFil;
+    }
+
+    //--------------//
+    // legFilaments //
+    //--------------//
+    /**
+     * Retrieve the vertical filaments in a lookup box.
+     *
+     * @param box    the lookup box
+     * @param system related system
+     * @return the filaments found, perhaps empty
+     */
+    private List<StraightFilament> legFilaments (Rectangle box,
+                                                 SystemInfo system)
+    {
         final Set<Section> sections = Sections.intersectedSections(
                 box,
                 system.getVerticalSections());
@@ -134,39 +231,7 @@ public abstract class LeggedIntersBuilder
         }
 
         // Retrieve candidates
-        final List<StraightFilament> filaments = factory.retrieveFilaments(sections);
-
-        // Purge filaments
-        for (Iterator<StraightFilament> it = filaments.iterator(); it.hasNext();) {
-            final StraightFilament fil = it.next();
-
-            if ((fil.getLength(VERTICAL) < params.minLegLow) //
-                    || ((fil.getStartPoint().getY() - segPt.y) > params.maxLegYGap)) {
-                it.remove();
-            }
-        }
-
-        if (filaments.isEmpty()) {
-            return null;
-        }
-
-        // Choose the seed whose top end is closest to segment end
-        StraightFilament bestFil = null;
-        double bestDistSq = Double.MAX_VALUE;
-
-        for (StraightFilament filament : filaments) {
-            Point2D top = filament.getStartPoint();
-            double dx = top.getX() - segPt.getX();
-            double dy = top.getY() - segPt.getY();
-            double distSq = (dx * dx) + (dy * dy);
-
-            if ((bestFil == null) || (bestDistSq > distSq)) {
-                bestDistSq = distSq;
-                bestFil = filament;
-            }
-        }
-
-        return bestFil;
+        return factory.retrieveFilaments(sections);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
