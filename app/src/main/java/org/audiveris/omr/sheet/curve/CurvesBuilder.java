@@ -42,6 +42,7 @@ import static org.audiveris.omr.sheet.curve.Skeleton.isSide;
 import static org.audiveris.omr.sheet.curve.Skeleton.scans;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.InterIndex;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.util.Dumping;
@@ -389,6 +390,22 @@ public abstract class CurvesBuilder
     protected abstract void createInter (Curve curve,
                                          Set<Inter> inters);
 
+    //--------------//
+    // bridgesBeams //
+    //--------------//
+    /**
+     * Report whether a curve end may be extended past a beam it runs into.
+     * <p>
+     * A line drawn touching a beam shares ink with it, so erasing the beam from the skeleton
+     * cuts the line in pieces as long as the beam.
+     *
+     * @return true to look for the continuation of the curve on the far side of such a beam
+     */
+    protected boolean bridgesBeams ()
+    {
+        return false;
+    }
+
     //---------------//
     // defineExtArea //
     //---------------//
@@ -403,13 +420,34 @@ public abstract class CurvesBuilder
     {
         Point ce = curve.getEnd(reverse); // Curve End
         Point2D uv = getEndVector(curve); // Unit Vector
-        GeoPath path;
 
         if (uv == null) {
             return null;
         }
 
-        double lg = params.gapBoxLength;
+        Area area = lookupArea(ce, uv, params.gapBoxLength);
+        curve.setExtArea(area, reverse);
+        curve.addAttachment(reverse ? "t" : "f", area);
+
+        return area;
+    }
+
+    //------------//
+    // lookupArea //
+    //------------//
+    /**
+     * Define the lookup area for arcs that could extend a curve end.
+     *
+     * @param ce the curve end
+     * @param uv the unit vector of the curve end
+     * @param lg how far to look from the curve end
+     * @return the lookup area
+     */
+    private Area lookupArea (Point ce,
+                             Point2D uv,
+                             double lg)
+    {
+        GeoPath path;
         Point2D lgVect = new Point2D.Double(lg * uv.getX(), lg * uv.getY());
         Point2D ce2 = PointUtil.addition(ce, lgVect);
 
@@ -429,11 +467,7 @@ public abstract class CurvesBuilder
                 true);
         path.closePath();
 
-        Area area = new Area(path);
-        curve.setExtArea(area, reverse);
-        curve.addAttachment(reverse ? "t" : "f", area);
-
-        return area;
+        return new Area(path);
     }
 
     //--------------//
@@ -594,9 +628,11 @@ public abstract class CurvesBuilder
      *
      * @param curve         the curve being extended (on 'reverse' side)
      * @param reachableArcs (input/output) the set of arcs within reach
+     * @param crossBeams    true if beams may be crossed
      */
     private void filterReachableArcs (Curve curve,
-                                      Set<ArcView> reachableArcs)
+                                      Set<ArcView> reachableArcs,
+                                      boolean crossBeams)
     {
         final Point ce = curve.getEnd(reverse);
         final Rectangle extBox = getExtensionBox(curve, reachableArcs);
@@ -615,6 +651,10 @@ public abstract class CurvesBuilder
                 Area lineArea = null; // Lazily computed
 
                 for (Inter nc : ncs) {
+                    if (crossBeams && (nc instanceof AbstractBeamInter)) {
+                        continue;
+                    }
+
                     // Check extension line would cross item bounds
                     if (!nc.isImplicit() && nc.getBounds().intersectsLine(ce.x, ce.y, ae.x, ae.y)) {
                         final boolean crossing;
@@ -659,32 +699,102 @@ public abstract class CurvesBuilder
         final Area area = defineExtArea(ext.curve);
 
         if (area != null) {
-            // Check for reachable arcs in the extension area
-            final Rectangle box = area.getBounds();
-            final int xMax = (box.x + box.width) - 1;
+            addArcsIn(area, ext, false, reachableArcs);
+        }
 
-            // Look for free-standing end points (with no junction point)
-            for (Point end : skeleton.arcsEnds) {
-                if (area.contains(end)) {
-                    final Arc arc = skeleton.arcsMap.get(end);
+        return reachableArcs;
+    }
 
-                    if (!arc.isAssigned() && !ext.browsed.contains(arc)) {
-                        // Check for lack of junction point
-                        ArcView arcView = ext.curve.getArcView(arc, reverse);
-                        Point pivot = arcView.getJunction(!reverse);
+    //-------------------//
+    // findArcsPastBeams //
+    //-------------------//
+    /**
+     * Retrieve the arcs within reach across any beam the curve end runs into.
+     * <p>
+     * The lookup reaches from the curve end to past the far side of the beam. Whether the curve
+     * ink really goes on across the beam is left to the gap check.
+     *
+     * @param ext extension (on 'reverse' side), whose extension area is already defined
+     * @return the set of (new) arcs within reach past a beam
+     */
+    private Set<ArcView> findArcsPastBeams (Extension ext)
+    {
+        final Set<ArcView> reachableArcs = new LinkedHashSet<>();
+        final Curve curve = ext.curve;
+        final Area extArea = curve.getExtArea(reverse);
+        final Point2D uv = getEndVector(curve);
 
-                        if (pivot == null) {
-                            reachableArcs.add(arcView);
-                            ext.browsed.add(arc);
-                        }
-                    }
-                } else if (end.x > xMax) {
-                    break; // Since list arcsEnds is sorted
+        if ((extArea == null) || (uv == null) || (uv.getX() == 0)) {
+            return reachableArcs;
+        }
+
+        final Point ce = curve.getEnd(reverse);
+
+        for (SystemInfo system : sheet.getSystemManager().getSystemsOf(ce)) {
+            for (Inter nc : erasedInters(system, extArea.getBounds(), false)) {
+                if (!(nc instanceof AbstractBeamInter)) {
+                    continue;
+                }
+
+                // Where the curve direction leaves the beam bounds
+                final Rectangle beamBox = nc.getBounds();
+                final int farX = (uv.getX() > 0) ? (beamBox.x + beamBox.width) : (beamBox.x - 1);
+                final double t = (farX - ce.x) / uv.getX();
+
+                if (t > 0) {
+                    addArcsIn(
+                            lookupArea(ce, uv, t + params.gapBoxLength),
+                            ext,
+                            true,
+                            reachableArcs);
                 }
             }
         }
 
         return reachableArcs;
+    }
+
+    //-----------//
+    // addArcsIn //
+    //-----------//
+    /**
+     * Add the arcs whose end lies in the provided area.
+     * <p>
+     * Across a beam, an arc end may carry a junction: where the curve ink merges with the beam,
+     * the vertical runs are long enough to stop the arc there.
+     *
+     * @param area          the lookup area
+     * @param ext           extension (on 'reverse' side)
+     * @param acrossBeam    true to accept an arc end with a junction point
+     * @param reachableArcs (output) the set of arcs within reach
+     */
+    private void addArcsIn (Area area,
+                            Extension ext,
+                            boolean acrossBeam,
+                            Set<ArcView> reachableArcs)
+    {
+        final Rectangle box = area.getBounds();
+        final int xMax = (box.x + box.width) - 1;
+
+        // Look for free-standing end points (with no junction point)
+        for (Point end : skeleton.arcsEnds) {
+            if (area.contains(end)) {
+                final Arc arc = skeleton.arcsMap.get(end);
+
+                if (!arc.isAssigned() && !ext.browsed.contains(arc)) {
+                    // Check for lack of junction point
+                    ArcView arcView = ext.curve.getArcView(arc, reverse);
+                    Point pivot = arcView.getJunction(!reverse);
+
+                    if ((pivot == null) || acrossBeam) {
+                        reachableArcs.add(arcView);
+                        ext.browsed.add(arc);
+                    }
+                }
+            } else if (end.x > xMax) {
+                break; // Since list arcsEnds is sorted
+            }
+        }
     }
 
     /**
@@ -909,13 +1019,16 @@ public abstract class CurvesBuilder
     {
         // Find arcs within reach
         final Set<ArcView> reachables = findReachableArcs(ext);
+        final Set<ArcView> pastBeams = bridgesBeams() ? findArcsPastBeams(ext)
+                : new LinkedHashSet<>();
 
-        if (reachables.isEmpty()) {
+        if (reachables.isEmpty() && pastBeams.isEmpty()) {
             return;
         }
 
         // Remove extensions that hit non-crossable inters
-        filterReachableArcs(ext.curve, reachables);
+        reachables.addAll(pastBeams);
+        filterReachableArcs(ext.curve, reachables, bridgesBeams());
 
         // Closer look at actual white gap for each allowed extension
         for (ArcView arcView : reachables) {

@@ -132,6 +132,20 @@ public class SegmentsBuilder
         }
     }
 
+    //--------------//
+    // bridgesBeams //
+    //--------------//
+    /**
+     * A volta bracket is often drawn touching the beams of up-stem notes below it.
+     *
+     * @return true
+     */
+    @Override
+    protected boolean bridgesBeams ()
+    {
+        return true;
+    }
+
     //---------------//
     // buildSegments //
     //---------------//
