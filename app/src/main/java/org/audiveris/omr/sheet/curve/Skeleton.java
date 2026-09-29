@@ -56,6 +56,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -564,6 +565,7 @@ public class Skeleton
             final int maxDx = scale.toPixels(constants.maxDxFromStaff);
             final int maxDy = scale.toPixels(constants.maxDyFromStaff);
             final Area sheetArea = new Area(new Rectangle(buffer.getWidth(), buffer.getHeight()));
+            final List<Rectangle> staves = new ArrayList<>();
             final List<Rectangle> kept = new ArrayList<>();
 
             for (Staff staff : sheet.getStaffManager().getStaves()) {
@@ -584,6 +586,7 @@ public class Skeleton
                     }
                 }
 
+                staves.add(new Rectangle(staffRect));
                 staffRect.grow(maxDx, maxDy);
                 kept.add(staffRect);
             }
@@ -606,6 +609,28 @@ public class Skeleton
             }
 
             kept.addAll(gaps);
+
+            // Above the first staff there is no gap between two staves to keep, though what is
+            // drawn over it sits as high as over any other staff. Keep there the room the page
+            // leaves between two staves.
+            if (staves.size() > 1) {
+                final List<Integer> distances = new ArrayList<>();
+
+                for (int i = 1; i < staves.size(); i++) {
+                    final Rectangle above = staves.get(i - 1);
+                    distances.add(staves.get(i).y - (above.y + above.height));
+                }
+
+                Collections.sort(distances);
+
+                final int room = distances.get(distances.size() / 2);
+                final Rectangle first = kept.get(0);
+                final int top = Math.max(0, staves.get(0).y - room);
+
+                if (top < first.y) {
+                    kept.add(new Rectangle(first.x, top, first.width, first.y - top));
+                }
+            }
 
             for (Rectangle rect : kept) {
                 sheetArea.subtract(new Area(rect));
