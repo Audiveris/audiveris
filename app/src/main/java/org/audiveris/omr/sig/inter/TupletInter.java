@@ -293,7 +293,7 @@ public class TupletInter
     //-------------//
     /**
      * Try to create a tuplet inter, checking that there is at least one (head) chord
-     * nearby.
+     * nearby, and that the sign is not drawn over a note head.
      *
      * @param glyph        the candidate tuplet glyph
      * @param shape        TUPLET_THREE or TUPLET_SIX
@@ -323,6 +323,19 @@ public class TupletInter
             logger.debug("Discarding isolated tuplet candidate glyph#{}", glyph.getId());
 
             return null;
+        }
+
+        // A tuplet number is printed clear of the note heads
+        final Rectangle signBox = glyph.getBounds();
+
+        for (Inter chord : nearby) {
+            for (Inter note : ((AbstractChordInter) chord).getNotes()) {
+                if (note.getBounds().intersects(signBox)) {
+                    logger.debug("Discarding tuplet candidate glyph#{} over {}", glyph.getId(), note);
+
+                    return null;
+                }
+            }
         }
 
         return new TupletInter(glyph, shape, grade);
