@@ -256,16 +256,15 @@ public class TupletsBuilder
      * closest to the sign.
      *
      * @param row    the candidate chords, ordered by abscissa
-     * @param signX  the sign center abscissa
-     * @param count  the tuplet count, 3 or 6
-     * @param factor the tuplet duration factor
+     * @param tuplet the tuplet sign
      * @return the best run, or null if no run makes up the tuplet
      */
     private static List<AbstractChordInter> bestRun (List<AbstractChordInter> row,
-                                                     int signX,
-                                                     int count,
-                                                     Rational factor)
+                                                     TupletInter tuplet)
     {
+        final Point sign = tuplet.getCenter();
+        final int count = expectedCount(tuplet.getShape());
+        final Rational factor = tuplet.getDurationFactor();
         final int maxChords = count * constants.maxChordsPerItem.getValue();
         final double maxOffsetRatio = constants.maxSignOffset.getValue();
         List<AbstractChordInter> best = null;
@@ -274,7 +273,7 @@ public class TupletsBuilder
         for (int first = 0; first < row.size(); first++) {
             final AbstractChordInter firstChord = row.get(first);
 
-            if (Math.min(firstChord.getCenter().x, firstChord.getTailLocation().x) > signX) {
+            if (Math.min(firstChord.getCenter().x, firstChord.getTailLocation().x) > sign.x) {
                 break;
             }
 
@@ -291,14 +290,16 @@ public class TupletsBuilder
 
                 total = total.plus(duration);
 
-                final int offset = signOffset(row, first, last, signX);
+                final List<AbstractChordInter> run = row.subList(first, last + 1);
+                final int offset = signOffset(row, first, last, sign.x);
                 final int width = lastChord.getCenter().x - firstChord.getCenter().x;
 
                 if ((offset <= (maxOffsetRatio * width)) && (offset < bestOffset)
                         && isTupletTotal(total, count)
-                        && respectsBeamGroup(row, first, last, factor)) {
+                        && respectsBeamGroup(row, first, last, factor)
+                        && standsBeyond(sign, run)) {
                     bestOffset = offset;
-                    best = row.subList(first, last + 1);
+                    best = run;
                 }
             }
         }
@@ -406,6 +407,8 @@ public class TupletsBuilder
      * A run fits the beam group it holds, and holds no rest lying on the staff half away from
      * the sign, where the rests of another voice are. On a drum staff, it holds only the chords
      * stemmed like the chord closest to the sign.
+     * <p>
+     * The sign stands beyond the ends of the run chords.
      *
      * @param tuplet     underlying tuplet sign
      * @param candidates the chords candidates, ordered by euclidean distance to sign
@@ -450,11 +453,7 @@ public class TupletsBuilder
 
         Collections.sort(row, Inters.byCenterAbscissa);
 
-        final List<AbstractChordInter> best = bestRun(
-                row,
-                sign.x,
-                expectedCount(tuplet.getShape()),
-                tuplet.getDurationFactor());
+        final List<AbstractChordInter> best = bestRun(row, tuplet);
 
         if (best == null) {
             logger.debug("{} no run of chords adds up to its count", tuplet);
@@ -682,6 +681,34 @@ public class TupletsBuilder
                                        Rational played)
     {
         return (neighbors.divides(total).den == 1) || (neighbors.divides(played).den == 1);
+    }
+
+    //--------------//
+    // standsBeyond //
+    //--------------//
+    /**
+     * Check whether the sign stands beyond the ends of all chords of a run.
+     * <p>
+     * A tuplet number is printed past the stems or past the heads of the chords it embraces,
+     * never among them.
+     *
+     * @param sign the sign center
+     * @param run  the run of chords
+     * @return true if the sign is above all chords or below all chords
+     */
+    private static boolean standsBeyond (Point sign,
+                                         List<AbstractChordInter> run)
+    {
+        boolean above = true;
+        boolean below = true;
+
+        for (AbstractChordInter chord : run) {
+            final Rectangle box = chord.getBounds();
+            above &= sign.y < box.y;
+            below &= sign.y >= (box.y + box.height);
+        }
+
+        return above || below;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
