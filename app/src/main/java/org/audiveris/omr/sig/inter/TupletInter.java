@@ -293,7 +293,7 @@ public class TupletInter
     //-------------//
     /**
      * Try to create a tuplet inter, checking that there is at least one (head) chord
-     * nearby, and that the sign is not drawn over a note head.
+     * nearby, and that the sign is neither drawn over a note head nor a letter of a word.
      *
      * @param glyph        the candidate tuplet glyph
      * @param shape        TUPLET_THREE or TUPLET_SIX
@@ -335,6 +335,21 @@ public class TupletInter
 
                     return null;
                 }
+            }
+        }
+
+        // A tuplet number is not a letter among others in a word, unless the word shows its digit
+        final Point center = glyph.getCenter();
+        final String digit = (shape == Shape.TUPLET_THREE) ? "3" : "6";
+
+        for (Inter inter : system.getSig().inters(WordInter.class)) {
+            final WordInter word = (WordInter) inter;
+
+            if ((word.getValue().length() > 1) && !word.getValue().contains(digit)
+                    && word.getBounds().contains(center)) {
+                logger.debug("Discarding tuplet candidate glyph#{} in {}", glyph.getId(), word);
+
+                return null;
             }
         }
 
