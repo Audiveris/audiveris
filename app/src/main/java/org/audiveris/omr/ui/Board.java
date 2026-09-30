@@ -515,7 +515,7 @@ public abstract class Board
 
         private final Constant.Integer borderTopInset = new Constant.Integer(
                 "pixels",
-                15,
+                18,
                 "Border inset on top side");
 
         private final Constant.Integer borderLeftInset = new Constant.Integer(
@@ -525,12 +525,12 @@ public abstract class Board
 
         private final Constant.Integer borderBottomInset = new Constant.Integer(
                 "pixels",
-                5,
+                10,
                 "Border inset on bottom side");
 
         private final Constant.Integer borderRightInset = new Constant.Integer(
                 "pixels",
-                5,
+                10,
                 "Border inset on right side");
 
         private final Constant.Integer headerBottomInset = new Constant.Integer(

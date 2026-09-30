@@ -159,7 +159,9 @@ public class EvaluationBoard
     //--------------//
     private void defineLayout ()
     {
-        final String colSpec = Panel.makeColumns(2, "right:", Panel.getLabelWidth(), "50dlu");
+        // Use 6dlu gap between grade label and button, button fills remaining width
+        final String labelWidth = Panel.getLabelWidth();
+        final String colSpec = "right:" + labelWidth + ",6dlu,pref:grow";
         final FormLayout layout = new FormLayout(colSpec, "");
         final int visibleButtons = Math.min(
                 constants.visibleButtons.getValue(),
@@ -179,7 +181,7 @@ public class EvaluationBoard
             int r = (2 * i) + 1; // --------------------------------
             final EvalButton evb = selector.buttons.get(i);
             builder.addRaw(evb.grade).xy(1, r);
-            builder.addRaw(evb.button).xyw(3, r, 5);
+            builder.addRaw(evb.button).xy(3, r);
         }
     }
 
