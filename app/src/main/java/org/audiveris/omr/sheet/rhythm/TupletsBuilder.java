@@ -26,6 +26,9 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Rational;
+import org.audiveris.omr.sheet.Picture;
+import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
@@ -40,6 +43,8 @@ import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -255,12 +260,14 @@ public class TupletsBuilder
      * Among the runs of consecutive chords that make up a tuplet, report the one centered
      * closest to the sign.
      *
-     * @param row    the candidate chords, ordered by abscissa
-     * @param tuplet the tuplet sign
+     * @param row       the candidate chords, ordered by abscissa
+     * @param tuplet    the tuplet sign
+     * @param bracketed true if the sign has a bracket
      * @return the best run, or null if no run makes up the tuplet
      */
     private static List<AbstractChordInter> bestRun (List<AbstractChordInter> row,
-                                                     TupletInter tuplet)
+                                                     TupletInter tuplet,
+                                                     boolean bracketed)
     {
         final Point sign = tuplet.getCenter();
         final int count = expectedCount(tuplet.getShape());
@@ -297,7 +304,8 @@ public class TupletsBuilder
                 if ((offset <= (maxOffsetRatio * width)) && (offset < bestOffset)
                         && isTupletTotal(total, count)
                         && respectsBeamGroup(row, first, last, factor)
-                        && standsBeyond(sign, run)) {
+                        && standsBeyond(sign, run)
+                        && (bracketed || isBeamed(run))) {
                     bestOffset = offset;
                     best = run;
                 }
@@ -408,7 +416,8 @@ public class TupletsBuilder
      * the sign, where the rests of another voice are. On a drum staff, it holds only the chords
      * stemmed like the chord closest to the sign.
      * <p>
-     * The sign stands beyond the ends of the run chords.
+     * The sign stands beyond the ends of the run chords, and a run whose chords are not all
+     * beamed needs a bracket around the sign.
      *
      * @param tuplet     underlying tuplet sign
      * @param candidates the chords candidates, ordered by euclidean distance to sign
@@ -453,7 +462,7 @@ public class TupletsBuilder
 
         Collections.sort(row, Inters.byCenterAbscissa);
 
-        final List<AbstractChordInter> best = bestRun(row, tuplet);
+        final List<AbstractChordInter> best = bestRun(row, tuplet, hasBracket(tuplet));
 
         if (best == null) {
             logger.debug("{} no run of chords adds up to its count", tuplet);
@@ -485,6 +494,93 @@ public class TupletsBuilder
         }
 
         return null;
+    }
+
+    //------------//
+    // hasBracket //
+    //------------//
+    /**
+     * Check whether the sign has a bracket: a thin horizontal line on either side of it, at its
+     * height, as drawn for chords that no beam joins.
+     *
+     * @param tuplet the tuplet sign
+     * @return true if a line is found on both sides
+     */
+    private static boolean hasBracket (TupletInter tuplet)
+    {
+        final Sheet sheet = tuplet.getSig().getSystem().getSheet();
+        final ByteProcessor buffer = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
+        final Scale scale = sheet.getScale();
+        final int maxGap = scale.toPixels(constants.maxBracketGap);
+        final int minLength = scale.toPixels(constants.minBracketLength);
+        final int maxThickness = scale.toPixels(constants.maxBracketThickness);
+        final Rectangle box = tuplet.getBounds();
+        final Line left = new Line(box.x - 1, -1, maxGap, minLength, maxThickness);
+        final Line right = new Line(box.x + box.width, 1, maxGap, minLength, maxThickness);
+
+        return hasLine(buffer, box, left) && hasLine(buffer, box, right);
+    }
+
+    //---------//
+    // hasLine //
+    //---------//
+    /**
+     * Check whether a thin horizontal line starts next to the sign box, on one side.
+     *
+     * @param buffer the staff-free image
+     * @param box    the sign bounds
+     * @param line   where to look and what to look for
+     * @return true if one row of the box height holds such a line
+     */
+    private static boolean hasLine (ByteProcessor buffer,
+                                    Rectangle box,
+                                    Line line)
+    {
+        final int width = buffer.getWidth();
+
+        for (int y = box.y; y < (box.y + box.height); y++) {
+            int x = line.xStart;
+            int gap = 0;
+
+            while ((x >= 0) && (x < width) && (buffer.get(x, y) != 0) && (gap <= line.maxGap)) {
+                x += line.dir;
+                gap++;
+            }
+
+            int length = 0;
+
+            while ((x >= 0) && (x < width) && (buffer.get(x, y) == 0)
+                    && (thickness(buffer, x, y) <= line.maxThickness)) {
+                x += line.dir;
+                length++;
+            }
+
+            if (length >= line.minLength) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //----------//
+    // isBeamed //
+    //----------//
+    /**
+     * Check whether the head chords of a run are all beamed.
+     *
+     * @param run the run of chords, holding at most one beam group
+     * @return true if every head chord belongs to a beam group
+     */
+    private static boolean isBeamed (List<AbstractChordInter> run)
+    {
+        for (AbstractChordInter chord : run) {
+            if (!chord.isRest() && (beamGroup(chord) == null)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     //------------//
@@ -683,6 +779,36 @@ public class TupletsBuilder
         return (neighbors.divides(total).den == 1) || (neighbors.divides(played).den == 1);
     }
 
+    //-----------//
+    // thickness //
+    //-----------//
+    /**
+     * Report the height of the vertical run of foreground pixels through a point.
+     *
+     * @param buffer the staff-free image
+     * @param x      point abscissa
+     * @param y      point ordinate, on a foreground pixel
+     * @return the run height
+     */
+    private static int thickness (ByteProcessor buffer,
+                                  int x,
+                                  int y)
+    {
+        int top = y;
+
+        while ((top > 0) && (buffer.get(x, top - 1) == 0)) {
+            top--;
+        }
+
+        int bottom = y;
+
+        while ((bottom < (buffer.getHeight() - 1)) && (buffer.get(x, bottom + 1) == 0)) {
+            bottom++;
+        }
+
+        return bottom - top + 1;
+    }
+
     //--------------//
     // standsBeyond //
     //--------------//
@@ -739,6 +865,43 @@ public class TupletsBuilder
         }
     }
 
+    //------//
+    // Line //
+    //------//
+    /**
+     * The side of a sign to search for a bracket line, and the line expected there.
+     */
+    private static class Line
+    {
+        /** The abscissa just beyond the sign box side. */
+        final int xStart;
+
+        /** -1 to look left, +1 to look right. */
+        final int dir;
+
+        /** Maximum gap between sign box and line. */
+        final int maxGap;
+
+        /** Minimum line length. */
+        final int minLength;
+
+        /** Maximum line thickness. */
+        final int maxThickness;
+
+        Line (int xStart,
+              int dir,
+              int maxGap,
+              int minLength,
+              int maxThickness)
+        {
+            this.xStart = xStart;
+            this.dir = dir;
+            this.maxGap = maxGap;
+            this.minLength = minLength;
+            this.maxThickness = maxThickness;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -758,5 +921,17 @@ public class TupletsBuilder
                 "PitchPosition",
                 2.0,
                 "Maximum pitch position of an embraced rest, on the staff half away from the sign");
+
+        private final Scale.Fraction maxBracketGap = new Scale.Fraction(
+                1.0,
+                "Maximum gap between a tuplet sign and its bracket line");
+
+        private final Scale.Fraction minBracketLength = new Scale.Fraction(
+                0.5,
+                "Minimum length of a tuplet bracket line on each side of the sign");
+
+        private final Scale.Fraction maxBracketThickness = new Scale.Fraction(
+                0.2,
+                "Maximum thickness of a tuplet bracket line");
     }
 }
