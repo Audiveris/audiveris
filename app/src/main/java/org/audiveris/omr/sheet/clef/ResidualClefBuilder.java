@@ -330,8 +330,14 @@ public class ResidualClefBuilder
                 continue;
             }
 
-            // Assign to the single closest staff -- not every staff whose margin reaches here
+            // A clef lies within a staff, and the shape checks need one to measure pitch against
             final Point2D center = compound.getCenter2D();
+
+            if (system.getClosestStaff(center) == null) {
+                continue;
+            }
+
+            // Assign to the single closest staff -- not every staff whose margin reaches here
             Staff bestStaff = null;
             double bestDistance = Double.MAX_VALUE;
 
