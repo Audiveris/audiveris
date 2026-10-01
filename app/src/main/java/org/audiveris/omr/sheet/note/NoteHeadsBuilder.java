@@ -146,11 +146,17 @@ public class NoteHeadsBuilder
             Shape.TREMOLO_3,
             Shape.VERTICAL_SERIF);
 
-    /** Shapes handled by template matching. */
+    /**
+     * Shapes handled by template matching.
+     * <p>
+     * The stem-less heads are deliberately left out: they cost far more heads to the wholes
+     * they mistake than they find whole heads.
+     */
     private static final Set<Shape> MATCHED_SHAPES = EnumSet.noneOf(Shape.class);
     static {
         MATCHED_SHAPES.addAll(ShapeSet.HeadsOval);
         MATCHED_SHAPES.addAll(ShapeSet.QuarterHeads);
+        MATCHED_SHAPES.addAll(ShapeSet.HalfHeads);
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
