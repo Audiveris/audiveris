@@ -81,6 +81,19 @@ modules:
         url: ${GRADLE_URL}
         sha256: ${GRADLE_SHA256}
 
+      # The fonts app/build.gradle downloads, which the build cannot do here: Gradle runs
+      # offline in the sandbox. Keep these in step with its downloadBravura and downloadJazzPerc.
+      - type: file
+        url: https://github.com/steinbergmedia/bravura/releases/download/bravura-1.480/Bravura.otf
+        sha256: 1699a09cf3a150ec50ec3c503b0c46380f4ae9893804e8454db3a21bf345ec3f
+        dest: app/res
+
+      - type: file
+        url: https://ttfonts.net/sfonts/2/20683_JazzPerc.ttf
+        sha256: 310ef24d859055f1ba026fe3a86359eb3be1e3ebbcac6cb9029281952e958538
+        dest: app/res
+        dest-filename: JazzPerc.ttf
+
       - type: file
         path: org.audiveris.audiveris.desktop
 
