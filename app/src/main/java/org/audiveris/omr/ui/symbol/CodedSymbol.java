@@ -23,7 +23,7 @@ package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.ui.symbol.MusicFont.TINY_INTERLINE;
-import static org.audiveris.omr.ui.symbol.OmrFont.defaultImageColor;
+import static org.audiveris.omr.ui.symbol.OmrFont.defaultIconColor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -166,7 +166,7 @@ public class CodedSymbol
         logger.trace("CodedSymbol.paintIcon {} family: {}", this, musicFamily);
         final MusicFont font = MusicFont.getBaseFont(musicFamily, TINY_INTERLINE);
         final Graphics2D g2 = (Graphics2D) g;
-        g.setColor(logger.isDebugEnabled() ? Color.RED : defaultImageColor);
+        g.setColor(logger.isDebugEnabled() ? Color.RED : defaultIconColor);
         paint(g2, getParams(font), new Point(x, y), Alignment.TOP_LEFT);
     }
 }
