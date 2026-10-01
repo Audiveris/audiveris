@@ -3715,13 +3715,20 @@ public class PartwiseBuilder
             }
 
             // Sort by time offset, and for same offset, ensure START (LEFT) comes before STOP (RIGHT)
+            // A chord whose rhythm could not be resolved has no time offset:
+            // its wedge events go last, they are flushed at the end of the measure
             Collections.sort(
                     events,
                     (w1,
                      w2) -> {
-                        int cmp = w1.timeOffset.compareTo(w2.timeOffset);
-                        if (cmp != 0) {
-                            return cmp;
+                        if ((w1.timeOffset == null) != (w2.timeOffset == null)) {
+                            return (w1.timeOffset == null) ? 1 : -1;
+                        }
+                        if (w1.timeOffset != null) {
+                            int cmp = w1.timeOffset.compareTo(w2.timeOffset);
+                            if (cmp != 0) {
+                                return cmp;
+                            }
                         }
                         if (w1.side == w2.side) {
                             return 0;
@@ -3744,7 +3751,7 @@ public class PartwiseBuilder
                 while (it.hasNext()) {
                     TimedWedge event = it.next();
 
-                    if (event.timeOffset.compareTo(timeOffset) <= 0) {
+                    if ((event.timeOffset != null) && (event.timeOffset.compareTo(timeOffset) <= 0)) {
                         processWedge(event.wedge, event.side, event.referenceNote);
                     } else {
                         it.previous();
