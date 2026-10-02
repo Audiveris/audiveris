@@ -997,7 +997,9 @@ public abstract class Preferences
             extends Panel
             implements ActionListener
     {
-        private static final String[] THEMES = new String[] { "Light", "Dark" };
+        private final List<Theme> themes = List.of(
+                new Theme("Light", THEME_LIGHT_NAME),
+                new Theme("Dark", THEME_DARK_NAME));
 
         private final JComboBox<String> themeBox;
 
@@ -1007,7 +1009,7 @@ public abstract class Preferences
             final String tip = resources.getString(className + ".themeBox.toolTipText");
 
             // Define themeBox
-            themeBox = new JComboBox<>(THEMES);
+            themeBox = new JComboBox<>(ids());
             themeBox.addActionListener(this);
 
             // Layout
@@ -1016,26 +1018,16 @@ public abstract class Preferences
             builder.addRaw(themeBox).xyw(1, 1, 3);
             builder.addRaw(new JLabel(tip)).xy(5, 1);
 
-            // Display current value
+            // Select index in themeBox, according to current theme name
             final String currentThemeName = UILookAndFeel.getThemeName();
-            if (currentThemeName.equals(THEME_LIGHT_NAME)) {
-                themeBox.setSelectedIndex(0);
-            } else if (currentThemeName.equals(THEME_DARK_NAME)) {
-                themeBox.setSelectedIndex(1);
-            } else {
-                logger.error("Unknown theme name: {}", currentThemeName);
-            }
+            themeBox.setSelectedIndex(nameIndex(currentThemeName));
         }
 
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            final String selectedTheme = (String) themeBox.getSelectedItem();
-            UILookAndFeel.setUI(switch (selectedTheme) {
-                case "Light" -> THEME_LIGHT_NAME;
-                case "Dark" -> THEME_DARK_NAME;
-                default -> null;
-            });
+            final int index = themeBox.getSelectedIndex();
+            UILookAndFeel.setUI(themes.get(index).name);
         }
 
         @Override
@@ -1043,6 +1035,36 @@ public abstract class Preferences
         {
             super.setEnabled(enabled);
             themeBox.setEnabled(enabled);
+        }
+
+        private String[] ids ()
+        {
+            return themes.stream().map(th -> th.id).toArray(String[]::new);
+        }
+
+        private int nameIndex (String name)
+        {
+            for (int i = 0; i < themes.size(); i++) {
+                if (name.equals(themes.get(i).name)) {
+                    return i;
+                }
+            }
+
+            return 0; // To please the compiler
+        }
+
+        private static class Theme
+        {
+            public final String id;
+
+            public final String name;
+
+            public Theme (String id,
+                          String name)
+            {
+                this.id = id;
+                this.name = name;
+            }
         }
     }
 }
