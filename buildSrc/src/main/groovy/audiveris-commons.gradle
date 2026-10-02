@@ -18,7 +18,7 @@ plugins {
 
 // Central location for application version
 // REMINDER: Also update the "audiveris_functional_version" in docs/_config.yml
-project.version = '5.11.0'
+project.version = '5.12.0'
 logger.info("version: {}", project.version)
 
 // Name of host OS
