@@ -151,8 +151,9 @@ public abstract class AbstractClassifier<M extends Object, N extends Object>
 
             // Successful checks?
             if ((conditions != null) && conditions.contains(Condition.CHECKED)) {
-                // This may change the eval shape in only one case:
-                // HW_REST_set may be changed for HALF_REST or WHOLE_REST based on pitch
+                // This may change the eval shape:
+                // HW_REST_set may be changed for HALF_REST or WHOLE_REST based on pitch,
+                // and a tuplet shape is set by the digit topology
                 glyphChecker.annotate(system, eval, glyph);
 
                 if (eval.failure != null) {

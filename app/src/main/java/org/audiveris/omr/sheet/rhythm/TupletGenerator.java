@@ -336,7 +336,7 @@ public class TupletGenerator
 
         // Set relation between tuplet and every chord in group
         for (AbstractChordInter ch : group) {
-            sig.addEdge(ch, tuplet, new ChordTupletRelation(shape));
+            sig.addEdge(ch, tuplet, ChordTupletRelation.create());
         }
 
         return tuplet;

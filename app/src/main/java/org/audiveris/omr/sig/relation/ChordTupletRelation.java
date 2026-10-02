@@ -23,7 +23,6 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.TupletInter;
 
@@ -60,14 +59,9 @@ public class ChordTupletRelation
         this.tupletCoeff = 0;
     }
 
-    /**
-     * Creates a new <code>TupletChordRelation</code> object.
-     *
-     * @param shape the tuplet shape (currently either TUPLET_THREE or TUPLET_SIX)
-     */
-    public ChordTupletRelation (Shape shape)
+    private ChordTupletRelation (double tupletCoeff)
     {
-        tupletCoeff = getTupletCoeff(shape);
+        this.tupletCoeff = tupletCoeff;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -92,18 +86,6 @@ public class ChordTupletRelation
     protected double getTargetCoeff ()
     {
         return tupletCoeff;
-    }
-
-    //----------------//
-    // getTupletCoeff //
-    //----------------//
-    private double getTupletCoeff (Shape shape)
-    {
-        return switch (shape) {
-            case TUPLET_THREE -> constants.tupletThreeSupportCoeff.getValue();
-            case TUPLET_SIX -> constants.tupletSixSupportCoeff.getValue();
-            default -> throw new IllegalArgumentException("Illegal tuplet shape " + shape);
-        };
     }
 
     //----------------//
@@ -137,6 +119,24 @@ public class ChordTupletRelation
         }
     }
 
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create the relation of a chord that makes up a tuplet.
+     * <p>
+     * Every such chord brings the same support, whatever the tuplet number: how many chords
+     * make up a tuplet follows from their durations, not from the number.
+     *
+     * @return the supporting relation
+     */
+    public static ChordTupletRelation create ()
+    {
+        return new ChordTupletRelation(constants.tupletSupportCoeff.getValue());
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------//
@@ -145,12 +145,8 @@ public class ChordTupletRelation
     private static class Constants
             extends ConstantSet
     {
-        private final Constant.Ratio tupletThreeSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio tupletSupportCoeff = new Constant.Ratio(
                 2 * 0.33,
-                "Supporting coeff for tuplet 3");
-
-        private final Constant.Ratio tupletSixSupportCoeff = new Constant.Ratio(
-                2 * 0.17,
-                "Supporting coeff for tuplet 6");
+                "Supporting coeff brought by each chord of a tuplet");
     }
 }
