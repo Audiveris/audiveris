@@ -65,6 +65,7 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.Jaxb;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.VerticalSide;
@@ -99,6 +100,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class <code>HeadInter</code> represents a note head, that is any head shape including
@@ -133,6 +135,22 @@ public class HeadInter
     @XmlIDREF
     @XmlAttribute(name = "mirror")
     protected AbstractInter oldMirror;
+
+    /**
+     * How far beyond the head's left edge its stem is drawn, when a bracket stands
+     * between them.
+     */
+    @XmlAttribute(name = "stem-shift-left")
+    private Integer stemShiftLeft;
+
+    /** Same thing on the right side. */
+    @XmlAttribute(name = "stem-shift-right")
+    private Integer stemShiftRight;
+
+    /** Whether the head is drawn between brackets, as a ghost note is. */
+    @XmlAttribute(name = "parentheses")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean parentheses;
 
     // Transient data
     //---------------
@@ -728,6 +746,9 @@ public class HeadInter
         final Scale scale = sig.getSystem().getSheet().getScale();
         final HeadSeedScale hs = scale.getHeadSeedScale();
 
+        final HorizontalSide hSide = anchor.hSide();
+        final int shift = (hSide == LEFT) ? -getStemShift(LEFT) : getStemShift(RIGHT);
+
         if (hs != null) {
             // NOTA: We use the same abscissa correction for BOTH horizontal sides
             final Double dl = hs.getDx(shape, LEFT);
@@ -745,15 +766,75 @@ public class HeadInter
             }
 
             if (dx != null) {
-                final HorizontalSide hSide = anchor.hSide();
                 final double x = (hSide == LEFT) ? headBox.x + 0.5 - dx
                         : headBox.x + headBox.width - 1 + dx;
 
-                return new Point2D.Double(x, ref.getY());
+                return new Point2D.Double(x + shift, ref.getY());
             }
         }
 
-        return ref;
+        return new Point2D.Double(ref.getX() + shift, ref.getY());
+    }
+
+    //--------------//
+    // getStemShift //
+    //--------------//
+    /**
+     * Report how far beyond this head's edge its stem is drawn on the given side.
+     *
+     * @param side the head side
+     * @return the shift in pixels, zero where the stem is drawn against the head
+     */
+    public int getStemShift (HorizontalSide side)
+    {
+        final Integer shift = (side == LEFT) ? stemShiftLeft : stemShiftRight;
+
+        return (shift == null) ? 0 : shift;
+    }
+
+    //----------------//
+    // hasParentheses //
+    //----------------//
+    /**
+     * Report whether this head is drawn between brackets.
+     *
+     * @return true for a parenthesized head
+     */
+    public boolean hasParentheses ()
+    {
+        return parentheses;
+    }
+
+    //----------------//
+    // setParentheses //
+    //----------------//
+    /**
+     * Record whether this head is drawn between brackets.
+     *
+     * @param parentheses true for a parenthesized head
+     */
+    public void setParentheses (boolean parentheses)
+    {
+        this.parentheses = parentheses;
+    }
+
+    //--------------//
+    // setStemShift //
+    //--------------//
+    /**
+     * Record that this head's stem is drawn beyond a bracket on the given side.
+     *
+     * @param side  the head side
+     * @param shift how far beyond the head's edge, in pixels
+     */
+    public void setStemShift (HorizontalSide side,
+                              int shift)
+    {
+        if (side == LEFT) {
+            stemShiftLeft = shift;
+        } else {
+            stemShiftRight = shift;
+        }
     }
 
     //-----------------------//
