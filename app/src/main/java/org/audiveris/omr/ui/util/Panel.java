@@ -435,7 +435,7 @@ public class Panel
                 "Horizontal gap between two fields");
 
         private final Constant.String fieldWidth = new Constant.String(
-                "35dlu",
+                "38dlu",
                 "Width of a field value");
 
         private final PixelCount insetBottom = new PixelCount(6, "Value of Bottom inset");
