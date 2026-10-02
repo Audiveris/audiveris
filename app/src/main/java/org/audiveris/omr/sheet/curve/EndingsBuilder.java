@@ -31,6 +31,7 @@ import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
+import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Profiles;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
@@ -270,6 +271,12 @@ public class EndingsBuilder
         final int rightStaffY = staff.getFirstLine().yAt(rightPt.x);
         final Filament rightLeg = lookupLeg(seg, rightPt, rightStaffY, system);
 
+        if (closesBox(seg, leftLeg, rightLeg, leftStaffY, system)) {
+            logger.debug("Ending {} is a side of a box", segment);
+
+            return null;
+        }
+
         // Middle legs if any (each would split segment line into separate endings)
         final List<Filament> middleLegs = getMiddleLegs(segment, staff);
 
@@ -328,6 +335,48 @@ public class EndingsBuilder
 
             return created;
         }
+    }
+
+    //-----------//
+    // closesBox //
+    //-----------//
+    /**
+     * Report whether the segment is a side of a box rather than the line of an ending.
+     * <p>
+     * An ending is open at the bottom. A box drawn around a label is closed: the legs of its top
+     * edge are joined by another horizontal, and its bottom edge has sides rising from both ends.
+     *
+     * @param seg      the horizontal segment
+     * @param leftLeg  left leg, perhaps null
+     * @param rightLeg right leg, perhaps null
+     * @param staffY   ordinate of the staff top line below the segment
+     * @param system   related system
+     * @return true for a side of a box
+     */
+    private boolean closesBox (SegmentInfo seg,
+                               Filament leftLeg,
+                               Filament rightLeg,
+                               int staffY,
+                               SystemInfo system)
+    {
+        if ((leftLeg != null) && (rightLeg != null)) {
+            final Point p1 = PointUtil.rounded(leftLeg.getStopPoint());
+            final Point p2 = PointUtil.rounded(rightLeg.getStopPoint());
+            final CurveGap gap = CurveGap.create(p1, p2);
+            gap.computeVector(sheet.getPicture().getSource(Picture.SourceKey.BINARY));
+
+            if (gap.getLargestGap() <= params.maxBoxGap) {
+                return true;
+            }
+        }
+
+        // The sides of a box may rise as high as the legs of an ending may drop
+        final Point leftPt = seg.getEnd(true);
+        final Point rightPt = seg.getEnd(false);
+        final int reach = staffY - leftPt.y;
+
+        return (lookupRisingLeg(leftPt, leftPt.y - reach, system) != null)
+                && (lookupRisingLeg(rightPt, rightPt.y - reach, system) != null);
     }
 
     //---------------//
@@ -506,6 +555,10 @@ public class EndingsBuilder
         private final Constant.Ratio minFirstMeasureRatio = new Constant.Ratio(
                 0.6,
                 "Minimum ending length as ratio of related measure length, for first in system");
+
+        private final Scale.Fraction maxBoxGap = new Scale.Fraction(
+                0.25,
+                "Maximum hole in the horizontal joining the legs of a box");
     }
 
     //------------//
@@ -519,11 +572,14 @@ public class EndingsBuilder
     {
         final int maxBarShift;
 
+        final int maxBoxGap;
+
         Parameters (Scale scale)
         {
             super(scale);
 
             maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(Profiles.STRICT));
+            maxBoxGap = scale.toPixels(constants.maxBoxGap);
         }
     }
 }
