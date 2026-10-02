@@ -179,7 +179,7 @@ public class NumberInter
         final Collection<Link> links = searchLinks(sig.getSystem());
 
         if (!links.isEmpty()) {
-            final Link link = links.iterator().next(); // There should be just one link
+            final Link link = links.iterator().next(); // Tells what this number is
 
             if ((link.partner instanceof MultipleRestInter) && DIGITS.contains(shape)) {
                 // Use a MeasureCountInter, with any digit printed beside this one
@@ -189,11 +189,16 @@ public class NumberInter
                 link.applyTo(mc);
             } else if ((link.partner instanceof MultipleRestInter)
                     || (link.partner instanceof MeasureRepeatInter)) {
-                // Use a MeasureCountInter
+                // Use a MeasureCountInter, linked to every candidate of the sign below it:
+                // which of them survives is decided later, and a count left linked only to
+                // one that does not is removed as abnormal
                 final MeasureCountInter mc = new MeasureCountInter(glyph, shape, getGrade());
                 mc.setStaff(link.partner.getStaff());
                 sig.addVertex(mc);
-                link.applyTo(mc);
+
+                for (Link candidate : links) {
+                    candidate.applyTo(mc);
+                }
             } else if (link.partner instanceof TimeNumberInter other) {
                 // Use a TimeNumberInter
                 final VerticalSide vSide = link.outgoing ? VerticalSide.TOP : VerticalSide.BOTTOM;
