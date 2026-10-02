@@ -109,7 +109,8 @@ public class OpusExporter
 
         for (Score score : scores) {
             // Reference each score/movement in opus
-            String entryName = rootName + (multi ? (".mvt" + score.getId()) : "")
+            // Rank, not score id: scores exported for a sheet selection have no id
+            String entryName = rootName + (multi ? (".mvt" + (1 + scores.indexOf(score))) : "")
                     + OMR.SCORE_EXTENSION;
             org.audiveris.proxymusic.opus.Score oScore = opusFactory.createScore();
             oScore.setHref(entryName);

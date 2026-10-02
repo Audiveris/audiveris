@@ -644,8 +644,7 @@ public class Book
             for (Entry<Score, Path> entry : scoreMap.entrySet()) {
                 final Score score = entry.getKey();
                 final Path scorePath = entry.getValue();
-                final String scoreName = (!isMultiMovement()) ? bookName
-                        : (bookName + OMR.MOVEMENT_EXTENSION + score.getId());
+                final String scoreName = getScoreName(bookName, score, theScores);
 
                 try {
                     new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
@@ -1116,8 +1115,7 @@ public class Book
         final String ext = compressed ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION;
 
         for (Score score : theScores) {
-            final String scoreName = (!isMultiMovement()) ? bookName
-                    : (bookName + OMR.MOVEMENT_EXTENSION + score.getId());
+            final String scoreName = getScoreName(bookName, score, theScores);
             pathMap.put(score, bookPathSansExt.resolveSibling(scoreName + ext));
         }
 
@@ -2910,6 +2908,30 @@ public class Book
         }
 
         return jaxbContext;
+    }
+
+    //--------------//
+    // getScoreName //
+    //--------------//
+    /**
+     * Report the export name of a score: "BOOK" when it is exported alone,
+     * otherwise "BOOK.mvt#" where "#" is its rank among the exported scores.
+     * <p>
+     * The rank is not {@link Score#getId()}: the scores exported for a sheet selection in batch
+     * are not the book scores, and have no id.
+     *
+     * @param bookName  the book name
+     * @param score     the score to name
+     * @param theScores the scores exported together
+     * @return the score name
+     */
+    private static String getScoreName (String bookName,
+                                        Score score,
+                                        List<Score> theScores)
+    {
+        return (theScores.size() > 1)
+                ? (bookName + OMR.MOVEMENT_EXTENSION + (1 + theScores.indexOf(score)))
+                : bookName;
     }
 
     //---------------//
