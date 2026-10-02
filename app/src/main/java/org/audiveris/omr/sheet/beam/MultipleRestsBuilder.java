@@ -38,7 +38,7 @@ import org.audiveris.omr.sheet.grid.BarFilamentBuilder;
 import org.audiveris.omr.sheet.grid.StaffPeak;
 import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.BeamInter;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.MultipleRestInter;
 import org.audiveris.omr.sig.inter.VerticalSerifInter;
@@ -93,7 +93,8 @@ public class MultipleRestsBuilder
     private final Parameters params;
 
     /** Suitable candidates found for multiple rest in this system. */
-    private final Map<BeamInter, Map<HorizontalSide, StaffPeak>> found = new LinkedHashMap<>();
+    private final Map<AbstractBeamInter, Map<HorizontalSide, StaffPeak>> found =
+            new LinkedHashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -124,8 +125,8 @@ public class MultipleRestsBuilder
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
         final BarFilamentBuilder filamentBuilder = new BarFilamentBuilder(sheet);
 
-        for (Entry<BeamInter, Map<HorizontalSide, StaffPeak>> entry : found.entrySet()) {
-            final BeamInter beam = entry.getKey();
+        for (Entry<AbstractBeamInter, Map<HorizontalSide, StaffPeak>> entry : found.entrySet()) {
+            final AbstractBeamInter beam = entry.getKey();
 
             // Create multiple rest
             final MultipleRestInter multipleRest = new MultipleRestInter(
@@ -251,7 +252,7 @@ public class MultipleRestsBuilder
      * @param staff the surrounding staff
      * @return the serif peak found at each beam side
      */
-    private Map<HorizontalSide, StaffPeak> getSerifPeaks (BeamInter beam,
+    private Map<HorizontalSide, StaffPeak> getSerifPeaks (AbstractBeamInter beam,
                                                           Staff staff)
     {
         final Map<HorizontalSide, StaffPeak> serifPeaks = new EnumMap<>(HorizontalSide.class);
@@ -278,7 +279,9 @@ public class MultipleRestsBuilder
     // process //
     //---------//
     /**
-     * Check every beam as a potential multiple rest.
+     * Check every beam as a potential multiple rest, whichever beam thickness it was built with.
+     * A rest bar is often thicker than the beams, so on a sheet with a second beam thickness
+     * it is built as a small beam.
      * <ul>
      * <li>Minimum beam width
      * <li>Beam must be stuck on staff mid line
@@ -290,10 +293,10 @@ public class MultipleRestsBuilder
     public void process ()
     {
         final SIGraph sig = system.getSig();
-        final List<Inter> beams = sig.inters(BeamInter.class);
+        final List<Inter> beams = sig.inters(AbstractBeamInter.class);
 
         for (Inter bi : beams) {
-            final BeamInter beam = (BeamInter) bi;
+            final AbstractBeamInter beam = (AbstractBeamInter) bi;
 
             // Long enough?
             if (beam.getBounds().width < params.minLength) {
