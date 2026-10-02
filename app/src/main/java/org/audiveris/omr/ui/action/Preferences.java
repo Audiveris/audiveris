@@ -32,6 +32,8 @@ import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UILookAndFeel;
+import static org.audiveris.omr.ui.util.UILookAndFeel.THEME_DARK_NAME;
+import static org.audiveris.omr.ui.util.UILookAndFeel.THEME_LIGHT_NAME;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.LabeledEnum;
 import org.audiveris.omr.util.param.Param;
@@ -317,7 +319,7 @@ public abstract class Preferences
         BookManager.useSeparateBookFolders().resetToSource();
         UIUtil.setGlobalFontRatio(1.0);
         Main.setLocale(Locale.ENGLISH);
-        UILookAndFeel.setUI(null);
+        UILookAndFeel.setUI(THEME_LIGHT_NAME);
     }
 
     //----------//
@@ -1015,8 +1017,14 @@ public abstract class Preferences
             builder.addRaw(new JLabel(tip)).xy(5, 1);
 
             // Display current value
-            final String currentTheme = UILookAndFeel.getThemeName();
-            themeBox.setSelectedItem(currentTheme);
+            final String currentThemeName = UILookAndFeel.getThemeName();
+            if (currentThemeName.equals(THEME_LIGHT_NAME)) {
+                themeBox.setSelectedIndex(0);
+            } else if (currentThemeName.equals(THEME_DARK_NAME)) {
+                themeBox.setSelectedIndex(1);
+            } else {
+                logger.error("Unknown theme name: {}", currentThemeName);
+            }
         }
 
         @Override
@@ -1024,8 +1032,8 @@ public abstract class Preferences
         {
             final String selectedTheme = (String) themeBox.getSelectedItem();
             UILookAndFeel.setUI(switch (selectedTheme) {
-                case "Light" -> "com.formdev.flatlaf.FlatLightLaf";
-                case "Dark" -> "com.formdev.flatlaf.FlatDarkLaf";
+                case "Light" -> THEME_LIGHT_NAME;
+                case "Dark" -> THEME_DARK_NAME;
                 default -> null;
             });
         }
