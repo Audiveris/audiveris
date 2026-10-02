@@ -85,6 +85,21 @@ public class MeasureCountInter
         super(glyph, shape, grade);
     }
 
+    /**
+     * Creates a new MeasureCountInter object for a count of several digits.
+     *
+     * @param bounds bounding box of all its digits
+     * @param value  the count they spell
+     * @param grade  evaluation value
+     */
+    public MeasureCountInter (Rectangle bounds,
+                              Integer value,
+                              Double grade)
+    {
+        super(bounds, Shape.NUMBER_CUSTOM, grade);
+        this.value = value;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
 
     //---------------//

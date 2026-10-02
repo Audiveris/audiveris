@@ -21,9 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.classifier.Classifier;
+import org.audiveris.omr.classifier.Evaluation;
+import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
@@ -53,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -72,6 +77,25 @@ public class NumberInter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
+
+    /** The shapes a single digit of a measure count may be classified as. */
+    private static final EnumSet<Shape> DIGITS = EnumSet.of(
+            Shape.TIME_ZERO,
+            Shape.TIME_ONE,
+            Shape.TIME_TWO,
+            Shape.TIME_THREE,
+            Shape.TIME_FOUR,
+            Shape.TIME_FIVE,
+            Shape.TIME_SIX,
+            Shape.TIME_SEVEN,
+            Shape.TIME_EIGHT,
+            Shape.TIME_NINE,
+            Shape.DIGIT_0,
+            Shape.DIGIT_1,
+            Shape.DIGIT_2,
+            Shape.DIGIT_3,
+            Shape.DIGIT_4,
+            Shape.DIGIT_5);
 
     private static final Logger logger = LoggerFactory.getLogger(NumberInter.class);
 
@@ -147,12 +171,23 @@ public class NumberInter
             logger.info("VIP linkAndConvert for {}", this);
         }
 
+        // Already taken into the count of a number beside it
+        if (isRemoved()) {
+            return;
+        }
+
         final Collection<Link> links = searchLinks(sig.getSystem());
 
         if (!links.isEmpty()) {
             final Link link = links.iterator().next(); // There should be just one link
 
-            if ((link.partner instanceof MultipleRestInter)
+            if ((link.partner instanceof MultipleRestInter) && DIGITS.contains(shape)) {
+                // Use a MeasureCountInter, with any digit printed beside this one
+                final MeasureCountInter mc = measureCount();
+                mc.setStaff(link.partner.getStaff());
+                sig.addVertex(mc);
+                link.applyTo(mc);
+            } else if ((link.partner instanceof MultipleRestInter)
                     || (link.partner instanceof MeasureRepeatInter)) {
                 // Use a MeasureCountInter
                 final MeasureCountInter mc = new MeasureCountInter(glyph, shape, getGrade());
@@ -182,6 +217,112 @@ public class NumberInter
         } else {
             logger.debug("No time, rest or repeat sign linked to {}", this);
         }
+    }
+
+    //--------------//
+    // measureCount //
+    //--------------//
+    /**
+     * Build the measure count this number starts, taking in any digit printed beside it.
+     * <p>
+     * A count of 41 is two glyphs, and the 1 is often classified as a fingering digit, which
+     * finds no note to finger and is dropped. So the glyphs beside this number on its line are
+     * classified again here, and each that reads as a time numeral or a fingering digit extends
+     * the count.
+     * <p>
+     * A glyph overlapping the count is another reading of the same ink, not a digit beside it.
+     *
+     * @return the measure count
+     */
+    private MeasureCountInter measureCount ()
+    {
+        final SystemInfo system = sig.getSystem();
+        final int interline = system.getSheet().getInterline();
+        final int maxGap = (int) Math.rint(constants.maxDigitGap.getValue() * interline);
+        final Classifier classifier = ShapeClassifier.getInstance();
+        final Rectangle span = getBounds();
+        final List<Glyph> digitGlyphs = new ArrayList<>();
+        final List<Integer> digitValues = new ArrayList<>();
+        digitGlyphs.add(glyph);
+        digitValues.add(valueOf(shape));
+
+        boolean grown;
+
+        do {
+            grown = false;
+
+            final Rectangle band = new Rectangle(span);
+            band.grow(maxGap, 0);
+
+            for (Glyph candidate : system.getSheet().getGlyphIndex().getIntersectedEntities(band)) {
+                final Rectangle box = candidate.getBounds();
+                final int gap = Math.max(box.x - (span.x + span.width),
+                                         span.x - (box.x + box.width));
+                final int overlap = Math.min(span.y + span.height, box.y + box.height)
+                        - Math.max(span.y, box.y);
+
+                if ((gap < 0) || digitGlyphs.contains(candidate)
+                        || (overlap < (constants.minDigitOverlap.getValue()
+                                * Math.max(span.height, box.height)))) {
+                    continue;
+                }
+
+                for (Evaluation eval : classifier.evaluate(
+                        candidate,
+                        system,
+                        constants.maxDigitEvaluations.getValue(),
+                        Grades.symbolMinGrade,
+                        EnumSet.of(Classifier.Condition.CHECKED))) {
+                    if (DIGITS.contains(eval.shape)) {
+                        final int at = (box.x < span.x) ? 0 : digitGlyphs.size();
+                        digitGlyphs.add(at, candidate);
+                        digitValues.add(at, digitOf(eval.shape));
+                        span.add(box);
+                        grown = true;
+
+                        break;
+                    }
+                }
+
+                if (grown) {
+                    break;
+                }
+            }
+        } while (grown);
+
+        if (digitGlyphs.size() == 1) {
+            return new MeasureCountInter(glyph, shape, getGrade());
+        }
+
+        int value = 0;
+
+        for (int digit : digitValues) {
+            value = (10 * value) + digit;
+        }
+
+        for (Inter other : sig.inters(NumberInter.class)) {
+            if ((other != this) && span.contains(other.getCenter())) {
+                other.remove();
+            }
+        }
+
+        return new MeasureCountInter(span, value, getGrade());
+    }
+
+    //---------//
+    // digitOf //
+    //---------//
+    /**
+     * Report the value of a single digit, whether classified a time numeral or a fingering.
+     *
+     * @param digitShape one of {@link #DIGITS}
+     * @return its value
+     */
+    private static int digitOf (Shape digitShape)
+    {
+        final Integer time = valueOf(digitShape);
+
+        return (time != null) ? time : FingeringInter.valueOf(digitShape);
     }
 
     //--------//
@@ -410,5 +551,19 @@ public class NumberInter
         private final Scale.Fraction oneLineMaxTimeDy = new Scale.Fraction(
                 0.25,
                 "Maximum vertical gap between a partial time and a 1-line staff");
+
+        private final Scale.Fraction maxDigitGap = new Scale.Fraction(
+                0.5,
+                "Maximum horizontal gap between two digits of one measure count");
+
+        private final Constant.Ratio minDigitOverlap = new Constant.Ratio(
+                0.75,
+                "Least vertical overlap of two digits of one measure count, as a share of the"
+                + " taller");
+
+        private final Constant.Integer maxDigitEvaluations = new Constant.Integer(
+                "evaluations",
+                3,
+                "How many of a glyph's best evaluations are looked through for a digit");
     }
 }
