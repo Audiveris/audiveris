@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedSet;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -133,10 +132,7 @@ public class TupletInter
     @Override
     public boolean checkAbnormal ()
     {
-        SortedSet<AbstractChordInter> embraced = TupletsBuilder.getEmbracedChords(
-                this,
-                getChords());
-        setAbnormal(embraced == null);
+        setAbnormal(!TupletsBuilder.makesUpTuplet(this, getChords()));
 
         return isAbnormal();
     }
@@ -297,7 +293,7 @@ public class TupletInter
     //-------------//
     /**
      * Try to create a tuplet inter, checking that there is at least one (head) chord
-     * nearby.
+     * nearby, and that the sign is neither drawn over a note head nor a letter of a word.
      *
      * @param glyph        the candidate tuplet glyph
      * @param shape        TUPLET_THREE or TUPLET_SIX
@@ -327,6 +323,34 @@ public class TupletInter
             logger.debug("Discarding isolated tuplet candidate glyph#{}", glyph.getId());
 
             return null;
+        }
+
+        // A tuplet number is printed clear of the note heads
+        final Rectangle signBox = glyph.getBounds();
+
+        for (Inter chord : nearby) {
+            for (Inter note : ((AbstractChordInter) chord).getNotes()) {
+                if (note.getBounds().intersects(signBox)) {
+                    logger.debug("Discarding tuplet candidate glyph#{} over {}", glyph.getId(), note);
+
+                    return null;
+                }
+            }
+        }
+
+        // A tuplet number is not a letter among others in a word, unless the word shows its digit
+        final Point center = glyph.getCenter();
+        final String digit = (shape == Shape.TUPLET_THREE) ? "3" : "6";
+
+        for (Inter inter : system.getSig().inters(WordInter.class)) {
+            final WordInter word = (WordInter) inter;
+
+            if ((word.getValue().length() > 1) && !word.getValue().contains(digit)
+                    && word.getBounds().contains(center)) {
+                logger.debug("Discarding tuplet candidate glyph#{} in {}", glyph.getId(), word);
+
+                return null;
+            }
         }
 
         return new TupletInter(glyph, shape, grade);
