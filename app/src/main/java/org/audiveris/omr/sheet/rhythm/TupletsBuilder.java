@@ -199,7 +199,7 @@ public class TupletsBuilder
         List<Link> links = new ArrayList<>();
 
         for (AbstractChordInter chord : chords) {
-            links.add(new Link(chord, new ChordTupletRelation(tuplet.getShape()), false));
+            links.add(new Link(chord, ChordTupletRelation.create(), false));
         }
 
         return links;
