@@ -862,6 +862,11 @@ public class SlursBuilder
             // Vertical distance from slur end to closest staff line
             Staff staff = sheet.getStaffManager().getClosestStaff(end);
 
+            if (staff == null) {
+                // Outside every staff area (e.g. a margin text): not ending on a staff line
+                continue;
+            }
+
             if (!staff.isTablature()) {
                 final LineInfo line = staff.getClosestStaffLine(end);
                 final double toLine = line.yAt(end.x) - end.y;

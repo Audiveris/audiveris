@@ -279,7 +279,7 @@ public class SegmentsBuilder
                 Point end = arc.getEnd(rev);
                 Staff staff = staffManager.getClosestStaff(end);
 
-                if (!staff.isOneLineStaff()) {
+                if ((staff != null) && !staff.isOneLineStaff()) {
                     double dist = staff.distanceTo(end);
 
                     if (dist <= 0) {
