@@ -96,6 +96,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -155,6 +156,14 @@ public class NoteHeadsBuilder
      * they mistake than they find whole heads.
      */
     private static final Set<Shape> MATCHED_SHAPES = EnumSet.noneOf(Shape.class);
+
+    /**
+     * Shapes whose stem is drawn from a tip of the head, so that a stem seed may end short of
+     * the head's middle.
+     */
+    private static final Set<Shape> TIP_STEMMED = EnumSet.of(
+            Shape.NOTEHEAD_CROSS,
+            Shape.NOTEHEAD_CROSS_VOID);
     static {
         MATCHED_SHAPES.addAll(ShapeSet.HeadsOval);
         MATCHED_SHAPES.addAll(ShapeSet.QuarterHeads);
@@ -613,6 +622,28 @@ public class NoteHeadsBuilder
         Collections.sort(kept, Inters.byAbscissa);
 
         return kept;
+    }
+
+    //---------//
+    // isOnBar //
+    //---------//
+    /**
+     * Report whether a glyph runs along a barline or connector, frozen or not.
+     *
+     * @param glyph the glyph to check
+     * @return true if it meets the area of one
+     */
+    private boolean isOnBar (Glyph glyph)
+    {
+        final Rectangle box = glyph.getBounds();
+
+        for (Area area : systemBarlineAreas) {
+            if (area.intersects(box)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //----------------//
@@ -1296,6 +1327,11 @@ public class NoteHeadsBuilder
                 0.75,
                 "Vertical margin for intercepting stem seed around a target pitch");
 
+        private final Constant.Ratio tipPitchMargin = new Constant.Ratio(
+                1.0,
+                "Vertical margin for intercepting stem seed around a target pitch, for a head"
+                + " whose stem is drawn from a tip");
+
         private final Constant.Ratio stemLessBoost = new Constant.Ratio(
                 0, // Was 0.38,
                 "How much do we boost stem-less heads (always isolated)");
@@ -1529,6 +1565,9 @@ public class NoteHeadsBuilder
 
         private final Area seedsArea;
 
+        /** Area for stem seeds of the heads whose stem is drawn from a tip. */
+        private final Area tipSeedsArea;
+
         private final List<Inter> competitors;
 
         private final List<Area> barAreas;
@@ -1589,6 +1628,13 @@ public class NoteHeadsBuilder
                 final double above = ((interline * (dir - ratio)) / 2);
                 final double below = ((interline * (dir + ratio)) / 2);
                 seedsArea = line.getArea(above, below);
+            }
+
+            {
+                final double ratio = constants.tipPitchMargin.getValue();
+                final double above = ((interline * (dir - ratio)) / 2);
+                final double below = ((interline * (dir + ratio)) / 2);
+                tipSeedsArea = line.getArea(above, below);
             }
 
             {
@@ -2226,8 +2272,13 @@ public class NoteHeadsBuilder
          */
         private List<HeadInter> lookupSeeds ()
         {
-            // Intersected seeds in the area
-            final List<Glyph> seeds = getGlyphsSlice(systemSeeds, seedsArea);
+            // Intersected seeds in the area, the ones reaching the pitch middle apart.
+            // A seed reaching only a tip is no stem where it runs along a barline, whose serif
+            // would then read as a head hanging from it.
+            final List<Glyph> seeds = getGlyphsSlice(systemSeeds, tipSeedsArea);
+            final Set<Glyph> middleSeeds = new HashSet<>(
+                    Glyphs.intersectedGlyphs(seeds, seedsArea));
+            seeds.removeIf(seed -> !middleSeeds.contains(seed) && isOnBar(seed));
 
             // Use one anchor for each horizontal side of the stem seed
             final Anchor[] anchors = new Anchor[] { LEFT_STEM, RIGHT_STEM };
@@ -2252,6 +2303,10 @@ public class NoteHeadsBuilder
                     // keep the best match (if acceptable) among all locations tried.
                     ShapeLoop:
                     for (Shape shape : scannerTemplateNotesStem) {
+                        if (!middleSeeds.contains(seed) && !TIP_STEMMED.contains(shape)) {
+                            continue;
+                        }
+
                         PixelDistance bestLoc = null;
 
                         // Brute force: explore the whole rectangle around (x0, y0)
