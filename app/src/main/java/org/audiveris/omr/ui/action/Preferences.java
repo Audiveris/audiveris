@@ -31,9 +31,10 @@ import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.util.Panel;
-import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.util.UILookAndFeel;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.LabeledEnum;
+import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationContext;
@@ -147,9 +148,9 @@ public abstract class Preferences
     /**
      * Display the preferences dialog.
      * <p>
-     * Controls apply their effect immediately. "Cancel" reverts to the state captured
-     * when the dialog was opened. "Reset" applies the default values and refreshes the
-     * controls.
+     * Controls apply their effect immediately.
+     * "Cancel" reverts to the state captured when the dialog was opened.
+     * "Reset" applies the default values and refreshes the controls.
      */
     public static void show ()
     {
@@ -169,18 +170,19 @@ public abstract class Preferences
         final JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
         final JButton ok = new JButton(resources.getString("Preferences.ok"));
+        ok.setToolTipText(resources.getString("Preferences.ok.toolTipText"));
         ok.addActionListener(e -> dialog.dispose());
 
         final JButton cancel = new JButton(resources.getString("Preferences.cancel"));
-        cancel.addActionListener(e ->
-        {
+        cancel.setToolTipText(resources.getString("Preferences.cancel.toolTipText"));
+        cancel.addActionListener(e -> {
             restoreSnapshot(snapshot);
             dialog.dispose();
         });
 
         final JButton reset = new JButton(resources.getString("Preferences.reset"));
-        reset.addActionListener(e ->
-        {
+        reset.setToolTipText(resources.getString("Preferences.reset.toolTipText"));
+        reset.addActionListener(e -> {
             resetToDefaults();
 
             // Refresh content to reflect the default values
@@ -200,8 +202,9 @@ public abstract class Preferences
 
         // Keyboard shortcuts
         dialog.getRootPane().setDefaultButton(ok);
-        dialog.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel");
+        dialog.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                "cancel");
         dialog.getRootPane().getActionMap().put("cancel", new AbstractAction()
         {
             @Override
@@ -314,7 +317,7 @@ public abstract class Preferences
         BookManager.useSeparateBookFolders().resetToSource();
         UIUtil.setGlobalFontRatio(1.0);
         Main.setLocale(Locale.ENGLISH);
-        UILookAndFeel.setUI("com.formdev.flatlaf.FlatLightLaf");
+        UILookAndFeel.setUI(null);
     }
 
     //----------//
@@ -326,13 +329,21 @@ public abstract class Preferences
     private static class Snapshot
     {
         private final boolean[] topics;
+
         private final OmrStep earlyStep;
+
         private final String defaultPlugin;
+
         private final Path baseFolder;
+
         private final boolean inputBookFolder;
+
         private final boolean separateBookFolders;
+
         private final double fontRatio;
+
         private final Locale locale;
+
         private final String theme;
 
         private Snapshot (boolean[] topics,
@@ -662,7 +673,7 @@ public abstract class Preferences
 
             // Define pluginBox
             final Collection<String> ids = PluginsManager.getInstance().getPluginIds();
-            pluginBox = new JComboBox<>(ids.toArray(new String[ids.size()]));
+            pluginBox = new JComboBox<>(ids.toArray(String[]::new));
             pluginBox.setToolTipText(tip);
             pluginBox.addActionListener(this);
 
@@ -679,7 +690,9 @@ public abstract class Preferences
             outerBuilder.addRaw(content).xy(1, 2);
 
             // Initial status
-            pluginBox.setSelectedItem(PluginsManager.defaultPluginId.getValue());
+            final Param<String> param = PluginsManager.defaultPluginId;
+            final String value = param.getValue();
+            pluginBox.setSelectedItem(value);
         }
 
         @Override
@@ -982,18 +995,17 @@ public abstract class Preferences
             extends Panel
             implements ActionListener
     {
+        private static final String[] THEMES = new String[] { "Light", "Dark" };
+
         private final JComboBox<String> themeBox;
 
         public ThemePane ()
         {
             final String className = getClass().getSimpleName();
-            final String tip = resources.getString(className + ".titledBorder.text");
+            final String tip = resources.getString(className + ".themeBox.toolTipText");
 
             // Define themeBox
-            themeBox = new JComboBox<>(new String[] {
-                    "Light",
-                    "Dark"
-            });
+            themeBox = new JComboBox<>(THEMES);
             themeBox.addActionListener(this);
 
             // Layout
@@ -1002,24 +1014,20 @@ public abstract class Preferences
             builder.addRaw(themeBox).xyw(1, 1, 3);
             builder.addRaw(new JLabel(tip)).xy(5, 1);
 
-            // Set current value
-            String currentTheme = UILookAndFeel.getThemeName();
-            if ("com.formdev.flatlaf.FlatDarkLaf".equals(currentTheme)) {
-                themeBox.setSelectedIndex(1);
-            } else {
-                themeBox.setSelectedIndex(0);
-            }
+            // Display current value
+            final String currentTheme = UILookAndFeel.getThemeName();
+            themeBox.setSelectedItem(currentTheme);
         }
 
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            String selectedTheme = (String) themeBox.getSelectedItem();
-            if ("Dark".equals(selectedTheme)) {
-                UILookAndFeel.setUI("com.formdev.flatlaf.FlatDarkLaf");
-            } else {
-                UILookAndFeel.setUI("com.formdev.flatlaf.FlatLightLaf");
-            }
+            final String selectedTheme = (String) themeBox.getSelectedItem();
+            UILookAndFeel.setUI(switch (selectedTheme) {
+                case "Light" -> "com.formdev.flatlaf.FlatLightLaf";
+                case "Dark" -> "com.formdev.flatlaf.FlatDarkLaf";
+                default -> null;
+            });
         }
 
         @Override

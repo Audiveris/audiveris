@@ -86,6 +86,9 @@ public class PluginsManager
     /** The list of registered plugins. */
     private final List<Plugin> plugins;
 
+    /** The first plugin defined. */
+    private final Plugin firstPlugin;
+
     /** The current default plugin. */
     private Plugin defaultPlugin;
 
@@ -100,11 +103,14 @@ public class PluginsManager
         // Load all defined plugins
         plugins = loadPlugins();
 
+        // First defined
+        firstPlugin = plugins.isEmpty() ? null : plugins.get(0);
+
         // Default plugin, if any is defined
         if (!constants.defaultPlugin.getValue().trim().isEmpty()) {
             setDefaultPlugin(constants.defaultPlugin.getValue().trim());
-        } else if (!plugins.isEmpty()) {
-            setDefaultPlugin(plugins.get(0));
+        } else {
+            setDefaultPlugin(firstPlugin);
         }
     }
 
@@ -164,9 +170,9 @@ public class PluginsManager
         return menu;
     }
 
-    //------------//
-    // getPlugins //
-    //------------//
+    //--------------//
+    // getPluginIds //
+    //--------------//
     /**
      * Report the collection of plugins ids
      *
@@ -234,16 +240,26 @@ public class PluginsManager
     /**
      * Assign the default plugin via its id.
      *
-     * @param pluginId id of new default plugin
+     * @param pluginId id of new default plugin, perhaps blank
      */
     public final void setDefaultPlugin (String pluginId)
     {
-        Plugin plugin = findDefaultPlugin(pluginId);
+        if (!pluginId.isBlank()) {
+            final Plugin plugin = findDefaultPlugin(pluginId);
 
-        if (!pluginId.isEmpty() && (plugin == null)) {
-            logger.warn("Could not find default plugin {}", pluginId);
+            if (plugin != null) {
+                setDefaultPlugin(plugin);
+            } else {
+                logger.warn("Could not find default plugin {}", pluginId);
+            }
         } else {
-            setDefaultPlugin(plugin);
+            final String defaultId = constants.defaultPlugin.getValue().trim();
+
+            if (!defaultId.isBlank()) {
+                setDefaultPlugin(defaultId);
+            } else {
+                setDefaultPlugin(firstPlugin);
+            }
         }
     }
 
@@ -326,7 +342,11 @@ public class PluginsManager
             if (!getValue().equals(specific)) {
                 constants.defaultPlugin.setStringValue(specific);
                 getInstance().setDefaultPlugin(specific);
-                logger.info("Default plugin is now: {}", specific);
+
+                final Plugin defaultPlugin = getInstance().defaultPlugin;
+                logger.debug(
+                        "Default plugin is now: {}",
+                        (defaultPlugin != null) ? defaultPlugin.getId() : null);
 
                 return true;
             }
