@@ -43,6 +43,7 @@ import static org.audiveris.omr.sheet.time.TimeBuilder.TimeKind.DEN;
 import static org.audiveris.omr.sheet.time.TimeBuilder.TimeKind.NUM;
 import static org.audiveris.omr.sheet.time.TimeBuilder.TimeKind.WHOLE;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
+import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
@@ -214,6 +215,28 @@ public class HeaderTimeBuilder
                 adapter.cleanup();
             }
         }
+    }
+
+    //---------//
+    // canVeto // Copied from PR #1013 of manolo
+    //---------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * A barline never gets a say here. A staff header holds none by definition, and
+     * {@link org.audiveris.omr.sheet.header.HeaderBuilder} deletes any that turns up inside one,
+     * but it does so only once clef, key and time have been retrieved. A vertical stroke picked
+     * up over the time signature would otherwise outgrade it and delete it for good, before the
+     * purge it is bound to lose to ever runs.
+     * <p>
+     * The veto from barlines is limited to non-indented systems.
+     * This is so because the header of an indented system (the starting system of a movement)
+     * should always contain a time signature.
+     */
+    @Override
+    protected boolean canVeto (Inter neighbor)
+    {
+        return !system.isIndented() || !(neighbor instanceof BarlineInter);
     }
 
     //---------------//
