@@ -835,6 +835,60 @@ public class SlursBuilder
     }
 
     //-----------------//
+    // purgeAlongLines //
+    //-----------------//
+    /**
+     * Purge the clump candidates that run along a staff line.
+     * <p>
+     * On a scan or a photocopy, what is left of a thick staff line between two heads drawn
+     * on that line looks like a flat slur: its ends bend towards the heads, but its whole
+     * central half lies on the line, within the line thickness. A real slur or tie keeps
+     * clear of that band, but for the rare tie engraved right onto a staff line.
+     *
+     * @param inters the candidates to weed
+     */
+    private void purgeAlongLines (List<SlurInter> inters)
+    {
+        for (Iterator<SlurInter> it = inters.iterator(); it.hasNext();) {
+            final SlurInter inter = it.next();
+            final List<Point> points = inter.getInfo().getPoints();
+
+            if (points.isEmpty()) {
+                continue;
+            }
+
+            final Point mid = points.get(points.size() / 2);
+            final Staff staff = sheet.getStaffManager().getClosestStaff(mid);
+
+            if ((staff == null) || staff.isTablature()) {
+                continue;
+            }
+
+            final LineInfo line = staff.getClosestStaffLine(mid);
+            final double maxDy = min(params.maxStaffLineDy, line.getThickness());
+            boolean along = true;
+
+            for (int i = points.size() / 4; i <= ((3 * points.size()) / 4); i++) {
+                final Point p = points.get(i);
+
+                if (abs(p.y - line.yAt((double) p.x)) > maxDy) {
+                    along = false;
+
+                    break;
+                }
+            }
+
+            if (along) {
+                if (debugArc) {
+                    logger.info("{} runs along a staff line", inter);
+                }
+
+                it.remove();
+            }
+        }
+    }
+
+    //-----------------//
     // purgeStaffLines //
     //-----------------//
     /**
@@ -1068,6 +1122,9 @@ public class SlursBuilder
 
         // Discard candidates that end as a portion of staff line
         purgeStaffLines(inters);
+
+        // Discard candidates that run along a staff line
+        purgeAlongLines(inters);
 
         // Discard the ones with too short distance from one end to the other
         SlurInter longest = purgeShortests(inters);
