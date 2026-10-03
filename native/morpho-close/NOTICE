@@ -1,0 +1,15 @@
+SPDX-License-Identifier: AGPL-3.0-only
+
+AGPL-3.0 source-offer notice
+----------------------------
+
+This isolated worker is distributed as corresponding source under the GNU
+Affero General Public License version 3 only. The complete corresponding
+source is the contents of this package directory: Zig sources, the frozen
+morphology candidate and ABI, C header, build definition, tests, and protocol
+documentation.
+
+If this worker is conveyed or run as a network service, preserve the AGPL
+notices and provide recipients/users with access to the corresponding source
+for the exact version used. The canonical AGPL-3.0 text is referenced by
+LICENSE.
