@@ -28,14 +28,12 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
-import static org.audiveris.omr.glyph.ShapeSet.HeadMotif.*;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.SheetEditor;
 import org.audiveris.omr.sheet.ui.SheetEditor.SheetKeyListener;
 import org.audiveris.omr.ui.Board;
-import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.action.Preferences;
 import org.audiveris.omr.ui.dnd.AbstractGhostDropListener;
@@ -151,9 +149,6 @@ public class ShapeBoard
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(ShapeBoard.class);
 
-    /** Unicode value for black up-pointing triangle sign: {@value}. */
-    private static final String BACK = "\u25B2";
-
     static {
         ShapeShortcuts.loadAllConfigurations();
     }
@@ -175,13 +170,6 @@ public class ShapeBoard
         String setName = ((Component) e.getSource()).getName();
         ShapeSet set = ShapeSet.getShapeSet(setName);
         selectSet(set);
-    };
-
-    /**
-     * Called-back when a set panel is closed.
-     */
-    private final ActionListener closeListener = (ActionEvent e) -> {
-        closeSet();
     };
 
     /**
@@ -221,6 +209,15 @@ public class ShapeBoard
 
     /** Current set panel. */
     private Panel currentSetPanel;
+
+    /** Collapsible title for the selected set. */
+    private CollapsibleTitleLabel selectedSetTitle;
+
+    /** Collapsible title for the history panel. */
+    private CollapsibleTitleLabel historyTitle;
+
+    /** Collapsible title for the custom set panel. */
+    private CollapsibleTitleLabel customSetTitle;
 
     /** GlassPane. */
     private final GhostGlassPane glassPane = OMR.gui.getGlassPane();
@@ -370,7 +367,6 @@ public class ShapeBoard
         panel.setName("globalPanel");
         panel.setNoInsets();
         panel.setLayout(new WrapLayout(FlowLayout.LEADING));
-        panel.setBackground(Color.LIGHT_GRAY);
 
         setPanels.clear();
 
@@ -422,16 +418,6 @@ public class ShapeBoard
         panel.setName(set.getName());
         panel.setNoInsets();
         panel.setLayout(new WrapLayout(FlowLayout.LEADING));
-
-        // Button to close this set and return to global panel
-        final JButton close = new JButton(BACK);
-        close.addActionListener(closeListener);
-        close.setToolTipText(resources.getString("close.toolTipText"));
-        close.setBorderPainted(false); // To avoid visual confusion with draggable items
-        panel.add(close);
-
-        // Title for this set
-        panel.add(new JLabel(set.getName()));
 
         // One button (or more) per filtered shape
         final List<Shape> filtered = filteredShapes(set);
@@ -506,6 +492,11 @@ public class ShapeBoard
     {
         if (currentSetPanel != null) {
             currentSetPanel.setVisible(false);
+            currentSetPanel = null;
+        }
+
+        if (selectedSetTitle != null) {
+            selectedSetTitle.setVisible(false);
         }
 
         resizeBoard();
@@ -516,25 +507,54 @@ public class ShapeBoard
     //--------------//
     private void defineLayout ()
     {
-        // Rows: historyPanel, globalPanel, customPanel, currentSetPanel
-        final FormLayout layout = new FormLayout("pref", rowSpec(4));
+        // Each section has a collapsible title (row N) and content (row N+1)
+        final FormLayout layout = new FormLayout("pref", rowSpec(12));
         final FormBuilder builder = FormBuilder.create().layout(layout).panel(getBody());
         getBody().setName("ShapeBody");
 
         int row = 1;
-        builder.addRaw(shapeHistory.panel).xy(1, row);
-
+        if (historyTitle == null) {
+            historyTitle = new CollapsibleTitleLabel(resources.getString("history.title"), shapeHistory.panel);
+        }
+        historyTitle.setVisible(false); // Hide until elements are added
+        builder.addRaw(historyTitle).xy(1, row);
         row += 2;
-        builder.addRaw(globalPanel).xy(1, row);
+        builder.addRaw(shapeHistory.panel).xy(1, row);
+        shapeHistory.panel.setVisible(false); // Hide until elements are added
+        // Ensure history title visibility matches content, default expanded
+        if (shapeHistory.getShapes().isEmpty()) {
+            historyTitle.setVisible(false);
+            shapeHistory.panel.setVisible(false);
+        } else {
+            historyTitle.setVisible(true);
+            // Panel visibility follows expanded state (default expanded)
+            shapeHistory.panel.setVisible(historyTitle.isExpanded());
+        }
 
         if (customSet != null) {
+            row += 2;
+            if (customSetTitle == null) {
+                customSetTitle = new CollapsibleTitleLabel(resources.getString("customSet.title"), customSet.panel);
+            }
+            builder.addRaw(customSetTitle).xy(1, row);
             row += 2;
             builder.addRaw(customSet.panel).xy(1, row);
         }
 
         row += 2;
+        builder.addRaw(new CollapsibleTitleLabel(resources.getString("globalSets.title"), globalPanel)).xy(1, row);
+        row += 2;
+        builder.addRaw(globalPanel).xy(1, row);
+
+        row += 2;
+        if (selectedSetTitle == null) {
+            selectedSetTitle = new CollapsibleTitleLabel("", null);
+        }
+        selectedSetTitle.setVisible(false); // Hide until a set is selected
+        builder.addRaw(selectedSetTitle).xy(1, row);
+        row += 2;
         for (Panel sp : setPanels.values()) {
-            builder.addRaw(sp).xy(1, row); // All these set panels use the same row!
+            builder.addRaw(sp).xy(1, row);
             sp.setVisible(false);
         }
     }
@@ -623,7 +643,7 @@ public class ShapeBoard
      * Report the available space for component within containing JSplitPane.
      * <p>
      * We take into account the JSplitPane size, the divider location and size and all
-     * the insets of ancestors until the JSplitPane included.
+     * the insets of this board component and of its ancestors until the JSplitPane included.
      *
      * @return the available width, perhaps null
      */
@@ -644,8 +664,8 @@ public class ShapeBoard
             final int divLoc = sp.getDividerLocation();
             space -= divLoc;
 
-            // Remove horizontal insets
-            Container parent = comp.getParent();
+            // Remove horizontal insets, starting with the board component's own ones
+            Container parent = comp;
 
             while (parent != null) {
                 Insets insets = parent.getInsets();
@@ -794,6 +814,13 @@ public class ShapeBoard
 
         currentSetPanel = setPanel;
         currentSetPanel.setVisible(true);
+
+        // Update the title to show the set name
+        if (selectedSetTitle != null) {
+            selectedSetTitle.updateTitle(setPanel.getName());
+            selectedSetTitle.setVisible(true);
+        }
+
         resizeBoard();
         currentSetPanel.requestFocusInWindow();
     }
@@ -1081,8 +1108,19 @@ public class ShapeBoard
         public CustomSet ()
         {
             super("custom", constants.customSetShapes, null, trashCan);
-            panel.setBackground(Colors.CUSTOM_SET_BACKGROUND);
             panel.setVisible(true);
+        }
+
+        @Override
+        public void add (final Shape shape, final int index)
+        {
+            super.add(shape, index);
+            // Ensure the custom set title is expanded when an element is added
+            if (customSetTitle != null) {
+                customSetTitle.ensureExpanded();
+                customSetTitle.setVisible(true);
+                panel.setVisible(true);
+            }
         }
 
         public void drop (Point localPt)
@@ -1704,6 +1742,115 @@ public class ShapeBoard
         }
     }
 
+    //-----------------------//
+    // CollapsibleTitleLabel //
+    //-----------------------//
+    /**
+     * A clickable title label that toggles visibility of an associated panel.
+     */
+    private class CollapsibleTitleLabel
+            extends JLabel
+    {
+        private final Panel associatedPanel;
+
+        private boolean isExpanded = true;
+
+        private String currentTitle = "";
+
+        public boolean isExpanded ()
+        {
+            return isExpanded;
+        }
+
+        /**
+         * Create a collapsible title for a panel.
+         *
+         * @param title the title text
+         * @param panel the panel to toggle, or null for "Selected Set" (handled separately)
+         */
+        public CollapsibleTitleLabel (String title,
+                                      Panel panel)
+        {
+            this.associatedPanel = panel;
+            this.currentTitle = title;
+            updateDisplay(title);
+
+            setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+            addMouseListener(new MouseAdapter()
+            {
+                @Override
+                public void mouseClicked (MouseEvent e)
+                {
+                    toggleExpanded();
+                }
+            });
+        }
+
+        /**
+         * Update the title text (used for "Selected Set" to show the actual set name).
+         *
+         * @param newTitle the new title
+         */
+        public void updateTitle (String newTitle)
+        {
+            this.currentTitle = newTitle;
+            this.isExpanded = true;
+            updateDisplay(newTitle);
+        }
+
+        /**
+         * Collapse the title (icon ▶) without changing visibility.
+         */
+        public void collapse ()
+        {
+            if (isExpanded) {
+                isExpanded = false;
+                updateDisplay(currentTitle);
+                if (associatedPanel != null) {
+                    associatedPanel.setVisible(false);
+                }
+            }
+        }
+
+        /**
+         * Ensure the title is expanded (icon ▼) without changing visibility.
+         */
+
+        /**
+         * Ensure the title is expanded (icon ▼).
+         */
+        public void ensureExpanded ()
+        {
+            if (!isExpanded) {
+                isExpanded = true;
+                updateDisplay(currentTitle);
+            }
+        }
+
+        private void toggleExpanded ()
+        {
+            isExpanded = !isExpanded;
+
+            if (associatedPanel != null) {
+                associatedPanel.setVisible(isExpanded);
+            } else if (currentTitle.length() > 0) {
+                // Special handling for "Selected Set" - toggle the current set panel
+                if (currentSetPanel != null) {
+                    currentSetPanel.setVisible(isExpanded);
+                }
+            }
+
+            updateDisplay(currentTitle);
+            resizeBoard();
+        }
+
+        private void updateDisplay (String title)
+        {
+            final String icon = isExpanded ? "▼" : "▶";
+            setText(icon + " " + title);
+        }
+    }
+
     //--------------//
     // SymbolButton //
     //--------------//
@@ -1773,6 +1920,93 @@ public class ShapeBoard
         public ShapeHistory ()
         {
             super("history", null, constants.maxHistoryLength.getValue(), null);
+        }
+
+        @Override
+        public void add (Shape shape, int index)
+        {
+            // Avoid recursion with DynamicSet.add's invokeAndWait
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(() -> add(shape, index));
+                return;
+            }
+            // Add directly to persistent set
+            super.add(index, shape.name());
+            panel.removeAll();
+            addButtons(panel, initial, getShapes());
+            // Show history title and panel when first element added, preserve expanded state
+            if (historyTitle != null) {
+                historyTitle.setVisible(true);
+                // Do not force panel visibility; let toggle state control it
+                // If title is currently expanded, make panel visible
+                if (historyTitle.isExpanded()) {
+                    panel.setVisible(true);
+                }
+                resizeBoard();
+            }
+        }
+
+        @Override
+        public void remove (Shape shape)
+        {
+            // Avoid recursion with DynamicSet.remove's invokeAndWait
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(() -> remove(shape));
+                return;
+            }
+            super.remove(shape.name());
+            panel.removeAll();
+            addButtons(panel, initial, getShapes());
+            // Hide history title and panel when empty
+            if (getShapes().isEmpty()) {
+                if (historyTitle != null) {
+                    historyTitle.setVisible(false);
+                    panel.setVisible(false);
+                    resizeBoard();
+                }
+            }
+        }
+
+        @Override
+        public void clear ()
+        {
+            // Avoid recursion with DynamicSet.clear's invokeAndWait
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(() -> clear());
+                return;
+            }
+            super.clear();
+            panel.removeAll();
+            addButtons(panel, initial, getShapes());
+            // Hide history title and panel when cleared
+            if (historyTitle != null) {
+                historyTitle.setVisible(false);
+                panel.setVisible(false);
+                resizeBoard();
+            }
+        }
+
+        @Override
+        public void update ()
+        {
+            super.update();
+            // Ensure title visibility matches content, preserve expanded state
+            if (getShapes().isEmpty()) {
+                if (historyTitle != null) {
+                    historyTitle.setVisible(false);
+                    panel.setVisible(false);
+                    resizeBoard();
+                }
+            } else {
+                if (historyTitle != null) {
+                    historyTitle.setVisible(true);
+                    // Only show panel if title is expanded
+                    if (historyTitle.isExpanded()) {
+                        panel.setVisible(true);
+                    }
+                    resizeBoard();
+                }
+            }
         }
 
         /**

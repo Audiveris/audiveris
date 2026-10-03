@@ -51,12 +51,14 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.score.DrumSet;
 import org.audiveris.omr.score.DrumSet.DrumInstrument;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.grid.LineInfo;
+import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
@@ -94,6 +96,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -146,11 +149,25 @@ public class NoteHeadsBuilder
             Shape.TREMOLO_3,
             Shape.VERTICAL_SERIF);
 
-    /** Shapes handled by template matching. */
+    /**
+     * Shapes handled by template matching.
+     * <p>
+     * The stem-less heads are deliberately left out: they cost far more heads to the wholes
+     * they mistake than they find whole heads.
+     */
     private static final Set<Shape> MATCHED_SHAPES = EnumSet.noneOf(Shape.class);
+
+    /**
+     * Shapes whose stem is drawn from a tip of the head, so that a stem seed may end short of
+     * the head's middle.
+     */
+    private static final Set<Shape> TIP_STEMMED = EnumSet.of(
+            Shape.NOTEHEAD_CROSS,
+            Shape.NOTEHEAD_CROSS_VOID);
     static {
         MATCHED_SHAPES.addAll(ShapeSet.HeadsOval);
         MATCHED_SHAPES.addAll(ShapeSet.QuarterHeads);
+        MATCHED_SHAPES.addAll(ShapeSet.HalfHeads);
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -191,6 +208,9 @@ public class NoteHeadsBuilder
 
     /** The forbidden areas around connectors and frozen barlines. */
     private List<Area> systemBarAreas;
+
+    /** The area of every barline, frozen or not, where a keypoint gets no slack. */
+    private List<Area> systemBarlineAreas;
 
     /** The vertical (stem) seeds for the system. */
     private List<Glyph> systemSeeds;
@@ -333,6 +353,7 @@ public class NoteHeadsBuilder
         final MusicFamily family = sheet.getStub().getMusicFamily();
         final StopWatch watch = new StopWatch("buildHeads S#" + system.getId());
         systemBarAreas = getSystemBarAreas();
+        systemBarlineAreas = getSystemBarlineAreas();
         systemCompetitors = getSystemCompetitors(); // Competitors
         systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED); // Vertical seeds
         Collections.sort(systemSeeds, Glyphs.byOrdinate);
@@ -603,6 +624,28 @@ public class NoteHeadsBuilder
         return kept;
     }
 
+    //---------//
+    // isOnBar //
+    //---------//
+    /**
+     * Report whether a glyph runs along a barline or connector, frozen or not.
+     *
+     * @param glyph the glyph to check
+     * @return true if it meets the area of one
+     */
+    private boolean isOnBar (Glyph glyph)
+    {
+        final Rectangle box = glyph.getBounds();
+
+        for (Area area : systemBarlineAreas) {
+            if (area.intersects(box)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //----------------//
     // getGlyphsSlice //
     //----------------//
@@ -685,6 +728,29 @@ public class NoteHeadsBuilder
         for (Inter inter : inters) {
             AbstractVerticalInter vertical = (AbstractVerticalInter) inter;
             areas.add(vertical.getArea());
+        }
+
+        return areas;
+    }
+
+    //-----------------------//
+    // getSystemBarlineAreas //
+    //-----------------------//
+    /**
+     * Report the area of every barline, whether or not it is frozen.
+     * <p>
+     * Used to withhold the stroke slack, not to keep heads off barlines: a barline that is
+     * only a candidate has to stay free to lose to a real note.
+     *
+     * @return the barline areas
+     */
+    private List<Area> getSystemBarlineAreas ()
+    {
+        final List<Area> areas = new ArrayList<>();
+
+        for (Inter inter : sig.inters(
+                inter -> inter instanceof BarlineInter || inter instanceof BarConnectorInter)) {
+            areas.add(((AbstractVerticalInter) inter).getArea());
         }
 
         return areas;
@@ -1261,9 +1327,18 @@ public class NoteHeadsBuilder
                 0.75,
                 "Vertical margin for intercepting stem seed around a target pitch");
 
+        private final Constant.Ratio tipPitchMargin = new Constant.Ratio(
+                1.0,
+                "Vertical margin for intercepting stem seed around a target pitch, for a head"
+                + " whose stem is drawn from a tip");
+
         private final Constant.Ratio stemLessBoost = new Constant.Ratio(
                 0, // Was 0.38,
                 "How much do we boost stem-less heads (always isolated)");
+
+        private final Constant.Ratio minInkHeight = new Constant.Ratio(
+                0.75,
+                "Least of a template's height a head's own ink may stand");
 
         private final Constant.Ratio crossBoost = new Constant.Ratio(
                 0.0, // Was 0.1,
@@ -1490,9 +1565,15 @@ public class NoteHeadsBuilder
 
         private final Area seedsArea;
 
+        /** Area for stem seeds of the heads whose stem is drawn from a tip. */
+        private final Area tipSeedsArea;
+
         private final List<Inter> competitors;
 
         private final List<Area> barAreas;
+
+        /** Every barline near this line, where no keypoint gets its slack. */
+        private final List<Area> barlineAreas;
 
         private final List<LedgerAdapter> ledgers;
 
@@ -1550,6 +1631,13 @@ public class NoteHeadsBuilder
             }
 
             {
+                final double ratio = constants.tipPitchMargin.getValue();
+                final double above = ((interline * (dir - ratio)) / 2);
+                final double below = ((interline * (dir + ratio)) / 2);
+                tipSeedsArea = line.getArea(above, below);
+            }
+
+            {
                 // Horizontal slice to detect competitors
                 final double ratio = HeadInter.getShrinkVertRatio();
                 final double above = ((interline * (dir - ratio)) / 2);
@@ -1563,6 +1651,7 @@ public class NoteHeadsBuilder
                 final double below = ((interline * dir) / 2.0) + params.vBarMargin;
                 Area barsArea = line.getArea(above, below);
                 barAreas = getBarAreas(barsArea);
+                barlineAreas = getBarlineAreas(barsArea);
             }
 
             if (constants.allowAttachments.isSet()) {
@@ -1618,6 +1707,26 @@ public class NoteHeadsBuilder
             return false;
         }
 
+        //-------------//
+        // onABarline  //
+        //-------------//
+        /**
+         * Check whether the provided rectangle sits on a barline of any kind.
+         *
+         * @param rect provided rectangle
+         * @return true if a barline is drawn there
+         */
+        private boolean onABarline (Rectangle rect)
+        {
+            for (Area a : barlineAreas) {
+                if (a.intersects(rect)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         //----------------//
         // buildShapeList //
         //----------------//
@@ -1630,7 +1739,7 @@ public class NoteHeadsBuilder
         {
             final Staff staff = line.getStaff();
 
-            if (!staff.isDrum()) {
+            if (!isUnpitched(staff)) {
                 return sheetTemplateNotesAll;
             }
 
@@ -1664,6 +1773,42 @@ public class NoteHeadsBuilder
             }
 
             return allShapes;
+        }
+
+        //-------------//
+        // isUnpitched //
+        //-------------//
+        /**
+         * Report whether a staff is to be read as unpitched, so that its head templates
+         * are limited to the motifs the drum set lists for each pitch.
+         * <p>
+         * {@link Staff#isDrum()} answers from a PERCUSSION_CLEF and a great many drum
+         * charts print none, opening straight onto the time signature. Setting
+         * {@code drumNotation} stands in for the clef that was never printed; a staff
+         * whose clef was read and is not a percussion clef stays pitched.
+         * <p>
+         * Asked here rather than inside {@code isDrum()}, which {@code ClefBuilder}
+         * consults while it is still choosing which clef shapes to look for: a true
+         * answer there would narrow the candidates to PERCUSSION_CLEF alone, and a
+         * melodic staff beside the drum one would never find its own clef.
+         *
+         * @param staff the staff to test
+         * @return true if its heads are to be looked up in the drum set
+         */
+        private boolean isUnpitched (Staff staff)
+        {
+            if (staff.isDrum()) {
+                return true;
+            }
+
+            final StaffHeader header = staff.getHeader();
+
+            if ((header != null) && (header.clef != null)) {
+                return false;
+            }
+
+            return staff.getSystem().getSheet().getStub().getProcessingSwitches()
+                    .getValue(ProcessingSwitch.drumNotation);
         }
 
         //-----------------//
@@ -1761,8 +1906,12 @@ public class NoteHeadsBuilder
                 return null;
             }
 
+            // No slack on a barline: its ink reads as a stem, and the digits of the time
+            // signature beside it then read as the heads hanging off it.
+            final boolean loose = useSeeds && !onABarline(slimBox);
+
             // Then try (all variants for) the shape and keep the best dist
-            double dist = template.evaluate(x, y, anchor, distances);
+            double dist = template.evaluate(x, y, anchor, distances, loose);
 
             // Trick to boost cross heads
             if (shape == Shape.NOTEHEAD_CROSS) {
@@ -1816,6 +1965,25 @@ public class NoteHeadsBuilder
         {
             List<Area> kept = new ArrayList<>();
             for (Area r : systemBarAreas) {
+                if (area.intersects(r.getBounds())) {
+                    kept.add(r);
+                }
+            }
+            return kept;
+        }
+
+        //-----------------//
+        // getBarlineAreas //
+        //-----------------//
+        /**
+         * Build the list of areas around barlines of any kind.
+         *
+         * @return the barline-centered areas
+         */
+        private List<Area> getBarlineAreas (Area area)
+        {
+            List<Area> kept = new ArrayList<>();
+            for (Area r : systemBarlineAreas) {
                 if (area.intersects(r.getBounds())) {
                     kept.add(r);
                 }
@@ -1903,6 +2071,29 @@ public class NoteHeadsBuilder
             } else {
                 return line.yAt(x);
             }
+        }
+
+        //----------------//
+        // fillsItsShape  //
+        //----------------//
+        /**
+         * Report whether the ink a head was built from is as tall as the template that found it.
+         * <p>
+         * A template's distance and the glyph's own bounds part company where the match is on
+         * something else: a numeral, a fragment, the end of a stroke. Head ink is erased before
+         * the symbol step, so whatever that ink really belonged to is gone with it.
+         *
+         * @param head     the head just built
+         * @param template the template that found it
+         * @return true if its ink fills the template's height
+         */
+        private boolean fillsItsShape (HeadInter head,
+                                       Template template)
+        {
+            final int drawn = head.getBounds().height;
+            final int expected = template.getSlimBounds().height;
+
+            return drawn >= expected * constants.minInkHeight.getValue();
         }
 
         //--------------------//
@@ -2056,7 +2247,7 @@ public class NoteHeadsBuilder
                 final Template template = catalog.getTemplate(inter.getShape());
                 final Glyph glyph = inter.retrieveGlyph(template, image);
 
-                if (glyph != null) {
+                if (glyph != null && fillsItsShape(inter, template)) {
                     sig.addVertex(inter);
                 } else {
                     it.remove();
@@ -2081,8 +2272,13 @@ public class NoteHeadsBuilder
          */
         private List<HeadInter> lookupSeeds ()
         {
-            // Intersected seeds in the area
-            final List<Glyph> seeds = getGlyphsSlice(systemSeeds, seedsArea);
+            // Intersected seeds in the area, the ones reaching the pitch middle apart.
+            // A seed reaching only a tip is no stem where it runs along a barline, whose serif
+            // would then read as a head hanging from it.
+            final List<Glyph> seeds = getGlyphsSlice(systemSeeds, tipSeedsArea);
+            final Set<Glyph> middleSeeds = new HashSet<>(
+                    Glyphs.intersectedGlyphs(seeds, seedsArea));
+            seeds.removeIf(seed -> !middleSeeds.contains(seed) && isOnBar(seed));
 
             // Use one anchor for each horizontal side of the stem seed
             final Anchor[] anchors = new Anchor[] { LEFT_STEM, RIGHT_STEM };
@@ -2107,6 +2303,10 @@ public class NoteHeadsBuilder
                     // keep the best match (if acceptable) among all locations tried.
                     ShapeLoop:
                     for (Shape shape : scannerTemplateNotesStem) {
+                        if (!middleSeeds.contains(seed) && !TIP_STEMMED.contains(shape)) {
+                            continue;
+                        }
+
                         PixelDistance bestLoc = null;
 
                         // Brute force: explore the whole rectangle around (x0, y0)
@@ -2159,7 +2359,7 @@ public class NoteHeadsBuilder
                         final Template template = catalog.getTemplate(shape);
                         final Glyph glyph = head.retrieveGlyph(template, image);
 
-                        if (glyph == null) {
+                        if (glyph == null || !fillsItsShape(head, template)) {
                             continue;
                         }
 

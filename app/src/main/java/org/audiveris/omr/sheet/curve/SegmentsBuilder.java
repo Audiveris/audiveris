@@ -132,6 +132,20 @@ public class SegmentsBuilder
         }
     }
 
+    //--------------//
+    // bridgesBeams //
+    //--------------//
+    /**
+     * A volta bracket is often drawn touching the beams of up-stem notes below it.
+     *
+     * @return true
+     */
+    @Override
+    protected boolean bridgesBeams ()
+    {
+        return true;
+    }
+
     //---------------//
     // buildSegments //
     //---------------//
@@ -265,7 +279,7 @@ public class SegmentsBuilder
                 Point end = arc.getEnd(rev);
                 Staff staff = staffManager.getClosestStaff(end);
 
-                if (!staff.isOneLineStaff()) {
+                if ((staff != null) && !staff.isOneLineStaff()) {
                     double dist = staff.distanceTo(end);
 
                     if (dist <= 0) {

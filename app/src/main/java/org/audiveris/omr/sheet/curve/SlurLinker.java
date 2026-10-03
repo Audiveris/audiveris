@@ -145,6 +145,12 @@ public class SlurLinker
         Point2D slurEnd = (side == LEFT) ? curve.getP1() : curve.getP2();
         Staff staff = system.getClosestStaff(slurEnd);
 
+        if (staff == null) {
+            logger.debug("{} orphan side outside staff areas", slur);
+
+            return false;
+        }
+
         if (staff.isTablature()) {
             logger.debug("{} orphan side in tablature", slur);
 

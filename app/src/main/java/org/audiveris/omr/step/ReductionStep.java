@@ -28,6 +28,7 @@ import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.beam.ResidualBeamBuilder;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigReducer;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
@@ -80,6 +81,10 @@ public class ReductionStep
         // Detect false BeamGroup's
         for (SystemInfo system : sheet.getSystems()) {
             BeamGroupInter.checkBeamGroups(system);
+
+            // Recover any beam that SpotsBuilder never produced a spot glyph for at all (as
+            // opposed to a spot that was found but merged/rejected) -- see ResidualBeamBuilder.
+            new ResidualBeamBuilder(system).process();
         }
 
         // Measure typical length of stem free portion

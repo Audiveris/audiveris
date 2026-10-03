@@ -45,6 +45,10 @@ public class UILookAndFeel
 
     private static final Logger logger = LoggerFactory.getLogger(UILookAndFeel.class);
 
+    public static final String THEME_LIGHT_NAME = "com.formdev.flatlaf.FlatLightLaf";
+
+    public static final String THEME_DARK_NAME = "com.formdev.flatlaf.FlatDarkLaf";
+
     static {
         if (WellKnowns.MAC_OS_X) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
@@ -116,7 +120,7 @@ public class UILookAndFeel
             extends ConstantSet
     {
         private final Constant.String lookAndFeel = new Constant.String(
-                "com.formdev.flatlaf.FlatLightLaf",
+                THEME_LIGHT_NAME,
                 "Full class path to the desired UI Look & Feel");
     }
 }

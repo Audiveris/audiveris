@@ -33,7 +33,7 @@ public class TemplateEvaluationTest
         final double[][] configurations = {
                 {6, 1, 4}, {0.1, 0.2, 0.3}, {0, 0, 0}, {1, 0, 0},
                 {1e16, 1, 0.1}, {Double.MIN_NORMAL, Double.MIN_VALUE, 1e-300}};
-        final int[] distanceValues = {-32768, -2, -1, 0, 1, 32767, 65536};
+        final int[] distanceValues = {ChamferDistance.VALUE_UNKNOWN, 0, 1, 2, 3, 32767};
         final double[] pointDistances = {-3, -0.0, 0, 2, Double.NaN,
                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY};
         final Random random = new Random(0x4845414453L);
@@ -78,7 +78,7 @@ public class TemplateEvaluationTest
                                             table, configuration);
                                     assertEquals(Double.doubleToRawLongBits(expected),
                                             Double.doubleToRawLongBits(
-                                                    template.evaluate(x, y, anchor, table)));
+                                                    template.evaluate(x, y, anchor, table, false)));
                                     comparisons++;
                                 }
                             }
@@ -98,12 +98,12 @@ public class TemplateEvaluationTest
     {
         final DistanceTable table = new DistanceTable.Short(2, 2, 3);
         table.fill(ChamferDistance.VALUE_UNKNOWN);
-        assertEquals(Double.MAX_VALUE, template(List.of()).evaluate(0, 0, null, table), 0);
+        assertEquals(Double.MAX_VALUE, template(List.of()).evaluate(0, 0, null, table, false), 0);
         assertEquals(Double.MAX_VALUE, template(List.of(new PixelDistance(0, 0, 0)))
-                .evaluate(0, 0, null, table), 0);
+                .evaluate(0, 0, null, table, false), 0);
         table.fill(0);
         assertEquals(Double.MAX_VALUE, template(List.of(new PixelDistance(0, 0, 0)))
-                .evaluate(Integer.MAX_VALUE, Integer.MIN_VALUE, null, table), 0);
+                .evaluate(Integer.MAX_VALUE, Integer.MIN_VALUE, null, table, false), 0);
     }
 
     @Test
@@ -123,9 +123,9 @@ public class TemplateEvaluationTest
                 points.add(new PixelDistance(0, 0, 1));
             }
 
-            final double forward = template(points).evaluate(0, 0, null, table);
+            final double forward = template(points).evaluate(0, 0, null, table, false);
             Collections.reverse(points);
-            final double reverse = template(points).evaluate(0, 0, null, table);
+            final double reverse = template(points).evaluate(0, 0, null, table, false);
             assertTrue("Grouping points or weights changes the original score bits",
                     Double.doubleToRawLongBits(forward) != Double.doubleToRawLongBits(reverse));
         } finally {
@@ -133,13 +133,55 @@ public class TemplateEvaluationTest
         }
     }
 
+    @Test
+    public void foregroundSlackRequiresStemAndStopsAtBoundary ()
+    {
+        final Template template = template(List.of(new PixelDistance(0, 0, 0, 2)));
+        final DistanceTable table = new DistanceTable.Short(1, 1, 3);
+        final double[] withoutStem = {0, 1, 1, 1};
+        final double[] withStem = {0, 0, 0, 1};
+
+        for (int distance = 0; distance <= 3; distance++) {
+            table.fill(distance);
+            assertEquals(withoutStem[distance], template.evaluate(0, 0, null, table, false), 0);
+            assertEquals(withStem[distance], template.evaluate(0, 0, null, table, true), 0);
+        }
+    }
+
+    @Test
+    public void slackDoesNotRelaxBackgroundOrHole ()
+    {
+        final DistanceTable table = new DistanceTable.Short(1, 1, 3);
+
+        for (double expectedDistance : new double[]{2, -3}) {
+            final Template template = template(List.of(
+                    new PixelDistance(0, 0, expectedDistance, 3)));
+
+            for (int distance = 0; distance <= 4; distance++) {
+                table.fill(distance);
+                final double expected = distance == 0 ? 1 : 0;
+                assertEquals(expected, template.evaluate(0, 0, null, table, false), 0);
+                assertEquals(expected, template.evaluate(0, 0, null, table, true), 0);
+            }
+        }
+    }
+
+    @Test
+    public void neutralizedForegroundIsSkippedEvenInsideSlack ()
+    {
+        final Template template = template(List.of(new PixelDistance(0, 0, 0, 2)));
+        final DistanceTable table = new DistanceTable.Short(1, 1, 3);
+        table.fill(ChamferDistance.VALUE_UNKNOWN);
+        assertEquals(Double.MAX_VALUE, template.evaluate(0, 0, null, table, true), 0);
+    }
+
     private static Template template (List<PixelDistance> points)
     {
         return new Template(Shape.NOTEHEAD_BLACK, MusicFamily.Bravura, 20, 7, 7, points,
-                new Rectangle(0, 0, 7, 7));
+                new Rectangle(0, 0, 7, 7), true);
     }
 
-    /** Reference arithmetic from Template.evaluate before the binary-distance simplification. */
+    /** Legacy binary score contract for nonnegative distances without stem slack. */
     private static double originalScore (Template template, int x, int y, Anchor anchor,
                                          DistanceTable table, double[] configuration)
     {

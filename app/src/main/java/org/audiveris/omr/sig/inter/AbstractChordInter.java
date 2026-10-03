@@ -80,6 +80,15 @@ public abstract class AbstractChordInter
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractChordInter.class);
 
+    /**
+     * Maximum number of beams and flags that can shorten a note.
+     * <p>
+     * Five is the shortest note there is a shape for, {@link Shape#FLAG_5}, so a higher count is a
+     * misreading. It has to be bounded at all because each one doubles an int denominator, which
+     * overflows to zero and makes {@link Rational} reject the duration.
+     */
+    private static final int MAX_BEAMS_OR_FLAGS = 5;
+
     /** For comparing chords by head location ordinate. */
     public static final Comparator<AbstractChordInter> byHeadOrdinate = //
             (c1,
@@ -563,7 +572,13 @@ public abstract class AbstractChordInter
                         dur = Shape.NOTEHEAD_BLACK.getNoteDuration();
                     }
 
-                    for (int i = 0; i < fbn; i++) {
+                    if (fbn > MAX_BEAMS_OR_FLAGS) {
+                        logger.warn("{} carries {} beams/flags, beyond the {} a note can have."
+                                + " Duration taken as if it had {}.",
+                                    this, fbn, MAX_BEAMS_OR_FLAGS, MAX_BEAMS_OR_FLAGS);
+                    }
+
+                    for (int i = 0; i < Math.min(fbn, MAX_BEAMS_OR_FLAGS); i++) {
                         dur = dur.divides(2);
                     }
                 }

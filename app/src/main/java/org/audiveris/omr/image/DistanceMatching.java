@@ -75,7 +75,7 @@ public class DistanceMatching
         for (int x = 0; x < scanWidth; x++) {
             for (int y = 0; y < scanHeight; y++) {
                 // Get match value for a template located at (x,y)
-                double dist = template.evaluate(x, y, null, distances);
+                double dist = template.evaluate(x, y, null, distances, false);
 
                 if (dist <= maxDistance) {
                     locations.add(new PixelDistance(x, y, dist));

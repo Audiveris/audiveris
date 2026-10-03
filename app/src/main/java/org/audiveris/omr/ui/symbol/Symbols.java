@@ -138,7 +138,9 @@ public abstract class Symbols
         // Second, try a code-based symbol dynamically built
         final int[] codes = getCode(shape);
         if (codes != null) {
-            return new CodedSymbol(shape, family(), codes);
+            final ShapeSymbol built = new CodedSymbol(shape, family(), codes);
+            symbolMap.put(shape, built); // Cache it (idea from Chris Tuijn)
+            return built;
         }
 
         // None

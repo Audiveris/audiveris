@@ -47,6 +47,7 @@ import static org.audiveris.omr.glyph.ShapeSet.SmallClefs;
 import static org.audiveris.omr.glyph.ShapeSet.Tuplets;
 import static org.audiveris.omr.glyph.ShapeSet.WholeTimes;
 import static org.audiveris.omr.glyph.ShapeSet.allPhysicalShapes;
+import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
@@ -55,15 +56,19 @@ import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 
+import ij.process.ByteProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.List;
 
@@ -228,6 +233,74 @@ public class ShapeChecker
         }
 
         return true;
+    }
+
+    //--------------------//
+    // enclosesBackground //
+    //--------------------//
+    /**
+     * Report whether the glyph surrounds some background pixels, that is background
+     * which cannot be reached from the glyph bounding box border.
+     * Background is explored with 4-connectivity, the dual of the 8-connectivity of glyph pixels.
+     *
+     * @param glyph the glyph to check
+     * @return true if the glyph has at least one hole
+     */
+    private static boolean enclosesBackground (Glyph glyph)
+    {
+        final ByteProcessor buffer = glyph.getBuffer();
+        final int width = buffer.getWidth();
+        final int height = buffer.getHeight();
+        final boolean[] reached = new boolean[width * height];
+        final Deque<Integer> stack = new ArrayDeque<>();
+
+        for (int x = 0; x < width; x++) {
+            stack.push(x);
+            stack.push(((height - 1) * width) + x);
+        }
+
+        for (int y = 0; y < height; y++) {
+            stack.push(y * width);
+            stack.push((y * width) + width - 1);
+        }
+
+        while (!stack.isEmpty()) {
+            final int index = stack.pop();
+            final int x = index % width;
+            final int y = index / width;
+
+            if (reached[index] || (buffer.get(x, y) != BACKGROUND)) {
+                continue;
+            }
+
+            reached[index] = true;
+
+            if (x > 0) {
+                stack.push(index - 1);
+            }
+
+            if (x < (width - 1)) {
+                stack.push(index + 1);
+            }
+
+            if (y > 0) {
+                stack.push(index - width);
+            }
+
+            if (y < (height - 1)) {
+                stack.push(index + width);
+            }
+        }
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (!reached[(y * width) + x] && (buffer.get(x, y) == BACKGROUND)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     //------------//
@@ -660,6 +733,10 @@ public class ShapeChecker
 
                     return false;
                 }
+
+                // The classifier has almost no 6 samples, so the digit is told by its
+                // topology: a 6 encloses a hole, a 3 does not.
+                eval.shape = enclosesBackground(glyph) ? Shape.TUPLET_SIX : Shape.TUPLET_THREE;
 
                 //                // Simply check the tuplet character via OCR, if available
                 //                // Nota: We should avoid multiple OCR calls on the same glyph

@@ -193,6 +193,7 @@ tasks.run {
 }
 
 // Download Bravura font(s)
+// Remember to also update Flatpak org.audiveris.audiveris.template.yml
 tasks.register('downloadBravura', Download) {
     def bravuraVersion = '1.480'
     def root = "https://github.com/steinbergmedia/bravura/releases/download/bravura-${bravuraVersion}"
@@ -204,6 +205,7 @@ tasks.register('downloadBravura', Download) {
 }
 
 // Download JazzPerc font(s)
+// Remember to also update Flatpak org.audiveris.audiveris.template.yml
 tasks.register('downloadJazzPerc', Download) {
     src "https://ttfonts.net/sfonts/2/20683_JazzPerc.ttf"
     dest 'res/JazzPerc.ttf'

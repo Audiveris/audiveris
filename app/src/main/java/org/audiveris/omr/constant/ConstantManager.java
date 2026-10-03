@@ -436,7 +436,10 @@ public class ConstantManager
                 try (OutputStreamWriter writer = new OutputStreamWriter(
                         new FileOutputStream(path.toFile()),
                         UTF_8)) { // The UTF-8 charset is needed to support chinese characters
-                    properties.store(writer, " Audiveris user properties file. Do not edit");
+                    properties.store(
+                            writer,
+                            " Audiveris user properties file."
+                                    + " Do not edit, unless you know what you are doing");
                 } catch (FileNotFoundException ex) {
                     logger.warn(
                             "Property file {} not found or not writable",

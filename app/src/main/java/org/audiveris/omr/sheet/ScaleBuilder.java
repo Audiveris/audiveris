@@ -287,11 +287,21 @@ public class ScaleBuilder
                 beamKey = peak;
             }
 
-            if ((comboPeak2 != null) && (peaks.size() > 1)) {
+            if ((beamKey != null) && (comboPeak2 != null) && (peaks.size() > 1)) {
                 final int peak2 = peaks.get(1);
                 final double qRatio = (double) histoKeeper.blackFunction.getValue(peak2) / quorum;
 
-                if (qRatio >= 1.0) {
+                // A beam is drawn in proportion to its staff. A second peak out of proportion
+                // with the second staff size is something else, such as the run through a
+                // filled head on a page dense with them.
+                final double thicknessRatio = (double) Math.max(beamKey, peak2)
+                        / Math.min(beamKey, peak2);
+                final double staffRatio = (double) Math.max(mainInterline, comboPeak2.main)
+                        / Math.min(mainInterline, comboPeak2.main);
+                final double deviation = Math.abs((thicknessRatio / staffRatio) - 1);
+
+                if ((qRatio >= 1.0) && (deviation <= constants.maxBeamProportionDeviation
+                        .getValue())) {
                     beamKey2 = peak2;
                 }
             }
@@ -522,6 +532,11 @@ public class ScaleBuilder
         private final Constant.Ratio beamMinCountRatio = new Constant.Ratio(
                 0.01,
                 "Minimum ratio of runs for beam height measurement (quorum)");
+
+        private final Constant.Ratio maxBeamProportionDeviation = new Constant.Ratio(
+                0.25,
+                "Maximum relative deviation of the ratio of two beam thicknesses from the ratio"
+                + " of the two staff sizes");
 
         private final Constant.Ratio beamRangeRatio = new Constant.Ratio(
                 0.25,

@@ -23,15 +23,20 @@ package org.audiveris.omr.ui.action;
 
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
+import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.OmrStep;
+import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.util.Panel;
-import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.util.UILookAndFeel;
+import static org.audiveris.omr.ui.util.UILookAndFeel.THEME_DARK_NAME;
+import static org.audiveris.omr.ui.util.UILookAndFeel.THEME_LIGHT_NAME;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.LabeledEnum;
+import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationContext;
@@ -43,11 +48,15 @@ import org.slf4j.LoggerFactory;
 import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -57,9 +66,13 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -135,11 +148,226 @@ public abstract class Preferences
     // show //
     //------//
     /**
-     * Display this entity.
+     * Display the preferences dialog.
+     * <p>
+     * Controls apply their effect immediately.
+     * "Cancel" reverts to the state captured when the dialog was opened.
+     * "Reset" applies the default values and refreshes the controls.
      */
     public static void show ()
     {
-        OMR.gui.displayMessage(getMessage(), resources.getString("Preferences.title"));
+        final Snapshot snapshot = takeSnapshot();
+
+        final JDialog dialog = new JDialog(
+                OMR.gui.getFrame(),
+                resources.getString("Preferences.title"),
+                true); // Modal flag
+        dialog.setName("PreferencesDialog");
+        dialog.setResizable(false);
+
+        final JPanel content = new JPanel(new BorderLayout());
+        content.add(getMessage(), BorderLayout.CENTER);
+
+        // Buttons
+        final JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        final JButton ok = new JButton(resources.getString("Preferences.ok"));
+        ok.setToolTipText(resources.getString("Preferences.ok.toolTipText"));
+        ok.addActionListener(e -> dialog.dispose());
+
+        final JButton cancel = new JButton(resources.getString("Preferences.cancel"));
+        cancel.setToolTipText(resources.getString("Preferences.cancel.toolTipText"));
+        cancel.addActionListener(e -> {
+            restoreSnapshot(snapshot);
+            dialog.dispose();
+        });
+
+        final JButton reset = new JButton(resources.getString("Preferences.reset"));
+        reset.setToolTipText(resources.getString("Preferences.reset.toolTipText"));
+        reset.addActionListener(e -> {
+            resetToDefaults();
+
+            // Refresh content to reflect the default values
+            content.removeAll();
+            content.add(getMessage(), BorderLayout.CENTER);
+            content.add(buttons, BorderLayout.SOUTH);
+            content.revalidate();
+            content.repaint();
+        });
+
+        buttons.add(reset);
+        buttons.add(ok);
+        buttons.add(cancel);
+        content.add(buttons, BorderLayout.SOUTH);
+
+        dialog.setContentPane(content);
+
+        // Keyboard shortcuts
+        dialog.getRootPane().setDefaultButton(ok);
+        dialog.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                "cancel");
+        dialog.getRootPane().getActionMap().put("cancel", new AbstractAction()
+        {
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                cancel.doClick();
+            }
+        });
+
+        dialog.pack();
+        OmrGui.getApplication().show(dialog);
+    }
+
+    //--------------//
+    // takeSnapshot //
+    //--------------//
+    /**
+     * Capture the current preference state, to be restored if the user cancels.
+     *
+     * @return the snapshot
+     */
+    private static Snapshot takeSnapshot ()
+    {
+        final Topic[] topics = Topic.values();
+        final boolean[] topicValues = new boolean[topics.length];
+
+        for (int i = 0; i < topics.length; i++) {
+            topicValues[i] = topics[i].isSet();
+        }
+
+        return new Snapshot(
+                topicValues,
+                StubsController.getEarlyStep(),
+                PluginsManager.defaultPluginId.getValue(),
+                BookManager.getBaseFolder(),
+                BookManager.useInputBookFolder().isSet(),
+                BookManager.useSeparateBookFolders().isSet(),
+                UIUtil.getGlobalFontRatio(),
+                Locale.getDefault(),
+                UILookAndFeel.getThemeName());
+    }
+
+    //-----------------//
+    // restoreSnapshot //
+    //-----------------//
+    /**
+     * Restore a previously captured preference state.
+     *
+     * @param snapshot the state to restore
+     */
+    private static void restoreSnapshot (Snapshot snapshot)
+    {
+        final Topic[] topics = Topic.values();
+
+        for (int i = 0; i < topics.length; i++) {
+            if (topics[i].isSet() != snapshot.topics[i]) {
+                topics[i].set(snapshot.topics[i]);
+            }
+        }
+
+        if (StubsController.getEarlyStep() != snapshot.earlyStep) {
+            StubsController.setEarlyStep(snapshot.earlyStep);
+        }
+
+        if (!snapshot.defaultPlugin.equals(PluginsManager.defaultPluginId.getValue())) {
+            PluginsManager.defaultPluginId.setSpecific(snapshot.defaultPlugin);
+        }
+
+        if (!snapshot.baseFolder.equals(BookManager.getBaseFolder())) {
+            BookManager.setBaseFolder(snapshot.baseFolder);
+        }
+
+        if (BookManager.useInputBookFolder().isSet() != snapshot.inputBookFolder) {
+            BookManager.useInputBookFolder().setValue(snapshot.inputBookFolder);
+        }
+
+        if (BookManager.useSeparateBookFolders().isSet() != snapshot.separateBookFolders) {
+            BookManager.useSeparateBookFolders().setValue(snapshot.separateBookFolders);
+        }
+
+        if (UIUtil.getGlobalFontRatio() != snapshot.fontRatio) {
+            UIUtil.setGlobalFontRatio(snapshot.fontRatio);
+        }
+
+        if (!Locale.getDefault().equals(snapshot.locale)) {
+            Main.setLocale(snapshot.locale);
+        }
+
+        if (!snapshot.theme.equals(UILookAndFeel.getThemeName())) {
+            UILookAndFeel.setUI(snapshot.theme);
+        }
+    }
+
+    //-----------------//
+    // resetToDefaults //
+    //-----------------//
+    /**
+     * Apply the default value to every preference.
+     */
+    private static void resetToDefaults ()
+    {
+        for (Topic topic : Topic.values()) {
+            topic.resetToDefault();
+        }
+
+        StubsController.setEarlyStep(OmrStep.BINARY);
+        PluginsManager.defaultPluginId.setSpecific("");
+        BookManager.setBaseFolder(WellKnowns.DEFAULT_BASE_FOLDER);
+        BookManager.useInputBookFolder().resetToSource();
+        BookManager.useSeparateBookFolders().resetToSource();
+        UIUtil.setGlobalFontRatio(1.0);
+        Main.setLocale(Locale.ENGLISH);
+        UILookAndFeel.setUI(THEME_LIGHT_NAME);
+    }
+
+    //----------//
+    // Snapshot //
+    //----------//
+    /**
+     * Immutable picture of the preference state, captured when the dialog is shown.
+     */
+    private static class Snapshot
+    {
+        private final boolean[] topics;
+
+        private final OmrStep earlyStep;
+
+        private final String defaultPlugin;
+
+        private final Path baseFolder;
+
+        private final boolean inputBookFolder;
+
+        private final boolean separateBookFolders;
+
+        private final double fontRatio;
+
+        private final Locale locale;
+
+        private final String theme;
+
+        private Snapshot (boolean[] topics,
+                          OmrStep earlyStep,
+                          String defaultPlugin,
+                          Path baseFolder,
+                          boolean inputBookFolder,
+                          boolean separateBookFolders,
+                          double fontRatio,
+                          Locale locale,
+                          String theme)
+        {
+            this.topics = topics;
+            this.earlyStep = earlyStep;
+            this.defaultPlugin = defaultPlugin;
+            this.baseFolder = baseFolder;
+            this.inputBookFolder = inputBookFolder;
+            this.separateBookFolders = separateBookFolders;
+            this.fontRatio = fontRatio;
+            this.locale = locale;
+            this.theme = theme;
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -447,7 +675,7 @@ public abstract class Preferences
 
             // Define pluginBox
             final Collection<String> ids = PluginsManager.getInstance().getPluginIds();
-            pluginBox = new JComboBox<>(ids.toArray(new String[ids.size()]));
+            pluginBox = new JComboBox<>(ids.toArray(String[]::new));
             pluginBox.setToolTipText(tip);
             pluginBox.addActionListener(this);
 
@@ -464,7 +692,9 @@ public abstract class Preferences
             outerBuilder.addRaw(content).xy(1, 2);
 
             // Initial status
-            pluginBox.setSelectedItem(PluginsManager.defaultPluginId.getValue());
+            final Param<String> param = PluginsManager.defaultPluginId;
+            final String value = param.getValue();
+            pluginBox.setSelectedItem(value);
         }
 
         @Override
@@ -695,6 +925,11 @@ public abstract class Preferences
             constant.setValue(val);
         }
 
+        public void resetToDefault ()
+        {
+            constant.resetToSource();
+        }
+
         public boolean isAdvanced ()
         {
             return switch (this) {
@@ -762,18 +997,19 @@ public abstract class Preferences
             extends Panel
             implements ActionListener
     {
+        private final List<Theme> themes = List.of(
+                new Theme("Light", THEME_LIGHT_NAME),
+                new Theme("Dark", THEME_DARK_NAME));
+
         private final JComboBox<String> themeBox;
 
         public ThemePane ()
         {
             final String className = getClass().getSimpleName();
-            final String tip = resources.getString(className + ".titledBorder.text");
+            final String tip = resources.getString(className + ".themeBox.toolTipText");
 
             // Define themeBox
-            themeBox = new JComboBox<>(new String[] {
-                    "Light",
-                    "Dark"
-            });
+            themeBox = new JComboBox<>(ids());
             themeBox.addActionListener(this);
 
             // Layout
@@ -782,24 +1018,16 @@ public abstract class Preferences
             builder.addRaw(themeBox).xyw(1, 1, 3);
             builder.addRaw(new JLabel(tip)).xy(5, 1);
 
-            // Set current value
-            String currentTheme = UILookAndFeel.getThemeName();
-            if ("com.formdev.flatlaf.FlatDarkLaf".equals(currentTheme)) {
-                themeBox.setSelectedIndex(1);
-            } else {
-                themeBox.setSelectedIndex(0);
-            }
+            // Select index in themeBox, according to current theme name
+            final String currentThemeName = UILookAndFeel.getThemeName();
+            themeBox.setSelectedIndex(nameIndex(currentThemeName));
         }
 
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            String selectedTheme = (String) themeBox.getSelectedItem();
-            if ("Dark".equals(selectedTheme)) {
-                UILookAndFeel.setUI("com.formdev.flatlaf.FlatDarkLaf");
-            } else {
-                UILookAndFeel.setUI("com.formdev.flatlaf.FlatLightLaf");
-            }
+            final int index = themeBox.getSelectedIndex();
+            UILookAndFeel.setUI(themes.get(index).name);
         }
 
         @Override
@@ -807,6 +1035,36 @@ public abstract class Preferences
         {
             super.setEnabled(enabled);
             themeBox.setEnabled(enabled);
+        }
+
+        private String[] ids ()
+        {
+            return themes.stream().map(th -> th.id).toArray(String[]::new);
+        }
+
+        private int nameIndex (String name)
+        {
+            for (int i = 0; i < themes.size(); i++) {
+                if (name.equals(themes.get(i).name)) {
+                    return i;
+                }
+            }
+
+            return 0; // To please the compiler
+        }
+
+        private static class Theme
+        {
+            public final String id;
+
+            public final String name;
+
+            public Theme (String id,
+                          String name)
+            {
+                this.id = id;
+                this.name = name;
+            }
         }
     }
 }

@@ -25,6 +25,7 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.UriUtil;
+import org.audiveris.omr.ui.Colors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,8 +92,11 @@ public abstract class OmrFont
             RATIO_METRO,
             RATIO_METRO);
 
-    /** Default color for images. */
-    public static final Color defaultImageColor = Color.BLACK;
+    /** Default color for images (templates, dragged symbols, score items). */
+    public static final Color defaultImageColor = Colors.DEFAULT_IMAGE_COLOR;
+
+    /** Default color for UI icons. */
+    public static final Color defaultIconColor = Colors.DEFAULT_ICON_COLOR;
 
     /** Needed for font size computation. */
     public static final FontRenderContext frc = new FontRenderContext(null, true, true);
