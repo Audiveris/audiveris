@@ -1252,6 +1252,8 @@ public class BarsRetriever
 
                 StaffPeak[] startPeaks = startColumn.getPeaks();
                 StaffPeak[] firstPeaks = startGroup.get(0).getPeaks();
+                int checked = 0; // Staves checked against their line ends
+                final List<Staff> inside = new ArrayList<>(); // Staves whose lines start before
 
                 for (int ip = 0; ip < startPeaks.length; ip++) {
                     final StaffPeak peak = startPeaks[ip];
@@ -1259,6 +1261,7 @@ public class BarsRetriever
 
                     if (!staff.isOneLineStaff()) {
                         int xLeft = staff.getAbscissa(LEFT); // Based on long line chunks only
+                        checked++;
 
                         // Not too far right into staff, measured from the group's first
                         // bar: the long line chunks begin inside the group, so its last
@@ -1273,7 +1276,9 @@ public class BarsRetriever
                                         staff.getId());
                             }
 
-                            continue SystemLoop;
+                            inside.add(staff);
+
+                            continue;
                         }
 
                         // Check column is not too far left of lines (using projection)
@@ -1290,6 +1295,20 @@ public class BarsRetriever
                             continue SystemLoop;
                         }
                     }
+                }
+
+                // Lines that start before the column on most staves: it is not the start.
+                // On a few staves only, these lines are extended by something else drawn on
+                // them, such as a part name: the staves start at the column like the others.
+                if (!inside.isEmpty() && ((2 * inside.size()) >= checked)) {
+                    continue SystemLoop;
+                }
+
+                for (Staff staff : inside) {
+                    logger.info(
+                            "{} staff#{} lines start before the system start bar",
+                            system,
+                            staff.getId());
                 }
 
                 // The whole group is the staff end, so purgeLeftPeaks keeps it.
