@@ -317,13 +317,18 @@ public class SigReducer
                     exclude(oneDurSet, otherDurSet, INCOMPATIBLE);
                 }
 
-                // Support within same duration set
+                // Support within same duration set,
+                // except between two heads that stand for the same note
                 final List<Inter> oneDurList = new ArrayList<>(oneDurSet);
                 for (int i = 0; i < oneDurList.size(); i++) {
                     final Inter head = oneDurList.get(i);
 
                     for (Inter sameDur : oneDurList.subList(i + 1, oneDurList.size())) {
-                        sig.insertSupport(head, sameDur, HeadHeadRelation.class);
+                        if (isSameNote((HeadInter) head, (HeadInter) sameDur)) {
+                            sig.insertExclusion(head, sameDur, OVERLAP);
+                        } else {
+                            sig.insertSupport(head, sameDur, HeadHeadRelation.class);
+                        }
                     }
                 }
             }
@@ -1695,6 +1700,28 @@ public class SigReducer
         }
 
         return found;
+    }
+
+    //------------//
+    // isSameNote //
+    //------------//
+    /**
+     * Tell whether two heads linked to the same stem stand for the same note: same staff and
+     * same pitch.
+     * <p>
+     * A unison on one stem is drawn as a single head. Two heads at the same pitch on one stem
+     * come from one head read twice, or from a weak candidate read next to the real head, which
+     * is frequent on scans and photos.
+     *
+     * @param one a head
+     * @param two another head on the same stem
+     * @return true if they stand for the same note
+     */
+    private static boolean isSameNote (HeadInter one,
+                                       HeadInter two)
+    {
+        return (one.getStaff() == two.getStaff()) && (one.getIntegerPitch() == two
+                .getIntegerPitch());
     }
 
     //-----------------------//
