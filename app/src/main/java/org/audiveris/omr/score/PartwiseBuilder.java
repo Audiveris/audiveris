@@ -1281,6 +1281,14 @@ public class PartwiseBuilder
                             if (stack.isRepeat(RIGHT)) {
                                 Repeat repeat = factory.createRepeat();
                                 repeat.setDirection(BackwardForward.BACKWARD);
+
+                                // Number of passes, when printed such as "x4"
+                                final Integer count = partBarline.getRepeatCount();
+
+                                if (count != null) {
+                                    repeat.setTimes(BigInteger.valueOf(count));
+                                }
+
                                 pmBarline.setRepeat(repeat);
                             }
 
