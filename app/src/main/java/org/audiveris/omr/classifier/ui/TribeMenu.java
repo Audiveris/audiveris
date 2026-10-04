@@ -29,6 +29,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sig.ui.ShapeMenuItem;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.util.SeparableMenu;
 
@@ -53,7 +54,7 @@ public class TribeMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(SampleMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(TribeMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -208,10 +209,9 @@ public class TribeMenu
 
         private void populate ()
         {
-            ShapeSet.addAllShapes(sheet.getStub().getMusicFamily(), this, (ActionEvent e) ->
-            {
-                JMenuItem source = (JMenuItem) e.getSource();
-                Shape shape = Shape.valueOf(source.getText());
+            ShapeSet.addAllShapes(sheet.getStub().getMusicFamily(), this, (ActionEvent e) -> {
+                final ShapeMenuItem source = (ShapeMenuItem) e.getSource();
+                final Shape shape = source.getShape();
                 selectBest(shape);
             });
         }

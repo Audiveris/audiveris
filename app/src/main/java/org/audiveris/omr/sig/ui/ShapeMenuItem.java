@@ -95,8 +95,4 @@ public class ShapeMenuItem
             setIcon(shape.getDecoratedSymbol(family));
         }
     }
-
-    //~ Static Methods -----------------------------------------------------------------------------
-
-    //~ Inner Classes ------------------------------------------------------------------------------
 }

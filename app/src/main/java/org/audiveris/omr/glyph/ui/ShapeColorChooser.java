@@ -23,6 +23,7 @@ package org.audiveris.omr.glyph.ui;
 
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
+import org.audiveris.omr.sig.ui.ShapeMenuItem;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -333,8 +334,8 @@ public class ShapeColorChooser
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                JMenuItem source = (JMenuItem) e.getSource();
-                current = Shape.valueOf(source.getText());
+                final ShapeMenuItem source = (ShapeMenuItem) e.getSource();
+                current = source.getShape();
                 banner.setText(current.toString());
 
                 // Check if a specific color is assigned

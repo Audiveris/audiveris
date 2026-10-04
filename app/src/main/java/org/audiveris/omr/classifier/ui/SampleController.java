@@ -28,6 +28,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ui.GlyphsController;
+import org.audiveris.omr.sig.ui.ShapeMenuItem;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.symbol.MusicFamily;
@@ -46,7 +47,6 @@ import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 /**
@@ -208,8 +208,8 @@ public class SampleController
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                final JMenuItem source = (JMenuItem) e.getSource();
-                final Shape shape = Shape.valueOf(source.getText());
+                final ShapeMenuItem source = (ShapeMenuItem) e.getSource();
+                final Shape shape = source.getShape();
                 final SampleModel sampleModel = (SampleModel) model;
                 final Sample sample = (Sample) sampleModel.getGlyphService().getSelectedEntity();
                 SampleController.this.assignSample(sample, shape);

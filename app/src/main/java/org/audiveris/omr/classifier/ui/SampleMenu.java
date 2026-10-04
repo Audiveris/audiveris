@@ -28,6 +28,7 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.ui.ShapeMenuItem;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.util.SeparableMenu;
 
@@ -40,7 +41,6 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 
 /**
  * Class <code>SampleMenu</code> is a menu dedicated to picking a glyph as a shape sample.
@@ -147,8 +147,8 @@ public class SampleMenu
             extends JMenu
     {
         private final ActionListener listener = (ActionEvent e) -> {
-            final JMenuItem source = (JMenuItem) e.getSource();
-            final Shape shape = Shape.valueOf(source.getText());
+            final ShapeMenuItem source = (ShapeMenuItem) e.getSource();
+            final Shape shape = source.getShape();
             addSample(shape);
         };
 
@@ -164,9 +164,7 @@ public class SampleMenu
             final MusicFamily family = sheet.getStub().getMusicFamily();
 
             for (Shape shape : shapes) {
-                final JMenuItem menuItem = new JMenuItem(
-                        shape.toString(),
-                        shape.getDecoratedSymbol(family));
+                final ShapeMenuItem menuItem = new ShapeMenuItem(shape, family);
                 menuItem.addActionListener(listener);
                 add(menuItem);
             }
@@ -189,8 +187,8 @@ public class SampleMenu
         private void populate ()
         {
             ShapeSet.addAllShapes(sheet.getStub().getMusicFamily(), this, (ActionEvent e) -> {
-                JMenuItem source = (JMenuItem) e.getSource();
-                Shape shape = Shape.valueOf(source.getText());
+                final ShapeMenuItem source = (ShapeMenuItem) e.getSource();
+                final Shape shape = source.getShape();
                 addSample(shape);
             });
         }
