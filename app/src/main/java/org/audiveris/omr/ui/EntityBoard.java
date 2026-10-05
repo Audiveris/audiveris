@@ -359,7 +359,8 @@ public class EntityBoard<E extends Entity>
         nf.setGroupingUsed(false);
         final javax.swing.text.NumberFormatter formatter = new javax.swing.text.NumberFormatter(nf);
         formatter.setAllowsInvalid(false);
-        formatter.setCommitsOnValidEdit(true);
+        formatter.setValueClass(Integer.class); // HB
+        //formatter.setCommitsOnValidEdit(true); // HB
         ftf.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(formatter));
         ftf.setFocusLostBehavior(javax.swing.JFormattedTextField.COMMIT_OR_REVERT);
 
