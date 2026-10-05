@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.CLI;
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.OmrEngine;
@@ -436,7 +437,8 @@ public class BookManager
      */
     public static Path getBaseFolder ()
     {
-        final Path cliOutput = Main.getCli().getOutputFolder();
+        final CLI cli = Main.getCli();
+        final Path cliOutput = (cli != null) ? cli.getOutputFolder() : null;
 
         if (cliOutput != null) {
             return cliOutput;
@@ -489,13 +491,33 @@ public class BookManager
             return book.getBookPath().getParent();
         }
 
-        final Path bookFolder = Main.getCli().getOutputFolder() != null //
-                ? Main.getCli().getOutputFolder() //
-                : constants.useInputBookFolder.isSet() //
-                        ? book.getInputPath().getParent() //
-                        : (useSeparateBookFolders().isSet() //
-                                ? getBaseFolder().resolve(book.getRadix()) //
-                                : getBaseFolder());
+        Path bookFolder = null;
+        final CLI cli = Main.getCli();
+
+        if (cli != null && cli.getOutputFolder() != null) {
+            bookFolder = cli.getOutputFolder();
+        } else {
+            if (constants.useInputBookFolder.isSet()) {
+                final Path inputPath = book.getInputPath();
+
+                if (inputPath != null) {
+                    final Path parent = inputPath.getParent();
+                    if (parent != null) {
+                        bookFolder = parent;
+                    }
+                }
+            }
+
+            if (bookFolder == null) {
+                final Path baseFolder = getBaseFolder();
+
+                if (useSeparateBookFolders().isSet()) {
+                    bookFolder = baseFolder.resolve(book.getRadix());
+                } else {
+                    bookFolder = baseFolder;
+                }
+            }
+        }
 
         try {
             if (!Files.exists(bookFolder)) {
