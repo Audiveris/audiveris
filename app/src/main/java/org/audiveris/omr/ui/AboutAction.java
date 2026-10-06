@@ -206,7 +206,6 @@ public class AboutAction
 
         panel.setInsets(10, 10, 10, 10);
         panel.setOpaque(true);
-        panel.setBackground(Color.WHITE);
         panel.setName("AboutPanel");
 
         // Manual injection
