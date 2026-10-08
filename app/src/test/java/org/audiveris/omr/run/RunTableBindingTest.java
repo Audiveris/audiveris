@@ -93,6 +93,29 @@ public class RunTableBindingTest
         assertEquals(table, newTable);
     }
 
+    @Test
+    public void testMarshalEmptyTable ()
+            throws PropertyException,
+                   JAXBException,
+                   FileNotFoundException,
+                   IOException,
+                   XMLStreamException
+    {
+        dir.mkdirs();
+
+        final File fileEmpty = new File(dir, "runtable-empty.xml");
+        Files.deleteIfExists(fileEmpty.toPath());
+        jaxbContext = JAXBContext.newInstance(RunTable.class);
+
+        // A table with no sequence at all is marshalled without any 'runs' element
+        RunTable table = new RunTable(HORIZONTAL, dim.width, 0);
+        Jaxb.marshal(table, fileEmpty.toPath(), jaxbContext);
+
+        RunTable newTable = (RunTable) Jaxb.unmarshal(fileEmpty.toPath(), jaxbContext);
+        assertEquals(table.dumpOf(), newTable.dumpOf());
+        assertEquals(table, newTable);
+    }
+
     //--------------------------//
     // createHorizontalInstance //
     //--------------------------//
