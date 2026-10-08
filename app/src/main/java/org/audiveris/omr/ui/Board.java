@@ -582,7 +582,7 @@ public abstract class Board
         @Override
         public String getName ()
         {
-            return name;
+            return resources.getString(name);
         }
 
         @Override
