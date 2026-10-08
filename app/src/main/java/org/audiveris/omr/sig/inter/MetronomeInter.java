@@ -1347,7 +1347,8 @@ public class MetronomeInter
                 0.0,
                 null);
 
-        for (int i = 0; i < evalNb; i++) {
+        // The classifier may return fewer evaluations than asked for
+        for (int i = 0; i < Math.min(evalNb, evals.length); i++) {
             final Evaluation eval = evals[i];
             final Note note = noteOf(eval.shape);
 
