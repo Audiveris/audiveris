@@ -194,6 +194,12 @@ public class HeaderBuilder
         for (Staff staff : system.getStaves()) {
             if (!staff.isTablature()) {
                 staff.getHeader().freeze();
+
+                // We protect the starting barline as well
+                final BarlineInter leftBarline = staff.getSideBarline(LEFT);
+                if (leftBarline != null) {
+                    leftBarline.freeze();
+                }
             }
         }
     }
