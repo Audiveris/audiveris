@@ -214,6 +214,11 @@ public class TextBuilder
 
         for (TextLine line : textLines) {
             final List<WordInter> createdWords = new ArrayList<>();
+
+            if (line.getRole() == null) {
+                line.setRole(TextRole.UnknownRole); // Role guess failed or gave nothing
+            }
+
             final TextRole role = line.getRole();
             final SentenceInter sentence = switch (role) {
                 case Lyrics -> LyricLineInter.create(line);
