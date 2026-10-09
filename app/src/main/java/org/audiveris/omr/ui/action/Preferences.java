@@ -910,11 +910,6 @@ public abstract class Preferences
             this.constant = constant;
         }
 
-        public String getDescription ()
-        {
-            return constant.getDescription();
-        }
-
         public boolean isSet ()
         {
             return constant.isSet();
@@ -962,11 +957,7 @@ public abstract class Preferences
         {
             this.topic = topic;
 
-            String desc = resources.getString("Topic." + topic + ".toolTipText");
-
-            if (desc == null) {
-                desc = topic.getDescription();
-            }
+            final String desc = resources.getString("Topic." + topic + ".toolTipText");
 
             final JCheckBox box = new JCheckBox(topicName);
             box.addActionListener(this);

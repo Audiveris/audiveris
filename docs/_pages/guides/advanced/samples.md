@@ -115,7 +115,7 @@ We can now select the shapes of interest.
 
 3. The `Samples` selector gets populated as soon as shapes get selected.  
   The samples are gathered by shape.
-  In a shape collection, via a right-click, we can sort samples by width, height, height or grade.  
+  In a shape collection, via a right-click, we can sort samples by width, height, weight or grade.  
   The synthetic samples (there are a handful of these in each shape collection) are displayed with a
   green background.  
   Only one sample can be selected at a time.

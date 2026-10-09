@@ -154,7 +154,7 @@ public class LabeledEnum<E extends Enum<E>>
 
         for (int i = 0; i < values.length; i++) {
             final E value = values[i];
-            final String key = prefix + value.name();
+            final String key = prefix + value.name() + ".text";
             final String label = resources.getString(key);
             labeled[i] = new LabeledEnum<>(value, (label != null) ? label : value.name());
         }
