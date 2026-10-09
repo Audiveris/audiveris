@@ -2367,15 +2367,21 @@ public class PartwiseBuilder
                     current.pmNote.setPitch(pitch);
                 }
 
-                // Non-oval notehead motif?
+                // Non-oval notehead motif, or a head between brackets?
                 final HeadMotif motif = note.getShape().getHeadMotif();
-                if (motif != HeadMotif.oval && motif != HeadMotif.small) {
+                final boolean parenthesized = (note instanceof HeadInter head)
+                        && head.hasParentheses();
+                if ((motif != HeadMotif.oval && motif != HeadMotif.small) || parenthesized) {
                     final Notehead notehead = factory.createNotehead();
                     switch (motif) {
                         case cross -> notehead.setValue(NoteheadValue.X);
                         case diamond -> notehead.setValue(NoteheadValue.DIAMOND);
                         case triangle -> notehead.setValue(NoteheadValue.INVERTED_TRIANGLE);
                         case circle -> notehead.setValue(NoteheadValue.CIRCLE_X);
+                        case null, default -> notehead.setValue(NoteheadValue.NORMAL);
+                    }
+                    if (parenthesized) {
+                        notehead.setParentheses(YesNo.YES);
                     }
                     current.pmNote.setNotehead(notehead);
                 }
