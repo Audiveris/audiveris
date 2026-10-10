@@ -338,20 +338,6 @@ public class PartBarline
         staffBarlines.addAll(below.staffBarlines);
     }
 
-    //    //--------------------//
-    //    // removeStaffBarline //
-    //    //--------------------//
-    //    /**
-    //     * Remove the provided StaffBarlineInter for this PartBarline.
-    //     *
-    //     * @param staffBarline the StaffBarllineInter to remove
-    //     * @return true if successful, false if not
-    //     */
-    //    public boolean removeStaffBarline (StaffBarlineInter staffBarline)
-    //    {
-    //        return staffBarlines.remove(staffBarline);
-    //    }
-    //
     //-------------//
     // splitBefore //
     //-------------//
