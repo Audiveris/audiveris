@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.ui.ShapeMenuItem;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.MusicFamily;
+import org.audiveris.omr.util.ResourceUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -67,6 +69,8 @@ public class ShapeSet
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeSet.class);
+
+    private static final ResourceBundle resources = ResourceUtil.getBundle(ShapeSet.class);
 
     /**
      * Half time numbers. These shapes are used for upper or lower part of a time signature.
@@ -372,7 +376,7 @@ public class ShapeSet
     //----------------------------------------------------------------------------------------------
     // Below are predefined instances of ShapeSet, meant mainly for UI packaging.
     //
-    // By being defined here, they will lead to corresponding gathering in user menus & palette.
+    // By being defined here, they will lead to corresponding gathering in user menus & pallets.
     // So, double-check before removing or modifying any one of them.
     //
     // Nota: Do not use EnumSet.range() since this could lead to subtle errors should Shape enum
@@ -738,6 +742,19 @@ public class ShapeSet
         }
     }
 
+    //---------//
+    // getText //
+    //---------//
+    /**
+     * Report the (localized) text for this ShapeSet instance.
+     *
+     * @return the localized text
+     */
+    public String getText ()
+    {
+        return resources.getString(getClass().getSimpleName() + "." + getName() + ".text");
+    }
+
     //----------//
     // setColor //
     //----------//
@@ -804,8 +821,8 @@ public class ShapeSet
         // All ranges of glyph shapes
         for (Field field : ShapeSet.class.getDeclaredFields()) {
             if (field.getType() == ShapeSet.class) {
-                ShapeSet set = ShapeSet.valueOf(field.getName());
-                JMenu menu = new JMenu(field.getName());
+                final ShapeSet set = ShapeSet.valueOf(field.getName());
+                final JMenu menu = new JMenu(set.getText());
 
                 if (set.rep != null) {
                     menu.setIcon(set.rep.getDecoratedSymbol(family));

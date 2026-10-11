@@ -2257,7 +2257,7 @@ public class BookActions
         // Constructor needed for creation of HistoryMenu
         public LoadBookTask ()
         {
-            super(OmrGui.getApplication(), "Loading");
+            super(OmrGui.getApplication(), "");
         }
 
         /**
@@ -2267,7 +2267,9 @@ public class BookActions
          */
         public LoadBookTask (Path path)
         {
-            super(OmrGui.getApplication(), "Loading " + path + " ...");
+            super(
+                    OmrGui.getApplication(),
+                    format(resources.getString("LoadBookTask.pattern"), path));
             this.path = path;
         }
 
@@ -2278,7 +2280,9 @@ public class BookActions
          */
         public LoadBookTask (SheetPath sheetPath)
         {
-            super(OmrGui.getApplication(), "Loading " + sheetPath.getBookPath() + " ...");
+            super(
+                    OmrGui.getApplication(),
+                    format(resources.getString("LoadBookTask.pattern"), sheetPath.getBookPath()));
             path = sheetPath.getBookPath();
             sheetNumber = sheetPath.getSheetNumber();
         }

@@ -39,6 +39,9 @@ import org.audiveris.omr.ui.util.WaitingTask;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.OmrExecutors;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +52,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import static java.text.MessageFormat.format;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +107,9 @@ public class StubsController
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StubsController.class);
+
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(StubsController.class);
 
     /** Events that can be published on sheet service. */
     private static final Class<?>[] eventsWritten = new Class<?>[] { StubEvent.class };
@@ -1206,7 +1213,9 @@ public class StubsController
 
         LoadingSheetTask (SheetStub stub)
         {
-            super(OmrGui.getApplication(), "Loading sheet " + stub.getId() + " ...");
+            super(
+                    OmrGui.getApplication(),
+                    format(resources.getString("LoadingSheetTask.pattern"), stub.getId()));
             this.stub = stub;
         }
 

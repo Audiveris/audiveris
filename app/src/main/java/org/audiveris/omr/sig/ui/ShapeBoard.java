@@ -163,8 +163,7 @@ public class ShapeBoard
     private InterDnd dnd;
 
     /**
-     * Called-back when a set is selected:
-     * The global panel is replaced by the selected set panel.
+     * Called-back when a set is selected.
      */
     private final ActionListener setListener = (ActionEvent e) -> {
         String setName = ((Component) e.getSource()).getName();
@@ -382,7 +381,7 @@ public class ShapeBoard
                     button.addActionListener(setListener);
                     button.setBorderPainted(false);
 
-                    final String desc = set.getName(); // + " (" + set.getDescription() + ")";
+                    final String desc = set.getText();
                     final Character shortcut = ShapeShortcuts.getReverseSetMap().get(set);
                     button.setToolTipText(standardizedTip(desc, standardized(shortcut)));
                     panel.add(button);
@@ -415,7 +414,7 @@ public class ShapeBoard
     private Panel buildSetPanel (ShapeSet set)
     {
         final Panel panel = new Panel();
-        panel.setName(set.getName());
+        panel.setName(set.getText());
         panel.setNoInsets();
         panel.setLayout(new WrapLayout(FlowLayout.LEADING));
 
@@ -514,7 +513,9 @@ public class ShapeBoard
 
         int row = 1;
         if (historyTitle == null) {
-            historyTitle = new CollapsibleTitleLabel(resources.getString("history.title"), shapeHistory.panel);
+            historyTitle = new CollapsibleTitleLabel(
+                    resources.getString("history.title"),
+                    shapeHistory.panel);
         }
         historyTitle.setVisible(false); // Hide until elements are added
         builder.addRaw(historyTitle).xy(1, row);
@@ -534,7 +535,9 @@ public class ShapeBoard
         if (customSet != null) {
             row += 2;
             if (customSetTitle == null) {
-                customSetTitle = new CollapsibleTitleLabel(resources.getString("customSet.title"), customSet.panel);
+                customSetTitle = new CollapsibleTitleLabel(
+                        resources.getString("customSet.title"),
+                        customSet.panel);
             }
             builder.addRaw(customSetTitle).xy(1, row);
             row += 2;
@@ -542,7 +545,10 @@ public class ShapeBoard
         }
 
         row += 2;
-        builder.addRaw(new CollapsibleTitleLabel(resources.getString("globalSets.title"), globalPanel)).xy(1, row);
+        builder.addRaw(
+                new CollapsibleTitleLabel(resources.getString("globalSets.title"), globalPanel)).xy(
+                        1,
+                        row);
         row += 2;
         builder.addRaw(globalPanel).xy(1, row);
 
@@ -1112,7 +1118,8 @@ public class ShapeBoard
         }
 
         @Override
-        public void add (final Shape shape, final int index)
+        public void add (final Shape shape,
+                         final int index)
         {
             super.add(shape, index);
             // Ensure the custom set title is expanded when an element is added
@@ -1923,11 +1930,12 @@ public class ShapeBoard
         }
 
         @Override
-        public void add (Shape shape, int index)
+        public void add (Shape shape,
+                         int index)
         {
             // Avoid recursion with DynamicSet.add's invokeAndWait
             if (!SwingUtilities.isEventDispatchThread()) {
-                SwingUtilities.invokeLater(() -> add(shape, index));
+                SwingUtilities.invokeLater( () -> add(shape, index));
                 return;
             }
             // Add directly to persistent set
@@ -1951,7 +1959,7 @@ public class ShapeBoard
         {
             // Avoid recursion with DynamicSet.remove's invokeAndWait
             if (!SwingUtilities.isEventDispatchThread()) {
-                SwingUtilities.invokeLater(() -> remove(shape));
+                SwingUtilities.invokeLater( () -> remove(shape));
                 return;
             }
             super.remove(shape.name());
@@ -1972,7 +1980,7 @@ public class ShapeBoard
         {
             // Avoid recursion with DynamicSet.clear's invokeAndWait
             if (!SwingUtilities.isEventDispatchThread()) {
-                SwingUtilities.invokeLater(() -> clear());
+                SwingUtilities.invokeLater( () -> clear());
                 return;
             }
             super.clear();
