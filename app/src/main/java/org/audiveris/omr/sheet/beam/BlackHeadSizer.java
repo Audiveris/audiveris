@@ -32,6 +32,7 @@ import org.audiveris.omr.image.StructureElement;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.BlackHeadScale;
 import org.audiveris.omr.sheet.Scale.MusicFontScale;
@@ -40,6 +41,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.util.Dumping;
+import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -260,6 +262,70 @@ public class BlackHeadSizer
         logger.debug("stacks: {}", Glyphs.ids(stacks));
 
         measureSingles(singles);
+
+        checkSmallHeads(spots);
+    }
+
+    //-----------------//
+    // checkSmallHeads //
+    //-----------------//
+    /**
+     * Enable small heads for this sheet if it exhibits enough spots shaped like small
+     * (cue or grace) black heads.
+     * <p>
+     * Small heads are searched only when the <code>smallHeads</code> switch is set, which is
+     * not the default. Without it, a sheet printed with cue-size notes loses all of them.
+     * An explicit (specific) switch value, set by the user, is always respected.
+     *
+     * @param spots the black spots of the sheet
+     */
+    private void checkSmallHeads (List<Glyph> spots)
+    {
+        if (!constants.detectSmallHeads.isSet()) {
+            return;
+        }
+
+        final Param<Boolean> param = sheet.getStub().getProcessingSwitches().getParam(
+                ProcessingSwitch.smallHeads);
+
+        if (param.isSpecific() || param.getValue()) {
+            return;
+        }
+
+        final BlackHeadScale headScale = sheet.getScale().getBlackHeadScale();
+
+        if (headScale == null) {
+            return;
+        }
+
+        final double minRatio = constants.minSmallHeadRatio.getValue();
+        final double maxRatio = constants.maxSmallHeadRatio.getValue();
+        final double w = headScale.getWidthMean();
+        final double h = headScale.getHeightMean();
+        int count = 0;
+
+        for (Glyph spot : spots) {
+            final int width = spot.getWidth();
+            final int height = spot.getHeight();
+
+            if ((width < minRatio * w) || (width > maxRatio * w) //
+                    || (height < minRatio * h) || (height > maxRatio * h)) {
+                continue;
+            }
+
+            final double fill = spot.getWeight() / (double) (width * height);
+
+            if (fill >= constants.minSmallHeadFill.getValue()) {
+                count++;
+            }
+        }
+
+        logger.debug("Small black head spots: {}", count);
+
+        if (count >= constants.smallHeadsQuorum.getValue()) {
+            logger.info("{} small black head spots, small heads enabled", count);
+            param.setSpecific(true);
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -322,6 +388,27 @@ public class BlackHeadSizer
                 "glyphs",
                 20,
                 "Quorum for usable singles");
+
+        private final Constant.Boolean detectSmallHeads = new Constant.Boolean(
+                true,
+                "Should we enable small heads for a sheet with enough small black head spots?");
+
+        private final Constant.Ratio minSmallHeadRatio = new Constant.Ratio(
+                0.6,
+                "Minimum size of a small black head spot, as ratio of black head size");
+
+        private final Constant.Ratio maxSmallHeadRatio = new Constant.Ratio(
+                0.85,
+                "Maximum size of a small black head spot, as ratio of black head size");
+
+        private final Constant.Ratio minSmallHeadFill = new Constant.Ratio(
+                0.6,
+                "Minimum ratio of weight to bounding box area for a small black head spot");
+
+        private final Constant.Integer smallHeadsQuorum = new Constant.Integer(
+                "glyphs",
+                10,
+                "Minimum count of small black head spots to enable small heads");
     }
 
     //------------//
