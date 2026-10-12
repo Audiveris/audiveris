@@ -74,7 +74,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -140,7 +140,7 @@ public class TextBuilder
     private final int maxLineDy;
 
     /** Map with key as staff pair and value as lines partition. */
-    private final Map<Pair<Staff>, Pair<List<TextLine>>> gutterMap = new HashMap<>();
+    private final Map<Pair<Staff>, Pair<List<TextLine>>> gutterMap = new LinkedHashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
 

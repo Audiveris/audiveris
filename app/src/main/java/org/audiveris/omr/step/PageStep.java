@@ -76,7 +76,7 @@ import org.audiveris.omr.text.TextRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,7 +123,7 @@ public class PageStep
     private static final Set<Class<?>> impactingClasses;
 
     static {
-        forVoices = new HashSet<>();
+        forVoices = new LinkedHashSet<>();
         // Inters
         forVoices.add(AbstractTimeInter.class);
         forVoices.add(AugmentationDotInter.class);
@@ -153,13 +153,13 @@ public class PageStep
     }
 
     static {
-        forLyrics = new HashSet<>();
+        forLyrics = new LinkedHashSet<>();
         forLyrics.add(LyricItemInter.class);
         forLyrics.add(LyricLineInter.class);
     }
 
     static {
-        forSlurs = new HashSet<>();
+        forSlurs = new LinkedHashSet<>();
         // Inters
         forSlurs.add(SlurInter.class);
         // Relations
@@ -167,14 +167,14 @@ public class PageStep
     }
 
     static {
-        forParts = new HashSet<>();
+        forParts = new LinkedHashSet<>();
         forParts.add(BraceInter.class);
         forParts.add(SentenceInter.class);
         forParts.add(WordInter.class);
     }
 
     static {
-        forMeasures = new HashSet<>();
+        forMeasures = new LinkedHashSet<>();
         // Inters
         forMeasures.add(BarlineInter.class);
         forMeasures.add(MeasureRepeatInter.class);
@@ -184,7 +184,7 @@ public class PageStep
     }
 
     static {
-        impactingClasses = new HashSet<>();
+        impactingClasses = new LinkedHashSet<>();
         impactingClasses.addAll(forVoices);
         impactingClasses.addAll(forLyrics);
         impactingClasses.addAll(forSlurs);

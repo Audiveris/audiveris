@@ -75,7 +75,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -147,10 +147,10 @@ public class LedgersBuilder
     private List<StraightFilament> ledgerCandidates;
 
     /** From stick to ledger. */
-    private Map<StraightFilament, LedgerInter> stick2ledger = new HashMap<>();
+    private Map<StraightFilament, LedgerInter> stick2ledger = new LinkedHashMap<>();
 
     /** From ledger to stick. */
-    private Map<LedgerInter, StraightFilament> ledger2stick = new HashMap<>();
+    private Map<LedgerInter, StraightFilament> ledger2stick = new LinkedHashMap<>();
 
     /** The (good) system-wide beams and hooks, sorted by left abscissa. */
     private List<Inter> sortedSystemBeams;
@@ -1113,7 +1113,7 @@ public class LedgersBuilder
      */
     private class Suites
     {
-        final Map<Integer, LedgerSuite> map = new HashMap<>();
+        final Map<Integer, LedgerSuite> map = new LinkedHashMap<>();
 
         Suites (Scale sheetScale)
         {

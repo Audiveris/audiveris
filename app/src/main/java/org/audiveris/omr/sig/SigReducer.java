@@ -456,7 +456,7 @@ public class SigReducer
                 .filter(inter -> inter.isAbnormal()) //
                 .filter(inter -> !inter.canStayAbnormal()) //
                 .filter(inter -> !inter.isManual()) //
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
         toRemove.forEach(inter -> inter.remove());
 
         return toRemove.size();

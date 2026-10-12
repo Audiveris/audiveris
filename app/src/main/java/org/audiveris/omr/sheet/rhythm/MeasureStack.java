@@ -59,7 +59,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -2121,7 +2120,7 @@ public class MeasureStack
         for (int partIndex = 0; partIndex < systemParts.size(); partIndex++) {
             final Part part = systemParts.get(partIndex);
             final PartBarline partBarline = partBarlines.get(partIndex);
-            Map<Staff, Integer> xRefs = new HashMap<>();
+            Map<Staff, Integer> xRefs = new LinkedHashMap<>();
 
             for (Staff staff : part.getStaves()) {
                 final int xRef = partBarline.getRightX(part, staff);

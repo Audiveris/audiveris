@@ -58,7 +58,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -247,7 +247,7 @@ public class SIGraph
         final List<Inter> partners = new ArrayList<>();
 
         /** Map: partner -> contribution. */
-        final Map<Inter, Double> partnerContrib = new HashMap<>();
+        final Map<Inter, Double> partnerContrib = new LinkedHashMap<>();
 
         // Check inter involvement
         for (Support support : supports) {

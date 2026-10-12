@@ -56,7 +56,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +86,7 @@ public class MultipleRestsBuilder
     private final Sheet sheet;
 
     /** Projections of system staves. */
-    private final Map<Staff, StaffProjector> projectors = new HashMap<>();
+    private final Map<Staff, StaffProjector> projectors = new LinkedHashMap<>();
 
     /** Scale-dependent global parameters. */
     private final Parameters params;

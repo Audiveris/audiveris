@@ -90,7 +90,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -111,7 +111,7 @@ public class AnnotationsBuilder
     private static final Logger logger = LoggerFactory.getLogger(AnnotationsBuilder.class);
 
     /** Inter excluded classes. */
-    private static final Set<Class> excludedInterClasses = new HashSet<>();
+    private static final Set<Class> excludedInterClasses = new LinkedHashSet<>();
 
     static {
         excludedInterClasses.add(AbstractChordInter.class);

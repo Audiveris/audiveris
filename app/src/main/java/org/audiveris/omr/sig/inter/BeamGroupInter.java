@@ -60,7 +60,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
@@ -253,7 +252,7 @@ public class BeamGroupInter
      */
     private boolean checkMultiStaff ()
     {
-        final Set<Staff> staves = new HashSet<>();
+        final Set<Staff> staves = new LinkedHashSet<>();
         getChords().forEach(chord -> staves.addAll(chord.getStaves()));
 
         return staves.size() > 1;

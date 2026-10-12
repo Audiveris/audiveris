@@ -41,7 +41,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -1249,7 +1249,7 @@ public class ShapeSet
     /** Build the set map in a lazy way */
     private static class Sets
     {
-        static final Map<String, ShapeSet> map = new HashMap<>();
+        static final Map<String, ShapeSet> map = new LinkedHashMap<>();
 
         static final List<ShapeSet> setList = new ArrayList<>();
 

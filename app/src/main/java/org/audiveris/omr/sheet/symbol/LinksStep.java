@@ -48,7 +48,7 @@ import org.audiveris.omr.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -74,13 +74,13 @@ public class LinksStep
     private static final Set<Class<?>> impactingClasses;
 
     static {
-        forTexts = new HashSet<>();
+        forTexts = new LinkedHashSet<>();
         forTexts.add(WordInter.class);
         forTexts.add(SentenceInter.class);
     }
 
     static {
-        impactingClasses = new HashSet<>();
+        impactingClasses = new LinkedHashSet<>();
         impactingClasses.addAll(forTexts);
     }
 

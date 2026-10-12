@@ -96,6 +96,40 @@ public abstract class Glyphs
         return Integer.compare(g1.getId(), g2.getId());
     };
 
+    /**
+     * To compare glyphs according to their left abscissa, then top ordinate, width, height
+     * and weight.
+     * <p>
+     * Unlike {@link #byFullAbscissa}, this comparator does not use glyph ID, which may depend
+     * on the order of glyph registration, so it gives the same order run after run.
+     */
+    public static final Comparator<Glyph> byGeometry = (g1,
+                                                        g2) -> {
+        if (g1 == g2) {
+            return 0;
+        }
+
+        int cmp = Integer.compare(g1.getLeft(), g2.getLeft());
+
+        if (cmp == 0) {
+            cmp = Integer.compare(g1.getTop(), g2.getTop());
+        }
+
+        if (cmp == 0) {
+            cmp = Integer.compare(g1.getWidth(), g2.getWidth());
+        }
+
+        if (cmp == 0) {
+            cmp = Integer.compare(g1.getHeight(), g2.getHeight());
+        }
+
+        if (cmp == 0) {
+            cmp = Integer.compare(g1.getWeight(), g2.getWeight());
+        }
+
+        return cmp;
+    };
+
     /** To compare glyphs according to their top ordinate. */
     public static final Comparator<Glyph> byOrdinate = (g1,
                                                         g2) -> //

@@ -46,7 +46,7 @@ import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +72,7 @@ public class DynamicsInter
     private static final Map<Shape, String> sigs = new EnumMap<>(Shape.class);
 
     /** Map Signature -> Shape. */
-    private static final Map<String, Shape> shapes = new HashMap<>();
+    private static final Map<String, Shape> shapes = new LinkedHashMap<>();
 
     /** Map Shape -> Sound. (TODO: complete the table) */
     private static final Map<Shape, Integer> sounds = new EnumMap<>(Shape.class);

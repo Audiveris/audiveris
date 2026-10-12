@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -83,7 +84,7 @@ public class SheetContainer
     /** Map (RunTable Hash code => list of sheet descriptors). */
     @XmlElement(name = "sheets")
     @XmlJavaTypeAdapter(HashMapAdapter.class)
-    private HashMap<Integer, List<Descriptor>> hashMap = new HashMap<>();
+    private HashMap<Integer, List<Descriptor>> hashMap = new LinkedHashMap<>();
 
     // Transient data
     //---------------
@@ -645,7 +646,7 @@ public class SheetContainer
         public HashMap<Integer, List<Descriptor>> unmarshal (ContainerValue value)
             throws Exception
         {
-            HashMap<Integer, List<Descriptor>> map = new HashMap<>();
+            HashMap<Integer, List<Descriptor>> map = new LinkedHashMap<>();
 
             for (Descriptor desc : value.descriptors) {
                 List<Descriptor> descriptors = map.get(desc.hash);

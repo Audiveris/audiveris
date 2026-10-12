@@ -59,7 +59,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -534,7 +534,7 @@ public class Part
         final LineInfo line = (side == VerticalSide.TOP) ? getFirstStaff().getFirstLine()
                 : getLastStaff().getLastLine();
         final SIGraph sig = getSystem().getSig();
-        final Set<Inter> inters = new HashSet<>();
+        final Set<Inter> inters = new LinkedHashSet<>();
 
         // Staff heads
         final Staff staff = (side == VerticalSide.TOP) ? getFirstStaff() : getLastStaff();

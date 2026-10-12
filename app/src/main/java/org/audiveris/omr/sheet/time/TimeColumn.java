@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -126,7 +126,7 @@ public abstract class TimeColumn
     {
         // Retrieve all time values found, organized by value and staff
         Map<TimeValue, AbstractTimeInter[]> vectors = getValueVectors();
-        Map<TimeValue, Double> grades = new HashMap<>();
+        Map<TimeValue, Double> grades = new LinkedHashMap<>();
 
         TimeLoop:
         for (Map.Entry<TimeValue, AbstractTimeInter[]> entry : vectors.entrySet()) {
@@ -272,7 +272,7 @@ public abstract class TimeColumn
     protected Map<TimeValue, AbstractTimeInter[]> getValueVectors ()
     {
         // Retrieve all occurrences of time values across staves.
-        final Map<TimeValue, AbstractTimeInter[]> values = new HashMap<>();
+        final Map<TimeValue, AbstractTimeInter[]> values = new LinkedHashMap<>();
 
         // Loop on system staves
         final List<Staff> staves = system.getStaves();

@@ -66,7 +66,7 @@ import static java.lang.Math.abs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -381,7 +381,7 @@ public class SlurLinker
                                              Area area,
                                              List<Inter> chords)
     {
-        final Map<Inter, SlurHeadLink> found = new HashMap<>();
+        final Map<Inter, SlurHeadLink> found = new LinkedHashMap<>();
         final CubicCurve2D curve = slur.getCurve();
         final Point2D end = (side == LEFT) ? curve.getP1() : curve.getP2();
         final Point2D target = getTargetPoint(slur, side);

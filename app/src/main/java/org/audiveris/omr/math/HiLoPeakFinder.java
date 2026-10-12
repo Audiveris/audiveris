@@ -32,7 +32,7 @@ import org.jfree.data.xy.XYSeries;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -221,7 +221,7 @@ public class HiLoPeakFinder
         retrieveHiLos();
 
         // Map: originating hilo -> corresponding peak
-        final Map<Range, Range> hiloToPeak = new HashMap<>();
+        final Map<Range, Range> hiloToPeak = new LinkedHashMap<>();
 
         // Process hilos by decreasing main value
         final List<Range> decreasing = new ArrayList<>(hilos);

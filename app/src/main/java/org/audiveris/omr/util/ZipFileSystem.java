@@ -27,7 +27,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -79,7 +79,7 @@ public abstract class ZipFileSystem
         // Make sure the containing folder exists
         Files.createDirectories(path.getParent());
 
-        final Map<String, String> env = new HashMap<>();
+        final Map<String, String> env = new LinkedHashMap<>();
         env.put("create", "true");
 
         final URI uri = URI.create("jar:" + path.toUri());
@@ -106,7 +106,7 @@ public abstract class ZipFileSystem
     {
         Objects.requireNonNull(path, "ZipFileSystem.open: path is null");
 
-        final Map<String, String> env = new HashMap<>(); // Empty map
+        final Map<String, String> env = new LinkedHashMap<>(); // Empty map
         final URI uri = URI.create("jar:" + path.toUri());
         final FileSystem fs = FileSystems.newFileSystem(uri, env, null);
 

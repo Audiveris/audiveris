@@ -251,7 +251,7 @@ public class SymbolsBuilder
      */
     private List<Glyph> getSymbolsGlyphs (Map<SystemInfo, List<Glyph>> optionalsMap)
     {
-        // Sorted by abscissa, ordinate, id
+        // Sorted by geometry (see below)
         List<Glyph> glyphs = new ArrayList<>();
 
         for (Glyph glyph : system.getGroupedGlyphs(GlyphGroup.SYMBOL)) {
@@ -278,6 +278,9 @@ public class SymbolsBuilder
                 }
             }
         }
+
+        // Free glyphs come in registration order, which may vary from run to run
+        Collections.sort(glyphs, Glyphs.byGeometry);
 
         return glyphs;
     }

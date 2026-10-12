@@ -69,7 +69,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.EventObject;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -146,10 +146,10 @@ public class SampleRepository
     private final Map<String, SampleSheet> nameMap = new TreeMap<>();
 
     /** Sheets, mapped by their image. */
-    private final Map<RunTable, SampleSheet> imageMap = new HashMap<>();
+    private final Map<RunTable, SampleSheet> imageMap = new LinkedHashMap<>();
 
     /** Sheets, mapped by their samples. */
-    private final Map<Sample, SampleSheet> sampleMap = new HashMap<>();
+    private final Map<Sample, SampleSheet> sampleMap = new LinkedHashMap<>();
 
     /** Container for sheet descriptors. */
     private SheetContainer sheetContainer = new SheetContainer();

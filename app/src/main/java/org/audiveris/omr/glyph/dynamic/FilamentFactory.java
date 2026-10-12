@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -116,7 +116,7 @@ public class FilamentFactory<F extends Filament>
     private final Set<Section> processedSections = new LinkedHashSet<>();
 
     /** Fat sections. unknown/true/false */
-    private final Map<Section, Boolean> fatSections = new HashMap<>();
+    private final Map<Section, Boolean> fatSections = new LinkedHashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
 
