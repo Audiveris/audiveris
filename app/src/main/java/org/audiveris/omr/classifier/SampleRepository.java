@@ -113,6 +113,9 @@ public class SampleRepository
 
     private static final Logger logger = LoggerFactory.getLogger(SampleRepository.class);
 
+    /** Seed for sample ordering when reproducibility is enforced. Can be any value in fact */
+    private static final int REPRODUCIBLE_SEED = 123;
+
     /** Standard interline value: {@value}. (Any value could fit, if used consistently) */
     public static final int STANDARD_INTERLINE = 20;
 
@@ -1773,7 +1776,8 @@ public class SampleRepository
         }
 
         // Now, dispatch into train & test (or none)
-        final Random random = ShapeClassifier.enforceReproducibility() ? new Random(123)
+        final Random random = ShapeClassifier.enforceReproducibility() //
+                ? new Random(REPRODUCIBLE_SEED)
                 : new Random();
 
         for (Entry<Shape, List<Sample>> entry : shapeSamples.entrySet()) {
