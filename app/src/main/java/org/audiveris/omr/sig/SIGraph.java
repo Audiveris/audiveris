@@ -1346,6 +1346,17 @@ public class SIGraph
             logger.info("VIP removeVertex {}", inter);
         }
 
+        // Remove edges one by one, rather than via super.removeVertex() which iterates on a
+        // snapshot: a relation removal may cascade (through SigListener) into removing another
+        // inter, together with its own edges, some of them also linked to this inter.
+        if (containsVertex(inter)) {
+            for (Relation rel : new ArrayList<>(edgesOf(inter))) {
+                if (containsEdge(rel)) {
+                    removeEdge(rel);
+                }
+            }
+        }
+
         return super.removeVertex(inter);
     }
 

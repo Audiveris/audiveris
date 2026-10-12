@@ -3707,9 +3707,17 @@ public class PartwiseBuilder
                     AbstractChordInter chord = wedge.getChord(side);
 
                     if ((chord != null) && (chord.getMeasure() == measure)) {
+                        final Rational timeOffset = chord.getTimeOffset();
+
+                        if (timeOffset == null) {
+                            // Chord not placed in time: drop the wedge, not the whole measure
+                            logger.info("{} skipped, {} has no time offset", wedge, chord);
+                            continue;
+                        }
+
                         // We take the first note of the chord as reference
                         AbstractNoteInter refNote = (AbstractNoteInter) chord.getNotes().get(0);
-                        events.add(new TimedWedge(wedge, side, refNote, chord.getTimeOffset()));
+                        events.add(new TimedWedge(wedge, side, refNote, timeOffset));
                     }
                 }
             }
