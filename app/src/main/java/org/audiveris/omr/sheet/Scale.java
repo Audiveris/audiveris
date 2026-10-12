@@ -205,6 +205,15 @@ public class Scale
     @XmlElement(name = "head-seeds")
     private HeadSeedScale headSeedScale;
 
+    // Transient data
+    //---------------
+
+    /**
+     * Strongest beam thickness measured, kept (not persisted) to restore the beam scale
+     * if the small interline cannot be confirmed by actual small staves.
+     */
+    private Integer mainBeamKey;
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
@@ -237,6 +246,47 @@ public class Scale
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+
+    //--------------------//
+    // discardSmallScales //
+    //--------------------//
+    /**
+     * Discard the small interline (and small beam) scales, since no small staff was found.
+     * <p>
+     * A second interline peak can come from regular patterns other than staves, typically
+     * the gaps within dense double beams. The beam thickness had then been split into
+     * (large) beam and small beam, so the beam scale is reset to the strongest beam measured.
+     */
+    public void discardSmallScales ()
+    {
+        if (smallInterlineScale == null) {
+            return;
+        }
+
+        logger.info("No small staff found, discarding {}", smallInterlineScale);
+        smallInterlineScale = null;
+
+        if (smallBeamScale != null) {
+            if (mainBeamKey != null) {
+                beamScale = new BeamScale(mainBeamKey, false);
+            }
+
+            smallBeamScale = null;
+        }
+    }
+
+    //----------------//
+    // setMainBeamKey //
+    //----------------//
+    /**
+     * Remember the strongest beam thickness measured.
+     *
+     * @param mainBeamKey strongest beam peak, perhaps null
+     */
+    public void setMainBeamKey (Integer mainBeamKey)
+    {
+        this.mainBeamKey = mainBeamKey;
+    }
 
     //----------------//
     // afterUnmarshal //

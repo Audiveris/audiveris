@@ -1527,6 +1527,13 @@ public class LinesRetriever
                 discardedFilaments = smallClustersRetriever.buildInfo();
             }
 
+            if ((smallInterline != null) && ((smallClustersRetriever == null)
+                    || smallClustersRetriever.getClusters().isEmpty())) {
+                // The small interline peak did not come from actual small staves
+                smallClustersRetriever = null;
+                scale.discardSmallScales();
+            }
+
             if (logger.isDebugEnabled()) {
                 logger.debug("Discarded filaments: {}", Entities.ids(discardedFilaments));
             }

@@ -400,7 +400,15 @@ public class ScaleBuilder
         final double jitter = (lineScale.max - lineScale.min) / (double) interlineScale.main;
         logger.info(String.format("Normalized black jitter: %.2f %%", 100 * jitter));
 
-        return new Scale(interlineScale, lineScale, beamScale, smallInterlineScale, smallBeamScale);
+        final Scale scale = new Scale(
+                interlineScale,
+                lineScale,
+                beamScale,
+                smallInterlineScale,
+                smallBeamScale);
+        scale.setMainBeamKey(beamKey);
+
+        return scale;
     }
 
     //-------------------//
