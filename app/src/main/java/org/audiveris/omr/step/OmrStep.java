@@ -40,6 +40,9 @@ import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.text.TextsStep;
+import org.audiveris.omr.util.ResourceUtil;
+
+import java.util.ResourceBundle;
 
 /**
  * Enum <code>OmrStep</code> describes the sequence of sheet processing steps in the OMR
@@ -51,31 +54,35 @@ import org.audiveris.omr.text.TextsStep;
  */
 public enum OmrStep
 {
-    LOAD("Get the sheet gray picture", new LoadStep()),
-    BINARY("Binarize the sheet gray picture", new BinaryStep()),
-    SCALE("Compute sheet line thickness, interline, beam thickness", new ScaleStep()),
-    GRID("Retrieve staff lines, barlines, systems & parts", new GridStep()),
-    HEADERS("Retrieve Clef-Key-Time systems headers", new HeadersStep()),
-    STEM_SEEDS("Retrieve stem thickness & seeds for stems", new StemSeedsStep()),
-    BEAMS("Retrieve beams", new BeamsStep()),
-    LEDGERS("Retrieve ledgers", new LedgersStep()),
-    HEADS("Retrieve note heads", new HeadsStep()),
-    STEMS("Retrieve stems connected to heads & beams", new StemsStep()),
-    REDUCTION("Reduce conflicts in heads, stems & beams", new ReductionStep()),
-    CUE_BEAMS("Retrieve cue beams", new CueBeamsStep()),
-    TEXTS("Call OCR on textual items", new TextsStep()),
-    MEASURES("Retrieve raw measures from groups of barlines", new MeasuresStep()),
-    CHORDS("Gather notes heads into chords", new ChordsStep()),
-    CURVES("Retrieve slurs, wedges & endings", new CurvesStep()),
-    SYMBOLS("Retrieve fixed-shape symbols", new SymbolsStep()),
-    LINKS("Link and reduce symbols", new LinksStep()),
-    RHYTHMS("Handle rhythms within measures", new RhythmsStep()),
-    PAGE("Connect systems within page", new PageStep());
+    LOAD(new LoadStep()),
+    BINARY(new BinaryStep()),
+    SCALE(new ScaleStep()),
+    GRID(new GridStep()),
+    HEADERS(new HeadersStep()),
+    STEM_SEEDS(new StemSeedsStep()),
+    BEAMS(new BeamsStep()),
+    LEDGERS(new LedgersStep()),
+    HEADS(new HeadsStep()),
+    STEMS(new StemsStep()),
+    REDUCTION(new ReductionStep()),
+    CUE_BEAMS(new CueBeamsStep()),
+    TEXTS(new TextsStep()),
+    MEASURES(new MeasuresStep()),
+    CHORDS(new ChordsStep()),
+    CURVES(new CurvesStep()),
+    SYMBOLS(new SymbolsStep()),
+    LINKS(new LinksStep()),
+    RHYTHMS(new RhythmsStep()),
+    PAGE(new PageStep());
+
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final ResourceBundle resources = ResourceUtil.getBundle(OmrStep.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Description of the step. */
-    private final String description;
+    private String description;
 
     /** Helper for step implementation. */
     private final AbstractStep helper;
@@ -85,13 +92,10 @@ public enum OmrStep
     /**
      * Create an instance of <code>Step</code>.
      *
-     * @param description step description
-     * @param helper      step implementation
+     * @param helper step implementation
      */
-    private OmrStep (String description,
-                     AbstractStep helper)
+    private OmrStep (AbstractStep helper)
     {
-        this.description = description;
         this.helper = helper;
     }
 
@@ -142,12 +146,20 @@ public enum OmrStep
     // getDescription //
     //----------------//
     /**
-     * Report a description of the step.
+     * Report a user-friendly description of this OmrStep.
      *
-     * @return a short description
+     * @return the step description
      */
     public String getDescription ()
     {
+        if (description == null) {
+            description = resources.getString(name() + ".text");
+
+            if (description == null) {
+                description = toString(); // Better than nothing!
+            }
+        }
+
         return description;
     }
 
