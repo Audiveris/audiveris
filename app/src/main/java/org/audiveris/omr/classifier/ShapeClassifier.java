@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.OmrExecutors;
 
@@ -43,8 +44,7 @@ public abstract class ShapeClassifier
     private static final Logger logger = LoggerFactory.getLogger(ShapeClassifier.class);
 
     /** A future which reflects whether instance has been initialized. */
-    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit( () ->
-    {
+    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit( () -> {
         try {
             logger.debug("Allocating instances for ShapeClassifier...");
             ShapeClassifier.getInstance();
@@ -96,6 +96,26 @@ public abstract class ShapeClassifier
     //        }
     //    }
     //
+
+    //------------------------//
+    // enforceReproducibility //
+    //------------------------//
+    /**
+     * Report whether we should enforce reproducibility for all parts of the training
+     * process.
+     * <ol>
+     * <li>split of samples into training and testing sets
+     * <li>initial weights (when training from scratch)
+     * <li>samples ordering within the training set
+     * </ol>
+     *
+     * @return true if reproducibility is desired, false if not
+     */
+    public static boolean enforceReproducibility ()
+    {
+        return constants.reproducibility.getValue();
+    }
+
     //---------//
     // preload //
     //---------//
@@ -124,6 +144,10 @@ public abstract class ShapeClassifier
     private static class Constants
             extends ConstantSet
     {
+
+        private final Constant.Boolean reproducibility = new Constant.Boolean(
+                false,
+                "Should we enforce reproducibility for the whole training process?");
         //
         //        private final Constant.Boolean useDeepClassifier = new Constant.Boolean(
         //                false,

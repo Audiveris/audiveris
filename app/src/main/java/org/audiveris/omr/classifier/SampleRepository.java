@@ -1773,7 +1773,8 @@ public class SampleRepository
         }
 
         // Now, dispatch into train & test (or none)
-        final Random random = constants.reproducibleSplit.isSet() ? new Random(123) : new Random();
+        final Random random = ShapeClassifier.enforceReproducibility() ? new Random(123)
+                : new Random();
 
         for (Entry<Shape, List<Sample>> entry : shapeSamples.entrySet()) {
             final List<Sample> list = entry.getValue();
@@ -2035,10 +2036,6 @@ public class SampleRepository
         private final Constant.Boolean printSampleCounts = new Constant.Boolean(
                 false,
                 "Should we print out the count of samples per shape?");
-
-        private final Constant.Boolean reproducibleSplit = new Constant.Boolean(
-                false,
-                "Should we enforce reproducibility of train/test split?");
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
