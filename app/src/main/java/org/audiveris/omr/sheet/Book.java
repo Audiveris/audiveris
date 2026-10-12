@@ -103,7 +103,6 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -180,9 +179,11 @@ public class Book
     /**
      * All Book parameters, editable via the BookParameters dialog.
      * This structure replaces the deprecated individual Param instances.
+     * <p>
+     * Marshalled via {@link #getXmlParameters()}, so that saving never modifies this live field
+     * while other threads may be reading it.
      */
-    @XmlElement(name = "parameters")
-    private BookParams parameters;
+    private volatile BookParams parameters;
 
     /**
      * This string, if any, is a specification of sheets selection.
@@ -263,8 +264,6 @@ public class Book
     /** Active parameter dialog, if any. */
     private JDialog parameterDialog;
 
-    /** A trick to keep parameters intact, even when nullified at marshal time. */
-    private BookParams parametersMirror;
 
     /** Has the book itself been upgraded?. */
     private boolean bookUpgraded = false;
@@ -342,15 +341,6 @@ public class Book
         stubs.add(stub);
     }
 
-    //--------------//
-    // afterMarshal //
-    //--------------//
-    @SuppressWarnings("unused")
-    private void afterMarshal (Marshaller m)
-    {
-        parameters = parametersMirror.duplicate();
-    }
-
     //----------//
     // annotate //
     //----------//
@@ -395,12 +385,38 @@ public class Book
         }
     }
 
-    @SuppressWarnings("unused")
-    private void beforeMarshal (Marshaller m)
+    //------------------//
+    // getXmlParameters //
+    //------------------//
+    /**
+     * Marshal a pruned copy of the parameters, leaving the live field untouched.
+     * <p>
+     * Pruning in place (as formerly done in beforeMarshal) briefly nullified the field,
+     * which raced with sheets being processed in parallel while the book was stored.
+     *
+     * @return the pruned copy, or null if nothing specific remains
+     */
+    @XmlElement(name = "parameters")
+    private BookParams getXmlParameters ()
     {
-        if ((parameters != null) && parameters.prune()) {
-            parameters = null;
+        final BookParams params = parameters;
+
+        if (params == null) {
+            return null;
         }
+
+        final BookParams copy = params.duplicate();
+
+        return copy.prune() ? null : copy;
+    }
+
+    //------------------//
+    // setXmlParameters //
+    //------------------//
+    @SuppressWarnings("unused")
+    private void setXmlParameters (BookParams parameters)
+    {
+        this.parameters = parameters;
     }
 
     //------------------//
@@ -2320,9 +2336,6 @@ public class Book
 
         // 2/ set parents
         parameters.setParents(null);
-
-        // 3/ set parametersMirror
-        parametersMirror = parameters.duplicate();
     }
 
     //------------------//

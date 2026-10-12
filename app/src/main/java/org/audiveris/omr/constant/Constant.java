@@ -604,9 +604,9 @@ public abstract class Constant<E>
     public static class Date
             extends Constant<java.util.Date>
     {
-        private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
-                "dd-MMM-yyyy",
-                Locale.US);
+        /** One format per thread, since SimpleDateFormat is not thread-safe. */
+        private static final ThreadLocal<DateFormat> DATE_FORMAT = ThreadLocal.withInitial(
+                () -> new SimpleDateFormat("dd-MMM-yyyy", Locale.US));
 
         public Date (java.lang.String str,
                      java.lang.String description)
@@ -625,7 +625,7 @@ public abstract class Constant<E>
         protected java.util.Date decode (java.lang.String str)
         {
             try {
-                return DATE_FORMAT.parse(str);
+                return DATE_FORMAT.get().parse(str);
             } catch (ParseException ex) {
                 logger.error("Error parsing {}", str, ex);
 
@@ -647,7 +647,7 @@ public abstract class Constant<E>
         public static java.util.Date decodeDate (java.lang.String str)
         {
             try {
-                return DATE_FORMAT.parse(str);
+                return DATE_FORMAT.get().parse(str);
             } catch (ParseException ex) {
                 logger.error("Error parsing {}", str, ex);
 
@@ -657,7 +657,7 @@ public abstract class Constant<E>
 
         public static java.lang.String encode (java.util.Date date)
         {
-            return DATE_FORMAT.format(date);
+            return DATE_FORMAT.get().format(date);
         }
     }
 
