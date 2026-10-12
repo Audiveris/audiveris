@@ -77,7 +77,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -110,7 +109,7 @@ public class RhythmsStep
     private static final Set<Class<?>> whiteClasses;
 
     static {
-        forStack = new HashSet<>();
+        forStack = new LinkedHashSet<>();
         // Inters
         forStack.add(AugmentationDotInter.class);
         forStack.add(BarlineInter.class);
@@ -139,7 +138,7 @@ public class RhythmsStep
         forStack.add(SeparateVoiceRelation.class);
     }
     static {
-        whiteForStack = new HashSet<>();
+        whiteForStack = new LinkedHashSet<>();
         // Inters
         whiteForStack.add(SmallChordInter.class);
         whiteForStack.add(GraceChordInter.class);
@@ -148,7 +147,7 @@ public class RhythmsStep
     }
 
     static {
-        forPage = new HashSet<>();
+        forPage = new LinkedHashSet<>();
         // Inters
         forPage.add(AbstractTimeInter.class);
         forPage.add(BraceInter.class); // Possibility of part merge/split
@@ -159,13 +158,13 @@ public class RhythmsStep
     }
 
     static {
-        impactingClasses = new HashSet<>();
+        impactingClasses = new LinkedHashSet<>();
         impactingClasses.addAll(forStack);
         impactingClasses.addAll(forPage);
     }
 
     static {
-        whiteClasses = new HashSet<>();
+        whiteClasses = new LinkedHashSet<>();
         whiteClasses.addAll(whiteForStack);
     }
 

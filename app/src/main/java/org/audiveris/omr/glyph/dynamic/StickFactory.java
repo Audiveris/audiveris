@@ -40,7 +40,7 @@ import static java.lang.Boolean.TRUE;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -483,7 +483,7 @@ public class StickFactory
         boolean grown;
 
         // Map: reverse -> finished
-        Map<Boolean, Boolean> finished = new HashMap<>();
+        Map<Boolean, Boolean> finished = new LinkedHashMap<>();
 
         if (fil.isVip()) {
             index.publish(fil);
@@ -504,7 +504,7 @@ public class StickFactory
 
                 // Determine the section(s) on this side of filament
                 Set<LinkedSection> sideSections = getSideSections(fil, reverse);
-                Map<Section, Integer> contribs = new HashMap<>();
+                Map<Section, Integer> contribs = new LinkedHashMap<>();
 
                 // Look for possible extensions on this side
                 final TreeSet<LinkedSection> allNeighbors = new TreeSet<>(Section.byCoordinate);

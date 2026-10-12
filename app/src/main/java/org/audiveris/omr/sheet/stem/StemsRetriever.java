@@ -184,7 +184,7 @@ public class StemsRetriever
     private List<Inter> systemBeams;
 
     /** Stems interpretations for this system. */
-    private final HashMap<Glyph, StemInter> systemStems = new HashMap<>();
+    private final HashMap<Glyph, StemInter> systemStems = new LinkedHashMap<>();
 
     /** Areas forbidden to stem candidates. */
     private final List<Area> noStemAreas;

@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -142,7 +142,7 @@ public class LedgersStep
 
         /** Map system -> builder. */
         public final Map<SystemInfo, LedgersBuilder> builders = //
-                Collections.synchronizedMap(new HashMap<>());
+                Collections.synchronizedMap(new LinkedHashMap<>());
 
         /**
          * Create a Context.

@@ -244,7 +244,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -312,13 +311,13 @@ public class PartwiseBuilder
     private final IsFirst isFirst = new IsFirst();
 
     /** Map of OctaveShift numbers, reset for every (physical) Part. */
-    private final Map<OctaveShiftInter, Integer> octaveShiftNumbers = new HashMap<>();
+    private final Map<OctaveShiftInter, Integer> octaveShiftNumbers = new LinkedHashMap<>();
 
     /** Map of Slur numbers, reset for every LogicalPart. */
-    private final Map<SlurInter, Integer> slurNumbers = new HashMap<>();
+    private final Map<SlurInter, Integer> slurNumbers = new LinkedHashMap<>();
 
     /** Map of Tuplet numbers, reset for every Measure. */
-    private final Map<TupletInter, Integer> tupletNumbers = new HashMap<>();
+    private final Map<TupletInter, Integer> tupletNumbers = new LinkedHashMap<>();
 
     /** Factory for ProxyMusic entities. */
     private final ObjectFactory factory = new ObjectFactory();
@@ -582,7 +581,7 @@ public class PartwiseBuilder
         if (isDrumLogicalPart) {
             // If so, retrieve drumset and export all midi instruments in xml preamble.
             final DrumSet drumSet = DrumSet.getInstance();
-            final Map<Integer, ScoreInstrument> instrumentMap = new HashMap<>();
+            final Map<Integer, ScoreInstrument> instrumentMap = new LinkedHashMap<>();
             for (DrumSound sound : DrumSound.values()) {
                 // Score instrument
                 ScoreInstrument scoreInstrument = new ScoreInstrument();
@@ -3584,7 +3583,7 @@ public class PartwiseBuilder
             staves = measure.getPart().getStaves();
 
             // Temporary map: staff -> staff's clefs
-            Map<Staff, List<ClefInter>> map = new HashMap<>();
+            Map<Staff, List<ClefInter>> map = new LinkedHashMap<>();
 
             for (ClefInter clef : measure.getClefs()) {
                 Staff staff = clef.getStaff();
@@ -3707,9 +3706,17 @@ public class PartwiseBuilder
                     AbstractChordInter chord = wedge.getChord(side);
 
                     if ((chord != null) && (chord.getMeasure() == measure)) {
+                        final Rational timeOffset = chord.getTimeOffset();
+
+                        if (timeOffset == null) {
+                            // Chord not placed in time: drop the wedge, not the whole measure
+                            logger.info("{} skipped, {} has no time offset", wedge, chord);
+                            continue;
+                        }
+
                         // We take the first note of the chord as reference
                         AbstractNoteInter refNote = (AbstractNoteInter) chord.getNotes().get(0);
-                        events.add(new TimedWedge(wedge, side, refNote, chord.getTimeOffset()));
+                        events.add(new TimedWedge(wedge, side, refNote, timeOffset));
                     }
                 }
             }

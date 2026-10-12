@@ -49,9 +49,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ConcurrentModificationException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Class <code>OmrFont</code> is meant to simplify the use of rendering symbols when using a
@@ -103,7 +103,7 @@ public abstract class OmrFont
      * Only the PLAIN style is cached.
      * If a different style is desired, the caller must derive it from the cached plain one.
      */
-    private static final Map<String, Map<Integer, Font>> fontCache = new HashMap<>();
+    private static final Map<String, Map<Integer, Font>> fontCache = new ConcurrentHashMap<>();
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -263,13 +263,7 @@ public abstract class OmrFont
     {
         final String key = font.getName().replaceAll(" ", "");
         logger.debug("Caching font: {} key:{}", font, key);
-        Map<Integer, Font> sizeMap = fontCache.get(key);
-
-        if (sizeMap == null) {
-            fontCache.put(key, sizeMap = new HashMap<>());
-        }
-
-        sizeMap.put(font.getSize(), font);
+        fontCache.computeIfAbsent(key, k -> new ConcurrentHashMap<>()).put(font.getSize(), font);
     }
 
     //------------//

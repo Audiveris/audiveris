@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -79,7 +79,7 @@ public class StackRhythm
     private boolean checkStavesAreFilled ()
     {
         // Use a temporary map: (staff -> chords)
-        Map<Staff, List<AbstractChordInter>> map = new HashMap<>();
+        Map<Staff, List<AbstractChordInter>> map = new LinkedHashMap<>();
 
         for (Staff staff : stack.getSystem().getStaves()) {
             if (!staff.isTablature()) {

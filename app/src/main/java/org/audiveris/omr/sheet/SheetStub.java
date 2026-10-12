@@ -85,7 +85,6 @@ import java.util.function.Predicate;
 
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -158,9 +157,11 @@ public class SheetStub
     /**
      * All SheetStub parameters, editable via the BookParameters dialog.
      * This structure replaces the deprecated individual Param instances.
+     * <p>
+     * Marshalled via {@link #getXmlParameters()}, so that saving never modifies this live field
+     * while other threads may be reading it.
      */
-    @XmlElement(name = "parameters")
-    private SheetParams parameters;
+    private volatile SheetParams parameters;
 
     /**
      * This is the sequence of steps already performed on this sheet.
@@ -199,9 +200,6 @@ public class SheetStub
 
     /** Related assembly instance, if any. */
     private SheetAssembly assembly;
-
-    /** A trick to keep parameters intact, even when nullified at marshal time. */
-    private SheetParams parametersMirror;
 
     // Deprecated persistent data
     //---------------------------
@@ -313,24 +311,38 @@ public class SheetStub
         pageRefs.add(pageRef);
     }
 
-    //--------------//
-    // afterMarshal //
-    //--------------//
-    @SuppressWarnings("unused")
-    private void afterMarshal (Marshaller m)
+    //------------------//
+    // getXmlParameters //
+    //------------------//
+    /**
+     * Marshal a pruned copy of the parameters, leaving the live field untouched.
+     * <p>
+     * Pruning in place (as formerly done in beforeMarshal) briefly nullified the field,
+     * which raced with sheets being processed in parallel while the book was stored.
+     *
+     * @return the pruned copy, or null if nothing specific remains
+     */
+    @XmlElement(name = "parameters")
+    private SheetParams getXmlParameters ()
     {
-        parameters = parametersMirror.duplicate();
+        final SheetParams params = parameters;
+
+        if (params == null) {
+            return null;
+        }
+
+        final SheetParams copy = params.duplicate();
+
+        return copy.prune() ? null : copy;
     }
 
-    //---------------//
-    // beforeMarshal //
-    //---------------//
+    //------------------//
+    // setXmlParameters //
+    //------------------//
     @SuppressWarnings("unused")
-    private void beforeMarshal (Marshaller m)
+    private void setXmlParameters (SheetParams parameters)
     {
-        if ((parameters != null) && parameters.prune()) {
-            parameters = null;
-        }
+        this.parameters = parameters;
     }
 
     //--------------//
@@ -1551,9 +1563,6 @@ public class SheetStub
 
         // 2/ set parents
         parameters.setParents(book);
-
-        // 3/ set parametersMirror
-        parametersMirror = parameters.duplicate();
     }
 
     //---------------//

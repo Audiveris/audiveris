@@ -1085,7 +1085,8 @@ public class RunTable
         getWeight();
 
         int hash = 3;
-        hash = (83 * hash) + Objects.hashCode(this.orientation);
+        // Enum ordinal rather than enum hashCode (identity-based, hence varying run to run)
+        hash = (83 * hash) + ((orientation != null) ? orientation.ordinal() : -1);
         hash = (83 * hash) + this.width;
         hash = (83 * hash) + this.height;
         hash = (83 * hash) + Objects.hashCode(this.weight);

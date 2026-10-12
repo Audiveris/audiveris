@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 import ij.process.ByteProcessor;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -60,12 +60,12 @@ public class TextsStep
     private static final Set<Class<?>> impactingClasses;
 
     static {
-        forLyrics = new HashSet<>();
+        forLyrics = new LinkedHashSet<>();
         forLyrics.add(LyricLineInter.class);
     }
 
     static {
-        impactingClasses = new HashSet<>();
+        impactingClasses = new LinkedHashSet<>();
         impactingClasses.addAll(forLyrics);
     }
 

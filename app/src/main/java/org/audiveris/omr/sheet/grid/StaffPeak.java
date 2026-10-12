@@ -45,7 +45,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.EnumSet;
-import java.util.Objects;
 
 /**
  * Class <code>StaffPeak</code> represents a peak in staff projection onto x-axis.
@@ -389,7 +388,8 @@ public class StaffPeak
     public int hashCode ()
     {
         int hash = 5;
-        hash = (71 * hash) + Objects.hashCode(staff);
+        // Staff ID rather than staff hashCode (identity-based, hence varying run to run)
+        hash = (71 * hash) + ((staff != null) ? staff.getId() : -1);
         hash = (71 * hash) + this.start;
 
         return hash;

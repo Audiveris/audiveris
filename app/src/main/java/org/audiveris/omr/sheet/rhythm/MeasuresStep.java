@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -64,7 +64,7 @@ public class MeasuresStep
     private static final Set<Class<?>> impactingClasses;
 
     static {
-        impactingClasses = new HashSet<>();
+        impactingClasses = new LinkedHashSet<>();
         impactingClasses.add(StaffBarlineInter.class);
     }
 

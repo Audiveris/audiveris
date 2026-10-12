@@ -41,7 +41,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -82,7 +82,7 @@ public class LedgersPostAnalysis
     private final Population popWidth = new Population();
 
     /** Collected info per ledger. */
-    private final Map<LedgerInter, Info> infoMap = new HashMap<>();
+    private final Map<LedgerInter, Info> infoMap = new LinkedHashMap<>();
 
     /** Discarded ledgers per system. */
     private final Map<SystemInfo, List<LedgerInter>> discarded = new TreeMap<>();

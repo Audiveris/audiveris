@@ -34,7 +34,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -431,7 +431,7 @@ public class CheckPanel<C>
             // Any & several bounds may have been modified by the user
             // Since the same constant can be used in several fields, we have to
             // take a snapshot of all constants values, before modifying any one
-            Map<NamedDouble, Double> values = new HashMap<>();
+            Map<NamedDouble, Double> values = new LinkedHashMap<>();
 
             for (Check<C> check : suite.getChecks()) {
                 values.put(check.getLowDouble(), check.getLowDouble().getValue());

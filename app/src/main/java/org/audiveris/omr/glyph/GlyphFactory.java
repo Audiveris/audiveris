@@ -41,7 +41,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +88,7 @@ public class GlyphFactory
     private final List<List<MarkedRun>> markedTable;
 
     /** Merges (child => parent). (numerical invariant: child > parent) */
-    private final Map<Integer, Integer> merges = new HashMap<>();
+    private final Map<Integer, Integer> merges = new LinkedHashMap<>();
 
     /** Most efficient way to use merging information. */
     private int[] lut;
