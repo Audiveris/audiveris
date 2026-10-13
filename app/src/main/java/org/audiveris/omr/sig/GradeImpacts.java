@@ -42,17 +42,19 @@ public abstract class GradeImpacts
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final NumberFormat nf1 = NumberFormat.getNumberInstance(Locale.US);
+    /** One format per thread, since NumberFormat is not thread-safe. */
+    private static final ThreadLocal<NumberFormat> NF1 = ThreadLocal.withInitial(() -> {
+        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
+        nf.setMaximumFractionDigits(1); // For a maximum of 1 decimal
+        return nf;
+    });
 
-    static {
-        nf1.setMaximumFractionDigits(1); // For a maximum of 1 decimal
-    }
-
-    private static final NumberFormat nf2 = NumberFormat.getNumberInstance(Locale.US);
-
-    static {
-        nf2.setMaximumFractionDigits(2); // For a maximum of 2 decimals
-    }
+    /** One format per thread, since NumberFormat is not thread-safe. */
+    private static final ThreadLocal<NumberFormat> NF2 = ThreadLocal.withInitial(() -> {
+        final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
+        nf.setMaximumFractionDigits(2); // For a maximum of 2 decimals
+        return nf;
+    });
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -223,8 +225,8 @@ public abstract class GradeImpacts
                 sb.append(" ");
             }
 
-            sb.append(nf1.format(getWeight(i))).append('/').append(getName(i)).append(':').append(
-                    nf2.format(getImpact(i)));
+            sb.append(NF1.get().format(getWeight(i))).append('/').append(getName(i)).append(':')
+                    .append(NF2.get().format(getImpact(i)));
         }
 
         return sb.toString();
