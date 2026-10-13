@@ -1614,13 +1614,12 @@ public class MeasureRhythm
             Voice voice = chord.getVoice();
 
             if (voice == null) {
-                if (mapping != null) {
-                    voice = mapping.ref(chord).getVoice();
-                } else {
-                    final AbstractChordInter prev = prevInVoice(chord);
-                    if (prev != null) {
-                        voice = prev.getVoice();
-                    }
+                // A chord absent from the mapping has no ref, fall back to an explicit relation
+                final AbstractChordInter ref = (mapping != null) ? mapping.ref(chord) : null;
+                final AbstractChordInter prev = (ref != null) ? ref : prevInVoice(chord);
+
+                if (prev != null) {
+                    voice = prev.getVoice();
                 }
             }
 
