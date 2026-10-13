@@ -268,7 +268,7 @@ public class ProcessingSwitches
                 false,
                 "Accept disconnected braced parts");
 
-        final Constant.Boolean implicitTuplets = new Constant.Boolean(false, "Implicit tuplets");
+        final Constant.Boolean implicitTuplets = new Constant.Boolean(true, "Implicit tuplets");
     }
 
     //-----------------//

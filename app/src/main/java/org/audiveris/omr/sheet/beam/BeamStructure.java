@@ -825,14 +825,25 @@ public class BeamStructure
 
         // Create the middle lines with proper vertical gap
         BeamLine line = lines.get(0);
+
+        // A blob as short as a head (or a pair of glued heads) is not a pair of beams
+        if (line.median.getX2() - line.median.getX1() < params.minBeamWidthHigh) {
+            return;
+        }
+
         double gutter = line.height - (2 * params.typicalHeight);
 
         if (gutter < 0) {
-            if (glyph.isVip()) {
-                logger.info("VIP glyph#{} not enough room for 2 beams", glyph.getId());
+            // Ink spread can fill the gutter entirely, leaving a band slightly under 2 beams
+            if (gutter < -params.typicalHeight * constants.maxStuckDeficit.getValue()) {
+                if (glyph.isVip()) {
+                    logger.info("VIP glyph#{} not enough room for 2 beams", glyph.getId());
+                }
+
+                return;
             }
 
-            return;
+            gutter = 0;
         }
 
         double newHeight = (line.height - gutter) / 2;
@@ -861,8 +872,14 @@ public class BeamStructure
                 median.getX2(),
                 median.getY2() + dy);
         lines.clear();
-        lines.add(new BeamLine(topMedian, newHeight));
-        lines.add(new BeamLine(botMedian, newHeight));
+
+        for (Line2D m : new Line2D[] { topMedian, botMedian }) {
+            final BeamLine newLine = new BeamLine(m, newHeight);
+            retrieveItems(newLine);
+            newLine.setVip(line.isVip());
+            lines.add(newLine);
+        }
+
         logger.debug("Adjusted {}", this);
     }
 
@@ -902,6 +919,10 @@ public class BeamStructure
         private final Constant.Boolean allowBorderCreation = new Constant.Boolean(
                 false,
                 "Allow the creation of non-found border");
+
+        private final Constant.Ratio maxStuckDeficit = new Constant.Ratio(
+                0.25,
+                "Maximum height deficit of 2 stuck beams, as ratio of typical beam height");
     }
 
     //---------------//
