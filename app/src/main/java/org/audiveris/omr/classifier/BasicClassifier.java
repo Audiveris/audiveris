@@ -88,8 +88,8 @@ public class BasicClassifier
     private static final Logger logger = LoggerFactory.getLogger(BasicClassifier.class);
 
     /**
-     * Seed of the initial weights and the sample order when reproducibility is enforced,
-     * the same one the train/test split uses.
+     * Seed of the initial weights and the sample order when reproducibility is enforced.
+     * Any constant value fits, independently of the seed SampleRepository uses.
      */
     private static final int REPRODUCIBLE_SEED = 123;
 
