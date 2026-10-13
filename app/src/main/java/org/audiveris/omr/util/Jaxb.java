@@ -449,12 +449,13 @@ public abstract class Jaxb
     public static class Double1Adapter
             extends XmlAdapter<String, Double>
     {
-        private static final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
-
-        static {
+        /** One format per thread, since NumberFormat is not thread-safe. */
+        private static final ThreadLocal<NumberFormat> NF = ThreadLocal.withInitial(() -> {
+            final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
             nf.setGroupingUsed(false);
             nf.setMaximumFractionDigits(1); // For a maximum of 1 decimal
-        }
+            return nf;
+        });
 
         @Override
         public String marshal (Double d)
@@ -464,7 +465,7 @@ public abstract class Jaxb
                 return null;
             }
 
-            return nf.format(d);
+            return NF.get().format(d);
         }
 
         @Override
@@ -488,12 +489,13 @@ public abstract class Jaxb
     public static class Double3Adapter
             extends XmlAdapter<String, Double>
     {
-        private static final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
-
-        static {
+        /** One format per thread, since NumberFormat is not thread-safe. */
+        private static final ThreadLocal<NumberFormat> NF = ThreadLocal.withInitial(() -> {
+            final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
             nf.setGroupingUsed(false);
             nf.setMaximumFractionDigits(3); // For a maximum of 3 decimals
-        }
+            return nf;
+        });
 
         @Override
         public String marshal (Double d)
@@ -503,7 +505,7 @@ public abstract class Jaxb
                 return null;
             }
 
-            return nf.format(d);
+            return NF.get().format(d);
         }
 
         @Override
@@ -527,12 +529,13 @@ public abstract class Jaxb
     public static class Double5Adapter
             extends XmlAdapter<String, Double>
     {
-        private static final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
-
-        static {
+        /** One format per thread, since NumberFormat is not thread-safe. */
+        private static final ThreadLocal<NumberFormat> NF = ThreadLocal.withInitial(() -> {
+            final NumberFormat nf = NumberFormat.getNumberInstance(Locale.US);
             nf.setGroupingUsed(false);
             nf.setMaximumFractionDigits(5); // For a maximum of 5 decimals
-        }
+            return nf;
+        });
 
         @Override
         public String marshal (Double d)
@@ -542,7 +545,7 @@ public abstract class Jaxb
                 return null;
             }
 
-            return nf.format(d);
+            return NF.get().format(d);
         }
 
         @Override
