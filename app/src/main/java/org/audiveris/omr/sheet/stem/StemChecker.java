@@ -340,7 +340,8 @@ public class StemChecker
             final int dx = scale.toPixels(constants.beltMarginDx);
             final Point2D start = stick.getStartPoint(VERTICAL);
             final Point2D stop = stick.getStopPoint(VERTICAL);
-            final double halfWidth = (scale.getMaxStem() - 1) / 2.0;
+            // At least 0.5, else a 1-pixel stem off an integer abscissa gives an empty row range
+            final double halfWidth = Math.max(0.5, (scale.getMaxStem() - 1) / 2.0);
 
             {
                 // Sanity check
