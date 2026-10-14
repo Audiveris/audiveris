@@ -365,6 +365,16 @@ public class NoteHeadsBuilder
             watch.start("Staff #" + staff.getId() + " range");
             ch.addAll(processStaff(staff, false));
 
+            // Boost head shapes that don't expect stem, before any grade-based purge below:
+            // a stemless head's raw (un-boosted) grade must not be compared, and lose, against a
+            // stem-based competitor's grade (e.g. a spurious seed-based candidate at the same
+            // spot) before it gets the credit the boost is meant to give it.
+            for (Inter inter : ch) {
+                if (ShapeSet.StemLessHeads.contains(inter.getShape())) {
+                    inter.increase(getStemLessBoost());
+                }
+            }
+
             // Remove duplicates for current staff
             Collections.sort(ch, Inters.byFullAbscissa);
             watch.start("Staff #" + staff.getId() + " duplicates");
@@ -396,11 +406,6 @@ public class NoteHeadsBuilder
             tally.purgeRemovedHeads();
 
             for (Inter inter : ch) {
-                // Boost head shapes that don't expect stem
-                if (ShapeSet.StemLessHeads.contains(inter.getShape())) {
-                    inter.increase(getStemLessBoost());
-                }
-
                 // Keep created heads in staff
                 staff.addNote((AbstractNoteInter) inter);
             }
@@ -1262,7 +1267,7 @@ public class NoteHeadsBuilder
                 "Vertical margin for intercepting stem seed around a target pitch");
 
         private final Constant.Ratio stemLessBoost = new Constant.Ratio(
-                0, // Was 0.38,
+                0.38,
                 "How much do we boost stem-less heads (always isolated)");
 
         private final Constant.Ratio crossBoost = new Constant.Ratio(
@@ -1407,6 +1412,8 @@ public class NoteHeadsBuilder
     {
         final double maxDistanceLow;
 
+        final double maxDistanceHigh;
+
         final double reallyBadDistance;
 
         final int maxTemplateDx;
@@ -1427,6 +1434,7 @@ public class NoteHeadsBuilder
         Parameters (Scale scale)
         {
             maxDistanceLow = Template.maxDistanceLow();
+            maxDistanceHigh = Template.maxDistanceHigh();
             reallyBadDistance = Template.reallyBadDistance();
 
             maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
@@ -1997,11 +2005,19 @@ public class NoteHeadsBuilder
                 for (Shape shape : shapeSet) {
                     PixelDistance bestLoc = null;
 
+                    // Stemless heads (whole/breve) cannot rely on a nearby stem to compensate
+                    // for a degraded template match (e.g. touching tie, accidental or neighbor
+                    // head), so admit weaker raw matches here and let isWeakStemLessHead(),
+                    // which already applies a dedicated boost, decide whether to keep them.
+                    final double admitDistance = ShapeSet.StemLessHeads.contains(shape)
+                            ? params.maxDistanceHigh
+                            : params.maxDistanceLow;
+
                     for (int yOffset : yOffsets) {
                         final int y = y0 + yOffset;
                         PixelDistance loc = eval(shape, x0, y, MIDDLE_LEFT);
 
-                        if ((loc != null) && (loc.d <= params.maxDistanceLow)) {
+                        if ((loc != null) && (loc.d <= admitDistance)) {
                             if ((bestLoc == null) || (bestLoc.d > loc.d)) {
                                 bestLoc = loc;
                             }
