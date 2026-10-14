@@ -241,7 +241,7 @@ using the mandatory `.toolTipText` suffix:
 | :---   | :---      | :---     |
 | English | Shape.properties | MORDENT_INVERTED.toolTipText = Mordent with no vertical line |
 | French | Shape_fr.properties | MORDENT_INVERTED.toolTipText = Mordant sans ligne verticale |
-| Romanian | Shape_ro.properties | MORDENT_INVERTED.toolTipText = Mordent fÄrÄ linie verticalÄ |
+| Romanian | Shape_ro.properties | MORDENT_INVERTED.toolTipText = Mordent fără linie verticală |
 
 
 
