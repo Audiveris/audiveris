@@ -608,7 +608,6 @@ public class NeuralNetwork
 
         final int patterns = inputs.length;
         final long startTime = System.currentTimeMillis();
-        final double multiplier = 1.0 - (learningRate * lambda); // For L2 regularization
 
         // Allocate needed arrays
         final double[] gottenOutputs = new double[outputSize];
@@ -620,6 +619,11 @@ public class NeuralNetwork
 
         for (int epoch = 1; epoch <= epochs; epoch++) {
             epochsTotal++;
+
+            // The rate falls linearly toward zero over the epochs, so the weights settle instead of
+            // following the last samples of the final epoch.
+            final double rate = learningRate * (epochs - epoch + 1) / epochs;
+            final double multiplier = 1.0 - (rate * lambda); // For L2 regularization
 
             // Loop on every pattern (batch size = 1)
             for (int ip = 0; ip < patterns; ip++) {
@@ -650,7 +654,7 @@ public class NeuralNetwork
                 // Update the output weights
                 for (int io = outputSize - 1; io >= 0; io--) {
                     for (int ih = hiddenSize - 1; ih >= 0; ih--) {
-                        final double dw = (learningRate * outputGrads[io] * hiddens[ih]) //
+                        final double dw = (rate * outputGrads[io] * hiddens[ih]) //
                                 + (momentum * outputDeltas[io][ih + 1]);
                         outputWeights[io][ih + 1] += dw;
                         outputWeights[io][ih + 1] *= multiplier; // Regularization
@@ -658,7 +662,7 @@ public class NeuralNetwork
                     }
 
                     // Bias
-                    final double dw = (learningRate * outputGrads[io]) //
+                    final double dw = (rate * outputGrads[io]) //
                             + (momentum * outputDeltas[io][0]);
                     outputWeights[io][0] += dw;
                     outputWeights[io][0] *= multiplier; // Regularization
@@ -668,7 +672,7 @@ public class NeuralNetwork
                 // Update the hidden weights
                 for (int ih = hiddenSize - 1; ih >= 0; ih--) {
                     for (int i = inputSize - 1; i >= 0; i--) {
-                        final double dw = (learningRate * hiddenGrads[ih] * inputs[ip][i]) //
+                        final double dw = (rate * hiddenGrads[ih] * inputs[ip][i]) //
                                 + (momentum * hiddenDeltas[ih][i + 1]);
                         hiddenWeights[ih][i + 1] += dw;
                         hiddenWeights[ih][i + 1] *= multiplier; // Regularization
@@ -676,7 +680,7 @@ public class NeuralNetwork
                     }
 
                     // Bias
-                    final double dw = (learningRate * hiddenGrads[ih]) //
+                    final double dw = (rate * hiddenGrads[ih]) //
                             + (momentum * hiddenDeltas[ih][0]);
                     hiddenWeights[ih][0] += dw;
                     hiddenWeights[ih][0] *= multiplier; // Regularization
