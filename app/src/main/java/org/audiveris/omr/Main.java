@@ -40,6 +40,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -203,6 +204,16 @@ public class Main
      */
     public static void main (String[] args)
     {
+        System.out.println(Runtime.version());
+        System.out.println();
+        System.out.println("Charset.defaultCharset(): " + Charset.defaultCharset());
+        System.out.println("file.encoding property:" + System.getProperty("file.encoding"));
+        System.out.println("native.encoding property:" + System.getProperty("native.encoding"));
+        System.out.println("sun.jnu.encoding property:" + System.getProperty("sun.jnu.encoding"));
+        System.out.println("stdout.encoding property:" + System.getProperty("stdout.encoding"));
+        System.out.println(
+                "sun.stdout.encoding property:" + System.getProperty("sun.stdout.encoding"));
+
         // Log files
         LogUtil.addFileAppender();
 
