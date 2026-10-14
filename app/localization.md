@@ -168,5 +168,82 @@ DAL_SEGNO.text = Dal segno
 DAL_SEGNO.toolTipText = D.S.: Repeat from the sign
 ```
 
+
+## Work progress
+
+### 24-aug-2026
+
+First version of this documentation.
+
+Start of French localization
+
+Start of restructuring the localization mechanisms, regardless of the language.
+
+### 14-oct-2026
+
+We now have support close to completion for 3 languages: English, French, Romanian
+
+This support is still limited to the GUI items.
+
+Beyond the UI-oriented classes, thanks to the `ResourceUtil.getBundle()` method,
+localization has been extended to the classes:
+- `OmrStep`
+- `ProcessingSwitch`
+- `Shape`
+- `ShapeSet`
+- `TextRole` 
+
+We can now clean up and rationalize the concepts and names used in localization,
+as described here under.
+
+#### Name
+
+An entity has a `name`, which is a Java legal identifier composed of letters, digits and underscore.
+This identifier is used in the Java source code and in the persistent files like the `.omr` files.  
+
+In the source code, this name can be obtained via the expression:
+`<entity>.getName()`  
+-- unless a predefined `name()` method already exists
+(as is the case for enumerations).
+
+It is not impacted by localization but is often used as a **key** in properties files  
+Example: `MORDENT_INVERTED` is one of the many items in the `Shape` enumeration.
+
+#### Text
+
+While the first UI implementations used to display the entity `name`,
+we now have chosen to display a related **`text`**, whose precise value depends on the locale selected by the end user.  
+
+In the source code, this text value can be obtained via the expression:
+`<entity>.getText()`  
+
+The actual value of this entity text is defined in the dedicated resource file,
+using the mandatory `.text` suffix:
+
+| Locale | File name | Statement|
+| :---   | :---      | :---     |
+| English | Shape.properties | MORDENT_INVERTED.text = Upper mordent |
+| French | Shape_fr.properties | MORDENT_INVERTED.text = Mordant ascendant |
+| Romanian | Shape_ro.properties | MORDENT_INVERTED.text = Mordent superior |
+
+#### Tip
+
+A user-friendly **`tip`** can sometimes by added to the entity,
+meant to be displayed when the user remains on the displayed entity.
+
+In the source code, this tip value can be obtained via the expression:
+`<entity>.getTip()`  
+
+The actual value of this entity tip is defined in the dedicated resource file,
+using the mandatory `.toolTipText` suffix:
+
+| Locale | File name | Statement|
+| :---   | :---      | :---     |
+| English | Shape.properties | MORDENT_INVERTED.toolTipText = Mordent with no vertical line |
+| French | Shape_fr.properties | MORDENT_INVERTED.toolTipText = Mordant sans ligne verticale |
+| Romanian | Shape_ro.properties | MORDENT_INVERTED.toolTipText = Mordent fÄrÄ linie verticalÄ |
+
+
+
 ---
 [JSR296]:   https://www.oracle.com/technical-resources/articles/javase/swingappfr.html

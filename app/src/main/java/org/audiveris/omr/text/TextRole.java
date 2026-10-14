@@ -96,33 +96,33 @@ public enum TextRole
 
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** User-friendly description. */
-    private String description;
+    /** Localized description. */
+    private String text;
 
-    /** User-friendly explanation. */
+    /** Localised explanation. */
     private String tip;
 
     //~ Methods ------------------------------------------------------------------------------------
 
-    //----------------//
-    // getDescription //
-    //----------------//
+    //---------//
+    // getText //
+    //---------//
     /**
-     * Report a user-friendly description of this text role.
+     * Report a localized text for this role.
      *
-     * @return the text role description
+     * @return the role localized text
      */
-    public String getDescription ()
+    public String getText ()
     {
-        if (description == null) {
-            description = resources.getString(name() + ".text");
+        if (text == null) {
+            text = resources.getString(name() + ".text");
 
-            if (description == null) {
-                description = name(); // Better than nothing!
+            if (text == null) {
+                text = name(); // Better than nothing!
             }
         }
 
-        return description;
+        return text;
     }
 
     //--------//
@@ -166,7 +166,7 @@ public enum TextRole
     @Override
     public String toString ()
     {
-        return getDescription();
+        return getText(); // Localized!
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
