@@ -71,6 +71,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -81,9 +82,11 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -361,6 +364,7 @@ public class InterBoard
         roleCombo.getField().setMaximumRowCount(TextRole.values().length);
         roleCombo.addActionListener(paramAction);
         roleCombo.setVisible(false);
+        roleCombo.getField().setRenderer(new RoleRenderer());
         builder.addRaw(roleCombo.getField()).xyw(3, r, 4);
 
         r += 2; // --------------------------------
@@ -912,6 +916,38 @@ public class InterBoard
 
                 popup.show(getBody(), e.getX(), e.getY() + musicPane.getHeight());
             }
+        }
+    }
+
+    private static class RoleRenderer
+            extends DefaultListCellRenderer
+    {
+
+        public RoleRenderer ()
+        {
+        }
+
+        @Override
+        public Component getListCellRendererComponent (JList list,
+                                                       Object value,
+                                                       int index,
+                                                       boolean isSelected,
+                                                       boolean cellHasFocus)
+        {
+            JComponent c = (JComponent) super.getListCellRendererComponent(
+                    list,
+                    value,
+                    index,
+                    isSelected,
+                    cellHasFocus);
+
+            if (value instanceof TextRole && isSelected) {
+                list.setToolTipText(((TextRole) value).getTip());
+            } else if (!(value instanceof TextRole) && isSelected) {
+                list.setToolTipText("");
+            }
+
+            return c;
         }
     }
 }

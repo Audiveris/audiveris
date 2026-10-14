@@ -746,13 +746,13 @@ public class ShapeSet
     // getText //
     //---------//
     /**
-     * Report the (localized) text for this ShapeSet instance.
+     * Report the localized text for this ShapeSet instance.
      *
      * @return the localized text
      */
     public String getText ()
     {
-        return resources.getString(getClass().getSimpleName() + "." + getName() + ".text");
+        return resources.getString(getName() + ".text");
     }
 
     //----------//

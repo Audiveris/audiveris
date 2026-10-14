@@ -35,6 +35,7 @@ import org.audiveris.omr.sig.inter.MetronomeInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import org.audiveris.omr.util.ResourceUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 
 /**
@@ -90,7 +92,59 @@ public enum TextRole
 
     private static final Logger logger = LoggerFactory.getLogger(TextRole.class);
 
+    private static final ResourceBundle resources = ResourceUtil.getBundle(TextRole.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
+
+    /** User-friendly description. */
+    private String description;
+
+    /** User-friendly explanation. */
+    private String tip;
+
     //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // getDescription //
+    //----------------//
+    /**
+     * Report a user-friendly description of this text role.
+     *
+     * @return the text role description
+     */
+    public String getDescription ()
+    {
+        if (description == null) {
+            description = resources.getString(name() + ".text");
+
+            if (description == null) {
+                description = name(); // Better than nothing!
+            }
+        }
+
+        return description;
+    }
+
+    //--------//
+    // getTip //
+    //--------//
+    /**
+     * Report a user-friendly explanation of this text role.
+     *
+     * @return the text role explanation
+     */
+    public String getTip ()
+    {
+        if (tip == null) {
+            tip = resources.getString(name() + ".toolTipText");
+
+            if (tip == null) {
+                tip = name(); // Better than nothing!
+            }
+        }
+
+        return tip;
+    }
 
     //-----------//
     // isCreator //
@@ -104,6 +158,15 @@ public enum TextRole
     {
         return (this == CreatorArranger) || (this == CreatorComposer) || (this == CreatorLyricist)
                 || (this == Creator);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return getDescription();
     }
 
     //~ Static Methods -----------------------------------------------------------------------------

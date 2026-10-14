@@ -370,7 +370,7 @@ public class CLI
         buf.append("\nSheet steps are in order:");
 
         for (OmrStep step : OmrStep.values()) {
-            buf.append(String.format("%n    %-10s : %s", step.toString(), step.getDescription()));
+            buf.append(String.format("%n    %-10s : %s", step.name(), step.getTip()));
         }
 
         buf.append("\n");

@@ -161,7 +161,7 @@ public class StepMenu
         {
             super(step.toString());
             this.step = step;
-            putValue(SHORT_DESCRIPTION, step.getDescription());
+            putValue(SHORT_DESCRIPTION, step.getTip());
         }
 
         @Override

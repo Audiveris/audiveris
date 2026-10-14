@@ -84,6 +84,9 @@ public enum OmrStep
     /** Description of the step. */
     private String description;
 
+    /** User-friendly explanation of the step. */
+    private String tip;
+
     /** Helper for step implementation. */
     private final AbstractStep helper;
 
@@ -156,7 +159,7 @@ public enum OmrStep
             description = resources.getString(name() + ".text");
 
             if (description == null) {
-                description = toString(); // Better than nothing!
+                description = name(); // Better than nothing!
             }
         }
 
@@ -174,6 +177,27 @@ public enum OmrStep
     public SheetTab getSheetTab ()
     {
         return helper.getSheetTab();
+    }
+
+    //--------//
+    // getTip //
+    //--------//
+    /**
+     * Report a user-friendly explanation of this OmrStep.
+     *
+     * @return the step explanation
+     */
+    public String getTip ()
+    {
+        if (tip == null) {
+            tip = resources.getString(name() + ".toolTipText");
+
+            if (tip == null) {
+                tip = name(); // Better than nothing!
+            }
+        }
+
+        return tip;
     }
 
     //--------//
