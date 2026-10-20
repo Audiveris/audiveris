@@ -299,11 +299,14 @@ public class BookActions
 
         defaultBookPath = Paths.get(bookSansExt + ext);
 
+        // Use the bare "pdf" extension for the file filter (the full suffix is "-print.pdf")
+        final String pdfExt = OMR.PRINT_EXTENSION.substring(OMR.PRINT_EXTENSION.lastIndexOf('.') + 1);
+
         return UIUtil.pathChooser(
                 true,
                 OMR.gui.getFrame(),
                 defaultBookPath,
-                filter(ext),
+                filter(pdfExt),
                 resources.getString("chooseBookPrint"));
     }
 
@@ -320,11 +323,14 @@ public class BookActions
         final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
         final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ext);
 
+        // Use the bare "pdf" extension for the file filter (the full suffix is "-print.pdf")
+        final String pdfExt = OMR.PRINT_EXTENSION.substring(OMR.PRINT_EXTENSION.lastIndexOf('.') + 1);
+
         return UIUtil.pathChooser(
                 true,
                 OMR.gui.getFrame(),
                 defaultSheetPath,
-                filter(ext),
+                filter(pdfExt),
                 resources.getString("chooseSheetPrint"));
     }
 

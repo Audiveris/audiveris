@@ -388,8 +388,22 @@ public abstract class UIUtil
         final String[] bareExtensions = new String[extensions.length];
 
         for (int i = 0; i < extensions.length; i++) {
-            final String ext = extensions[i];
-            bareExtensions[i] = ext.startsWith(".") ? ext.substring(1) : ext;
+            String ext = extensions[i];
+
+            // Strip a leading dot if present
+            if (ext.startsWith(".")) {
+                ext = ext.substring(1);
+            }
+
+            // FileNameExtensionFilter does not accept extensions containing '.' or '*',
+            // so for multi-part suffixes (e.g. "opus.mxl", "print.pdf") keep only the last part.
+            final int lastDot = ext.lastIndexOf('.');
+
+            if (lastDot >= 0) {
+                ext = ext.substring(lastDot + 1);
+            }
+
+            bareExtensions[i] = ext;
         }
 
         return new SystemFileChooser.FileNameExtensionFilter(
