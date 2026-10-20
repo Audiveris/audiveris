@@ -35,12 +35,16 @@ import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.util.SeparableMenu;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import static java.text.MessageFormat.format;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -52,8 +56,6 @@ import javax.swing.JMenuItem;
 
 /**
  * Class <code>InterMenu</code> builds a menu around a given inter.
- * <p>
- * TODO: I18N of this class
  *
  * @author Hervé Bitteur
  */
@@ -62,6 +64,9 @@ public class InterMenu
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterMenu.class);
+
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(InterMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -299,7 +304,8 @@ public class InterMenu
             if (source == dumpItem) {
                 logger.info("{}", relation.dumpOf(sig));
             } else if (source == deleteItem) {
-                if (OMR.gui.displayConfirmation("Remove " + relation.getName() + " relation?")) {
+                if (OMR.gui.displayConfirmation(
+                        format(resources.getString("removeRelation.pattern"), relation.getName()))) {
                     interController.unlink(sig, relation);
                 }
             }

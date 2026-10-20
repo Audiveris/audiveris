@@ -123,6 +123,9 @@ import org.audiveris.omr.util.VoidTask;
 import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.Wrapper;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,6 +142,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_BYTE_GRAY;
+import static java.text.MessageFormat.format;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -185,6 +189,9 @@ public class InterController
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(InterController.class);
+
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(InterController.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -2654,11 +2661,11 @@ public class InterController
                 return;
             }
 
-            if ((inters.size() == 1) //
-                    || AdvancedTopics.allowMultipleDelete() //
+            if ((inters.size() == 1)
+                    || AdvancedTopics.allowMultipleDelete()
                     || OMR.gui.displayConfirmation(
-                            "Do you confirm this multiple deletion?",
-                            "Deletion of " + inters.size() + " inters")) {
+                            resources.getString("confirmMultipleDelete"),
+                            format(resources.getString("confirmMultipleDeleteTitle.pattern"), inters.size()))) {
                 removeInters(inters);
             }
         }
