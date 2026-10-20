@@ -624,8 +624,14 @@ public class BookActions
         final Path exportPathSansExt = BookManager.getDefaultExportPathSansExt(book);
 
         if (exportPathSansExt != null) {
-            //TODO: check/prompt for overwrite??? (perhaps several files)
-            return new ExportBookTask(book, exportPathSansExt);
+            final String ext = BookManager.getExportExtension();
+            final Path exportPath = Paths.get(exportPathSansExt + ext);
+
+            if (isTargetConfirmed(exportPath)) {
+                return new ExportBookTask(book, exportPathSansExt);
+            } else {
+                return exportBookAs(e);
+            }
         } else {
             return exportBookAs(e);
         }
@@ -649,9 +655,7 @@ public class BookActions
             return null;
         }
 
-        // Let user select book export target
-        //TODO: if we have several movements in this book, export will result in several files...
-        //TODO: so, how can we check/prompt for overwrite?
+        // Let user select book export target (the OS save dialog already handles overwrite confirmation)
         final String ext = BookManager.getExportExtension();
         final Path sansExt = BookManager.getDefaultExportPathSansExt(book);
         final Path targetPath = Paths.get(sansExt + ext);
@@ -662,7 +666,7 @@ public class BookActions
                 filter(ext),
                 resources.getString("chooseBookExport"));
 
-        if ((bookPath == null) || !isTargetConfirmed(bookPath)) {
+        if (bookPath == null) {
             return null;
         }
 
@@ -705,7 +709,7 @@ public class BookActions
                 filter(ext),
                 resources.getString("chooseSheetExport"));
 
-        if ((sheetPath == null) || !isTargetConfirmed(sheetPath)) {
+        if (sheetPath == null) {
             return null;
         }
 
@@ -994,10 +998,10 @@ public class BookActions
             return null;
         }
 
-        // Select target book print path
+        // Select target book print path (the OS save dialog already handles overwrite confirmation)
         final Path bookPrintPath = choosePrintPath(book, "");
 
-        if ((bookPrintPath == null) || !isTargetConfirmed(bookPrintPath)) {
+        if (bookPrintPath == null) {
             return null;
         }
 
@@ -1022,10 +1026,10 @@ public class BookActions
             return null;
         }
 
-        // Let the user select a PDF output file
+        // Let the user select a PDF output file (the OS save dialog already handles overwrite confirmation)
         final Path sheetPrintPath = choosePrintPath(stub, "");
 
-        if ((sheetPrintPath == null) || !isTargetConfirmed(sheetPrintPath)) {
+        if (sheetPrintPath == null) {
             return null;
         }
 
