@@ -43,12 +43,16 @@ import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import static java.text.MessageFormat.format;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,6 +75,9 @@ public class InterListMenu
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterListMenu.class);
+
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(InterListMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -100,13 +107,13 @@ public class InterListMenu
                                      final List<Inter> sysInters)
     {
         final JMenuItem item = new JMenuItem(
-                "Delete " + sysInters.size() + " inters for System #" + system.getId() + ":");
+                format(resources.getString("deleteInters.pattern"), sysInters.size(), system.getId()));
 
         // To delete all listed inters when item is clicked upon
         item.addActionListener( (ActionEvent e) -> {
-            if (AdvancedTopics.allowMultipleDelete() //
+            if (AdvancedTopics.allowMultipleDelete()
                     || OMR.gui.displayConfirmation(
-                            "Do you confirm the removal of " + sysInters.size() + " inter(s)?")) {
+                            format(resources.getString("confirmDeleteInters.pattern"), sysInters.size()))) {
                 sheet.getInterController().removeInters(sysInters);
             }
         });
