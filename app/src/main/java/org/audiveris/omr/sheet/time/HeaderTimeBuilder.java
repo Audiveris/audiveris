@@ -48,6 +48,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
+import org.audiveris.omr.sig.relation.BarGroupRelation;
 import org.audiveris.omr.util.ChartPlotter;
 
 import org.slf4j.Logger;
@@ -232,11 +233,19 @@ public class HeaderTimeBuilder
      * The veto from barlines is limited to non-indented systems.
      * This is so because the header of an indented system (the starting system of a movement)
      * should always contain a time signature.
+     * <p>
+     * A barline grouped with another one keeps its veto even there: a double bar or a repeat sign
+     * is not a stroke read across a time signature, and an indented system may open on one
+     * without any time signature.
      */
     @Override
     protected boolean canVeto (Inter neighbor)
     {
-        return !system.isIndented() || !(neighbor instanceof BarlineInter);
+        if (!system.isIndented() || !(neighbor instanceof BarlineInter)) {
+            return true;
+        }
+
+        return !system.getSig().getRelations(neighbor, BarGroupRelation.class).isEmpty();
     }
 
     //---------------//
