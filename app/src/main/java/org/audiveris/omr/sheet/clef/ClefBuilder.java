@@ -226,6 +226,50 @@ public class ClefBuilder
         }
     }
 
+    //--------------//
+    // findWeakClef //
+    //--------------//
+    /**
+     * Retrieve a header clef too weak to be registered on its own, when its kind is one
+     * this staff shows clearly on other systems of the sheet.
+     * <p>
+     * A real clef can grade low: a treble clef with its octave mark next to a part name, for
+     * instance. A staff that prints no clef shows none clearly anywhere, so it gets none here.
+     * Only the best candidate is considered, so that a clef change is not forced back to the
+     * clef of the other systems.
+     *
+     * @param kinds the clef kinds clearly read for this staff on other systems
+     * @return the clef registered, or null
+     */
+    public ClefInter findWeakClef (Set<ClefKind> kinds)
+    {
+        outerRect = getOuterRect();
+        innerRect = getInnerRect(outerRect);
+
+        Map<ClefKind, ClefInter> bestMap = getBestMap(true);
+
+        if (bestMap.isEmpty()) {
+            bestMap = getBestMap(false);
+        }
+
+        ClefInter best = null;
+
+        for (ClefInter clef : bestMap.values()) {
+            if ((best == null) || (clef.getGrade() > best.getGrade())) {
+                best = clef;
+            }
+        }
+
+        if ((best == null) || !kinds.contains(best.getKind())) {
+            return null;
+        }
+
+        registerClefs(Arrays.asList(best));
+        selectClef();
+
+        return staff.getHeader().clef;
+    }
+
     //-----------//
     // bestGrade //
     //-----------//
