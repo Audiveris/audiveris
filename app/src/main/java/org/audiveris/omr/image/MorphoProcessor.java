@@ -24,6 +24,19 @@ package org.audiveris.omr.image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SymbolLookup;
+import java.lang.foreign.ValueLayout;
+import java.lang.invoke.MethodHandle;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.LongAdder;
+
 import ij.process.ByteProcessor;
 
 /**
@@ -46,6 +59,35 @@ public class MorphoProcessor
 
     private static final int MINUS = -1;
 
+    private static final String LIBRARY_PROPERTY = "audiveris.morpho.library";
+
+    private static final String WORKER_PROPERTY = "audiveris.morpho.worker";
+
+    private static final String NATIVE_SYMBOL = "musicspace_morpho_close_v1";
+
+    private static final int PROBE_RECORD_BYTES = 12;
+
+    private static final long MAX_NATIVE_BYTES = 64L * 1024 * 1024;
+
+    private static final Arena NATIVE_ARENA = Arena.ofShared();
+
+    private static final NativeState NATIVE_STATE = loadNativeState();
+
+    private static final AtomicBoolean NATIVE_CIRCUIT_OPEN =
+            new AtomicBoolean(!NATIVE_STATE.available());
+
+    private static final LongAdder NATIVE_CALLS = new LongAdder();
+
+    private static final LongAdder FALLBACK_CALLS = new LongAdder();
+
+    private static final ThreadLocal<NativeBuffers> NATIVE_BUFFERS =
+            ThreadLocal.withInitial(NativeBuffers::new);
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(MorphoProcessor::reportNativeSummary,
+                                                         "morpho-native-summary"));
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     private final StructureElement se; //, down_se, up_se;
@@ -66,9 +108,137 @@ public class MorphoProcessor
 
     private final int[][] pg_minus;
 
+    private final MemorySegment flattenedProbe;
+
+    private final long flattenedProbeLength;
+
     int width;
 
     int height;
+
+    private static NativeState loadNativeState ()
+    {
+        try {
+            String library = System.getProperty(LIBRARY_PROPERTY);
+            if (library == null || library.isBlank()) {
+                throw new IOException("library_property_missing");
+            }
+
+            SymbolLookup lookup = SymbolLookup.libraryLookup(Path.of(library), NATIVE_ARENA);
+            MemorySegment symbol = lookup.findOrThrow(NATIVE_SYMBOL);
+            MethodHandle handle = Linker.nativeLinker().downcallHandle(
+                    symbol,
+                    FunctionDescriptor.of(
+                            ValueLayout.JAVA_INT,
+                            ValueLayout.ADDRESS,
+                            ValueLayout.JAVA_LONG,
+                            ValueLayout.ADDRESS,
+                            ValueLayout.JAVA_LONG,
+                            ValueLayout.ADDRESS,
+                            ValueLayout.JAVA_LONG,
+                            ValueLayout.JAVA_LONG,
+                            ValueLayout.JAVA_LONG,
+                            ValueLayout.ADDRESS,
+                            ValueLayout.JAVA_LONG));
+            return new NativeState(handle, null);
+        } catch (Throwable ex) {
+            return new NativeState(null, ex.getClass().getSimpleName());
+        }
+    }
+
+    private static MemorySegment flattenProbe (int[][] probe)
+    {
+        if (probe == null || probe.length == 0) {
+            throw new IllegalArgumentException("probe_empty");
+        }
+
+        long bytes = Math.multiplyExact((long) probe.length, PROBE_RECORD_BYTES);
+        MemorySegment flattened = NATIVE_ARENA.allocate(bytes, Integer.BYTES);
+        for (int index = 0; index < probe.length; index++) {
+            int[] row = probe[index];
+            if (row == null || row.length < 3) {
+                throw new IllegalArgumentException("probe_row_short_" + index);
+            }
+
+            long offset = (long) index * PROBE_RECORD_BYTES;
+            flattened.set(ValueLayout.JAVA_INT, offset, row[0]);
+            flattened.set(ValueLayout.JAVA_INT, offset + Integer.BYTES, row[1]);
+            flattened.set(ValueLayout.JAVA_INT, offset + (2L * Integer.BYTES), row[2]);
+        }
+        return flattened.asReadOnly();
+    }
+
+    private static void reportNativeSummary ()
+    {
+        System.err.println("MORPHO_NATIVE_SUMMARY native_calls=" + NATIVE_CALLS.sum()
+                                   + " fallback_calls=" + FALLBACK_CALLS.sum()
+                                   + " circuit_open=" + NATIVE_CIRCUIT_OPEN.get());
+    }
+
+    private static final class NativeState
+    {
+        private final MethodHandle handle;
+
+        private final String failure;
+
+        private NativeState (MethodHandle handle,
+                             String failure)
+        {
+            this.handle = handle;
+            this.failure = failure;
+        }
+
+        private boolean available ()
+        {
+            return handle != null;
+        }
+    }
+
+    private static final class NativeBuffers
+    {
+        private Arena arena;
+
+        private MemorySegment input;
+
+        private MemorySegment scratch;
+
+        private MemorySegment output;
+
+        private long capacity;
+
+        private void ensure (long bytes)
+                throws IOException
+        {
+            if (bytes <= 0 || bytes > MAX_NATIVE_BYTES) {
+                throw new IOException("native_plane_too_large");
+            }
+            if (capacity >= bytes) {
+                return;
+            }
+
+            Arena replacement = Arena.ofConfined();
+            try {
+                MemorySegment replacementInput = replacement.allocate(bytes, 1);
+                MemorySegment replacementScratch = replacement.allocate(bytes, 1);
+                MemorySegment replacementOutput = replacement.allocate(bytes, 1);
+                Arena previous = arena;
+                arena = replacement;
+                input = replacementInput;
+                scratch = replacementScratch;
+                output = replacementOutput;
+                capacity = bytes;
+                if (previous != null) {
+                    previous.close();
+                }
+            } catch (Throwable ex) {
+                replacement.close();
+                if (ex instanceof IOException io) {
+                    throw io;
+                }
+                throw new IOException("native_buffer_allocation_failed", ex);
+            }
+        }
+    }
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -90,6 +260,8 @@ public class MorphoProcessor
         pg = se.getVect();
         pg_plus = plus_se.getVect();
         pg_minus = minus_se.getVect();
+        flattenedProbe = flattenProbe(pg);
+        flattenedProbeLength = pg.length;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -104,6 +276,25 @@ public class MorphoProcessor
      * @param ip the ImageProcessor
      */
     public void close (ByteProcessor ip)
+    {
+        try {
+            byte[] pixels = (byte[]) ip.getPixels();
+            closeWithWorker(ip.getWidth(), ip.getHeight(), pixels);
+            NATIVE_CALLS.increment();
+            return;
+        } catch (Exception ex) {
+            FALLBACK_CALLS.increment();
+        }
+
+        closeJavaFallback(ip);
+    }
+
+    /**
+     * The original Java close implementation, retained as a fail-closed fallback.
+     *
+     * @param ip the ImageProcessor
+     */
+    private void closeJavaFallback (ByteProcessor ip)
     {
         int width = ip.getWidth();
         int height = ip.getHeight();
@@ -153,6 +344,110 @@ public class MorphoProcessor
         }
 
         System.arraycopy(newpix2, 0, pixels, 0, pixels.length);
+    }
+
+    private void closeWithWorker (int imageWidth,
+                                  int imageHeight,
+                                  byte[] pixels)
+            throws IOException
+    {
+        if (imageWidth <= 0 || imageHeight <= 0) {
+            throw new IOException("invalid_dimensions");
+        }
+
+        long expectedLength = (long) imageWidth * imageHeight;
+        if (expectedLength != pixels.length || expectedLength > Integer.MAX_VALUE) {
+            throw new IOException("pixel_length_mismatch");
+        }
+
+        if (NATIVE_CIRCUIT_OPEN.get()) {
+            throw new IOException("native_circuit_open");
+        }
+
+        NativeBuffers buffers = NATIVE_BUFFERS.get();
+        MemorySegment heapPixels = MemorySegment.ofArray(pixels);
+        try {
+            buffers.ensure(expectedLength);
+            MemorySegment.copy(heapPixels, 0, buffers.input, 0, expectedLength);
+            int status = (int) NATIVE_STATE.handle.invokeExact(
+                    buffers.input,
+                    expectedLength,
+                    buffers.scratch,
+                    expectedLength,
+                    buffers.output,
+                    expectedLength,
+                    (long) imageWidth,
+                    (long) imageHeight,
+                    flattenedProbe,
+                    flattenedProbeLength);
+            if (status != 0) {
+                throw new IOException("native_status_" + status);
+            }
+
+            MemorySegment.copy(buffers.output, 0, heapPixels, 0, expectedLength);
+        } catch (Throwable ex) {
+            NATIVE_CIRCUIT_OPEN.set(true);
+            if (ex instanceof IOException io) {
+                throw io;
+            }
+            throw new IOException("native_call_failed", ex);
+        }
+    }
+
+    private static byte[] encodeProbe (int[][] probe)
+    {
+        if (probe == null || probe.length == 0) {
+            throw new IllegalArgumentException("probe_empty");
+        }
+
+        byte[] encoded = new byte[Math.multiplyExact(probe.length, PROBE_RECORD_BYTES)];
+        for (int index = 0; index < probe.length; index++) {
+            int[] row = probe[index];
+            if (row == null || row.length < 3) {
+                throw new IllegalArgumentException("probe_row_short_" + index);
+            }
+
+            int offset = index * PROBE_RECORD_BYTES;
+            writeLittleEndian(encoded, offset, row[0]);
+            writeLittleEndian(encoded, offset + 4, row[1]);
+            writeLittleEndian(encoded, offset + 8, row[2]);
+        }
+        return encoded;
+    }
+
+    private static void writeLittleEndian (byte[] target,
+                                           int offset,
+                                           int value)
+    {
+        target[offset] = (byte) value;
+        target[offset + 1] = (byte) (value >>> 8);
+        target[offset + 2] = (byte) (value >>> 16);
+        target[offset + 3] = (byte) (value >>> 24);
+    }
+
+    private static void reportNative (String status,
+                                      long started,
+                                      int imageWidth,
+                                      int imageHeight,
+                                      int bytes,
+                                      String detail)
+    {
+        long elapsed = System.nanoTime() - started;
+        System.err.println("MORPHO_NATIVE status=" + status
+                                   + " elapsed_ns=" + elapsed
+                                   + " width=" + imageWidth
+                                   + " height=" + imageHeight
+                                   + " bytes=" + bytes
+                                   + " detail=" + detail);
+    }
+
+    private static String sanitize (Exception ex)
+    {
+        String detail = ex.getClass().getSimpleName();
+        if (ex.getMessage() != null && !ex.getMessage().isBlank()) {
+            detail += "_" + ex.getMessage().replaceAll("[^A-Za-z0-9_.-]", "_");
+        }
+        return detail;
     }
 
     //--------//
