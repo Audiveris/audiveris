@@ -211,6 +211,14 @@ tasks.jpackage {
                            "-Xms512m",
                            "-Xmx8G"]
 
+    // On macOS, export the EAWT package to the unnamed module so that the Swing Application
+    // Framework (bsaf) can reflectively access com.apple.eawt.Application at startup.
+    // Without this, an IllegalAccessException is thrown (harmless but noisy) and the
+    // macOS "Quit" menu item is not wired up.
+    if (hostOSName == "macosx") {
+        javaOptions.add("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
+    }
+
     // Chosen installer type, if any
     ImageType installerType = null
     if (project.hasProperty('installerType')) {
