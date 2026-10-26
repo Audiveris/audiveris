@@ -182,14 +182,20 @@ application {
     mainClass = project.mainClass
 
     // REMINDER: the same arguments should be copied into the "javaOptions" of packaging/build.gradle
-    //
-    // Arg 1: Needed to circumvent the limitations brought by Java 9 and above (the JigSaw cuts)
-    // Arg 2: Enable native access
-    // Arg 3: Enable HiDPI/display scaling support for Linux Wayland (GNOME, KDE)
-    //
-    applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
-                                 "--enable-native-access=ALL-UNNAMED",
-                                 "-Dsun.java2d.uiScale.enabled=true"]
+    
+    // Needed to circumvent the limitations brought by Java 9 and above (the JigSaw cuts)
+    applicationDefaultJvmArgs.add("--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED")
+       
+    // Enable native access
+    applicationDefaultJvmArgs.add("--enable-native-access=ALL-UNNAMED")
+    
+    // Enable HiDPI/display scaling support for Linux Wayland (GNOME, KDE)
+    applicationDefaultJvmArgs.add("-Dsun.java2d.uiScale.enabled=true")
+    
+    // Enforce use of UTF-8 encoding
+    applicationDefaultJvmArgs.add("-Dfile.encoding=UTF-8")
+    applicationDefaultJvmArgs.add("-Dstdout.encoding=UTF-8")
+    applicationDefaultJvmArgs.add("-Dstderr.encoding=UTF-8")
 
     // On macOS, export the EAWT package to the unnamed module so that the Swing Application
     // Framework (bsaf) can reflectively access com.apple.eawt.Application at startup.
