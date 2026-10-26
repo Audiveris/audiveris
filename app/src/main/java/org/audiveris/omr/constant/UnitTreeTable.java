@@ -24,6 +24,7 @@ package org.audiveris.omr.constant;
 import org.audiveris.omr.ui.treetable.JTreeTable;
 import org.audiveris.omr.ui.treetable.TreeTableModelAdapter;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.ui.util.UILookAndFeel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,9 +63,6 @@ public class UnitTreeTable
 
     private static final Logger logger = LoggerFactory.getLogger(UnitTreeTable.class);
 
-    /** Alternate color for zebra appearance */
-    private static final Color zebraColor = new Color(248, 248, 255);
-
     //~ Instance fields ----------------------------------------------------------------------------
 
     private final TableCellRenderer valueRenderer = new ValueRenderer();
@@ -86,7 +84,7 @@ public class UnitTreeTable
         ///setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         // Zebra
-        UIManager.put("Table.alternateRowColor", zebraColor);
+        UIManager.put("Table.alternateRowColor", getZebraColor());
         setFillsViewportHeight(true);
 
         // Show grid?
@@ -230,6 +228,27 @@ public class UnitTreeTable
         return new TreePath(objects.toArray());
     }
 
+    //---------------//
+    // getZebraColor //
+    //---------------//
+    /**
+     * Returns the alternate color used for zebra rows, depending on the current theme.
+     *
+     * @return the zebra color
+     */
+    private Color getZebraColor ()
+    {
+        final String themeName = UILookAndFeel.getThemeName();
+
+        // In dark theme, use a subtle gray, so that zebra rows remain readable
+        if (themeName != null && themeName.contains("Dark")) {
+            return new Color(70, 70, 70);
+        }
+
+        // In light theme, use a very light lavender
+        return new Color(248, 248, 255);
+    }
+
     //------------//
     // nodeForRow //
     //------------//
@@ -331,6 +350,21 @@ public class UnitTreeTable
         Collections.sort(rows);
 
         return rows;
+    }
+
+    //----------//
+    // updateUI //
+    //----------//
+    /**
+     * Overridden to keep the zebra color in sync with the current theme.
+     */
+    @Override
+    public void updateUI ()
+    {
+        super.updateUI();
+
+        // Zebra
+        UIManager.put("Table.alternateRowColor", getZebraColor());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
