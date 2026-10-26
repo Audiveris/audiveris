@@ -180,20 +180,24 @@ tasks.withType(ProcessResources) {
 
 application {
     mainClass = project.mainClass
-    
+
     // REMINDER: the same arguments should be copied into the "javaOptions" of packaging/build.gradle
     //
     // Arg 1: Needed to circumvent the limitations brought by Java 9 and above (the JigSaw cuts)
     // Arg 2: Enable native access
     // Arg 3: Enable HiDPI/display scaling support for Linux Wayland (GNOME, KDE)
-    // Arg 4-6: Enforce use of UTF-8 encoding
     //
     applicationDefaultJvmArgs = ["--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED",
                                  "--enable-native-access=ALL-UNNAMED",
-                                 "-Dsun.java2d.uiScale.enabled=true",
-                                 "-Dfile.encoding=UTF-8",
-                                 "-Dstdout.encoding=UTF-8",
-                                 "-Dstderr.encoding=UTF-8"]
+                                 "-Dsun.java2d.uiScale.enabled=true"]
+
+    // On macOS, export the EAWT package to the unnamed module so that the Swing Application
+    // Framework (bsaf) can reflectively access com.apple.eawt.Application at startup.
+    // Without this, an IllegalAccessException is thrown (harmless but noisy) and the
+    // macOS "Quit" menu item is not wired up.
+    if (targetOS.startsWith("macosx")) {
+        applicationDefaultJvmArgs.add("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
+    }
 }
 
 // Run default configuration.
