@@ -42,6 +42,7 @@ import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
+import static org.audiveris.omr.util.ResourceUtil.format;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -52,7 +53,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
-import static java.text.MessageFormat.format;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -107,13 +107,12 @@ public class InterListMenu
                                      final List<Inter> sysInters)
     {
         final JMenuItem item = new JMenuItem(
-                format(resources.getString("deleteInters.pattern"), sysInters.size(), system.getId()));
+                format(resources.getString("deleteInters"), sysInters.size(), system.getId()));
 
         // To delete all listed inters when item is clicked upon
         item.addActionListener( (ActionEvent e) -> {
-            if (AdvancedTopics.allowMultipleDelete()
-                    || OMR.gui.displayConfirmation(
-                            format(resources.getString("confirmDeleteInters.pattern"), sysInters.size()))) {
+            if (AdvancedTopics.allowMultipleDelete() || OMR.gui.displayConfirmation(
+                    format(resources.getString("confirmDeleteInters"), sysInters.size()))) {
                 sheet.getInterController().removeInters(sysInters);
             }
         });

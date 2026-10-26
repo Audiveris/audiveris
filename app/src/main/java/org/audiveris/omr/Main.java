@@ -32,6 +32,7 @@ import org.audiveris.omr.text.tesseract.Languages;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.MainGui;
 import org.audiveris.omr.util.OmrExecutors;
+import org.audiveris.omr.util.ResourceUtil;
 
 import org.jdesktop.application.Application;
 
@@ -41,9 +42,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -72,6 +75,8 @@ public class Main
 
     private static final Constants constants = new Constants();
 
+    private static ResourceBundle resources; // Warning: Initialization differed until locale is set
+
     /** CLI parameters. */
     private static CLI cli;
 
@@ -89,12 +94,12 @@ public class Main
     private static void checkLocale ()
     {
         final String localeStr = constants.locale.getValue().trim();
-
-        Locale locale = getLocale(localeStr);
+        final Locale locale = getLocale(localeStr);
 
         if (locale != null) {
             Locale.setDefault(locale);
-            logger.debug("Locale set to {}", locale);
+            resources = ResourceUtil.getBundle(Main.class);
+            logger.info(trans("locale", locale));
         }
     }
 
@@ -123,7 +128,7 @@ public class Main
                 }
             }
 
-            logger.warn("Not supported locale {}", localeStr);
+            logger.warn(trans("not.supported.locale", localeStr));
         }
 
         return null;
@@ -181,9 +186,9 @@ public class Main
     private static void logTasks (List<CliTask> tasks,
                                   boolean inParallel)
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Submitting ").append(tasks.size()).append(" task(s) in ");
-        sb.append(inParallel ? "parallel:" : "sequence:");
+        final StringBuilder sb = new StringBuilder();
+        final String mode = inParallel ? "parallel" : "sequence";
+        sb.append(trans("submitting.tasks", tasks.size(), trans(mode)));
 
         for (Callable task : tasks) {
             sb.append("\n    ").append(task);
@@ -216,6 +221,9 @@ public class Main
         // Log files
         LogUtil.addFileAppender();
 
+        // Locale to be used in the whole application?
+        checkLocale();
+
         // Process CLI parameters
         processCli(args);
 
@@ -231,9 +239,6 @@ public class Main
                     ModuleLayer.boot().modules().stream().map(Module::getName) //
                             .sorted().collect(Collectors.joining("\n")));
         }
-
-        // Locale to be used in the whole application?
-        checkLocale();
 
         // Help?
         if (cli.isHelpMode()) {
@@ -255,16 +260,14 @@ public class Main
         OMR.engine = BookManager.getInstance();
 
         if (!cli.isBatchMode()) {
-            logger.debug("Running in interactive mode");
-
-            logger.debug("Main. Launching MainGui");
+            logger.info(trans("running.in.interactive.mode"));
             Application.launch(MainGui.class, args);
         } else {
-            ///System.setProperty("java.awt.headless", "true"); //TODO: Useful?
-            logger.info("Running in batch mode");
+            logger.info(trans("running.in.batch.mode"));
 
-            // Perhaps time to check for a new release?
-            // Fix for issue #562: Disable this check when running in batch mode.
+            ///System.setProperty("java.awt.headless", "true"); //TODO: Useful?
+
+            // No version check when running in batch mode. See #562
             ///Versions.considerPolling();
 
             // Check OCR languages
@@ -293,20 +296,21 @@ public class Main
 
             // Force JVM exit?
             if (failure || timeout) {
-                String msg = "Exit forced.";
+                final StringBuilder sb = new StringBuilder();
+                sb.append(trans("Exit forced."));
                 int status = 0;
 
                 if (failure) {
                     status += 1;
-                    msg += " Failure";
+                    sb.append(" ").append(trans("failure"));
                 }
 
                 if (timeout) {
                     status += 2;
-                    msg += " Timeout";
+                    sb.append(" ").append(trans("timeout"));
                 }
 
-                logger.warn(msg);
+                logger.warn(sb.toString());
                 System.exit(status);
             }
         }
@@ -322,8 +326,9 @@ public class Main
             cli = new CLI(WellKnowns.TOOL_NAME);
             cli.parseParameters(args);
         } catch (CmdLineException ex) {
-            logger.warn("Error in command line: {}", ex.getLocalizedMessage(), ex);
-            logger.warn("Exiting ...");
+            logger.info(trans("commands", Arrays.asList(args)));
+            logger.warn(trans("error.in.command.line", ex.getLocalizedMessage()));
+            logger.warn(trans("exiting"));
 
             // Stop the JVM, with failure status (1)
             Runtime.getRuntime().exit(1);
@@ -346,7 +351,7 @@ public class Main
 
                     List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor().invokeAll(
                             tasks);
-                    logger.info("Checking {} task(s)", tasks.size());
+                    logger.info(trans("checking.tasks", tasks.size()));
 
                     // Check for time-out
                     for (Future<Void> future : futures) {
@@ -356,12 +361,12 @@ public class Main
                             CliTask task = tasks.get(futures.indexOf(future));
                             final String radix = task.getRadix();
 
-                            logger.warn("Future exception on {}, {}", radix, ex.toString(), ex);
+                            logger.warn(trans("future.exception", radix, ex.toString()), ex);
                             failure = true;
                         }
                     }
                 } catch (InterruptedException ex) {
-                    logger.warn("Error in processing tasks", ex);
+                    logger.warn(trans("error.in.processing.tasks"), ex);
                     failure = true;
                 }
             } else {
@@ -372,7 +377,7 @@ public class Main
                         task.call();
                     } catch (Exception ex) {
                         final String radix = task.getRadix();
-                        logger.warn("Exception on {}, {}", radix, ex.toString(), ex);
+                        logger.warn(trans("exception.on", radix, ex.toString()), ex);
                         failure = true;
                     }
                 }
@@ -395,7 +400,7 @@ public class Main
         if (!Locale.getDefault().equals(locale)) {
             constants.locale.setValue(locale.toString());
             Locale.setDefault(locale);
-            logger.info("Locale set to: '{}'", locale);
+            logger.info(trans("locale.set.to", locale));
         }
     }
 
@@ -433,6 +438,36 @@ public class Main
                         " (build " + System.getProperty("java.vm.version") + //
                         ", " + System.getProperty("java.vm.info") + ")",
                 "- OCR Engine:   " + TesseractOCR.getInstance().identify());
+    }
+
+    //-------//
+    // trans //
+    //-------//
+    /**
+     * Formatting and translating utility method.
+     *
+     * @param key       key to the pattern string
+     * @param arguments elements
+     * @return the formatted string
+     */
+    private static String trans (String key,
+                                 Object... arguments)
+    {
+        return ResourceUtil.format(trans(key), arguments);
+    }
+
+    //-------//
+    // trans //
+    //-------//
+    /**
+     * Translating utility method.
+     *
+     * @param key item id
+     * @return the translated string
+     */
+    private static String trans (String key)
+    {
+        return resources.getString(key);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

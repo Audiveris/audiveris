@@ -235,7 +235,7 @@ public class BasicClassifier
     @Override
     public final String getName ()
     {
-        return "BASIC_CLASSIFIER";
+        return "CLASSIFIER";
     }
 
     //-----------------------//
@@ -613,9 +613,10 @@ public class BasicClassifier
         // the network as much as its initial weights do, so a seed has to fix both
         // for a training run to be repeatable.
         final List<Sample> newSamples = new ArrayList<>(samples);
-        Collections.shuffle(newSamples, ShapeClassifier.enforceReproducibility()
-                ? new Random(REPRODUCIBLE_SEED)
-                : new Random());
+        Collections.shuffle(
+                newSamples,
+                ShapeClassifier.enforceReproducibility() ? new Random(REPRODUCIBLE_SEED)
+                        : new Random());
 
         // Build raw dataset
         watch.start("getRawDataSet");

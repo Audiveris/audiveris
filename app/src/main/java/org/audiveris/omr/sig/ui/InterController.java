@@ -118,6 +118,7 @@ import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import static org.audiveris.omr.util.ResourceUtil.format;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.VoidTask;
 import org.audiveris.omr.util.WrappedBoolean;
@@ -142,7 +143,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_BYTE_GRAY;
-import static java.text.MessageFormat.format;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2661,11 +2661,12 @@ public class InterController
                 return;
             }
 
-            if ((inters.size() == 1)
-                    || AdvancedTopics.allowMultipleDelete()
-                    || OMR.gui.displayConfirmation(
+            if ((inters.size() == 1) || AdvancedTopics.allowMultipleDelete() || OMR.gui
+                    .displayConfirmation(
                             resources.getString("confirmMultipleDelete"),
-                            format(resources.getString("confirmMultipleDeleteTitle.pattern"), inters.size()))) {
+                            format(
+                                    resources.getString("confirmMultipleDeleteTitle"),
+                                    inters.size()))) {
                 removeInters(inters);
             }
         }

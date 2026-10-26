@@ -34,6 +34,7 @@ import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.util.SeparableMenu;
+import static org.audiveris.omr.util.ResourceUtil.format;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -44,7 +45,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import static java.text.MessageFormat.format;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -305,7 +305,7 @@ public class InterMenu
                 logger.info("{}", relation.dumpOf(sig));
             } else if (source == deleteItem) {
                 if (OMR.gui.displayConfirmation(
-                        format(resources.getString("removeRelation.pattern"), relation.getName()))) {
+                        format(resources.getString("removeRelation"), relation.getName()))) {
                     interController.unlink(sig, relation);
                 }
             }

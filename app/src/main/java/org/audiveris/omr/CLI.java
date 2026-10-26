@@ -37,6 +37,7 @@ import static org.audiveris.omr.ui.action.AdvancedTopics.swapProcessedSheets;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.NaturalSpec;
+import org.audiveris.omr.util.ResourceUtil;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -65,6 +66,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -86,6 +88,8 @@ public class CLI
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CLI.class);
+
+    private static final ResourceBundle resources = ResourceUtil.getBundle(CLI.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -131,8 +135,7 @@ public class CLI
     {
         if (params.transcribe) {
             if ((params.step != null) && (params.step != OmrStep.last())) {
-                String msg = "'-transcribe' option not compatible with '-step " + params.step
-                        + "' option";
+                final String msg = trans("transcribe.incompatible", params.step);
                 throw new CmdLineException(parser, new Throwable(msg));
             }
 
@@ -348,26 +351,25 @@ public class CLI
         final StringBuilder buf = new StringBuilder();
 
         // Print syntax
-        buf.append("\nSyntax:");
-        buf.append("\n    audiveris [OPTIONS] [--] [INPUT_FILES]\n");
+        buf.append("\n").append(trans("syntax.title"));
+        buf.append("\n    audiveris ").append(trans("syntax")).append("\n");
 
-        buf.append("\n@file:");
-        buf.append("\n    Content of file to be extended in line");
-        buf.append("\n");
+        buf.append("\n").append(trans("file.title"));
+        buf.append("\n    ").append(trans("file")).append("\n");
 
-        buf.append("\nOptions:\n");
+        buf.append("\n").append(trans("options.title")).append("\n");
 
         StringWriter writer = new StringWriter();
-        parser.printUsage(writer, null);
+        parser.printUsage(writer, resources);
         buf.append(writer.toString());
 
-        buf.append("\nInput file extensions:");
-        buf.append("\n    .omr        : book file  (input/output)");
-        buf.append("\n    [any other] : image file (input)");
+        buf.append("\n").append(trans("extensions.title"));
+        buf.append("\n    ").append(trans("extensions.omr"));
+        buf.append("\n    ").append(trans("extensions.other"));
         buf.append("\n");
 
         // Print all steps
-        buf.append("\nSheet steps are in order:");
+        buf.append("\n").append(trans("steps.title"));
 
         for (OmrStep step : OmrStep.values()) {
             buf.append(String.format("%n    %-10s : %s", step.name(), step.getTip()));
@@ -386,6 +388,38 @@ public class CLI
     public void nullifyOutputFolder ()
     {
         params.outputFolder = null;
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    //-------//
+    // trans //
+    //-------//
+    /**
+     * Formatting and translating utility method.
+     *
+     * @param key       key to the pattern string
+     * @param arguments elements
+     * @return the formatted string
+     */
+    private static String trans (String key,
+                                 Object... arguments)
+    {
+        return ResourceUtil.format(trans(key), arguments);
+    }
+
+    //-------//
+    // trans //
+    //-------//
+    /**
+     * Translating utility method.
+     *
+     * @param key item id
+     * @return the translated string
+     */
+    private static String trans (String key)
+    {
+        return resources.getString(key);
     }
 
     //~ Inner classes ------------------------------------------------------------------------------
@@ -501,7 +535,8 @@ public class CLI
         {
             // Check source does exist
             if (!Files.exists(path)) {
-                String msg = "Could not find file \"" + path + "\"";
+                final String quotedPath = "\"" + path + "\"";
+                final String msg = trans("could.not.find.file", quotedPath);
                 logger.warn(msg);
                 throw new RuntimeException(msg);
             }
@@ -609,7 +644,7 @@ public class CLI
         @Override
         public String getDefaultMetaVariable ()
         {
-            return "int[]";
+            return "<int[]>";
         }
 
         @Override
@@ -644,68 +679,68 @@ public class CLI
     {
 
         /** Batch mode. */
-        @Option(name = "-batch", usage = "Run with no graphic user interface")
+        @Option(name = "-batch", usage = "-batch")
         boolean batchMode;
 
         /** The map of application options. */
-        @Option(name = "-constant", usage = "Define an application constant", handler = PropertyOptionHandler.class)
+        @Option(name = "-constant", usage = "-constant", handler = PropertyOptionHandler.class)
         Properties constants;
 
         /** Should MusicXML data be produced?. */
-        @Option(name = "-export", usage = "Export MusicXML")
+        @Option(name = "-export", usage = "-export")
         boolean export;
 
         /** Force step re-processing. */
-        @Option(name = "-force", usage = "Force step/transcribe re-processing")
+        @Option(name = "-force", usage = "-force")
         boolean force;
 
         /** Help mode. */
-        @Option(name = "-help", help = true, usage = "Display general help then stop")
+        @Option(name = "-help", help = true, usage = "-help")
         boolean helpMode;
 
         /** Output directory. */
-        @Option(name = "-output", usage = "Define base output folder", metaVar = "<output-folder>")
+        @Option(name = "-output", usage = "-output", metaVar = "<folder>")
         Path outputFolder;
 
         /** PlayList path. */
-        @Option(name = "-playlist", usage = "Build a compound book from playlist", metaVar = "<file.xml>")
+        @Option(name = "-playlist", usage = "-playlist", metaVar = "<file.xml>")
         Path playListPath;
 
         /** Should book be printed?. */
-        @Option(name = "-print", usage = "Print out book")
+        @Option(name = "-print", usage = "-print")
         boolean print;
 
         /** Should book be saved on every successful batch step?. */
-        @Option(name = "-save", usage = "In batch, save book on every successful step")
+        @Option(name = "-save", usage = "-save")
         boolean save;
 
         /** The set of sheet IDs to load. */
-        @Option(name = "-sheets", usage = "Select sheet numbers and ranges (1 4-5)", handler = IntArrayOptionHandler.class)
+        @Option(name = "-sheets", usage = "-sheets", handler = IntArrayOptionHandler.class)
         private ArrayList<Integer> sheets;
 
         /** Specific step. */
-        @Option(name = "-step", usage = "Define a specific target step", handler = StepOptionHandler.class)
+        @Option(name = "-step", usage = "-step", handler = StepOptionHandler.class)
         OmrStep step;
 
         /** Should every sheet be swapped after processing?. */
-        @Option(name = "-swap", usage = "Swap out every sheet after its processing")
+        @Option(name = "-swap", usage = "-swap")
         boolean swap;
 
         /** Should book be transcribed?. */
-        @Option(name = "-transcribe", usage = "Transcribe whole book")
+        @Option(name = "-transcribe", usage = "-transcribe")
         boolean transcribe;
 
         /** Should book file be upgraded?. */
-        @Option(name = "-upgrade", usage = "Upgrade whole book file")
+        @Option(name = "-upgrade", usage = "-upgrade")
         boolean upgrade;
 
         /** Version. */
-        @Option(name = "-version", help = true, usage = "Display version then stop")
+        @Option(name = "-version", help = true, usage = "-version")
         boolean versionMode;
 
         /** Optional "--" separator. */
         @Argument
-        @Option(name = "--", handler = StopOptionHandler.class)
+        @Option(name = "--", usage = "--.usage", metaVar = "<-->", handler = StopOptionHandler.class)
         /** Final arguments. */
         List<Path> arguments = new ArrayList<>();
 
@@ -713,15 +748,15 @@ public class CLI
         //-----------------
 
         /** Ability to run a class on each valid sheet. */
-        @Option(name = "-run", usage = "(advanced) Run provided class on valid sheets", handler = ClassOptionHandler.class)
+        @Option(name = "-run", usage = "-run", handler = ClassOptionHandler.class)
         Class runClass;
 
         /** Should samples be produced?. */
-        @Option(name = "-sample", usage = "(advanced) Sample all book symbols")
+        @Option(name = "-sample", usage = "-sample")
         boolean sample;
 
         /** Should symbols annotations be produced?. */
-        @Option(name = "-annotate", usage = "(advanced) Annotate all book symbols")
+        @Option(name = "-annotate", usage = "-annotate")
         boolean annotate;
 
         private Parameters ()
@@ -890,7 +925,8 @@ public class CLI
 
                     if (!ok) {
                         if (OMR.gui == null) {
-                            throw new Exception("Error in reaching step " + params.step);
+                            final String msg = trans("error.in.reaching.step", params.step);
+                            throw new Exception(msg);
                         } else {
                             return; // Safer
                         }
@@ -902,7 +938,8 @@ public class CLI
                     final boolean ok = book.transcribe(validStubs, scores, swap);
 
                     if (!ok && (OMR.gui == null)) {
-                        throw new Exception("Error in transcribing " + book);
+                        final String msg = trans("error.in.transcribing", book);
+                        throw new Exception(msg);
                     }
                 }
 
@@ -917,7 +954,8 @@ public class CLI
                     } catch (IllegalAccessException | IllegalArgumentException
                             | InstantiationException | NoSuchMethodException | SecurityException
                             | InvocationTargetException ex) {
-                        logger.warn("Error running {} {}", params.runClass, ex.toString(), ex);
+                        final String msg = trans("error.running", params.runClass, ex.toString());
+                        logger.warn(msg, ex);
                     }
                 }
 
@@ -927,7 +965,7 @@ public class CLI
                     final boolean ok = book.export(validStubs, scores);
 
                     if (!ok && (OMR.gui == null)) {
-                        throw new Exception("Error in export");
+                        throw new Exception(trans("export.error"));
                     }
                 }
 
@@ -949,11 +987,11 @@ public class CLI
                     book.print(validStubs);
                 }
             } catch (ProcessingCancellationException pce) {
-                logger.warn("Cancelled " + book);
+                logger.warn(trans("cancelled", book));
                 cancelled = true;
                 throw pce;
             } catch (Exception ex) {
-                logger.warn("Exception occurred " + ex, ex);
+                logger.warn(trans("exception.occurred", ex), ex);
                 throw ex;
             } finally {
                 // Close (when in batch mode only)
@@ -1008,7 +1046,7 @@ public class CLI
         @Override
         public String getDefaultMetaVariable ()
         {
-            return "key=value";
+            return "<key.value.pair>";
         }
 
         @Override
@@ -1028,7 +1066,8 @@ public class CLI
             try {
                 props.load(new StringReader(pair));
             } catch (IOException ex) {
-                throw new CmdLineException(owner, "Error in " + name + " " + pair, ex);
+                final String msg = trans("error.in", name, pair);
+                throw new CmdLineException(owner, msg, ex);
             }
 
             return 1;
@@ -1105,7 +1144,8 @@ public class CLI
                     final OmrStep step = OmrStep.valueOf(stepName);
                     setter.addValue(step);
                 } catch (Exception ex) {
-                    throw new CmdLineException(owner, ex);
+                    final String msg = trans("invalid.step.name", stepName);
+                    throw new CmdLineException(owner, msg, ex);
                 }
             }
 

@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.util.NaturalSpec;
+import static org.audiveris.omr.util.ResourceUtil.format;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -39,7 +40,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import static java.text.MessageFormat.format;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,8 +84,8 @@ public class StubsSelection
         this.book = book;
         specField = new LTextField(
                 true,
-                format(resources.getString("specField.text.pattern"), book.size()),
-                format(resources.getString("specField.shortDescription.pattern"), "1,4-6"));
+                format(resources.getString("specField.text"), book.size()),
+                format(resources.getString("specField.shortDescription"), "1,4-6"));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -140,9 +140,7 @@ public class StubsSelection
         }
 
         // Prepare prompt dialog
-        final String frameTitle = format(
-                resources.getString("frameTitle.pattern"),
-                book.getRadix());
+        final String frameTitle = format(resources.getString("frameTitle"), book.getRadix());
         final JOptionPane pane = defineLayout();
 
         // Initial sheets selection, as read from book

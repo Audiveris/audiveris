@@ -376,7 +376,7 @@ public class ShapeSet
     //----------------------------------------------------------------------------------------------
     // Below are predefined instances of ShapeSet, meant mainly for UI packaging.
     //
-    // By being defined here, they will lead to corresponding gathering in user menus & pallets.
+    // By being defined here, they will lead to corresponding gathering in user menus & palettes.
     // So, double-check before removing or modifying any one of them.
     //
     // Nota: Do not use EnumSet.range() since this could lead to subtle errors should Shape enum

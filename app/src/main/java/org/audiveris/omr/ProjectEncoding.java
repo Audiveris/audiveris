@@ -42,13 +42,15 @@ import java.nio.file.attribute.BasicFileAttributes;
  * <p>
  * All the XML fragments are stored in a file named "encoding-fragments.xml" located in
  * Audiveris user temp folder.
- * Its content should then be copied manually into the NetBeans user configuration file
+ * <p>
+ * Second phase:
+ * 1/ Exit NetBeans if any instance is running. This is mandatory!
+ * 2/ The content of the "encoding-fragments.xml" file must be copied manually
+ * (via NotePad or another editor, except NetBeans) into the NetBeans user configuration file
  * named "attributes.xml" and located in a folder like
  * C:\Users\herve\AppData\Roaming\NetBeans\31\var
  * Beware, the location depends on NetBeans version (here: 31).
- * <p>
- * Also, do NOT use NetBeans to update this NetBeans configuration file,
- * because this file is overwritten when NetBeans exits...
+ * 3/Re-launch NetBeans (it will load the "attributes.xml" file, and rewrite it at exit time)
  *
  * @author Hervé Bitteur
  */
