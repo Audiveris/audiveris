@@ -38,6 +38,7 @@ import org.audiveris.omr.ui.selection.StubEvent;
 import org.audiveris.omr.ui.util.WaitingTask;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.OmrExecutors;
+import static org.audiveris.omr.util.ResourceUtil.format;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -52,7 +53,6 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-import static java.text.MessageFormat.format;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1215,7 +1215,7 @@ public class StubsController
         {
             super(
                     OmrGui.getApplication(),
-                    format(resources.getString("LoadingSheetTask.pattern"), stub.getId()));
+                    format(resources.getString("LoadingSheetTask"), stub.getId()));
             this.stub = stub;
         }
 

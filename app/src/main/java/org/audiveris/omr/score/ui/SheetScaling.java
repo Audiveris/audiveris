@@ -24,6 +24,7 @@ package org.audiveris.omr.score.ui;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.ScaleItem;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.util.ResourceUtil;
 import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Application;
@@ -35,7 +36,6 @@ import org.slf4j.LoggerFactory;
 import com.jgoodies.forms.builder.FormBuilder;
 
 import java.awt.event.ActionEvent;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.EnumMap;
 
@@ -164,7 +164,7 @@ public class SheetScaling
     {
         final String pattern = resources.getString("SheetScaling.titlePattern");
 
-        return MessageFormat.format(pattern, sheet.getId());
+        return ResourceUtil.format(pattern, sheet.getId());
     }
 
     //----------------//

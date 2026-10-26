@@ -70,7 +70,7 @@ repositories {
 
 dependencies {
     implementation(
-        "args4j:args4j:2.33",
+        "args4j:args4j:2.37",
         "ch.qos.logback:logback-classic:1.4.14",
         "com.github.jai-imageio:jai-imageio-core:1.4.0",
         "com.github.jai-imageio:jai-imageio-jpeg2000:1.4.0",
@@ -157,13 +157,26 @@ sourceSets {
 // Tasks //
 //-------//
 
-tasks.withType(JavaCompile) {
+// 1. Source code compilation
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+// 2. Resource files processing (.properties)
+tasks.withType(Copy).configureEach {
+    filteringCharset = 'UTF-8'
+}
+
+// 3. Test execution console/logs
+tasks.withType(Test).configureEach {
+    systemProperty 'file.encoding', 'UTF-8'
+}
+
+// HB: perhaps not needed?
 tasks.withType(ProcessResources) {
     filteringCharset = 'UTF-8'
 }
+
 
 application {
     mainClass = project.mainClass

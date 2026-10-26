@@ -59,6 +59,7 @@ import org.audiveris.omr.ui.view.HistoryMenu;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.PathListTask;
+import static org.audiveris.omr.util.ResourceUtil.format;
 import org.audiveris.omr.util.SheetPath;
 import org.audiveris.omr.util.SheetPathHistory;
 import org.audiveris.omr.util.VoidTask;
@@ -83,7 +84,6 @@ import java.beans.PropertyChangeEvent;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import static java.text.MessageFormat.format;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -276,7 +276,7 @@ public class BookActions
                     }
                 };
             } else {
-                logger.info(format(resources.getString("noBookRepo.pattern"), book.getRadix()));
+                logger.info(format(resources.getString("noBookRepo"), book.getRadix()));
             }
         }
 
@@ -299,11 +299,15 @@ public class BookActions
 
         defaultBookPath = Paths.get(bookSansExt + ext);
 
+        // Use the bare "pdf" extension for the file filter (the full suffix is "-print.pdf")
+        final String pdfExt = OMR.PRINT_EXTENSION.substring(
+                OMR.PRINT_EXTENSION.lastIndexOf('.') + 1);
+
         return UIUtil.pathChooser(
                 true,
                 OMR.gui.getFrame(),
                 defaultBookPath,
-                filter(ext),
+                filter(pdfExt),
                 resources.getString("chooseBookPrint"));
     }
 
@@ -320,11 +324,15 @@ public class BookActions
         final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
         final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ext);
 
+        // Use the bare "pdf" extension for the file filter (the full suffix is "-print.pdf")
+        final String pdfExt = OMR.PRINT_EXTENSION.substring(
+                OMR.PRINT_EXTENSION.lastIndexOf('.') + 1);
+
         return UIUtil.pathChooser(
                 true,
                 OMR.gui.getFrame(),
                 defaultSheetPath,
-                filter(ext),
+                filter(pdfExt),
                 resources.getString("chooseSheetPrint"));
     }
 
@@ -624,8 +632,14 @@ public class BookActions
         final Path exportPathSansExt = BookManager.getDefaultExportPathSansExt(book);
 
         if (exportPathSansExt != null) {
-            //TODO: check/prompt for overwrite??? (perhaps several files)
-            return new ExportBookTask(book, exportPathSansExt);
+            final String ext = BookManager.getExportExtension();
+            final Path exportPath = Paths.get(exportPathSansExt + ext);
+
+            if (isTargetConfirmed(exportPath)) {
+                return new ExportBookTask(book, exportPathSansExt);
+            } else {
+                return exportBookAs(e);
+            }
         } else {
             return exportBookAs(e);
         }
@@ -649,9 +663,7 @@ public class BookActions
             return null;
         }
 
-        // Let user select book export target
-        //TODO: if we have several movements in this book, export will result in several files...
-        //TODO: so, how can we check/prompt for overwrite?
+        // Let user select book export target (the OS save dialog already handles overwrite confirmation)
         final String ext = BookManager.getExportExtension();
         final Path sansExt = BookManager.getDefaultExportPathSansExt(book);
         final Path targetPath = Paths.get(sansExt + ext);
@@ -662,7 +674,7 @@ public class BookActions
                 filter(ext),
                 resources.getString("chooseBookExport"));
 
-        if ((bookPath == null) || !isTargetConfirmed(bookPath)) {
+        if (bookPath == null) {
             return null;
         }
 
@@ -705,7 +717,7 @@ public class BookActions
                 filter(ext),
                 resources.getString("chooseSheetExport"));
 
-        if ((sheetPath == null) || !isTargetConfirmed(sheetPath)) {
+        if (sheetPath == null) {
             return null;
         }
 
@@ -839,7 +851,7 @@ public class BookActions
                 if (Files.exists(path)) {
                     return new LoadBookTask(sheetPath);
                 } else {
-                    logger.warn(format(resources.getString("fileNotFound.pattern"), path));
+                    logger.warn(format(resources.getString("fileNotFound"), path));
                     bookHistory.remove(sheetPath);
                 }
             }
@@ -994,10 +1006,10 @@ public class BookActions
             return null;
         }
 
-        // Select target book print path
+        // Select target book print path (the OS save dialog already handles overwrite confirmation)
         final Path bookPrintPath = choosePrintPath(book, "");
 
-        if ((bookPrintPath == null) || !isTargetConfirmed(bookPrintPath)) {
+        if (bookPrintPath == null) {
             return null;
         }
 
@@ -1022,10 +1034,10 @@ public class BookActions
             return null;
         }
 
-        // Let the user select a PDF output file
+        // Let the user select a PDF output file (the OS save dialog already handles overwrite confirmation)
         final Path sheetPrintPath = choosePrintPath(stub, "");
 
-        if ((sheetPrintPath == null) || !isTargetConfirmed(sheetPrintPath)) {
+        if (sheetPrintPath == null) {
             return null;
         }
 
@@ -1065,7 +1077,7 @@ public class BookActions
             return;
         }
 
-        final String msg = format(resources.getString("rebuildScores.pattern"), book.getRadix());
+        final String msg = format(resources.getString("rebuildScores"), book.getRadix());
 
         if (!OMR.gui.displayConfirmation(msg + doYouConfirm)) {
             return;
@@ -1108,10 +1120,7 @@ public class BookActions
             return null;
         }
 
-        final String msg = format(
-                resources.getString("resetBookToEnd.pattern"),
-                book.getRadix(),
-                step);
+        final String msg = format(resources.getString("resetBookToEnd"), book.getRadix(), step);
 
         if (!OMR.gui.displayConfirmation(msg + doYouConfirm)) {
             return null;
@@ -1428,7 +1437,7 @@ public class BookActions
         if (stub != null) {
             final boolean isValid = stub.isValid();
             final String pattern = resources.getString(
-                    isValid ? "setSheetInvalid.pattern" : "setSheetValid.pattern");
+                    isValid ? "setSheetInvalid" : "setSheetValid");
             final String msg = format(pattern, stub.getId());
 
             if (!OMR.gui.displayConfirmation(msg + doYouConfirm)) {
@@ -1828,7 +1837,7 @@ public class BookActions
         if ((bookStatus != null) && defaultPromptOnClosingUnsaved.getValue()) {
             final int answer = JOptionPane.showConfirmDialog(
                     OMR.gui.getFrame(),
-                    format(resources.getString("saveBook.pattern"), bookStatus, book.getRadix()));
+                    format(resources.getString("saveBook"), bookStatus, book.getRadix()));
 
             if (answer == JOptionPane.YES_OPTION) {
                 Path bookPath;
@@ -1904,7 +1913,7 @@ public class BookActions
     public static boolean isTargetConfirmed (Path target)
     {
         return (!Files.exists(target)) || OMR.gui.displayConfirmation(
-                format(resources.getString("overwriteFile.pattern"), target));
+                format(resources.getString("overwriteFile"), target));
     }
 
     //-----------------------//
@@ -2029,12 +2038,12 @@ public class BookActions
         }
 
         if (!Files.exists(path)) {
-            logger.warn(format(resources.getString("fileNotFound.pattern"), path));
+            logger.warn(format(resources.getString("fileNotFound"), path));
             return null;
         }
 
         if (Files.isDirectory(path)) {
-            logger.warn(format(resources.getString("isDirectory.pattern"), path));
+            logger.warn(format(resources.getString("isDirectory"), path));
             return null;
         }
 
@@ -2069,12 +2078,12 @@ public class BookActions
 
         for (Path path : paths) {
             if (!Files.exists(path)) {
-                logger.warn(format(resources.getString("fileNotFound.pattern"), path));
+                logger.warn(format(resources.getString("fileNotFound"), path));
                 return new Path[0];
             }
 
             if (Files.isDirectory(path)) {
-                logger.warn(format(resources.getString("isDirectory.pattern"), path));
+                logger.warn(format(resources.getString("isDirectory"), path));
                 return new Path[0];
             }
         }
@@ -2267,9 +2276,7 @@ public class BookActions
          */
         public LoadBookTask (Path path)
         {
-            super(
-                    OmrGui.getApplication(),
-                    format(resources.getString("LoadBookTask.pattern"), path));
+            super(OmrGui.getApplication(), format(resources.getString("LoadBookTask"), path));
             this.path = path;
         }
 
@@ -2282,7 +2289,7 @@ public class BookActions
         {
             super(
                     OmrGui.getApplication(),
-                    format(resources.getString("LoadBookTask.pattern"), sheetPath.getBookPath()));
+                    format(resources.getString("LoadBookTask"), sheetPath.getBookPath()));
             path = sheetPath.getBookPath();
             sheetNumber = sheetPath.getSheetNumber();
         }

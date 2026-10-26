@@ -39,6 +39,18 @@ import java.nio.file.attribute.BasicFileAttributes;
 /**
  * Class <code>ProjectEncoding</code> generates the XML fragments meant for NetBeans
  * to let every .properties file use the project encoding.
+ * <p>
+ * All the XML fragments are stored in a file named "encoding-fragments.xml" located in
+ * Audiveris user temp folder.
+ * <p>
+ * Second phase:
+ * 1/ Exit NetBeans if any instance is running. This is mandatory!
+ * 2/ The content of the "encoding-fragments.xml" file must be copied manually
+ * (via NotePad or another editor, except NetBeans) into the NetBeans user configuration file
+ * named "attributes.xml" and located in a folder like
+ * C:\Users\herve\AppData\Roaming\NetBeans\31\var
+ * Beware, the location depends on NetBeans version (here: 31).
+ * 3/Re-launch NetBeans (it will load the "attributes.xml" file, and rewrite it at exit time)
  *
  * @author Hervé Bitteur
  */
@@ -47,6 +59,10 @@ public class ProjectEncoding
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ProjectEncoding.class);
+
+    private static final String SEPARATOR_REGEX = WellKnowns.FILE_SEPARATOR.equals("/") //
+            ? "/" // Linux, macOS
+            : "\\\\"; // Windows
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -71,7 +87,8 @@ public class ProjectEncoding
     private void printFragment (Path path,
                                 PrintWriter out)
     {
-        final String f = path.toString().replaceAll("\\\\", "|");
+        // Replace all '/' or '\' folder separators by a vertical line '|'
+        final String f = path.toString().replaceAll(SEPARATOR_REGEX, "|");
         out.print("    <fileobject name=\"");
         out.print(f);
         out.println("\">");
@@ -125,7 +142,7 @@ public class ProjectEncoding
             });
 
             logger.info("files: {} ", fileCount);
-            logger.info("Fragments written in file: {}", outPath.toAbsolutePath().normalize());
+            logger.info("All fragments written in file: {}", outPath.toAbsolutePath().normalize());
         } catch (IOException ex) {
             logger.warn("Error processing {}", root, ex);
         }
@@ -140,14 +157,14 @@ public class ProjectEncoding
      * Run the program on the provided root location
      *
      * @param args the path to the roo folder of a project.
-     *             If null, the docs/_pages of the current project is chosen
+     *             If null, the root of the current project is chosen
      */
     public static void main (String... args)
     {
         try {
             final String rootString;
             if ((args == null) || (args.length != 1)) {
-                rootString = ".."; // Root of the current project
+                rootString = ".."; // Root of the current project (seen from 'app' sub-project)
             } else {
                 rootString = args[0]; // Path provided explicitly
             }

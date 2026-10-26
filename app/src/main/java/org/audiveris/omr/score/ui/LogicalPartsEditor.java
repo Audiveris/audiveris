@@ -37,6 +37,7 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.ui.util.Panel;
+import static org.audiveris.omr.util.ResourceUtil.format;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
@@ -60,7 +61,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -377,7 +377,7 @@ public class LogicalPartsEditor
 
         // Dialog layout
         dialog.setTitle(
-                MessageFormat.format(
+                format(
                         resources.getString("dialog.title"),
                         score.getId(),
                         score.getBook().getRadix()));

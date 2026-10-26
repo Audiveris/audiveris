@@ -45,6 +45,7 @@ import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.ComboBoxTipRenderer;
+import static org.audiveris.omr.util.ResourceUtil.format;
 import static org.audiveris.omr.util.param.Param.GLOBAL_SCOPE;
 
 import org.jdesktop.application.Application;
@@ -57,7 +58,6 @@ import com.jgoodies.forms.builder.FormBuilder;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -210,9 +210,7 @@ public class BookParameters
                     xactPanes.put(s, sheetPanes);
 
                     final TopicsPanel sheetPanel = new TopicsPanel(
-                            MessageFormat.format(
-                                    resources.getString("sheetTab.toolTipText"),
-                                    s.getNum()),
+                            format(resources.getString("sheetTab.toolTipText"), s.getNum()),
                             buildTopics(s, book, sheetPanes, true, true),
                             resources);
                     final String initial = resources.getString("sheetInitialChar");
@@ -445,7 +443,7 @@ public class BookParameters
     public String getTitle ()
     {
         if (book != null) {
-            return MessageFormat.format(resources.getString("bookTitlePattern"), book.getRadix());
+            return format(resources.getString("bookTitlePattern"), book.getRadix());
         } else {
             return resources.getString("defaultTitle");
         }

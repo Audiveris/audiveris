@@ -67,6 +67,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
+import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -86,6 +87,13 @@ import java.util.Set;
  */
 public class SymbolsFilter
 {
+    /**
+     * A word that is one letter amid punctuation, the way a sign drawn in a text font is
+     * read: a segno comes back as "./S/.". A digit is not a letter, so "2." is not one.
+     */
+    private static final Pattern ONE_LETTER_AMID_PUNCTUATION = Pattern.compile(
+            "^\\W*\\p{L}\\W*$");
+
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
@@ -353,9 +361,15 @@ public class SymbolsFilter
                         continue;
                     }
 
-                    // Check short words
+                    // Check short words, and one-letter words whatever punctuation surrounds them
                     if (inter instanceof WordInter word) {
-                        if (word.getValue().length() <= maxSymbolLength) {
+                        final String value = word.getValue();
+
+                        if (value.length() <= maxSymbolLength) {
+                            continue;
+                        }
+
+                        if (ONE_LETTER_AMID_PUNCTUATION.matcher(value).matches()) {
                             continue;
                         }
                     }
