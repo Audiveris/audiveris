@@ -21,6 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr;
 
+import org.audiveris.omr.text.tesseract.TesseractOCR;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import com.github.difflib.DiffUtils;
 import com.github.difflib.UnifiedDiffUtils;
 import com.github.difflib.patch.Patch;
@@ -49,15 +58,6 @@ import java.util.zip.ZipFile;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.audiveris.omr.text.tesseract.TesseractOCR;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 /**
  * Regression test that validates Audiveris' conversion of sheet-music images (png/jpg/pdf)
  * to MusicXML, against known good reference outputs.
@@ -85,7 +85,8 @@ import static org.junit.Assert.fail;
  * change of content (missing or extra symbol, other pitch or duration...) is reported</li>
  * <li>absolute input paths in {@code <source>} and in the {@code source-file}
  * miscellaneous field are reduced to the bare file name</li>
- * </ul></li>
+ * </ul>
+ * </li>
  * </ul>
  * Every input file is tested, and a final report lists all failures (not just the first).
  * On failure the whole temp work folder is kept for inspection.
@@ -100,8 +101,7 @@ public class XmlExportRegressionTest
     //~ Static fields ///////////////////////////////////////////////////////////////////////////////
 
     /** Extensions accepted as input images. */
-    private static final List<String> INPUT_EXTENSIONS =
-            Arrays.asList("png", "jpg", "jpeg", "pdf");
+    private static final List<String> INPUT_EXTENSIONS = Arrays.asList("png", "jpg", "jpeg", "pdf");
 
     /** Timeout, in seconds, for a single file conversion. */
     private static final long TIMEOUT_SECONDS = TimeUnit.MINUTES.toSeconds(15);
@@ -133,15 +133,15 @@ public class XmlExportRegressionTest
             "https://raw.githubusercontent.com/tesseract-ocr/tessdata/main/eng.traineddata";
 
     /** Pattern to match an <encoding-date> line (volatile, dropped). */
-    private static final Pattern ENCODING_DATE =
-            Pattern.compile("\\s*<encoding-date>.*</encoding-date>\\s*");
+    private static final Pattern ENCODING_DATE = Pattern.compile(
+            "\\s*<encoding-date>.*</encoding-date>\\s*");
 
     /** Pattern to match a <software> line (carries the Audiveris version, dropped). */
     private static final Pattern SOFTWARE = Pattern.compile("\\s*<software>.*</software>\\s*");
 
     /** Pattern to match font attributes whose values vary across environments. */
-    private static final Pattern FONT_ATTRIBUTES =
-            Pattern.compile("\\s+font-(?:family|size)=\"[^\"]*\"");
+    private static final Pattern FONT_ATTRIBUTES = Pattern.compile(
+            "\\s+font-(?:family|size)=\"[^\"]*\"");
 
     /** Pattern to match the <source> element that carries the absolute input path. */
     private static final Pattern SOURCE_LINE = Pattern.compile("(<source>)(.*)(</source>)");
@@ -151,16 +151,16 @@ public class XmlExportRegressionTest
             "(<miscellaneous-field name=\"source-file\">)(.*)(</miscellaneous-field>)");
 
     /** Pattern to match position attributes, which only reflect layout. */
-    private static final Pattern POSITION_ATTRIBUTES =
-            Pattern.compile("\\s+(?:default|relative|bezier)-[xy]\\d?=\"[^\"]*\"");
+    private static final Pattern POSITION_ATTRIBUTES = Pattern.compile(
+            "\\s+(?:default|relative|bezier)-[xy]\\d?=\"[^\"]*\"");
 
     /** Pattern to match the distance elements, which only reflect layout. */
-    private static final Pattern DISTANCE_LINE =
-            Pattern.compile("<(?:system|staff)-distance>.*</(?:system|staff)-distance>");
+    private static final Pattern DISTANCE_LINE = Pattern.compile(
+            "<(?:system|staff)-distance>.*</(?:system|staff)-distance>");
 
     /** Pattern to match the display position lines of a rest. */
-    private static final Pattern REST_POSITION =
-            Pattern.compile("<display-(?:step|octave)>.*</display-(?:step|octave)>");
+    private static final Pattern REST_POSITION = Pattern.compile(
+            "<display-(?:step|octave)>.*</display-(?:step|octave)>");
 
     /** The folder holding input/reference pairs. */
     private static Path regressionFolder;
@@ -204,8 +204,9 @@ public class XmlExportRegressionTest
         final List<Path> inputs = listInputFiles();
 
         if (inputs.isEmpty()) {
-            fail("No input file (png/jpg/jpeg/pdf) found in " + regressionFolder
-                    + ". Populate it with input/reference pairs, e.g. file1.png + file1.xml");
+            fail(
+                    "No input file (png/jpg/jpeg/pdf) found in " + regressionFolder
+                            + ". Populate it with input/reference pairs, e.g. file1.png + file1.xml");
         }
 
         final List<String> failures = new ArrayList<>();
@@ -255,16 +256,18 @@ public class XmlExportRegressionTest
                         continue;
                     }
 
-                    final String expectedXml =
-                            new String(Files.readAllBytes(reference), StandardCharsets.UTF_8);
+                    final String expectedXml = new String(
+                            Files.readAllBytes(reference),
+                            StandardCharsets.UTF_8);
 
                     final List<String> expectedLines = normalize(expectedXml);
                     final List<String> actualLines = normalize(producedXml);
                     final String diff = diffOf(expectedLines, actualLines);
 
                     if (diff == null) {
-                        System.out.println(fileName + ": matches reference ("
-                                + expectedLines.size() + " normalized lines)");
+                        System.out.println(
+                                fileName + ": matches reference (" + expectedLines.size()
+                                        + " normalized lines)");
                         okCount++;
                         deleteTree(tempDir);
                     } else {
@@ -276,8 +279,8 @@ public class XmlExportRegressionTest
                         failures.add(fileName + ":\n" + diff + "\nArtifacts kept in: " + tempDir);
                     }
                 } catch (Exception | AssertionError ex) {
-                    failures.add(fileName + ":\n" + ex.getMessage() + "\nArtifacts kept in: "
-                            + tempDir);
+                    failures.add(
+                            fileName + ":\n" + ex.getMessage() + "\nArtifacts kept in: " + tempDir);
                 }
             }
 
@@ -285,8 +288,9 @@ public class XmlExportRegressionTest
                     okCount + "/" + inputs.size() + " input file(s) converted and compared");
 
             if (!failures.isEmpty()) {
-                fail("Reference comparison failed for " + failures.size() + " file(s):\n\n"
-                        + String.join("\n\n---\n\n", failures));
+                fail(
+                        "Reference comparison failed for " + failures.size() + " file(s):\n\n"
+                                + String.join("\n\n---\n\n", failures));
             }
         } finally {
             deleteTree(ocrFolder);
@@ -332,16 +336,15 @@ public class XmlExportRegressionTest
 
         try {
             final Path installedFolder = TesseractOCR.getInstance().getOcrFolder();
-            final Path installedEnglish = (installedFolder != null)
-                    ? installedFolder.resolve(englishData.getFileName())
-                    : null;
+            final Path installedEnglish = (installedFolder != null) ? installedFolder.resolve(
+                    englishData.getFileName()) : null;
 
-            if ((installedEnglish != null) && Files.isRegularFile(installedEnglish)
-                    && (Files.size(installedEnglish) > 0)) {
+            if ((installedEnglish != null) && Files.isRegularFile(installedEnglish) && (Files.size(
+                    installedEnglish) > 0)) {
                 Files.copy(installedEnglish, englishData);
             } else {
-                final URLConnection connection =
-                        URI.create(ENGLISH_TRAINEDDATA_URL).toURL().openConnection();
+                final URLConnection connection = URI.create(ENGLISH_TRAINEDDATA_URL).toURL()
+                        .openConnection();
                 connection.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(30));
                 connection.setReadTimeout((int) TimeUnit.MINUTES.toMillis(2));
 
@@ -428,16 +431,16 @@ public class XmlExportRegressionTest
         Path dir = Paths.get("").toAbsolutePath();
 
         while (dir != null) {
-            if (Files.isDirectory(dir.resolve("data"))
-                    && Files.isDirectory(dir.resolve("app").resolve("res"))) {
+            if (Files.isDirectory(dir.resolve("data")) && Files.isDirectory(
+                    dir.resolve("app").resolve("res"))) {
                 return dir;
             }
 
             dir = dir.getParent();
         }
 
-        throw new IllegalStateException("Could not locate data from "
-                + Paths.get("").toAbsolutePath());
+        throw new IllegalStateException(
+                "Could not locate data from " + Paths.get("").toAbsolutePath());
     }
 
     //----------------------//
@@ -631,8 +634,8 @@ public class XmlExportRegressionTest
             final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 
-            final NodeList rootFiles = factory.newDocumentBuilder().parse(is)
-                    .getElementsByTagName("rootfile");
+            final NodeList rootFiles = factory.newDocumentBuilder().parse(is).getElementsByTagName(
+                    "rootfile");
 
             if (rootFiles.getLength() == 0) {
                 return null;
@@ -671,8 +674,9 @@ public class XmlExportRegressionTest
             if (entry == null) {
                 entry = Collections.list(zip.entries()) //
                         .stream() //
-                        .filter(e -> e.getName().toLowerCase().endsWith(".xml") && !e.getName()
-                                .startsWith("META-INF")) //
+                        .filter(
+                                e -> e.getName().toLowerCase().endsWith(".xml") && !e.getName()
+                                        .startsWith("META-INF")) //
                         .findFirst() //
                         .orElse(null);
             }
@@ -755,12 +759,13 @@ public class XmlExportRegressionTest
         final int exitCode = process.exitValue();
 
         if (exitCode != 0) {
-            final String log = Files.exists(logFile)
-                    ? new String(Files.readAllBytes(logFile), StandardCharsets.UTF_8)
-                    : "<no log>";
+            final String log = Files.exists(logFile) ? new String(
+                    Files.readAllBytes(logFile),
+                    StandardCharsets.UTF_8) : "<no log>";
 
-            fail("Audiveris exited with code " + exitCode + "\n--- last log lines ---\n"
-                    + tailOf(log, 40));
+            fail(
+                    "Audiveris exited with code " + exitCode + "\n--- last log lines ---\n"
+                            + tailOf(log, 40));
         }
     }
 
