@@ -1,7 +1,7 @@
-# Localization
+# Internationalization
 
-This document describes the current localization of the Audiveris application,
-in order to make Audiveris accessible to anyone interested around the world.
+This document describes the current internationalization (aka i18n) of the Audiveris application,
+in order to make Audiveris more accessible to anyone interested around the world.
 
 - [First steps](#first-steps)
 - [Concrete objectives](#concrete-objectives)
@@ -19,7 +19,9 @@ To make the application accessible to non-English speakers, a first step involve
 in the graphical user interface into French.
 
 With the help of knowledgeable users, we recently decided to undertake a full translation into French.
-Furthermore, this should validate the technical foundations for extending the application to other languages.
+
+Furthermore, this should build/validate/improve the technical foundations
+for opening the application to external languages, which is precisely the goal of internationalization.
 
 ## Concrete objectives
 
@@ -47,7 +49,7 @@ Audiveris uses the ***BSAF*** (Better Swing Application Framework) library
 to ease the building, event handling, localizable resources and persistency of Swing entities.
 Its documentation is available [here][JSR296].
 
-Regarding localization, this framework provides two interesting features that can be combined:
+Regarding internationalization, this framework provides two interesting features that can be combined:
 `ResourceMap` and `Action`.
 
 #### ResourceMap
@@ -58,7 +60,7 @@ For example, the Java class `InterBoard` contains this declaration:
 private static final ResourceMap resources = Application.getInstance().getContext().getResourceMap(InterBoard.class);
 ```
 It allows to access the resources stored in the related `.properties` files
-located in the sibling subfolder named `resources`:
+located in a sibling subfolder named `resources`:
 ```sh
 ./resources/InterBoard.properties
 ./resources/InterBoard_fr.properties
@@ -177,7 +179,7 @@ First version of this documentation.
 
 Start of French localization
 
-Start of restructuring the localization mechanisms, regardless of the language.
+Start of restructuring the internationalization mechanisms, regardless of the language.
 
 ### 14-oct-2026
 
@@ -193,7 +195,7 @@ localization has been extended to the classes:
 - `ShapeSet`
 - `TextRole` 
 
-We can now clean up and rationalize the concepts and names used in localization,
+We can now clean up and rationalize the concepts and names used in internationalization,
 as described here under.
 
 #### Name

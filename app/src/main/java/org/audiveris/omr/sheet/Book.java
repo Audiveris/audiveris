@@ -63,6 +63,7 @@ import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.NaturalSpec;
 import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.ZipFileSystem;
 import org.audiveris.omr.util.param.IntegerParam;
@@ -137,6 +138,8 @@ public class Book
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Book.class);
+
+    private static final Translator ct = new Translator(Book.class);
 
     /** File name for book internals in book file system: {@value}. */
     public static final String BOOK_INTERNALS = "book.xml";
@@ -394,15 +397,15 @@ public class Book
                     LogUtil.start(stub);
                     stub.getSheet().annotate(root);
                 } catch (Exception ex) {
-                    logger.warn("Error annotating {} {}", stub, ex.toString(), ex);
+                    logger.warn(ct.trans("error.annotating.stub", stub, ex.toString()), ex);
                 } finally {
                     LogUtil.stopStub();
                 }
             }
 
-            logger.info("Book annotated as {}", annotationsPath);
+            logger.info(ct.trans("book.annotated.as", annotationsPath));
         } catch (IOException ex) {
-            logger.warn("Error annotating book {} {}", this, ex.toString(), ex);
+            logger.warn(ct.trans("error.annotating.book", this, ex.toString()), ex);
         } finally {
             if (root != null) {
                 try {
@@ -561,7 +564,7 @@ public class Book
             }
         }
 
-        logger.info("Created scores: {}", theScores);
+        logger.info(ct.trans("created.scores", theScores));
     }
 
     //-------------//
@@ -578,7 +581,7 @@ public class Book
         if (loader != null) {
             final int imageCount = loader.getImageCount();
             loader.dispose();
-            logger.info("{} sheet{} in {}", imageCount, ((imageCount > 1) ? "s" : ""), path);
+            logger.info(ct.trans("sheets.in", path));
 
             for (int i = 1; i <= imageCount; i++) {
                 stubs.add(new SheetStub(this, i));
@@ -614,7 +617,7 @@ public class Book
         final boolean ok = transcribe(theStubs, theScores, swap);
 
         if (!ok) {
-            logger.info("Could not export since transcription did not complete successfully");
+            logger.info(ct.trans("could.not.export.since"));
             return false;
         }
 
@@ -634,7 +637,7 @@ public class Book
             try {
                 new OpusExporter(this).export(opusPath, bookName, sig, theScores);
             } catch (Exception ex) {
-                logger.warn("Could not export opus " + opusPath, ex);
+                logger.warn(ct.trans("could.not.export.opus", opusPath), ex);
             }
         } else {
             // Export the book as one or several movement files
@@ -649,7 +652,7 @@ public class Book
                 try {
                     new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
                 } catch (Exception ex) {
-                    logger.warn("Could not export score " + scoreName, ex);
+                    logger.warn(ct.trans("could.not.export.score", scoreName), ex);
                 }
             }
         }
@@ -1063,7 +1066,7 @@ public class Book
             }
         }
 
-        logger.warn("Book.getScore. No score found for {}", page);
+        logger.warn(ct.trans("no.score.found.for", page));
         return null;
     }
 
@@ -1281,7 +1284,7 @@ public class Book
 
         for (int id : sheetIds) {
             if (id < 1 || id > stubs.size()) {
-                logger.warn("No sheet #{} in {}", id, this);
+                logger.warn(ct.trans("no.sheet.in", id, this));
             } else {
                 found.add(stubs.get(id - 1));
             }
@@ -1308,11 +1311,7 @@ public class Book
             stubsToUpgrade.addAll(getStubsWithTableFiles());
 
             if (!stubsToUpgrade.isEmpty()) {
-                logger.info(
-                        "{} stub{} to upgrade in {}",
-                        stubsToUpgrade.size(),
-                        (stubsToUpgrade.size() > 1) ? "s" : "",
-                        this);
+                logger.info(ct.trans("stubs.to.upgrade.in", stubsToUpgrade.size(), this));
             }
         }
 
@@ -1380,7 +1379,7 @@ public class Book
 
             root.getFileSystem().close();
         } catch (Exception ex) {
-            logger.warn("Error browsing project file of {} {}", this, ex.toString(), ex);
+            logger.warn(ct.trans("error.browsing.project", this, ex.toString()), ex);
         } finally {
             bookLock.unlock();
         }
@@ -1578,37 +1577,37 @@ public class Book
             if (constants.checkBookVersion.isSet()) {
                 // Check compatibility between book file version and program version
                 final CheckResult status = Versions.check(new Version(version));
+                final String bookVersionMsg = ct.trans("bookPath.version", bookPath, version);
 
                 switch (status) {
                     case BOOK_TOO_OLD -> {
-                        final String msg = bookPath + " version " + version;
-                        logger.warn(msg);
+                        logger.warn(bookVersionMsg);
 
                         // Reset book sheets to binary?
+                        final String tooOldBook = ct.trans("too.old.book.version");
                         if (((OMR.gui == null) && constants.resetOldBooks.isSet())
                                 || ((OMR.gui != null) && OMR.gui.displayConfirmation(
-                                        msg + "\nConfirm reset to binary?",
-                                        "Too old book version"))) {
+                                        bookVersionMsg + "\n" + ct.trans("confirm.reset.to.binary"),
+                                        tooOldBook))) {
                             resetTo(OmrStep.BINARY);
-                            logger.info("Book {} reset to binary.", radix);
+                            logger.info(ct.trans("book.reset.to.binary", radix));
                             version = WellKnowns.TOOL_REF;
                             build = WellKnowns.TOOL_BUILD;
 
                             return true;
                         } else {
-                            logger.info("Too old book version, ignored.");
+                            logger.info(tooOldBook + ", " + ct.trans("ignored"));
+                            return false;
                         }
 
-                        return false;
                     }
 
                     case PROGRAM_TOO_OLD -> {
-                        final String msg = bookPath + " version " + version
-                                + "\nPlease use a more recent Audiveris version";
+                        final String msg = bookVersionMsg + "\n" + ct.trans("use.recent.audiveris");
                         logger.warn(msg);
 
                         if (OMR.gui != null) {
-                            OMR.gui.displayWarning(msg, "Too old Audiveris software version");
+                            OMR.gui.displayWarning(msg, ct.trans("too.old.audiveris"));
                         }
 
                         return false;
@@ -1897,9 +1896,9 @@ public class Book
                     theStubs,
                     new SheetResultPainter.PdfResultPainter());
             setPrintPath(pdfPath);
-            logger.info("Book printed to {}", pdfPath);
+            logger.info(ct.trans("book.printed.to", pdfPath));
         } catch (Exception ex) {
-            logger.warn("Cannot print to {} {}", pdfPath, ex.toString(), ex);
+            logger.warn(ct.trans("cannot.print.to", pdfPath, ex.toString()), ex);
         }
     }
 
@@ -1946,10 +1945,11 @@ public class Book
             // Launch the steps on each sheet
             long startTime = System.currentTimeMillis();
             logger.info(
-                    "Book reaching {}{} on sheets:{}",
-                    target,
-                    force ? " force" : "",
-                    ids(theStubs));
+                    ct.trans(
+                            "book.reaching.on.sheets",
+                            target,
+                            force ? " " + ct.trans("force") : "",
+                            ids(theStubs)));
 
             try {
                 boolean someFailure = false;
@@ -1969,7 +1969,7 @@ public class Book
                             : target;
 
                     if (force || target != maxStep) {
-                        logger.info("Initial book processing until {}", maxStep);
+                        logger.info(ct.trans("initial.book.processing.until", maxStep));
                     }
 
                     for (final SheetStub stub : theStubs) {
@@ -2004,19 +2004,19 @@ public class Book
                                 if (ex.getCause() instanceof StepPause) {
                                     logger.debug("StepPause in Future {}", future);
                                 } else {
-                                    logger.warn("Future exception", ex);
+                                    logger.warn(ct.trans("future.exception"), ex);
                                     someFailure = true;
                                 }
                             }
                         }
                     } catch (InterruptedException ex) {
-                        logger.warn("Error in parallel reachBookStep", ex);
+                        logger.warn(ct.trans("processing.interrupted", ex.getMessage()), ex);
                         someFailure = true;
                     }
 
                     // Final session?
                     if (target.compareTo(OmrStep.lastParallel()) > 0) {
-                        logger.info("Final book processing until {}", target);
+                        logger.info(ct.trans("final.book.processing.until", target));
 
                         // Final processing, one stub after the other
                         for (SheetStub stub : theStubs) {
@@ -2027,18 +2027,18 @@ public class Book
                             } catch (StepPause ex) {
                                 // Book pause required
                                 // Stop processing for the other stubs
-                                logger.info("Book processing stopped by user.");
+                                logger.info(ct.trans("book.processing.stopped.by.user"));
                                 break;
                             } catch (Exception ex) {
                                 // Exception raised on stub
                                 // Let processing continue for the other stubs
-                                logger.warn("Error processing stub");
+                                logger.warn(ct.trans("error.processing.stub", ex.getMessage()));
                                 someFailure = true;
                             } finally {
                                 stub.printWatch(false);
                                 if (swap) {
                                     swapAllSheets(); // Save sheet(s) & global book info to disk
-                                    logger.info("End of {}", stub);
+                                    logger.info(ct.trans("end.of", stub));
                                 }
 
                                 LogUtil.stopStub();
@@ -2055,25 +2055,25 @@ public class Book
                         } catch (StepPause ex) {
                             // Book pause required
                             // Stop processing for the other stubs
-                            logger.info("Book processing stopped by user.");
+                            logger.info(ct.trans("book.processing.stopped.by.user"));
                             break;
                         } catch (Exception ex) {
                             // Exception raised on stub
                             // Let processing continue for the other stubs
-                            logger.warn("Error processing stub {}", ex.getMessage(), ex);
+                            logger.warn(ct.trans("error.processing.stub", ex.getMessage()), ex);
                             someFailure = true;
                         } finally {
                             stub.printWatch(false);
                             if (swap) {
                                 swapAllSheets(); // Save sheet(s) & global book info to disk
-                                logger.info("End of {}", stub);
+                                logger.info(ct.trans("end.of", stub));
                             }
 
                             LogUtil.stopStub();
                         }
                     }
 
-                    logger.info("End of {}", this);
+                    logger.info(ct.trans("end.of", this));
                 }
 
                 return !someFailure;
@@ -2085,11 +2085,11 @@ public class Book
                 logger.debug("End of step set in {} ms.", (stopTime - startTime));
             }
         } catch (StepPause sp) {
-            logger.info("Processing stopped.");
+            logger.info(ct.trans("processing.stopped"));
         } catch (ProcessingCancellationException pce) {
             throw pce;
         } catch (Exception ex) {
-            logger.warn("Error in performing " + target, ex);
+            logger.warn(ct.trans("error.in.performing", target), ex);
         }
 
         return false;
@@ -2125,7 +2125,7 @@ public class Book
                 setModified(true);
             }
 
-            logger.info("Scores built: {}", theScores.size());
+            logger.info(ct.trans("scores.built", theScores.size()));
         }
 
         if (theScores == this.scores) {
@@ -2163,7 +2163,7 @@ public class Book
     public void resetTo (OmrStep step)
     {
         if (step != OmrStep.LOAD && step != OmrStep.BINARY) {
-            logger.error("Method resetTo is reserved to LOAD and BINARY steps");
+            logger.error(ct.trans("method.resetto.is.reserved"));
             return;
         }
 
@@ -2441,7 +2441,7 @@ public class Book
     public void store ()
     {
         if (bookPath == null) {
-            logger.warn("Bookpath not defined");
+            logger.warn(ct.trans("book.path.not.defined"));
         } else {
             store(bookPath, false);
         }
@@ -2468,7 +2468,7 @@ public class Book
             Path backup = FileUtil.backup(bookPath);
 
             if (backup != null) {
-                logger.info("Previous book file renamed as {}", backup);
+                logger.info(ct.trans("previous.book.file.renamed.as", backup));
             }
         }
 
@@ -2538,10 +2538,10 @@ public class Book
             this.bookPath = bookPath;
 
             if (diskWritten) {
-                logger.info("Book stored as {}", bookPath);
+                logger.info(ct.trans("book.stored.as", bookPath));
             }
         } catch (Exception ex) {
-            logger.warn("Error storing " + this + " to " + bookPath + " ex:" + ex, ex);
+            logger.warn(ct.trans("error.storing.to", this, bookPath, ex), ex);
         } finally {
             if (root != null) {
                 try {
@@ -2578,7 +2578,7 @@ public class Book
 
         setModified(false);
         bookUpgraded = false;
-        logger.info("Stored {}", bookInternals);
+        logger.info(ct.trans("stored", bookInternals));
     }
 
     //------------//
@@ -2794,7 +2794,7 @@ public class Book
             }
 
             if (!upgraded.isEmpty()) {
-                logger.info("Upgraded book {}", bookPath);
+                logger.info(ct.trans("upgraded.book", bookPath));
                 stubsToUpgrade.removeAll(upgraded);
             }
 
@@ -2802,7 +2802,7 @@ public class Book
                 BookActions.getInstance().setBookModifiedOrUpgraded(isModified() || isUpgraded());
             }
         } catch (Exception ex) {
-            logger.warn("Error upgrading stubs", ex);
+            logger.warn(ct.trans("error.upgrading.stubs", ex), ex);
         }
 
         if (constants.printWatch.isSet()) {
@@ -2853,9 +2853,9 @@ public class Book
         try {
             fileSystem.close();
 
-            logger.info("Book file system closed.");
+            logger.info(ct.trans("book.file.system.closed"));
         } catch (IOException ex) {
-            logger.warn("Could not close book file system " + ex, ex);
+            logger.warn(ct.trans("error.closing.book.file.system", ex), ex);
         }
     }
 
@@ -2892,7 +2892,7 @@ public class Book
             SchemaOutputResolver sor = new OmrSchemaOutputResolver(outputFileName);
             getJaxbContext().generateSchema(sor);
         } catch (Exception ex) {
-            logger.warn("Error generating schema for Book {}", ex.toString(), ex);
+            logger.warn(ct.trans("error.generating.book.schema", ex.toString()), ex);
         }
     }
 
@@ -2929,9 +2929,8 @@ public class Book
                                         Score score,
                                         List<Score> theScores)
     {
-        return (theScores.size() > 1)
-                ? (bookName + OMR.MOVEMENT_EXTENSION + (1 + theScores.indexOf(score)))
-                : bookName;
+        return (theScores.size() > 1) ? (bookName + OMR.MOVEMENT_EXTENSION + (1 + theScores.indexOf(
+                score))) : bookName;
     }
 
     //---------------//
@@ -2999,10 +2998,10 @@ public class Book
 
         try {
             if (!Files.exists(bookPath)) {
-                logger.warn("The file {} does not exist", bookPath);
+                logger.warn(ct.trans("file.does.not.exist", bookPath));
                 return null;
             } else {
-                logger.info("Loading book {}", bookPath);
+                logger.info(ct.trans("loading.book", bookPath));
             }
 
             watch.start("book");
@@ -3024,7 +3023,7 @@ public class Book
                 boolean ok = book.initTransients(null, bookPath);
 
                 if (!ok) {
-                    logger.info("Discarded {}", bookPath);
+                    logger.info(ct.trans("book.discarded", bookPath));
 
                     return null;
                 }
@@ -3033,7 +3032,7 @@ public class Book
                 return book;
             }
         } catch (IOException | JAXBException ex) {
-            logger.warn("Error loading book " + bookPath + " " + ex, ex);
+            logger.warn(ct.trans("error.loading.book", bookPath, ex.getMessage()), ex);
 
             return null;
         } finally {
@@ -3075,9 +3074,9 @@ public class Book
 
             return fileSystem.getPath(fileSystem.getSeparator());
         } catch (FileNotFoundException ex) {
-            logger.warn("File not found: " + bookPath, ex);
+            logger.warn(ct.trans("file.does.not.exist", bookPath));
         } catch (IOException ex) {
-            logger.warn("Error reading book:" + bookPath, ex);
+            logger.warn(ct.trans("error.reading.book.file", bookPath), ex);
         }
 
         return null;

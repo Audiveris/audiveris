@@ -29,9 +29,9 @@ import org.audiveris.omr.ui.GuiActions;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.WaitingTask;
+import org.audiveris.omr.util.Translator;
 
 import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
 
 import org.kohsuke.github.GHContent;
 import org.kohsuke.github.GHOrganization;
@@ -86,6 +86,8 @@ public class Languages
 
     private static final Logger logger = LoggerFactory.getLogger(Languages.class);
 
+    private static final Translator ct = new Translator(Languages.class);
+
     private static final String GITHUB_ORGANIZATION = "tesseract-ocr";
 
     private static final String GITHUB_REPOSITORY = "tessdata";
@@ -93,9 +95,6 @@ public class Languages
     private static Languages INSTANCE;
 
     //~ Instance fields ----------------------------------------------------------------------------
-
-    /** Component resources. */
-    private ResourceMap resources;
 
     /** Remote data (languages, codes). */
     private RemoteData remoteData;
@@ -135,22 +134,21 @@ public class Languages
     {
         final SortedSet<String> installed = TesseractOCR.getInstance().getSupportedLanguages();
         if (!installed.isEmpty()) {
-            logger.info(
-                    "Installed OCR languages: {}",
-                    installed.stream().collect(Collectors.joining(",")));
+            final String langs = installed.stream().collect(Collectors.joining(","));
+            logger.info(ct.trans("installed.ocr.languages", langs));
         } else if (OMR.gui == null) {
-            logger.warn("*** No installed OCR languages ***");
+            logger.warn(ct.trans("no.installed.ocr.languages"));
         } else {
             // Prompt user
-            final String install = getResources().getString("Check.install");
-            final String later = getResources().getString("Check.later");
+            final String install = ct.trans("Check.install");
+            final String later = ct.trans("Check.later");
             final Object[] options = { install, later };
-            final String message = getResources().getString("Check.message");
+            final String message = ct.trans("Check.message");
 
             final int choice = JOptionPane.showOptionDialog(
                     OMR.gui.getFrame(),
                     message,
-                    getResources().getString("Check.title"),
+                    ct.trans("Check.title"),
                     JOptionPane.DEFAULT_OPTION,
                     JOptionPane.WARNING_MESSAGE,
                     null,
@@ -200,15 +198,15 @@ public class Languages
                 }
             }
 
-            logger.info("Languages available on Tesseract site: {}", remoteData.codes.size());
+            logger.info(ct.trans("count.of.remote.languages", remoteData.codes.size()));
         } catch (IOException ex) {
-            logger.warn("Error getting remote languages.\n   {}", ex.getMessage());
+            logger.warn(ct.trans("error.getting.remote.languages", ex.getMessage()));
 
             if (ex.getCause() != null) {
-                logger.warn("   Cause: {}", ex.getCause().toString());
+                logger.warn("  " + ct.trans("cause", ex.getCause().toString()));
             }
 
-            logger.warn("   Please make sure you have access to Internet.");
+            logger.warn(" " + ct.trans("check.internet"));
         }
     }
 
@@ -227,18 +225,6 @@ public class Languages
         }
 
         return remoteData;
-    }
-
-    //--------------//
-    // getResources //
-    //--------------//
-    private ResourceMap getResources ()
-    {
-        if (resources == null) {
-            resources = Application.getInstance().getContext().getResourceMap(getClass());
-        }
-
-        return resources;
     }
 
     //-------------//
@@ -285,7 +271,7 @@ public class Languages
     {
         DownloadRemoteTask ()
         {
-            super(OmrGui.getApplication(), getResources().getString("downloadTask.message"));
+            super(OmrGui.getApplication(), ct.trans("downloadTask.message"));
         }
 
         @Override
@@ -367,7 +353,7 @@ public class Languages
     {
         private final JDialog dialog;
 
-        private final String boxTip = getResources().getString("box.shortDescription");
+        private final String boxTip = ct.trans("box.shortDescription");
 
         /**
          * Creates a new <code>Selector</code> object.
@@ -400,7 +386,8 @@ public class Languages
                 }
             });
 
-            getResources().injectComponents(dialog);
+            Application.getInstance().getContext().getResourceMap(getClass()) //
+                    .injectComponents(dialog);
             dialog.pack();
         }
 
@@ -451,7 +438,7 @@ public class Languages
                 logger.debug("ocrFolder: {}", ocrFolder);
 
                 if (!Files.isWritable(ocrFolder)) {
-                    logger.warn("No write access to the OCR folder {}", ocrFolder);
+                    logger.warn(ct.trans("no.write.access.to.ocr.folder", ocrFolder));
                     return;
                 }
 
@@ -461,11 +448,11 @@ public class Languages
                     if (c.isFile() && c.getName().equals(fileName)) {
                         final URI uri = new URI(c.getDownloadUrl());
                         final Path targetPath = ocrFolder.resolve(fileName);
-                        logger.info("Downloading '{}' as {} ...", code, targetPath);
+                        logger.info(ct.trans("downloading.as", code, targetPath));
 
                         try (InputStream is = uri.toURL().openStream()) {
                             final long size = Files.copy(is, targetPath, REPLACE_EXISTING);
-                            logger.info("Installed file: {} size: {}", fileName, size);
+                            logger.info(ct.trans("installed.file.size", fileName, size));
 
                             // Update the current collection of supported codes
                             getSupportedLanguages().addCode(code);
@@ -473,15 +460,16 @@ public class Languages
                             return;
                         } catch (IOException ex) {
                             logger.warn(
-                                    "{} while downloading {} to {}",
-                                    ex.getClass().getName(),
-                                    fileName,
-                                    ocrFolder);
+                                    ct.trans(
+                                            "error.while.downloading.to",
+                                            ex.getClass().getName(),
+                                            fileName,
+                                            ocrFolder));
                         }
                     }
                 }
             } catch (IOException | URISyntaxException ex) {
-                logger.error("Error downloading from  remote site {}", ex.getMessage(), ex);
+                logger.error(ct.trans("error.downloading.from", ex.getMessage()), ex);
             }
         }
 
@@ -535,7 +523,7 @@ public class Languages
 
                 if (box.isSelected()) {
                     if (getSupportedLanguages().contains(code)) {
-                        logger.info("No need to re-download '{}'", code);
+                        logger.info(ct.trans("no.need.to.redownload", code));
                     } else {
                         install(code);
                     }

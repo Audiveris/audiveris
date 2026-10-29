@@ -272,7 +272,6 @@ public class Source
             String name = field.getName();
             String value = field.getValue().trim();
 
-            ///logger.info("miscellaneous-field name:{} value:'{}'", name, value);
             if (name.startsWith(SOURCE_PREFIX)) {
                 String tail = name.substring(SOURCE_PREFIX.length());
 

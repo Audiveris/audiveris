@@ -56,10 +56,10 @@ import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 
-import ij.process.ByteProcessor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -194,10 +194,6 @@ public class ShapeChecker
             return;
         }
 
-        //        if (glyph.isVip()) {
-        //            logger.info("Checking " + glyph);
-        //        }
-        //
         Collection<Checker> checks = checkerMap.get(eval.shape);
 
         if (checks == null) {
@@ -226,9 +222,6 @@ public class ShapeChecker
                                   Shape newShape)
     {
         if (eval.shape != newShape) {
-            //            logger.info(
-            //                system.getLogPrefix() + "G#" + glyph.getId() + " " +
-            //                eval.shape + " -> " + newShape);
             eval.shape = newShape;
         }
 

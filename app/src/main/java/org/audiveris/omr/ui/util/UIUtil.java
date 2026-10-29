@@ -23,14 +23,16 @@ package org.audiveris.omr.ui.util;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-
-import com.formdev.flatlaf.util.SystemFileChooser;
+import org.audiveris.omr.util.ResourceUtil;
+import static org.audiveris.omr.util.ResourceUtil.format;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.formdev.flatlaf.util.SystemFileChooser;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -52,6 +54,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -80,6 +83,8 @@ public abstract class UIUtil
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(UIUtil.class);
+
+    private static final ResourceBundle resources = ResourceUtil.getBundle(UIUtil.class);
 
     /** Ratio to be applied on all font size. */
     public static final float GLOBAL_FONT_RATIO = constants.globalFontRatio.getValue().floatValue();
@@ -848,7 +853,7 @@ public abstract class UIUtil
     {
         if (ratio != constants.globalFontRatio.getValue()) {
             constants.globalFontRatio.setValue(ratio);
-            logger.info("Global font ratio: {} at next restart", ratio);
+            logger.info(format(resources.getString("global.font.ratio.at.next.restart"), ratio));
         }
     }
 

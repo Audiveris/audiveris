@@ -158,12 +158,10 @@ public class SegmentsBuilder
             List<Arc> relevants = getSeedArcs();
 
             for (Arc arc : relevants) {
-                ///logger.info("buildSegments for {}", arc);
                 buildCurve(arc);
             }
 
             // Purge duplicates
-            ///logger.info("purgeDuplicates...");
             purgeDuplicates();
 
             logger.info("Segments: {}", segments.size());
@@ -274,8 +272,7 @@ public class SegmentsBuilder
             }
 
             // Check location with respect to staves
-            for (boolean rev : new boolean[]
-            { true, false }) {
+            for (boolean rev : new boolean[] { true, false }) {
                 Point end = arc.getEnd(rev);
                 Staff staff = staffManager.getClosestStaff(end);
 

@@ -403,16 +403,12 @@ public abstract class Constant<E>
                 setTuple(prop, decode(prop));
             } else {
                 // Use source value
-                ///logger.info("setUnitAndName. unit:" + unit + " name:" + name);
                 setTuple(sourceString, decode(sourceString));
             }
 
             // Very last thing
             qualifiedName = qName;
 
-            //            System.out.println(
-            //                Thread.currentThread().getName() + ": " + "Done unit:" + unit +
-            //                " name:" + name);
         } catch (Exception ex) {
             logger.warn("Error registering constant {}", qName);
             ex.printStackTrace();

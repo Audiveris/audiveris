@@ -135,7 +135,6 @@ public class BeatUnitInter
                                MusicFont font,
                                Point dropLocation)
     {
-        //logger.info("BeatUnitInter.deriveFrom {}", symbol);
         //        MetronomeSymbol metroSymbol = (MetronomeSymbol) symbol;
         //        MetronomeInter.Model model = metroSymbol.getModel(font, dropLocation);
         //        setValue(model.value);

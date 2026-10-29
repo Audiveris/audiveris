@@ -24,6 +24,7 @@ package org.audiveris.omr.log;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.UriUtil;
 
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.SwingUtilities;
 
@@ -182,13 +184,7 @@ public abstract class LogUtil
      */
     public static String allInitialMessages ()
     {
-        StringBuilder sb = new StringBuilder();
-
-        for (String str : initialMessages) {
-            sb.append(str).append("\n");
-        }
-
-        return sb.toString();
+        return initialMessages.stream().collect(Collectors.joining("\n"));
     }
 
     //------------//
@@ -206,6 +202,8 @@ public abstract class LogUtil
     public static void initialize (Path CONFIG_FOLDER,
                                    URI RES_URI)
     {
+        final Translator ct = new Translator(LogUtil.class);
+
         // 1/ Check if system property is set and points to a real file
         final String loggingProp = System.getProperty(LOGBACK_LOGGING_KEY);
 
@@ -213,7 +211,7 @@ public abstract class LogUtil
             Path configPath = Paths.get(loggingProp).toAbsolutePath();
 
             if (Files.exists(configPath)) {
-                initMessage("Logging configuration found at " + configPath);
+                initMessage(ct.trans("logging.configuration.found.at", configPath));
 
                 return;
             } else {
@@ -227,7 +225,7 @@ public abstract class LogUtil
         Path configPath = CONFIG_FOLDER.resolve(LOGBACK_FILE_NAME).toAbsolutePath();
 
         if (Files.exists(configPath)) {
-            initMessage("Logging configuration found at " + configPath);
+            initMessage(ct.trans("logging.configuration.found.at", configPath));
             System.setProperty(LOGBACK_LOGGING_KEY, configPath.toString());
 
             return;
@@ -255,7 +253,7 @@ public abstract class LogUtil
             }
 
             if (Files.exists(localPath)) {
-                initMessage("Logging configuration found at " + configUri);
+                initMessage(ct.trans("logging.configuration.found.at", configUri));
                 System.setProperty(LOGBACK_LOGGING_KEY, localPath.toString());
 
                 return;
@@ -267,7 +265,7 @@ public abstract class LogUtil
         }
 
         // 4/ We need a default configuration
-        initMessage("LogUtil. Building a minimal Logging configuration");
+        initMessage(ct.trans("building.minimal.logging.configuration"));
 
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(

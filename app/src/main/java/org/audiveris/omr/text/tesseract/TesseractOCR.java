@@ -28,6 +28,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OCR;
 import org.audiveris.omr.text.TextLine;
+import org.audiveris.omr.util.Translator;
 
 import org.bytedeco.tesseract.StringVector;
 import org.bytedeco.tesseract.TessBaseAPI;
@@ -67,6 +68,8 @@ public class TesseractOCR
 
     private static final Logger logger = LoggerFactory.getLogger(TesseractOCR.class);
 
+    private static final Translator ct = new Translator(TesseractOCR.class);
+
     /** Latin encoder, to check character validity. (not used yet) */
     private static final CharsetEncoder encoder = Charset.forName("iso-8859-1").newEncoder();
 
@@ -78,11 +81,6 @@ public class TesseractOCR
 
     /** System environment variable pointing to TESSDATA location. */
     private static final String TESSDATA_PREFIX = "TESSDATA_PREFIX";
-
-    /** Warning message when OCR folder cannot be found. */
-    private static final String ocrNotFoundMsg = "Tesseract data could not be found. "
-            + "Try setting " + TESSDATA_PREFIX + " environment variable to point to " + TESSDATA
-            + " folder.";
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -129,19 +127,21 @@ public class TesseractOCR
         }
 
         // Second, test or create the Audiveris user config tessdata folder
-        final Path userConfigTessdata = WellKnowns.CONFIG_FOLDER.resolve(TESSDATA);
-        if (Files.isDirectory(userConfigTessdata)) {
-            return userConfigTessdata;
+        final Path userTessdata = WellKnowns.CONFIG_FOLDER.resolve(TESSDATA);
+        if (Files.isDirectory(userTessdata)) {
+            return userTessdata;
         } else {
             try {
-                logger.info("Creating OCR folder {}", userConfigTessdata);
-                return Files.createDirectories(userConfigTessdata);
+                logger.info(ct.trans("creating.ocr.folder", userTessdata));
+                return Files.createDirectories(userTessdata);
             } catch (IOException ex) {
-                logger.warn("Could not create folder {} {}", userConfigTessdata, ex);
+                logger.warn(ct.trans("could.not.create.folder", userTessdata, ex.getMessage()), ex);
             }
         }
 
-        logger.warn(ocrNotFoundMsg);
+        /** Warning message when OCR folder cannot be found. */
+        logger.warn(ct.trans("tesseract.data.could.not.be.found"));
+        logger.warn(ct.trans("try.setting.environment.variable", TESSDATA_PREFIX, TESSDATA));
 
         return null;
     }
@@ -167,14 +167,14 @@ public class TesseractOCR
                         set.add(languages.pop_back().getString());
                     }
                 } else {
-                    logger.warn("TesseractOCR. Could not initialize TessBaseAPI");
+                    logger.warn(ct.trans("could.not.initialize.TessBaseAPI"));
                 }
 
                 api.End();
 
                 return set;
             } catch (Throwable ex) {
-                final String msg = "Error in loading local OCR languages";
+                final String msg = ct.trans("error.in.loading.local.languages");
                 logger.warn(msg);
                 throw new UnavailableOcrException(msg, ex);
             }
@@ -301,11 +301,11 @@ public class TesseractOCR
 
             return lines;
         } catch (IOException ex) {
-            logger.warn("Could not create OCR order", ex);
+            logger.warn(ct.trans("could.not.create.ocr.order"), ex);
 
             return null;
         } catch (UnsatisfiedLinkError ex) {
-            final String msg = "OCR link error";
+            final String msg = ct.trans("ocr.link.error");
             logger.warn(msg);
             throw new UnavailableOcrException(msg, ex);
         }
@@ -318,27 +318,27 @@ public class TesseractOCR
     public boolean supports (String langSpec)
     {
         if (langSpec == null) {
-            logger.warn("Null language(s) specification");
+            logger.warn(ct.trans("null.languages.specification"));
             return false;
         }
 
         final List<String> codes = Language.codesOf(langSpec);
 
         if (codes.isEmpty()) {
-            logger.warn("Empty language(s) specification");
+            logger.warn(ct.trans("empty.languages.specification"));
             return false;
         }
 
         final Collection<String> supported = getSupportedLanguages();
 
         if (supported.isEmpty()) {
-            logger.warn("The collection of supported languages is empty");
+            logger.warn(ct.trans("empty.supported.languages"));
             return false;
         }
 
         for (String code : codes) {
             if (!supported.contains(code)) {
-                logger.warn("Language '{}' is not supported", code);
+                logger.warn(ct.trans("language.is.not.supported", code));
                 return false;
             }
         }

@@ -1405,9 +1405,6 @@ public class Staff
 
         double mean = dys.getMeanValue();
 
-        //        logger.info(
-        //            String.format("Staff#%d dy:%.2f std:%.2f", id, mean, dys.getStandardDeviation()));
-        //
         return mean;
     }
 

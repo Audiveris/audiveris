@@ -184,9 +184,7 @@ public class ActionManager
     public void loadAllDescriptors ()
     {
         // Load classes first for system actions, then for user actions if any
-        URI[] uris = new URI[]
-        {
-                UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
+        URI[] uris = new URI[] { UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
                 WellKnowns.CONFIG_FOLDER.resolve("user-actions.xml").toUri().normalize() };
 
         for (int i = 0; i < uris.length; i++) {
@@ -222,7 +220,6 @@ public class ActionManager
     @SuppressWarnings("unchecked")
     private ApplicationAction registerAction (ActionDescriptor desc)
     {
-        ///logger.info("registerAction. " + desc);
         ApplicationAction action = null;
 
         try {
@@ -237,8 +234,7 @@ public class ActionManager
                 if (Modifier.isStatic(getInstance.getModifiers())) {
                     instance = getInstance.invoke(null);
                 }
-            } catch (NoSuchMethodException ignored) {
-            }
+            } catch (NoSuchMethodException ignored) {}
 
             if (instance == null) {
                 // Fall back to allocate a new class instance

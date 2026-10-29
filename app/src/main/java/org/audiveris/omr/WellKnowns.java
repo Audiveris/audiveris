@@ -190,7 +190,7 @@ public abstract class WellKnowns
         createFolder(LOG_FOLDER);
 
         /** Log declared data (debug). */
-        logDeclaredData();
+        /// logDeclaredData();
 
         /** Make sure TEMP_FOLDER exists. */
         createFolder(TEMP_FOLDER);
@@ -286,8 +286,7 @@ public abstract class WellKnowns
             try {
                 System.setProperty("sun.java2d.uiScale", gdkScale);
                 return;
-            } catch (Exception ignored) {
-            }
+            } catch (Exception ignored) {}
         }
 
         // Auto-detect monitor scaling via GDK
@@ -296,8 +295,7 @@ public abstract class WellKnowns
             if (scale > 1) {
                 System.setProperty("sun.java2d.uiScale", String.valueOf(scale));
             }
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) {}
     }
 
     //------------------//
@@ -341,11 +339,17 @@ public abstract class WellKnowns
     }
 
     // GTK/GDK native function declarations
-    private static native boolean gtk_init_check(com.sun.jna.ptr.IntByReference argc, com.sun.jna.ptr.PointerByReference argv);
-    private static native com.sun.jna.Pointer gdk_display_get_default();
-    private static native int gdk_display_get_n_monitors(com.sun.jna.Pointer display);
-    private static native com.sun.jna.Pointer gdk_display_get_monitor(com.sun.jna.Pointer display, int num);
-    private static native int gdk_monitor_get_scale_factor(com.sun.jna.Pointer monitor);
+    private static native boolean gtk_init_check (com.sun.jna.ptr.IntByReference argc,
+                                                  com.sun.jna.ptr.PointerByReference argv);
+
+    private static native com.sun.jna.Pointer gdk_display_get_default ();
+
+    private static native int gdk_display_get_n_monitors (com.sun.jna.Pointer display);
+
+    private static native com.sun.jna.Pointer gdk_display_get_monitor (com.sun.jna.Pointer display,
+                                                                       int num);
+
+    private static native int gdk_monitor_get_scale_factor (com.sun.jna.Pointer monitor);
 
     //--------------//
     // ensureLoaded //

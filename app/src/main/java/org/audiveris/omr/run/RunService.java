@@ -27,10 +27,10 @@ import org.audiveris.omr.ui.selection.RunEvent;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.SelectionService;
 
-import org.bushe.swing.event.EventSubscriber;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.bushe.swing.event.EventSubscriber;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -50,12 +50,10 @@ public class RunService
     private static final Logger logger = LoggerFactory.getLogger(RunService.class);
 
     /** Events allowed to be published on this run service. */
-    private static final Class<?>[] eventsAllowed = new Class<?>[]
-    { RunEvent.class };
+    private static final Class<?>[] eventsAllowed = new Class<?>[] { RunEvent.class };
 
     /** Events observed on location service. */
-    private static final Class<?>[] locEventsRead = new Class<?>[]
-    { LocationEvent.class };
+    private static final Class<?>[] locEventsRead = new Class<?>[] { LocationEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -104,7 +102,6 @@ public class RunService
      */
     protected void handleLocationEvent (LocationEvent locationEvent)
     {
-        ///logger.info("RunTable location: {}", locationEvent);
         Rectangle rect = locationEvent.getData();
 
         if (rect == null) {

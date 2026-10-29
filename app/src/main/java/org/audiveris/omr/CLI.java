@@ -37,7 +37,7 @@ import static org.audiveris.omr.ui.action.AdvancedTopics.swapProcessedSheets;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.NaturalSpec;
-import org.audiveris.omr.util.ResourceUtil;
+import org.audiveris.omr.util.Translator;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -66,7 +66,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -89,7 +88,7 @@ public class CLI
 
     private static final Logger logger = LoggerFactory.getLogger(CLI.class);
 
-    private static final ResourceBundle resources = ResourceUtil.getBundle(CLI.class);
+    private static final Translator ct = new Translator(CLI.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -135,7 +134,7 @@ public class CLI
     {
         if (params.transcribe) {
             if ((params.step != null) && (params.step != OmrStep.last())) {
-                final String msg = trans("transcribe.incompatible", params.step);
+                final String msg = ct.trans("transcribe.incompatible", params.step);
                 throw new CmdLineException(parser, new Throwable(msg));
             }
 
@@ -330,7 +329,7 @@ public class CLI
      */
     public void printCommandLine ()
     {
-        StringBuilder sb = new StringBuilder("Command line parameters: ");
+        final StringBuilder sb = new StringBuilder("Command line parameters: ");
 
         if (toolName != null) {
             sb.append(toolName).append(" ");
@@ -351,25 +350,25 @@ public class CLI
         final StringBuilder buf = new StringBuilder();
 
         // Print syntax
-        buf.append("\n").append(trans("syntax.title"));
-        buf.append("\n    audiveris ").append(trans("syntax")).append("\n");
+        buf.append("\n").append(ct.trans("syntax.title"));
+        buf.append("\n    audiveris ").append(ct.trans("syntax")).append("\n");
 
-        buf.append("\n").append(trans("file.title"));
-        buf.append("\n    ").append(trans("file")).append("\n");
+        buf.append("\n").append(ct.trans("file.title"));
+        buf.append("\n    ").append(ct.trans("file")).append("\n");
 
-        buf.append("\n").append(trans("options.title")).append("\n");
+        buf.append("\n").append(ct.trans("options.title")).append("\n");
 
         StringWriter writer = new StringWriter();
-        parser.printUsage(writer, resources);
+        parser.printUsage(writer, ct.getBundle());
         buf.append(writer.toString());
 
-        buf.append("\n").append(trans("extensions.title"));
-        buf.append("\n    ").append(trans("extensions.omr"));
-        buf.append("\n    ").append(trans("extensions.other"));
+        buf.append("\n").append(ct.trans("extensions.title"));
+        buf.append("\n    ").append(ct.trans("extensions.omr"));
+        buf.append("\n    ").append(ct.trans("extensions.other"));
         buf.append("\n");
 
         // Print all steps
-        buf.append("\n").append(trans("steps.title"));
+        buf.append("\n").append(ct.trans("steps.title"));
 
         for (OmrStep step : OmrStep.values()) {
             buf.append(String.format("%n    %-10s : %s", step.name(), step.getTip()));
@@ -388,38 +387,6 @@ public class CLI
     public void nullifyOutputFolder ()
     {
         params.outputFolder = null;
-    }
-
-    //~ Static Methods -----------------------------------------------------------------------------
-
-    //-------//
-    // trans //
-    //-------//
-    /**
-     * Formatting and translating utility method.
-     *
-     * @param key       key to the pattern string
-     * @param arguments elements
-     * @return the formatted string
-     */
-    private static String trans (String key,
-                                 Object... arguments)
-    {
-        return ResourceUtil.format(trans(key), arguments);
-    }
-
-    //-------//
-    // trans //
-    //-------//
-    /**
-     * Translating utility method.
-     *
-     * @param key item id
-     * @return the translated string
-     */
-    private static String trans (String key)
-    {
-        return resources.getString(key);
     }
 
     //~ Inner classes ------------------------------------------------------------------------------
@@ -536,7 +503,7 @@ public class CLI
             // Check source does exist
             if (!Files.exists(path)) {
                 final String quotedPath = "\"" + path + "\"";
-                final String msg = trans("could.not.find.file", quotedPath);
+                final String msg = ct.trans("could.not.find.file", quotedPath);
                 logger.warn(msg);
                 throw new RuntimeException(msg);
             }
@@ -925,7 +892,7 @@ public class CLI
 
                     if (!ok) {
                         if (OMR.gui == null) {
-                            final String msg = trans("error.in.reaching.step", params.step);
+                            final String msg = ct.trans("error.in.reaching.step", params.step);
                             throw new Exception(msg);
                         } else {
                             return; // Safer
@@ -938,7 +905,7 @@ public class CLI
                     final boolean ok = book.transcribe(validStubs, scores, swap);
 
                     if (!ok && (OMR.gui == null)) {
-                        final String msg = trans("error.in.transcribing", book);
+                        final String msg = ct.trans("error.in.transcribing", book);
                         throw new Exception(msg);
                     }
                 }
@@ -954,7 +921,10 @@ public class CLI
                     } catch (IllegalAccessException | IllegalArgumentException
                             | InstantiationException | NoSuchMethodException | SecurityException
                             | InvocationTargetException ex) {
-                        final String msg = trans("error.running", params.runClass, ex.toString());
+                        final String msg = ct.trans(
+                                "error.running",
+                                params.runClass,
+                                ex.toString());
                         logger.warn(msg, ex);
                     }
                 }
@@ -965,7 +935,7 @@ public class CLI
                     final boolean ok = book.export(validStubs, scores);
 
                     if (!ok && (OMR.gui == null)) {
-                        throw new Exception(trans("export.error"));
+                        throw new Exception(ct.trans("export.error"));
                     }
                 }
 
@@ -987,11 +957,11 @@ public class CLI
                     book.print(validStubs);
                 }
             } catch (ProcessingCancellationException pce) {
-                logger.warn(trans("cancelled", book));
+                logger.warn(ct.trans("cancelled", book));
                 cancelled = true;
                 throw pce;
             } catch (Exception ex) {
-                logger.warn(trans("exception.occurred", ex), ex);
+                logger.warn(ct.trans("exception.occurred", ex), ex);
                 throw ex;
             } finally {
                 // Close (when in batch mode only)
@@ -1066,7 +1036,7 @@ public class CLI
             try {
                 props.load(new StringReader(pair));
             } catch (IOException ex) {
-                final String msg = trans("error.in", name, pair);
+                final String msg = ct.trans("error.in", name, pair);
                 throw new CmdLineException(owner, msg, ex);
             }
 
@@ -1144,7 +1114,7 @@ public class CLI
                     final OmrStep step = OmrStep.valueOf(stepName);
                     setter.addValue(step);
                 } catch (Exception ex) {
-                    final String msg = trans("invalid.step.name", stepName);
+                    final String msg = ct.trans("invalid.step.name", stepName);
                     throw new CmdLineException(owner, msg, ex);
                 }
             }

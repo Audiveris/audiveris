@@ -146,7 +146,6 @@ public class HeadSeedTally
                        HorizontalSide hSide,
                        double dx)
     {
-        ///logger.info(String.format("putDx %3d %5s %s", dx, hSide, head));
         data.get(hSide).put(head, dx);
     }
 
