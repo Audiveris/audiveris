@@ -472,6 +472,13 @@ public abstract class UIUtil
         if (fnef != null) {
             fc.addChoosableFileFilter(fnef);
             fc.setFileFilter(fnef);
+
+            // Let the Windows save dialog append the extension
+            if (save) {
+                fc.putPlatformProperty(
+                        SystemFileChooser.WINDOWS_DEFAULT_EXTENSION,
+                        fnef.getExtensions()[0]);
+            }
         }
 
         if (title != null) {
@@ -482,9 +489,134 @@ public abstract class UIUtil
 
         if (result == SystemFileChooser.APPROVE_OPTION) {
             file = fc.getSelectedFile();
+
+            if (save) {
+                file = withFilterExtension(file, fc.getFileFilter());
+            }
         }
 
         return file;
+    }
+
+    //-------------//
+    // fileChooser //
+    //-------------//
+    /**
+     * Let the user select a file, using the operating system native file dialog.
+     * <p>
+     * Several filters can be provided: <b>every</b> one is offered as a separate entry in the
+     * file-type dropdown, and the <b>first</b> one is selected by default.
+     *
+     * @param save      true for a SAVE dialog, false for a LOAD dialog
+     * @param parent    the parent component for the dialog, if any
+     * @param startFile default file, or just default directory, or null
+     * @param filters   the list of filters to offer as separate dropdown options (not null, not empty)
+     * @param title     a specific dialog title or null
+     * @return the selected file, or null
+     */
+    public static File fileChooser (boolean save,
+                                    Component parent,
+                                    File startFile,
+                                    List<OmrFileFilter> filters,
+                                    String title)
+    {
+        File file = null;
+
+        final SystemFileChooser fc = new SystemFileChooser();
+        fc.setApproveButtonText(title);
+        fc.setFileSelectionMode(SystemFileChooser.FILES_ONLY);
+
+        // Pre-select the directory, and potentially the file to save to
+        if (startFile != null) {
+            if (startFile.isDirectory()) {
+                fc.setCurrentDirectory(startFile);
+            } else {
+                File parentFile = startFile.getParentFile();
+                fc.setCurrentDirectory(parentFile);
+                fc.setSelectedFile(startFile);
+            }
+        }
+
+        // Offer every filter as a separate dropdown entry; the first one is the active default.
+        SystemFileChooser.FileNameExtensionFilter defaultFilter = null;
+
+        for (OmrFileFilter filter : filters) {
+            final SystemFileChooser.FileNameExtensionFilter fnef = toFileFilter(filter);
+
+            if (fnef != null) {
+                fc.addChoosableFileFilter(fnef);
+
+                if (defaultFilter == null) {
+                    defaultFilter = fnef;
+                }
+            }
+        }
+
+        if (defaultFilter != null) {
+            fc.setFileFilter(defaultFilter);
+
+            // Without a default extension, the Windows save dialog neither appends the extension
+            // nor switches it when the user picks another file type.
+            // Windows then keeps it in sync with the selected file type.
+            if (save) {
+                fc.putPlatformProperty(
+                        SystemFileChooser.WINDOWS_DEFAULT_EXTENSION,
+                        defaultFilter.getExtensions()[0]);
+            }
+        }
+
+        if (title != null) {
+            fc.setDialogTitle(title);
+        }
+
+        int result = save ? fc.showSaveDialog(parent) : fc.showOpenDialog(parent);
+
+        if (result == SystemFileChooser.APPROVE_OPTION) {
+            file = fc.getSelectedFile();
+
+            if (save) {
+                file = withFilterExtension(file, fc.getFileFilter());
+            }
+        }
+
+        return file;
+    }
+
+    //---------------------//
+    // withFilterExtension //
+    //---------------------//
+    /**
+     * Make sure the provided file name ends with one of the extensions of the selected filter.
+     * <p>
+     * Some native save dialogs (Linux, or Windows when the name already contains a dot)
+     * return the name as typed, without the extension of the selected file type.
+     *
+     * @param file   the file returned by the dialog
+     * @param filter the filter selected in the dialog, perhaps null
+     * @return the file, with the first filter extension appended if needed
+     */
+    private static File withFilterExtension (File file,
+                                             SystemFileChooser.FileFilter filter)
+    {
+        if (!(filter instanceof SystemFileChooser.FileNameExtensionFilter fnef)) {
+            return file;
+        }
+
+        final String[] extensions = fnef.getExtensions();
+
+        if (extensions.length == 0) {
+            return file;
+        }
+
+        final String name = file.getName().toLowerCase();
+
+        for (String ext : extensions) {
+            if (name.endsWith("." + ext.toLowerCase())) {
+                return file;
+            }
+        }
+
+        return new File(file.getParentFile(), file.getName() + "." + extensions[0]);
     }
 
     //--------------//
@@ -710,6 +842,37 @@ public abstract class UIUtil
                                     String title)
     {
         File file = fileChooser(save, parent, startPath.toFile(), filter, null);
+
+        if (file != null) {
+            return file.toPath();
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // pathChooser //
+    //-------------//
+    /**
+     * Let the user select a file path, using the operating system native file dialog.
+     * <p>
+     * Several filters can be provided: <b>every</b> one is offered as a separate entry in the
+     * file-type dropdown, and the <b>first</b> one is selected by default.
+     *
+     * @param save      true for a SAVE dialog, false for a LOAD dialog
+     * @param parent    the parent component for the dialog, if any
+     * @param startPath default path, or just default directory, or null
+     * @param filters   the list of filters to offer as separate dropdown options (not null, not empty)
+     * @param title     a specific dialog title or null
+     * @return the selected file, or null
+     */
+    public static Path pathChooser (boolean save,
+                                    Component parent,
+                                    Path startPath,
+                                    List<OmrFileFilter> filters,
+                                    String title)
+    {
+        File file = fileChooser(save, parent, startPath.toFile(), filters, null);
 
         if (file != null) {
             return file.toPath();
