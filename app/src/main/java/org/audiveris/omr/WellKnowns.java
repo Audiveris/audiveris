@@ -274,30 +274,91 @@ public abstract class WellKnowns
     //--------------------//
     // enableHiDpiScaling //
     //--------------------//
+    /**
+     * Detect the desktop scale factor on Linux and apply it.
+     * <p>
+     * Java2D on X11 (which includes XWayland) only supports integer scale factors, any
+     * fractional part of "sun.java2d.uiScale" is truncated.
+     * Hence the integer part of the scale is given to Java2D, and the remaining fractional ratio
+     * is given to FlatLaf via "flatlaf.uiScale", which is applied on top of Java2D scaling.
+     * For example, 1.25 gives Java2D 1 and FlatLaf 1.25, while 2.5 gives Java2D 2 and FlatLaf 1.25.
+     */
     private static void enableHiDpiScaling ()
     {
-        if (!LINUX || System.getProperty("sun.java2d.uiScale") != null) {
+        if (!LINUX || System.getProperty("sun.java2d.uiScale") != null
+                || System.getProperty("flatlaf.uiScale") != null) {
             return;
         }
+
+        double scale = 0;
 
         // Manual override via GDK_SCALE
         String gdkScale = System.getenv("GDK_SCALE");
         if (gdkScale != null && !gdkScale.isEmpty()) {
             try {
-                System.setProperty("sun.java2d.uiScale", gdkScale);
-                return;
-            } catch (Exception ignored) {
+                scale = Double.parseDouble(gdkScale.trim());
+            } catch (NumberFormatException ignored) {
             }
         }
 
-        // Auto-detect monitor scaling via GDK
-        try {
-            int scale = getGdkMaxScale();
-            if (scale > 1) {
-                System.setProperty("sun.java2d.uiScale", String.valueOf(scale));
+        // Auto-detect scaling via the Xft.dpi resource, set by KDE/GNOME to 96 * scale.
+        // Unlike GDK monitor scale, this supports fractional values and is 1 when the compositor
+        // already scales XWayland windows by itself.
+        if (scale <= 0) {
+            try {
+                scale = getXftScale();
+            } catch (Throwable ignored) {
             }
-        } catch (Exception ignored) {
         }
+
+        // Fallback to monitor scaling via GDK (integer only, fractional scales are rounded up)
+        if (scale <= 0) {
+            try {
+                scale = getGdkMaxScale();
+            } catch (Throwable ignored) {
+            }
+        }
+
+        if (scale <= 0) {
+            return;
+        }
+
+        // Always set FlatLaf scale explicitly, otherwise FlatLaf would guess its own scale from
+        // the default font size, which may not match the desktop scale.
+        final int java2dScale = Math.max(1, (int) Math.floor(scale));
+        final double flatScale = Math.max(1.0, scale / java2dScale);
+        System.setProperty("sun.java2d.uiScale", String.valueOf(java2dScale));
+        System.setProperty("flatlaf.uiScale", String.format(Locale.ROOT, "%.3f", flatScale));
+    }
+
+    //-------------//
+    // getXftScale //
+    //-------------//
+    /**
+     * Report the scale factor derived from "Xft.dpi" X resource, rounded to 0.05.
+     *
+     * @return the scale factor, or 0 if not available
+     */
+    private static double getXftScale ()
+    {
+        final String resources = X11.getResourceManagerString();
+        if (resources == null) {
+            return 0;
+        }
+
+        for (String line : resources.split("\n")) {
+            final int colon = line.indexOf(':');
+            if (colon > 0 && line.substring(0, colon).trim().equals("Xft.dpi")) {
+                try {
+                    final double dpi = Double.parseDouble(line.substring(colon + 1).trim());
+                    return (dpi > 0) ? Math.round(dpi / 96.0 * 20) / 20.0 : 0;
+                } catch (NumberFormatException ex) {
+                    return 0;
+                }
+            }
+        }
+
+        return 0;
     }
 
     //------------------//
@@ -346,6 +407,44 @@ public abstract class WellKnowns
     private static native int gdk_display_get_n_monitors(com.sun.jna.Pointer display);
     private static native com.sun.jna.Pointer gdk_display_get_monitor(com.sun.jna.Pointer display, int num);
     private static native int gdk_monitor_get_scale_factor(com.sun.jna.Pointer monitor);
+
+    //-----//
+    // X11 //
+    //-----//
+    /**
+     * Xlib native function declarations, kept apart from GTK ones since JNA direct mapping
+     * binds all native methods of a class to a single library.
+     */
+    private static class X11
+    {
+        static {
+            com.sun.jna.Native.register("X11");
+        }
+
+        /**
+         * Report the RESOURCE_MANAGER property of the X display (the xrdb resources).
+         *
+         * @return the resources string, or null if not available
+         */
+        static String getResourceManagerString ()
+        {
+            final com.sun.jna.Pointer display = XOpenDisplay(null);
+            if (display == null) {
+                return null;
+            }
+
+            try {
+                final com.sun.jna.Pointer resources = XResourceManagerString(display);
+                return (resources != null) ? resources.getString(0) : null;
+            } finally {
+                XCloseDisplay(display);
+            }
+        }
+
+        private static native com.sun.jna.Pointer XOpenDisplay(String name);
+        private static native com.sun.jna.Pointer XResourceManagerString(com.sun.jna.Pointer display);
+        private static native int XCloseDisplay(com.sun.jna.Pointer display);
+    }
 
     //--------------//
     // ensureLoaded //
