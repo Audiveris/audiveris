@@ -28,6 +28,8 @@ import com.github.difflib.patch.Patch;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.net.URI;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,6 +49,7 @@ import java.util.zip.ZipFile;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Element;
@@ -68,6 +71,7 @@ import static org.junit.Assert.fail;
  * <li>copies it into a temporary work folder (never touching the original),</li>
  * <li>runs the full batch pipeline ({@code -batch -transcribe -export}), with the work folder
  * as output folder,</li>
+ * <li>uses an isolated Tesseract data folder containing only the English language pack,</li>
  * <li>extracts the produced MusicXML (unzipped from the generated {@code .mxl} if needed),</li>
  * <li>compares it against the reference {@code .xml} file, after normalization of a few
  * volatile fields that cannot be reproduced byte for byte:
@@ -114,10 +118,15 @@ public class XmlExportRegressionTest
      * so that exactly one MusicXML file is produced per input.
      */
     private static final List<String> FORCED_CONSTANTS = Arrays.asList(
-            "org.audiveris.omr.sheet.BookManager.useOpus=false");
+            "org.audiveris.omr.sheet.BookManager.useOpus=false",
+            "org.audiveris.omr.text.Language.defaultSpecification=eng");
 
     /** Maximum number of unified diff lines reported per file. */
     private static final int MAX_DIFF_LINES = 80;
+
+    /** URL of the English Tesseract data file used when it is not already installed. */
+    private static final String ENGLISH_TRAINEDDATA_URL =
+            "https://raw.githubusercontent.com/tesseract-ocr/tessdata/main/eng.traineddata";
 
     /** Pattern to match an <encoding-date> line (volatile, dropped). */
     private static final Pattern ENCODING_DATE =
@@ -172,6 +181,7 @@ public class XmlExportRegressionTest
      */
     @Test
     public void testAllReferenceConversions ()
+        throws IOException
     {
         System.out.println("\n+++ testAllReferenceConversions in " + regressionFolder);
 
@@ -184,79 +194,86 @@ public class XmlExportRegressionTest
 
         final List<String> failures = new ArrayList<>();
         int okCount = 0;
+        final Path ocrFolder = prepareOcrData();
 
-        for (Path input : inputs) {
-            final String fileName = input.getFileName().toString();
-            final int dot = fileName.lastIndexOf('.');
-            final String radix = fileName.substring(0, dot);
-            final Path reference = input.resolveSibling(radix + ".xml");
+        try {
+            for (Path input : inputs) {
+                final String fileName = input.getFileName().toString();
+                final int dot = fileName.lastIndexOf('.');
+                final String radix = fileName.substring(0, dot);
+                final Path reference = input.resolveSibling(radix + ".xml");
 
-            if (!Files.exists(reference) && !isUpdateRequested()) {
-                failures.add(fileName + ": missing reference file " + reference);
-                continue;
-            }
-
-            // Work on a copy, never touch the reference folder
-            final Path tempDir;
-            final Path inputCopy;
-
-            try {
-                tempDir = Files.createTempDirectory("xml-export-");
-                inputCopy = Files.copy(input, tempDir.resolve(fileName));
-            } catch (IOException ex) {
-                failures.add(fileName + ": " + ex.getMessage());
-                continue;
-            }
-
-            try {
-                // Full batch pipeline on the copy, with outputs in the work folder
-                runAudiveris(
-                        tempDir.resolve("audiveris-run.log"),
-                        TIMEOUT_SECONDS,
-                        tempDir,
-                        inputCopy.toAbsolutePath());
-
-                final String producedXml = readScoreXml(findSingleExportFile(tempDir));
-
-                if (isUpdateRequested()) {
-                    updateReference(reference, producedXml);
-                    okCount++;
-                    deleteTree(tempDir);
-
+                if (!Files.exists(reference) && !isUpdateRequested()) {
+                    failures.add(fileName + ": missing reference file " + reference);
                     continue;
                 }
 
-                final String expectedXml =
-                        new String(Files.readAllBytes(reference), StandardCharsets.UTF_8);
+                // Work on a copy, never touch the reference folder
+                final Path tempDir;
+                final Path inputCopy;
 
-                final List<String> expectedLines = normalize(expectedXml);
-                final List<String> actualLines = normalize(producedXml);
-                final String diff = diffOf(expectedLines, actualLines);
-
-                if (diff == null) {
-                    System.out.println(fileName + ": matches reference ("
-                            + expectedLines.size() + " normalized lines)");
-                    okCount++;
-                    deleteTree(tempDir);
-                } else {
-                    // Keep the whole temp folder for inspection
-                    final Path kept = tempDir.resolve("produced-normalized.xml");
-                    Files.write(
-                            kept,
-                            String.join("\n", actualLines).getBytes(StandardCharsets.UTF_8));
-                    failures.add(fileName + ":\n" + diff + "\nArtifacts kept in: " + tempDir);
+                try {
+                    tempDir = Files.createTempDirectory("xml-export-");
+                    inputCopy = Files.copy(input, tempDir.resolve(fileName));
+                } catch (IOException ex) {
+                    failures.add(fileName + ": " + ex.getMessage());
+                    continue;
                 }
-            } catch (Exception | AssertionError ex) {
-                failures.add(fileName + ":\n" + ex.getMessage() + "\nArtifacts kept in: "
-                        + tempDir);
+
+                try {
+                    // Full batch pipeline on the copy, with outputs in the work folder
+                    runAudiveris(
+                            tempDir.resolve("audiveris-run.log"),
+                            TIMEOUT_SECONDS,
+                            tempDir,
+                            inputCopy.toAbsolutePath(),
+                            ocrFolder);
+
+                    final String producedXml = readScoreXml(findSingleExportFile(tempDir));
+
+                    if (isUpdateRequested()) {
+                        updateReference(reference, producedXml);
+                        okCount++;
+                        deleteTree(tempDir);
+
+                        continue;
+                    }
+
+                    final String expectedXml =
+                            new String(Files.readAllBytes(reference), StandardCharsets.UTF_8);
+
+                    final List<String> expectedLines = normalize(expectedXml);
+                    final List<String> actualLines = normalize(producedXml);
+                    final String diff = diffOf(expectedLines, actualLines);
+
+                    if (diff == null) {
+                        System.out.println(fileName + ": matches reference ("
+                                + expectedLines.size() + " normalized lines)");
+                        okCount++;
+                        deleteTree(tempDir);
+                    } else {
+                        // Keep the whole temp folder for inspection
+                        final Path kept = tempDir.resolve("produced-normalized.xml");
+                        Files.write(
+                                kept,
+                                String.join("\n", actualLines).getBytes(StandardCharsets.UTF_8));
+                        failures.add(fileName + ":\n" + diff + "\nArtifacts kept in: " + tempDir);
+                    }
+                } catch (Exception | AssertionError ex) {
+                    failures.add(fileName + ":\n" + ex.getMessage() + "\nArtifacts kept in: "
+                            + tempDir);
+                }
             }
-        }
 
-        System.out.println(okCount + "/" + inputs.size() + " input file(s) converted and compared");
+            System.out.println(
+                    okCount + "/" + inputs.size() + " input file(s) converted and compared");
 
-        if (!failures.isEmpty()) {
-            fail("Reference comparison failed for " + failures.size() + " file(s):\n\n"
-                    + String.join("\n\n---\n\n", failures));
+            if (!failures.isEmpty()) {
+                fail("Reference comparison failed for " + failures.size() + " file(s):\n\n"
+                        + String.join("\n\n---\n\n", failures));
+            }
+        } finally {
+            deleteTree(ocrFolder);
         }
     }
 
@@ -282,6 +299,51 @@ public class XmlExportRegressionTest
             });
         } catch (IOException | UncheckedIOException ex) {
             System.out.println("Could not delete work folder " + root + ": " + ex.getMessage());
+        }
+    }
+
+    //----------------//
+    // prepareOcrData //
+    //----------------//
+    /**
+     * Prepare an isolated Tesseract data folder containing only the English language pack.
+     */
+    private static Path prepareOcrData ()
+        throws IOException
+    {
+        final Path ocrFolder = Files.createTempDirectory("xml-export-tessdata-");
+        final Path englishData = ocrFolder.resolve("eng" + TesseractOCR.LANGUAGE_FILE_EXT);
+
+        try {
+            final Path installedFolder = TesseractOCR.getInstance().getOcrFolder();
+            final Path installedEnglish = (installedFolder != null)
+                    ? installedFolder.resolve(englishData.getFileName())
+                    : null;
+
+            if ((installedEnglish != null) && Files.isRegularFile(installedEnglish)
+                    && (Files.size(installedEnglish) > 0)) {
+                Files.copy(installedEnglish, englishData);
+            } else {
+                final URLConnection connection =
+                        URI.create(ENGLISH_TRAINEDDATA_URL).toURL().openConnection();
+                connection.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(30));
+                connection.setReadTimeout((int) TimeUnit.MINUTES.toMillis(2));
+
+                try (InputStream input = connection.getInputStream()) {
+                    Files.copy(input, englishData);
+                }
+            }
+
+            if (Files.size(englishData) == 0) {
+                throw new IOException("English Tesseract data file is empty: " + englishData);
+            }
+
+            System.out.println("Using English-only Tesseract data from " + ocrFolder);
+
+            return ocrFolder;
+        } catch (IOException ex) {
+            deleteTree(ocrFolder);
+            throw new IOException("Could not prepare English-only Tesseract data", ex);
         }
     }
 
@@ -622,7 +684,8 @@ public class XmlExportRegressionTest
     private static void runAudiveris (Path logFile,
                                       long timeoutSecs,
                                       Path outputFolder,
-                                      Path input)
+                                      Path input,
+                                      Path ocrFolder)
         throws IOException, InterruptedException
     {
         final List<String> command = new ArrayList<>();
@@ -645,6 +708,7 @@ public class XmlExportRegressionTest
         final ProcessBuilder builder = new ProcessBuilder(command);
         builder.directory(appFolder.toFile());
         builder.redirectErrorStream(true);
+        builder.environment().put("TESSDATA_PREFIX", ocrFolder.toAbsolutePath().toString());
 
         builder.redirectOutput(logFile.toFile());
 
