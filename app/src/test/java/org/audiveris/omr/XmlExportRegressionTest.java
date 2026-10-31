@@ -74,6 +74,7 @@ import static org.junit.Assert.fail;
  * <ul>
  * <li>{@code <encoding-date>} lines are dropped (they carry the export date)</li>
  * <li>{@code <software>} lines are dropped (they carry the Audiveris version)</li>
+ * <li>{@code font-family} and {@code font-size} attributes are dropped</li>
  * <li>absolute input paths in {@code <source>} and in the {@code source-file}
  * miscellaneous field are reduced to the bare file name</li>
  * </ul></li>
@@ -124,6 +125,10 @@ public class XmlExportRegressionTest
 
     /** Pattern to match a <software> line (carries the Audiveris version, dropped). */
     private static final Pattern SOFTWARE = Pattern.compile("\\s*<software>.*</software>\\s*");
+
+    /** Pattern to match font attributes whose values vary across environments. */
+    private static final Pattern FONT_ATTRIBUTES =
+            Pattern.compile("\\s+font-(?:family|size)=\"[^\"]*\"");
 
     /** Pattern to match the <source> element that carries the absolute input path. */
     private static final Pattern SOURCE_LINE = Pattern.compile("(<source>)(.*)(</source>)");
@@ -501,6 +506,8 @@ public class XmlExportRegressionTest
             // Reduce absolute input paths to their bare file name
             line = reduceToBaseName(SOURCE_LINE, line);
             line = reduceToBaseName(SOURCE_FILE_LINE, line);
+
+            line = FONT_ATTRIBUTES.matcher(line).replaceAll("");
 
             lines.add(line);
         }
