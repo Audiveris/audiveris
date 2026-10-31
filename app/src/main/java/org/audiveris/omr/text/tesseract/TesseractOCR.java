@@ -46,7 +46,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -152,35 +151,31 @@ public class TesseractOCR
     @Override
     public SortedSet<String> getSupportedLanguages ()
     {
-        if (isAvailable()) {
-            final Path ocrFolder = getOcrFolder();
-            final TreeSet<String> set = new TreeSet<>();
+        final Path ocrFolder = getOcrFolder();
+        final TreeSet<String> set = new TreeSet<>();
 
-            try {
-                final TessBaseAPI api = new TessBaseAPI();
+        try {
+            final TessBaseAPI api = new TessBaseAPI();
 
-                if (api.Init(ocrFolder.toString(), "") == 0) {
-                    final StringVector languages = new StringVector();
-                    api.GetAvailableLanguagesAsVector(languages);
+            if (api.Init(ocrFolder.toString(), "") == 0) {
+                final StringVector languages = new StringVector();
+                api.GetAvailableLanguagesAsVector(languages);
 
-                    while (!languages.empty()) {
-                        set.add(languages.pop_back().getString());
-                    }
-                } else {
-                    logger.warn(ct.trans("could.not.initialize.TessBaseAPI"));
+                while (!languages.empty()) {
+                    set.add(languages.pop_back().getString());
                 }
-
-                api.End();
-
-                return set;
-            } catch (Throwable ex) {
-                final String msg = ct.trans("error.in.loading.local.languages");
-                logger.warn(msg);
-                throw new UnavailableOcrException(msg, ex);
+            } else {
+                logger.warn(ct.trans("could.not.initialize.TessBaseAPI"));
             }
-        }
 
-        return Collections.emptySortedSet();
+            api.End();
+
+            return set;
+        } catch (Throwable ex) {
+            final String msg = ct.trans("error.in.loading.local.languages");
+            logger.warn(msg);
+            throw new UnavailableOcrException(msg, ex);
+        }
     }
 
     //------------------//

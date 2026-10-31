@@ -34,6 +34,7 @@ import org.audiveris.omr.math.PoorManAlgebra.Nd4j;
 import org.audiveris.omr.util.ChartPlotter;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.UriUtil;
 import org.audiveris.omr.util.ZipFileSystem;
 
@@ -86,6 +87,8 @@ public class BasicClassifier
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BasicClassifier.class);
+
+    private static final Translator ct = new Translator(BasicClassifier.class);
 
     /**
      * Seed of the initial weights and the sample order when reproducibility is enforced.
@@ -161,14 +164,14 @@ public class BasicClassifier
     private NeuralNetwork createModel ()
     {
         // Get a brand new one (not trained)
-        logger.info("Creating a brand new {}", getName());
+        logger.info(ct.trans("creating.a.brand.new.classifier", getName()));
 
         // Weights are random, so two trainings on the same samples give two different
         // networks. Seeding them is part of what makes a run repeatable; the sample
         // order in train() and the split in SampleRepository are the rest.
         if (ShapeClassifier.enforceReproducibility()) {
             NeuralNetwork.setSeed(REPRODUCIBLE_SEED);
-            logger.info("Initial weights seeded for reproducibility");
+            logger.info(ct.trans("initial.weights.seeded "));
         }
 
         // We allocate a hidden layer with as many cells as the output layer
@@ -321,17 +324,16 @@ public class BasicClassifier
                 root.getFileSystem().close();
 
                 if (!isCompatible(model, norms)) {
-                    final String msg = "Incompatible classifier user data in " + path
-                            + ", trying default data";
-                    logger.warn(msg);
+                    logger.warn(ct.trans("incompatible.classifier.user.data.in", path));
+                    logger.warn(ct.trans("trying.default.data"));
                 } else {
                     // Tell user we are not using the default
-                    logger.info("Local classifier data found at {}", path);
+                    logger.info(ct.trans("custom.classifier.data.found.at", path));
 
                     return new Network(model, norms); // Normal exit
                 }
             } catch (Exception ex) {
-                logger.warn("Load error {}", ex.toString(), ex);
+                logger.warn(ct.trans("load.error", ex.toString()), ex);
             }
         }
 
@@ -376,7 +378,7 @@ public class BasicClassifier
             return new Network(model, norms); // Normal exit
             //            }
         } catch (Exception ex) {
-            logger.warn("Load error on {} {}", uri, ex.toString(), ex);
+            logger.warn(ct.trans("load.error.on", uri), ex.toString(), ex);
         }
 
         return null; // Failure
@@ -487,7 +489,7 @@ public class BasicClassifier
     public void setLambda (double lambda)
     {
         network.model.setLambda(lambda);
-        logger.info("Lambda set to {}", lambda);
+        logger.info(ct.trans("lambda.set.to", lambda));
     }
 
     //-----------------//
@@ -497,7 +499,7 @@ public class BasicClassifier
     public void setLearningRate (double learningRate)
     {
         network.model.setLearningRate(learningRate);
-        logger.info("Learning set to {}", learningRate);
+        logger.info(ct.trans("learning.set.to", learningRate));
     }
 
     //-------------//
@@ -537,9 +539,9 @@ public class BasicClassifier
 
             root.getFileSystem().close();
 
-            logger.info("{} data stored to {}", getName(), path);
+            logger.info(ct.trans("data.stored.to", getName(), path));
         } catch (Exception ex) {
-            logger.warn("Error storing {} {}", getName(), ex.toString(), ex);
+            logger.warn(ct.trans("error.storing", getName(), ex.toString()), ex);
         }
     }
 
@@ -558,7 +560,7 @@ public class BasicClassifier
             bos.flush();
         }
 
-        logger.info("Engine marshalled to {}", modelPath);
+        logger.info(ct.trans("engine.marshalled.to", modelPath));
     }
 
     //------------//
@@ -593,10 +595,10 @@ public class BasicClassifier
     public void train (Collection<Sample> samples,
                        int epochs)
     {
-        logger.info("Training on {} samples", samples.size());
+        logger.info(ct.trans("training.on.samples", samples.size()));
 
         if (samples.isEmpty()) {
-            logger.warn("No sample to retrain neural classifier");
+            logger.warn(ct.trans("no.sample.to.retrain.neural.network"));
 
             return;
         }
@@ -636,8 +638,8 @@ public class BasicClassifier
         // Convert features for NeuralNetwork data format
         int rows = features.rows();
         int cols = features.columns();
-        logger.info("samples: {}", rows);
-        logger.info("features: {}", cols);
+        logger.info(ct.trans("samples", rows));
+        logger.info(ct.trans("features", cols));
 
         INDArray labels = dataSet.getLabels();
         double[][] inputs = new double[newSamples.size()][];
@@ -673,7 +675,7 @@ public class BasicClassifier
         try {
             store();
         } catch (Exception ex) {
-            logger.warn("Error storing {} {}", getName(), ex.getMessage(), ex);
+            logger.warn(ct.trans("error.storing", getName(), ex.getMessage()), ex);
         }
     }
 

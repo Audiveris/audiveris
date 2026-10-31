@@ -190,7 +190,7 @@ public abstract class WellKnowns
         createFolder(LOG_FOLDER);
 
         /** Log declared data (debug). */
-        /// logDeclaredData();
+        logDeclaredData();
 
         /** Make sure TEMP_FOLDER exists. */
         createFolder(TEMP_FOLDER);

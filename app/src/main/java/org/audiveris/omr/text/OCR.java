@@ -22,6 +22,7 @@
 package org.audiveris.omr.text;
 
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.util.Translator;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -37,8 +38,10 @@ public interface OCR
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    static final Translator ocrCt = new Translator(OCR.class);
+
     /** Standard NO_OCR message: {@value}. */
-    static String NO_OCR = "No OCR is available!";
+    static String NO_OCR = ocrCt.trans("no.ocr.is.available");
 
     //~ Methods ------------------------------------------------------------------------------------
 

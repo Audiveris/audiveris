@@ -17,6 +17,7 @@ nbproject
 .idea/*
 .nb-gradle/*
 .nb-gradle-properties
+*.bak
 *.exe
 *.lnk
 *.log

@@ -63,7 +63,7 @@ public abstract class Constant<E>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(Constant.class);
+    private static Logger logger;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -109,6 +109,7 @@ public abstract class Constant<E>
                         java.lang.String description)
     {
         if (sourceString == null) {
+            initLogger();
             logger.warn("*** Constant with no sourceString. Description: {}", description);
             throw new IllegalArgumentException("Any constant must have a source-provided String");
         }
@@ -410,6 +411,7 @@ public abstract class Constant<E>
             qualifiedName = qName;
 
         } catch (Exception ex) {
+            initLogger();
             logger.warn("Error registering constant {}", qName);
             ex.printStackTrace();
         }
@@ -458,6 +460,15 @@ public abstract class Constant<E>
     public java.lang.String toString ()
     {
         return (name != null) ? name : "NO_NAME";
+    }
+
+    //~ Static Methods -----------------------------------------------------------------------------
+
+    private static void initLogger ()
+    {
+        if (logger == null) {
+            logger = LoggerFactory.getLogger(Constant.class);
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -626,6 +637,7 @@ public abstract class Constant<E>
                     return DATE_FORMAT.parse(str);
                 }
             } catch (ParseException ex) {
+                initLogger();
                 logger.error("Error parsing {}", str, ex);
 
                 return null;
@@ -650,6 +662,7 @@ public abstract class Constant<E>
                     return DATE_FORMAT.parse(str);
                 }
             } catch (ParseException ex) {
+                initLogger();
                 logger.error("Error parsing {}", str, ex);
 
                 return null;

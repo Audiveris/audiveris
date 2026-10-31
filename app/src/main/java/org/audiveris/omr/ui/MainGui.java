@@ -29,7 +29,6 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.log.LogPane;
-import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.score.PartwiseBuilder;
 import org.audiveris.omr.sheet.Book;
@@ -53,6 +52,7 @@ import org.audiveris.omr.ui.util.SeparableMenu;
 import org.audiveris.omr.ui.util.UILookAndFeel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.OmrExecutors;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.WeakPropertyChangeListener;
 
 import org.jdesktop.application.Application;
@@ -101,6 +101,8 @@ public class MainGui
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(MainGui.class);
+
+    private static final Translator ct = new Translator(MainGui.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -486,7 +488,7 @@ public class MainGui
                 frame.setTitle(sb.toString());
             });
         } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
+            logger.warn(ct.trans("onevent.error", ex.getMessage()), ex);
         }
     }
 
@@ -551,7 +553,7 @@ public class MainGui
 
         // Launch inputs, books & scripts
         for (Callable<Void> task : Main.getCli().getCliTasks()) {
-            logger.info("MainGui submitting {}", task);
+            logger.info(ct.trans("submitting.task", task));
             OmrExecutors.getCachedLowExecutor().submit(task);
         }
     }
@@ -564,10 +566,9 @@ public class MainGui
     {
         logger.debug("MainGui. 2/startup");
         logger.debug("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
-        logger.info("\n{}", LogUtil.allInitialMessages());
 
         if (!OcrUtil.getOcr().isAvailable()) {
-            logger.warn("{} Check log file for more details.", OCR.NO_OCR);
+            logger.warn(OCR.NO_OCR);
         }
 
         // Make the OmrGui instance available for the other classes
