@@ -36,10 +36,10 @@ import static org.audiveris.omr.ui.util.UILookAndFeel.THEME_DARK_NAME;
 import static org.audiveris.omr.ui.util.UILookAndFeel.THEME_LIGHT_NAME;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.LabeledEnum;
+import static org.audiveris.omr.util.ResourceUtil.format;
 import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Application;
-import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
@@ -90,6 +90,9 @@ public abstract class Preferences
 
     private static final Logger logger = LoggerFactory.getLogger(Preferences.class);
 
+    private static final ResourceMap resources = Application.getInstance().getContext()
+            .getResourceMap(Preferences.class);
+
     /**
      * Common column specifications for all rows.
      * For the browse pane, last field on right must be kept extended, hence the fixed 190dlu value
@@ -97,10 +100,6 @@ public abstract class Preferences
     private static final String columnSpecs = "" //
             + "12dlu,1dlu,90dlu" // 1,x,3: (Checkbox + gap + item) or button alone
             + ",10dlu,190dlu"; // x,5: Gap, then large field on right for explanation
-
-    private static final ApplicationContext context = Application.getInstance().getContext();
-
-    private static final ResourceMap resources = context.getResourceMap(Preferences.class);
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -487,7 +486,7 @@ public abstract class Preferences
                 if (dir != null) {
                     field.setText(dir.toString());
                     BookManager.setBaseFolder(dir.toPath());
-                    logger.info("Output folder is now {}", dir);
+                    logger.info(format(resources.getString("base.output.folder.is.now"), dir));
                 }
             }
         }

@@ -77,7 +77,6 @@ public class FilamentView
         List<Filament> list = entityService.getSelectedEntityList();
 
         if ((list != null) && !list.isEmpty()) {
-            ///logger.info("{} selected filaments", list.size());
             for (Filament fil : list) {
                 for (Section section : fil.getMembers()) {
                     section.render(g, false, Color.BLUE);

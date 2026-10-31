@@ -466,10 +466,6 @@ public class AlterInter
             // Average value of both heuristics
             double mix = 0.5 * (massPitch + geoPitch);
 
-            // logger.info(
-            //         "G#{} {}",
-            //         glyph.getId(),
-            //         String.format("mass:%+.2f geo:%+.2f mix:%+.2f", massPitch, geoPitch, mix));
             return new Pitches((int) Math.rint(mix), mix);
         } else {
             return new Pitches((int) Math.rint(massPitch), massPitch);

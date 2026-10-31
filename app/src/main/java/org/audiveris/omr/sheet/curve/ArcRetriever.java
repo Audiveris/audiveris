@@ -185,13 +185,12 @@ public class ArcRetriever
 
         // Too short?
         if (points.size() < params.arcMinQuorum) {
-            ///logger.info("Too short: {}", points.size());
             return ArcShape.SHORT;
         }
 
         // Check arc is not just a long portion of staff line
         if (isStaffArc(arc)) {
-            //logger.info("Staff Line");
+            // Staff Line
             if (arc.getLength() > params.maxStaffArcLength) {
                 return ArcShape.IRRELEVANT;
             } else {
@@ -207,7 +206,7 @@ public class ArcRetriever
         double sinSq = sinSq(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y);
 
         if (sinSq <= params.maxSinSq) {
-            ///logger.info("3 colinear points");
+            // 3 colinear points
 
             // This cannot be a slur, but perhaps a straight line.
             // Check mean distance to straight line
@@ -219,17 +218,17 @@ public class ArcRetriever
                 double invSlope = line.getInvertedSlope();
 
                 if (abs(invSlope + sheet.getSkew().getSlope()) <= params.minSlope) {
-                    //logger.info("Vertical line");
+                    // Vertical line
                     return ArcShape.IRRELEVANT;
                 }
 
                 double slope = line.getSlope();
 
                 if (abs(slope - sheet.getSkew().getSlope()) <= params.minSlope) {
-                    //logger.info("Horizontal  line");
+                    // Horizontal  line
                 }
 
-                ///logger.info("Straight line");
+                // Straight line
                 return ArcShape.LINE;
             }
         }
@@ -298,8 +297,7 @@ public class ArcRetriever
         double maxDy = Double.MIN_VALUE;
         double minDy = Double.MAX_VALUE;
 
-        for (int i : new int[]
-        { 0, points.size() / 2, points.size() - 1 }) {
+        for (int i : new int[] { 0, points.size() / 2, points.size() - 1 }) {
             Point p = points.get(i);
             double dist = p.y - line.yAt(p.x);
             maxDist = max(maxDist, abs(dist));

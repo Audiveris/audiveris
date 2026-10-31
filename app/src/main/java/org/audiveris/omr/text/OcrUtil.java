@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.text.OCR.LayoutMode;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,16 +51,20 @@ public abstract class OcrUtil
 
     private static final Logger logger = LoggerFactory.getLogger(OcrUtil.class);
 
+    private static final Translator ct = new Translator(OcrUtil.class);
+
     /** The related OCR. */
     private static final OCR ocr = TesseractOCR.getInstance();
 
     //~ Constructors -------------------------------------------------------------------------------
+
     /** Not meant to be instantiated. */
     private OcrUtil ()
     {
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
+
     //--------//
     // getOcr //
     //--------//
@@ -97,13 +102,13 @@ public abstract class OcrUtil
     {
         // Make sure we can use the OCR
         if (!ocr.isAvailable()) {
-            logger.info("No OCR available");
+            logger.info(ct.trans("no.ocr.available"));
             return Collections.emptyList();
         }
 
         // Make sure we have all the specified languages
         if (!ocr.supports(languages)) {
-            logger.info("Missing support for '{}' language(s)", languages);
+            logger.info(ct.trans("missing.support.for", languages));
             return Collections.emptyList();
         }
 
@@ -136,7 +141,7 @@ public abstract class OcrUtil
         final List<TextLine> lines = ocr.recognize(sheet, bi, origin, languages, layoutMode, label);
 
         if (lines == null) {
-            logger.info("No OCR'd lines");
+            logger.info(ct.trans("no.ocrd.lines"));
             return Collections.emptyList();
         }
 

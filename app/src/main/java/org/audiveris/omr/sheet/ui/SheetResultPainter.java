@@ -375,7 +375,6 @@ public class SheetResultPainter
                     }
 
                     final TextLayout layout = basicLayout(fullName, fat);
-                    ///logger.info("{} {}", fullName, layout.getBounds());
                     paint(layout, new Point(x + partDx, y), BOTTOM_LEFT);
                 }
             }

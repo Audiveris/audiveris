@@ -978,7 +978,7 @@ public class SheetStub
 
             // LOAD already performed: unmarshall from book file
             if (SwingUtilities.isEventDispatchThread()) {
-                logger.warn("XXX Unmarshalling .omr file on EDT XXXX");
+                logger.error("XXX Unmarshalling .omr file on EDT XXX");
             }
 
             final StopWatch watch = new StopWatch("Load Sheet " + this);

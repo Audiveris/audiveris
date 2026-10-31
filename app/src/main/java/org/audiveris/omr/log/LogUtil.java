@@ -24,14 +24,15 @@ package org.audiveris.omr.log;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.UriUtil;
 
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.slf4j.event.Level;
 
 import org.apache.commons.io.FileUtils;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
@@ -77,7 +78,7 @@ public abstract class LogUtil
     private static final String LOGBACK_FILE_NAME = "logback.xml";
 
     /** Initial messages before logging is fully set. */
-    private static final List<String> initialMessages = new ArrayList<>();
+    private static final List<Message> messages = new ArrayList<>();
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -149,7 +150,7 @@ public abstract class LogUtil
         fileAppender.start();
         root.addAppender(fileAppender);
 
-        initMessage("Logging to file " + logPath);
+        messages.add(new Message(Level.INFO, "logging.file", logPath));
     }
 
     //----------------//
@@ -180,15 +181,9 @@ public abstract class LogUtil
      *
      * @return initial messages concatenated into one string
      */
-    public static String allInitialMessages ()
+    public static List<Message> allInitialMessages ()
     {
-        StringBuilder sb = new StringBuilder();
-
-        for (String str : initialMessages) {
-            sb.append(str).append("\n");
-        }
-
-        return sb.toString();
+        return messages;
     }
 
     //------------//
@@ -210,29 +205,23 @@ public abstract class LogUtil
         final String loggingProp = System.getProperty(LOGBACK_LOGGING_KEY);
 
         if (loggingProp != null) {
-            Path configPath = Paths.get(loggingProp).toAbsolutePath();
+            final Path configPath = Paths.get(loggingProp).toAbsolutePath();
 
             if (Files.exists(configPath)) {
-                initMessage("Logging configuration found at " + configPath);
+                messages.add(new Message(Level.INFO, "configuration.found.at", configPath));
 
                 return;
-            } else {
-                /// initMessage("LogUtil. File " + configPath + " does not exist.");
             }
-        } else {
-            /// initMessage("LogUtil. Property " + LOGBACK_LOGGING_KEY + " not defined, skipped.");
         }
 
         // 2/ Look for well-known location (user Audiveris config folder)
-        Path configPath = CONFIG_FOLDER.resolve(LOGBACK_FILE_NAME).toAbsolutePath();
+        final Path configPath = CONFIG_FOLDER.resolve(LOGBACK_FILE_NAME).toAbsolutePath();
 
         if (Files.exists(configPath)) {
-            initMessage("Logging configuration found at " + configPath);
+            messages.add(new Message(Level.INFO, "configuration.found.at", configPath));
             System.setProperty(LOGBACK_LOGGING_KEY, configPath.toString());
 
             return;
-        } else {
-            /// initMessage("LogUtil. No " + configPath + ", skipped.");
         }
 
         // 3/ Look for suitable file within 'res' folder or resource
@@ -255,19 +244,17 @@ public abstract class LogUtil
             }
 
             if (Files.exists(localPath)) {
-                initMessage("Logging configuration found at " + configUri);
+                messages.add(new Message(Level.INFO, "configuration.found.at", configUri));
                 System.setProperty(LOGBACK_LOGGING_KEY, localPath.toString());
 
                 return;
-            } else {
-                /// initMessage("LogUtil. No " + localPath + ", skipped.");
             }
         } catch (IOException ex) {
             ex.printStackTrace();
         }
 
         // 4/ We need a default configuration
-        initMessage("LogUtil. Building a minimal Logging configuration");
+        messages.add(new Message(Level.INFO, "minimal.configuration"));
 
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
@@ -286,23 +273,10 @@ public abstract class LogUtil
         root.addAppender(consoleAppender);
 
         // Levels
-        root.setLevel(Level.INFO);
+        root.setLevel(ch.qos.logback.classic.Level.INFO);
 
         // OPTIONAL: print logback internal status messages
         StatusPrinter.print(loggerContext);
-    }
-
-    //-------------//
-    // initMessage //
-    //-------------//
-    /**
-     * Record a message before logging is fully set.
-     *
-     * @param str the message to record
-     */
-    private static void initMessage (String str)
-    {
-        initialMessages.add(str);
     }
 
     //----------------//
@@ -398,14 +372,48 @@ public abstract class LogUtil
     public static Level toLevel (final String str)
     {
         return switch (str.toUpperCase()) {
-            case "ALL" -> Level.ALL;
             case "TRACE" -> Level.TRACE;
             case "DEBUG" -> Level.DEBUG;
             case "INFO" -> Level.INFO;
             case "WARN" -> Level.WARN;
             case "ERROR" -> Level.ERROR;
-            case "OFF" -> Level.OFF;
-            default -> Level.OFF;
+            default -> Level.INFO;
         };
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //---------//
+    // Message //
+    //---------//
+    /**
+     * Message whose translation can be differed (typically until the user locale is known).
+     */
+    public static class Message
+    {
+        public final Level level;
+
+        public final String key;
+
+        public final Object[] arguments;
+
+        public Message (Level level,
+                        String key,
+                        Object... arguments)
+        {
+            this.level = level;
+            this.key = key;
+            this.arguments = arguments;
+        }
+
+        public String translated ()
+        {
+            final Translator ct = new Translator(LogUtil.class);
+
+            if (arguments == null)
+                return ct.trans(key);
+            else
+                return ct.trans(key, arguments);
+        }
     }
 }

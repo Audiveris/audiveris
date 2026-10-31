@@ -141,7 +141,6 @@ public class ShapeColorChooser
     public void stateChanged (ChangeEvent e)
     {
         chosenColor = colorChooser.getColor();
-        ///logger.info("chosenColor: " + chosenColor);
         ranges.colorChanged();
         shapes.colorChanged();
     }

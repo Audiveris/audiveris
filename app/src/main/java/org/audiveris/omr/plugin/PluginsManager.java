@@ -27,6 +27,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.ui.util.AbstractMenuListener;
 import org.audiveris.omr.ui.util.SeparableMenu;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
@@ -68,6 +69,8 @@ public class PluginsManager
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(PluginsManager.class);
+
+    private static final Translator ct = new Translator(PluginsManager.class);
 
     /** Persistent default plugin id. */
     public static final Param<String> defaultPluginId = new Default();
@@ -208,14 +211,14 @@ public class PluginsManager
                     }
                 }
 
-                logger.info("Plugins loaded from {}", pluginsPath);
+                logger.info(ct.trans("plugins.loaded.from", pluginsPath));
 
                 return pluginsHolder.list; // Normal exit
             } catch (JAXBException ex) {
-                logger.warn("Error loading {}", pluginsPath, ex);
+                logger.warn(ct.trans("error.loading", pluginsPath), ex);
             }
         } else {
-            logger.debug("No {} file found", pluginsPath);
+            logger.debug(ct.trans("no.file.found", pluginsPath));
         }
 
         return Collections.emptyList();
@@ -250,7 +253,7 @@ public class PluginsManager
             if (plugin != null) {
                 setDefaultPlugin(plugin);
             } else {
-                logger.warn("Could not find default plugin {}", pluginId);
+                logger.warn(ct.trans("could.not.find.default.plugin", pluginId));
             }
         } else {
             final String defaultId = constants.defaultPlugin.getValue().trim();
@@ -345,8 +348,9 @@ public class PluginsManager
 
                 final Plugin defaultPlugin = getInstance().defaultPlugin;
                 logger.debug(
-                        "Default plugin is now: {}",
-                        (defaultPlugin != null) ? defaultPlugin.getId() : null);
+                        ct.trans(
+                                "default.plugin.is.now",
+                                (defaultPlugin != null) ? defaultPlugin.getId() : null));
 
                 return true;
             }
@@ -390,8 +394,8 @@ public class PluginsManager
                     // Indicate which plugin is the default (if any)
                     Action action = item.getAction();
 
-                    if (action instanceof PluginAction) {
-                        Plugin plugin = ((PluginAction) action).getPlugin();
+                    if (action instanceof PluginAction pluginAction) {
+                        Plugin plugin = pluginAction.getPlugin();
                         item.setText(
                                 plugin.getId() + ((plugin == defaultPlugin) ? " (default)" : ""));
                     }

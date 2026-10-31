@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.UriUtil;
 
 import org.slf4j.Logger;
@@ -61,6 +62,8 @@ public class AliasPatterns
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AliasPatterns.class);
+
+    private static final Translator ct = new Translator(AliasPatterns.class);
 
     private static final String ALIAS_PATTERNS_FILENAME = "alias-patterns.xml";
 
@@ -143,7 +146,7 @@ public class AliasPatterns
 
                         // Compile strings into patterns
                         if (!stringList.isEmpty()) {
-                            logger.info("Alias patterns: {}", stringList);
+                            logger.info(ct.trans("alias.patterns", stringList));
 
                             for (String raw : stringList) {
                                 patternList.add(Pattern.compile(raw));
@@ -153,10 +156,10 @@ public class AliasPatterns
                 } catch (IOException ex) {
                     if (i != 0) {
                         // First item (user) is optional
-                        logger.error("Mandatory file not found {}", uri, ex);
+                        logger.error(ct.trans("mandatory.file.not.found", uri), ex);
                     }
                 } catch (JAXBException ex) {
-                    logger.warn("Error unmarshalling " + uri, ex);
+                    logger.warn(ct.trans("error.unmarshalling", uri), ex);
                 }
             }
         }

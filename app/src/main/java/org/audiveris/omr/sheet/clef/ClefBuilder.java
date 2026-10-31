@@ -203,7 +203,7 @@ public class ClefBuilder
         for (Inter inter : system.getSig().inters(ClefInter.class)) {
             if (outerRect.contains(inter.getCenter())) {
                 registerClefs(Arrays.asList((ClefInter) inter));
-                logger.info("Using {}", inter);
+                logger.debug("Using {}", inter);
 
                 return;
             }
@@ -220,8 +220,7 @@ public class ClefBuilder
         // Register the remaining candidates, unless none of them is really a clef: the
         // header is erased before symbols are read, so a clef found on the first note
         // column of a staff that prints none takes that music with it.
-        if (!bestMap.isEmpty() && bestGrade(bestMap) >= constants.minRegisteredGrade
-                .getValue()) {
+        if (!bestMap.isEmpty() && bestGrade(bestMap) >= constants.minRegisteredGrade.getValue()) {
             registerClefs(bestMap.values());
         }
     }

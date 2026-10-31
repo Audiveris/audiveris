@@ -27,12 +27,13 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.log.LogUtil;
+import org.audiveris.omr.log.LogUtil.Message;
 import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.text.tesseract.Languages;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.MainGui;
 import org.audiveris.omr.util.OmrExecutors;
-import org.audiveris.omr.util.ResourceUtil;
+import org.audiveris.omr.util.Translator;
 
 import org.jdesktop.application.Application;
 
@@ -46,7 +47,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -71,11 +71,15 @@ public class Main
         WellKnowns.ensureLoaded();
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
-
     private static final Constants constants = new Constants();
 
-    private static ResourceBundle resources; // Warning: Initialization differed until locale is set
+    static {
+        readLocale();
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
+    private static Translator ct = new Translator(Main.class);
 
     /** CLI parameters. */
     private static CLI cli;
@@ -87,21 +91,6 @@ public class Main
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
-
-    //-------------//
-    // checkLocale //
-    //-------------//
-    private static void checkLocale ()
-    {
-        final String localeStr = constants.locale.getValue().trim();
-        final Locale locale = getLocale(localeStr);
-
-        if (locale != null) {
-            Locale.setDefault(locale);
-            resources = ResourceUtil.getBundle(Main.class);
-            logger.info(trans("locale", locale));
-        }
-    }
 
     //--------//
     // getCli //
@@ -128,7 +117,8 @@ public class Main
                 }
             }
 
-            logger.warn(trans("not.supported.locale", localeStr));
+            ///logger.warn(ct.trans("not.supported.locale", localeStr));
+            logger.warn("Not supported locale: \"{}\"", localeStr);
         }
 
         return null;
@@ -160,7 +150,7 @@ public class Main
             String trimmedToken = token.trim();
 
             if (!trimmedToken.isEmpty()) {
-                Locale locale = getLocale(trimmedToken);
+                final Locale locale = getLocale(trimmedToken);
 
                 if (locale != null) {
                     locales.add(locale);
@@ -188,7 +178,7 @@ public class Main
     {
         final StringBuilder sb = new StringBuilder();
         final String mode = inParallel ? "parallel" : "sequence";
-        sb.append(trans("submitting.tasks", tasks.size(), trans(mode)));
+        sb.append(ct.trans("submitting.tasks", tasks.size(), ct.trans(mode)));
 
         for (Callable task : tasks) {
             sb.append("\n    ").append(task);
@@ -218,11 +208,8 @@ public class Main
         //        System.out.println(
         //                "sun.stdout.encoding property:" + System.getProperty("sun.stdout.encoding"));
 
-        // Log files
+        // Log file
         LogUtil.addFileAppender();
-
-        // Locale to be used in the whole application?
-        checkLocale();
 
         // Process CLI parameters
         processCli(args);
@@ -230,6 +217,19 @@ public class Main
         if (!cli.isBatchMode()) {
             // Log all events to LogPane
             LogUtil.addGuiAppender();
+        }
+
+        logger.info(ct.trans("locale", Locale.getDefault()));
+
+        if (cli.isBatchMode()) {
+            logger.info(ct.trans("running.in.batch.mode"));
+        } else {
+            logger.info(ct.trans("running.in.interactive.mode"));
+        }
+
+        // Initial logging messages
+        for (Message msg : LogUtil.allInitialMessages()) {
+            logger.atLevel(msg.level).log(msg.translated());
         }
 
         // List of Java modules?
@@ -260,10 +260,9 @@ public class Main
         OMR.engine = BookManager.getInstance();
 
         if (!cli.isBatchMode()) {
-            logger.info(trans("running.in.interactive.mode"));
             Application.launch(MainGui.class, args);
         } else {
-            logger.info(trans("running.in.batch.mode"));
+            ///logger.info("\n{}", LogUtil.allInitialMessages());
 
             ///System.setProperty("java.awt.headless", "true"); //TODO: Useful?
 
@@ -297,17 +296,17 @@ public class Main
             // Force JVM exit?
             if (failure || timeout) {
                 final StringBuilder sb = new StringBuilder();
-                sb.append(trans("Exit forced."));
+                sb.append(ct.trans("Exit forced."));
                 int status = 0;
 
                 if (failure) {
                     status += 1;
-                    sb.append(" ").append(trans("failure"));
+                    sb.append(" ").append(ct.trans("failure"));
                 }
 
                 if (timeout) {
                     status += 2;
-                    sb.append(" ").append(trans("timeout"));
+                    sb.append(" ").append(ct.trans("timeout"));
                 }
 
                 logger.warn(sb.toString());
@@ -326,12 +325,28 @@ public class Main
             cli = new CLI(WellKnowns.TOOL_NAME);
             cli.parseParameters(args);
         } catch (CmdLineException ex) {
-            logger.info(trans("commands", Arrays.asList(args)));
-            logger.warn(trans("error.in.command.line", ex.getLocalizedMessage()));
-            logger.warn(trans("exiting"));
+            logger.info(ct.trans("commands", Arrays.asList(args)));
+            logger.warn(ct.trans("error.in.command.line", ex.getLocalizedMessage()));
+            logger.warn(ct.trans("exiting"));
 
             // Stop the JVM, with failure status (1)
             Runtime.getRuntime().exit(1);
+        }
+    }
+
+    //------------//
+    // readLocale //
+    //------------//
+    /**
+     * Retrieve the user locale from the saved application constant.
+     */
+    private static void readLocale ()
+    {
+        final String localeStr = constants.locale.getValue().trim();
+        final Locale locale = getLocale(localeStr);
+
+        if (locale != null) {
+            Locale.setDefault(locale);
         }
     }
 
@@ -351,7 +366,7 @@ public class Main
 
                     List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor().invokeAll(
                             tasks);
-                    logger.info(trans("checking.tasks", tasks.size()));
+                    logger.info(ct.trans("checking.tasks", tasks.size()));
 
                     // Check for time-out
                     for (Future<Void> future : futures) {
@@ -361,12 +376,12 @@ public class Main
                             CliTask task = tasks.get(futures.indexOf(future));
                             final String radix = task.getRadix();
 
-                            logger.warn(trans("future.exception", radix, ex.toString()), ex);
+                            logger.warn(ct.trans("future.exception", radix, ex.toString()), ex);
                             failure = true;
                         }
                     }
                 } catch (InterruptedException ex) {
-                    logger.warn(trans("error.in.processing.tasks"), ex);
+                    logger.warn(ct.trans("error.in.processing.tasks"), ex);
                     failure = true;
                 }
             } else {
@@ -377,7 +392,7 @@ public class Main
                         task.call();
                     } catch (Exception ex) {
                         final String radix = task.getRadix();
-                        logger.warn(trans("exception.on", radix, ex.toString()), ex);
+                        logger.warn(ct.trans("exception.on", radix, ex.toString()), ex);
                         failure = true;
                     }
                 }
@@ -400,7 +415,7 @@ public class Main
         if (!Locale.getDefault().equals(locale)) {
             constants.locale.setValue(locale.toString());
             Locale.setDefault(locale);
-            logger.info(trans("locale.set.to", locale));
+            logger.info(ct.trans("locale.set.to", locale));
         }
     }
 
@@ -438,36 +453,6 @@ public class Main
                         " (build " + System.getProperty("java.vm.version") + //
                         ", " + System.getProperty("java.vm.info") + ")",
                 "- OCR Engine:   " + TesseractOCR.getInstance().identify());
-    }
-
-    //-------//
-    // trans //
-    //-------//
-    /**
-     * Formatting and translating utility method.
-     *
-     * @param key       key to the pattern string
-     * @param arguments elements
-     * @return the formatted string
-     */
-    private static String trans (String key,
-                                 Object... arguments)
-    {
-        return ResourceUtil.format(trans(key), arguments);
-    }
-
-    //-------//
-    // trans //
-    //-------//
-    /**
-     * Translating utility method.
-     *
-     * @param key item id
-     * @return the translated string
-     */
-    private static String trans (String key)
-    {
-        return resources.getString(key);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

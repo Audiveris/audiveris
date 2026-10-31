@@ -98,7 +98,6 @@ public class RunsRetriever
 
         // Browse other dimension
         for (int c = cMin; c <= cMax; c++) {
-            ///logger.info("p:" + p + " c:" + c + " level:" + level);
             if (adapter.isFore(c, pos)) {
                 // We are on a foreground pixel
                 if (isFore) {
@@ -185,8 +184,7 @@ public class RunsRetriever
 
                 for (int p = pMin; p <= pMax; p++) {
                     final int pp = p;
-                    tasks.add( () ->
-                    {
+                    tasks.add( () -> {
                         processPosition(pp, cMin, cMax);
 
                         return null;

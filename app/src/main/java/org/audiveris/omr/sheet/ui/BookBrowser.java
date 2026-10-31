@@ -356,7 +356,6 @@ public class BookBrowser
                 return relevants;
             }
 
-            ///logger.info("standard node: " + node);
             Class<?> classe = node.getClass();
             relevants = new ArrayList<>();
 
@@ -513,8 +512,7 @@ public class BookBrowser
         //------------//
         public void refreshAll ()
         {
-            TreeModelEvent modelEvent = new TreeModelEvent(this, new Object[]
-            { book });
+            TreeModelEvent modelEvent = new TreeModelEvent(this, new Object[] { book });
 
             for (TreeModelListener listener : listeners) {
                 listener.treeStructureChanged(modelEvent);
