@@ -83,12 +83,17 @@ public abstract class UIUtil
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(UIUtil.class);
-
+  
     private static final ResourceBundle resources = ResourceUtil.getBundle(UIUtil.class);
-
-    /** Ratio to be applied on all font size. */
-    public static final float GLOBAL_FONT_RATIO = constants.globalFontRatio.getValue().floatValue();
-
+  
+    /**
+     * Ratio to be applied on all font size.
+     * It includes the FlatLaf UI scale if any, since our explicit font sizes are not scaled
+     * by FlatLaf (this is needed for fractional scaling on Linux, see WellKnowns).
+     */
+    public static final float GLOBAL_FONT_RATIO = constants.globalFontRatio.getValue().floatValue()
+            * getFlatLafUIScale();
+    
     /**
      * Customized border for tool buttons, to use consistently in all UI components.
      */
@@ -559,6 +564,30 @@ public abstract class UIUtil
     public static int getDefaultFontSize ()
     {
         return constants.defaultFontSize.getValue();
+    }
+
+    //-------------------//
+    // getFlatLafUIScale //
+    //-------------------//
+    /**
+     * Report the UI scale factor specified for FlatLaf via "flatlaf.uiScale" property.
+     *
+     * @return the FlatLaf UI scale, or 1 if not specified
+     */
+    private static float getFlatLafUIScale ()
+    {
+        final String uiScale = System.getProperty("flatlaf.uiScale");
+        if (uiScale != null) {
+            try {
+                final float scale = Float.parseFloat(uiScale.trim());
+                if (scale > 0) {
+                    return scale;
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        return 1f;
     }
 
     //--------------------//

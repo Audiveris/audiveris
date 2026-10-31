@@ -25,6 +25,8 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 
+import com.formdev.flatlaf.FlatLaf;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,6 +93,12 @@ public class UILookAndFeel
             } else {
                 UIManager.setLookAndFeel(constants.lookAndFeel.getValue());
             }
+
+            // Screen insets are not reliable on Linux, see LinuxPopupMenuUI
+            final boolean useLinuxPopupMenuUI = WellKnowns.LINUX
+                    && (UIManager.getLookAndFeel() instanceof FlatLaf);
+            UIManager.put("PopupMenuUI", useLinuxPopupMenuUI ? LinuxPopupMenuUI.class.getName()
+                    : null);
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException
                 | UnsupportedLookAndFeelException ex) {
             //ex.printStackTrace();
