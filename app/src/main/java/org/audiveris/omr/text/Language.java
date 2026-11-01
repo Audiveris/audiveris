@@ -299,6 +299,16 @@ public abstract class Language
         }
 
         /**
+         * Remove a language code from the collection.
+         *
+         * @param code the code to remove
+         */
+        public void removeCode (String code)
+        {
+            codesList.remove(code);
+        }
+
+        /**
          * Report the code at specified index.
          *
          * @param index the specified index
