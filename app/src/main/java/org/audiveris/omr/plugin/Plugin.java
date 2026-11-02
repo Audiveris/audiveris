@@ -25,6 +25,7 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.ui.StubsController;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VoidTask;
 
 import org.jdesktop.application.Task;
@@ -75,6 +76,8 @@ public class Plugin
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Plugin.class);
+
+    private static final Translator ct = new Translator(Plugin.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -158,7 +161,7 @@ public class Plugin
     public boolean check ()
     {
         if ((id == null) || id.isEmpty()) {
-            logger.warn("No id for {}", this);
+            logger.warn(ct.trans("no.id.for", this));
 
             return false;
         }
@@ -169,7 +172,7 @@ public class Plugin
             }
         }
 
-        logger.warn("Missing special '{}' arg in plugin {}", "{}", getId());
+        logger.warn(ct.trans("missing.special.arg.in.plugin", "{}", getId()));
 
         return false;
     }
@@ -316,7 +319,7 @@ public class Plugin
                 }
             }
         } catch (IOException ex) {
-            logger.warn("Error getting export file(s) {}", ex.toString(), ex);
+            logger.warn(ct.trans("error.getting.export.file", ex.toString()), ex);
         }
 
         return null;
@@ -336,14 +339,14 @@ public class Plugin
         final Collection<Path> exportPaths = retrieveExportFiles(book);
 
         if (exportPaths == null) {
-            logger.info("No suitable export file(s)");
+            logger.info(ct.trans("no.suitable.export.files"));
 
             return null;
         }
 
         // Build process
         final List<String> cli = buildCli(exportPaths);
-        logger.info("Process: {}", cli);
+        logger.info(ct.trans("command", cli));
 
         final ProcessBuilder pb = new ProcessBuilder(cli);
         pb.redirectErrorStream(true); // Merge process error stream with its output stream
@@ -363,10 +366,10 @@ public class Plugin
 
                 // Wait to get exit value
                 final int exitValue = process.waitFor();
-                logger.info("{} exit value: {}", getId(), exitValue);
+                logger.info(ct.trans("exit.value", getId(), exitValue));
             }
         } catch (IOException | InterruptedException ex) {
-            logger.warn("Error launching {} {}", this, ex.toString(), ex);
+            logger.warn(ct.trans("error.launching", this, ex.toString()), ex);
         }
 
         return null;

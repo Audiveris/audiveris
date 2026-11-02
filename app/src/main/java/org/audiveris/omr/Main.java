@@ -260,9 +260,11 @@ public class Main
         OMR.engine = BookManager.getInstance();
 
         if (!cli.isBatchMode()) {
+            // Interactive mode
+
             Application.launch(MainGui.class, args);
         } else {
-            ///logger.info("\n{}", LogUtil.allInitialMessages());
+            // Batch mode
 
             ///System.setProperty("java.awt.headless", "true"); //TODO: Useful?
 

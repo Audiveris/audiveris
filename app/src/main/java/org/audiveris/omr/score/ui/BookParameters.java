@@ -46,6 +46,7 @@ import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.ComboBoxTipRenderer;
 import static org.audiveris.omr.util.ResourceUtil.format;
+import org.audiveris.omr.util.Translator;
 import static org.audiveris.omr.util.param.Param.GLOBAL_SCOPE;
 
 import org.jdesktop.application.Application;
@@ -133,6 +134,8 @@ public class BookParameters
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BookParameters.class);
+
+    private static final Translator ct = new Translator(BookParameters.class);
 
     /** Resource injection. */
     private static final ResourceMap resources = Application.getInstance().getContext()
@@ -393,11 +396,11 @@ public class BookParameters
             }
 
             if (defaultModified) {
-                logger.info("Default parameters committed");
+                logger.info(ct.trans("default.parameters.committed"));
             }
 
             if (bookModified) {
-                logger.info("Book parameters committed");
+                logger.info(ct.trans("book.parameters.committed"));
             }
 
             if (!modifiedScopes.isEmpty()) {
@@ -416,7 +419,7 @@ public class BookParameters
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Could not commit book parameters {}", ex.toString(), ex);
+            logger.warn(ct.trans("could.not.commit.book.parameters", ex.toString()), ex);
 
             return false;
         }
@@ -506,10 +509,10 @@ public class BookParameters
             try {
                 return new LangPane();
             } catch (Throwable ex) {
-                logger.warn("Error creating language pane", ex);
+                logger.warn(ct.trans("error.creating.language.pane", ex.toString()), ex);
             }
         } else {
-            logger.info("No language pane for lack of OCR.");
+            logger.info(ct.trans("no.language.pane.for.lack.of.ocr"));
         }
 
         return null;

@@ -22,6 +22,7 @@
 package org.audiveris.omr.image;
 
 import org.audiveris.omr.WellKnowns;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,8 @@ public abstract class ImageUtil
 
     private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
 
+    private static final Translator ct = new Translator(ImageUtil.class);
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /** No constructor needed, this is just a functional class. */
@@ -76,7 +79,7 @@ public abstract class ImageUtil
      */
     public static BufferedImage grayAlphaToGray (BufferedImage image)
     {
-        logger.info("Converting gray+alpha to gray");
+        logger.info(ct.trans("converting.gray.alpha.to.gray"));
 
         final int width = image.getWidth();
         final int height = image.getHeight();
@@ -149,7 +152,7 @@ public abstract class ImageUtil
      */
     public static BufferedImage maxRgbToGray (BufferedImage image)
     {
-        logger.info("Converting max RGB to gray");
+        logger.info(ct.trans("converting.max.rgb.to.gray"));
 
         final int width = image.getWidth();
         final int height = image.getHeight();
@@ -231,7 +234,7 @@ public abstract class ImageUtil
      */
     public static BufferedImage rgbaToRgb (BufferedImage rgba)
     {
-        logger.info("Discarding alpha band ...");
+        logger.info(ct.trans("discarding.alpha.band"));
 
         final int width = rgba.getWidth();
         final int height = rgba.getHeight();
@@ -264,7 +267,7 @@ public abstract class ImageUtil
      */
     public static BufferedImage rgbToGray (BufferedImage rgb)
     {
-        logger.info("Converting RGB to gray ...");
+        logger.info(ct.trans("converting.rgb.to.gray"));
 
         final int width = rgb.getWidth();
         final int height = rgb.getHeight();
@@ -388,7 +391,7 @@ public abstract class ImageUtil
             final Path dir = Files.createDirectories(WellKnowns.TEMP_FOLDER.resolve(dirs));
             final File file = dir.resolve(name + ".png").toFile();
             ImageIO.write(image, "png", file);
-            logger.info("Saved {}", file);
+            logger.info(ct.trans("saved", file));
         } catch (IOException ex) {
             logger.warn("Error saving " + name, ex);
         }
