@@ -437,8 +437,8 @@ public class Languages
                 final Path ocrFolder = TesseractOCR.getInstance().getOcrFolder();
                 logger.debug("ocrFolder: {}", ocrFolder);
 
-                if (!Files.isWritable(ocrFolder)) {
-                    logger.warn(ct.trans("no.write.access.to.ocr.folder", ocrFolder));
+                if ((ocrFolder == null) || !Files.isWritable(ocrFolder)) {
+                    logger.warn("No write access to the OCR folder {}", ocrFolder);
                     return;
                 }
 
@@ -471,6 +471,27 @@ public class Languages
             } catch (IOException | URISyntaxException ex) {
                 logger.error(ct.trans("error.downloading.from", ex.getMessage()), ex);
             }
+        }
+
+        /**
+         * Uninstall the data file for the provided language code.
+         *
+         * @param code the language code
+         * @throws IOException if the file cannot be deleted
+         */
+        private void uninstall (String code)
+            throws IOException
+        {
+            final Path ocrFolder = TesseractOCR.getInstance().getOcrFolder();
+
+            if ((ocrFolder == null) || !Files.isWritable(ocrFolder)) {
+                throw new IOException("No write access to the OCR folder " + ocrFolder);
+            }
+
+            final Path languageFile = ocrFolder.resolve(code + LANGUAGE_FILE_EXT);
+            Files.deleteIfExists(languageFile);
+            getSupportedLanguages().removeCode(code);
+            logger.info("Uninstalled OCR language '{}'", code);
         }
 
         public JDialog getComponent ()
@@ -526,6 +547,13 @@ public class Languages
                         logger.info(ct.trans("no.need.to.redownload", code));
                     } else {
                         install(code);
+                    }
+                } else if (getSupportedLanguages().contains(code)) {
+                    try {
+                        uninstall(code);
+                    } catch (IOException ex) {
+                        logger.error("Could not uninstall OCR language '{}'", code, ex);
+                        box.setSelected(true);
                     }
                 }
             }
