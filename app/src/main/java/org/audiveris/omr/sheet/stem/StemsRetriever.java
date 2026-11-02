@@ -470,17 +470,6 @@ public class StemsRetriever
         return Glyphs.intersectedGlyphs(systemSeeds, fatBox);
     }
 
-    //----------------//
-    // getNoStemAreas //
-    //----------------//
-    /**
-     * @return the noStemAreas
-     */
-    List<Area> getNoStemAreas ()
-    {
-        return noStemAreas;
-    }
-
     //-----------//
     // getParams //
     //-----------//
@@ -639,6 +628,42 @@ public class StemsRetriever
         }
     }
 
+    //----------------//
+    // isInNoStemArea //
+    //----------------//
+    /**
+     * Report whether the provided box lies too much in a so-called noStemArea, that is on a
+     * 2-staff barline or its connector.
+     *
+     * @param box the box of a stem candidate (seed or full stem)
+     * @return true if so
+     */
+    boolean isInNoStemArea (Rectangle box)
+    {
+        final double boxSize = box.width * box.height;
+
+        for (Area noStem : noStemAreas) {
+            if (noStem.intersects(box)) {
+                // Compute intersection over noStem area
+                Area intersection = new Area(box);
+                intersection.intersect(noStem);
+                Rectangle2D interBox = intersection.getBounds2D();
+                double interSize = interBox.getWidth() * interBox.getHeight();
+
+                Rectangle2D barBox = noStem.getBounds2D();
+                double barSize = barBox.getWidth() * barBox.getHeight();
+
+                final double ratio = interSize / Math.min(barSize, boxSize);
+
+                if (ratio > params.maxBarOverlap) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     //-----------//
     // linkStems //
     //-----------//
@@ -721,33 +746,7 @@ public class StemsRetriever
      */
     private void purgeNoStemSeeds (List<Glyph> seeds)
     {
-        SeedLoop:
-        for (Iterator<Glyph> it = seeds.iterator(); it.hasNext();) {
-            final Glyph seed = it.next();
-            final Rectangle seedBox = seed.getBounds();
-            final double seedSize = seedBox.width * seedBox.height;
-
-            for (Area noStem : noStemAreas) {
-                if (noStem.intersects(seedBox)) {
-                    // Compute intersection over noStem area
-                    Area intersection = new Area(seedBox);
-                    intersection.intersect(noStem);
-                    Rectangle2D interBox = intersection.getBounds2D();
-                    double interSize = interBox.getWidth() * interBox.getHeight();
-
-                    Rectangle2D barBox = noStem.getBounds2D();
-                    double barSize = barBox.getWidth() * barBox.getHeight();
-
-                    final double ratio = interSize / Math.min(barSize, seedSize);
-
-                    if (ratio > params.maxBarOverlap) {
-                        it.remove();
-
-                        continue SeedLoop;
-                    }
-                }
-            }
-        }
+        seeds.removeIf(seed -> isInNoStemArea(seed.getBounds()));
     }
 
     //---------------------//
