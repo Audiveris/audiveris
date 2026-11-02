@@ -79,6 +79,10 @@ import static org.junit.Assert.fail;
  * <li>{@code <encoding-date>} lines are dropped (they carry the export date)</li>
  * <li>{@code <software>} lines are dropped (they carry the Audiveris version)</li>
  * <li>{@code font-family} and {@code font-size} attributes are dropped</li>
+ * <li>layout is ignored: position attributes ({@code default-x/y}, {@code relative-x/y},
+ * {@code bezier-*}), {@code <system-distance>}, {@code <staff-distance>} and the
+ * {@code display-step} / {@code display-octave} of rests are dropped, so that only a
+ * change of content (missing or extra symbol, other pitch or duration...) is reported</li>
  * <li>absolute input paths in {@code <source>} and in the {@code source-file}
  * miscellaneous field are reduced to the bare file name</li>
  * </ul></li>
@@ -145,6 +149,14 @@ public class XmlExportRegressionTest
     /** Pattern to match the source-file miscellaneous field (absolute input path). */
     private static final Pattern SOURCE_FILE_LINE = Pattern.compile(
             "(<miscellaneous-field name=\"source-file\">)(.*)(</miscellaneous-field>)");
+
+    /** Pattern to match position attributes, which only reflect layout. */
+    private static final Pattern POSITION_ATTRIBUTES =
+            Pattern.compile("\\s+(?:default|relative|bezier)-[xy]\\d?=\"[^\"]*\"");
+
+    /** Pattern to match the distance elements, which only reflect layout. */
+    private static final Pattern DISTANCE_LINE =
+            Pattern.compile("<(?:system|staff)-distance>.*</(?:system|staff)-distance>");
 
     /** Pattern to match the display position lines of a rest. */
     private static final Pattern REST_POSITION =
@@ -571,7 +583,7 @@ public class XmlExportRegressionTest
             }
 
             // Drop the display position of rests
-            if (line.startsWith("<rest>")) {
+            if ((line.startsWith("<rest>") || line.startsWith("<rest ")) && !line.endsWith("/>")) {
                 inRest = true;
             } else if (line.startsWith("</rest>")) {
                 inRest = false;
@@ -584,6 +596,13 @@ public class XmlExportRegressionTest
             line = reduceToBaseName(SOURCE_FILE_LINE, line);
 
             line = FONT_ATTRIBUTES.matcher(line).replaceAll("");
+
+            // Ignore layout
+            if (DISTANCE_LINE.matcher(line).matches()) {
+                continue;
+            }
+
+            line = POSITION_ATTRIBUTES.matcher(line).replaceAll("");
 
             lines.add(line);
         }
