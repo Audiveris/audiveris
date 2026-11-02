@@ -1061,7 +1061,11 @@ public class BarsRetriever
                         maxRight - (params.maxBracePeakWidth + params.maxBraceBarGap));
                 StaffPeak bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
-                if ((bracePeak == null) && (iStart >= 1)) {
+                // The bars that open the system are all marked as staff end, a brace mistaken for
+                // the first of them included, so the first peak may be a brace portion even when
+                // it is itself the start peak.
+                if ((bracePeak == null) && ((iStart >= 1) || ((peaks.size() > 1)
+                        && peaks.get(1).isStaffEnd(LEFT)))) {
                     // First peak could itself be a brace portion (mistaken for a bar)
                     final StaffPeak secondPeak = peaks.get(1);
                     maxRight = secondPeak.getStart() - 1 - params.braceBarNeutralGap;
@@ -1071,7 +1075,17 @@ public class BarsRetriever
                     bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
                     if (bracePeak != null) {
+                        final boolean wasStart = firstPeak.isStaffEnd(LEFT);
                         replacePeak(firstPeak, bracePeak);
+
+                        if (wasStart) {
+                            // The staff no longer starts inside a bar that was a brace
+                            final int i = projector.getStartPeakIndex();
+
+                            if (i != -1) {
+                                staff.setAbscissa(LEFT, projector.getPeaks().get(i).getStop());
+                            }
+                        }
                     }
                 }
 
