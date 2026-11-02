@@ -132,6 +132,9 @@ public class LinesRetriever
     /** Second collection of filaments. (for small staves) */
     private List<StaffFilament> secondFilaments;
 
+    /** Curved filaments. */
+    private List<StaffFilament> curvedFilaments;
+
     /** Sloped filaments. */
     private List<StaffFilament> slopedFilaments;
 
@@ -647,6 +650,203 @@ public class LinesRetriever
         }
     }
 
+    //-------------//
+    // extendStaff //
+    //-------------//
+    /**
+     * Try to extend the lines of the provided staff on the provided side, using the
+     * filaments that were set aside.
+     * <p>
+     * On a page that curls, the staff lines bend near the page border.
+     * The bent part of a line then gives a filament that is either curved or sloped, and which
+     * is thus discarded from the clusters, so that the staff ends where its lines begin to bend.
+     * The bar lines located beyond would then never be looked for.
+     * <p>
+     * Each line is followed, filament after filament, as long as the next filament starts close
+     * to the current line end and in the continuation of it.
+     * The extension is kept only if it is consistent for the whole staff: the lines must still
+     * be one interline apart where all of them but one exist, which a slur or any other curve
+     * crossing the staff cannot fake.
+     *
+     * @param staff      the staff to process
+     * @param side       the side to process
+     * @param candidates the filaments set aside
+     */
+    private void extendStaff (Staff staff,
+                              HorizontalSide side,
+                              List<StaffFilament> candidates)
+    {
+        final int dir = (side == RIGHT) ? 1 : -1;
+        final List<LineInfo> lines = staff.getLines();
+        final int lineCount = lines.size();
+        final List<List<StaffFilament>> chains = new ArrayList<>(lineCount);
+        final Set<StaffFilament> used = new LinkedHashSet<>();
+        final double[] ends = new double[lineCount];
+
+        for (LineInfo line : lines) {
+            final StaffFilament filament = (StaffFilament) line;
+            final List<StaffFilament> chain = new ArrayList<>();
+            Point2D end = filament.getEndPoint(side);
+            double slope = slopeAt(filament, end.getX(), dir);
+
+            while (true) {
+                StaffFilament best = null;
+                double bestReach = (dir * end.getX()) + params.minLineExtension;
+
+                for (StaffFilament fil : candidates) {
+                    if ((fil.getPartOf() != null) || used.contains(fil)) {
+                        continue;
+                    }
+
+                    final Point2D near = fil.getEndPoint(side.opposite());
+                    final Point2D far = fil.getEndPoint(side);
+                    final double reach = dir * far.getX();
+
+                    if (reach < bestReach) {
+                        continue;
+                    }
+
+                    final double gap = dir * (near.getX() - end.getX());
+
+                    if (gap > params.maxLineExtensionGap) {
+                        continue;
+                    }
+
+                    // Junction, where the filament takes over the line.
+                    // A filament end may be pulled by an object crossing the line there,
+                    // so we also check a bit further within the filament.
+                    final double xj = (gap > 0) ? near.getX() : end.getX();
+                    final double xIn = xj + (dir * Math.min(
+                            params.minLineExtension / 2.0,
+                            Math.abs(far.getX() - xj) / 2));
+                    final double dyj = Math.abs(
+                            fil.yAt(xj) - (end.getY() + (slope * (xj - end.getX()))));
+                    final double dyIn = Math.abs(
+                            fil.yAt(xIn) - (end.getY() + (slope * (xIn - end.getX()))));
+
+                    if (Math.min(dyj, dyIn) > params.maxLineJunctionDy) {
+                        continue;
+                    }
+
+                    best = fil;
+                    bestReach = reach;
+                }
+
+                if (best == null) {
+                    break;
+                }
+
+                chain.add(best);
+                used.add(best);
+                end = best.getEndPoint(side);
+                slope = slopeAt(best, end.getX(), dir);
+            }
+
+            ends[chains.size()] = end.getX();
+            chains.add(chain);
+        }
+
+        // As in buildStaves, the staff ends at the median of line ends
+        final double[] sorted = ends.clone();
+        Arrays.sort(sorted);
+
+        final int oldEnd = staff.getAbscissa(side);
+        final int newEnd = (int) Math.rint(sorted[lineCount / 2]);
+
+        if ((dir * (newEnd - oldEnd)) < params.minLineExtension) {
+            return;
+        }
+
+        // Check the lines are still one interline apart, where all lines but one exist
+        final double xCheck = (side == RIGHT) ? sorted[1] : sorted[lineCount - 2];
+        final double interline = staff.getSpecificInterline();
+        Double prevY = null;
+        int prevIndex = -1;
+        int checked = 0;
+
+        for (int i = 0; i < lineCount; i++) {
+            final Double y = yAt((StaffFilament) lines.get(i), chains.get(i), xCheck);
+
+            if (y == null) {
+                continue;
+            }
+
+            if (prevY != null) {
+                final double dy = (y - prevY) / (i - prevIndex);
+
+                if (Math.abs(dy - interline) > (params.maxLineExtensionInterlineDev * interline)) {
+                    logger.debug(
+                            "Staff#{} {} extension inconsistent at x:{} dy:{}",
+                            staff.getId(),
+                            side,
+                            xCheck,
+                            dy);
+
+                    return;
+                }
+            }
+
+            prevY = y;
+            prevIndex = i;
+            checked++;
+        }
+
+        if (checked < (lineCount - 1)) {
+            return;
+        }
+
+        // Extend the lines and the staff
+        for (int i = 0; i < lineCount; i++) {
+            final List<StaffFilament> chain = chains.get(i);
+
+            if (!chain.isEmpty()) {
+                final StaffFilament filament = (StaffFilament) lines.get(i);
+
+                for (StaffFilament fil : chain) {
+                    filament.stealSections(fil);
+                }
+
+                // The line now ends where its last extension ends
+                final Point2D end = chain.get(chain.size() - 1).getEndPoint(side);
+
+                if (side == RIGHT) {
+                    filament.setEndingPoints(filament.getStartPoint(), end);
+                } else {
+                    filament.setEndingPoints(end, filament.getStopPoint());
+                }
+            }
+        }
+
+        logger.info("Staff#{} {} end extended from {} to {}", staff.getId(), side, oldEnd, newEnd);
+        staff.setAbscissa(side, newEnd);
+    }
+
+    //--------------//
+    // extendStaves //
+    //--------------//
+    /**
+     * Try to extend every staff on each side, where its lines bend away.
+     *
+     * @see #extendStaff(Staff, HorizontalSide, List)
+     */
+    private void extendStaves ()
+    {
+        final List<StaffFilament> candidates = new ArrayList<>();
+        candidates.addAll(curvedFilaments);
+        candidates.addAll(slopedFilaments);
+        candidates.addAll(discardedFilaments);
+
+        for (Staff staff : staffManager.getStaves()) {
+            if ((staff instanceof OneLineStaff) || (staff instanceof Tablature)) {
+                continue;
+            }
+
+            for (HorizontalSide side : HorizontalSide.values()) {
+                extendStaff(staff, side, candidates);
+            }
+        }
+    }
+
     //-----------//
     // fillHoles //
     //-----------//
@@ -1147,11 +1347,13 @@ public class LinesRetriever
     //----------------------//
     /**
      * Discard all filaments that exhibit a too strong curvature.
+     *
+     * @return the collection of purged curved filaments
      */
-    private void purgeCurvedFilaments ()
+    private List<StaffFilament> purgeCurvedFilaments ()
         throws StepException
     {
-        List<Filament> toRemove = new ArrayList<>();
+        final List<StaffFilament> toRemove = new ArrayList<>();
 
         for (StaffFilament fil : filaments) {
             Point2D start = fil.getStartPoint();
@@ -1187,6 +1389,8 @@ public class LinesRetriever
                     ct.trans("too.few.staff.filaments", sheet.getId(), filaments.size()),
                     false);
         }
+
+        return toRemove;
     }
 
     //----------------------//
@@ -1500,7 +1704,7 @@ public class LinesRetriever
             filaments = factory.retrieveFilaments(hLag.getEntities());
 
             // Purge curved filaments
-            purgeCurvedFilaments();
+            curvedFilaments = purgeCurvedFilaments();
 
             // Compute global slope out of longest filaments
             watch.start("retrieveGlobalSlope");
@@ -1535,11 +1739,70 @@ public class LinesRetriever
             // Convert clusters into staves
             watch.start("BuildStaves");
             buildStaves();
+
+            // Follow staff lines that bend away near a staff end
+            watch.start("extendStaves");
+            extendStaves();
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
             }
         }
+    }
+
+    //---------//
+    // slopeAt //
+    //---------//
+    /**
+     * Report the slope of the provided filament at its end located at abscissa x.
+     *
+     * @param fil the filament
+     * @param x   abscissa of filament end
+     * @param dir 1 for the right end, -1 for the left end
+     * @return the local slope
+     */
+    private double slopeAt (StaffFilament fil,
+                            double x,
+                            int dir)
+    {
+        final double length = fil.getStopPoint().getX() - fil.getStartPoint().getX();
+        final double dx = Math.min(length, scale.getInterline());
+
+        if (dx <= 0) {
+            return globalSlope;
+        }
+
+        final double x1 = x - (dir * dx);
+
+        return (fil.yAt(x) - fil.yAt(x1)) / (x - x1);
+    }
+
+    //-----//
+    // yAt //
+    //-----//
+    /**
+     * Report the ordinate at x of a line, perhaps extended by a chain of filaments.
+     *
+     * @param line  the line
+     * @param chain the chain of filaments that extends the line
+     * @param x     the provided abscissa
+     * @return the ordinate found, or null if neither the line nor its chain covers x
+     */
+    private static Double yAt (StaffFilament line,
+                               List<StaffFilament> chain,
+                               double x)
+    {
+        for (StaffFilament fil : chain) {
+            if ((x >= fil.getStartPoint().getX()) && (x <= fil.getStopPoint().getX())) {
+                return fil.yAt(x);
+            }
+        }
+
+        if ((x >= line.getStartPoint().getX()) && (x <= line.getStopPoint().getX())) {
+            return line.yAt(x);
+        }
+
+        return null;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1623,6 +1886,22 @@ public class LinesRetriever
         private final Scale.Fraction maxEndingDx = new Scale.Fraction(
                 1.0,
                 "Maximum abscissa delta between line end and staff end");
+
+        private final Scale.Fraction minLineExtension = new Scale.Fraction(
+                1.0,
+                "Minimum extension of a staff line beyond its end");
+
+        private final Scale.Fraction maxLineExtensionGap = new Scale.Fraction(
+                4.0,
+                "Maximum abscissa gap between a staff line end and its extension");
+
+        private final Scale.Fraction maxLineJunctionDy = new Scale.Fraction(
+                0.35,
+                "Maximum ordinate gap between a staff line end and its extension");
+
+        private final Constant.Ratio maxLineExtensionInterlineDev = new Constant.Ratio(
+                0.25,
+                "Maximum deviation from interline between extended staff lines");
 
         private final Scale.Fraction patternWidth = new Scale.Fraction(
                 1.0,
@@ -1804,6 +2083,14 @@ public class LinesRetriever
         /** Maximum abscissa delta between concrete line end and staff end */
         final int maxEndingDx;
 
+        final int minLineExtension;
+
+        final int maxLineExtensionGap;
+
+        final double maxLineJunctionDy;
+
+        final double maxLineExtensionInterlineDev;
+
         /** Width used for staff pattern */
         final int patternWidth;
 
@@ -1850,6 +2137,10 @@ public class LinesRetriever
             maxStickerGap = scale.toPixelsDouble(constants.maxStickerGap);
             maxThinStickerWeight = scale.toPixels(constants.maxThinStickerWeight);
             maxEndingDx = scale.toPixels(constants.maxEndingDx);
+            minLineExtension = scale.toPixels(constants.minLineExtension);
+            maxLineExtensionGap = scale.toPixels(constants.maxLineExtensionGap);
+            maxLineJunctionDy = scale.toPixelsDouble(constants.maxLineJunctionDy);
+            maxLineExtensionInterlineDev = constants.maxLineExtensionInterlineDev.getValue();
             patternWidth = scale.toPixels(constants.patternWidth);
             patternJitter = scale.toPixels(constants.patternJitter);
             minRadius = scale.toPixels(constants.minRadius);
