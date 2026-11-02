@@ -32,6 +32,7 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.note.WholeHeadChecker;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.stem.BeamLinker;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
@@ -175,6 +176,9 @@ public class SigReducer
 
     /** Should we purge weak inter instances?. */
     private final boolean purgeWeaks;
+
+    /** Checker of stem-less heads as whole heads, created on demand. */
+    private WholeHeadChecker wholeChecker;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -760,7 +764,17 @@ public class SigReducer
 
             // Check if the head has a stem relation
             if (!headHasStem(head)) {
-                head.remove();
+                // A notehead without any stem can only be a whole note, which the heads step
+                // does not look for as such: it was read as a stem head, which fits it badly.
+                // So we keep it only if its ink is the one of a whole head.
+                final Rectangle ink = getWholeChecker().check((HeadInter) head);
+
+                if (ink != null) {
+                    reclassifyAsWhole((HeadInter) head, ink);
+                } else {
+                    head.remove();
+                }
+
                 modifs++;
 
                 continue;
@@ -771,6 +785,93 @@ public class SigReducer
         }
 
         return modifs;
+    }
+
+    //------------------//
+    // rescueWholeNotes //
+    //------------------//
+    /**
+     * Reclassify the stem-less heads which are the ink of a whole head.
+     * <p>
+     * This must be done before the weak inters get purged, since a whole note is first read as a
+     * stem head, which fits it badly, so it often gets a low grade.
+     * <p>
+     * Several candidates may lie on the same ink, we keep the one best centered on it.
+     */
+    private void rescueWholeNotes ()
+    {
+        final Map<Rectangle, HeadInter> bestHeads = new LinkedHashMap<>();
+        final Set<HeadInter> others = new LinkedHashSet<>();
+
+        for (Inter inter : sig.inters(ShapeSet.StemHeads)) {
+            if (headHasStem(inter)) {
+                continue;
+            }
+
+            final HeadInter head = (HeadInter) inter;
+            final Rectangle ink = getWholeChecker().check(head);
+
+            if (ink != null) {
+                final HeadInter prev = bestHeads.get(ink);
+
+                if (prev == null) {
+                    bestHeads.put(ink, head);
+                } else if (isBetterCentered(head, prev, ink)) {
+                    others.add(prev);
+                    bestHeads.put(ink, head);
+                } else {
+                    others.add(head);
+                }
+            }
+        }
+
+        others.forEach(head -> head.remove());
+        bestHeads.forEach((ink, head) -> reclassifyAsWhole(head, ink));
+    }
+
+    //------------------//
+    // isBetterCentered //
+    //------------------//
+    private boolean isBetterCentered (HeadInter head,
+                                      HeadInter other,
+                                      Rectangle ink)
+    {
+        final double dy = Math.abs(head.getCenter().y - ink.getCenterY());
+        final double otherDy = Math.abs(other.getCenter().y - ink.getCenterY());
+
+        return (dy < otherDy) || ((dy == otherDy) && (head.getGrade() > other.getGrade()));
+    }
+
+    //-------------------//
+    // reclassifyAsWhole //
+    //-------------------//
+    /**
+     * Turn the provided stem-less head into a whole note, on the provided ink.
+     * <p>
+     * The grade now stands for the check of the ink, not for the template that had read this
+     * head as a stem head.
+     * The abnormal flag is cleared too: it was set when the head was still a stem head (see
+     * HeadInter.added), and a whole note legitimately has no stem.
+     *
+     * @param head the head candidate
+     * @param ink  the bounds of its ink
+     */
+    private void reclassifyAsWhole (HeadInter head,
+                                    Rectangle ink)
+    {
+        head.renameShapeAs(Shape.WHOLE_NOTE);
+        head.setBounds(ink);
+        head.setGrade(Math.max(head.getGrade(), constants.wholeHeadGrade.getValue()));
+        head.setAbnormal(false);
+    }
+
+    private WholeHeadChecker getWholeChecker ()
+    {
+        if (wholeChecker == null) {
+            wholeChecker = new WholeHeadChecker(system.getSheet());
+        }
+
+        return wholeChecker;
     }
 
     //---------------//
@@ -2296,6 +2397,7 @@ public class SigReducer
             logger.debug("S#{} prolog", system.getId());
 
             ///analyzeHeadStems(); // Check there is at most one stem on each side of any head
+            rescueWholeNotes(); // Before the weak heads get purged
             analyzeChords(); // Heads & beams compatibility
         }
     }
@@ -2375,6 +2477,10 @@ public class SigReducer
         private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
                 3,
                 "Maximum width for slur around tuplet");
+
+        private final Constant.Ratio wholeHeadGrade = new Constant.Ratio(
+                0.6,
+                "Minimum grade of a stem-less head whose ink is a whole head");
 
         private final Constant.Ratio minIou = new Constant.Ratio(
                 0.05,
