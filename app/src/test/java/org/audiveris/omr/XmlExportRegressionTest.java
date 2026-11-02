@@ -146,6 +146,10 @@ public class XmlExportRegressionTest
     private static final Pattern SOURCE_FILE_LINE = Pattern.compile(
             "(<miscellaneous-field name=\"source-file\">)(.*)(</miscellaneous-field>)");
 
+    /** Pattern to match the display position lines of a rest. */
+    private static final Pattern REST_POSITION =
+            Pattern.compile("<display-(?:step|octave)>.*</display-(?:step|octave)>");
+
     /** The folder holding input/reference pairs. */
     private static Path regressionFolder;
 
@@ -552,6 +556,7 @@ public class XmlExportRegressionTest
     private static List<String> normalize (String xml)
     {
         final List<String> lines = new ArrayList<>();
+        boolean inRest = false;
 
         for (String raw : xml.split("\r?\n")) {
             String line = raw.trim(); // Line endings and trailing blanks are not meaningful
@@ -562,6 +567,15 @@ public class XmlExportRegressionTest
 
             // Drop the export date and the software version, they cannot be reproduced
             if (ENCODING_DATE.matcher(line).matches() || SOFTWARE.matcher(line).matches()) {
+                continue;
+            }
+
+            // Drop the display position of rests
+            if (line.startsWith("<rest>")) {
+                inRest = true;
+            } else if (line.startsWith("</rest>")) {
+                inRest = false;
+            } else if (inRest && REST_POSITION.matcher(line).matches()) {
                 continue;
             }
 
