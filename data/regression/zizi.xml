@@ -12,11 +12,11 @@
       <supports type="yes" element="beam"></supports>
       <supports type="yes" element="stem"></supports>
       <software>ProxyMusic 4.0.3</software>
-      <encoding-date>2026-10-29</encoding-date>
+      <encoding-date>2026-11-02</encoding-date>
     </encoding>
-    <source>C:\Users\Mihai\AppData\Local\Temp\xml-export-1098325047521553137\zizi.png</source>
+    <source>D:\sources\audiveris\data\regression\zizi.png</source>
     <miscellaneous>
-      <miscellaneous-field name="source-file">C:\Users\Mihai\AppData\Local\Temp\xml-export-1098325047521553137\zizi.png</miscellaneous-field>
+      <miscellaneous-field name="source-file">D:\sources\audiveris\data\regression\zizi.png</miscellaneous-field>
       <miscellaneous-field name="source-sheet-1">1 2</miscellaneous-field>
     </miscellaneous>
   </identification>
@@ -996,7 +996,7 @@
         <duration>4</duration>
         <voice>5</voice>
         <type>quarter</type>
-        <stem default-y="-14">up</stem>
+        <stem default-y="-15">up</stem>
         <staff>2</staff>
       </note>
       <note default-x="76">
