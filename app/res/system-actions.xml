@@ -33,7 +33,7 @@
     <action domain="BOOK" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="selectSheets"/>
     <action domain="BOOK" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printBook"            button="javax.swing.JButton"/>
     <action domain="BOOK" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printBookAs"/>
-    <action domain="BOOK" section="40" class="org.audiveris.omr.sheet.ui.BookActions" method="exportBook"/>
+    <action domain="BOOK" section="40" class="org.audiveris.omr.sheet.ui.BookActions" method="exportBook"     button="javax.swing.JButton"/>
     <action domain="BOOK" section="40" class="org.audiveris.omr.sheet.ui.BookActions" method="exportBookAs"/>
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="sampleBook"         topic="SAMPLES"/>
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="browseBookSamples"  topic="SAMPLES"/>
