@@ -90,6 +90,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -697,8 +698,13 @@ public class SigReducer
                         logger.info("VIP deleting {} lacking stem on {}", beam, portion);
                     }
 
+                    final Set<StemInter> stems = beam.getStems();
                     beam.remove();
                     modifs++;
+
+                    for (StemInter stem : stems) {
+                        relinkHeads(stem);
+                    }
 
                     break;
                 }
@@ -2214,6 +2220,59 @@ public class SigReducer
     //        return false;
     //    }
     //
+    //-------------//
+    // relinkHeads //
+    //-------------//
+    /**
+     * Check again the links between the provided stem and its heads, now that the beam
+     * this stem was linked to is gone.
+     * <p>
+     * A beam at one end of a stem sets the direction in which the stem heads were linked: they
+     * were looked for away from the beam, which defines on which head side (top or bottom) the
+     * stem ends.
+     * When the beam was a false one, the stem may well go the other way, and its head links then
+     * locate the heads in the middle of the stem, so that the stem direction cannot be decided
+     * and the stem is deleted with its heads.
+     * <p>
+     * Unless the stem is still linked to another beam, the head links are thus checked again,
+     * with the stem going toward its farther end from each head.
+     *
+     * @param stem the stem left by a removed beam
+     */
+    private void relinkHeads (StemInter stem)
+    {
+        if (stem.isRemoved() || !sig.getRelations(stem, BeamStemRelation.class).isEmpty()) {
+            return;
+        }
+
+        final Line2D stemLine = stem.getMedian();
+
+        for (Relation rel : new ArrayList<>(sig.getRelations(stem, HeadStemRelation.class))) {
+            final HeadInter head = (HeadInter) sig.getEdgeSource(rel);
+            final double yHead = head.getCenter2D().getY();
+            final VerticalSide headToTail = ((yHead - stemLine.getY1()) > (stemLine.getY2()
+                    - yHead)) ? VerticalSide.TOP : VerticalSide.BOTTOM;
+            final HeadStemRelation newRel = HeadStemRelation.checkRelation(
+                    head,
+                    stemLine,
+                    null,
+                    headToTail,
+                    scale,
+                    system.getProfile());
+
+            if (head.isVip() || stem.isVip()) {
+                logger.info("VIP relinkHeads {} {} toward {} -> {}", head, stem, headToTail, newRel);
+            }
+
+            sig.removeEdge(rel);
+
+            if (newRel != null) {
+                newRel.setConsistency(head, stem);
+                sig.addEdge(head, stem, newRel);
+            }
+        }
+    }
+
     //----------------------//
     // stemHasSingleHeadEnd //
     //----------------------//
@@ -2352,16 +2411,18 @@ public class SigReducer
 
             int modifs = 0;
 
-            modifs += checkStemEndingHeads();
-            deleted.addAll(contextualizeAndPurge());
-
-            modifs += checkHeads();
-            deleted.addAll(contextualizeAndPurge());
-
+            // Beams and hooks lacking their stems go first, so that they no longer decide
+            // the direction of their stems when heads are checked
             modifs += checkHooksHaveStem();
             deleted.addAll(contextualizeAndPurge());
 
             modifs += checkBeamsHaveBothStems();
+            deleted.addAll(contextualizeAndPurge());
+
+            modifs += checkStemEndingHeads();
+            deleted.addAll(contextualizeAndPurge());
+
+            modifs += checkHeads();
             deleted.addAll(contextualizeAndPurge());
 
             modifs += checkLedgers();
