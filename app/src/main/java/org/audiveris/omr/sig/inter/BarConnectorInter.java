@@ -25,6 +25,10 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.grid.BarConnection;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.relation.NoExclusion;
+import org.audiveris.omr.sig.relation.Relation;
+
+import java.awt.Color;
 
 import java.awt.geom.Line2D;
 
@@ -88,6 +92,52 @@ public class BarConnectorInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //----------//
+    // getColor //
+    //----------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * A connector that stands on its two bar lines is not shown as a weak one, even though its
+     * own grade is.
+     */
+    @Override
+    public Color getColor ()
+    {
+        if (!isAbnormal() && isVouchedByBars()) {
+            return shape.getColor();
+        }
+
+        return super.getColor();
+    }
+
+    //-----------------//
+    // isVouchedByBars //
+    //-----------------//
+    /**
+     * Report whether the two bar lines this connector connects are still there.
+     * <p>
+     * The connection between two bar lines has been accepted on its own (alignment, gap and white
+     * ratio), only its grade can be poor, typically when the page is curled so that the bar lines
+     * lean differently from the sheet slope.
+     * Nothing in the SIG supports a connector, so its grade alone would then get it purged,
+     * whereas its bar lines support each other.
+     *
+     * @return true if the connector still links two bar lines
+     */
+    public boolean isVouchedByBars ()
+    {
+        int bars = 0;
+
+        for (Relation rel : sig.getRelations(this, NoExclusion.class)) {
+            if (sig.getOppositeInter(this, rel) instanceof BarlineInter) {
+                bars++;
+            }
+        }
+
+        return bars >= 2;
     }
 
     //--------//
