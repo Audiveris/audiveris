@@ -405,6 +405,15 @@ public class NoteHeadsBuilder
                 logger.debug("Staff#{} {} duplicates", staff.getId(), duplicates);
             }
 
+            // Candidates tied on adjacent pitches are decided by their ink
+            watch.start("Staff #" + staff.getId() + " pitch ties");
+            purge(
+                    ch,
+                    "pitch tie",
+                    (h1,
+                     h2) -> pitchTieLoser((HeadInter) h1, (HeadInter) h2) != null,
+                    true);
+
             // Overlaps for current staff are formalized as exclusions
             watch.start("Staff #" + staff.getId() + " overlaps");
             final int overlaps = purge(
@@ -1265,6 +1274,92 @@ public class NoteHeadsBuilder
         return ch;
     }
 
+    //---------------//
+    // pitchTieLoser //
+    //---------------//
+    /**
+     * Among two head candidates of the same shape, found on adjacent pitches for the same ink
+     * with almost the same grade, report the one which is not centered on the ink.
+     * <p>
+     * The same ink means that the candidates overlap on most of their width, and that the ink
+     * rows found between them are no higher than a head.
+     * <p>
+     * A head drawn a bit off its pitch, or a tie or slur touching it, can make the template match
+     * as well one pitch above as on the right pitch.
+     * The relation with the stem would then decide, by a small abscissa shift of either
+     * candidate, which has nothing to do with the pitch.
+     * Instead, we compare the ordinate of each pitch with the center of the head ink, measured
+     * on the rows of the ink which are as wide as a head.
+     *
+     * @param h1 a head candidate
+     * @param h2 another head candidate
+     * @return the candidate to discard, or null if the provided candidates are not in such tie
+     */
+    private HeadInter pitchTieLoser (HeadInter h1,
+                                     HeadInter h2)
+    {
+        if ((h1.getShape() != h2.getShape()) || (h1.getStaff() != h2.getStaff())
+                || (Math.abs(h1.getIntegerPitch() - h2.getIntegerPitch()) != 1)
+                || (Math.abs(h1.getGrade() - h2.getGrade()) > constants.maxPitchTieGradeDiff
+                        .getValue())) {
+            return null;
+        }
+
+        final Rectangle box1 = h1.getBounds();
+        final Rectangle box2 = h2.getBounds();
+        final int xMin = Math.max(box1.x, box2.x);
+        final int xMax = Math.min(box1.x + box1.width, box2.x + box2.width) - 1;
+        final int maxWidth = Math.max(box1.width, box2.width);
+
+        // Both candidates must lie on the same ink, not side by side like the heads of a second
+        if ((xMax - xMin + 1) < (constants.minPitchTieOverlap.getValue() * maxWidth)) {
+            return null;
+        }
+
+        // Ink rows, from the middle between the two candidates, as long as they are head-wide
+        final int minCount = (int) Math.ceil(
+                constants.minPitchTieRowRatio.getValue() * (xMax - xMin + 1));
+        final double y1 = h1.getCenter2D().getY();
+        final double y2 = h2.getCenter2D().getY();
+        final int yMid = (int) Math.rint((y1 + y2) / 2);
+
+        if (rowCount(xMin, xMax, yMid) < minCount) {
+            return null;
+        }
+
+        int top = yMid;
+
+        while ((top > 0) && (rowCount(xMin, xMax, top - 1) >= minCount)) {
+            top--;
+        }
+
+        int bottom = yMid;
+
+        while ((bottom < (image.getHeight() - 1)) && (rowCount(xMin, xMax, bottom + 1)
+                >= minCount)) {
+            bottom++;
+        }
+
+        // The ink must be as high as a head, not merged with a stem or another head
+        final int maxHeight = Math.max(box1.height, box2.height);
+
+        if ((bottom - top + 1) > (constants.maxPitchTieInkRatio.getValue() * maxHeight)) {
+            return null;
+        }
+
+        final double yInk = (top + bottom) / 2.0;
+        final double xMid = (xMin + xMax) / 2.0;
+        final Staff staff = h1.getStaff();
+        final double d1 = Math.abs(yInk - staff.pitchToOrdinate(xMid, h1.getIntegerPitch()));
+        final double d2 = Math.abs(yInk - staff.pitchToOrdinate(xMid, h2.getIntegerPitch()));
+
+        if (Math.abs(d1 - d2) < 1) {
+            return null; // Ink cannot tell either
+        }
+
+        return (d1 > d2) ? h1 : h2;
+    }
+
     //-------//
     // purge //
     //-------//
@@ -1306,8 +1401,11 @@ public class NoteHeadsBuilder
                     if (ipp.test(left, right)) {
                         final HeadInter purged;
                         final double diff = Math.abs(left.getGrade() - right.getGrade());
+                        final HeadInter tieLoser = pitchTieLoser(left, right);
 
-                        if (diff < EPSILON) {
+                        if (tieLoser != null) {
+                            purged = tieLoser;
+                        } else if (diff < EPSILON) {
                             // We try to preserve seed data as much as possible
                             purged = purgedEquals(left, right);
                         } else {
@@ -1396,6 +1494,32 @@ public class NoteHeadsBuilder
         }
 
         return h2;
+    }
+
+    //----------//
+    // rowCount //
+    //----------//
+    /**
+     * Count the foreground pixels of a row within the provided abscissa range.
+     *
+     * @param xMin range start
+     * @param xMax range stop
+     * @param y    row ordinate
+     * @return the count of foreground pixels
+     */
+    private int rowCount (int xMin,
+                          int xMax,
+                          int y)
+    {
+        int count = 0;
+
+        for (int x = xMin; x <= xMax; x++) {
+            if (image.get(x, y) == 0) {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     //---------------//
@@ -1612,6 +1736,22 @@ public class NoteHeadsBuilder
         private final Constant.Ratio gradeMargin = new Constant.Ratio(
                 0.1,
                 "Grade margin to boost seed-based competitors");
+
+        private final Constant.Ratio maxPitchTieGradeDiff = new Constant.Ratio(
+                0.02,
+                "Maximum grade difference for head candidates tied on adjacent pitches");
+
+        private final Constant.Ratio minPitchTieRowRatio = new Constant.Ratio(
+                0.5,
+                "Minimum ink of a head row, as ratio of the width shared by tied candidates");
+
+        private final Constant.Ratio minPitchTieOverlap = new Constant.Ratio(
+                0.75,
+                "Minimum abscissa overlap of tied candidates, as ratio of head width");
+
+        private final Constant.Ratio maxPitchTieInkRatio = new Constant.Ratio(
+                1.3,
+                "Maximum height of tied candidates ink, as ratio of head height");
 
         private final Constant.Ratio minIouHeads = new Constant.Ratio(
                 0.1,
