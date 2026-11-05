@@ -162,6 +162,10 @@ public class XmlExportRegressionTest
     private static final Pattern REST_POSITION =
             Pattern.compile("<display-(?:step|octave)>.*</display-(?:step|octave)>");
 
+    /** Pattern to match the content of OCR-produced text elements (direction words, lyrics). */
+    private static final Pattern OCR_TEXT =
+            Pattern.compile("(<(?:words|text)(?:\\s[^>]*)?>)(.*)(</(?:words|text)>)");
+
     /** The folder holding input/reference pairs. */
     private static Path regressionFolder;
 
@@ -569,6 +573,7 @@ public class XmlExportRegressionTest
     {
         final List<String> lines = new ArrayList<>();
         boolean inRest = false;
+        boolean inCredit = false;
 
         for (String raw : xml.split("\r?\n")) {
             String line = raw.trim(); // Line endings and trailing blanks are not meaningful
@@ -579,6 +584,19 @@ public class XmlExportRegressionTest
 
             // Drop the export date and the software version, they cannot be reproduced
             if (ENCODING_DATE.matcher(line).matches() || SOFTWARE.matcher(line).matches()) {
+                continue;
+            }
+
+            // Drop whole credits (titles, composer, page texts...), they only come from OCR
+            if (line.startsWith("<credit ") || line.equals("<credit>")) {
+                inCredit = true;
+            }
+
+            if (inCredit) {
+                if (line.equals("</credit>")) {
+                    inCredit = false;
+                }
+
                 continue;
             }
 
@@ -596,6 +614,9 @@ public class XmlExportRegressionTest
             line = reduceToBaseName(SOURCE_FILE_LINE, line);
 
             line = FONT_ATTRIBUTES.matcher(line).replaceAll("");
+
+            // Ignore the recognized text itself, OCR results may vary across platforms
+            line = OCR_TEXT.matcher(line).replaceFirst("$1$3");
 
             // Ignore layout
             if (DISTANCE_LINE.matcher(line).matches()) {

@@ -13,7 +13,7 @@
       <supports type="yes" element="beam"></supports>
       <supports type="yes" element="stem"></supports>
       <software>ProxyMusic 4.0.3</software>
-      <encoding-date>2026-11-02</encoding-date>
+      <encoding-date>2026-11-05</encoding-date>
     </encoding>
     <source>D:\sources\audiveris\data\regression\carmen.png</source>
     <miscellaneous>
@@ -51,27 +51,6 @@
   <credit page="1">
     <credit-type>composer</credit-type>
     <credit-words default-x="1075" default-y="1568" font-family="serif" font-size="11">t A. DUMOND</credit-words>
-  </credit>
-  <credit page="1">
-    <credit-words default-x="492" default-y="753" font-family="sans-serif" font-style="italic" font-size="20" font-weight="bold">J</credit-words>
-  </credit>
-  <credit page="1">
-    <credit-words default-x="677" default-y="751" font-family="sans-serif" font-style="italic" font-size="21" font-weight="bold">J</credit-words>
-  </credit>
-  <credit page="1">
-    <credit-words default-x="873" default-y="750" font-family="sans-serif" font-style="italic" font-size="21" font-weight="bold">J</credit-words>
-  </credit>
-  <credit page="1">
-    <credit-words default-x="1134" default-y="749" font-family="sans-serif" font-style="italic" font-size="21" font-weight="bold">J</credit-words>
-  </credit>
-  <credit page="1">
-    <credit-words default-x="728" default-y="457" font-family="sans-serif" font-style="italic" font-size="21" font-weight="bold">J</credit-words>
-  </credit>
-  <credit page="1">
-    <credit-words default-x="514" default-y="457" font-family="sans-serif" font-style="italic" font-size="24" font-weight="bold">J</credit-words>
-  </credit>
-  <credit page="1">
-    <credit-words default-x="315" default-y="457" font-family="sans-serif" font-style="italic" font-size="24" font-weight="bold">J</credit-words>
   </credit>
   <part-list>
     <score-part id="P1">
@@ -145,8 +124,8 @@
       </direction>
       <note default-x="179">
         <rest measure="yes">
-          <display-step>D</display-step>
-          <display-octave>5</display-octave>
+          <display-step>B</display-step>
+          <display-octave>4</display-octave>
         </rest>
         <duration>24</duration>
         <voice>1</voice>
@@ -247,8 +226,8 @@
     <measure number="2" width="239">
       <note default-x="123">
         <rest measure="yes">
-          <display-step>C</display-step>
-          <display-octave>5</display-octave>
+          <display-step>B</display-step>
+          <display-octave>4</display-octave>
         </rest>
         <duration>24</duration>
         <voice>1</voice>
@@ -308,7 +287,7 @@
         <duration>6</duration>
         <voice>5</voice>
         <type>eighth</type>
-        <stem default-y="2">up</stem>
+        <stem default-y="3">up</stem>
         <staff>2</staff>
         <beam number="1">begin</beam>
         <notations>
@@ -340,8 +319,8 @@
     <measure number="3" width="233">
       <note default-x="120">
         <rest measure="yes">
-          <display-step>D</display-step>
-          <display-octave>5</display-octave>
+          <display-step>B</display-step>
+          <display-octave>4</display-octave>
         </rest>
         <duration>24</duration>
         <voice>1</voice>
@@ -1443,6 +1422,9 @@
         <staff>2</staff>
         <beam number="1">end</beam>
         <beam number="2">backward hook</beam>
+        <notations>
+          <slur type="start" number="1" placement="below" default-x="9" default-y="-68" bezier-x="10" bezier-y="-5"></slur>
+        </notations>
       </note>
       <note default-x="108">
         <pitch>
@@ -1459,6 +1441,7 @@
           <articulations>
             <staccato placement="below" default-y="-47"></staccato>
           </articulations>
+          <slur type="stop" number="1" default-x="4" default-y="-55" bezier-x="0" bezier-y="-11"></slur>
         </notations>
       </note>
       <note default-x="143">
@@ -1586,6 +1569,9 @@
         <staff>2</staff>
         <beam number="1">end</beam>
         <beam number="2">backward hook</beam>
+        <notations>
+          <slur type="start" number="1" placement="below" default-x="12" default-y="-71" bezier-x="11" bezier-y="-5"></slur>
+        </notations>
       </note>
       <note default-x="109">
         <pitch>
@@ -1602,6 +1588,7 @@
           <articulations>
             <staccato placement="below" default-y="-46"></staccato>
           </articulations>
+          <slur type="stop" number="1" default-x="6" default-y="-55" bezier-x="2" bezier-y="-12"></slur>
         </notations>
       </note>
       <note default-x="143">
@@ -1736,6 +1723,9 @@
         <staff>2</staff>
         <beam number="1">end</beam>
         <beam number="2">backward hook</beam>
+        <notations>
+          <slur type="start" number="1" placement="below" default-x="9" default-y="-73" bezier-x="10" bezier-y="-5"></slur>
+        </notations>
       </note>
       <note default-x="108">
         <pitch>
@@ -1752,6 +1742,7 @@
           <articulations>
             <staccato placement="below" default-y="-48"></staccato>
           </articulations>
+          <slur type="stop" number="1" default-x="5" default-y="-60" bezier-x="1" bezier-y="-11"></slur>
         </notations>
       </note>
       <note default-x="143">
@@ -1903,6 +1894,9 @@
         <staff>2</staff>
         <beam number="1">end</beam>
         <beam number="2">backward hook</beam>
+        <notations>
+          <slur type="start" number="1" placement="below" default-x="8" default-y="-73" bezier-x="10" bezier-y="-7"></slur>
+        </notations>
       </note>
       <note default-x="172">
         <pitch>
@@ -1919,6 +1913,7 @@
           <articulations>
             <staccato placement="below" default-y="-49"></staccato>
           </articulations>
+          <slur type="stop" number="1" default-x="3" default-y="-60" bezier-x="2" bezier-y="-12"></slur>
         </notations>
       </note>
       <note default-x="207">
@@ -2072,6 +2067,9 @@
         <staff>2</staff>
         <beam number="1">end</beam>
         <beam number="2">backward hook</beam>
+        <notations>
+          <slur type="start" number="1" placement="below" default-x="8" default-y="-75" bezier-x="11" bezier-y="-8"></slur>
+        </notations>
       </note>
       <note default-x="173">
         <pitch>
@@ -2089,6 +2087,7 @@
           <articulations>
             <staccato placement="below" default-y="-49"></staccato>
           </articulations>
+          <slur type="stop" number="1" default-x="4" default-y="-60" bezier-x="2" bezier-y="-13"></slur>
         </notations>
       </note>
       <note default-x="210">
@@ -2219,6 +2218,9 @@
         <staff>2</staff>
         <beam number="1">end</beam>
         <beam number="2">backward hook</beam>
+        <notations>
+          <slur type="start" number="1" placement="below" default-x="7" default-y="-75" bezier-x="11" bezier-y="-8"></slur>
+        </notations>
       </note>
       <note default-x="115">
         <pitch>
@@ -2236,6 +2238,7 @@
           <articulations>
             <staccato placement="below" default-y="-49"></staccato>
           </articulations>
+          <slur type="stop" number="1" default-x="4" default-y="-60" bezier-x="2" bezier-y="-13"></slur>
         </notations>
       </note>
       <note default-x="154">
@@ -2386,6 +2389,9 @@
         <staff>2</staff>
         <beam number="1">end</beam>
         <beam number="2">backward hook</beam>
+        <notations>
+          <slur type="start" number="1" placement="below" default-x="9" default-y="-74" bezier-x="11" bezier-y="-8"></slur>
+        </notations>
       </note>
       <note default-x="128">
         <pitch>
@@ -2403,6 +2409,7 @@
           <articulations>
             <staccato placement="below" default-y="-50"></staccato>
           </articulations>
+          <slur type="stop" number="1" default-x="5" default-y="-59" bezier-x="2" bezier-y="-13"></slur>
         </notations>
       </note>
       <note default-x="167">
