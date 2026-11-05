@@ -394,9 +394,16 @@ tasks.withType(CreateStartScripts).configureEach {
     windowsStartScriptGenerator.template = resources.text.fromFile(layout.buildDirectory.file("custom-windowsStartScript.txt"))
 }
 
-// Tell gradle to log standard output and error streams when running tests
+// Tell gradle to log standard output and error streams when running tests,
+// and to show full failure messages (e.g. the XML diffs) in the console / CI log
 test {
-    testLogging.showStandardStreams = true
+    testLogging {
+        // Must come before showStandardStreams, because events() replaces the set of events
+        events "failed"
+        exceptionFormat = "full"
+        showStackTraces = true
+        showStandardStreams = true
+    }
 
     // Application JVM options, for tests that launch Audiveris in a separate JVM
     systemProperty 'audiveris.jvmArgs', application.applicationDefaultJvmArgs.join(',')

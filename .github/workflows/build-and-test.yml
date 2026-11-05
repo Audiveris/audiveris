@@ -56,3 +56,14 @@ jobs:
 
       - name: Unit-Test Audiveris
         run: ./gradlew test
+
+      - name: Upload test reports and regression artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-failure-artifacts
+          path: |
+            app/build/reports/tests/
+            app/build/test-results/
+            /tmp/xml-export-*/
+          if-no-files-found: ignore
