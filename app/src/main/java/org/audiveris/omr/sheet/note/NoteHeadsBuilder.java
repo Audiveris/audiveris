@@ -227,6 +227,9 @@ public class NoteHeadsBuilder
     /** All head templates for this sheet. */
     private final EnumSet<Shape> sheetTemplateNotesAll;
 
+    /** Head templates for a standard staff, the same as on a sheet without drum notation. */
+    private final EnumSet<Shape> stdTemplateNotesAll;
+
     /** All stem head templates for this sheet. */
     private final EnumSet<Shape> sheetTemplateNotesStem;
 
@@ -281,6 +284,8 @@ public class NoteHeadsBuilder
         scale = sheet.getScale();
 
         sheetTemplateNotesAll = ShapeSet.getTemplateNotesAll(sheet);
+        stdTemplateNotesAll = EnumSet.copyOf(
+                ShapeSet.getProcessedShapes(sheet, ShapeSet.Heads, false));
         sheetTemplateNotesStem = ShapeSet.getTemplateNotesStem(sheet);
         sheetTemplateNotesHollow = ShapeSet.getTemplateNotesHollow(sheet);
 
@@ -2066,7 +2071,8 @@ public class NoteHeadsBuilder
             final Staff staff = line.getStaff();
 
             if (!staff.isUnpitched()) {
-                return sheetTemplateNotesAll;
+                // A standard staff is read exactly as on a sheet without drum notation
+                return stdTemplateNotesAll;
             }
 
             // Here below, we are dealing with a drum staff
