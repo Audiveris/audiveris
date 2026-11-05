@@ -790,6 +790,32 @@ public class PartwiseBuilder
         return 0;
     }
 
+    //---------------------//
+    // getRestDisplayPitch //
+    //---------------------//
+    /**
+     * Report the pitch position to export as display step and octave of the provided rest.
+     * <p>
+     * MusicXML locates a rest by the pitch it would have at its standard position, that is
+     * the staff middle line.
+     * But the pitch position of a rest inter is the one of its center: a whole rest hangs below a
+     * line, so its center is half a step below that line, which itself is one line above
+     * the standard position; a half rest sits on a line, so its center is half a step above it.
+     *
+     * @param note the rest
+     * @return the pitch position to export
+     */
+    private int getRestDisplayPitch (AbstractNoteInter note)
+    {
+        final double pitch = note.getPitch();
+
+        return switch (note.getShape()) {
+            case WHOLE_REST -> (int) Math.rint(pitch - 0.5) + 2;
+            case HALF_REST -> (int) Math.rint(pitch + 0.5);
+            default -> note.getIntegerPitch();
+        };
+    }
+
     //----------------------//
     // getOctaveShiftNumber //
     //----------------------//
@@ -2315,8 +2341,11 @@ public class PartwiseBuilder
 
                 if (!current.measure.isDummy() && !staff.isOneLineStaff()) {
                     // Set displayStep & displayOctave for rest
-                    rest.setDisplayStep(stepOf(note.getStep()));
-                    rest.setDisplayOctave(note.getOctave() + getOctaveShift(note));
+                    final ClefInter clef = current.measure.getClefBefore(note.getCenter(), staff);
+                    final int displayPitch = getRestDisplayPitch(note);
+                    rest.setDisplayStep(stepOf(ClefInter.noteStepOf(clef, displayPitch)));
+                    rest.setDisplayOctave(
+                            ClefInter.octaveOf(clef, displayPitch) + getOctaveShift(note));
                 }
 
                 current.pmNote.setRest(rest);
