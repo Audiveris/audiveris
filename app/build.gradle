@@ -112,6 +112,7 @@ dependencies {
     testImplementation(
         "junit:junit:4.13.2",
         "org.jgrapht:jgrapht-ext:1.5.2",
+        "io.github.java-diff-utils:java-diff-utils:4.12",
     )
 }
 
@@ -396,6 +397,9 @@ tasks.withType(CreateStartScripts).configureEach {
 // Tell gradle to log standard output and error streams when running tests
 test {
     testLogging.showStandardStreams = true
+
+    // Application JVM options, for tests that launch Audiveris in a separate JVM
+    systemProperty 'audiveris.jvmArgs', application.applicationDefaultJvmArgs.join(',')
 }
 
 // Defining 'debug' task allows to set its arguments later   
