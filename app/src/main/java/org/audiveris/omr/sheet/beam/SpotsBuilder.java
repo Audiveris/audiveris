@@ -235,10 +235,13 @@ public class SpotsBuilder
 
         List<Glyph> glyphs = GlyphFactory.buildGlyphs(spotTable, offset);
 
-        // Head sizing (cannot be used if the sheet contains any drum notation)
+        // Head sizing.
+        // With drum notation, it is still performed if the sheet has a pitched staff, on the same
+        // spots as without drum notation, so that the pitched staves get the same head templates.
+        // It is skipped for a sheet of unpitched staves only, and for 1-line staves.
         final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
         if (!switches.getValue(ProcessingSwitch.oneLineStaves) //
-                && !switches.getValue(ProcessingSwitch.drumNotation)) {
+                && (!switches.getValue(ProcessingSwitch.drumNotation) || hasPitchedStaff())) {
             watch.start("computeHeadSizing");
             new BlackHeadSizer(sheet).process(glyphs);
         }
@@ -395,6 +398,25 @@ public class SpotsBuilder
                 watch.print();
             }
         }
+    }
+
+    //-----------------//
+    // hasPitchedStaff //
+    //-----------------//
+    /**
+     * Report whether the sheet has at least one staff that is not read as unpitched.
+     *
+     * @return true if so
+     */
+    private boolean hasPitchedStaff ()
+    {
+        for (Staff staff : sheet.getStaffManager().getStaves()) {
+            if (!staff.isUnpitched()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //--------------//
