@@ -386,7 +386,7 @@ public class Languages
                 }
             });
 
-            Application.getInstance().getContext().getResourceMap(getClass()) //
+            Application.getInstance().getContext().getResourceMap(Languages.class) //
                     .injectComponents(dialog);
             dialog.pack();
         }
