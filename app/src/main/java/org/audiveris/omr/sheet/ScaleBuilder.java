@@ -280,10 +280,14 @@ public class ScaleBuilder
                                 (int) Math.rint(quorumRatio * 100)));
             }
 
-            // Quorum reached or measured value close to guess?
+            // Quorum reached, or measured value close to guess, or strongly corroborated
+            // (sub-quorum) peak: on sparse sheets a genuine beam may fall slightly short of the
+            // global quorum while still being a clear, well-supported local maximum.
             final int diff = Math.abs(peak - beamGuess);
 
-            if ((quorumRatio >= 1.0) || (diff <= constants.beamMaxDiff.getValue())) {
+            if ((quorumRatio >= 1.0)
+                    || (quorumRatio >= constants.beamSubQuorumRatio.getValue())
+                    || (diff <= constants.beamMaxDiff.getValue())) {
                 beamKey = peak;
             }
 
@@ -546,6 +550,11 @@ public class ScaleBuilder
                 "pixels",
                 2,
                 "Maximum difference between beam guess and measurement");
+
+        private final Constant.Ratio beamSubQuorumRatio = new Constant.Ratio(
+                0.8,
+                "Minimum ratio of needed quorum to accept a well-corroborated beam peak"
+                + " on sparse sheets");
 
         private final Constant.Ratio maxWhiteHeightRatio = new Constant.Ratio(
                 0.25,
