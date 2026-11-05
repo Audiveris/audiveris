@@ -1394,7 +1394,10 @@ public class SheetStub
         try {
             final OmrStep latestStep = getLatestStep();
 
-            if (force && (target.compareTo(latestStep) <= 0)) {
+            // Only reset & re-perform when a step has already been reached.
+            // A fresh sheet has no latest step (null); there is nothing to
+            // reset, so simply process forward to the target step.
+            if (force && (latestStep != null) && (target.compareTo(latestStep) <= 0)) {
                 if (target.compareTo(OmrStep.BINARY) > 0) {
                     resetToBinary();
                 } else {
