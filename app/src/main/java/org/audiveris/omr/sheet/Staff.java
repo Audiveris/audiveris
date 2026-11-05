@@ -1670,6 +1670,39 @@ public class Staff
         return false; // By default
     }
 
+    //-------------//
+    // isUnpitched //
+    //-------------//
+    /**
+     * Report whether this staff is to be read as unpitched, so that its head templates
+     * are limited to the motifs the drum set lists for each pitch.
+     * <p>
+     * {@link #isDrum()} answers from a PERCUSSION_CLEF and a great many drum
+     * charts print none, opening straight onto the time signature. Setting
+     * {@code drumNotation} stands in for the clef that was never printed; a staff
+     * whose clef was read and is not a percussion clef stays pitched.
+     * <p>
+     * Asked apart from {@code isDrum()}, which {@code ClefBuilder}
+     * consults while it is still choosing which clef shapes to look for: a true
+     * answer there would narrow the candidates to PERCUSSION_CLEF alone, and a
+     * melodic staff beside the drum one would never find its own clef.
+     *
+     * @return true if its heads are to be looked up in the drum set
+     */
+    public boolean isUnpitched ()
+    {
+        if (isDrum()) {
+            return true;
+        }
+
+        if ((header != null) && (header.clef != null)) {
+            return false;
+        }
+
+        return system.getSheet().getStub().getProcessingSwitches()
+                .getValue(ProcessingSwitch.drumNotation);
+    }
+
     //-----------------//
     // pitchPositionOf //
     //-----------------//
