@@ -57,6 +57,7 @@ import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.ZipFileSystem;
 import org.audiveris.omr.util.param.IntegerParam;
@@ -110,6 +111,8 @@ public class SheetStub
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SheetStub.class);
+
+    private static final Translator ct = new Translator(SheetStub.class);
 
     /** Predicate that tests stub validity. */
     public static final Predicate<SheetStub> VALIDITY_CHECK = (SheetStub stub) -> stub.isValid();
@@ -403,7 +406,7 @@ public class SheetStub
         // If no stub is left, force book closing
         if (!book.isClosing()) {
             if (!book.getStubs().isEmpty()) {
-                logger.info("Sheet closed");
+                logger.info(ct.trans("sheet.closed"));
             } else {
                 book.close(null);
             }
@@ -466,7 +469,7 @@ public class SheetStub
                     SwingUtilities.invokeAndWait(runnable);
                 }
             } catch (InterruptedException | InvocationTargetException ex) {
-                logger.warn("Could not reset {}", ex.toString(), ex);
+                logger.warn(ct.trans("could.not.reset", ex.toString()), ex);
             }
         }
     }
@@ -546,7 +549,7 @@ public class SheetStub
                 storeSheet();
             }
         } catch (TimeoutException tex) {
-            logger.warn("Timeout {} seconds for step {}", timeout, step, tex);
+            logger.warn(ct.trans("timeout.seconds.for.step", timeout, step), tex);
 
             // Signal the on-going step processing to stop (if possible)
             if (future != null) {
@@ -971,7 +974,7 @@ public class SheetStub
                 try {
                     return sheet = new Sheet(this, null, false);
                 } catch (StepException ignored) {
-                    logger.info("Could not load sheet for stub {}", this);
+                    logger.info(ct.trans("could.not.load.sheet.for.stub", this));
                     return null;
                 }
             }
@@ -1019,10 +1022,10 @@ public class SheetStub
                     watch.print();
                 }
 
-                logger.info("Loaded {}", sheetFile);
+                logger.info(ct.trans("loaded", sheetFile));
             } catch (IOException | JAXBException ex) {
-                logger.warn("Error in loading sheet structure " + ex, ex);
-                logger.info("Trying to restart from binary");
+                logger.warn(ct.trans("error.in.loading.sheet.structure", ex.getMessage()), ex);
+                logger.info(ct.trans("trying.to.restart.from.binary"));
                 resetToBinary();
             }
 
@@ -1213,7 +1216,7 @@ public class SheetStub
             StubsController.getInstance().markTab(this, Colors.SHEET_INVALID);
         }
 
-        logger.info("Sheet {} flagged as invalid.", getId());
+        logger.info(ct.trans("sheet.flagged.as.invalid", getId()));
     }
 
     //--------//
@@ -1283,7 +1286,7 @@ public class SheetStub
 
         try {
             if (!Files.exists(si.path)) {
-                logger.warn("Input {} not found", si.path);
+                logger.warn(ct.trans("input.not.found", si.path));
 
                 return null;
             }
@@ -1291,24 +1294,25 @@ public class SheetStub
             final ImageLoading.Loader loader = ImageLoading.getLoader(si.path);
 
             if (loader == null) {
-                logger.warn("No image loader for {}", si.path);
+                logger.warn(ct.trans("no.image.loader.for", si.path));
 
                 return null;
             }
 
             final BufferedImage img = loader.getImage(si.number);
             logger.info(
-                    "Loaded image #{} {}x{} from {}",
-                    si.number,
-                    img.getWidth(),
-                    img.getHeight(),
-                    si.path);
+                    ct.trans(
+                            "loaded.image.from",
+                            si.number,
+                            img.getWidth(),
+                            img.getHeight(),
+                            si.path));
 
             loader.dispose();
 
             return img;
         } catch (IOException ex) {
-            logger.warn("Error loading image " + si.path, ex);
+            logger.warn(ct.trans("error.loading.image", si.path, ex.getMessage()), ex);
 
             return null;
         }
@@ -1432,7 +1436,7 @@ public class SheetStub
 
             ok = true;
         } catch (StepPause sp) {
-            logger.info("Processing paused.");
+            logger.info(ct.trans("processing.paused"));
             ok = true;
             throw sp;
         } finally {
@@ -1477,10 +1481,10 @@ public class SheetStub
         try {
             BufferedImage img = loadGrayImage();
             sheet = new Sheet(this, img, true);
-            logger.info("Sheet#{} reset as valid.", number);
+            logger.info(ct.trans("sheet.reset.as.valid", number));
             display();
         } catch (Exception ex) {
-            logger.warn("Error reloading image for sheet#{} {}", number, ex.toString(), ex);
+            logger.warn(ct.trans("error.reloading.image.for.sheet", number, ex.toString()), ex);
         }
     }
 
@@ -1498,13 +1502,13 @@ public class SheetStub
             if (binaryTable != null) {
                 doReset();
                 sheet = new Sheet(this, binaryTable);
-                logger.info("Sheet#{} reset to binary.", number);
+                logger.info(ct.trans("sheet.reset.to.binary", number));
                 display();
             } else {
-                logger.warn("No binary table available for sheet #{}", number);
+                logger.warn(ct.trans("no.binary.table.available.for.sheet", number));
             }
         } catch (Throwable ex) {
-            logger.warn("Sheet#{} could not reset to binary {}", number, ex.toString(), ex);
+            logger.warn(ct.trans("sheet.could.not.reset.to.binary", number, ex.toString()), ex);
         }
     }
 
@@ -1522,13 +1526,13 @@ public class SheetStub
             if (img != null) {
                 doReset();
                 sheet = new Sheet(this, img, true);
-                logger.info("Sheet#{} reset to gray.", number);
+                logger.info(ct.trans("sheet.reset.to.gray", number));
                 display();
             } else {
-                logger.warn("No gray image available for sheet #{}", number);
+                logger.warn(ct.trans("no.gray.image.available.for.sheet", number));
             }
         } catch (Throwable ex) {
-            logger.warn("Sheet#{} could not reset to gray {}", number, ex.toString(), ex);
+            logger.warn(ct.trans("sheet.could.not.reset.to.gray", number, ex.toString()), ex);
         }
     }
 
@@ -1669,12 +1673,12 @@ public class SheetStub
     {
         try {
             if (isModified() || isUpgraded()) {
-                logger.info("{} storing", this);
+                logger.info(ct.trans("storing", this));
                 storeSheet();
             }
 
             if (sheet != null) {
-                logger.info("Sheet{} disposed", sheet.getStub().getNum());
+                logger.info(ct.trans("sheet.disposed", sheet.getStub().getNum()));
                 sheet = null;
                 Memory.gc(); // Trigger a garbage collection...
             }
@@ -1692,7 +1696,7 @@ public class SheetStub
                 });
             }
         } catch (Exception ex) {
-            logger.warn("Error swapping sheet", ex);
+            logger.warn(ct.trans("error.swapping.sheet", ex.getMessage()), ex);
         }
     }
 
@@ -1753,7 +1757,7 @@ public class SheetStub
             StubsController.getInstance().markTab(this, Colors.SHEET_OK);
         }
 
-        logger.info("Sheet {} flagged as valid.", getId());
+        logger.info(ct.trans("sheet.flagged.as.valid", getId()));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -581,7 +581,7 @@ public class Book
         if (loader != null) {
             final int imageCount = loader.getImageCount();
             loader.dispose();
-            logger.info(ct.trans("sheets.in", path));
+            logger.info(ct.trans("sheets.in", imageCount, path));
 
             for (int i = 1; i <= imageCount; i++) {
                 stubs.add(new SheetStub(this, i));
