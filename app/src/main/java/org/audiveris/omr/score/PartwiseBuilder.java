@@ -563,6 +563,9 @@ public class PartwiseBuilder
                         : partName.getValue());
 
         // Is this a drum part?
+        // A logical part is a drum part as soon as one of its system parts is a drum part:
+        // the first system part may start with a G clef (e.g. a vocal line in a drum set part),
+        // while a later system starts with the percussion clef and will need the instrument map.
         boolean isDrumLogicalPart = false;
         final List<SheetStub> scoreStubs = score.getStubs();
         outermost:
@@ -572,9 +575,9 @@ public class PartwiseBuilder
             final Page page = sheet.getPages().get(sheetPageId - 1);
             for (SystemInfo system : page.getSystems()) {
                 Part systemPart = system.getPartById(logicalPart.getId());
-                if (systemPart != null) {
-                    // we've found a SystemPart that corresponds to this LogicalPart
-                    isDrumLogicalPart = systemPart.isDrumPart();
+                if ((systemPart != null) && systemPart.isDrumPart()) {
+                    // we've found a drum SystemPart that corresponds to this LogicalPart
+                    isDrumLogicalPart = true;
                     break outermost;
                 }
             }
@@ -2508,7 +2511,7 @@ public class PartwiseBuilder
 
                     if (map != null) {
                         final DrumInstrument drum = map.get(ms);
-                        if (drum != null) {
+                        if ((drum != null) && (current.instrumentMap != null)) {
                             instrument = factory.createInstrument();
                             instrument.setId(current.instrumentMap.get(drum.sound.getMidi()));
                             current.pmNote.getInstrument().add(instrument);
