@@ -373,10 +373,16 @@ public class StubsController
                         SheetAssembly assembly = stub.getAssembly();
                         assembly.assemblySelected();
 
-                        // Apply fit-to-width on initial display
-                        ScrollView scrollView = assembly.getSelectedScrollView();
-                        if (scrollView != null) {
-                            scrollView.fitWidth();
+                        // Apply fit-to-width only the first time this tab is displayed.
+                        // On subsequent tab switches, the zoom level the user set on
+                        // this tab must be preserved.
+                        if (assembly.isFirstDisplay()) {
+                            ScrollView scrollView = assembly.getSelectedScrollView();
+                            if (scrollView != null) {
+                                scrollView.fitWidth();
+                            }
+
+                            assembly.markDisplayed();
                         }
 
                         // Stub status
