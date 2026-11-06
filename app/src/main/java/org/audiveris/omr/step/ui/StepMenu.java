@@ -29,7 +29,6 @@ import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.ui.util.AbstractMenuListener;
-import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VoidTask;
 
 import org.slf4j.Logger;
@@ -59,8 +58,6 @@ public class StepMenu
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StepMenu.class);
-
-    private static final Translator ct = new Translator(StepMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
