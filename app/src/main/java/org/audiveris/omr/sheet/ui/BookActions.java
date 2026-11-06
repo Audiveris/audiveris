@@ -303,6 +303,10 @@ public class BookActions
         final String pdfExt = OMR.PRINT_EXTENSION.substring(
                 OMR.PRINT_EXTENSION.lastIndexOf('.') + 1);
 
+        // The default file name is provided WITHOUT its ".pdf" extension:
+        // the save dialog appends the extension of the file-type filter.
+        defaultBookPath = FileUtil.avoidExtensions(defaultBookPath, "." + pdfExt);
+
         return UIUtil.pathChooser(
                 true,
                 OMR.gui.getFrame(),
@@ -322,11 +326,15 @@ public class BookActions
         final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
         final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PRINT_EXTENSION);
         final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
-        final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ext);
-
         // Use the bare "pdf" extension for the file filter (the full suffix is "-print.pdf")
         final String pdfExt = OMR.PRINT_EXTENSION.substring(
                 OMR.PRINT_EXTENSION.lastIndexOf('.') + 1);
+
+        // The default file name is provided WITHOUT its ".pdf" extension:
+        // the save dialog appends the extension of the file-type filter.
+        final Path defaultSheetPath = FileUtil.avoidExtensions(
+                Paths.get(bookSansExt + sheetSuffix + ext),
+                "." + pdfExt);
 
         return UIUtil.pathChooser(
                 true,
@@ -663,20 +671,49 @@ public class BookActions
             return null;
         }
 
-        // Let user select book export target (the OS save dialog already handles overwrite confirmation)
-        final String ext = BookManager.getExportExtension();
-        final Path sansExt = BookManager.getDefaultExportPathSansExt(book);
-        final Path targetPath = Paths.get(sansExt + ext);
+        // Let user select book export target (the OS save dialog already handles overwrite confirmation).
+        // Offer the two extensions as SEPARATE entries in the file-type dropdown:
+        // .mxl (compressed) and .xml (uncompressed).
+        // The default file name is provided WITHOUT extension: the file-type dropdown
+        // is the single source of truth for the extension, and the OS save dialog
+        // appends the active filter's extension on confirm.
+        final Path targetPath = BookManager.getDefaultExportPathSansExt(book);
+
+        // Order matters: the first filter is the active default in the dropdown.
+        final List<OmrFileFilter> exportFilters = new ArrayList<>();
+        final boolean defaultCompressed = BookManager.useCompression();
+
+        if (defaultCompressed) {
+            exportFilters.add(new OmrFileFilter(
+                    resources.getString("compressedMusicXmlFilter"), OMR.COMPRESSED_SCORE_EXTENSION));
+            exportFilters.add(new OmrFileFilter(
+                    resources.getString("uncompressedMusicXmlFilter"), OMR.SCORE_EXTENSION));
+        } else {
+            exportFilters.add(new OmrFileFilter(
+                    resources.getString("uncompressedMusicXmlFilter"), OMR.SCORE_EXTENSION));
+            exportFilters.add(new OmrFileFilter(
+                    resources.getString("compressedMusicXmlFilter"), OMR.COMPRESSED_SCORE_EXTENSION));
+        }
+
         final Path bookPath = UIUtil.pathChooser(
                 true,
                 OMR.gui.getFrame(),
                 targetPath,
-                filter(ext),
+                exportFilters,
                 resources.getString("chooseBookExport"));
 
         if (bookPath == null) {
             return null;
         }
+
+        // The chosen extension drives the (de)compression:
+        // .xml => uncompressed MusicXML, .mxl => compressed MusicXML.
+        // This flag is the single source of truth read by Book.export / getScoreExportPaths,
+        // so it consistently controls both the output extension and the actual compression.
+        final String fileName = bookPath.getFileName().toString();
+        final boolean compressed = fileName.toLowerCase()
+                .endsWith(OMR.COMPRESSED_SCORE_EXTENSION);
+        BookManager.setCompression(compressed);
 
         // Remove extensions if any (.opus.mxl, .mxl, .xml, .mvt#.mxl, .mvt#.xml)
         final Path bookPathSansExt = ExportPattern.getPathSansExt(bookPath);
@@ -703,23 +740,52 @@ public class BookActions
             return null; // Not likely to happen, but safer
         }
 
-        // Let user select sheet export target
+        // Let user select sheet export target.
+        // Offer the two extensions as SEPARATE entries in the file-type dropdown:
+        // .mxl (compressed) and .xml (uncompressed).
         final Book book = stub.getBook();
         final Path bookSansExt = BookManager.getDefaultExportPathSansExt(book);
-        final boolean compressed = BookManager.useCompression();
-        final String ext = compressed ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION;
         final String suffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
-        final Path defaultSheetPath = Paths.get(bookSansExt + suffix + ext);
+
+        // The default file name is provided WITHOUT extension: the file-type dropdown
+        // is the single source of truth for the extension, and the OS save dialog
+        // appends the active filter's extension on confirm.
+        final Path defaultSheetPath = Paths.get(bookSansExt + suffix);
+
+        // Order matters: the first filter is the active default in the dropdown.
+        final boolean defaultCompressed = BookManager.useCompression();
+        final List<OmrFileFilter> exportFilters = new ArrayList<>();
+
+        if (defaultCompressed) {
+            exportFilters.add(new OmrFileFilter(
+                    resources.getString("compressedMusicXmlFilter"), OMR.COMPRESSED_SCORE_EXTENSION));
+            exportFilters.add(new OmrFileFilter(
+                    resources.getString("uncompressedMusicXmlFilter"), OMR.SCORE_EXTENSION));
+        } else {
+            exportFilters.add(new OmrFileFilter(
+                    resources.getString("uncompressedMusicXmlFilter"), OMR.SCORE_EXTENSION));
+            exportFilters.add(new OmrFileFilter(
+                    resources.getString("compressedMusicXmlFilter"), OMR.COMPRESSED_SCORE_EXTENSION));
+        }
+
         final Path sheetPath = UIUtil.pathChooser(
                 true,
                 OMR.gui.getFrame(),
                 defaultSheetPath,
-                filter(ext),
+                exportFilters,
                 resources.getString("chooseSheetExport"));
 
         if (sheetPath == null) {
             return null;
         }
+
+        // The chosen extension drives the (de)compression:
+        // .xml => uncompressed MusicXML, .mxl => compressed MusicXML.
+        // This flag is the single source of truth read by the export pipeline,
+        // so it consistently controls both the output extension and the actual compression.
+        final String fileName = sheetPath.getFileName().toString();
+        final boolean compressed = fileName.toLowerCase().endsWith(OMR.COMPRESSED_SCORE_EXTENSION);
+        BookManager.setCompression(compressed);
 
         return new ExportSheetTask(stub.getSheet(), sheetPath);
     }
