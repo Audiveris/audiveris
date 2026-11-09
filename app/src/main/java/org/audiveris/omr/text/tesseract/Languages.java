@@ -360,7 +360,8 @@ public class Languages
          */
         public Selector ()
         {
-            dialog = new JDialog(OMR.gui.getFrame(), true); // True for a modal dialog
+            // Modal dialog
+            dialog = new JDialog(OMR.gui.getFrame(), ct.trans("LanguagesFrame.title"), true);
             dialog.setName("LanguagesFrame"); // For SAF life cycle
             dialog.setPreferredSize(new Dimension(340, 600));
 
@@ -370,7 +371,7 @@ public class Languages
             framePane.add(new JScrollPane(defineLayout()));
 
             // Closing (via exit button)
-            JButton button = new JButton();
+            final JButton button = new JButton();
             button.setName("exitButton");
             button.setAlignmentX(CENTER_ALIGNMENT);
             button.addActionListener(this);
@@ -386,7 +387,7 @@ public class Languages
                 }
             });
 
-            Application.getInstance().getContext().getResourceMap(getClass()) //
+            Application.getInstance().getContext().getResourceMap(Languages.class) //
                     .injectComponents(dialog);
             dialog.pack();
         }
@@ -438,7 +439,7 @@ public class Languages
                 logger.debug("ocrFolder: {}", ocrFolder);
 
                 if ((ocrFolder == null) || !Files.isWritable(ocrFolder)) {
-                    logger.warn("No write access to the OCR folder {}", ocrFolder);
+                    logger.warn(ct.trans("no.write.access.to.ocr.folder", ocrFolder));
                     return;
                 }
 
@@ -485,13 +486,13 @@ public class Languages
             final Path ocrFolder = TesseractOCR.getInstance().getOcrFolder();
 
             if ((ocrFolder == null) || !Files.isWritable(ocrFolder)) {
-                throw new IOException("No write access to the OCR folder " + ocrFolder);
+                throw new IOException(ct.trans("no.write.access.to.ocr.folder", ocrFolder));
             }
 
             final Path languageFile = ocrFolder.resolve(code + LANGUAGE_FILE_EXT);
             Files.deleteIfExists(languageFile);
             getSupportedLanguages().removeCode(code);
-            logger.info("Uninstalled OCR language '{}'", code);
+            logger.info(ct.trans("uninstalled.ocr.language", code));
         }
 
         public JDialog getComponent ()
@@ -552,7 +553,7 @@ public class Languages
                     try {
                         uninstall(code);
                     } catch (IOException ex) {
-                        logger.error("Could not uninstall OCR language '{}'", code, ex);
+                        logger.error(ct.trans("could.not.uninstall.ocr.language", code, ex), ex);
                         box.setSelected(true);
                     }
                 }

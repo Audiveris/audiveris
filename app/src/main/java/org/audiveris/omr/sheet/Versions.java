@@ -33,6 +33,7 @@ import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.LabeledEnum;
 import org.audiveris.omr.util.OmrExecutors;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.Version.UpgradeVersion;
 
@@ -97,6 +98,8 @@ public abstract class Versions
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Versions.class);
+
+    private static final Translator ct = new Translator(Versions.class);
 
     /** Version of current Audiveris software. */
     public static final Version CURRENT_SOFTWARE = new Version(WellKnowns.TOOL_REF);
@@ -340,10 +343,10 @@ public abstract class Versions
             final Version latestVersion = new Version(latest.getTagName().trim());
 
             if (Versions.CURRENT_SOFTWARE.compareTo(latestVersion) < 0) {
-                logger.info("A new software release is available: {}", latestVersion);
+                logger.info(ct.trans("a.new.software.release.is.available", latestVersion));
 
                 if (OMR.gui == null) {
-                    logger.info("See {}", latest.getHtmlUrl());
+                    logger.info(ct.trans("see", latest.getHtmlUrl()));
                 } else {
                     // Explicitly tell the user that check result is positive
                     final PositivePanel panel = new PositivePanel(latest);
@@ -356,7 +359,7 @@ public abstract class Versions
                             JOptionPane.INFORMATION_MESSAGE);
                 }
             } else {
-                logger.info("Software version is up-to-date");
+                logger.info(ct.trans("software.version.is.up.to.date"));
 
                 if ((OMR.gui != null) && manual) {
                     // Explicitly tell the user that check result is negative
@@ -378,9 +381,9 @@ public abstract class Versions
             }
 
         } catch (TimeoutException tex) {
-            logger.warn("Timeout {} seconds while checking version", timeout);
+            logger.warn(ct.trans("timeout.seconds.while.checking.version", timeout));
         } catch (InterruptedException | ExecutionException ex) {
-            logger.warn("Error while checking version", ex);
+            logger.warn(ct.trans("error.while.checking.version", ex.getMessage()), ex);
         } finally {
             // Signal the on-going check to stop (if possible)
             if (future != null) {
