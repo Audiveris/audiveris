@@ -76,6 +76,9 @@ public class TextWord
     /** Regexp for abnormal words. */
     private static final Pattern ABNORMAL_WORDS = compileRegexp(constants.abnormalWordRegexp);
 
+    /** Regexp for words whose shape is confusable with a slur. */
+    private static final Pattern SLUR_LIKE_WORDS = compileRegexp(constants.slurLikeWordRegexp);
+
     /** Regexp for tuplets. */
     private static final Pattern TUPLET_WORDS = compileRegexp(constants.tupletWordRegexp);
 
@@ -297,6 +300,16 @@ public class TextWord
             if (matcher.matches()) {
                 logger.debug("      abnormal word value {}", this);
                 return "abnormal-word-value";
+            }
+        }
+
+        // Remove word which is most likely a slur mis-read as a letter (e.g. a lone "J")
+        if (SLUR_LIKE_WORDS != null) {
+            Matcher matcher = SLUR_LIKE_WORDS.matcher(value);
+
+            if (matcher.matches()) {
+                logger.debug("      slur-like word {}", this);
+                return "slur-like-word-value";
             }
         }
 
@@ -723,6 +736,11 @@ public class TextWord
         private final Constant.String abnormalWordRegexp = new Constant.String(
                 "^[<>\\{\\}\\[\\]]+$",
                 "Regular expression to detect abnormal words");
+
+        // A lone "J" is how OCR may read the shape of a slur, depending on the platform
+        private final Constant.String slurLikeWordRegexp = new Constant.String(
+                "^J$",
+                "Regular expression to detect words that are actually slurs mis-read by OCR");
 
         private final Constant.String tupletWordRegexp = new Constant.String(
                 "^.*[-_\u2014][36][-_\u2014].*$",
