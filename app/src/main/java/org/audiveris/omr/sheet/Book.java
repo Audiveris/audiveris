@@ -2578,7 +2578,7 @@ public class Book
 
         setModified(false);
         bookUpgraded = false;
-        logger.info(ct.trans("stored", bookInternals));
+        logger.debug(ct.trans("storing", bookInternals));
     }
 
     //------------//

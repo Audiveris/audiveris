@@ -1580,7 +1580,7 @@ public class Sheet
 
             stub.setModified(false);
             stub.setUpgraded(false);
-            logger.info("Stored {}", structurePath);
+            logger.debug("Storing {}", structurePath);
         } catch (IOException | JAXBException | XMLStreamException ex) {
             logger.warn("Error in saving sheet structure " + ex, ex);
         }

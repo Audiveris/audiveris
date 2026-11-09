@@ -156,7 +156,7 @@ public class ProjectEncoding
     /**
      * Run the program on the provided root location
      *
-     * @param args the path to the roo folder of a project.
+     * @param args the path to the root folder of a project.
      *             If null, the root of the current project is chosen
      */
     public static void main (String... args)

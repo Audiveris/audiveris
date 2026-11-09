@@ -49,6 +49,7 @@ import static org.audiveris.omr.text.TextRole.PartName;
 import org.audiveris.omr.text.Word;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Entities;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.Wrapper;
 
@@ -68,6 +69,8 @@ import java.util.stream.Collectors;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.audiveris.omr.GlobalMessages;
 
 /**
  * Class <code>SentenceInter</code> represents a full sentence of words.
@@ -100,6 +103,8 @@ public class SentenceInter
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SentenceInter.class);
+
+    private static final Translator ct = new Translator(GlobalMessages.class);
 
     /** For ordering sentences by their de-skewed ordinate. */
     public static final Comparator<SentenceInter> byOrdinate = (s1,
@@ -426,7 +431,7 @@ public class SentenceInter
             }
 
             if (role == null) {
-                logger.info("No role for {}", this);
+                logger.info(ct.trans("no.role.for", this));
                 return;
             }
 
@@ -450,7 +455,7 @@ public class SentenceInter
                         final MeasureStack stack = system.getStackAt(location);
 
                         if (stack == null) {
-                            logger.info("No measure stack for {} {}", this, getValue());
+                            logger.info(ct.trans("no.measure.stack.for", this, getValue()));
                         } else {
                             final int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
                             final Rectangle box = new Rectangle(bounds);
@@ -464,7 +469,7 @@ public class SentenceInter
                             if (chord != null) {
                                 sig.addEdge(chord, this, new ChordSentenceRelation());
                             } else {
-                                logger.info("No chord near {} {}", this, getValue());
+                                logger.info(ct.trans("no.chord.near", this, getValue()));
                             }
                         }
                     }
@@ -484,7 +489,7 @@ public class SentenceInter
                         final Link link = word.lookupLink(system);
 
                         if (link == null) {
-                            logger.info("No chord below {}", word);
+                            logger.info(ct.trans("no.chord.below", word));
                         } else {
                             link.applyTo(wInter);
                         }
@@ -520,7 +525,7 @@ public class SentenceInter
             // and thus need no link.
 
         } catch (Exception ex) {
-            logger.warn("Error in link {} {}", this, ex.toString(), ex);
+            logger.warn(ct.trans("error.in.link", this, ex.toString()), ex);
         }
     }
 
@@ -731,7 +736,7 @@ public class SentenceInter
             }
 
             switch (oldRole) {
-                case null -> logger.info("Null old role for {}", this);
+                case null -> logger.info(ct.trans("no.old.role.for", this));
                 default -> {}
 
                 case Lyrics -> getMembers().forEach(
@@ -760,7 +765,7 @@ public class SentenceInter
                         rel -> sig.removeEdge(rel));
             }
         } catch (Exception ex) {
-            logger.warn("Error in unlink for {} {}", this, ex.toString(), ex);
+            logger.warn(ct.trans("error.in.unlink.for", this, ex), ex);
         }
     }
 

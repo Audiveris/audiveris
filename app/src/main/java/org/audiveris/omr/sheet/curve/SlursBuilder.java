@@ -44,6 +44,7 @@ import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +73,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.audiveris.omr.GlobalMessages;
+
 /**
  * Class <code>SlursBuilder</code> builds all slur curves from a sheet skeleton.
  *
@@ -85,6 +88,8 @@ public class SlursBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SlursBuilder.class);
+
+    private static final Translator ct = new Translator(GlobalMessages.class);
 
     private static final Color SLUR_POINTS = new Color(255, 0, 0, 50);
 
@@ -237,7 +242,7 @@ public class SlursBuilder
             // (because alterations & clefs have not been handled yet)
             handleTieCollisions();
 
-            logger.info("Slurs: {}", pageSlurs.size());
+            logger.info(ct.trans("slurs", pageSlurs.size()));
             logger.debug("Slur maxClumpSize: {}", maxClumpSize);
 
             // Dispatch slurs to their containing parts
@@ -251,7 +256,7 @@ public class SlursBuilder
             // Handle slurs collision on same head (TODO: just for information right now)
             handleCollisions();
         } catch (Throwable ex) {
-            logger.warn("Error in SlursBuilder: " + ex, ex);
+            logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
         }
     }
 
@@ -282,8 +287,7 @@ public class SlursBuilder
         if (bothSides) {
             double sum = 0;
 
-            for (boolean bool : new boolean[]
-            { true, false }) {
+            for (boolean bool : new boolean[] { true, false }) {
                 Model sideModel = slur.getSideModel(bool);
 
                 if (sideModel == null) {
@@ -531,7 +535,7 @@ public class SlursBuilder
                             slurPart.addSlur(slur);
                             slur.setPart(slurPart);
                         } else if (slurPart != headPart) {
-                            logger.warn("Slur crosses parts " + slur);
+                            logger.warn(ct.trans("slur.crosses.parts", slur));
                         }
                     }
                 }
@@ -1024,8 +1028,7 @@ public class SlursBuilder
                 Color oldColor = g.getColor();
                 g.setColor(SLUR_MODELS);
 
-                for (boolean rev : new boolean[]
-                { true, false }) {
+                for (boolean rev : new boolean[] { true, false }) {
                     Model sideModel = info.getSideModel(rev);
 
                     if (sideModel != null) {
@@ -1055,7 +1058,7 @@ public class SlursBuilder
                 try {
                     inters.add(new SlurInter(slur, impacts));
                 } catch (Exception ex) {
-                    logger.warn("Could not create SlurInter from {}", slur, ex);
+                    logger.warn(ct.trans("could.not.create.slurinter.from", slur, ex), ex);
                 }
             }
         }

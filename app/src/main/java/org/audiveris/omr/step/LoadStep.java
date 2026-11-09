@@ -21,12 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.step;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.util.Memory;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +48,8 @@ public class LoadStep
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LoadStep.class);
+
+    private static final Translator ct = new Translator(GlobalMessages.class);
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -69,7 +73,7 @@ public class LoadStep
         final BufferedImage image = stub.loadGrayImage();
 
         if (image == null) {
-            throw new StepException("No image");
+            throw new StepException(ct.trans("no.image.loaded"));
         } else {
             // Threshold on image size
             final int count = image.getWidth() * image.getHeight();
@@ -78,9 +82,8 @@ public class LoadStep
             if ((max > 0) && (count > max)) {
                 Memory.gc();
 
-                ///logger.info("Occupied memory: {}", Memory.getValue());
-                final String msg = "Too large image: " + String.format("%,d", count)
-                        + " pixels (vs " + String.format("%,d", max) + " max)";
+                logger.debug("Occupied memory: {}", Memory.getValue());
+                final String msg = ct.trans("too.large.image", count, max);
                 stub.decideOnRemoval(msg, false); // This may throw StepException
             }
 

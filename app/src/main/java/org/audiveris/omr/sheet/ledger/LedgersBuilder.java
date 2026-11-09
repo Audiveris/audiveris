@@ -106,8 +106,7 @@ public class LedgersBuilder
     private static final Logger logger = LoggerFactory.getLogger(LedgersBuilder.class);
 
     /** Events this entity is interested in. */
-    private static final Class<?>[] eventClasses = new Class<?>[]
-    { EntityListEvent.class };
+    private static final Class<?>[] eventClasses = new Class<?>[] { EntityListEvent.class };
 
     /** Failure codes. */
     private static final Failure TOO_SHORT = new Failure("Hori-TooShort");
@@ -795,7 +794,7 @@ public class LedgersBuilder
 
         LedgerCheckBoard (Sheet sheet)
         {
-            super("LedgerCheck", null, sheet.getFilamentIndex().getEntityService(), eventClasses);
+            super("Ledger", null, sheet.getFilamentIndex().getEntityService(), eventClasses);
             this.sheet = sheet;
         }
 

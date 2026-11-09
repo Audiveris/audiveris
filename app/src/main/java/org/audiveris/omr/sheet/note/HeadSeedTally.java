@@ -231,7 +231,8 @@ public class HeadSeedTally
             }
         }
 
-        logger.info("Scale information: {}", hsScale);
+        // Precise abscissa offsets, in pixels, between stem and head box (per head kind)
+        logger.debug("Abscissa adjustments (in pixels): {}", hsScale);
         sheet.getScale().setHeadSeedScale(hsScale);
     }
 

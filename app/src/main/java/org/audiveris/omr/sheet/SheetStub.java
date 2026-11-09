@@ -420,7 +420,7 @@ public class SheetStub
      * An abnormal situation has been found, as detailed in provided message,
      * now how should we proceed?, depending on batch mode or user answer.
      *
-     * @param msg   the problem description
+     * @param msg   the problem description (already localized)
      * @param dummy true for a dummy (positive) decision
      * @throws StepException thrown when processing must stop
      */
@@ -440,14 +440,14 @@ public class SheetStub
         }
 
         if ((OMR.gui == null) || (OMR.gui.displayConfirmation(
-                msg + WellKnowns.LINE_SEPARATOR + "OK for discarding this sheet?"))) {
+                msg + WellKnowns.LINE_SEPARATOR + ct.trans("ok.for.discarding.this.sheet")))) {
             invalidate();
 
             if (book.isMultiSheet()) {
                 close();
-                throw new StepException("Sheet removed");
+                throw new StepException(ct.trans("sheet.removed"));
             } else {
-                throw new StepException("Sheet ignored");
+                throw new StepException(ct.trans("sheet.ignored"));
             }
         }
     }
@@ -1022,7 +1022,7 @@ public class SheetStub
                     watch.print();
                 }
 
-                logger.info(ct.trans("loaded", sheetFile));
+                logger.debug(ct.trans("loaded", sheetFile));
             } catch (IOException | JAXBException ex) {
                 logger.warn(ct.trans("error.in.loading.sheet.structure", ex.getMessage()), ex);
                 logger.info(ct.trans("trying.to.restart.from.binary"));

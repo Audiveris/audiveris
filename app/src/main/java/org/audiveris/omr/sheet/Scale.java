@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.Range;
 import org.audiveris.omr.sheet.note.HeadSeedScale;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.param.ConstantBasedParam;
 import org.audiveris.omr.util.param.Param;
 
@@ -149,6 +150,8 @@ public class Scale
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Scale.class);
+
+    private static final Translator ct = new Translator(Scale.class);
 
     public static final Param<Integer> defaultInterlineSpecification = new ConstantBasedParam<>(
             constants.defaultInterlineSpecification,
@@ -386,7 +389,8 @@ public class Scale
             return smallInterlineScale;
         }
 
-        throw new IllegalArgumentException("No interline scale for provided value " + interline);
+        throw new IllegalArgumentException(
+                ct.trans("no.interline.scale.for.provided.value", interline));
     }
 
     //--------------//
@@ -601,7 +605,7 @@ public class Scale
      */
     public boolean isBeamExtrapolated ()
     {
-        Objects.requireNonNull(beamScale, "This scale instance has no beam information");
+        Objects.requireNonNull(beamScale, ct.trans("no.beam.information"));
 
         return beamScale.isExtrapolated();
     }
@@ -822,12 +826,12 @@ public class Scale
         final StringBuilder sb = new StringBuilder();
 
         if (info == Info.ALL) {
-            sb.append("Scale{");
+            sb.append(ct.trans("scale"));
         }
 
         if (info == Info.COMBO || info == Info.ALL) {
             if (smallInterlineScale != null) {
-                sb.append(" small_").append(smallInterlineScale);
+                sb.append(" ").append(ct.trans("small")).append("_").append(smallInterlineScale);
             }
 
             if (interlineScale != null) {
@@ -841,7 +845,7 @@ public class Scale
             }
 
             if (smallBeamScale != null) {
-                sb.append(" small_").append(smallBeamScale);
+                sb.append(" ").append(ct.trans("small")).append("_").append(smallBeamScale);
             }
 
             if (beamScale != null) {
@@ -973,11 +977,11 @@ public class Scale
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("beam(");
+            StringBuilder sb = new StringBuilder(ct.trans("beam")).append('(');
             sb.append(main);
 
             if (extra != null) {
-                sb.append(" extra");
+                sb.append(' ').append(ct.trans("extra"));
             }
 
             sb.append(')');
@@ -1083,11 +1087,12 @@ public class Scale
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("blackHead(");
+            final StringBuilder sb = new StringBuilder(ct.trans("black.head"));
+            sb.append('(');
             String frm = "%s:%.1f~%.1f";
-            sb.append(String.format(frm, "width", widthMean, widthStd));
+            sb.append(String.format(frm, ct.trans("width"), widthMean, widthStd));
             sb.append(" ");
-            sb.append(String.format(frm, "height", heightMean, heightStd));
+            sb.append(String.format(frm, ct.trans("height"), heightMean, heightStd));
             sb.append(')');
 
             return sb.toString();
@@ -1252,7 +1257,7 @@ public class Scale
         @Override
         public String toString ()
         {
-            return "interline" + super.toString();
+            return ct.trans("interline") + super.toString();
         }
 
         /**
@@ -1394,7 +1399,7 @@ public class Scale
         @Override
         public String toString ()
         {
-            return "line" + super.toString();
+            return ct.trans("line") + super.toString();
         }
     }
 
@@ -1456,8 +1461,7 @@ public class Scale
         @Override
         public String toString ()
         {
-            return new StringBuilder("MusicFont{").append("name:").append(name).append(
-                    " pointSize:").append(pointSize).append('}').toString();
+            return ct.trans("music.font.string", name, pointSize);
         }
     }
 
@@ -1539,13 +1543,7 @@ public class Scale
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("stem");
-            sb.append('(');
-            sb.append(main);
-            sb.append(" max:").append(max);
-            sb.append(')');
-
-            return sb.toString();
+            return ct.trans("stem.string", main, max);
         }
     }
 }

@@ -22,8 +22,10 @@
 package org.audiveris.omr.sheet.note;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +54,8 @@ public class HeadSeedScale
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(HeadSeedScale.class);
+
+    private static final Translator ct = new Translator(Scale.class); // Indeed!
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -184,7 +188,7 @@ public class HeadSeedScale
     @Override
     public String toString ()
     {
-        final StringBuilder sb = new StringBuilder("HeadSeeds{");
+        final StringBuilder sb = new StringBuilder(ct.trans("head.to.stem")).append('{');
         boolean outerStarted = false;
 
         for (Entry<Shape, EnumMap<HorizontalSide, Double>> entry : globalMap.entrySet()) {

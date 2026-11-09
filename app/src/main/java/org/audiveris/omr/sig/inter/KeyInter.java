@@ -59,6 +59,7 @@ import org.audiveris.omr.ui.symbol.KeySymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Entities;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +77,8 @@ import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.audiveris.omr.GlobalMessages;
 
 /**
  * Class <code>KeyInter</code> represents a key signature on a staff.
@@ -113,6 +116,8 @@ public class KeyInter
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(KeyInter.class);
+
+    private static final Translator ct = new Translator(GlobalMessages.class);
 
     /** Sharp pitches per clef kind. */
     public static final Map<ClefKind, int[]> SHARP_PITCHES_MAP = new EnumMap<>(ClefKind.class);
@@ -1171,7 +1176,7 @@ public class KeyInter
         final ClefInter clef = getEffectiveClef(staff, pt);
 
         if (clef == null) {
-            logger.warn("No effective clef before {}", firstAlter);
+            logger.warn(ct.trans("no.effective.clef.before", firstAlter));
             return null;
         }
 
@@ -1195,7 +1200,7 @@ public class KeyInter
             cancelFifths = getNaturalFifths(firstAlter);
 
             if (cancelFifths == null) {
-                logger.info("No effective key before {}", firstAlter);
+                logger.info(ct.trans("no.effective.key.before", firstAlter));
                 return null;
             }
 
@@ -1328,7 +1333,7 @@ public class KeyInter
         // Link members
         members.forEach(m -> sig.addEdge(key, m, new Containment()));
 
-        logger.info("Key built {}", key);
+        logger.info(ct.trans("key.built", key));
     }
 
     //-------------------------//

@@ -34,6 +34,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.BOTTOM;
 import static org.audiveris.omr.util.VerticalSide.TOP;
@@ -84,6 +85,8 @@ public class SystemManager
 
     private static final Logger logger = LoggerFactory.getLogger(SystemManager.class);
 
+    private static final Translator ct = new Translator(SystemManager.class);
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Related sheet. */
@@ -131,7 +134,7 @@ public class SystemManager
 
             if (system.isIndented()) {
                 final int systId = system.getId();
-                logger.info("Indentation detected for system #{}", systId);
+                logger.info(ct.trans("indentation.detected.for.system", systId));
 
                 // We have a movement start
                 if (page != null) {
@@ -235,7 +238,7 @@ public class SystemManager
             return false;
         }
 
-        logger.info("Indentation changed  for system #{}", system.getId());
+        logger.info(ct.trans("indentation.changed.for.system ", system.getId()));
         system.setIndented(newIndent);
 
         // Rebuild pages, pageRefs and scores
@@ -705,7 +708,7 @@ public class SystemManager
         final int index = systems.indexOf(system);
 
         if (index == -1) {
-            logger.error("Cannot remove unknown {}", system);
+            logger.error(ct.trans("cannot.remove.unknown", system));
         } else {
             final SystemRef systemRef = system.getRef();
             systems.remove(system);
@@ -736,19 +739,22 @@ public class SystemManager
     //---------------//
     // reportResults //
     //---------------//
+    /**
+     * Print a description of the sheet in terms of pages, parts and systems.
+     */
     private void reportResults ()
     {
-        int pageNb = sheet.getPages().size();
+        final int pageNb = sheet.getPages().size();
 
         if (pageNb > 1) {
-            logger.info("{} pages found in sheet", pageNb);
+            logger.info(ct.trans("pages.found.in.sheet", pageNb));
         }
 
         for (Page page : sheet.getPages()) {
             final StringBuilder sb = new StringBuilder();
 
             if (pageNb > 1) {
-                sb.append("Page #").append(1 + sheet.getPages().indexOf(page)).append(": ");
+                sb.append(ct.trans("page.number", 1 + sheet.getPages().indexOf(page))).append(' ');
             }
 
             int partNb = 0;
@@ -767,34 +773,24 @@ public class SystemManager
             }
 
             if (partNb > 0) {
-                sb.append(partNb).append(" part");
-
-                if (partNb > 1) {
-                    sb.append("s");
-                }
+                sb.append(ct.trans(partNb == 1 ? "part.singular" : "part.plural", partNb));
             } else {
-                sb.append("no part found");
+                sb.append(ct.trans("no.part.found"));
             }
 
             final int sysNb = page.getSystems().size();
 
             if (sysNb > 0) {
-                sb.append(" along ").append(sysNb).append(" system");
-
-                if (sysNb > 1) {
-                    sb.append("s");
-                }
+                sb.append(" ").append(
+                        ct.trans(sysNb == 1 ? "along.system" : "along.systems", sysNb));
             } else {
-                sb.append(", no system found");
+                sb.append(", ").append(ct.trans("no.system.found"));
             }
 
             // Tablatures in page?
             if (tabNb > 0) {
-                sb.append(", ").append(tabNb).append(" tablature");
-
-                if (tabNb > 1) {
-                    sb.append("s");
-                }
+                sb.append(", ").append(
+                        ct.trans(tabNb == 1 ? "tablature.singular" : "tablature.plural", tabNb));
             }
 
             logger.info("{}", sb);

@@ -62,6 +62,7 @@ import org.audiveris.omr.util.PathListTask;
 import static org.audiveris.omr.util.ResourceUtil.format;
 import org.audiveris.omr.util.SheetPath;
 import org.audiveris.omr.util.SheetPathHistory;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VoidTask;
 import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.param.Param;
@@ -120,10 +121,12 @@ public class BookActions
 
     private static final Logger logger = LoggerFactory.getLogger(BookActions.class);
 
+    private static final Translator ct = new Translator(BookActions.class);
+
     private static final ResourceMap resources = Application.getInstance().getContext()
             .getResourceMap(BookActions.class);
 
-    private static final String doYouConfirm = "\n" + resources.getString("doYouConfirm");
+    private static final String doYouConfirm = "\n" + ct.trans("do.you.confirm");
 
     /** Default parameter. */
     public static final Param<Boolean> defaultPromptOnClosingUnsaved = new PromptOnClosingUnsaved();
@@ -183,7 +186,7 @@ public class BookActions
                     LogUtil.start(book);
                     book.annotate(book.getValidSelectedStubs());
                 } catch (Throwable ex) {
-                    logger.warn("Error in annotateBook {}", ex.toString(), ex);
+                    logger.warn(ct.trans("error.in", "annotateBook", ex), ex);
                 } finally {
                     LogUtil.stopBook();
                 }
@@ -217,7 +220,7 @@ public class BookActions
                     LogUtil.start(sheet.getStub());
                     sheet.annotate();
                 } catch (Throwable ex) {
-                    logger.warn("Error in annotateSheet {}", ex.toString(), ex);
+                    logger.warn(ct.trans("error.in", "annotateSheet", ex), ex);
                 } finally {
                     LogUtil.stopBook();
                 }
@@ -233,7 +236,7 @@ public class BookActions
     @Action
     public void bookHistory (ActionEvent e)
     {
-        logger.info("bookHistory");
+        logger.info("bookHistory"); // TODO What is this used for? BINGO
     }
 
     //------------//
@@ -266,7 +269,7 @@ public class BookActions
 
         if (book != null) {
             if (book.hasSpecificRepository()) {
-                return new SampleBrowser.Waiter(resources.getString("launchingBookSampleBrowser"))
+                return new SampleBrowser.Waiter(ct.trans("launchingBookSampleBrowser"))
                 {
                     @Override
                     protected SampleBrowser doInBackground ()
@@ -276,7 +279,7 @@ public class BookActions
                     }
                 };
             } else {
-                logger.info(format(resources.getString("noBookRepo"), book.getRadix()));
+                logger.info(ct.trans("no.book.repo", book.getRadix()));
             }
         }
 
@@ -308,7 +311,7 @@ public class BookActions
                 OMR.gui.getFrame(),
                 defaultBookPath,
                 filter(pdfExt),
-                resources.getString("chooseBookPrint"));
+                ct.trans("choose.book.print"));
     }
 
     //-----------------//
@@ -333,7 +336,7 @@ public class BookActions
                 OMR.gui.getFrame(),
                 defaultSheetPath,
                 filter(pdfExt),
-                resources.getString("chooseSheetPrint"));
+                ct.trans("choose.sheet.print"));
     }
 
     //-----------//
@@ -429,7 +432,7 @@ public class BookActions
             dialog.pack();
             OmrGui.getApplication().show(dialog);
         } catch (Throwable ex) {
-            logger.warn("Error in defineSheetScaling {}", ex.toString(), ex);
+            logger.warn(ct.trans("error.in", "defineSheetScaling", ex), ex);
         }
     }
 
@@ -457,10 +460,10 @@ public class BookActions
                     assembly.selectViewTab(tab);
                 }
             } else {
-                logger.info(resources.getString("noBinaryImage"));
+                logger.info(ct.trans("no.binary.image"));
             }
         } catch (Throwable ex) {
-            logger.warn("Error in displayBinary {}", ex.toString(), ex);
+            logger.warn(ct.trans("error.in", "displayBinary", ex), ex);
         }
     }
 
@@ -488,10 +491,10 @@ public class BookActions
                     assembly.selectViewTab(tab);
                 }
             } else {
-                logger.info(resources.getString("noDataTab"));
+                logger.info(ct.trans("no.data.tab"));
             }
         } catch (Throwable ex) {
-            logger.warn("Error in displayData {}", ex.toString(), ex);
+            logger.warn(ct.trans("error.in", "displayData", ex), ex);
         }
     }
 
@@ -544,7 +547,7 @@ public class BookActions
                 assembly.selectViewTab(tab);
             }
         } else {
-            logger.info(resources.getString("noStaffLines"));
+            logger.info(ct.trans("no.staff.lines"));
         }
     }
 
@@ -577,7 +580,7 @@ public class BookActions
                 assembly.selectViewTab(tab);
             }
         } else {
-            logger.info(resources.getString("noStaffLines"));
+            logger.info(ct.trans("noStaffLines"));
         }
     }
 
@@ -672,7 +675,7 @@ public class BookActions
                 OMR.gui.getFrame(),
                 targetPath,
                 filter(ext),
-                resources.getString("chooseBookExport"));
+                ct.trans("choose.book.export"));
 
         if (bookPath == null) {
             return null;
@@ -715,7 +718,7 @@ public class BookActions
                 OMR.gui.getFrame(),
                 defaultSheetPath,
                 filter(ext),
-                resources.getString("chooseSheetExport"));
+                ct.trans("choose.sheet.export"));
 
         if (sheetPath == null) {
             return null;
@@ -748,7 +751,7 @@ public class BookActions
         final List<SheetStub> stubs = book.getValidSelectedStubs();
 
         if (stubs.isEmpty()) {
-            logger.warn("No valid selected sheets in {}", book);
+            logger.warn(ct.trans("no.valid.selected.sheets", book));
 
             return false;
         } else {
@@ -771,7 +774,7 @@ public class BookActions
         Plugin defaultPlugin = PluginsManager.getInstance().getDefaultPlugin();
 
         if (defaultPlugin == null) {
-            logger.warn("No default plugin defined");
+            logger.warn(ct.trans("no.default.plugin.defined"));
 
             return null;
         }
@@ -851,7 +854,7 @@ public class BookActions
                 if (Files.exists(path)) {
                     return new LoadBookTask(sheetPath);
                 } else {
-                    logger.warn(format(resources.getString("fileNotFound"), path));
+                    logger.warn(ct.trans("file.not.found", path));
                     bookHistory.remove(sheetPath);
                 }
             }
@@ -877,7 +880,7 @@ public class BookActions
             if (stub.isDone(OmrStep.BINARY)) {
                 new ScaleBuilder(stub.getSheet()).displayChart();
             } else {
-                logger.info(resources.getString("noScaleData"));
+                logger.info(ct.trans("no.scale.data"));
             }
         }
     }
@@ -905,7 +908,7 @@ public class BookActions
         final StaffManager staffManager = sheet.getStaffManager();
 
         if (staffManager.getStaffCount() == 0) {
-            logger.info(resources.getString("noStaffData"));
+            logger.info(ct.trans("no.staff.data"));
 
             return;
         }
@@ -957,7 +960,7 @@ public class BookActions
         if (stub.isDone(OmrStep.STEM_SEEDS)) {
             new StemScaler(stub.getSheet()).displayChart();
         } else {
-            logger.info(resources.getString("noStemData"));
+            logger.info(ct.trans("no.stem.data"));
         }
     }
 
@@ -1077,7 +1080,7 @@ public class BookActions
             return;
         }
 
-        final String msg = format(resources.getString("rebuildScores"), book.getRadix());
+        final String msg = ct.trans("rebuild.scores", book.getRadix());
 
         if (!OMR.gui.displayConfirmation(msg + doYouConfirm)) {
             return;
@@ -1120,7 +1123,7 @@ public class BookActions
             return null;
         }
 
-        final String msg = format(resources.getString("resetBookToEnd"), book.getRadix(), step);
+        final String msg = ct.trans("reset.book.to", book.getRadix(), step);
 
         if (!OMR.gui.displayConfirmation(msg + doYouConfirm)) {
             return null;
@@ -1229,7 +1232,7 @@ public class BookActions
 
             return saveBookAs(e);
         } catch (Throwable ex) {
-            logger.warn("Error in saveBook {}", ex.toString(), ex);
+            logger.warn(ct.trans("error.in", "saveBook", ex), ex);
         }
 
         return null;
@@ -1258,7 +1261,7 @@ public class BookActions
                 return new StoreBookTask(book, targetPath);
             }
         } catch (Throwable ex) {
-            logger.warn("Error in saveBookAs {}", ex.toString(), ex);
+            logger.warn(ct.trans("error.in", "saveBookAs", ex), ex);
         }
 
         return null;
@@ -1291,7 +1294,7 @@ public class BookActions
                 }
             }
         } catch (Throwable ex) {
-            logger.warn("Error in saveBookRepository {}", ex.toString(), ex);
+            logger.warn(ct.trans("error.in", "saveBookRepository", ex), ex);
         }
 
         return null;
@@ -1319,7 +1322,7 @@ public class BookActions
                 book.clearScores();
             }
         } catch (Throwable ex) {
-            logger.warn("Error in selectSheets {}", ex.toString(), ex);
+            logger.warn(ct.trans("error.in", "selectSheets", ex), ex);
         }
     }
 
@@ -1368,7 +1371,7 @@ public class BookActions
         }
 
         book.setPauseRequired(true);
-        logger.info("Pause required for book {} ...", book.getRadix());
+        logger.info(ct.trans("pause.required.for.book", book.getRadix()));
     }
 
     //------------//
@@ -1391,7 +1394,7 @@ public class BookActions
         try {
             book.swapAllSheets();
         } catch (Throwable ex) {
-            logger.warn("Error in swapSheets {}", ex.toString(), ex);
+            logger.warn(ct.trans("error.in", "swapSheets", ex), ex);
         }
     }
 
@@ -1436,9 +1439,9 @@ public class BookActions
 
         if (stub != null) {
             final boolean isValid = stub.isValid();
-            final String pattern = resources.getString(
-                    isValid ? "setSheetInvalid" : "setSheetValid");
-            final String msg = format(pattern, stub.getId());
+            final String msg = ct.trans(
+                    isValid ? "set.sheet.invalid" : "set.sheet.valid",
+                    stub.getId());
 
             if (!OMR.gui.displayConfirmation(msg + doYouConfirm)) {
                 return;
@@ -1485,9 +1488,9 @@ public class BookActions
             if (((bookPath != null) && (defPath.toAbsolutePath().equals(bookPath.toAbsolutePath()))
                     || isTargetConfirmed(defPath))) {
                 swap = true;
-                logger.info("Processed sheets will be swapped out");
+                logger.info(ct.trans("processed.sheets.swapped"));
             } else {
-                logger.info("No swap out for processed sheets");
+                logger.info(ct.trans("no.swap.out.for.processed.sheets"));
             }
         }
 
@@ -1765,7 +1768,7 @@ public class BookActions
             dialog.pack();
             OmrGui.getApplication().show(dialog);
         } catch (Exception ex) {
-            logger.warn("Error in BookParameters {}", ex.toString(), ex);
+            logger.warn(ct.trans("error.in", "BookParameters", ex), ex);
         }
     }
 
@@ -1837,7 +1840,7 @@ public class BookActions
         if ((bookStatus != null) && defaultPromptOnClosingUnsaved.getValue()) {
             final int answer = JOptionPane.showConfirmDialog(
                     OMR.gui.getFrame(),
-                    format(resources.getString("saveBook"), bookStatus, book.getRadix()));
+                    ct.trans("save.book", bookStatus, book.getRadix()));
 
             if (answer == JOptionPane.YES_OPTION) {
                 Path bookPath;
@@ -1865,7 +1868,7 @@ public class BookActions
 
                     return true; // Book successfully saved
                 } catch (Exception ex) {
-                    logger.warn("Error saving book", ex);
+                    logger.warn(ct.trans("error.saving.book", ex), ex);
 
                     return false; // Saving failed
                 }
@@ -1913,7 +1916,7 @@ public class BookActions
     public static boolean isTargetConfirmed (Path target)
     {
         return (!Files.exists(target)) || OMR.gui.displayConfirmation(
-                format(resources.getString("overwriteFile"), target));
+                ct.trans("overwrite.file", target));
     }
 
     //-----------------------//
@@ -1944,7 +1947,7 @@ public class BookActions
         final String allSuffixes = OMR.BOOK_EXTENSION + " " + suffixes + " " + suffixes
                 .toUpperCase();
         final OmrFileFilter filter = new OmrFileFilter(
-                resources.getString("bookAnd") + " " + resources.getString("majorImageFiles") + " ("
+                ct.trans("book.and") + " " + ct.trans("common.image.files") + " ("
                         + OMR.BOOK_EXTENSION + " " + suffixes + ")",
                 allSuffixes.split("\\s"));
 
@@ -1991,7 +1994,7 @@ public class BookActions
         final String suffixes = constants.validImageExtensions.getValue();
         final String allSuffixes = suffixes + " " + suffixes.toUpperCase();
         final OmrFileFilter filter = new OmrFileFilter(
-                resources.getString("majorImageFiles") + " (" + suffixes + ")",
+                ct.trans("common.image.files") + " (" + suffixes + ")",
                 allSuffixes.split("\\s"));
 
         return selectPath(false, Paths.get(BookManager.getDefaultImageFolder()), filter);
@@ -2005,7 +2008,7 @@ public class BookActions
         final String suffixes = constants.validImageExtensions.getValue();
         final String allSuffixes = suffixes + " " + suffixes.toUpperCase();
         final OmrFileFilter filter = new OmrFileFilter(
-                resources.getString("majorImageFiles") + " (" + suffixes + ")",
+                ct.trans("common.image.files") + " (" + suffixes + ")",
                 allSuffixes.split("\\s"));
 
         return selectPaths(false, Paths.get(BookManager.getDefaultImageFolder()), filter);
@@ -2038,12 +2041,12 @@ public class BookActions
         }
 
         if (!Files.exists(path)) {
-            logger.warn(format(resources.getString("fileNotFound"), path));
+            logger.warn(ct.trans("file.not.found", path));
             return null;
         }
 
         if (Files.isDirectory(path)) {
-            logger.warn(format(resources.getString("isDirectory"), path));
+            logger.warn(ct.trans("is.directory", path));
             return null;
         }
 
@@ -2078,12 +2081,12 @@ public class BookActions
 
         for (Path path : paths) {
             if (!Files.exists(path)) {
-                logger.warn(format(resources.getString("fileNotFound"), path));
+                logger.warn(ct.trans("file.not.found", path));
                 return new Path[0];
             }
 
             if (Files.isDirectory(path)) {
-                logger.warn(format(resources.getString("isDirectory"), path));
+                logger.warn(ct.trans("is.directory", path));
                 return new Path[0];
             }
         }
@@ -2121,7 +2124,7 @@ public class BookActions
                 LogUtil.start(book);
                 book.close(stub.getNumber());
             } catch (Throwable ex) {
-                logger.warn("Error in CloseBookTask {}", ex.toString(), ex);
+                logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
             } finally {
                 LogUtil.stopBook();
             }
@@ -2181,7 +2184,7 @@ public class BookActions
                     book.export(book.getValidSelectedStubs(), book.getScores());
                 }
             } catch (Throwable ex) {
-                logger.warn("Error in ExportBookTask {}", ex.toString(), ex);
+                logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
             } finally {
                 LogUtil.stopBook();
             }
@@ -2219,9 +2222,9 @@ public class BookActions
                     sheet.export(sheetExportPath);
                 }
             } catch (StepPause sp) {
-                logger.info("ExportSheetTask stopped by user.");
+                logger.info(ct.trans("sheet.export.stopped"));
             } catch (Exception ex) {
-                logger.warn("Error in ExportSheetTask {}", ex.toString(), ex);
+                logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
             } finally {
                 LogUtil.stopStub();
             }
@@ -2276,7 +2279,7 @@ public class BookActions
          */
         public LoadBookTask (Path path)
         {
-            super(OmrGui.getApplication(), format(resources.getString("LoadBookTask"), path));
+            super(OmrGui.getApplication(), ct.trans("loading.book", path));
             this.path = path;
         }
 
@@ -2304,7 +2307,7 @@ public class BookActions
                 // Actually open the book zip system
                 book = OMR.engine.loadBook(path);
             } catch (Throwable ex) {
-                logger.warn("Error in {} {}", getClass().getSimpleName(), ex.toString(), ex);
+                logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
             }
 
             return book;
@@ -2383,7 +2386,7 @@ public class BookActions
                         book.createStubs(); // Read just the count of sheets in input file
                     }
                 } catch (Throwable ex) {
-                    logger.warn("Error in {} {}", getClass().getSimpleName(), ex.toString(), ex);
+                    logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
                 }
 
                 bookList.add(book); // book can be null
@@ -2413,11 +2416,7 @@ public class BookActions
                             }
                         }
                     } catch (Throwable ex) {
-                        logger.warn(
-                                "Error in {} {}",
-                                getClass().getSimpleName(),
-                                ex.toString(),
-                                ex);
+                        logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
                     }
                 }
             }
@@ -2460,7 +2459,7 @@ public class BookActions
 
                 return book;
             } catch (Exception ex) {
-                logger.warn("Error opening path " + path + " " + ex, ex);
+                logger.warn(ct.trans("error.opening.path", path, ex), ex);
             } finally {
                 LogUtil.stopBook();
             }
@@ -2480,7 +2479,7 @@ public class BookActions
                         BookActions.applyUserSettings(book.getFirstValidStub());
                     }
                 } catch (Throwable ex) {
-                    logger.warn("Error in {} {}", getClass().getSimpleName(), ex.toString(), ex);
+                    logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
                 }
             }
         }
@@ -2512,7 +2511,7 @@ public class BookActions
                 book.setPrintPath(bookPrintPath);
                 book.print(book.getValidSelectedStubs());
             } catch (Throwable ex) {
-                logger.warn("Error in PrintBookTask {}", ex.toString(), ex);
+                logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
             } finally {
                 LogUtil.stopBook();
             }
@@ -2546,7 +2545,7 @@ public class BookActions
                 LogUtil.start(sheet.getStub());
                 sheet.print(sheetPrintPath);
             } catch (Throwable ex) {
-                logger.warn("Error in PrintSheetTask {}", ex.toString(), ex);
+                logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
             } finally {
                 LogUtil.stopStub();
             }
@@ -2593,7 +2592,7 @@ public class BookActions
         {
             if (!getValue().equals(specific)) {
                 constants.closeConfirmation.setValue(specific);
-                logger.info(resources.getString("promptOnClose." + specific));
+                logger.info(ct.trans("prompt.on.close." + specific));
 
                 return true;
             } else {
@@ -2655,7 +2654,7 @@ public class BookActions
                 LogUtil.start(book);
                 book.sample(book.getValidSelectedStubs());
             } catch (Throwable ex) {
-                logger.warn("Error in SampleBookTask {}", ex.toString(), ex);
+                logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
             } finally {
                 LogUtil.stopBook();
             }
@@ -2685,7 +2684,7 @@ public class BookActions
                 LogUtil.start(sheet.getStub());
                 sheet.sample();
             } catch (Throwable ex) {
-                logger.warn("Error in SampleSheetTask {}", ex.toString(), ex);
+                logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
             } finally {
                 LogUtil.stopStub();
             }
@@ -2730,7 +2729,7 @@ public class BookActions
                 // Update books map
                 OMR.engine.renameBook(book, oldBookPath);
             } catch (Throwable ex) {
-                logger.warn("Error in StoreBookTask {}", ex.toString(), ex);
+                logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
             } finally {
                 LogUtil.stopBook();
             }

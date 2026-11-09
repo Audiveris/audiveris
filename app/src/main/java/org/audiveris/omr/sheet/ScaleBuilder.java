@@ -36,6 +36,7 @@ import org.audiveris.omr.sheet.Scale.LineScale;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.util.ChartPlotter;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,6 +107,8 @@ public class ScaleBuilder
 
     private static final Logger logger = LoggerFactory.getLogger(ScaleBuilder.class);
 
+    private static final Translator ct = new Translator(ScaleBuilder.class);
+
     /** To sort peaks by main key. */
     private static final Comparator<Range> byMainKey = (e1,
                                                         e2) -> Double.compare(e1.main, e2.main);
@@ -163,11 +166,6 @@ public class ScaleBuilder
     /**
      * Check the global interline value, to detect pictures with too low
      * resolution or pictures which do not represent music staves.
-     * <p>
-     * <b>Coding note</b>:
-     * The use of text blocks led to a parsing error by the <b>xsltproc</b> software
-     * that is today mandatory to generate the documentation of .omr files.
-     * Hence these text blocks have been replaced by plain String entities.
      *
      * @throws StepException if processing must stop on this sheet
      */
@@ -177,21 +175,10 @@ public class ScaleBuilder
         final int interline = comboPeak.main;
 
         if (interline < constants.minInterline.getValue()) {
-            final String msg = String.format(
-                    "%s\n\n With a too low interline value of %d pixels,\n"
-                            + " either this sheet contains no multi-line staves,\n"
-                            + " or the picture resolution is too low (try 300 DPI).\n\n"
-                            + " This interline value is NOT RELIABLE!",
-                    sheet.getId(),
-                    interline);
+            final String msg = ct.trans("too.low.interline", sheet.getId(), interline);
             sheet.getStub().decideOnRemoval(msg, false);
         } else if (interline > constants.maxInterline.getValue()) {
-            final String msg = String.format(
-                    "%s\n\n With a too high interline value of %d pixels,\n"
-                            + " this sheet does not seem to contain multi-line staves.\n\n"
-                            + " This interline value is NOT RELIABLE!",
-                    sheet.getId(),
-                    interline);
+            final String msg = ct.trans("too.high.interline", sheet.getId(), interline);
             sheet.getStub().decideOnRemoval(msg, false);
         }
     }
@@ -217,7 +204,7 @@ public class ScaleBuilder
             beamKey = specifiedBeam;
 
             if (verbose) {
-                logger.info("User-specified beam height: {} pixels", beamKey);
+                logger.info(ct.trans("user.specified.beam.height", beamKey));
             }
 
             return;
@@ -242,7 +229,7 @@ public class ScaleBuilder
         // Significant beam peak detected?
         if (beamKey != null) {
             if (verbose) {
-                logger.info("Significant beam peak detected: {} pixels", beamKey);
+                logger.info(ct.trans("significant.beam.peak.detected", beamKey));
             }
 
             return;
@@ -254,7 +241,7 @@ public class ScaleBuilder
         if (verbose) {
             logger.info(
                     String.format(
-                            "Beam  guessed height: %2d -- %.2f of [%d..%d] range",
+                            ct.trans("beam.guessed.height"),
                             beamGuess,
                             beamRatio,
                             minHeight,
@@ -271,8 +258,7 @@ public class ScaleBuilder
             if (verbose) {
                 logger.info(
                         String.format(
-                                "Beam measured height: %2d -- %.2f"
-                                        + " of [%d..%d] range at %d%% of needed quorum",
+                                ct.trans("beam.measured.height"),
                                 peak,
                                 rangeRatio,
                                 minHeight,
@@ -285,8 +271,7 @@ public class ScaleBuilder
             // global quorum while still being a clear, well-supported local maximum.
             final int diff = Math.abs(peak - beamGuess);
 
-            if ((quorumRatio >= 1.0)
-                    || (quorumRatio >= constants.beamSubQuorumRatio.getValue())
+            if ((quorumRatio >= 1.0) || (quorumRatio >= constants.beamSubQuorumRatio.getValue())
                     || (diff <= constants.beamMaxDiff.getValue())) {
                 beamKey = peak;
             }
@@ -298,10 +283,11 @@ public class ScaleBuilder
                 // A beam is drawn in proportion to its staff. A second peak out of proportion
                 // with the second staff size is something else, such as the run through a
                 // filled head on a page dense with them.
-                final double thicknessRatio = (double) Math.max(beamKey, peak2)
-                        / Math.min(beamKey, peak2);
-                final double staffRatio = (double) Math.max(mainInterline, comboPeak2.main)
-                        / Math.min(mainInterline, comboPeak2.main);
+                final double thicknessRatio = (double) Math.max(beamKey, peak2) / Math.min(
+                        beamKey,
+                        peak2);
+                final double staffRatio = (double) Math.max(mainInterline, comboPeak2.main) / Math
+                        .min(mainInterline, comboPeak2.main);
                 final double deviation = Math.abs((thicknessRatio / staffRatio) - 1);
 
                 if ((qRatio >= 1.0) && (deviation <= constants.maxBeamProportionDeviation
@@ -312,7 +298,7 @@ public class ScaleBuilder
         }
 
         if ((beamKey == null) && verbose) {
-            logger.warn("No reliable beam height found, guessed value: {}", beamGuess);
+            logger.warn(ct.trans("no.reliable.beam.height.found", beamGuess));
         }
     }
 
@@ -354,7 +340,7 @@ public class ScaleBuilder
         final Integer specifiedInterline = sheet.getStub().getInterlineSpecification();
         if ((specifiedInterline != null) && (specifiedInterline != 0)) {
             interlineKey = specifiedInterline;
-            logger.info("User-specified interline: {} pixels", interlineKey);
+            logger.info(ct.trans("user.specified.interline", interlineKey));
         }
 
         final Scale scl = sheet.getScale();
@@ -380,7 +366,7 @@ public class ScaleBuilder
 
         // Respect user-assigned scale info, if any
         if (scl != null) {
-            logger.info("Sheet scale data already set.");
+            logger.info(ct.trans("sheet.scale.data.already.set"));
             return scl;
         }
 
@@ -418,7 +404,7 @@ public class ScaleBuilder
 
         // Normalized black jitter
         final double jitter = (lineScale.max - lineScale.min) / (double) interlineScale.main;
-        logger.info(String.format("Normalized black jitter: %.2f %%", 100 * jitter));
+        logger.debug(String.format("Normalized black jitter: %.2f %%", 100 * jitter));
 
         return new Scale(interlineScale, lineScale, beamScale, smallInterlineScale, smallBeamScale);
     }
@@ -540,7 +526,7 @@ public class ScaleBuilder
         private final Constant.Ratio maxBeamProportionDeviation = new Constant.Ratio(
                 0.25,
                 "Maximum relative deviation of the ratio of two beam thicknesses from the ratio"
-                + " of the two staff sizes");
+                        + " of the two staff sizes");
 
         private final Constant.Ratio beamRangeRatio = new Constant.Ratio(
                 0.25,
@@ -554,7 +540,7 @@ public class ScaleBuilder
         private final Constant.Ratio beamSubQuorumRatio = new Constant.Ratio(
                 0.8,
                 "Minimum ratio of needed quorum to accept a well-corroborated beam peak"
-                + " on sparse sheets");
+                        + " on sparse sheets");
 
         private final Constant.Ratio maxWhiteHeightRatio = new Constant.Ratio(
                 0.25,
@@ -702,12 +688,12 @@ public class ScaleBuilder
             logger.debug("blackRatio: {}", blackRatio);
 
             if (blackRatio < constants.minBlackRatio.getValue()) {
-                sheet.getStub().decideOnRemoval("""
-                        %s
-
-                        Too few black pixels: %.2f%% of whole image.
-                        This sheet is almost blank.
-                        """.formatted(sheet.getId(), 100 * blackRatio), false);
+                sheet.getStub().decideOnRemoval(
+                        ct.trans(
+                                "too.few.black.pixels",
+                                sheet.getId(),
+                                String.format("%.2f%%", 100 * blackRatio)),
+                        false);
             }
         }
 
@@ -929,7 +915,7 @@ public class ScaleBuilder
                 blackFinder.plot(plotter, true, "Black", 0, comboPeak.main) //
                         .display(new Point(20, 20));
             } catch (Throwable ex) {
-                logger.warn("Error in plotting black", ex);
+                logger.warn(ct.trans("error.in.plotting.black.values", ex));
             }
 
             try {
@@ -942,7 +928,7 @@ public class ScaleBuilder
                 comboMax = Math.min((comboMax * 3) / 2, sheet.getWidth() - 1); // Add some margin
                 comboFinder.plot(plotter, true, "Combo", 0, comboMax).display(new Point(80, 80));
             } catch (Throwable ex) {
-                logger.warn("Error in plotting combo", ex);
+                logger.warn(ct.trans("error.in.plotting.combo.values", ex));
             }
         }
     }

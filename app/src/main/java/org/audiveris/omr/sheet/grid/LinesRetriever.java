@@ -22,7 +22,6 @@
 package org.audiveris.omr.sheet.grid;
 
 import org.audiveris.omr.OMR;
-import static org.audiveris.omr.WellKnowns.LINE_SEPARATOR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -67,6 +66,7 @@ import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.TOP;
 
@@ -105,6 +105,8 @@ public class LinesRetriever
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LinesRetriever.class);
+
+    private static final Translator ct = new Translator(LinesRetriever.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -1053,7 +1055,7 @@ public class LinesRetriever
                             final double slope = (double) (bounds.height - line) / bounds.width;
                             return Math.abs(slope) > params.maxOneLineSlope;
                         }) //
-                        .peek(cl -> logger.info("Too sloped {} at {}", cl, cl.getBounds())) //
+                        .peek(cl -> logger.info(ct.trans("too.sloped", cl, cl.getBounds()))) //
                         .collect(Collectors.toList());
                 allClusters.removeAll(slopedOneLines);
                 oneLines.removeAll(slopedOneLines);
@@ -1069,7 +1071,7 @@ public class LinesRetriever
             final int minTrueLength = (int) Math.rint(maxTrueLength * params.minTrueLengthRatio);
             final List<LineCluster> emptyOneLines = oneLines.stream() //
                     .filter(cl -> cl.getTrueLength() < minTrueLength) //
-                    .peek(cl -> logger.info("Almost empty {} at {}", cl, cl.getBounds())) //
+                    .peek(cl -> logger.info(ct.trans("almost.empty", cl, cl.getBounds()))) //
                     .collect(Collectors.toList());
             allClusters.removeAll(emptyOneLines);
             oneLines.removeAll(emptyOneLines);
@@ -1109,7 +1111,7 @@ public class LinesRetriever
                     final Point2D belowDsk = skew.deskewed(below.getFirstLine().getEndPoint(RIGHT));
                     return belowDsk.getX() - endDsk.getX() > params.maxRightIndentation;
                 }) //
-                .peek(cl -> logger.info("Right-indented {} at {}", cl, cl.getBounds())) //
+                .peek(cl -> logger.info(ct.trans("right.indented", cl, cl.getBounds()))) //
                 .collect(Collectors.toList());
         allClusters.removeAll(indentedOneLines);
         fullOneLines.removeAll(indentedOneLines);
@@ -1182,8 +1184,7 @@ public class LinesRetriever
 
         if (filaments.size() < 5) {
             sheet.getStub().decideOnRemoval(
-                    sheet.getId() + LINE_SEPARATOR + "Too few staff filaments: " + filaments.size()
-                            + LINE_SEPARATOR + "This sheet does not seem to contain staff lines.",
+                    ct.trans("too.few.staff.filaments", sheet.getId(), filaments.size()),
                     false);
         }
     }
@@ -1505,7 +1506,7 @@ public class LinesRetriever
             watch.start("retrieveGlobalSlope");
             globalSlope = retrieveGlobalSlope();
             sheet.setSkew(new Skew(globalSlope, sheet));
-            logger.info("Global slope: {}", String.format("%.5f", globalSlope));
+            logger.info(ct.trans("global.slope", String.format("%.5f", globalSlope)));
 
             // Purge sloped filaments
             slopedFilaments = purgeSlopedFilaments();
@@ -1521,7 +1522,7 @@ public class LinesRetriever
             if ((smallInterline != null) && !discardedFilaments.isEmpty()) {
                 secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Entities.byId);
-                logger.info("Searching clusters with smallInterline: {}", smallInterline);
+                logger.info(ct.trans("searching.clusters.with.smallInterline", smallInterline));
                 watch.start("smallClustersRetriever");
                 smallClustersRetriever = new ClustersRetriever(sheet, 2, secondFilaments);
                 discardedFilaments = smallClustersRetriever.buildInfo();

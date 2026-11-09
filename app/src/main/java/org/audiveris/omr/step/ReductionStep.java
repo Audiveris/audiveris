@@ -34,6 +34,7 @@ import org.audiveris.omr.sig.SigReducer;
 import org.audiveris.omr.sig.inter.BeamGroupInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,8 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.audiveris.omr.GlobalMessages;
 
 /**
  * Class <code>ReductionStep</code> implements <b>REDUCTION</b> step, which tries to reduce
@@ -58,6 +61,8 @@ public class ReductionStep
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ReductionStep.class);
+
+    private static final Translator ct = new Translator(GlobalMessages.class);
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -108,9 +113,10 @@ public class ReductionStep
             final double medianFraction = sheet.getScale().pixelsToFrac(medianValue);
 
             logger.info(
-                    "Stems free length median value: {} pixels, {} interlines",
-                    medianValue,
-                    String.format("%.1f", medianFraction));
+                    ct.trans(
+                            "stems.free.length.median.value",
+                            medianValue,
+                            String.format("%.1f", medianFraction)));
         }
 
         // Clean up glyphs

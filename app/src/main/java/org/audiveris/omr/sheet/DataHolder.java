@@ -253,7 +253,7 @@ public abstract class DataHolder<T>
 
         try {
             if (Files.deleteIfExists(path)) {
-                logger.info("Removed {}", path);
+                logger.debug("Removed {}", path);
             }
         } catch (Exception ex) {
             logger.warn("Error in removeData " + ex, ex);
@@ -335,7 +335,7 @@ public abstract class DataHolder<T>
 
                     if (Files.exists(oldPath) && !Files.exists(path)) {
                         Files.copy(oldPath, path);
-                        logger.info("Copied {}", path);
+                        logger.debug("Copied {}", path);
                     }
                 }
             } else if (modified) {
@@ -345,7 +345,7 @@ public abstract class DataHolder<T>
                     store(os);
                     os.flush();
                     setModified(false);
-                    logger.info("Stored {}", path);
+                    logger.debug("Stored {}", path);
                 }
             }
         } catch (Exception ex) {

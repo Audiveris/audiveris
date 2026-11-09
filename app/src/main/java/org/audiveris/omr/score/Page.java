@@ -31,6 +31,7 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,8 @@ public class Page
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Page.class);
+
+    private static final Translator ct = new Translator(Page.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -190,9 +193,7 @@ public class Page
                                 durations.add(duration);
                             }
                         } catch (Exception ex) {
-                            logger.warn(
-                                    getClass().getSimpleName() + " Error visiting " + chord,
-                                    ex);
+                            logger.warn(ct.trans("error.visiting", this, chord, ex), ex);
                         }
                     }
                 }
@@ -201,11 +202,12 @@ public class Page
             // Compute the greatest duration divisor for the page
             final Rational[] durationArray = durations.toArray(Rational[]::new);
             final Rational divisor = Rational.gcd(durationArray);
-            logger.info("durations={} gcd={}", Arrays.deepToString(durationArray), divisor);
+            logger.info(
+                    ct.trans("durations.gcd", this, Arrays.deepToString(durationArray), divisor));
 
             return divisor.den;
         } catch (Exception ex) {
-            logger.warn(getClass().getSimpleName() + " Error visiting " + this, ex);
+            logger.warn(ct.trans("error.visiting", this, ex), ex);
 
             return 0;
         }
@@ -286,27 +288,21 @@ public class Page
     public void dumpMeasureCounts ()
     {
         int count = 0;
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
         for (SystemInfo sys : systems) {
-            Part part = sys.getFirstPart();
+            final Part part = sys.getFirstPart();
 
             if (sb.length() > 0) {
                 sb.append(", ");
             }
 
-            sb.append(part.getMeasures().size()).append(" in system#").append(sys.getId());
+            sb.append(ct.trans("nb.measures.in.system", part.getMeasures().size(), sys.getId()));
             count += part.getMeasures().size();
         }
 
-        StringBuilder msg = new StringBuilder();
-        msg.append(count);
-        msg.append(" raw measure");
-
-        if (count > 1) {
-            msg.append('s');
-        }
-
+        final StringBuilder msg = new StringBuilder();
+        msg.append(ct.trans(count < 2 ? "raw.measure" : "raw.measures", this, count));
         msg.append(": [").append(sb).append("]");
 
         logger.info("{}", msg.toString());
@@ -719,10 +715,10 @@ public class Page
     @Override
     public String toString ()
     {
-        final StringBuilder sb = new StringBuilder("{Page");
+        final StringBuilder sb = new StringBuilder("{").append(ct.trans("page")).append(' ');
 
         if ((sheet != null) && (sheet.getStub() != null)) {
-            sb.append('#').append(sheet.getStub().getNumber());
+            sb.append(ct.trans("number", sheet.getStub().getNumber()));
         }
 
         if (id != 0) {

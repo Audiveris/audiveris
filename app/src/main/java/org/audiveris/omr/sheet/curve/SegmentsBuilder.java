@@ -34,6 +34,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SegmentInter;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.Dumping;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
+import org.audiveris.omr.GlobalMessages;
+
 /**
  * Class <code>SegmentsBuilder</code> retrieves straight segments that can be used to build
  * wedges or endings.
@@ -67,6 +70,8 @@ public class SegmentsBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SegmentsBuilder.class);
+
+    private static final Translator ct = new Translator(GlobalMessages.class);
 
     private static final Color SEGMENT = Color.CYAN;
 
@@ -164,10 +169,10 @@ public class SegmentsBuilder
             // Purge duplicates
             purgeDuplicates();
 
-            logger.info("Segments: {}", segments.size());
+            logger.info(ct.trans("segments", segments.size()));
             logger.debug("Segment maxClumpSize: {}", maxClumpSize);
         } catch (Throwable ex) {
-            logger.warn("Error in SegmentsBuilder: " + ex, ex);
+            logger.warn(ct.trans("error.in", getClass().getSimpleName(), ex), ex);
         }
     }
 

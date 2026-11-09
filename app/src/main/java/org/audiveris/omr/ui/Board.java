@@ -582,7 +582,14 @@ public abstract class Board
         @Override
         public String getName ()
         {
-            return resources.getString(name);
+            final String locName = resources.getString(name);
+
+            if (locName == null) {
+                logger.error("Board. No localized value for {}", name);
+                return name; // Better than null
+            }
+
+            return locName;
         }
 
         @Override

@@ -47,6 +47,7 @@ import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.BOTTOM;
 import static org.audiveris.omr.util.VerticalSide.TOP;
@@ -89,6 +90,8 @@ public class PeakGraph
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(PeakGraph.class);
+
+    private static final Translator ct = new Translator(PeakGraph.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -302,12 +305,12 @@ public class PeakGraph
         mgr.setSystems(createSystems(getSystemTops()));
 
         if (mgr.getSystems().isEmpty()) {
-            logger.warn("No system found");
+            logger.warn(ct.trans("no.system.found"));
             sheet.getStub().invalidate();
             throw new StepException("No system found");
         }
 
-        logger.info("Systems: {}", mgr.getSystemsString());
+        logger.info(ct.trans("systems", mgr.getSystemsString()));
 
         watch.start("purgeCrossAlignments");
         purgeCrossAlignments(); // Purge peak alignments across systems, they are not relevant
@@ -817,9 +820,10 @@ public class PeakGraph
 
             if (staff.isOneLineStaff() && projector.getPeaks().size() <= 1) {
                 logger.info(
-                        "Discarding 1-line staff for unsufficient barline peaks {} {}",
-                        staff,
-                        staff.getMidLine().getBounds());
+                        ct.trans(
+                                "discarding.one.line.staff",
+                                staff,
+                                staff.getMidLine().getBounds()));
                 staffManager.removeStaff(staff);
             } else {
                 projectors.add(projector);
@@ -1377,7 +1381,7 @@ public class PeakGraph
             }
         }
 
-        logger.info("Split {} into {} and {}", peak, p1, p2);
+        logger.info(ct.trans("split", peak, p1, p2));
 
         // This is the end...
         projector.removePeak(peak);

@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import org.audiveris.omr.GlobalMessages;
+
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
@@ -33,11 +35,19 @@ public abstract class ResourceUtil
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Name of the sub-folder dedicated to resources. */
-    public static final String RESOURCES = "resources";
+    /** Token string for the sub-folder dedicated to resources. */
+    public static final String RESOURCES_STRING = ".resources.";
 
     /** Specific value to indicate lack of resource, and avoid recurring searches. */
     public static final String NO_RESOURCE = "NO_RESOURCE";
+
+    /** The single instance of GlobalMessages bundle. */
+    private static final ResourceBundle GLOBAL_MESSAGES_BUNDLE;
+    static {
+        final String packageName = GlobalMessages.class.getPackageName();
+        final String name = GlobalMessages.class.getSimpleName();
+        GLOBAL_MESSAGES_BUNDLE = ResourceBundle.getBundle(packageName + RESOURCES_STRING + name);
+    }
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -54,15 +64,20 @@ public abstract class ResourceUtil
      * Loads the resource bundle related to a Java class, by pointing to a sibling "resources"
      * sub-folder.
      *
-     * @param classe the Java class
+     * @param classe the related Java class
      * @return the loaded bundle
      */
     public static ResourceBundle getBundle (Class<?> classe)
     {
+        // Special case of GlobalMessages to share the same bundle instance.
+        if (classe == GlobalMessages.class) {
+            return GLOBAL_MESSAGES_BUNDLE;
+        }
+
         final String packageName = classe.getPackageName();
         final String name = classe.getSimpleName();
 
-        return ResourceBundle.getBundle(packageName + "." + RESOURCES + "." + name);
+        return ResourceBundle.getBundle(packageName + RESOURCES_STRING + name);
     }
 
     //--------//

@@ -33,12 +33,15 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.audiveris.omr.GlobalMessages;
 
 /**
  * Class <code>CueBeamsStep</code> implements <b>CUE_BEAMS</b> step, which attempts to
@@ -61,6 +64,8 @@ public class CueBeamsStep
 
     private static final Logger logger = LoggerFactory.getLogger(CueBeamsStep.class);
 
+    private static final Translator ct = new Translator(GlobalMessages.class);
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CueBeamsStep object.
@@ -78,12 +83,12 @@ public class CueBeamsStep
     {
         // Check whether we have to effectively run this step
         if (!sheet.getStub().getProcessingSwitches().getValue(ProcessingSwitch.smallHeads)) {
-            logger.info("Step CUE_BEAMS is skipped because small heads switch is off");
+            logger.info(ct.trans("cue.beams.skipped.for.small.heads.switch"));
             return null;
         }
 
         if (sheet.getScale().getSmallBeamScale() != null) {
-            logger.info("Step CUE_BEAMS is skipped because small beams have been processed");
+            logger.info(ct.trans("cue.beams.skipped.for.small.beams.processed"));
             return null;
         }
 
@@ -105,7 +110,7 @@ public class CueBeamsStep
     @Override
     public void doSystem (SystemInfo system,
                           Context context)
-            throws StepException
+        throws StepException
     {
         if (context != null) {
             new BeamsBuilder(system, context.spotLag).buildCueBeams(context.spots); // -> Cue beams

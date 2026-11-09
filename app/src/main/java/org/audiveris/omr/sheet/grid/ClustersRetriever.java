@@ -37,6 +37,7 @@ import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
@@ -101,6 +102,8 @@ public class ClustersRetriever
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ClustersRetriever.class);
+
+    private static final Translator ct = new Translator(ClustersRetriever.class);
 
     /**
      * For comparing Filament instances on their starting point.
@@ -324,10 +327,11 @@ public class ClustersRetriever
         retrieveClusters(checkConsistency);
 
         logger.info(
-                "Retrieved raw line clusters: {} of sizes {} with {}",
-                allClusters.size(),
-                combSizes,
-                interlineScale);
+                ct.trans(
+                        "retrieved.raw.line.clusters",
+                        allClusters.size(),
+                        combSizes,
+                        interlineScale));
 
         return discardedFilaments;
     }
@@ -530,7 +534,7 @@ public class ClustersRetriever
             LineCluster cluster = it.next();
 
             if (!isConsistent(cluster)) {
-                logger.info("Destroying non-consistent {}", cluster);
+                logger.info(ct.trans("destroying.non.consistent", cluster));
 
                 cluster.destroy();
                 it.remove();
@@ -839,7 +843,7 @@ public class ClustersRetriever
                 }
 
                 // Merge
-                logger.info("Pairing clusters C{} & C{}", cluster.getId(), cl.getId());
+                logger.info(ct.trans("pairing.clusters", cluster.getId(), cl.getId()));
                 cluster.mergeWith(cl, 0);
                 clusters.remove(cl);
 
@@ -848,7 +852,7 @@ public class ClustersRetriever
 
             // Short isolated?
             if (cluster.getTrueLength() < minLength) {
-                logger.info("Destroying spurious {}", cluster);
+                logger.info(ct.trans("destroying.spurious", cluster));
                 clusters.remove(cluster);
             } else {
                 idx++; // Move forward

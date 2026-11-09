@@ -87,8 +87,7 @@ public class StemChecker
     private static final Failure NON_STRAIGHT = new Failure("Stem-NonStraight");
 
     /** Events this entity is interested in. */
-    private static final Class<?>[] eventClasses = new Class<?>[]
-    { EntityListEvent.class };
+    private static final Class<?>[] eventClasses = new Class<?>[] { EntityListEvent.class };
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -786,7 +785,7 @@ public class StemChecker
                         SelectionService eventService,
                         Class[] eventList)
         {
-            super("SeedCheck", null, eventService, eventList);
+            super("Stem", null, eventService, eventList);
             this.sheet = sheet;
         }
 
