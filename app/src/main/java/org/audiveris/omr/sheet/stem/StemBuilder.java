@@ -227,6 +227,16 @@ public class StemBuilder
             return stemInter;
         }
 
+        // Seeds are kept off 2-staff barlines, but the chunks gathered along the stem line are
+        // not, and on such a barline they can make up a stem on their own
+        if (retriever.isInNoStemArea(stemGlyph.getBounds())) {
+            if (stemGlyph.isVip()) {
+                logger.info("VIP {} lies on a connected barline", stemGlyph);
+            }
+
+            return null;
+        }
+
         final GradeImpacts impacts = retriever.getStemChecker().checkStem(stemGlyph, profile);
         final double grade = impacts.getGrade();
 
