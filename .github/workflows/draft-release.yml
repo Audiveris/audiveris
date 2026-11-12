@@ -31,11 +31,13 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Retrieve Gradle properties
-        uses: BrycensRanch/read-properties-action@v1
+        shell: bash
         id: all
-        with:
-          file: gradle.properties
-          all: true
+        run: |
+          # Expose every 'key = value' of gradle.properties as a step output
+          grep -E '^[[:space:]]*[A-Za-z0-9_.]+[[:space:]]*=' gradle.properties \
+            | sed -E 's/^[[:space:]]*([A-Za-z0-9_.]+)[[:space:]]*=[[:space:]]*(.*[^[:space:]])?[[:space:]]*$/=/' \
+            >> "$GITHUB_OUTPUT"
 
       - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
         uses: actions/setup-java@v5
@@ -98,11 +100,13 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Retrieve Gradle properties
-        uses: BrycensRanch/read-properties-action@v1
+        shell: bash
         id: all
-        with:
-          file: gradle.properties
-          all: true
+        run: |
+          # Expose every 'key = value' of gradle.properties as a step output
+          grep -E '^[[:space:]]*[A-Za-z0-9_.]+[[:space:]]*=' gradle.properties \
+            | sed -E 's/^[[:space:]]*([A-Za-z0-9_.]+)[[:space:]]*=[[:space:]]*(.*[^[:space:]])?[[:space:]]*$/=/' \
+            >> "$GITHUB_OUTPUT"
 
       - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
         uses: actions/setup-java@v5
