@@ -27,6 +27,7 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.OmrEngine;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.util.FileUtil;
@@ -667,6 +668,30 @@ public class BookManager
     public static boolean useCompression ()
     {
         return constants.useCompression.getValue();
+    }
+
+    //-----------------//
+    // setCompression //
+    //-----------------//
+    /**
+     * Set whether we should use compression (to .MXL files) or not (to .XML files).
+     * <p>
+     * This is meant for interactive setting, e.g. when the user chooses the export
+     * extension in the "Export book as" dialog.
+     * <p>
+     * If the new value differs from the currently stored one, the setting is persisted
+     * immediately, so the last used export format is remembered even if the application
+     * is not gracefully closed afterwards.
+     *
+     * @param compressed true to produce compressed (.MXL) output, false for uncompressed (.XML)
+     */
+    public static void setCompression (boolean compressed)
+    {
+        // Only write to disk if the value actually changed, to avoid needless I/O
+        if (constants.useCompression.getValue() != compressed) {
+            constants.useCompression.setValue(compressed);
+            ConstantManager.getInstance().storeResource();
+        }
     }
 
     //--------------------//
