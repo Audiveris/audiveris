@@ -871,10 +871,6 @@ public class Scale
             }
         }
 
-        if (info == Info.ALL) {
-            sb.append("}");
-        }
-
         return sb.toString();
     }
 
