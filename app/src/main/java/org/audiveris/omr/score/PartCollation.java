@@ -56,6 +56,9 @@ import java.util.Set;
  * we process part collation bottom up.</li>
  * <li>When available, we use the part names (or abbreviations) to help the collation algorithm,
  * but this is questionable for lack of OCR reliability on part names and abbreviations.
+ * Hence a name is accepted in full or abbreviated, and despite a digit read for a letter
+ * (see {@link PartNames}), while a name with no letters at all is ignored. A logical part
+ * whose name was not read takes a named part only when no other logical part matches it.
  * </ul>
  *
  * @author Hervé Bitteur
@@ -152,6 +155,36 @@ public class PartCollation
 
         // Insert at proper end of records
         records.add(dir < 0 ? 0 : records.size(), record);
+    }
+
+    //-----------//
+    // affiliate //
+    //-----------//
+    /**
+     * Map the candidate part to the record's logical part.
+     *
+     * @param record  the record of the logical part
+     * @param partRef the candidate part
+     */
+    private void affiliate (Record record,
+                            PartRef partRef)
+    {
+        logger.debug("    Success");
+        record.partRefs.add(partRef);
+
+        // Use name of affiliate part to define abbreviation of logical?
+        final LogicalPart logical = record.logical;
+        final String resAbbrev = logical.getAbbreviation();
+        if (resAbbrev == null) {
+            final String resName = logical.getName();
+            final String affiName = partRef.getName();
+            if (PartNames.isReadable(affiName) //
+                    && !affiName.equals(resName) //
+                    && (resName == null || affiName.length() < logical.getName().length()) //
+                    && !logicalNames.contains(affiName)) {
+                logical.setAbbreviation(affiName);
+            }
+        }
     }
 
     //---------//
@@ -262,7 +295,6 @@ public class PartCollation
         final int ic2 = (dir > 0) ? sequence.size() : (-1); // Breaking sequence index value
         int recordIndex = (dir > 0) ? (-1) : records.size(); // Current index in defined records
 
-        CandidateLoop:
         for (int ic = ic1; ic != ic2; ic += dir) {
             final PartRef partRef = sequence.get(ic);
             final List<StaffConfig> staffConfigs = partRef.getStaffConfigs();
@@ -274,6 +306,10 @@ public class PartCollation
 
             // Check against defined records
             recordIndex += dir;
+
+            // The compatible record whose name fits the candidate's best, the first of equals
+            int best = -1;
+            double bestFit = 0;
 
             for (; ((dir > 0) && (recordIndex < records.size())) || ((dir < 0)
                     && (recordIndex >= 0)); recordIndex += dir) {
@@ -302,31 +338,23 @@ public class PartCollation
                 }
 
                 // Check candidate name
-                final String name = partRef.getName();
-                if ((name != null) //
-                        && !name.equalsIgnoreCase(logical.getName()) //
-                        && !name.equalsIgnoreCase(logical.getAbbreviation())) {
+                final double fit = nameFit(partRef.getName(), logical);
+                if (fit == 0) {
                     logger.debug("    Name incompatibility");
                     continue;
                 }
 
-                logger.debug("    Success");
-                record.partRefs.add(partRef);
-
-                // Use name of affiliate part to define abbreviation of logical?
-                final String resAbbrev = logical.getAbbreviation();
-                if (resAbbrev == null) {
-                    final String resName = logical.getName();
-                    final String affiName = partRef.getName();
-                    if ((affiName != null) //
-                            && !affiName.equals(resName) //
-                            && (resName == null || affiName.length() < logical.getName().length()) //
-                            && !logicalNames.contains(affiName)) {
-                        logical.setAbbreviation(affiName);
-                    }
+                logger.debug("    Name fit {}", fit);
+                if (fit > bestFit) {
+                    best = recordIndex;
+                    bestFit = fit;
                 }
+            }
 
-                continue CandidateLoop;
+            if (best != -1) {
+                recordIndex = best;
+                affiliate(records.get(best), partRef);
+                continue;
             }
 
             logger.debug("  No more records available");
@@ -424,6 +452,57 @@ public class PartCollation
     public List<Record> getRecords ()
     {
         return records;
+    }
+
+    //---------//
+    // isNamed //
+    //---------//
+    /**
+     * Tell whether the logical part has a readable name or abbreviation.
+     *
+     * @param logical the logical part
+     * @return true if named
+     */
+    private static boolean isNamed (LogicalPart logical)
+    {
+        return PartNames.isReadable(logical.getName())
+                || PartNames.isReadable(logical.getAbbreviation());
+    }
+
+    //---------//
+    // nameFit //
+    //---------//
+    /**
+     * Report how well the name read for a candidate part fits a logical part.
+     * <p>
+     * 0 when the names do not match, see {@link PartNames}; 1 when either has no name to
+     * compare (no letters), which imposes no constraint; 4 for the same name or
+     * abbreviation; in between for a name that abbreviates the other, more for the same
+     * instrument number and an abbreviation that covers more of the name.
+     *
+     * @param name    the candidate part name, perhaps null
+     * @param logical the logical part
+     * @return the fit, 0 for incompatible names
+     */
+    private static double nameFit (String name,
+                                   LogicalPart logical)
+    {
+        if (!PartNames.isReadable(name) || !isNamed(logical)) {
+            return 1;
+        }
+
+        final String logicalName = logical.getName();
+        final String abbreviation = logical.getAbbreviation();
+
+        if (name.equalsIgnoreCase(logicalName) || name.equalsIgnoreCase(abbreviation)) {
+            return 4;
+        }
+
+        final double fit = Math.max(
+                PartNames.fit(name, logicalName),
+                PartNames.fit(name, abbreviation));
+
+        return (fit > 0) ? (1 + fit) : 0;
     }
 
     //-----------------//
