@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.grid;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.dynamic.Compounds;
@@ -103,7 +104,7 @@ public class ClustersRetriever
 
     private static final Logger logger = LoggerFactory.getLogger(ClustersRetriever.class);
 
-    private static final Translator ct = new Translator(ClustersRetriever.class);
+    private static final Translator ct = new Translator(GlobalMessages.class);
 
     /**
      * For comparing Filament instances on their starting point.

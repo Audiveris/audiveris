@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.Translator;
@@ -47,7 +48,7 @@ public abstract class FilterDescriptor
 
     private static final Logger logger = LoggerFactory.getLogger(FilterDescriptor.class);
 
-    private static final Translator ct = new Translator(GlobalDescriptor.class);
+    private static final Translator ct = new Translator(GlobalMessages.class);
 
     /** Default param. */
     public static final Param<FilterDescriptor> defaultFilter = new Default();
