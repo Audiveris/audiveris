@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -63,7 +64,7 @@ public class AliasPatterns
 
     private static final Logger logger = LoggerFactory.getLogger(AliasPatterns.class);
 
-    private static final Translator ct = new Translator(AliasPatterns.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     private static final String ALIAS_PATTERNS_FILENAME = "alias-patterns.xml";
 

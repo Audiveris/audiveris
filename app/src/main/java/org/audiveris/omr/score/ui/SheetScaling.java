@@ -21,14 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.ScaleItem;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.util.ResourceUtil;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.param.Param;
-
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,12 +49,10 @@ public class SheetScaling
 
     private static final Logger logger = LoggerFactory.getLogger(SheetScaling.class);
 
+    private static final Translator ct = Translator.GLOBAL;
+
     // JGoodies columns specification:     Topic      SelBox     Item             Value
     private static final String colSpec = "10dlu,1dlu,10dlu,1dlu,100dlu,1dlu,right:15dlu";
-
-    /** Resource injection. */
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(SheetScaling.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -87,7 +83,8 @@ public class SheetScaling
         // Populate scalings with current scale values
         populateScalings();
 
-        final XactTopic topic = new XactTopic(resources.getString("Scaling.text"));
+        ///final XactTopic topic = new XactTopic(ct.trans("Scaling.text"));
+        final XactTopic topic = new XactTopic("SheetScaling");
 
         for (ScaleItem key : ScaleItem.values()) {
             ScalingParam ip = scalings.get(key);
@@ -101,12 +98,7 @@ public class SheetScaling
             topic.add(scaledPane);
         }
 
-        topicsPanel = new TopicsPanel(
-                "Sheet settings",
-                Arrays.asList(topic),
-                resources,
-                colSpec,
-                1);
+        topicsPanel = new TopicsPanel("Sheet settings", Arrays.asList(topic), ct, colSpec, 1); // BINGO à fixer!
 
         initialDisplay();
     }
@@ -162,9 +154,7 @@ public class SheetScaling
     //----------//
     public String getTitle ()
     {
-        final String pattern = resources.getString("SheetScaling.titlePattern");
-
-        return ResourceUtil.format(pattern, sheet.getId());
+        return ct.trans("SheetScaling.title", sheet.getId());
     }
 
     //----------------//

@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import org.audiveris.omr.GlobalMessages;
+
 import java.util.ResourceBundle;
 
 /**
@@ -31,6 +33,11 @@ import java.util.ResourceBundle;
  */
 public class Translator
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    /** The translator based on the global messages. */
+    public static final Translator GLOBAL = new Translator(GlobalMessages.class);
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     protected final ResourceBundle resources; // The underlying bundle of resources

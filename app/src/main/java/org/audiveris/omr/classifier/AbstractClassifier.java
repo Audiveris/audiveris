@@ -33,6 +33,7 @@ import org.audiveris.omr.math.PoorManAlgebra.Nd4j;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +84,8 @@ public abstract class AbstractClassifier<M extends Object, N extends Object>
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractClassifier.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     /** A special evaluation array, used to report NOISE. */
     private static final Evaluation[] noiseEvaluations = { new Evaluation(
@@ -288,7 +291,7 @@ public abstract class AbstractClassifier<M extends Object, N extends Object>
     {
         if (create && !Files.exists(WellKnowns.TRAIN_FOLDER)) {
             Files.createDirectories(WellKnowns.TRAIN_FOLDER);
-            logger.info("Created directory {}", WellKnowns.TRAIN_FOLDER);
+            logger.info(ct.trans("creating.folder", WellKnowns.TRAIN_FOLDER));
         }
 
         return WellKnowns.TRAIN_FOLDER;

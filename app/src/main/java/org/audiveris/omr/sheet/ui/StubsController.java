@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -38,10 +39,7 @@ import org.audiveris.omr.ui.selection.StubEvent;
 import org.audiveris.omr.ui.util.WaitingTask;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.OmrExecutors;
-import static org.audiveris.omr.util.ResourceUtil.format;
-
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,8 +106,7 @@ public class StubsController
 
     private static final Logger logger = LoggerFactory.getLogger(StubsController.class);
 
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(StubsController.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     /** Events that can be published on sheet service. */
     private static final Class<?>[] eventsWritten = new Class<?>[] { StubEvent.class };
@@ -442,7 +439,7 @@ public class StubsController
             try {
                 SwingUtilities.invokeAndWait( () -> displayStubs(book, focus, validityCheck));
             } catch (InterruptedException | InvocationTargetException ex) {
-                logger.warn("invokeAndWait error", ex);
+                logger.warn(ct.trans("invoke.and.wait.error", ex), ex);
             }
 
             return;
@@ -715,7 +712,7 @@ public class StubsController
             task.finished();
             return sheet;
         } catch (InterruptedException | ExecutionException ex) {
-            logger.warn("Error loading sheet {}", ex.toString(), ex);
+            logger.warn(ct.trans("error.loading.sheet", ex), ex);
             return null;
         }
     }
@@ -736,7 +733,7 @@ public class StubsController
             try {
                 SwingUtilities.invokeAndWait( () -> markTab(stub, color));
             } catch (InterruptedException | InvocationTargetException ex) {
-                logger.warn("invokeAndWait error", ex);
+                logger.warn(ct.trans("invoke.and.wait.error", ex), ex);
             }
         } else {
             logger.debug("mark {} with {}", stub, color);
@@ -787,7 +784,7 @@ public class StubsController
                     @Override
                     protected void done ()
                     {
-                        logger.info("Upgrade completed for book " + book.getRadix());
+                        logger.info(ct.trans("upgrade.completed.for.book", book.getRadix()));
                         BookActions.getInstance().setBookUpgradable(false);
                     }
                 }.execute();
@@ -895,7 +892,7 @@ public class StubsController
             if (tabIndex != -1) {
                 stubsPane.setSelectedIndex(tabIndex);
             } else {
-                logger.warn("No tab found for {}", stub);
+                logger.warn(ct.trans("no.tab.found.for", stub));
             }
         }
     }
@@ -916,7 +913,8 @@ public class StubsController
             try {
                 SwingUtilities.invokeAndWait( () -> selectOtherBook(currentBook));
             } catch (InterruptedException | InvocationTargetException ex) {
-                logger.warn("invokeAndWait error", ex);
+                logger.warn(ct.trans("invoke.and.wait.error", ex), ex);
+
             }
         } else {
             SheetStub currentStub = getCurrentStub();
@@ -1118,7 +1116,8 @@ public class StubsController
             try {
                 SwingUtilities.invokeAndWait( () -> invokeSelect(stub));
             } catch (InterruptedException | InvocationTargetException ex) {
-                logger.warn("invokeAndWait error", ex);
+                logger.warn(ct.trans("invoke.and.wait.error", ex), ex);
+
             }
         } else {
             StubsController.getInstance().selectAssembly(stub);
@@ -1137,7 +1136,7 @@ public class StubsController
     {
         if (step != getEarlyStep()) {
             constants.earlyStep.setValue(step);
-            logger.info("Early step is now: {}", step);
+            logger.info(ct.trans("early.step.is.now", step));
         }
     }
 
@@ -1213,9 +1212,7 @@ public class StubsController
 
         LoadingSheetTask (SheetStub stub)
         {
-            super(
-                    OmrGui.getApplication(),
-                    format(resources.getString("LoadingSheetTask"), stub.getId()));
+            super(OmrGui.getApplication(), ct.trans("loading.sheet.task", stub.getId()));
             this.stub = stub;
         }
 

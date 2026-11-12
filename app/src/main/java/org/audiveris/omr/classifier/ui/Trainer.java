@@ -32,7 +32,6 @@ import org.audiveris.omr.ui.util.UIUtil;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
-import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +70,7 @@ import javax.swing.border.TitledBorder;
  * @author Hervé Bitteur
  */
 public class Trainer
-        extends SingleFrameApplication
+        extends OmrGui
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

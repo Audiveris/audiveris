@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Sheet;
@@ -42,10 +43,7 @@ import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
-import static org.audiveris.omr.util.ResourceUtil.format;
-
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,8 +74,7 @@ public class InterListMenu
 
     private static final Logger logger = LoggerFactory.getLogger(InterListMenu.class);
 
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(InterListMenu.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -107,12 +104,12 @@ public class InterListMenu
                                      final List<Inter> sysInters)
     {
         final JMenuItem item = new JMenuItem(
-                format(resources.getString("deleteInters"), sysInters.size(), system.getId()));
+                ct.trans("delete.inters", sysInters.size(), system.getId()));
 
         // To delete all listed inters when item is clicked upon
         item.addActionListener( (ActionEvent e) -> {
             if (AdvancedTopics.allowMultipleDelete() || OMR.gui.displayConfirmation(
-                    format(resources.getString("confirmDeleteInters"), sysInters.size()))) {
+                    ct.trans("delete.inters.confirm", sysInters.size()))) {
                 sheet.getInterController().removeInters(sysInters);
             }
         });

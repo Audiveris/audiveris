@@ -104,7 +104,7 @@ public class SentenceInter
 
     private static final Logger logger = LoggerFactory.getLogger(SentenceInter.class);
 
-    private static final Translator ct = new Translator(GlobalMessages.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     /** For ordering sentences by their de-skewed ordinate. */
     public static final Comparator<SentenceInter> byOrdinate = (s1,

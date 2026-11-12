@@ -167,7 +167,7 @@ public class SelectionPanel
 
         r += 2; // ----------------------------
 
-        builder.addRaw(new JButton(selectAction)).xy(3, r);
+        builder.addRaw(new JButton(selectAction)).xyw(1, r, 3);
 
         builder.addRaw(new JButton(storeAction)).xy(5, r);
 
@@ -353,8 +353,8 @@ public class SelectionPanel
     {
         SelectAction ()
         {
-            super("Select");
-            putValue(Action.SHORT_DESCRIPTION, "Build samples selection");
+            super("Select train/test sets");
+            putValue(Action.SHORT_DESCRIPTION, "Build samples selections");
         }
 
         @Override

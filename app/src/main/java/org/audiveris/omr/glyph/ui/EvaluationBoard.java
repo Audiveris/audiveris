@@ -45,9 +45,7 @@ import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.FixedWidthIcon;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.util.Navigable;
-
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,8 +81,7 @@ public class EvaluationBoard
 
     private static final Logger logger = LoggerFactory.getLogger(EvaluationBoard.class);
 
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(EvaluationBoard.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[] { EntityListEvent.class };
@@ -366,7 +363,7 @@ public class EvaluationBoard
 
         public EvalButton ()
         {
-            grade.setToolTipText(resources.getString("grade.text"));
+            grade.setToolTipText(ct.trans("grade.toolTipText"));
 
             button = new ShapeButton();
             button.addActionListener(this);

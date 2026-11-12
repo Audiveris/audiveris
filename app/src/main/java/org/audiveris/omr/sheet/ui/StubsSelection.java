@@ -21,16 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.util.NaturalSpec;
-import static org.audiveris.omr.util.ResourceUtil.format;
-
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +46,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 /**
- * Class <code>StubsSelection</code> handles a dialog where user can specify stubs
- * selection.
+ * Class <code>StubsSelection</code> handles a dialog where user can specify stubs selection.
  *
  * @author Hervé Bitteur
  */
@@ -60,9 +57,7 @@ public class StubsSelection
 
     private static final Logger logger = LoggerFactory.getLogger(StubsSelection.class);
 
-    /** Resource injection. */
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(StubsSelection.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -84,8 +79,8 @@ public class StubsSelection
         this.book = book;
         specField = new LTextField(
                 true,
-                format(resources.getString("specField.text"), book.size()),
-                format(resources.getString("specField.shortDescription"), "1,4-6"));
+                ct.trans("specField.text", book.size()),
+                ct.trans("specField.toolTipText", "1,4-6"));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -140,7 +135,7 @@ public class StubsSelection
         }
 
         // Prepare prompt dialog
-        final String frameTitle = format(resources.getString("frameTitle"), book.getRadix());
+        final String frameTitle = ct.trans("StubsSelection.title", book.getRadix());
         final JOptionPane pane = defineLayout();
 
         // Initial sheets selection, as read from book

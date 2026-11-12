@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.log;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
@@ -208,7 +209,7 @@ public abstract class LogUtil
             final Path configPath = Paths.get(loggingProp).toAbsolutePath();
 
             if (Files.exists(configPath)) {
-                messages.add(new Message(Level.INFO, "configuration.found.at", configPath));
+                messages.add(new Message(Level.INFO, "logging.config.found.at", configPath));
 
                 return;
             }
@@ -218,7 +219,7 @@ public abstract class LogUtil
         final Path configPath = CONFIG_FOLDER.resolve(LOGBACK_FILE_NAME).toAbsolutePath();
 
         if (Files.exists(configPath)) {
-            messages.add(new Message(Level.INFO, "configuration.found.at", configPath));
+            messages.add(new Message(Level.INFO, "logging.config.found.at", configPath));
             System.setProperty(LOGBACK_LOGGING_KEY, configPath.toString());
 
             return;
@@ -244,7 +245,7 @@ public abstract class LogUtil
             }
 
             if (Files.exists(localPath)) {
-                messages.add(new Message(Level.INFO, "configuration.found.at", configUri));
+                messages.add(new Message(Level.INFO, "logging.config.found.at", configUri));
                 System.setProperty(LOGBACK_LOGGING_KEY, localPath.toString());
 
                 return;
@@ -254,7 +255,7 @@ public abstract class LogUtil
         }
 
         // 4/ We need a default configuration
-        messages.add(new Message(Level.INFO, "minimal.configuration"));
+        messages.add(new Message(Level.INFO, "logging.minimal.config"));
 
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
@@ -408,7 +409,7 @@ public abstract class LogUtil
 
         public String translated ()
         {
-            final Translator ct = new Translator(LogUtil.class);
+            final Translator ct = Translator.GLOBAL;
 
             if (arguments == null)
                 return ct.trans(key);

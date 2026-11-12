@@ -89,7 +89,7 @@ public class SlursBuilder
 
     private static final Logger logger = LoggerFactory.getLogger(SlursBuilder.class);
 
-    private static final Translator ct = new Translator(GlobalMessages.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     private static final Color SLUR_POINTS = new Color(255, 0, 0, 50);
 

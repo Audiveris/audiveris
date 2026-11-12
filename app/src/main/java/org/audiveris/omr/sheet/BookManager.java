@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.CLI;
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.OmrEngine;
@@ -34,6 +35,7 @@ import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.PathHistory;
 import org.audiveris.omr.util.SheetPath;
 import org.audiveris.omr.util.SheetPathHistory;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,6 +122,8 @@ public class BookManager
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BookManager.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -279,7 +283,7 @@ public class BookManager
 
             if (alias != null) {
                 book.setAlias(alias);
-                logger.info("Found alias: {} for {}", alias, nameSansExt);
+                logger.info(ct.trans("found.alias.for", alias, nameSansExt));
             }
         }
 
@@ -384,11 +388,11 @@ public class BookManager
                     Files.delete(path);
                     count++;
                 } catch (IOException ex) {
-                    logger.warn("Error deleting " + path + " " + ex, ex);
+                    logger.warn(ct.trans("error.deleting", path, ex), ex);
                 }
             }
 
-            logger.info("{} path(s) deleted.", count);
+            logger.info(ct.trans("paths.deleted", count));
         }
     }
 
@@ -417,12 +421,12 @@ public class BookManager
             if (!Files.exists(folder)) {
                 Files.createDirectories(folder);
 
-                logger.info("Creating folder {}", folder);
+                logger.info(ct.trans("creating.folder", folder));
             }
 
             return targetPath;
         } catch (IOException ex) {
-            logger.warn("Cannot get directory for " + targetPath, ex);
+            logger.warn(ct.trans("cannot.get.folder.for", targetPath, ex), ex);
 
             return null;
         }
@@ -527,7 +531,7 @@ public class BookManager
 
             return bookFolder;
         } catch (IOException ex) {
-            logger.warn("Cannot create folder {}", bookFolder, ex);
+            logger.warn(ct.trans("cannot.create.folder", bookFolder, ex), ex);
 
             return null;
         }

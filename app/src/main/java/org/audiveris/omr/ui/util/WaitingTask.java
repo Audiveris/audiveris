@@ -22,6 +22,7 @@
 package org.audiveris.omr.ui.util;
 
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.util.Translator;
 
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.Task;
@@ -53,6 +54,10 @@ import javax.swing.JProgressBar;
 public abstract class WaitingTask<T, V>
         extends Task<T, V>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Translator ct = Translator.GLOBAL;
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Timer is used to delay the initial display of the waiting dialog. */
@@ -100,9 +105,7 @@ public abstract class WaitingTask<T, V>
             @Override
             public void run ()
             {
-                final String dialogTitle = (title != null) ? title
-                        : application.getContext().getResourceMap(WaitingTask.class).getString(
-                                "title");
+                final String dialogTitle = (title != null) ? title : ct.trans("waiting.title");
 
                 dialog = new JDialog(application.getMainFrame(), dialogTitle, false);
 

@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -63,6 +64,7 @@ import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TremoloInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +90,8 @@ public abstract class Relations
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Relations.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> src =
             new LinkedHashMap<>();
@@ -382,7 +386,7 @@ public abstract class Relations
         Objects.requireNonNull(sig, "Source has no sig");
 
         if (target.getSig() != sig) {
-            logger.info("Source and Target do not share the same sig");
+            logger.info(ct.trans("no.common.sig"));
 
             return Collections.emptySet();
         }

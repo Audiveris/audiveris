@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.math.Rational;
 import static org.audiveris.omr.math.Rational.THREE_OVER_TWO;
 import static org.audiveris.omr.math.Rational.TWO_OVER_THREE;
@@ -46,6 +47,7 @@ import org.audiveris.omr.sig.relation.NextInVoiceRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SeparateVoiceRelation;
 import org.audiveris.omr.util.Entities;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +92,8 @@ public class MeasureRhythm
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureRhythm.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -688,12 +692,13 @@ public class MeasureRhythm
 
                         if (lastChord.isVip() || logger.isDebugEnabled()) {
                             logger.info(
-                                    "{} {} extinct at {} before slot#{} at {}",
-                                    voice,
-                                    Inters.ids(voice.getChords()),
-                                    end,
-                                    slot.getId(),
-                                    firstTime);
+                                    ct.trans(
+                                            "voice.extinct.at",
+                                            voice.getId(),
+                                            Inters.ids(voice.getChords()),
+                                            end,
+                                            slot.getId(),
+                                            firstTime));
                         }
 
                         extinctVoices.add(voice);
@@ -1041,7 +1046,7 @@ public class MeasureRhythm
                                 }
                             }
 
-                            logger.info("{} No timeOffset for {}", measure, ch);
+                            logger.info(ct.trans("no.time.offset.for", measure, ch));
                         }
                     }
                 }
@@ -1273,7 +1278,7 @@ public class MeasureRhythm
                 } else if (times.size() > 1) {
                     // Time problem detected in a narrow slot
                     // Some data is wrong (recognition problem or implicit tuplet)
-                    logger.info("{} Time inconsistency in {}", measure, times);
+                    logger.info(ct.trans("time.inconsistency.in", measure, times));
                     ok &= analyzeTimes(times);
                 }
             }

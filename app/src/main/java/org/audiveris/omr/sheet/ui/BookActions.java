@@ -59,7 +59,6 @@ import org.audiveris.omr.ui.view.HistoryMenu;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.PathListTask;
-import static org.audiveris.omr.util.ResourceUtil.format;
 import org.audiveris.omr.util.SheetPath;
 import org.audiveris.omr.util.SheetPathHistory;
 import org.audiveris.omr.util.Translator;
@@ -2356,9 +2355,7 @@ public class BookActions
          */
         public LoadBookTask (SheetPath sheetPath)
         {
-            super(
-                    OmrGui.getApplication(),
-                    format(resources.getString("LoadBookTask"), sheetPath.getBookPath()));
+            super(OmrGui.getApplication(), ct.trans("loading.book", sheetPath.getBookPath()));
             path = sheetPath.getBookPath();
             sheetNumber = sheetPath.getSheetNumber();
         }

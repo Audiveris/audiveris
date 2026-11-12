@@ -57,7 +57,6 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ResourceMap;
-import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +120,7 @@ import javax.swing.event.ListSelectionListener;
  * @author Hervé Bitteur
  */
 public class SampleBrowser
-        extends SingleFrameApplication
+        extends OmrGui
         implements ChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------

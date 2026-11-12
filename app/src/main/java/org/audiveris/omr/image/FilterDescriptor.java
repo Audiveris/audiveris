@@ -23,6 +23,7 @@ package org.audiveris.omr.image;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
@@ -45,6 +46,8 @@ public abstract class FilterDescriptor
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(FilterDescriptor.class);
+
+    private static final Translator ct = new Translator(GlobalDescriptor.class);
 
     /** Default param. */
     public static final Param<FilterDescriptor> defaultFilter = new Default();
@@ -218,13 +221,13 @@ public abstract class FilterDescriptor
                         AdaptiveDescriptor.resetToSource();
 
                         desc = getValue();
-                        logger.info("Default binarization filter reset to {}", desc);
+                        logger.info(ct.trans("default.binary.filter.reset", desc));
                     } else {
                         return false;
                     }
                 } else {
                     desc = specific;
-                    logger.info("Default binarization filter set to {}", desc);
+                    logger.info(ct.trans("default.binary.filter.set", desc));
 
                     FilterKind kind = specific.getKind();
                     FilterDescriptor.setDefaultKind(kind);

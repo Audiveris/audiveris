@@ -186,7 +186,7 @@ public class BookParameters
         final TopicsPanel defaultPanel = new TopicsPanel(
                 resources.getString("defaultTab.toolTipText"),
                 buildTopics(GLOBAL_SCOPE, null, defaultPanes, false, false), // No interline, no beam
-                resources);
+                ct);
         defaultPanel.setPreferredSize(minDimension);
         final String defaultTitle = resources.getString("defaultTab.text");
         component.addTab(defaultTitle, null, defaultPanel, defaultPanel.getName());
@@ -201,7 +201,7 @@ public class BookParameters
             final TopicsPanel bookPanel = new TopicsPanel(
                     resources.getString("bookTab.toolTipText"),
                     buildTopics(book, GLOBAL_SCOPE, bookPanes, true, true),
-                    resources);
+                    ct);
             bookPanel.setPreferredSize(minDimension);
             component.addTab(book.getRadix(), null, bookPanel, bookPanel.getName());
             panels.put(book, bookPanel);
@@ -215,7 +215,7 @@ public class BookParameters
                     final TopicsPanel sheetPanel = new TopicsPanel(
                             format(resources.getString("sheetTab.toolTipText"), s.getNum()),
                             buildTopics(s, book, sheetPanes, true, true),
-                            resources);
+                            ct);
                     final String initial = resources.getString("sheetInitialChar");
                     String label = initial + "#" + s.getNumber();
 
@@ -446,7 +446,7 @@ public class BookParameters
     public String getTitle ()
     {
         if (book != null) {
-            return format(resources.getString("bookTitlePattern"), book.getRadix());
+            return format(resources.getString("bookTitle"), book.getRadix());
         } else {
             return resources.getString("defaultTitle");
         }

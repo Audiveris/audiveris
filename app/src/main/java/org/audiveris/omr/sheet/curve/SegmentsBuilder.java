@@ -71,7 +71,7 @@ public class SegmentsBuilder
 
     private static final Logger logger = LoggerFactory.getLogger(SegmentsBuilder.class);
 
-    private static final Translator ct = new Translator(GlobalMessages.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     private static final Color SEGMENT = Color.CYAN;
 

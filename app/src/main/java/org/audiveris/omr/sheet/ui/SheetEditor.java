@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.classifier.BasicClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -73,6 +74,7 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,6 +120,8 @@ public class SheetEditor
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SheetEditor.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -504,9 +508,8 @@ public class SheetEditor
     {
         view.repetitiveInputMode = repetitiveInputMode;
         logger.info(
-                "{} Repetitive input mode is {}",
-                sheet.getId(),
-                view.repetitiveInputMode ? "ON" : "OFF");
+                repetitiveInputMode ? "repetitive.input.mode.on" : "repetitive.input.mode.off",
+                sheet.getId());
     }
 
     //---------------------------//

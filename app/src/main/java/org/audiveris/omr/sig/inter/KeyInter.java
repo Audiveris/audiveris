@@ -117,7 +117,7 @@ public class KeyInter
 
     private static final Logger logger = LoggerFactory.getLogger(KeyInter.class);
 
-    private static final Translator ct = new Translator(GlobalMessages.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     /** Sharp pitches per clef kind. */
     public static final Map<ClefKind, int[]> SHARP_PITCHES_MAP = new EnumMap<>(ClefKind.class);

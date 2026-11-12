@@ -74,7 +74,8 @@ import javax.swing.border.Border;
 /**
  * Class <code>UIUtil</code> gathers utilities related to User Interface
  *
- * @author Hervé Bitteur and Brenton Partridge
+ * @author Brenton Partridge
+ * @author Hervé Bitteur
  */
 public abstract class UIUtil
 {
@@ -83,9 +84,9 @@ public abstract class UIUtil
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(UIUtil.class);
-  
+
     private static final ResourceBundle resources = ResourceUtil.getBundle(UIUtil.class);
-  
+
     /**
      * Ratio to be applied on all font size.
      * It includes the FlatLaf UI scale if any, since our explicit font sizes are not scaled
@@ -93,7 +94,7 @@ public abstract class UIUtil
      */
     public static final float GLOBAL_FONT_RATIO = constants.globalFontRatio.getValue().floatValue()
             * getFlatLafUIScale();
-    
+
     /**
      * Customized border for tool buttons, to use consistently in all UI components.
      */
@@ -715,8 +716,7 @@ public abstract class UIUtil
                 if (scale > 0) {
                     return scale;
                 }
-            } catch (NumberFormatException ignored) {
-            }
+            } catch (NumberFormatException ignored) {}
         }
 
         return 1f;

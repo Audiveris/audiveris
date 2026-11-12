@@ -21,9 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import org.audiveris.omr.util.ResourceUtil;
-
-import java.util.ResourceBundle;
+import org.audiveris.omr.util.Translator;
 
 /**
  * Scale information item.
@@ -39,7 +37,7 @@ public enum ScaleItem
 
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final ResourceBundle resources = ResourceUtil.getBundle(ScaleItem.class);
+    private static final Translator ct = new Translator(ScaleItem.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -57,7 +55,7 @@ public enum ScaleItem
     public String getText ()
     {
         if (text == null) {
-            text = resources.getString(name() + ".text");
+            text = ct.trans(name() + ".text");
         }
 
         return text;
@@ -71,7 +69,7 @@ public enum ScaleItem
     public String getTip ()
     {
         if (tip == null) {
-            tip = resources.getString(name() + ".toolTipText");
+            tip = ct.trans(name() + ".toolTipText");
         }
 
         return tip;

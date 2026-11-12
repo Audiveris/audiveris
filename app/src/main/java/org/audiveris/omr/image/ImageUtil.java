@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.util.Translator;
 
@@ -57,7 +58,7 @@ public abstract class ImageUtil
 
     private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
 
-    private static final Translator ct = new Translator(ImageUtil.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -391,7 +392,7 @@ public abstract class ImageUtil
             final Path dir = Files.createDirectories(WellKnowns.TEMP_FOLDER.resolve(dirs));
             final File file = dir.resolve(name + ".png").toFile();
             ImageIO.write(image, "png", file);
-            logger.info(ct.trans("saved", file));
+            logger.info(ct.trans("image.saved.in", file));
         } catch (IOException ex) {
             logger.warn("Error saving " + name, ex);
         }

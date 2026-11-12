@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr;
 
-import org.audiveris.omr.ui.OmrGui;
+import org.audiveris.omr.ui.MainGui;
 
 /**
  * Class <code>OMR</code> gathers definitions and dependencies for an OMR application.
@@ -62,7 +62,7 @@ public abstract class OMR
     public static OmrEngine engine;
 
     /** Master view, if any. */
-    public static OmrGui gui;
+    public static MainGui gui;
 
     //~ Constructors -------------------------------------------------------------------------------
 

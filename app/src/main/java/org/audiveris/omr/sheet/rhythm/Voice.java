@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.math.GCD;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Mark;
@@ -34,6 +35,7 @@ import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +68,8 @@ public class Voice
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Voice.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -224,7 +228,7 @@ public class Voice
 
             return upgraded;
         } catch (Exception ex) {
-            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+            logger.warn(ct.trans("error.in", "Voice.afterReload()", ex), ex);
             return false;
         }
     }
@@ -254,7 +258,7 @@ public class Voice
                     if (delta.compareTo(Rational.ZERO) > 0) {
                         MeasureStack stack = measure.getStack();
                         excess = delta; // For voice
-                        logger.info("{} {} too long", measure, this);
+                        logger.info(ct.trans("voice.too.long", measure, this));
                         measure.setAbnormal(true);
 
                         if ((stack.getExcess() == null) || (delta.compareTo(
@@ -265,7 +269,7 @@ public class Voice
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error checking {} duration " + ex, measure, ex);
+            logger.warn(ct.trans("error.checking.duration", measure, ex), ex);
             measure.setAbnormal(true);
         }
     }
@@ -600,7 +604,7 @@ public class Voice
                     inferredTimeSig = timeSigOf(count, common);
                 }
             } catch (Exception ex) {
-                logger.warn("Could not guess time signature for {} {}", this, ex.toString(), ex);
+                logger.warn(ct.trans("no.guessed.time.signature", this, ex), ex);
 
                 return null;
             }
@@ -858,7 +862,7 @@ public class Voice
                              SlotVoice chordInfo)
     {
         if (isMeasureRest()) {
-            logger.error("You cannot insert a slot in a measure-rest voice");
+            logger.error(ct.trans("no.slot.in.measure.rest.voice"));
 
             return;
         }

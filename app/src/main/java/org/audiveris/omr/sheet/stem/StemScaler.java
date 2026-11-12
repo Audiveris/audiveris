@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.stem;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
@@ -45,6 +46,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.util.ChartPlotter;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +81,8 @@ public class StemScaler
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StemScaler.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -140,7 +144,7 @@ public class StemScaler
             final double ratio = constants.stemAsForeRatio.getValue();
             mainStem = (int) Math.rint(ratio * scale.getFore());
             maxStem = (int) Math.rint(ratio * scale.getMaxFore());
-            logger.info("No stem peak found, computing defaults");
+            logger.info(ct.trans("no.stem.peak.found"));
         }
 
         return new StemScale(mainStem, maxStem);

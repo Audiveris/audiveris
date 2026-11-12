@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.beam;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -40,8 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.audiveris.omr.GlobalMessages;
 
 /**
  * Class <code>CueBeamsStep</code> implements <b>CUE_BEAMS</b> step, which attempts to
@@ -64,7 +63,7 @@ public class CueBeamsStep
 
     private static final Logger logger = LoggerFactory.getLogger(CueBeamsStep.class);
 
-    private static final Translator ct = new Translator(GlobalMessages.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -83,12 +82,12 @@ public class CueBeamsStep
     {
         // Check whether we have to effectively run this step
         if (!sheet.getStub().getProcessingSwitches().getValue(ProcessingSwitch.smallHeads)) {
-            logger.info(ct.trans("cue.beams.skipped.for.small.heads.switch"));
+            logger.info(ct.trans("cue.beams.skipped.heads"));
             return null;
         }
 
         if (sheet.getScale().getSmallBeamScale() != null) {
-            logger.info(ct.trans("cue.beams.skipped.for.small.beams.processed"));
+            logger.info(ct.trans("cue.beams.skipped.beams"));
             return null;
         }
 

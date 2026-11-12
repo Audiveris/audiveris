@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.ui;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.field.LCheckBox;
 import org.audiveris.omr.ui.field.LLabel;
@@ -34,9 +35,7 @@ import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.util.Entity;
 import org.audiveris.omr.util.EntityIndex;
-
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,8 +68,7 @@ public class EntityBoard<E extends Entity>
 
     private static final Logger logger = LoggerFactory.getLogger(EntityBoard.class);
 
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(EntityBoard.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[] { EntityListEvent.class };
@@ -142,7 +140,7 @@ public class EntityBoard<E extends Entity>
         // Count
         if (useCount) {
             count = getCountField();
-            count.setToolTipText(resources.getString("count.toolTipText"));
+            count.setToolTipText(ct.trans("count.toolTipText"));
         }
 
         // VIP
@@ -162,14 +160,12 @@ public class EntityBoard<E extends Entity>
         // Id
         switch (idOption) {
             case ID_LABEL -> {
-                idLabel = new LLabel(
-                        resources.getString("idLabel.text"),
-                        resources.getString("idLabel.toolTipText"));
+                idLabel = new LLabel(ct.trans("idLabel.text"), ct.trans("idLabel.toolTipText"));
             }
             case ID_SPINNER -> {
                 idSpinner = makeIdSpinner(entityService.getIndex());
                 idSpinner.setName("idSpinner");
-                idSpinner.setToolTipText(resources.getString("idSpinner.toolTipText"));
+                idSpinner.setToolTipText(ct.trans("idSpinner.toolTipText"));
             }
             case ID_NONE -> {}
         }
@@ -211,7 +207,7 @@ public class EntityBoard<E extends Entity>
         int r = 1; // --------------------------------
 
         if (idSpinner != null) {
-            builder.addLabel("Id ").xy(1, r);
+            builder.addLabel(ct.trans("idLabel.text")).xy(1, r);
             builder.addRaw(idSpinner).xy(3, r);
         }
 

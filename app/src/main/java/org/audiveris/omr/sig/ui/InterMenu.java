@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.score.Page;
@@ -34,10 +35,7 @@ import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.util.SeparableMenu;
-import static org.audiveris.omr.util.ResourceUtil.format;
-
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,8 +63,7 @@ public class InterMenu
 
     private static final Logger logger = LoggerFactory.getLogger(InterMenu.class);
 
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(InterMenu.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -288,10 +285,10 @@ public class InterMenu
             this.relation = relation;
 
             // Dump
-            add(dumpItem = new JMenuItem("Dump"));
+            add(dumpItem = new JMenuItem(ct.trans("dump")));
             dumpItem.addActionListener(this);
 
-            add(deleteItem = new JMenuItem("Delete"));
+            add(deleteItem = new JMenuItem(ct.trans("delete")));
             deleteItem.addActionListener(this);
         }
 
@@ -304,8 +301,7 @@ public class InterMenu
             if (source == dumpItem) {
                 logger.info("{}", relation.dumpOf(sig));
             } else if (source == deleteItem) {
-                if (OMR.gui.displayConfirmation(
-                        format(resources.getString("removeRelation"), relation.getName()))) {
+                if (OMR.gui.displayConfirmation(ct.trans("remove.relation", relation.getName()))) {
                     interController.unlink(sig, relation);
                 }
             }
@@ -328,8 +324,8 @@ public class InterMenu
         {
             this.inter = inter;
 
-            putValue(NAME, "Select all " + inter.getShape() + " in sheet");
-            putValue(SHORT_DESCRIPTION, "Select all inters with the same shape as this one");
+            putValue(NAME, ct.trans("select.inters", inter.getShape()));
+            putValue(SHORT_DESCRIPTION, ct.trans("select.inters.toolTipText"));
         }
 
         @Override

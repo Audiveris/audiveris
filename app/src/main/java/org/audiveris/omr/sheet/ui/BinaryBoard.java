@@ -180,71 +180,75 @@ public class BinaryBoard
      */
     protected void handleLocationEvent (LocationEvent sheetLocation)
     {
-        // Clear all fields
-        mean.setText("");
-        stdDev.setText("");
-        threshold.setText("");
-        color.setText("");
+        try {
+            // Clear all fields
+            mean.setText("");
+            stdDev.setText("");
+            threshold.setText("");
+            color.setText("");
 
-        // Display rectangle attributes
-        final Rectangle rect = sheetLocation.getData();
-        if (rect == null) {
-            return;
-        }
-
-        final ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.GRAY);
-        if (source == null) {
-            logger.info("No GRAY source available");
-            return;
-        }
-
-        final int level = source.get(rect.x, rect.y);
-        final FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
-
-        if (desc != previousDesc) {
-            if (!(desc instanceof AdaptiveDescriptor)) {
-                mean.setVisible(false);
-                stdDev.setVisible(false);
-            } else {
-                mean.setVisible(true);
-                stdDev.setVisible(true);
+            // Display rectangle attributes
+            final Rectangle rect = sheetLocation.getData();
+            if (rect == null) {
+                return;
             }
 
-            previousDesc = desc;
-        }
+            final ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.GRAY);
+            if (source == null) {
+                logger.info(resources.getString("no.gray.source.available"));
+                return;
+            }
 
-        final PixelFilter filter = desc.getFilter(source);
+            final int level = source.get(rect.x, rect.y);
+            final FilterDescriptor desc = sheet.getStub().getBinarizationFilter();
 
-        Double thresholdValue = null;
-
-        switch (filter) {
-            case AdaptiveFilter adpFilter -> {
-                final PixelFilter.Context context = adpFilter.getContext(rect.x, rect.y);
-
-                if (context != null) {
-                    if (context instanceof AdaptiveContext ctx) {
-                        mean.setValue(ctx.mean);
-                        stdDev.setValue(ctx.standardDeviation);
-                    } else {
-                        mean.setText("");
-                        stdDev.setText("");
-                    }
-
-                    thresholdValue = context.threshold;
+            if (desc != previousDesc) {
+                if (!(desc instanceof AdaptiveDescriptor)) {
+                    mean.setVisible(false);
+                    stdDev.setVisible(false);
+                } else {
+                    mean.setVisible(true);
+                    stdDev.setVisible(true);
                 }
+
+                previousDesc = desc;
             }
-            case GlobalFilter gblFilter -> thresholdValue = Double.valueOf(gblFilter.threshold);
-            default -> {}
-        }
 
-        if (thresholdValue == null) {
-            return;
-        }
+            final PixelFilter filter = desc.getFilter(source);
 
-        threshold.setValue(thresholdValue);
-        final boolean isBlack = level <= thresholdValue;
-        color.setText(isBlack ? black : white);
-        color.getField().setBackground(isBlack ? Color.BLACK : Color.WHITE);
+            Double thresholdValue = null;
+
+            switch (filter) {
+                case AdaptiveFilter adpFilter -> {
+                    final PixelFilter.Context context = adpFilter.getContext(rect.x, rect.y);
+
+                    if (context != null) {
+                        if (context instanceof AdaptiveContext ctx) {
+                            mean.setValue(ctx.mean);
+                            stdDev.setValue(ctx.standardDeviation);
+                        } else {
+                            mean.setText("");
+                            stdDev.setText("");
+                        }
+
+                        thresholdValue = context.threshold;
+                    }
+                }
+                case GlobalFilter gblFilter -> thresholdValue = Double.valueOf(gblFilter.threshold);
+                default -> {}
+            }
+
+            if (thresholdValue == null) {
+                return;
+            }
+
+            threshold.setValue(thresholdValue);
+            final boolean isBlack = level <= thresholdValue;
+            color.setText(isBlack ? black : white);
+            color.getField().setBackground(isBlack ? Color.BLACK : Color.WHITE);
+        } catch (Exception ex) {
+            logger.warn(getClass().getName() + " handleLocationEvent error", ex);
+        }
     }
 
     //---------//
@@ -253,19 +257,15 @@ public class BinaryBoard
     @Override
     public void onEvent (UserEvent event)
     {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
+        // Ignore RELEASING
+        if (event.movement == MouseMovement.RELEASING) {
+            return;
+        }
 
-            logger.debug("BinarizationBoard: {}", event);
+        logger.debug("BinaryBoard: {}", event);
 
-            if (event instanceof LocationEvent locationEvent) {
-                handleLocationEvent(locationEvent);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
+        if (event instanceof LocationEvent locationEvent) {
+            handleLocationEvent(locationEvent);
         }
     }
 }

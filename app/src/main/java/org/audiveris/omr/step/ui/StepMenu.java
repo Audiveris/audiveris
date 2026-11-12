@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.step.ui;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.Picture;
@@ -60,7 +61,7 @@ public class StepMenu
 
     private static final Logger logger = LoggerFactory.getLogger(StepMenu.class);
 
-    private static final Translator ct = new Translator(StepMenu.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -229,7 +230,7 @@ public class StepMenu
                             LogUtil.stopStub();
                         }
                     } catch (ProcessingCancellationException pce) {
-                        logger.info(ct.trans("ProcessingCancellationException.detected"));
+                        logger.info(ct.trans("cancellation.detected"));
                     }
 
                     return null;

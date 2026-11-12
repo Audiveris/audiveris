@@ -62,7 +62,7 @@ public class ReductionStep
 
     private static final Logger logger = LoggerFactory.getLogger(ReductionStep.class);
 
-    private static final Translator ct = new Translator(GlobalMessages.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Constructors -------------------------------------------------------------------------------
 

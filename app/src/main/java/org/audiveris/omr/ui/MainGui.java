@@ -144,7 +144,9 @@ public class MainGui
     //----------//
     // clearLog //
     //----------//
-    @Override
+    /**
+     * Erase the content of the log window (but not the log itself).
+     */
     public void clearLog ()
     {
         logPane.clearLog();
@@ -292,7 +294,12 @@ public class MainGui
     //---------------------//
     // displayConfirmation //
     //---------------------//
-    @Override
+    /**
+     * Allow to display a modal confirmation dialog with a message.
+     *
+     * @param message the message asking for confirmation
+     * @return true if confirmed, false otherwise
+     */
     public boolean displayConfirmation (Object message)
     {
         return displayConfirmation(message, "Confirm");
@@ -301,7 +308,13 @@ public class MainGui
     //---------------------//
     // displayConfirmation //
     //---------------------//
-    @Override
+    /**
+     * Allow to display a modal confirmation dialog with a message and specific title
+     *
+     * @param message the message asking for confirmation
+     * @param title   dialog title
+     * @return true if confirmed, false otherwise
+     */
     public boolean displayConfirmation (Object message,
                                         String title)
     {
@@ -315,7 +328,17 @@ public class MainGui
     //---------------------//
     // displayConfirmation //
     //---------------------//
-    @Override
+    /**
+     * Allow to display a modal confirmation dialog with a message, specific title,
+     * and specific option type
+     *
+     * @param message     the message asking for confirmation
+     * @param title       dialog title
+     * @param optionType  YES_NO_OPTION, YES_NO_CANCEL_OPTION or OK_CANCEL_OPTION
+     * @param messageType ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE, QUESTION_MESSAGE or
+     *                    PLAIN_MESSAGE
+     * @return true if confirmed, false otherwise
+     */
     public boolean displayConfirmation (Object message,
                                         String title,
                                         int optionType,
@@ -329,7 +352,11 @@ public class MainGui
     //--------------//
     // displayError //
     //--------------//
-    @Override
+    /**
+     * Allow to display a modal dialog with an error message.
+     *
+     * @param message the error message
+     */
     public void displayError (Object message)
     {
         JOptionPane.showMessageDialog(frame, message, "Error", JOptionPane.ERROR_MESSAGE);
@@ -338,7 +365,11 @@ public class MainGui
     //--------------------//
     // displayHtmlMessage //
     //--------------------//
-    @Override
+    /**
+     * Allow to display a modal dialog with an HTML content.
+     *
+     * @param htmlStr the HTML string
+     */
     public void displayHtmlMessage (String htmlStr)
     {
         JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
@@ -349,7 +380,12 @@ public class MainGui
     //----------------//
     // displayMessage //
     //----------------//
-    @Override
+    /**
+     * Allow to display a modal dialog with a string content.
+     *
+     * @param message the message object
+     * @param title   dialog title
+     */
     public void displayMessage (Object message,
                                 String title)
     {
@@ -359,7 +395,12 @@ public class MainGui
     //------------------------//
     // displayModelessConfirm //
     //------------------------//
-    @Override
+    /**
+     * Allow to display a non-modal confirmation dialog.
+     *
+     * @param message the confirmation message object
+     * @return the option chosen
+     */
     public int displayModelessConfirm (Object message)
     {
         return ModelessOptionPane.showModelessConfirmDialog(
@@ -372,7 +413,11 @@ public class MainGui
     //----------------//
     // displayWarning //
     //----------------//
-    @Override
+    /**
+     * Allow to display a modal dialog with a warning message.
+     *
+     * @param message the warning message object
+     */
     public void displayWarning (Object message)
     {
         displayWarning(message, "Warning");
@@ -381,7 +426,12 @@ public class MainGui
     //----------------//
     // displayWarning //
     //----------------//
-    @Override
+    /**
+     * Allow to display a modal dialog with a warning message and specific title
+     *
+     * @param message the warning message object
+     * @param title   dialog title
+     */
     public void displayWarning (Object message,
                                 String title)
     {
@@ -391,7 +441,11 @@ public class MainGui
     //----------//
     // getFrame //
     //----------//
-    @Override
+    /**
+     * Report the concrete Swing frame.
+     *
+     * @return the OmrGui frame
+     */
     public JFrame getFrame ()
     {
         return frame;
@@ -400,7 +454,11 @@ public class MainGui
     //--------------//
     // getGlassPane //
     //--------------//
-    @Override
+    /**
+     * Report the main window glassPane, needed for drag and drop.
+     *
+     * @return the ghost glass pane
+     */
     public OmrGlassPane getGlassPane ()
     {
         return glassPane;
@@ -446,7 +504,9 @@ public class MainGui
     //-----------//
     // notifyLog //
     //-----------//
-    @Override
+    /**
+     * Notify that one or several new log records are available for display.
+     */
     public void notifyLog ()
     {
         if (logPane != null) {
@@ -571,7 +631,7 @@ public class MainGui
             logger.warn(OCR.NO_OCR);
         }
 
-        // Make the OmrGui instance available for the other classes
+        // Make the MainGui instance available for the other classes
         OMR.gui = this;
 
         frame = getMainFrame();

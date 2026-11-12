@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
@@ -43,6 +44,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +81,8 @@ public abstract class AbstractChordInter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractChordInter.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     /**
      * Maximum number of beams and flags that can shorten a note.
@@ -246,7 +250,7 @@ public abstract class AbstractChordInter
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+            logger.warn(ct.trans("error.in", "AbstractChordInter.afterReload()", ex), ex);
         }
     }
 
@@ -573,9 +577,8 @@ public abstract class AbstractChordInter
                     }
 
                     if (fbn > MAX_BEAMS_OR_FLAGS) {
-                        logger.warn("{} carries {} beams/flags, beyond the {} a note can have."
-                                + " Duration taken as if it had {}.",
-                                    this, fbn, MAX_BEAMS_OR_FLAGS, MAX_BEAMS_OR_FLAGS);
+                        logger.warn(ct.trans("chord.carries.too", this, fbn, MAX_BEAMS_OR_FLAGS));
+                        logger.warn(ct.trans("duration.taken.as.if", MAX_BEAMS_OR_FLAGS));
                     }
 
                     for (int i = 0; i < Math.min(fbn, MAX_BEAMS_OR_FLAGS); i++) {
@@ -647,7 +650,7 @@ public abstract class AbstractChordInter
             return null;
         } else {
             if (timeOffset == null) {
-                logger.info("{} No timeOffset for {}", (measure != null) ? measure : "", this);
+                logger.info(ct.trans("no.time.offset.for", (measure != null) ? measure : "", this));
                 return null;
             } else {
                 return timeOffset.plus(chordDur);
@@ -733,7 +736,7 @@ public abstract class AbstractChordInter
         final List<Inter> notes = getMembers(); // Members are returned bottom up
 
         if (notes.isEmpty()) {
-            logger.warn("No notes in chord " + this);
+            logger.warn(ct.trans("no.notes.in.chord", this));
 
             return null;
         }
@@ -1238,10 +1241,10 @@ public abstract class AbstractChordInter
                             chord.setTimeOffset(prevChord.getEndTime());
                         }
                     } catch (Exception ex) {
-                        logger.warn("{} Cannot compute chord time based on previous chord", chord);
+                        logger.warn(ct.trans("no.time.based.on.previous", chord));
                     }
                 } else if (chord.getTimeOffset() == null) {
-                    logger.warn("{} Computing beam group times with first chord not set", chord);
+                    logger.warn(ct.trans("beam.group.times.without", chord));
                 }
 
                 if (measure == chord.getMeasure()) {

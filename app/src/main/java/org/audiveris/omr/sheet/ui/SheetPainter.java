@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
@@ -108,11 +109,8 @@ import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.StringUtil;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
-
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ApplicationContext;
-import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,11 +168,7 @@ public abstract class SheetPainter
 
     private static final Logger logger = LoggerFactory.getLogger(SheetPainter.class);
 
-    private static final ApplicationContext applicationContext = Application.getInstance()
-            .getContext();
-
-    private static final ResourceMap resources = applicationContext.getResourceMap(
-            SheetPainter.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     /** A transformation to half scale. (used for slot time annotation) */
     protected static final AffineTransform halfAT = AffineTransform.getScaleInstance(0.5, 0.5);
@@ -604,7 +598,7 @@ public abstract class SheetPainter
         }
 
         // Resource injection
-        resources.injectComponents(panel);
+        panel.setToolTipText(ct.trans("VoicePanel.toolTipText"));
 
         return panel;
     }

@@ -21,15 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.util.Panel;
-
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,8 +53,7 @@ public class GlyphBoard
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphBoard.class);
 
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(GlyphBoard.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -114,9 +112,7 @@ public class GlyphBoard
         builder.addRaw(groupField).xyw(5, r, 3);
 
         groupField.setHorizontalAlignment(SwingConstants.CENTER);
-
-        groupField.setName("groupField");
-        resources.injectComponents(getComponent());
+        groupField.setToolTipText(ct.trans("groupField.toolTipText"));
     }
 
     //---------------//

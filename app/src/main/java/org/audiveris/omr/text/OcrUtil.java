@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.text;
 
+import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
@@ -51,7 +52,7 @@ public abstract class OcrUtil
 
     private static final Logger logger = LoggerFactory.getLogger(OcrUtil.class);
 
-    private static final Translator ct = new Translator(OcrUtil.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     /** The related OCR. */
     private static final OCR ocr = TesseractOCR.getInstance();
@@ -102,7 +103,7 @@ public abstract class OcrUtil
     {
         // Make sure we can use the OCR
         if (!ocr.isAvailable()) {
-            logger.info(ct.trans("no.ocr.available"));
+            logger.info(ct.trans("no.ocr.is.available"));
             return Collections.emptyList();
         }
 

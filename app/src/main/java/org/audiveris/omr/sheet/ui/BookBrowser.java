@@ -50,7 +50,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -207,32 +206,23 @@ public class BookBrowser
                 @Override
                 public void actionPerformed (ActionEvent e)
                 {
-                    refresh();
+                    model.refreshAll();
                 }
             });
             refreshButton.setName("refreshButton");
             toolBar.add(refreshButton);
+
             frame.add(component);
 
             // Resources injection
             ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
             resource.injectComponents(frame);
+
             frame.setTitle(resource.getString("frameTitleMask", book.getRadix()));
             frame.setIconImage(OmrGui.getApplication().getMainFrame().getIconImage());
         }
 
         return frame;
-    }
-
-    //---------//
-    // refresh //
-    //---------//
-    /**
-     * Refresh the whole display, to be in sync with latest data
-     */
-    public void refresh ()
-    {
-        model.refreshAll();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -327,13 +317,11 @@ public class BookBrowser
             logger.debug("Retrieving relevants of {} {}", node, node.getClass());
 
             // Case of Named Collection
-            if (node instanceof NamedCollection) {
+            if (node instanceof NamedCollection namedCollection) {
                 logger.debug("named collection: " + node);
-
-                NamedCollection nc = (NamedCollection) node;
                 relevants = new ArrayList<>();
 
-                for (Object n : nc.collection) {
+                for (Object n : namedCollection.collection) {
                     if (isRelevant(n)) {
                         relevants.add(n);
                     }
@@ -345,12 +333,9 @@ public class BookBrowser
             }
 
             // Case of Named Data
-            if (node instanceof NamedData) {
+            if (node instanceof NamedData namedData) {
                 logger.debug("named data: " + node);
-
-                NamedData nd = (NamedData) node;
-                relevants = getRelevantChildren(nd.data, nd.orgInter);
-
+                relevants = getRelevantChildren(namedData.data, namedData.orgInter);
                 logger.debug("{} nb={}", node, relevants.size());
 
                 return relevants;
@@ -359,18 +344,15 @@ public class BookBrowser
             Class<?> classe = node.getClass();
             relevants = new ArrayList<>();
 
-            if (node instanceof Inter) {
+            if (node instanceof Inter inter) {
                 // Add inter relations first if any
-                Inter inter = (Inter) node;
-                SIGraph sig = inter.getSig();
+                final SIGraph sig = inter.getSig();
 
                 for (Relation rel : sig.edgesOf(inter)) {
                     relevants.add(new NamedData(rel.getClass().getSimpleName(), rel, inter));
                 }
-            } else if (node instanceof Relation) {
+            } else if (node instanceof Relation rel) {
                 // Add relation source and target first
-                Relation rel = (Relation) node;
-
                 if (orgInter != null) {
                     SIGraph sig = orgInter.getSig();
                     Inter source = sig.getEdgeSource(rel);
@@ -411,7 +393,7 @@ public class BookBrowser
 
                         field.setAccessible(true);
 
-                        Object object = field.get(node);
+                        final Object object = field.get(node);
 
                         // No null field
                         if (object == null) {
@@ -499,8 +481,8 @@ public class BookBrowser
             if (constants.hideEmptyDummies.isSet() && node instanceof NamedCollection) {
                 return getChildCount(node) > 0;
             } else {
-                if (node instanceof WeakReference) {
-                    return ((WeakReference) node).get() != null;
+                if (node instanceof WeakReference weakReference) {
+                    return weakReference.get() != null;
                 }
 
                 return true;
@@ -512,7 +494,7 @@ public class BookBrowser
         //------------//
         public void refreshAll ()
         {
-            TreeModelEvent modelEvent = new TreeModelEvent(this, new Object[] { book });
+            final TreeModelEvent modelEvent = new TreeModelEvent(this, new Object[] { book });
 
             for (TreeModelListener listener : listeners) {
                 listener.treeStructureChanged(modelEvent);
@@ -524,7 +506,7 @@ public class BookBrowser
         //-------------//
         public void refreshPath (TreePath path)
         {
-            TreeModelEvent modelEvent = new TreeModelEvent(this, path);
+            final TreeModelEvent modelEvent = new TreeModelEvent(this, path);
 
             for (TreeModelListener listener : listeners) {
                 listener.treeStructureChanged(modelEvent);
@@ -626,51 +608,52 @@ public class BookBrowser
                 if (p != null) {
                     Object obj = p.getLastPathComponent();
 
-                    if (obj instanceof NamedData) {
-                        NamedData nd = (NamedData) obj;
+                    if (obj instanceof NamedData nd) {
                         obj = nd.data;
                     }
 
                     // Publish selection?
-                    if (obj instanceof Inter) {
-                        Inter inter = (Inter) obj;
-                        SIGraph sig = inter.getSig();
+                    switch (obj) {
+                        case Inter inter -> {
+                            SIGraph sig = inter.getSig();
 
-                        if (sig != null) {
-                            sig.publish(inter);
+                            if (sig != null) {
+                                sig.publish(inter);
+                            }
                         }
-                    } else if (obj instanceof Glyph) {
-                        Glyph glyph = (Glyph) obj;
-                        GlyphIndex index = glyph.getIndex();
-                        index.publish(glyph);
-                    } else if (obj instanceof WeakGlyph) {
-                        WeakGlyph weakGlyph = (WeakGlyph) obj;
-                        Glyph glyph = weakGlyph.get();
-
-                        if (glyph != null) {
+                        case Glyph glyph -> {
                             GlyphIndex index = glyph.getIndex();
                             index.publish(glyph);
                         }
-                    } else {
-                        // Empty selections
-                        StubsController controller = StubsController.getInstance();
-                        SheetStub stub = controller.getSelectedStub();
+                        case WeakGlyph weakGlyph -> {
+                            Glyph glyph = weakGlyph.get();
 
-                        if (stub.hasSheet()) {
-                            Sheet sheet = stub.getSheet();
-                            sheet.getInterIndex().publish(null);
-                            sheet.getGlyphIndex().publish(null);
-                            sheet.getLocationService().publish(
-                                    new LocationEvent(
-                                            this,
-                                            SelectionHint.LOCATION_INIT,
-                                            MouseMovement.PRESSING,
-                                            null));
+                            if (glyph != null) {
+                                GlyphIndex index = glyph.getIndex();
+                                index.publish(glyph);
+                            }
+                        }
+                        default -> {
+                            // Empty selections
+                            StubsController controller = StubsController.getInstance();
+                            SheetStub stub = controller.getSelectedStub();
+
+                            if (stub.hasSheet()) {
+                                Sheet sheet = stub.getSheet();
+                                sheet.getInterIndex().publish(null);
+                                sheet.getGlyphIndex().publish(null);
+                                sheet.getLocationService().publish(
+                                        new LocationEvent(
+                                                this,
+                                                SelectionHint.LOCATION_INIT,
+                                                MouseMovement.PRESSING,
+                                                null));
+                            }
                         }
                     }
 
-                    if (obj instanceof WeakReference) {
-                        Object o = ((Reference) obj).get();
+                    if (obj instanceof WeakReference weakReference) {
+                        final Object o = weakReference.get();
                         htmlPane.setText(new Dumper.Html(filter, o).toString());
                     } else {
                         htmlPane.setText(new Dumper.Html(filter, obj).toString());

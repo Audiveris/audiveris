@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import org.audiveris.omr.GlobalMessages;
-
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
@@ -40,14 +38,6 @@ public abstract class ResourceUtil
 
     /** Specific value to indicate lack of resource, and avoid recurring searches. */
     public static final String NO_RESOURCE = "NO_RESOURCE";
-
-    /** The single instance of GlobalMessages bundle. */
-    private static final ResourceBundle GLOBAL_MESSAGES_BUNDLE;
-    static {
-        final String packageName = GlobalMessages.class.getPackageName();
-        final String name = GlobalMessages.class.getSimpleName();
-        GLOBAL_MESSAGES_BUNDLE = ResourceBundle.getBundle(packageName + RESOURCES_STRING + name);
-    }
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -69,11 +59,6 @@ public abstract class ResourceUtil
      */
     public static ResourceBundle getBundle (Class<?> classe)
     {
-        // Special case of GlobalMessages to share the same bundle instance.
-        if (classe == GlobalMessages.class) {
-            return GLOBAL_MESSAGES_BUNDLE;
-        }
-
         final String packageName = classe.getPackageName();
         final String name = classe.getSimpleName();
 

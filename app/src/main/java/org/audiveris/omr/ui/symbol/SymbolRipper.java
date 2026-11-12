@@ -31,10 +31,9 @@ import org.audiveris.omr.ui.field.SpinnerUtil;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UILookAndFeel;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.util.Translator;
 
 import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
-import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,11 +79,13 @@ import javax.swing.event.ChangeListener;
  * @author Hervé Bitteur
  */
 public class SymbolRipper
-        extends SingleFrameApplication
+        extends OmrGui
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolRipper.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     /** Stand-alone run (vs part of Audiveris). */
     private static boolean standAlone = false;
@@ -331,10 +332,8 @@ public class SymbolRipper
     private JFrame defineLayout (final JFrame frame)
     {
         frame.setName("SymbolRipperFrame"); // For SAF life cycle
-
-        ResourceMap resources = OmrGui.getApplication().getContext().getResourceMap(getClass());
-        resources.injectComponents(frame);
         frame.setIconImage(OmrGui.getApplication().getMainFrame().getIconImage());
+        frame.setTitle(ct.trans("SymbolRipperFrame.title"));
 
         Container pane = frame.getContentPane();
         pane.setLayout(new BorderLayout());

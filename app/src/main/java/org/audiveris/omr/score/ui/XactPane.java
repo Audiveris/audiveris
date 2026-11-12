@@ -21,10 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
+import org.audiveris.omr.GlobalMessages;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.param.Param;
-
-import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +51,7 @@ public abstract class XactPane<E>
 
     private static final Logger logger = LoggerFactory.getLogger(XactPane.class);
 
-    /** Resource injection. */
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(XactPane.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -85,7 +82,7 @@ public abstract class XactPane<E>
 
         selBox = new JCheckBox();
         selBox.addActionListener(this);
-        selBox.setToolTipText(resources.getString("selBox.toolTipText"));
+        selBox.setToolTipText(ct.trans("selBox.toolTipText"));
     }
 
     //~ Methods ------------------------------------------------------------------------------------

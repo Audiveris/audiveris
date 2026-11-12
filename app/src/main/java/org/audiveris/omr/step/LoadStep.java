@@ -49,7 +49,7 @@ public class LoadStep
 
     private static final Logger logger = LoggerFactory.getLogger(LoadStep.class);
 
-    private static final Translator ct = new Translator(GlobalMessages.class);
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Constructors -------------------------------------------------------------------------------
 

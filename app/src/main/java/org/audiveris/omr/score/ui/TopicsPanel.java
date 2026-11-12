@@ -22,8 +22,7 @@
 package org.audiveris.omr.score.ui;
 
 import org.audiveris.omr.ui.util.Panel;
-
-import org.jdesktop.application.ResourceMap;
+import org.audiveris.omr.util.Translator;
 
 import com.jgoodies.forms.builder.FormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
@@ -56,41 +55,41 @@ public class TopicsPanel
     protected final List<XactTopic> topics = new ArrayList<>();
 
     /** For I18N. */
-    protected final ResourceMap resources;
+    private final Translator ct;
 
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new <code>TopicsPanel</code> object, using default colSpec.
      *
-     * @param name      panel name
-     * @param topics    contained data topics
-     * @param resources UI resources
+     * @param name   panel name (localized)
+     * @param topics contained data topics
+     * @param ct     class translator
      */
     public TopicsPanel (String name,
                         List<XactTopic> topics,
-                        ResourceMap resources)
+                        Translator ct)
     {
-        this(name, topics, resources, colSpec, 3);
+        this(name, topics, ct, colSpec, 3);
     }
 
     /**
      * Creates a new <code>TopicsPanel</code> object, with a provided columns specification.
      *
-     * @param name       panel name
+     * @param name       panel name (localized)
      * @param topics     contained data topics
-     * @param resources  UI resources
+     * @param ct         class translator
      * @param colSpec    specific columns specification
      * @param titleWidth number of cells for title, either 1 (just Item1) or 3 (Ite
      */
     public TopicsPanel (String name,
                         List<XactTopic> topics,
-                        ResourceMap resources,
+                        Translator ct,
                         String colSpec,
                         int titleWidth)
     {
         setName(name);
-        this.resources = resources;
+        this.ct = ct;
 
         for (XactTopic topic : topics) {
             if (topic != null) {
@@ -140,6 +139,7 @@ public class TopicsPanel
 
         for (XactTopic topic : topics) {
             // Topic title
+            System.out.println("topic.name: " + topic.name); // BINGO
             final JLabel title = new JLabel(textOf(topic.name));
             title.setHorizontalAlignment(SwingConstants.LEFT);
             builder.addRaw(title).xyw(1, r, 7);
@@ -170,7 +170,7 @@ public class TopicsPanel
     private String textOf (String name)
     {
         // Priority is given to text in resources file if any
-        final String desc = resources.getString(name + ".text");
+        final String desc = ct.trans(name + ".text");
 
         return (desc != null) ? desc : name;
     }
