@@ -228,6 +228,9 @@ public class IntegerFunction
     //----------------//
     /**
      * Report the local maximum points, sorted by decreasing value
+     * <p>
+     * The function values just outside the [x1..x2] range are looked at as well, so that a local
+     * maximum located right on x1 or x2 can be detected.
      *
      * @param x1 minimum x value
      * @param x2 maximum x value
@@ -245,14 +248,14 @@ public class IntegerFunction
         int prevY = 0;
         boolean growing = false;
 
-        for (int x = x1; x <= x2; x++) {
+        for (int x = Math.max(x1 - 1, xMin); x <= Math.min(x2 + 1, xMax); x++) {
             int y = getValue(x);
 
             if (prevX != null) {
                 if (y >= prevY) {
                     growing = true;
                 } else {
-                    if (growing) {
+                    if (growing && (prevX >= x1) && (prevX <= x2)) {
                         maxima.add(prevX); // End of a local max
                     }
 
