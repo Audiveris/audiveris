@@ -222,6 +222,16 @@ public class LedgersPostAnalysis
      * </ul>
      * Each value is checked to be in typical range [mean - 1*sigma .. mean + 1*sigma]
      * But the sigma coefficients can be customized via their defining Constants.
+     * <p>
+     * A wide ledger, as wide as a ledger drawn for a single head, is accepted up to at least
+     * {@code wideLedgerDeltaMargin} above the mean delta.
+     * The standard deviation is a poor measure when the sheet has few ledgers: it can reject a
+     * true ledger only a few pixels farther, typically where a page curls and the staff lines
+     * bend away from the symbols printed over them.
+     * The narrower or wider candidates found in the same range are rather pieces of other
+     * symbols, such as articulations, slurs or beams, hence the width condition.
+     * There is no such extension below the mean, where a candidate too close to the staff is
+     * typically the flat bottom of a head.
      */
     private void filter ()
     {
@@ -229,6 +239,8 @@ public class LedgersPostAnalysis
         Double maxDeltaAboveRatio = null;
         Double minDeltaBelowRatio = null;
         Double maxDeltaBelowRatio = null;
+        Double maxWideDeltaAboveRatio = null;
+        Double maxWideDeltaBelowRatio = null;
         Double minHeightRatio = null;
         Double maxHeightRatio = null;
 
@@ -237,6 +249,9 @@ public class LedgersPostAnalysis
                     .getValue() * popDeltaAbove.getStandardDeviation();
             maxDeltaAboveRatio = popDeltaAbove.getMeanValue() + constants.maxDeltaSigmaCoeff
                     .getValue() * popDeltaAbove.getStandardDeviation();
+            maxWideDeltaAboveRatio = Math.max(
+                    maxDeltaAboveRatio,
+                    popDeltaAbove.getMeanValue() + constants.wideLedgerDeltaMargin.getValue());
         }
 
         if (popDeltaBelow.getCardinality() > 0) {
@@ -244,6 +259,9 @@ public class LedgersPostAnalysis
                     .getValue() * popDeltaBelow.getStandardDeviation();
             maxDeltaBelowRatio = popDeltaBelow.getMeanValue() + constants.maxDeltaSigmaCoeff
                     .getValue() * popDeltaBelow.getStandardDeviation();
+            maxWideDeltaBelowRatio = Math.max(
+                    maxDeltaBelowRatio,
+                    popDeltaBelow.getMeanValue() + constants.wideLedgerDeltaMargin.getValue());
         }
 
         if (popHeight.getCardinality() > 0) {
@@ -275,8 +293,13 @@ public class LedgersPostAnalysis
 
             final int minDelta = (int) Math.floor(
                     (info.key < 0 ? minDeltaAboveRatio : minDeltaBelowRatio) * interline);
-            final int maxDelta = (int) Math.ceil(
-                    (info.key < 0 ? maxDeltaAboveRatio : maxDeltaBelowRatio) * interline);
+            // A ledger as wide as the ones drawn for a head is granted a wider upper delta
+            final boolean wide = (info.widthRatio >= constants.minWideLedgerWidth.getValue())
+                    && (info.widthRatio <= constants.maxIsolatedLedgerWidth.getValue());
+            final Double maxRatio = (info.key < 0) //
+                    ? (wide ? maxWideDeltaAboveRatio : maxDeltaAboveRatio)
+                    : (wide ? maxWideDeltaBelowRatio : maxDeltaBelowRatio);
+            final int maxDelta = (int) Math.ceil(maxRatio * interline);
             final String dD = Math.ceil(info.delta) < minDelta ? "delta"
                     : (Math.floor(info.delta) > maxDelta ? "DELTA" : "     ");
 
@@ -349,6 +372,14 @@ public class LedgersPostAnalysis
                 1,
                 "Coeff for standard deviation on maxDelta");
 
+        private final Constant.Ratio wideLedgerDeltaMargin = new Constant.Ratio(
+                0.4,
+                "Margin above mean delta for a wide ledger, as ratio of interline");
+
+        private final Constant.Ratio minWideLedgerWidth = new Constant.Ratio(
+                1.8,
+                "Minimum width of a wide ledger, as ratio of interline");
+
         private final Constant.Double minHeightSigmaCoeff = new Constant.Double(
                 "none",
                 -1,
@@ -389,7 +420,7 @@ public class LedgersPostAnalysis
 
         public final double width; // Width
 
-        public final double widthRatio; // Width normalized by staff interline (not for decision)
+        public final double widthRatio; // Width normalized by staff interline
 
         public Info (LedgerInter ledger,
                      Staff staff,
