@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.Versions;
+import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -393,6 +394,12 @@ public class SIGraph
 
             // Ledgers are not concerned here, they will get deleted when no head is left
             if (inter.getShape() == Shape.LEDGER) {
+                continue;
+            }
+
+            // A bar connector stands as long as the two bar lines it connects do
+            if ((inter instanceof BarConnectorInter) && ((BarConnectorInter) inter)
+                    .isVouchedByBars()) {
                 continue;
             }
 
