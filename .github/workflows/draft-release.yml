@@ -36,7 +36,7 @@ jobs:
         run: |
           # Expose every 'key = value' of gradle.properties as a step output
           grep -E '^[[:space:]]*[A-Za-z0-9_.]+[[:space:]]*=' gradle.properties \
-            | sed -E 's/^[[:space:]]*([A-Za-z0-9_.]+)[[:space:]]*=[[:space:]]*(.*[^[:space:]])?[[:space:]]*$/=/' \
+            | sed -E 's/^[[:space:]]*([A-Za-z0-9_.]+)[[:space:]]*=[[:space:]]*(.*[^[:space:]])?[[:space:]]*$/\1=\2/' \
             >> "$GITHUB_OUTPUT"
 
       - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
@@ -105,7 +105,7 @@ jobs:
         run: |
           # Expose every 'key = value' of gradle.properties as a step output
           grep -E '^[[:space:]]*[A-Za-z0-9_.]+[[:space:]]*=' gradle.properties \
-            | sed -E 's/^[[:space:]]*([A-Za-z0-9_.]+)[[:space:]]*=[[:space:]]*(.*[^[:space:]])?[[:space:]]*$/=/' \
+            | sed -E 's/^[[:space:]]*([A-Za-z0-9_.]+)[[:space:]]*=[[:space:]]*(.*[^[:space:]])?[[:space:]]*$/\1=\2/' \
             >> "$GITHUB_OUTPUT"
 
       - name: Setup Java ${{ steps.all.outputs.theMinJavaVersion }}
