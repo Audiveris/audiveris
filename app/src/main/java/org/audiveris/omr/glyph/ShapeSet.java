@@ -1016,6 +1016,31 @@ public class ShapeSet
     public static List<Shape> getProcessedShapes (Sheet sheet,
                                                   Collection<Shape> collection)
     {
+        return getProcessedShapes(sheet, collection, true);
+    }
+
+    //--------------------//
+    // getProcessedShapes //
+    //--------------------//
+    /**
+     * Filter the provided shape collection according to the sheet processing switches,
+     * for a drum staff or for a standard (pitched) staff.
+     * <p>
+     * The drum head motifs (cross, diamond, triangle, circle, hollow cross) and the playing signs
+     * are kept only when the sheet has drum notation (or 1-line staves) <b>and</b> the shapes are
+     * meant for a drum staff. On a standard staff of the same sheet, the result is the same as
+     * for a sheet without drum notation, so that the drumNotation switch leaves the pitched staves
+     * of a mixed sheet unchanged.
+     *
+     * @param sheet      the related sheet. If null, no filtering is performed.
+     * @param collection the initial shape collection
+     * @param drumStaff  true for a drum (unpitched) staff, false for a standard (pitched) staff
+     * @return the list of shapes kept
+     */
+    public static List<Shape> getProcessedShapes (Sheet sheet,
+                                                  Collection<Shape> collection,
+                                                  boolean drumStaff)
+    {
         final List<Shape> list = new ArrayList<>(collection);
 
         if (sheet != null) {
@@ -1025,8 +1050,11 @@ public class ShapeSet
                 list.removeAll(HeadsOvalSmall);
             }
 
-            if (!switches.getValue(ProcessingSwitch.drumNotation) //
-                    && !switches.getValue(ProcessingSwitch.oneLineStaves)) {
+            final boolean drums = drumStaff //
+                    && (switches.getValue(ProcessingSwitch.drumNotation) //
+                            || switches.getValue(ProcessingSwitch.oneLineStaves));
+
+            if (!drums) {
                 list.removeAll(HeadsDiamond);
                 list.removeAll(HeadsTriangle);
                 list.removeAll(HeadsCircle);
