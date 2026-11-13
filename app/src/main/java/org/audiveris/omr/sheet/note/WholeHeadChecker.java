@@ -128,11 +128,12 @@ public class WholeHeadChecker
             return null;
         }
 
-        final Rectangle blobBox = new Rectangle(
-                best[LEFT],
-                best[TOP],
-                best[RIGHT] - best[LEFT] + 1,
-                best[BOTTOM] - best[TOP] + 1);
+        final Rectangle blobBox = trimmedBox(
+                new Rectangle(
+                        best[LEFT],
+                        best[TOP],
+                        best[RIGHT] - best[LEFT] + 1,
+                        best[BOTTOM] - best[TOP] + 1));
         final double ratio = (double) blobBox.width / blobBox.height;
 
         if ((blobBox.height < (constants.minHeightRatio.getValue() * interline))
@@ -145,6 +146,48 @@ public class WholeHeadChecker
         final double minHole = constants.minHoleRatio.getValue() * interline * interline;
 
         return (holeArea(blobBox) >= minHole) ? blobBox : null;
+    }
+
+    //-------------//
+    // trimmedBox //
+    //-------------//
+    /**
+     * Cut the thin rows at top and bottom of the provided box.
+     * <p>
+     * A head sitting on a staff line, whose ink was erased, keeps stubs of this line above or
+     * below it, which would make the head look higher than it is.
+     *
+     * @param box the box of an ink blob
+     * @return the box limited to the rows which are wide enough
+     */
+    private Rectangle trimmedBox (Rectangle box)
+    {
+        final int[] counts = new int[box.height];
+        int max = 0;
+
+        for (int y = 0; y < box.height; y++) {
+            for (int x = box.x; x < (box.x + box.width); x++) {
+                if (isFore(x, box.y + y)) {
+                    counts[y]++;
+                }
+            }
+
+            max = Math.max(max, counts[y]);
+        }
+
+        final double minCount = constants.minRowRatio.getValue() * max;
+        int top = 0;
+        int bottom = box.height - 1;
+
+        while ((top < bottom) && (counts[top] < minCount)) {
+            top++;
+        }
+
+        while ((bottom > top) && (counts[bottom] < minCount)) {
+            bottom--;
+        }
+
+        return new Rectangle(box.x, box.y + top, box.width, bottom - top + 1);
     }
 
     //-------//
@@ -274,6 +317,10 @@ public class WholeHeadChecker
         private final Scale.Fraction searchMargin = new Scale.Fraction(
                 0.75,
                 "Margin around a candidate head, to look for its ink blob");
+
+        private final Constant.Ratio minRowRatio = new Constant.Ratio(
+                0.5,
+                "Minimum width of a row at top or bottom of a head, as ratio of its widest row");
 
         private final Constant.Ratio minHeightRatio = new Constant.Ratio(
                 0.7,
