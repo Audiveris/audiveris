@@ -50,6 +50,7 @@ import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.util.FixedWidthIcon;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.ui.util.UILookAndFeel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.util.WaitingTask;
 
@@ -981,7 +982,9 @@ public class SampleBrowser
     {
         standAlone = true;
 
-        Locale.setDefault(Locale.US);
+        // Set UI Look and Feel
+        UILookAndFeel.setUI(null);
+        Locale.setDefault(Locale.ENGLISH);
 
         // Off we go...
         Application.launch(SampleBrowser.class, args);

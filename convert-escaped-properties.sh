@@ -12,5 +12,15 @@
 find . -type f -name "*.properties" -exec perl -i.bak -pe 's/\\u([0-9a-fA-F]{4})/chr(hex($1))/eg; s/\\x([0-9a-fA-F]{2})/chr(hex($1))/eg' {} +
 
 # To clean up after inspection, we can use a command like:
-
+#
 # find . -type f -name "*.properties.bak" -delete
+
+# To detect escape sequences: (mind the single quotes)
+# 
+#  find . -name "*.properties" | xargs grep  '\\u'
+
+
+# To detect ZWSP (Zero Width SPace) characters
+# 
+#  find . -name "*.properties" | xargs grep  "$(printf %b '\u200b')"
+
