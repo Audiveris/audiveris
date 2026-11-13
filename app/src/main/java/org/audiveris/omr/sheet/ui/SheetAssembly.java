@@ -116,6 +116,13 @@ public class SheetAssembly
     /** Temporary information: the view being removed, if any. */
     private SheetView viewBeingRemoved;
 
+    /**
+     * True until this assembly has been displayed for the first time. Used to apply
+     * fit-to-width only once, on the initial display, while preserving the zoom level
+     * the user set afterwards.
+     */
+    private boolean firstDisplay = true;
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
@@ -257,6 +264,36 @@ public class SheetAssembly
             // Update repetitiveInput checkbox
             BookActions.getInstance().updateRepetitiveInput(stub.getSheet());
         }
+    }
+
+    //-----------------//
+    // isFirstDisplay //
+    //-----------------//
+    /**
+     * Report whether this assembly has not yet been displayed, i.e. this is its
+     * first display.
+     * <p>
+     * The first (and only) time a tab is displayed, the zoom is set to fit-to-width.
+     * After that, the zoom level the user set on this tab is preserved across tab
+     * switches.
+     *
+     * @return true if this is the first display of this assembly
+     */
+    public boolean isFirstDisplay ()
+    {
+        return firstDisplay;
+    }
+
+    //-----------------//
+    // markDisplayed  //
+    //-----------------//
+    /**
+     * Flag this assembly as displayed, so that fit-to-width is not applied again on
+     * subsequent tab switches.
+     */
+    public void markDisplayed ()
+    {
+        firstDisplay = false;
     }
 
     //-------//
