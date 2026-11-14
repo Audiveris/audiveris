@@ -21,9 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.relation.Link;
@@ -47,6 +49,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MarkerInter
         extends AbstractInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
@@ -113,8 +119,15 @@ public class MarkerInter
                 center);
         Link link = null;
 
-        if ((staffBar != null) && (GeoUtil.xOverlap(box, staffBar.getBounds()) > 0)) {
-            link = new Link(staffBar, new MarkerBarRelation(), true);
+        if (staffBar != null) {
+            // The marker may overlap the barline, or be printed next to it,
+            // for example a coda sign above the clef at system start
+            final int maxDx = system.getSheet().getScale().toPixels(constants.maxBarlineDx);
+
+            if ((GeoUtil.xOverlap(box, staffBar.getBounds()) > 0) //
+                    || (GeoUtil.xGap(box, staffBar.getBounds()) <= maxDx)) {
+                link = new Link(staffBar, new MarkerBarRelation(), true);
+            }
         }
 
         return (link == null) ? Collections.emptyList() : Collections.singleton(link);
@@ -153,5 +166,18 @@ public class MarkerInter
         marker.setStaff(staff);
 
         return marker;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static class Constants
+            extends ConstantSet
+    {
+        private final Scale.Fraction maxBarlineDx = new Scale.Fraction(
+                4.0,
+                "Maximum horizontal gap between marker and related barline");
     }
 }
