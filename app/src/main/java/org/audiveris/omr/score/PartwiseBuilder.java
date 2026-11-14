@@ -1375,11 +1375,17 @@ public class PartwiseBuilder
             }
 
             // Markers(Coda,Segno)? (TODO: add daCapo & dalSegno?)
-            if (location != RightLeftMiddle.RIGHT) {
+            // On left side, or on right side of the last measure in system
+            // (e.g. "To Coda" sign at end of system, which has no following left barline)
+            final boolean lastInSystem = current.measure.getStack().getNextSibling() == null;
+
+            if ((location != RightLeftMiddle.RIGHT) || lastInSystem) {
                 // Check staffBarline of top staff of top part in current stack
                 Part part = current.measure.getPart();
                 Measure topMeasure = current.measure.getStack().getFirstMeasure();
-                PartBarline topPartBarline = getBarlineOnLeft(topMeasure);
+                PartBarline topPartBarline = (location == RightLeftMiddle.RIGHT)
+                        ? topMeasure.getRightPartBarline()
+                        : getBarlineOnLeft(topMeasure);
 
                 if (topPartBarline != null) {
                     StaffBarlineInter topBarline = topPartBarline.getStaffBarline(
