@@ -58,9 +58,6 @@ public class ViewParameters
 
     private static final Logger logger = LoggerFactory.getLogger(ViewParameters.class);
 
-    private static final ResourceMap resources = Application.getInstance().getContext()
-            .getResourceMap(ViewParameters.class);
-
     /** Should the annotations be painted. */
     public static final String ANNOTATION_PAINTING = "annotationPainting";
 
@@ -915,6 +912,19 @@ public class ViewParameters
         static final ViewParameters INSTANCE = new ViewParameters();
     }
 
+    //---------------//
+    // LazyResources //
+    //---------------//
+    /**
+     * Resources for icons, available only once the GUI application is launched.
+     * Kept separate, so that ViewParameters remains usable in batch (e.g. for -print).
+     */
+    private static class LazyResources
+    {
+        static final ResourceMap MAP = Application.getInstance().getContext().getResourceMap(
+                ViewParameters.class);
+    }
+
     //~ Enumerations -------------------------------------------------------------------------------
 
     /**
@@ -943,7 +953,7 @@ public class ViewParameters
         {
             if (smallIcon == null) {
                 String key = getClass().getSimpleName() + "." + this + ".smallIcon";
-                String resourceName = resources.getString(key);
+                String resourceName = LazyResources.MAP.getString(key);
                 smallIcon = new ImageIcon(ViewParameters.class.getResource(resourceName));
             }
 
@@ -959,7 +969,7 @@ public class ViewParameters
         {
             if (largeIcon == null) {
                 String key = getClass().getSimpleName() + "." + this + ".largeIcon";
-                String resourceName = resources.getString(key);
+                String resourceName = LazyResources.MAP.getString(key);
                 largeIcon = new ImageIcon(ViewParameters.class.getResource(resourceName));
             }
 
@@ -990,7 +1000,7 @@ public class ViewParameters
         {
             if (smallIcon == null) {
                 String key = getClass().getSimpleName() + "." + this + ".smallIcon";
-                String resourceName = resources.getString(key);
+                String resourceName = LazyResources.MAP.getString(key);
                 smallIcon = new ImageIcon(ViewParameters.class.getResource(resourceName));
             }
 
@@ -1006,7 +1016,7 @@ public class ViewParameters
         {
             if (largeIcon == null) {
                 String key = getClass().getSimpleName() + "." + this + ".largeIcon";
-                String resourceName = resources.getString(key);
+                String resourceName = LazyResources.MAP.getString(key);
                 largeIcon = new ImageIcon(ViewParameters.class.getResource(resourceName));
             }
 
