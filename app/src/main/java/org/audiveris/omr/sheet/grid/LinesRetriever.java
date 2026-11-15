@@ -1726,7 +1726,7 @@ public class LinesRetriever
             if ((smallInterline != null) && !discardedFilaments.isEmpty()) {
                 secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Entities.byId);
-                logger.info(ct.trans("searching.clusters.with.smallInterline", smallInterline));
+                logger.info(ct.trans("searching.small.clusters", smallInterline));
                 watch.start("smallClustersRetriever");
                 smallClustersRetriever = new ClustersRetriever(sheet, 2, secondFilaments);
                 discardedFilaments = smallClustersRetriever.buildInfo();

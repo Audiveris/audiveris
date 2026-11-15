@@ -268,7 +268,7 @@ public class BookActions
 
         if (book != null) {
             if (book.hasSpecificRepository()) {
-                return new SampleBrowser.Waiter(ct.trans("launchingBookSampleBrowser"))
+                return new SampleBrowser.Waiter(ct.trans("launching.book.sample.browser"))
                 {
                     @Override
                     protected SampleBrowser doInBackground ()
@@ -587,7 +587,7 @@ public class BookActions
                 assembly.selectViewTab(tab);
             }
         } else {
-            logger.info(ct.trans("noStaffLines"));
+            logger.info(ct.trans("no.staff.lines"));
         }
     }
 

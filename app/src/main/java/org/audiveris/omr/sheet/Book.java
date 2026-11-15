@@ -1066,7 +1066,7 @@ public class Book
             }
         }
 
-        logger.warn(ct.trans("no.score.found.for", page));
+        logger.warn(ct.trans("no.score.found.for.page", page));
         return null;
     }
 

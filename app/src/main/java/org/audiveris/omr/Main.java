@@ -298,7 +298,7 @@ public class Main
             // Force JVM exit?
             if (failure || timeout) {
                 final StringBuilder sb = new StringBuilder();
-                sb.append(ct.trans("Exit forced."));
+                sb.append(ct.trans("exit.forced"));
                 int status = 0;
 
                 if (failure) {

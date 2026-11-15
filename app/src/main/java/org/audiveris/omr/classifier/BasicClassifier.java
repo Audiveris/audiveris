@@ -171,7 +171,7 @@ public class BasicClassifier
         // order in train() and the split in SampleRepository are the rest.
         if (ShapeClassifier.enforceReproducibility()) {
             NeuralNetwork.setSeed(REPRODUCIBLE_SEED);
-            logger.info(ct.trans("initial.weights.seeded "));
+            logger.info(ct.trans("initial.weights.seeded"));
         }
 
         // We allocate a hidden layer with as many cells as the output layer
