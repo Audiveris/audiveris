@@ -94,8 +94,8 @@ public class UILookAndFeel
                 UIManager.setLookAndFeel(constants.lookAndFeel.getValue());
             }
 
-            // Screen insets are not reliable on Linux, see LinuxPopupMenuUI
-            final boolean useLinuxPopupMenuUI = WellKnowns.LINUX
+            // Screen insets are not reliable on Linux (and other X11 systems), see LinuxPopupMenuUI
+            final boolean useLinuxPopupMenuUI = WellKnowns.UNIX
                     && (UIManager.getLookAndFeel() instanceof FlatLaf);
             UIManager.put("PopupMenuUI", useLinuxPopupMenuUI ? LinuxPopupMenuUI.class.getName()
                     : null);
