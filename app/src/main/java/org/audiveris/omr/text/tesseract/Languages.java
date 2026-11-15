@@ -132,6 +132,10 @@ public class Languages
      */
     public void checkSupport ()
     {
+        if (!TesseractOCR.getInstance().isAvailable()) {
+            return; // No point in prompting for languages
+        }
+
         final SortedSet<String> installed = TesseractOCR.getInstance().getSupportedLanguages();
         if (!installed.isEmpty()) {
             final String langs = installed.stream().collect(Collectors.joining(","));

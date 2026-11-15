@@ -31,6 +31,7 @@ import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.util.Translator;
 
+import org.bytedeco.javacpp.Loader;
 import org.bytedeco.tesseract.StringVector;
 import org.bytedeco.tesseract.TessBaseAPI;
 import org.bytedeco.tesseract.global.tesseract;
@@ -90,6 +91,9 @@ public class TesseractOCR
     /** Boolean to avoid any new search for OCR folder. */
     private boolean OCR_FOLDER_SEARCHED;
 
+    /** Have Tesseract native libraries been loaded?. */
+    private final boolean nativeLoaded;
+
     /** To assign a serial number to each image processing order. */
     private final AtomicInteger serial = new AtomicInteger(0);
 
@@ -100,6 +104,7 @@ public class TesseractOCR
      */
     private TesseractOCR ()
     {
+        nativeLoaded = loadNatives();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -154,6 +159,10 @@ public class TesseractOCR
     {
         final Path ocrFolder = getOcrFolder();
         final TreeSet<String> set = new TreeSet<>();
+
+        if (!nativeLoaded) {
+            return set;
+        }
 
         try {
             final TessBaseAPI api = new TessBaseAPI();
@@ -246,7 +255,7 @@ public class TesseractOCR
     @Override
     public boolean isAvailable ()
     {
-        return constants.useOCR.isSet() && (getOcrFolder() != null);
+        return constants.useOCR.isSet() && nativeLoaded && (getOcrFolder() != null);
     }
 
     //-----------//
@@ -357,6 +366,27 @@ public class TesseractOCR
         return LazySingleton.INSTANCE;
     }
 
+    //-------------//
+    // loadNatives //
+    //-------------//
+    /**
+     * Try to load Tesseract native libraries (and Leptonica ones as a dependency).
+     * <p>
+     * They may be missing for the current platform, in which case OCR is unavailable.
+     *
+     * @return true if loaded
+     */
+    private static boolean loadNatives ()
+    {
+        try {
+            Loader.load(tesseract.class);
+            return true;
+        } catch (Throwable ex) {
+            logger.warn(ct.trans("native.libraries.unavailable", ex.toString()));
+            return false;
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
 
     //-----------//
@@ -390,4 +420,5 @@ public class TesseractOCR
     {
         static final TesseractOCR INSTANCE = new TesseractOCR();
     }
+
 }
