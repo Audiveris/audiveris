@@ -641,7 +641,9 @@ public final class StaffBarlineInter
             }
         }
 
-        if (bars.isEmpty()) {
+        // Relations may also point to this staff barline as a whole
+        // (e.g. MarkerBarRelation created by MarkerInter.searchLinks), even with members
+        {
             for (Relation rel : sig.getRelations(this, relationClass)) {
                 if (related == null) {
                     related = new ArrayList<>();
