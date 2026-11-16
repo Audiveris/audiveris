@@ -95,6 +95,7 @@ public class BookPdfOutput
         Document document = null;
         PdfWriter writer = null;
         final List<Integer> printedIds = new ArrayList<>();
+        boolean completed = false;
 
         try {
             fos = new FileOutputStream(file);
@@ -141,9 +142,20 @@ public class BookPdfOutput
             }
 
             logger.info("Printed sheet(s): {}", printedIds);
+            completed = true;
         } finally {
             if (document != null) {
-                document.close();
+                try {
+                    document.close();
+                } catch (RuntimeException ex) {
+                    // A failed page painting leaves the document unbalanced:
+                    // don't let this closing error hide the original exception
+                    if (completed) {
+                        throw ex;
+                    }
+
+                    logger.debug("Error closing incomplete document {}", ex.toString());
+                }
             }
 
             if (fos != null) {
