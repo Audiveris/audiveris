@@ -29,6 +29,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.MissingResourceException;
 
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -170,8 +171,10 @@ public class TopicsPanel
     private String textOf (String name)
     {
         // Priority is given to text in resources file if any
-        final String desc = ct.trans(name + ".text");
-
-        return (desc != null) ? desc : name;
+        try {
+            return ct.trans(name + ".text");
+        } catch (MissingResourceException ex) {
+            return name;
+        }
     }
 }

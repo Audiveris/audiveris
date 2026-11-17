@@ -238,7 +238,7 @@ public class SystemManager
             return false;
         }
 
-        logger.info(ct.trans("indentation.changed.for.system ", system.getId()));
+        logger.info(ct.trans("indentation.changed.for.system", system.getId()));
         system.setIndented(newIndent);
 
         // Rebuild pages, pageRefs and scores

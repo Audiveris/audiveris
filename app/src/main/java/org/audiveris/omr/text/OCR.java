@@ -38,10 +38,8 @@ public interface OCR
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    static final Translator ocrCt = new Translator(OCR.class);
-
     /** Standard NO_OCR message: {@value}. */
-    static String NO_OCR = ocrCt.trans("no.ocr.is.available");
+    static String NO_OCR = Translator.GLOBAL.trans("no.ocr.is.available");
 
     //~ Methods ------------------------------------------------------------------------------------
 
