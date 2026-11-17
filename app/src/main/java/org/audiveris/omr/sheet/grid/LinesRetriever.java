@@ -86,6 +86,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -149,6 +150,9 @@ public class LinesRetriever
 
     /** Companion in charge of clusters of second interline, if any. */
     private ClustersRetriever smallClustersRetriever;
+
+    /** Companion in charge of clusters rescued from sloped filaments, if any. */
+    private ClustersRetriever rescueClustersRetriever;
 
     /** Too-short horizontal runs. */
     private RunTable shortHoriTable;
@@ -226,6 +230,10 @@ public class LinesRetriever
 
             // The second pass is the small one, whichever of the two sizes is the larger
             smallInterline = smallClustersRetriever.getInterline();
+        }
+
+        if (rescueClustersRetriever != null) {
+            allClusters.addAll(rescueClustersRetriever.getClusters());
         }
 
         // Discard false 1-line clusters
@@ -1452,6 +1460,76 @@ public class LinesRetriever
         return toRemove;
     }
 
+    //-----------------------//
+    // rescueSlopedFilaments //
+    //-----------------------//
+    /**
+     * Give the long sloped filaments a second chance, by looking for clusters among them and
+     * the filaments discarded by the clusters retrieval.
+     * <p>
+     * The sheet slope is a global value. On a photographed page that curls, a staff may be
+     * tilted with respect to the other staves, and its lines may even fan out.
+     * Some of its lines then exhibit a slope too far from sheet slope and are purged as sloped.
+     * Its remaining lines are too few to make a cluster, and they get discarded as well,
+     * so that the whole staff is lost.
+     * <p>
+     * A rescued cluster is kept only if it is a multi-line cluster that uses at least one of
+     * the rescued sloped filaments. The regular interline pattern of a cluster is what makes
+     * such rescue safe, a lonely sloped filament (a beam, a slur portion) cannot fake it.
+     */
+    private void rescueSlopedFilaments ()
+    {
+        if (slopedFilaments.isEmpty()) {
+            return;
+        }
+
+        final double sheetSlope = sheet.getSkew().getSlope();
+        final List<StaffFilament> rescued = new ArrayList<>();
+
+        for (StaffFilament fil : slopedFilaments) {
+            if (fil.getLength(HORIZONTAL) < params.minRescuedSlopedLength) {
+                continue;
+            }
+
+            final double filSlope = LineUtil.getSlope(fil.getStartPoint(), fil.getStopPoint());
+
+            if (Math.abs(sheetSlope - filSlope) <= params.maxRescuedSlopeDiff) {
+                rescued.add(fil);
+            }
+        }
+
+        if (rescued.isEmpty()) {
+            return;
+        }
+
+        // NOTA: The clusters retriever modifies the provided list
+        final List<StaffFilament> candidates = new ArrayList<>(discardedFilaments);
+        candidates.addAll(rescued);
+        Collections.sort(candidates, Entities.byId);
+
+        final ClustersRetriever retriever = new ClustersRetriever(sheet, 1, candidates);
+        retriever.buildInfo();
+
+        // Keep only the multi-line clusters that use some rescued filament
+        for (Iterator<LineCluster> it = retriever.getClusters().iterator(); it.hasNext();) {
+            final LineCluster cluster = it.next();
+
+            if (cluster.isOneLine() || rescued.stream().noneMatch(f -> f.getCluster() == cluster)) {
+                cluster.destroy();
+                it.remove();
+            }
+        }
+
+        if (retriever.getClusters().isEmpty()) {
+            return;
+        }
+
+        logger.info("Clusters rescued from sloped filaments: {}", retriever.getClusters().size());
+        rescueClustersRetriever = retriever;
+        slopedFilaments.removeIf(f -> f.getCluster() != null);
+        discardedFilaments.removeIf(f -> f.getCluster() != null);
+    }
+
     //-------------//
     // renderItems //
     //-------------//
@@ -1474,6 +1552,10 @@ public class LinesRetriever
 
             if (smallClustersRetriever != null) {
                 smallClustersRetriever.renderItems(g);
+            }
+
+            if (rescueClustersRetriever != null) {
+                rescueClustersRetriever.renderItems(g);
             }
         }
 
@@ -1732,6 +1814,10 @@ public class LinesRetriever
                 discardedFilaments = smallClustersRetriever.buildInfo();
             }
 
+            // Give a second chance to the long sloped filaments
+            watch.start("rescueSlopedFilaments");
+            rescueSlopedFilaments();
+
             if (logger.isDebugEnabled()) {
                 logger.debug("Discarded filaments: {}", Entities.ids(discardedFilaments));
             }
@@ -1918,6 +2004,15 @@ public class LinesRetriever
         private final Scale.Fraction minLengthForSlopeCheck = new Scale.Fraction(
                 4.0,
                 "Minimum filament length for strict slope check");
+
+        private final Scale.Fraction minRescuedSlopedLength = new Scale.Fraction(
+                8.0,
+                "Minimum length for a sloped filament to be rescued");
+
+        private final Constant.Double maxRescuedSlopeDiff = new Constant.Double(
+                "radians",
+                0.05,
+                "Maximum delta slope between a rescued filament and sheet");
 
         private final Scale.Fraction maxStickerConnectionLength = new Scale.Fraction(
                 0.05,
@@ -2108,6 +2203,10 @@ public class LinesRetriever
 
         final int minLengthForSlopeCheck;
 
+        final int minRescuedSlopedLength;
+
+        final double maxRescuedSlopeDiff;
+
         final int maxStickerConnectionLength;
 
         /** Minimum staff horizontal length. */
@@ -2145,6 +2244,8 @@ public class LinesRetriever
             patternJitter = scale.toPixels(constants.patternJitter);
             minRadius = scale.toPixels(constants.minRadius);
             minLengthForSlopeCheck = scale.toPixels(constants.minLengthForSlopeCheck);
+            minRescuedSlopedLength = scale.toPixels(constants.minRescuedSlopedLength);
+            maxRescuedSlopeDiff = constants.maxRescuedSlopeDiff.getValue();
             maxStickerConnectionLength = scale.toPixels(constants.maxStickerConnectionLength);
             minStaffLength = scale.toPixels(constants.minStaffLength);
             maxRightIndentation = scale.toPixels(constants.maxRightIndentation);
