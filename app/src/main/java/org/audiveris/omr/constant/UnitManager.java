@@ -23,6 +23,7 @@ package org.audiveris.omr.constant;
 
 import org.audiveris.omr.Main;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,8 @@ public class UnitManager
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(UnitManager.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     /** The single instance of this class. */
     private static final UnitManager INSTANCE = new UnitManager();
@@ -204,19 +207,17 @@ public class UnitManager
      */
     public void dumpAllUnits ()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("UnitManager. All Units:%n"));
+        final StringBuilder sb = new StringBuilder();
+        sb.append(ct.trans("unit.manager.all.units")).append("\n");
 
         // Use alphabetical order for easier reading
-        List<Node> nodes = new ArrayList<>(mapOfNodes.values());
+        final List<Node> nodes = new ArrayList<>(mapOfNodes.values());
         Collections.sort(nodes, Node.nameComparator);
 
         for (Node node : nodes) {
-            if (node instanceof UnitNode) {
-                UnitNode unit = (UnitNode) node;
-
+            if (node instanceof UnitNode unit) {
                 // ConstantSet?
-                ConstantSet set = unit.getConstantSet();
+                final ConstantSet set = unit.getConstantSet();
 
                 if (set != null) {
                     sb.append(String.format("%n%s", set.dumpOf()));
@@ -233,7 +234,7 @@ public class UnitManager
     private void dumpStrings (String title,
                               Collection<String> strings)
     {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
         sb.append(String.format("%s:%n", title));
 
@@ -359,7 +360,7 @@ public class UnitManager
         } else if (node instanceof UnitNode) {
             return (UnitNode) node;
         } else if (node instanceof PackageNode) {
-            logger.error("Unit with same name as package {}", name);
+            logger.error(ct.trans("unit.with.same.name.as.package", name));
         }
 
         return null;

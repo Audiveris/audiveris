@@ -36,6 +36,7 @@ import org.audiveris.omr.sheet.grid.StaffFilament;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +95,8 @@ public class FilamentFactory<F extends Filament>
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(FilamentFactory.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -564,7 +567,7 @@ public class FilamentFactory<F extends Filament>
                 } while (expanding);
             }
         } catch (Exception ex) {
-            logger.warn("FilamentsFactory cannot expandFilaments", ex);
+            logger.warn(ct.trans("error.in"), "FilamentsFactory.expandFilaments()", ex);
         }
 
         return filaments;
@@ -642,7 +645,7 @@ public class FilamentFactory<F extends Filament>
                 return setFat(section, bounds.height > params.maxThickness);
             }
         } catch (Exception ex) {
-            logger.warn("Error in checking fatness of " + section, ex);
+            logger.warn(ct.trans("error.in.checking.fatness.of", section, ex), ex);
 
             return setFat(section, true);
         }
@@ -824,7 +827,7 @@ public class FilamentFactory<F extends Filament>
 
             return filaments;
         } catch (Exception ex) {
-            logger.warn("FilamentsFactory cannot retrieveFilaments", ex);
+            logger.warn(ct.trans("error.in", "FilamentsFactory.retrieveFilaments()", ex), ex);
 
             return null;
         } finally {
@@ -871,7 +874,7 @@ public class FilamentFactory<F extends Filament>
 
             return fil;
         } catch (Exception ex) {
-            logger.warn("FilamentsFactory cannot retrieveLineFilament", ex);
+            logger.warn(ct.trans("error.in", "FilamentsFactory.retrieveLineFilament()", ex), ex);
 
             return null;
         } finally {

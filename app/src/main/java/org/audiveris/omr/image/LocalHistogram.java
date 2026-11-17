@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
+import org.audiveris.omr.util.Translator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,8 @@ public class LocalHistogram
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(LocalHistogram.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     private static final int MAX = 255;
 
@@ -235,7 +239,7 @@ public class LocalHistogram
                 }
             } catch (ArrayIndexOutOfBoundsException ex) {
                 k = x + (width * y);
-                logger.warn("AIOB x: {} y: {} index: {}", x, y, k);
+                logger.warn(ct.trans("a.i.o.o.Bounds.exception", x, y, k));
             }
             if (type == 0) {
                 bin = (k + pg1[2]) - 255;
@@ -273,7 +277,7 @@ public class LocalHistogram
     public void log ()
     {
         //    IJ.log("min:  "+min + "  max: "+max);
-        StringBuilder sb = new StringBuilder(200);
+        final StringBuilder sb = new StringBuilder(200);
 
         for (int h = 0; h <= 255; h++) {
             if (counts[h] != 0) {
@@ -283,7 +287,7 @@ public class LocalHistogram
             // sb.append(counts[h]+" ");
         }
 
-        logger.info("histogram +\n" + sb.toString() + "\n");
+        logger.info(ct.trans("histogram") + "\n" + sb.toString() + "\n");
     }
 
     public void sub (LocalHistogram bh)

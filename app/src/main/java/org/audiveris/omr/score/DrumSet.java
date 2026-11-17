@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet.HeadMotif;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.UriUtil;
 
 import org.slf4j.Logger;
@@ -74,6 +75,8 @@ public class DrumSet
 
     private static final Logger logger = LoggerFactory.getLogger(DrumSet.class);
 
+    private static final Translator ct = new Translator(DrumSet.class);
+
     /** File name for drum-set definitions. */
     private static final String fileName = "drum-set.xml";
 
@@ -108,16 +111,16 @@ public class DrumSet
     public void dumpResultingDrumSet ()
     {
         logger.info("");
-        logger.info("Resulting Drum Set:");
+        logger.info(ct.trans("resulting.drum.set"));
 
         for (Entry<Integer, Map<Integer, Map<MotifSign, DrumInstrument>>> staffEntry : structure
                 .entrySet()) {
             logger.info("");
-            logger.info("  line-count: {}", staffEntry.getKey());
+            logger.info("  " + ct.trans("line.count", staffEntry.getKey()));
             final Map<Integer, Map<MotifSign, DrumInstrument>> byPitch = staffEntry.getValue();
 
             for (Entry<Integer, Map<MotifSign, DrumInstrument>> entry : byPitch.entrySet()) {
-                logger.info("    pitch-position: {}", entry.getKey());
+                logger.info("    " + ct.trans("pitch.position", entry.getKey()));
                 final Map<MotifSign, DrumInstrument> msMap = entry.getValue();
 
                 if (msMap != null) {
@@ -125,10 +128,14 @@ public class DrumSet
                         final MotifSign ms = msEntry.getKey();
                         final DrumInstrument inst = msEntry.getValue();
                         logger.info(
-                                "      motif: {}{} sound: {}",
-                                String.format("%-8s", ms.motif),
-                                ms.sign != null ? String.format(" sign: %-17s", ms.sign) : "",
-                                inst != null ? inst.sound : "NULL");
+                                "      " + ct.trans(
+                                        "motif.sound",
+                                        String.format("%-8s", ms.motif),
+                                        ms.sign == null ? ""
+                                                : " " + String.format(
+                                                        ct.trans("ms.sign", "%-17s"),
+                                                        ms.sign),
+                                        inst != null ? inst.sound : "NULL"));
                     }
                 }
             }
@@ -161,9 +168,7 @@ public class DrumSet
     {
         // First load system drum-set which must exist
         // Second load user drum-set if any
-        final URI[] uris = new URI[]
-        {
-                UriUtil.toURI(WellKnowns.RES_URI, fileName),
+        final URI[] uris = new URI[] { UriUtil.toURI(WellKnowns.RES_URI, fileName),
                 WellKnowns.CONFIG_FOLDER.resolve(fileName).toUri().normalize() };
 
         for (int i = 0; i < uris.length; i++) {
@@ -172,17 +177,17 @@ public class DrumSet
             try {
                 final URL url = uri.toURL();
                 try (InputStream input = url.openStream()) {
-                    logger.info("Loading drum set entries from {}", uri);
+                    logger.info(ct.trans("loading.drum.set.entries.from", uri));
                     loadConfiguration(input);
                 }
             } catch (IOException ex) {
                 // Item does not exist
                 if (i == 0) {
                     // Only the first item (system) is mandatory
-                    logger.error("Mandatory file not found {}", uri);
+                    logger.error(ct.trans("mandatory.file.not.found ", uri));
                 }
             } catch (JAXBException ex) {
-                logger.warn("Error loading drum set from {}", uri, ex);
+                logger.warn(ct.trans("error.loading.drum.set.from", uri, ex), ex);
             }
         }
 
@@ -213,7 +218,7 @@ public class DrumSet
         for (StaffEntries staffEntries : entries.staffList) {
             final Integer lineCount = staffEntries.lineCount;
             if (lineCount == null) {
-                logger.error("For a staff, line-count cannot be null ");
+                logger.error(ct.trans("for.staff.line.count.cant.be.null"));
                 continue;
             }
 
@@ -229,12 +234,12 @@ public class DrumSet
                 if (entry.sound == null) {
                     // This entry is a removal
                     if (entry.headMotif == null) {
-                        logger.error("{} For a removal, motif cannot be null ", entry);
+                        logger.error(ct.trans("for.removal.motif.cant.be.null", entry));
                         continue;
                     }
 
                     if (pp == null) {
-                        logger.error("{} For a removal, pitch-position cannot be null ", entry);
+                        logger.error(ct.trans("for.removal.pitch.position.cant.be.null", entry));
                         continue;
                     }
 
@@ -243,7 +248,7 @@ public class DrumSet
                         final MotifSign ms = new MotifSign(entry.headMotif, entry.sign);
                         final DrumInstrument inst = msMap.get(ms);
                         if (inst != null) {
-                            logger.info("  at pitch-position: {} removing {}", pp, inst);
+                            logger.info("  " + ct.trans("at.pitch.position.removing", pp, inst));
                             msMap.put(ms, null);
                         }
                     }
@@ -255,7 +260,7 @@ public class DrumSet
                     }
 
                     if (entry.headMotif == null) {
-                        logger.warn("  at pitch-position: {} null motif {}", pp, entry);
+                        logger.warn("  " + ct.trans("at.pitch.position.null.motif", pp, entry));
                         continue;
                     }
 
@@ -274,7 +279,8 @@ public class DrumSet
                     if (old == null) {
                         logger.debug("  at pitch-position: {} adding {}", pp, inst);
                     } else {
-                        logger.info("  at pitch-position: {} replacing {} by {}", pp, old, inst);
+                        logger.info(
+                                "  " + ct.trans("at.pitch.position.replacing.by", pp, old, inst));
                     }
                 }
             }
@@ -541,7 +547,7 @@ public class DrumSet
                     return HeadMotif.valueOf(str);
                 }
             } catch (Exception ex) {
-                logger.warn("Unknown head motif: {}", str, ex);
+                logger.warn(ct.trans("unknown.head.motif", str, ex));
                 return null;
             }
         }
@@ -662,7 +668,7 @@ public class DrumSet
                     return DrumSound.valueOf(str);
                 }
             } catch (Exception ex) {
-                logger.warn("Unknown drum sound: {}", str, ex);
+                logger.warn(ct.trans("unknown.drum.sound", str, ex), ex);
                 return null;
             }
         }

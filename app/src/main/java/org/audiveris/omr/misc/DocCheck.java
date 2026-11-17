@@ -19,7 +19,7 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr;
+package org.audiveris.omr.misc;
 
 import static org.audiveris.omr.util.RegexUtil.getGroup;
 import static org.audiveris.omr.util.RegexUtil.group;

@@ -109,6 +109,7 @@ import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.OmrExecutors;
+import org.audiveris.omr.util.Translator;
 import static org.audiveris.omr.util.VerticalSide.*;
 import org.audiveris.proxymusic.AboveBelow;
 import org.audiveris.proxymusic.Accidental;
@@ -271,12 +272,14 @@ public class PartwiseBuilder
 
     private static final Logger logger = LoggerFactory.getLogger(PartwiseBuilder.class);
 
+    private static final Translator ct = new Translator(PartwiseBuilder.class);
+
     /** A future which reflects whether JAXB has been initialized. */
     private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit( () -> {
         try {
             Marshalling.getContext(ScorePartwise.class);
         } catch (JAXBException ex) {
-            logger.warn("Error preloading JaxbContext", ex);
+            logger.warn(ct.trans("error.preloading.JaxbContext", ex), ex);
             throw ex;
         }
 
@@ -448,7 +451,7 @@ public class PartwiseBuilder
 
             case PERCUSSION_CLEF -> pmClef.setSign(ClefSign.PERCUSSION);
 
-            default -> logger.error("Clef shape not exported {}", shape);
+            default -> logger.error(ct.trans("clef.shape.not.exported", shape));
         }
 
         return pmClef;
@@ -529,7 +532,7 @@ public class PartwiseBuilder
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error checking octave-shift {} side on {}", side, chord, ex);
+            logger.warn(ct.trans("error.checking.octave.shift.side.on", side, chord, ex), ex);
         }
     }
 
@@ -840,7 +843,7 @@ public class PartwiseBuilder
             }
         }
 
-        logger.warn("No number for {}", os);
+        logger.warn(ct.trans("no.number.for", os));
 
         return null;
     }
@@ -922,7 +925,7 @@ public class PartwiseBuilder
             }
         }
 
-        logger.warn("No number for {}", slur);
+        logger.warn(ct.trans("no.number.for", slur));
 
         return null;
     }
@@ -952,10 +955,12 @@ public class PartwiseBuilder
         } catch (Exception ex) {
             if (current.page.getDurationDivisor() != null) {
                 logger.warn(
-                        "Not able to insert backup {} at {} in {}",
-                        delta,
-                        current.measure,
-                        current.page,
+                        ct.trans(
+                                "cant.insert.backup.at.in",
+                                delta,
+                                current.measure,
+                                current.page,
+                                ex),
                         ex);
             }
         }
@@ -978,11 +983,13 @@ public class PartwiseBuilder
         } catch (Exception ex) {
             if (current.page.getDurationDivisor() != null) {
                 logger.warn(
-                        "Not able to insert forward {} for {} at {} in {}",
-                        delta,
-                        chord,
-                        current.measure,
-                        current.page,
+                        ct.trans(
+                                "cant.insert.forward.for.at.in",
+                                delta,
+                                chord,
+                                current.measure,
+                                current.page,
+                                ex),
                         ex);
             }
         }
@@ -1004,9 +1011,10 @@ public class PartwiseBuilder
             if (count == 0) {
                 count = constants.multirestDefaultValue.getValue();
                 logger.warn(
-                        "{} Multirest with no measure count, using default value {}",
-                        current.measure,
-                        count);
+                        ct.trans(
+                                "multirest.with.no.measure.count.default",
+                                current.measure,
+                                count));
             }
 
             // Measure duration
@@ -1075,7 +1083,7 @@ public class PartwiseBuilder
             } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
                     | SecurityException | InvocationTargetException ex) {
                 ex.printStackTrace();
-                logger.error("Could not setStaff for element {}", classe);
+                logger.error(ct.trans("cant.set.staff.on.element", obj));
             }
         }
     }
@@ -1150,7 +1158,7 @@ public class PartwiseBuilder
             //
             getNotations().getTiedOrSlurOrTuplet().add(pmArpeggiate);
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", arpeggiate, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", arpeggiate, current.page, ex), ex);
         }
     }
 
@@ -1184,7 +1192,7 @@ public class PartwiseBuilder
             getArticulations().getAccentOrStrongAccentOrStaccato().add(element);
         } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
                 | SecurityException | InvocationTargetException ex) {
-            logger.warn("Error visiting " + articulation, ex);
+            logger.warn(ct.trans("error.visiting", articulation, ex), ex);
         }
     }
 
@@ -1370,7 +1378,9 @@ public class PartwiseBuilder
                     // Everything is now OK
                     current.pmMeasure.getNoteOrBackupOrForward().add(pmBarline);
                 } catch (Exception ex) {
-                    logger.warn("Cannot process barline {} in {}", partBarline, current.page, ex);
+                    logger.warn(
+                            ct.trans("cant.process.barline.in", partBarline, current.page, ex),
+                            ex);
                 }
             }
 
@@ -1399,11 +1409,13 @@ public class PartwiseBuilder
             }
         } catch (Exception ex) {
             logger.warn(
-                    "Error visiting {} in {} {} location:{}",
-                    partBarline,
-                    current.page,
-                    current.measure,
-                    location,
+                    ct.trans(
+                            "error.visiting.in.location",
+                            partBarline,
+                            current.page,
+                            current.measure,
+                            location,
+                            ex),
                     ex);
         }
     }
@@ -1538,7 +1550,7 @@ public class PartwiseBuilder
             // Everything is now OK
             current.pmMeasure.getNoteOrBackupOrForward().add(harmony);
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", chordName, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", chordName, current.page, ex), ex);
         }
     }
 
@@ -1556,7 +1568,7 @@ public class PartwiseBuilder
                 getAttributes().getClef().add(pmClef);
             }
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", clef, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", clef, current.page, ex), ex);
         }
     }
 
@@ -1651,7 +1663,7 @@ public class PartwiseBuilder
             // Everything is now OK
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", sentence, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", sentence, current.page, ex), ex);
         }
     }
 
@@ -1708,7 +1720,7 @@ public class PartwiseBuilder
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", dynamics, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", dynamics, current.page, ex), ex);
         }
     }
 
@@ -1756,7 +1768,7 @@ public class PartwiseBuilder
                 getNotations().getTiedOrSlurOrTuplet().add(pmFermata); // Add to note
             }
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", fermata, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", fermata, current.page, ex), ex);
         }
     }
 
@@ -1815,7 +1827,7 @@ public class PartwiseBuilder
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", keySignature, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", keySignature, current.page, ex), ex);
         }
     }
 
@@ -1887,7 +1899,7 @@ public class PartwiseBuilder
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error in processKeyVoid in {}", current.page, ex);
+            logger.warn(ct.trans("error.in", "processKeyVoid", current.page, ex), ex);
         }
     }
 
@@ -1985,7 +1997,7 @@ public class PartwiseBuilder
                 }
 
                 default -> {
-                    logger.warn("Unknown marker shape: {}", marker.getShape());
+                    logger.warn(ct.trans("unknown.marker.shape", marker.getShape()));
                     return;
                 }
             }
@@ -1993,7 +2005,7 @@ public class PartwiseBuilder
             // Everything is now OK
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", marker, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", marker, current.page, ex), ex);
         }
     }
 
@@ -2063,11 +2075,12 @@ public class PartwiseBuilder
                     } catch (Exception ex) {
                         if (current.page.getDurationDivisor() == null) {
                             logger.warn(
-                                    "Not able to infer division value for part {} in {}",
-                                    current.logicalPart.getPid(),
-                                    current.page);
+                                    ct.trans(
+                                            "cant.infer.division.value.for",
+                                            current.logicalPart.getPid(),
+                                            current.page));
                         } else {
-                            logger.warn("Error on divisions in {}", current.page, ex);
+                            logger.warn(ct.trans("error.on.divisions.in", current.page, ex), ex);
                         }
                     }
                 }
@@ -2241,7 +2254,7 @@ public class PartwiseBuilder
                         }
                     } else if (!toCopy.isEmpty()) {
                         // We need a whole sequence of "normal" measures (w/o measure repeat signs)
-                        logger.warn("Abnormal measure sequence before repeat sign {}", measure);
+                        logger.warn(ct.trans("abnormal.measure.sequence.before.repeat", measure));
                         break; // Safer!
                     }
 
@@ -2266,7 +2279,7 @@ public class PartwiseBuilder
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", measure, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", measure, current.page, ex), ex);
 
             if (current.pmMeasure != null) {
                 current.pmPart.getMeasure().remove(current.pmMeasure);
@@ -2404,8 +2417,8 @@ public class PartwiseBuilder
 
                 // Non-oval notehead motif, or a head between brackets?
                 final HeadMotif motif = note.getShape().getHeadMotif();
-                final boolean parenthesized = (note instanceof HeadInter head)
-                        && head.hasParentheses();
+                final boolean parenthesized = (note instanceof HeadInter head) && head
+                        .hasParentheses();
                 if ((motif != HeadMotif.oval && motif != HeadMotif.small) || parenthesized) {
                     final Notehead notehead = factory.createNotehead();
                     switch (motif) {
@@ -2472,7 +2485,7 @@ public class PartwiseBuilder
                     current.pmNote.setDuration(new BigDecimal(current.page.simpleDurationOf(dur)));
                 } catch (Exception ex) {
                     if (current.page.getDurationDivisor() != null) {
-                        logger.warn("Not able to get duration of {} in {}", note, current.page, ex);
+                        logger.warn(ct.trans("cant.get.duration", note, current.page, ex), ex);
                     }
                 }
             }
@@ -2507,7 +2520,7 @@ public class PartwiseBuilder
                 final Map<Integer, Map<DrumSet.MotifSign, DrumInstrument>> staffSet = drumSet
                         .getStaffSet(lineCount);
                 if (staffSet == null) {
-                    logger.warn("No drum set defined for staff size {}", lineCount);
+                    logger.warn(ct.trans("no.drum.set.defined.for.staff.size", lineCount));
                 } else {
                     final Map<DrumSet.MotifSign, DrumInstrument> map = staffSet.get(notePitch);
                     Instrument instrument = null;
@@ -2522,7 +2535,7 @@ public class PartwiseBuilder
                     }
 
                     if (instrument == null) {
-                        logger.warn("No instrument for note {} {}", note, ms);
+                        logger.warn(ct.trans("no.instrument.for.note", note, ms));
                     }
                 }
             }
@@ -2533,7 +2546,7 @@ public class PartwiseBuilder
             if (voice != null) {
                 current.pmNote.setVoice("" + voice.getId());
             } else {
-                logger.warn("No voice for {}", chord);
+                logger.warn(ct.trans("no.voice.for", chord));
             }
 
             // Type
@@ -2672,7 +2685,7 @@ public class PartwiseBuilder
             // Everything is OK
             current.pmMeasure.getNoteOrBackupOrForward().add(current.pmNote);
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", note, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", note, current.page, ex), ex);
         }
 
         // Safer...
@@ -2706,7 +2719,7 @@ public class PartwiseBuilder
             getOrnaments().getTrillMarkOrTurnOrDelayedTurn().add(element);
         } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
                 | SecurityException | InvocationTargetException ex) {
-            logger.warn("Error visiting " + ornament, ex);
+            logger.warn(ct.trans("error.visiting", ornament, ex), ex);
         }
     }
 
@@ -2718,8 +2731,7 @@ public class PartwiseBuilder
         try {
             logger.debug("Processing {}", part);
 
-            // Reset numbers
-            octaveShiftNumbers.clear();
+            // Reset numbers            octaveShiftNumbers.clear();
 
             // Delegate to measures
             for (Measure measure : part.getMeasures()) {
@@ -2728,7 +2740,7 @@ public class PartwiseBuilder
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error visiting {}", part, ex);
+            logger.warn(ct.trans("error.visiting", part, ex), ex);
         }
     }
 
@@ -2753,7 +2765,7 @@ public class PartwiseBuilder
 
         // Then, stub by stub, populate all ScorePartwise.Part instances in parallel
         final List<SheetStub> scoreStubs = score.getStubs();
-        logger.info("Exporting sheet(s): {}", Book.ids(scoreStubs));
+        logger.info(ct.trans("exporting.sheets", Book.ids(scoreStubs)));
 
         for (SheetStub stub : scoreStubs) {
             processStub(stub, partMap);
@@ -2795,7 +2807,7 @@ public class PartwiseBuilder
             getArticulations().getAccentOrStrongAccentOrStaccato().add(element);
         } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException
                 | SecurityException | InvocationTargetException ex) {
-            logger.warn("Error visiting " + pause, ex);
+            logger.warn(ct.trans("error.visiting", pause, ex), ex);
         }
     }
 
@@ -2852,7 +2864,7 @@ public class PartwiseBuilder
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", pedal, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", pedal, current.page, ex), ex);
         }
     }
 
@@ -2896,7 +2908,7 @@ public class PartwiseBuilder
 
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", rehearsal, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", rehearsal, current.page, ex), ex);
         }
     }
 
@@ -2933,7 +2945,7 @@ public class PartwiseBuilder
                 try {
                     identification.setSource(book.getSomeInputPath().toAbsolutePath().toString());
                 } catch (Exception ex) {
-                    logger.warn("No input information for {}", book);
+                    logger.warn(ct.trans("no.input.information.for", book));
                 }
 
                 // Encoding
@@ -3034,7 +3046,7 @@ public class PartwiseBuilder
                 processPartList();
             }
         } catch (Exception ex) {
-            logger.warn("Error visiting {} {}", score, ex.toString(), ex);
+            logger.warn(ct.trans("error.visiting", score, ex), ex);
         }
     }
 
@@ -3117,7 +3129,7 @@ public class PartwiseBuilder
             pmCredit.getCreditTypeOrLinkOrBookmark().add(jeCreditWords);
             scorePartwise.getCredit().add(pmCredit);
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", sentence, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", sentence, current.page, ex), ex);
         }
     }
 
@@ -3179,7 +3191,7 @@ public class PartwiseBuilder
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", slur, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", slur, current.page, ex), ex);
         }
     }
 
@@ -3291,7 +3303,7 @@ public class PartwiseBuilder
                 isFirst.system = false;
             }
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", system, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", system, current.page, ex), ex);
         }
     }
 
@@ -3380,7 +3392,7 @@ public class PartwiseBuilder
 
             getNotations().getTiedOrSlurOrTuplet().add(pmTuplet);
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", tuplet, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", tuplet, current.page, ex), ex);
         }
     }
 
@@ -3445,7 +3457,7 @@ public class PartwiseBuilder
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warn("Error visiting {} in {}", wedge, current.page, ex);
+            logger.warn(ct.trans("error.visiting.in", wedge, current.page, ex), ex);
         }
     }
 
@@ -3800,7 +3812,8 @@ public class PartwiseBuilder
                 while (it.hasNext()) {
                     TimedWedge event = it.next();
 
-                    if ((event.timeOffset != null) && (event.timeOffset.compareTo(timeOffset) <= 0)) {
+                    if ((event.timeOffset != null) && (event.timeOffset.compareTo(
+                            timeOffset) <= 0)) {
                         processWedge(event.wedge, event.side, event.referenceNote);
                     } else {
                         it.previous();
@@ -4062,9 +4075,13 @@ public class PartwiseBuilder
                             }
                         } catch (Exception ex) {
                             logger.warn(
-                                    "Error exporting staff layout system#" + current.system.getId()
-                                            + " part#" + current.logicalPart.getId() + " staff#"
-                                            + staff.getId() + " in " + current.page,
+                                    ct.trans(
+                                            "error.exporting.staff.layout",
+                                            current.system.getId(),
+                                            current.logicalPart.getId(),
+                                            staff.getId(),
+                                            current.page,
+                                            ex),
                                     ex);
                         }
                     }

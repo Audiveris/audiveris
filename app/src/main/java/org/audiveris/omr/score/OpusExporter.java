@@ -23,6 +23,7 @@ package org.audiveris.omr.score;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.sheet.Book;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.proxymusic.ScorePartwise;
 import org.audiveris.proxymusic.mxl.Mxl;
 import org.audiveris.proxymusic.mxl.RootFile;
@@ -49,6 +50,8 @@ public class OpusExporter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OpusExporter.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -152,7 +155,7 @@ public class OpusExporter
     {
         try (OutputStream os = new FileOutputStream(path.toString())) {
             export(os, signed, rootName, scores);
-            logger.info("Opus {} exported to {}", rootName, path);
+            logger.info(ct.trans("opus.exported.to", rootName, path));
         }
     }
 }

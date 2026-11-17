@@ -23,6 +23,7 @@ package org.audiveris.omr.classifier;
 
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,8 @@ public abstract class GlyphDescriptor
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphDescriptor.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -104,9 +107,9 @@ public abstract class GlyphDescriptor
             //
             out.flush();
 
-            logger.info("{} {} samples saved in {}", samples.size(), radix, path.toAbsolutePath());
+            logger.info(ct.trans("samples.saved.in", radix, samples.size(), path.toAbsolutePath()));
         } catch (IOException ex) {
-            logger.warn("Could not save {} samples " + ex, radix, ex);
+            logger.warn(ct.trans("could.not.save.samples.of", radix, ex), ex);
         }
     }
 

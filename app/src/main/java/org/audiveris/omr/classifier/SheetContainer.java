@@ -22,6 +22,7 @@
 package org.audiveris.omr.classifier;
 
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,8 @@ public class SheetContainer
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SheetContainer.class);
+
+    private static final Translator ct = new Translator(SheetContainer.class);
 
     /** Name of the specific entry for container. */
     public static final String CONTAINER_ENTRY_NAME = "META-INF/container.xml";
@@ -133,7 +136,7 @@ public class SheetContainer
      */
     public void dump ()
     {
-        logger.info("SheetContainer: {}", hashMap);
+        logger.info(ct.trans("SheetContainer", hashMap));
     }
 
     //-------------//
@@ -185,7 +188,7 @@ public class SheetContainer
             }
         }
 
-        logger.warn("No unique name could be forged for {}", name);
+        logger.warn(ct.trans("no.unique.name.could.be.forged.for", name));
 
         return null; // Very unlikely!
     }
@@ -305,7 +308,7 @@ public class SheetContainer
 
             // Container
             Jaxb.marshal(this, path, getJaxbContext());
-            logger.info("Stored {}", path);
+            logger.info(ct.trans("stored", path));
 
             // Remove defunct sheets if any
             for (Descriptor descriptor : defunctDescriptors) {
@@ -316,7 +319,7 @@ public class SheetContainer
 
             setModified(false);
         } catch (IOException | JAXBException | XMLStreamException ex) {
-            logger.error("Error marshalling " + this + " " + ex, ex);
+            logger.error(ct.trans("error.marshalling", this, ex), ex);
         }
     }
 
@@ -402,11 +405,11 @@ public class SheetContainer
             logger.debug("SheetContainer unmarshalling {}", path);
 
             SheetContainer sheetContainer = (SheetContainer) Jaxb.unmarshal(path, getJaxbContext());
-            logger.info("Unmarshalled {}", sheetContainer);
+            logger.info(ct.trans("unmarshalled", sheetContainer));
 
             return sheetContainer;
         } catch (IOException | JAXBException ex) {
-            logger.warn("Error unmarshalling SheetContainer " + ex, ex);
+            logger.warn(ct.trans("error.unmarshalling.SheetContainer", ex), ex);
 
             return null;
         }
@@ -507,7 +510,7 @@ public class SheetContainer
         public void addAlias (String alias)
         {
             if ((alias != null) && !isAlias(alias)) {
-                logger.info("Added alias {} to {}", alias, this);
+                logger.info(ct.trans("added.alias.to", alias, this));
                 aliases.add(alias);
             }
         }

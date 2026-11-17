@@ -294,7 +294,7 @@ int xmlDocWidth = 50
         dependsOn('createFolders')
         outputs.file("build/plain/$sch")
   
-        mainClass = 'org.audiveris.omr.SchemaGeneration'
+        mainClass = 'org.audiveris.omr.misc.SchemaGeneration'
         classpath(app.sourceSets.main.runtimeClasspath)
         args=["$src", "build/plain/$sch"]
         

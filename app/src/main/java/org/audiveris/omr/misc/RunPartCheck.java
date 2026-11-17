@@ -19,7 +19,7 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr;
+package org.audiveris.omr.misc;
 
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Part;

@@ -32,6 +32,7 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,8 @@ public class ValidationPanel
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationPanel.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -266,7 +269,7 @@ public class ValidationPanel
     //---------------//
     private void runValidation ()
     {
-        logger.info("Validating {} on {} set...", task.classifier.getName(), setName);
+        logger.info(ct.trans("validating.on.set", task.classifier.getName(), setName));
 
         // Empty the display
         positiveValue.setText("");
@@ -325,12 +328,7 @@ public class ValidationPanel
         double accuracy = allPositives / (double) total;
         DecimalFormat df = new DecimalFormat("#.####");
         String accuStr = df.format(accuracy);
-        logger.info(
-                "{} accuracy: {}  {}/{}",
-                task.classifier.getName(),
-                accuStr,
-                allPositives,
-                total);
+        logger.info(ct.trans("accuracy", task.classifier.getName(), accuStr, allPositives, total));
         accuracyValue.setText(accuStr);
         positiveValue.setText(Integer.toString(positives));
         weakPositiveValue.setText(Integer.toString(weakPositives.size()));

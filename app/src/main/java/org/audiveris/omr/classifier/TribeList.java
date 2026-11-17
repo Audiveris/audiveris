@@ -22,6 +22,7 @@
 package org.audiveris.omr.classifier;
 
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,8 @@ class TribeList
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TribeList.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
@@ -117,9 +120,9 @@ class TribeList
         try {
             logger.debug("Marshalling {}", this);
             Jaxb.marshal(this, tribesPath, getJaxbContext());
-            logger.info("Stored {}", tribesPath);
+            logger.info(ct.trans("stored", tribesPath));
         } catch (IOException | JAXBException | XMLStreamException ex) {
-            logger.error("Error marshalling " + this + " " + ex, ex);
+            logger.error(ct.trans("error.marshalling", this, ex), ex);
         }
     }
 
@@ -159,7 +162,7 @@ class TribeList
             TribeList tribeList = (TribeList) um.unmarshal(is);
             return tribeList;
         } catch (JAXBException ex) {
-            logger.warn("Error unmarshalling " + path + " " + ex, ex);
+            logger.warn(ct.trans("error.unmarshalling", path, ex), ex);
             return null;
         }
     }

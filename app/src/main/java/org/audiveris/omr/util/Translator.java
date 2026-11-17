@@ -23,6 +23,10 @@ package org.audiveris.omr.util;
 
 import org.audiveris.omr.GlobalMessages;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
@@ -34,6 +38,8 @@ import java.util.ResourceBundle;
 public class Translator
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(Translator.class);
 
     /** The translator based on the global messages. */
     public static final Translator GLOBAL = new Translator(GlobalMessages.class);
@@ -96,6 +102,16 @@ public class Translator
      */
     public String trans (String key)
     {
-        return resources.getString(key);
+        // Obvious fix, to be removed ASAP
+        if (key.indexOf(' ') != -1) {
+            logger.error("Space found in resource key \"{}\"", key);
+        }
+
+        try {
+            return resources.getString(key);
+        } catch (MissingResourceException mre) {
+            logger.error("MissingResourceException for key \"{}\"", key);
+            return key;
+        }
     }
 }

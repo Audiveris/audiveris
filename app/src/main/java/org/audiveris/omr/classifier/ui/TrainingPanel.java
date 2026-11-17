@@ -34,6 +34,7 @@ import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.field.LIntegerField;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +75,8 @@ class TrainingPanel
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TrainingPanel.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -194,11 +197,11 @@ class TrainingPanel
 
                     list.add(sample);
                 } else {
-                    logger.warn("Removing non trainable shape: {}", physicalShape);
+                    logger.warn(ct.trans("removing.non.trainable.shape", physicalShape));
                     it.remove();
                 }
             } catch (Exception ex) {
-                logger.warn("Removing weird sample: " + sample, ex);
+                logger.warn(ct.trans("removing.weird.sample", sample, ex), ex);
                 it.remove();
             }
         }
@@ -213,7 +216,7 @@ class TrainingPanel
             final List<Sample> list = shapeSamples.get(physicalShape);
 
             if (list == null) {
-                logger.warn("Missing shape: {}", physicalShape);
+                logger.warn(ct.trans("missing.shape", physicalShape));
             } else if (!list.isEmpty()) {
                 logger.debug(String.format("%4d %s", list.size(), physicalShape));
                 final int size = list.size();

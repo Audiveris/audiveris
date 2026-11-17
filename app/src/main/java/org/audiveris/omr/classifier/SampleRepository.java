@@ -49,6 +49,7 @@ import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.symbol.TextSymbol;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.ZipFileSystem;
 
 import org.jdesktop.application.Application;
@@ -112,6 +113,8 @@ public class SampleRepository
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SampleRepository.class);
+
+    private static final Translator ct = new Translator(SampleRepository.class);
 
     /** Seed for sample ordering when reproducibility is enforced. Can be any value in fact */
     private static final int REPRODUCIBLE_SEED = 123;
@@ -247,7 +250,7 @@ public class SampleRepository
         sampleSheet.privateAddSample(sample);
         sampleMap.put(sample, sampleSheet);
 
-        logger.info("{} added {} to {}", this, sample, sampleSheet);
+        logger.info(ct.trans("added.to", this, sample, sampleSheet));
 
         fireStateChanged(new AdditionEvent(sample, this));
     }
@@ -523,20 +526,22 @@ public class SampleRepository
                 if ((s.getInterline() == interline) && s.getRunTable().equals(runTable)) {
                     if (s.getShape().getPhysicalShape() != sample.getShape().getPhysicalShape()) {
                         logger.warn(
-                                "Conflicting shapes between {}/{} and {}/{}",
-                                getSheetName(sample),
-                                sample,
-                                getSheetName(s),
-                                s);
+                                ct.trans(
+                                        "conflicting.shapes.between",
+                                        getSheetName(sample),
+                                        sample,
+                                        getSheetName(s),
+                                        s));
                         conflictings.add(sample);
                         conflictings.add(s);
                     } else {
                         logger.debug(
-                                "Same runtable for {}/{} & {}/{}",
-                                getSheetName(sample),
-                                sample,
-                                getSheetName(s),
-                                s);
+                                ct.trans(
+                                        "same.runtable.for",
+                                        getSheetName(sample),
+                                        sample,
+                                        getSheetName(s),
+                                        s));
                         if (!s.isSymbol()) {
                             redundants.add(s);
                         }
@@ -547,11 +552,11 @@ public class SampleRepository
         }
 
         if (!conflictings.isEmpty()) {
-            logger.warn("Conflicting samples: {} / {}", conflictings.size(), allSamples.size());
+            logger.warn(ct.trans("conflicting.samples", conflictings.size(), allSamples.size()));
         }
 
         if (!redundants.isEmpty()) {
-            logger.info("Redundant samples: {} / {}", redundants.size(), allSamples.size());
+            logger.info(ct.trans("redundant.samples", redundants.size(), allSamples.size()));
         }
     }
 
@@ -609,11 +614,12 @@ public class SampleRepository
                 if ((s.getInterline() == interline) && s.getRunTable().equals(runTable)) {
                     if (s.getShape().getPhysicalShape() != sample.getShape().getPhysicalShape()) {
                         logger.warn(
-                                "Conflicting shapes between {}/{} and {}/{}",
-                                getSheetName(sample),
-                                sample,
-                                getSheetName(s),
-                                s);
+                                ct.trans(
+                                        "conflicting.shapes.between",
+                                        getSheetName(sample),
+                                        sample,
+                                        getSheetName(s),
+                                        s));
                     } else {
                         logger.debug("Ignoring redundant {}/{}", getSheetName(s), s);
                         s.setIgnored(true);
@@ -640,7 +646,7 @@ public class SampleRepository
         if (isLoaded() && isModified()) {
             storeRepository();
         } else {
-            logger.info("No need to save {}", this);
+            logger.info(ct.trans("no.need.to.save", this));
         }
     }
 
@@ -1230,18 +1236,18 @@ public class SampleRepository
     public void loadAllImages ()
     {
         if (imagesLoaded) {
-            logger.info("All images already loaded.");
+            logger.info(ct.trans("all.images.already.loaded"));
         } else if (!hasSheetImages()) {
-            logger.info("Images file {} not found.", imagesFile);
+            logger.info(ct.trans("images.file.not.found", imagesFile));
         } else {
             try {
                 final Path imagesRoot = ZipFileSystem.open(imagesFile);
-                logger.info("Loading all images from {} ...", imagesFile);
+                logger.info(ct.trans("loading.all.images.from", imagesFile));
                 loadAllImages(imagesRoot);
                 imagesRoot.getFileSystem().close();
                 imagesLoaded = true;
             } catch (IOException ex) {
-                logger.warn("Error loading sheet images " + ex, ex);
+                logger.warn(ct.trans("error.loading.all.images", ex), ex);
             }
         }
     }
@@ -1300,7 +1306,7 @@ public class SampleRepository
                                 sampleSheet.setImage(runTable, true);
                                 logger.debug("Loaded {}", file);
                             } else {
-                                logger.warn("No SampleSheet found for image {}", file);
+                                logger.warn(ct.trans("no.SampleSheet.found.for.image", file));
                             }
                         }
                     }
@@ -1309,7 +1315,7 @@ public class SampleRepository
                 }
             });
         } catch (IOException ex) {
-            logger.warn("Error loading binaries from " + imagesFile + " " + ex, ex);
+            logger.warn(ct.trans("error.loading.images.from", imagesFile, ex), ex);
         }
     }
 
@@ -1350,7 +1356,7 @@ public class SampleRepository
                 }
             }
         } catch (IOException ex) {
-            logger.warn("Error loading {} image ", descriptor, ex);
+            logger.warn(ct.trans("error.loading.image.from", descriptor, ex), ex);
 
             return null;
         }
@@ -1411,14 +1417,15 @@ public class SampleRepository
                 samplesRoot.getFileSystem().close();
             } else {
                 logger.info(
-                        "No {} in folder {}",
-                        samplesFile.getFileName(),
-                        samplesFile.getParent());
+                        ct.trans(
+                                "no.file.in.folder",
+                                samplesFile.getFileName(),
+                                samplesFile.getParent()));
             }
 
             loaded = true;
         } catch (IOException ex) {
-            logger.warn("Error loading " + this + " " + ex, ex);
+            logger.warn(ct.trans("error.loading", ex), ex);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -1452,14 +1459,15 @@ public class SampleRepository
 
                         if (desc == null) {
                             logger.warn(
-                                    "Samples entry {} not declared in {} is ignored.",
-                                    folder,
-                                    SheetContainer.CONTAINER_ENTRY_NAME);
+                                    ct.trans(
+                                            "samples.entry.not.declared",
+                                            folder,
+                                            SheetContainer.CONTAINER_ENTRY_NAME));
                         } else {
                             boolean isSymbol = isSymbols(desc.getName());
 
                             if (isSymbol) {
-                                logger.info("Skipping symbols entry");
+                                logger.info(ct.trans("skipping.symbols.entry"));
 
                                 return FileVisitResult.CONTINUE;
                             }
@@ -1482,7 +1490,7 @@ public class SampleRepository
                 }
             });
         } catch (IOException ex) {
-            logger.warn("Error loading " + samplesFile + " " + ex, ex);
+            logger.warn(ct.trans("error.loading", samplesFile, ex), ex);
         }
     }
 
@@ -1513,7 +1521,7 @@ public class SampleRepository
                             sampleSheet.setTribes(tribeList.getTribes());
                             logger.debug("Loaded {}", file);
                         } else {
-                            logger.warn("No SampleSheet found for tribes {}", file);
+                            logger.warn(ct.trans("no.SampleSheet.found.for.tribes", file));
                         }
                     }
 
@@ -1521,7 +1529,7 @@ public class SampleRepository
                 }
             });
         } catch (IOException ex) {
-            logger.warn("Error loading tribes " + ex, ex);
+            logger.warn(ct.trans("error.loading.tribes", ex), ex);
         }
     }
 
@@ -1590,7 +1598,7 @@ public class SampleRepository
 
             if (sampleSheet == null) {
                 sheetContainer.removeDescriptor(descriptor);
-                logger.info("{} removed orphan descriptor: {}", this, descriptor);
+                logger.info(ct.trans("removed.orphan.descriptor", this, descriptor));
             }
         }
     }
@@ -1607,13 +1615,13 @@ public class SampleRepository
 
         for (SampleSheet sampleSheet : nameMap.values()) {
             if (sampleSheet.getAllSamples().isEmpty()) {
-                logger.info("Empty {}", sampleSheet);
+                logger.info(ct.trans("empty", sampleSheet));
                 sheetContainer.removeDescriptor(sampleSheet.getDescriptor());
                 count++;
             }
         }
 
-        logger.info("{} empty sheets purged: {}", this, count);
+        logger.info(ct.trans("empty.sheets.purged", this, count));
 
         if (constants.printSampleCounts.isSet()) {
             printSampleCounts();
@@ -1648,7 +1656,7 @@ public class SampleRepository
         final SampleSheet sampleSheet = getSampleSheet(sample);
 
         if (isSymbols(sampleSheet.getDescriptor().getName())) {
-            logger.info("A font-based symbol cannot be removed");
+            logger.info(ct.trans("a.font.symbol.cannot.be.removed"));
 
             return;
         }
@@ -1656,7 +1664,7 @@ public class SampleRepository
         sampleSheet.privateRemoveSample(sample);
         sampleMap.remove(sample);
 
-        logger.info("{} removed {} from {}", this, sample, sampleSheet);
+        logger.info(ct.trans("removed.from", this, sample, sampleSheet));
 
         fireStateChanged(new RemovalEvent(sample, this));
     }
@@ -1786,10 +1794,10 @@ public class SampleRepository
 
             final int size = list.size();
             switch (size) {
-                case 0 -> logger.warn("No sample for {}", entry.getKey());
+                case 0 -> logger.warn(ct.trans("no.sample.for", entry.getKey()));
                 case 1 -> {
                     train.addAll(list);
-                    logger.warn("No testing sample for {}", entry.getKey());
+                    logger.warn(ct.trans("no.testing.sample.for", entry.getKey()));
                 }
                 default -> {
                     // train
@@ -1805,7 +1813,7 @@ public class SampleRepository
             }
         }
 
-        logger.info("Train: {}, Test: {}", train.size(), test.size());
+        logger.info(ct.trans("train.test", train.size(), test.size()));
     }
 
     //-----------------//
@@ -1838,9 +1846,9 @@ public class SampleRepository
             imagesRoot.getFileSystem().close();
 
             setModified(false);
-            logger.info("{} stored to {}", this, samplesFile);
+            logger.info(ct.trans("stored.to", this, samplesFile));
         } catch (IOException ex) {
-            logger.warn("Error storing " + this + " to " + samplesFile + " " + ex, ex);
+            logger.warn(ct.trans("error.storing.to", this, samplesFile, ex), ex);
         }
     }
 
@@ -1925,14 +1933,14 @@ public class SampleRepository
             final SampleRepository repo = new SampleRepository(samplesFile);
 
             if (load && !repo.isLoaded()) {
-                logger.info("Repository loading...");
+                logger.info(ct.trans("repository.loading"));
                 repo.loadRepository(null);
-                logger.info("Repository loaded.");
+                logger.info(ct.trans("repository.loaded"));
             }
 
             return repo;
         } catch (Exception ex) {
-            logger.warn("Could not get repository instance at {} " + ex, samplesFile, ex);
+            logger.warn(ct.trans("could.not.get.repository.at", samplesFile, ex), ex);
 
             return null;
         }

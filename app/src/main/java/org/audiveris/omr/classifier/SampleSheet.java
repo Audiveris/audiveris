@@ -31,6 +31,7 @@ import static org.audiveris.omr.glyph.Shape.FLAG_5_UP;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +75,8 @@ public class SampleSheet
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SampleSheet.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     /** File name for sheet samples: {@value}. */
     public static final String SAMPLES_FILE_NAME = "samples.xml";
@@ -140,7 +143,7 @@ public class SampleSheet
             final Shape shape = sample.getShape();
 
             if (shape == null) {
-                logger.warn("Null shape sample:{} in sheet:{}", sample, descriptor.getName());
+                logger.warn(ct.trans("null.shape.sample.in.sheet", sample, descriptor.getName()));
             } else {
                 ArrayList<Sample> list = shapeMap.get(shape);
 
@@ -303,7 +306,7 @@ public class SampleSheet
 
             currentTribe = new Tribe(best);
             tribes.add(currentTribe);
-            logger.info("Created tribe on {} in {}", best, this);
+            logger.info(ct.trans("created.tribe.on", best, this));
             setModified(true);
         }
 
@@ -359,7 +362,7 @@ public class SampleSheet
 
                 final Path samplesPath = folderPath.resolve(SAMPLES_FILE_NAME);
                 Jaxb.marshal(new SampleList(this), samplesPath, getJaxbContext());
-                logger.info("Stored {}", samplesPath);
+                logger.info(ct.trans("stored", samplesPath));
 
                 // Tribes
                 if (!getTribes().isEmpty()) {
@@ -376,10 +379,10 @@ public class SampleSheet
                 final Path imagePath = folderPath.resolve(IMAGE_FILE_NAME);
                 Jaxb.marshal(image, imagePath, getJaxbContext());
                 imageSaved = true;
-                logger.info("Stored {}", imagePath);
+                logger.info(ct.trans("stored", imagePath));
             }
         } catch (IOException | JAXBException | XMLStreamException ex) {
-            logger.error("Error marshalling " + this + " " + ex, ex);
+            logger.error(ct.trans("error.marshalling", this, ex), ex);
         }
     }
 
@@ -428,7 +431,7 @@ public class SampleSheet
         final ArrayList<Sample> list = shapeMap.get(shape);
 
         if ((list == null) || !list.contains(sample)) {
-            logger.warn("{} not found in {}", sample, this);
+            logger.warn(ct.trans("not.found.in", sample, this));
 
             return;
         }
@@ -513,7 +516,7 @@ public class SampleSheet
                                Path imagesRoot)
     {
         try {
-            logger.info("Deleting material for sheet {}", descriptor);
+            logger.info(ct.trans("deleting.material.for.sheet", descriptor));
 
             {
                 // Samples (and tribes)
@@ -521,7 +524,7 @@ public class SampleSheet
 
                 if (Files.exists(folderPath)) {
                     FileUtil.deleteDirectory(folderPath);
-                    logger.info("   Samples: deleted {} folder", folderPath);
+                    logger.info(ct.trans("samples.deleted.folder", folderPath));
                 }
             }
 
@@ -531,11 +534,11 @@ public class SampleSheet
 
                 if (Files.exists(folderPath)) {
                     FileUtil.deleteDirectory(folderPath);
-                    logger.info("   Images: deleted {} folder", folderPath);
+                    logger.info(ct.trans("images.deleted.folder", folderPath));
                 }
             }
         } catch (IOException ex) {
-            logger.error("Error deleting material for sheet " + descriptor + " " + ex, ex);
+            logger.error(ct.trans("error.deleting.material.for.sheet", descriptor, ex), ex);
         }
     }
 
@@ -578,7 +581,7 @@ public class SampleSheet
 
             return sampleSheet;
         } catch (JAXBException ex) {
-            logger.warn("Error unmarshalling " + path + " " + ex, ex);
+            logger.warn(ct.trans("error.unmarshalling", path, ex), ex);
 
             return null;
         }
@@ -651,7 +654,7 @@ public class SampleSheet
             for (Sample sample : samples) {
                 final Shape shape = sample.getShape();
                 if (shape == null) {
-                    logger.warn("Null shape for sample: {}", sample);
+                    logger.warn(ct.trans("null.shape.for.sample", sample));
                 } else {
                     switch (shape) {
                         case FLAG_1_UP -> modified |= sample.renameShapeAs(Shape.FLAG_1_DOWN);

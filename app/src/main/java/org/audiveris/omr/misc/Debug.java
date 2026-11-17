@@ -19,7 +19,7 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr;
+package org.audiveris.omr.misc;
 
 import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.sheet.Picture;
@@ -39,6 +39,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+
+import org.audiveris.omr.WellKnowns;
 
 /**
  * Convenient class meant to temporarily inject some debugging.

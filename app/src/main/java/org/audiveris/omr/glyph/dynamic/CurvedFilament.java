@@ -27,6 +27,7 @@ import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,8 @@ public class CurvedFilament
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(CurvedFilament.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -165,7 +168,7 @@ public class CurvedFilament
             // Remember points (atomically)
             this.points = newPoints;
         } catch (Exception ex) {
-            logger.warn("Filament cannot computeData", ex);
+            logger.warn(ct.trans("error.in", "CurvedFilament.computeLine()", ex), ex);
         }
     }
 

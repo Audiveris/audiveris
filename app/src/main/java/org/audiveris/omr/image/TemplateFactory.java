@@ -38,6 +38,7 @@ import org.audiveris.omr.ui.symbol.TemplateSymbol;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +90,8 @@ public class TemplateFactory
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TemplateFactory.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     /** Singleton. */
     private static final TemplateFactory INSTANCE = new TemplateFactory();
@@ -595,8 +598,8 @@ public class TemplateFactory
     /**
      * Retrieve the key points to test for the given shape.
      *
-     * @param shape     the given shape
-     * @param family    the font family
+     * @param shape       the given shape
+     * @param family      the font family
      * @param pointSize   the font point size
      * @param strokeSlack whether the page may draw the strokes thinner than the font
      * @return the collection of testing locations
@@ -923,7 +926,7 @@ public class TemplateFactory
 
             // Check whether we have a usable template symbol
             if (symbol.getDimension(font) == null) {
-                logger.info("{} No template for {}", family, shape);
+                logger.info(ct.trans("no.template.for", family, shape));
 
                 return null;
             }
@@ -1039,7 +1042,7 @@ public class TemplateFactory
             } else {
                 // Holes detection failed. Process symbol at higher resolution
                 final int larger = constants.holeLargerRatio.getValue();
-                logger.info("Rebuilding {} template at resolution {}", shape, larger * ps);
+                logger.info(ct.trans("rebuilding.template.at.resolut", shape, larger * ps));
                 return processSymbol(larger * ratio);
             }
         }

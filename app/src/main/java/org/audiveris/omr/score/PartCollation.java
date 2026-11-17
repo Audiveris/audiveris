@@ -24,6 +24,7 @@ package org.audiveris.omr.score;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,8 @@ public class PartCollation
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(PartCollation.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     public static final List<StaffConfig> PIANO_CONFIG = StaffConfig.decodeCsv(
             constants.pianoStaffConfig.getValue());
@@ -334,7 +337,8 @@ public class PartCollation
             if (!logicalsLocked) {
                 addRecord(dir, partRef, records); // Create a brand new record for this candidate
             } else {
-                logger.info("  Cannot map {} to any logical", partRef.toQualifiedString());
+                logger.info(
+                        "  " + ct.trans("cant.map.to.any.logical", partRef.toQualifiedString()));
             }
         }
     }
@@ -367,7 +371,7 @@ public class PartCollation
             }
         }
 
-        logger.info("PartCollation records:{}", sb);
+        logger.info(ct.trans("part.collation.records", sb));
     }
 
     //-------------//
@@ -409,7 +413,7 @@ public class PartCollation
             }
         }
 
-        logger.warn("Cannot find logical for id {}", logicalId);
+        logger.warn(ct.trans("cant.find.logical.for.id", logicalId));
         return null;
     }
 

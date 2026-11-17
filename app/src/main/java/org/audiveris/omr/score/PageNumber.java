@@ -23,6 +23,7 @@ package org.audiveris.omr.score;
 
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,8 @@ public class PageNumber
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PageNumber.class);
+
+    private static final Translator ct = Translator.GLOBAL;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -137,7 +140,7 @@ public class PageNumber
         final List<PageRef> pageRefs = stub.getPageRefs();
 
         if (pageRefs.isEmpty()) {
-            logger.info("No page for sheet#{}", sheetNumber);
+            logger.info(ct.trans("no.page.for.sheet", sheetNumber));
             return null;
         }
 
