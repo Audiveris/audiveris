@@ -62,17 +62,15 @@ public abstract class ConstantSet
      * We use a sorted map to allow access by constant index in constant set, as
      * required by ConstantTreeTable.
      * This instance can only be lazily constructed, thanks to {@link #getMap}
-     * method, since all the enclosed constants must have been constructed
-     * beforehand.
+     * method, since all the enclosed constants must have been constructed beforehand.
      */
     private volatile SortedMap<String, Constant> map;
 
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * A new ConstantSet instance is created, and registered at the
-     * UnitManager singleton, but its map of internal constants will
-     * need to be built later.
+     * A new ConstantSet instance is created, and registered at the UnitManager singleton,
+     * but its map of internal constants will need to be built later.
      */
     public ConstantSet ()
     {
@@ -91,8 +89,7 @@ public abstract class ConstantSet
     // dumpOf //
     //--------//
     /**
-     * A utility method to dump current value of each constant in the
-     * set.
+     * A utility method to dump current value of each constant in the set.
      *
      * @return the string representation of this set
      */
@@ -272,8 +269,7 @@ public abstract class ConstantSet
                 }
 
                 // Make sure that we have only Constants in this ConstantSet
-                if (obj instanceof Constant) {
-                    Constant constant = (Constant) obj;
+                if (obj instanceof Constant constant) {
                     constant.setUnitAndName(unit, name);
                     tempMap.put(name, constant);
                 } else {
@@ -310,8 +306,7 @@ public abstract class ConstantSet
     // toString //
     //----------//
     /**
-     * Return the last part of the ConstantSet name, without the
-     * leading package names.
+     * Return the last part of the unit name, without the leading package names.
      * This short name is used by Constant TreeTable
      *
      * @return just the (unqualified) name of the ConstantSet
@@ -319,19 +314,7 @@ public abstract class ConstantSet
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
-
-        //sb.append("<html><b>");
-        int dot = unit.lastIndexOf('.');
-
-        if (dot != -1) {
-            sb.append(unit.substring(dot + 1));
-        } else {
-            sb.append(unit);
-        }
-
-        //sb.append("</b></html>");
-        return sb.toString();
+        return unit.substring(1 + unit.lastIndexOf('.'));
     }
 
     //~ Static Methods -----------------------------------------------------------------------------

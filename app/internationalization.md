@@ -170,33 +170,7 @@ DAL_SEGNO.text = Dal segno
 DAL_SEGNO.toolTipText = D.S.: Repeat from the sign
 ```
 
-
-## Work progress
-
-### 24-aug-2026
-
-First version of this documentation.
-
-Start of French localization
-
-Start of restructuring the internationalization mechanisms, regardless of the language.
-
-### 14-oct-2026
-
-We now have support close to completion for 3 languages: English, French, Romanian
-
-This support is still limited to the GUI items.
-
-Beyond the UI-oriented classes, thanks to the `ResourceUtil.getBundle()` method,
-localization has been extended to the classes:
-- `OmrStep`
-- `ProcessingSwitch`
-- `Shape`
-- `ShapeSet`
-- `TextRole` 
-
-We can now clean up and rationalize the concepts and names used in internationalization,
-as described here under.
+### Standardization of keys
 
 #### Name
 
@@ -244,6 +218,49 @@ using the mandatory `.toolTipText` suffix:
 | English | Shape.properties | MORDENT_INVERTED.toolTipText = Mordent with no vertical line |
 | French | Shape_fr.properties | MORDENT_INVERTED.toolTipText = Mordant sans ligne verticale |
 | Romanian | Shape_ro.properties | MORDENT_INVERTED.toolTipText = Mordent fără linie verticală |
+
+### Elaboration problems
+
+During the tedious work of internationalizing the existing classes, we stumbled upon problems
+related to the elaboration of some key classes and especially the order of this elaboration.
+
+One important aspect is the *interactive* vs *batch* mode.
+Simply because the former provides a ResourceMap which the latter cannot provide
+and thus must use a ResourceBundle instead.
+
+A more difficult problem arises from elaboration order.
+Typically, we should not allocate a bundle before knowing the precise locale chosen by the user.
+This locale value is defined as an application Constant and thus can be persisted
+in the `run.properties` file located in the Audiveris user folder.
+
+
+
+## Work progress
+
+### 24-aug-2026
+
+First version of this documentation.
+
+Start of French localization
+
+Start of restructuring the internationalization mechanisms, regardless of the language.
+
+### 14-oct-2026
+
+We now have support close to completion for 3 languages: English, French, Romanian
+
+This support is still limited to the GUI items.
+
+Beyond the UI-oriented classes, thanks to the `ResourceUtil.getBundle()` method,
+localization has been extended to the classes:
+- `OmrStep`
+- `ProcessingSwitch`
+- `Shape`
+- `ShapeSet`
+- `TextRole` 
+
+We can now clean up and rationalize the concepts and names used in internationalization,
+as described here under.
 
 
 
