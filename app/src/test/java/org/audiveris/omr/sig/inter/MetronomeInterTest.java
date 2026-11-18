@@ -39,9 +39,6 @@ import java.io.PrintWriter;
  */
 public class MetronomeInterTest
 {
-    /** Store output in dedicated file. */
-    private static final PrintWriter out = getPrintWriter(new File("../data/metronome-tests.log"));
-
     @Test
     public void test_01 ()
     {
@@ -161,23 +158,14 @@ public class MetronomeInterTest
         if (elem != null) {
             System.out.println();
             System.out.println("method   : " + elem.getMethodName());
-            out.println();
-            out.println("method   : " + elem.getMethodName());
-            out.flush();
         }
 
         System.out.println("input    : \"" + text + "\"");
-        out.println("input    : \"" + text + "\"");
-        out.flush();
 
         System.out.println("expected : " + exp);
-        out.println("expected : " + exp);
-        out.flush();
 
         boolean result = MetronomeInter.fullValidityCheck(text);
         System.out.println("output   : " + result);
-        out.println("output   : " + result);
-        out.flush();
 
         assertEquals(exp, result);
     }

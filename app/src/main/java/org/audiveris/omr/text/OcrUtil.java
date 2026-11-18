@@ -53,15 +53,8 @@ public abstract class OcrUtil
 
     private static final Translator ct = new Translator();
 
-    static {
-        System.out.println("OcrUtil before");
-    }
-
     /** Standard NO_OCR message: {@value}. */
     public static String NO_OCR = ct.trans("no.ocr.is.available");
-    static {
-        System.out.println("OcrUtil after");
-    }
 
     /** The related OCR. */
     private static final OCR ocr = TesseractOCR.getInstance();
