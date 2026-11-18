@@ -23,7 +23,9 @@ package org.audiveris.omr;
 
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -91,6 +93,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
  * Every input file is tested, and a final report lists all failures (not just the first).
  * On failure the whole temp work folder is kept for inspection.
  * <p>
+ * Another test transcribes, exports and prints one small input file, with OCR disabled,
+ * and checks that the outputs exist, that the MusicXML has notes but no words nor credits,
+ * and that no exception got logged.
+ * <p>
  * When the environment variable {@code AUDIVERIS_UPDATE_BASELINE} is set to {@code true}
  * (or {@code 1}), the produced MusicXML becomes the new reference for each input file
  * (the previous reference being kept as {@code <name>.xml.orig}).
@@ -124,6 +130,16 @@ public class XmlExportRegressionTest
     private static final List<String> FORCED_CONSTANTS = Arrays.asList(
             "org.audiveris.omr.sheet.BookManager.useOpus=false",
             "org.audiveris.omr.text.Language.defaultSpecification=eng");
+
+    /** Input file used by the batch print test, a small one. */
+    private static final String PRINT_INPUT = "zizi.png";
+
+    /** Constant to disable OCR. */
+    private static final String NO_OCR_CONSTANT =
+            "org.audiveris.omr.text.tesseract.TesseractOCR.useOCR=false";
+
+    /** Pattern to detect an exception stack trace in a log. */
+    private static final Pattern STACK_TRACE = Pattern.compile("(?m)^[ \\t]+at \\S+\\(");
 
     /** Maximum number of unified diff lines reported per file. */
     private static final int MAX_DIFF_LINES = 80;
@@ -248,7 +264,8 @@ public class XmlExportRegressionTest
                             TIMEOUT_SECONDS,
                             tempDir,
                             inputCopy.toAbsolutePath(),
-                            ocrFolder);
+                            ocrFolder,
+                            Arrays.asList("-transcribe", "-export"));
 
                     final String producedXml = readScoreXml(findSingleExportFile(tempDir));
 
@@ -298,6 +315,75 @@ public class XmlExportRegressionTest
             }
         } finally {
             deleteTree(ocrFolder);
+        }
+    }
+
+    //--------------------------//
+    // testBatchPrintWithoutOcr //
+    //--------------------------//
+    /**
+     * Transcribe, export and print one input file in batch, with OCR disabled.
+     * <p>
+     * Both a MusicXML file with notes but no words nor credits and a PDF file must be produced,
+     * and no exception be logged.
+     */
+    @Test
+    public void testBatchPrintWithoutOcr ()
+        throws IOException, InterruptedException
+    {
+        System.out.println("\n+++ testBatchPrintWithoutOcr");
+
+        final Path input = regressionFolder.resolve(PRINT_INPUT);
+        // Same prefix as the other test, to get the artifacts uploaded by CI on failure
+        final Path tempDir = Files.createTempDirectory("xml-export-print-");
+        final Path logFile = tempDir.resolve("audiveris-run.log");
+        boolean success = false;
+
+        try {
+            final Path inputCopy = Files.copy(input, tempDir.resolve(PRINT_INPUT));
+
+            runAudiveris(
+                    logFile,
+                    TIMEOUT_SECONDS,
+                    tempDir,
+                    inputCopy.toAbsolutePath(),
+                    null,
+                    Arrays.asList("-transcribe", "-export", "-print", "-constant", NO_OCR_CONSTANT));
+
+            final String log = new String(Files.readAllBytes(logFile), StandardCharsets.UTF_8);
+            final Matcher matcher = STACK_TRACE.matcher(log);
+
+            if (matcher.find()) {
+                fail("Exception logged:\n" + tailOf(log.substring(0, matcher.end()), 20));
+            }
+
+            final Path exportFile = findSingleExportFile(tempDir);
+            final String xml = readScoreXml(exportFile);
+            assertTrue("Empty score exported", xml.contains("<part ") && xml.contains("<note "));
+
+            // No words nor credits, otherwise OCR was not really disabled
+            final Matcher text = Pattern.compile("<(credit-)?words[^>]*>[^<]*").matcher(xml);
+
+            if (text.find()) {
+                fail("Text found in " + exportFile + " although OCR is disabled: " + text.group());
+            }
+
+            final String radix = PRINT_INPUT.substring(0, PRINT_INPUT.lastIndexOf('.'));
+            final Path pdf = tempDir.resolve(radix + OMR.PRINT_EXTENSION);
+            assertTrue("No print file " + pdf, Files.exists(pdf));
+
+            final byte[] bytes = Files.readAllBytes(pdf);
+            assertEquals(
+                    "Not a PDF file " + pdf,
+                    "%PDF-",
+                    new String(bytes, 0, Math.min(5, bytes.length), StandardCharsets.US_ASCII));
+            success = true;
+        } finally {
+            if (success) {
+                deleteTree(tempDir);
+            } else {
+                System.out.println("Artifacts kept in: " + tempDir);
+            }
         }
     }
 
@@ -738,12 +824,20 @@ public class XmlExportRegressionTest
      * The process runs from the app folder (so that relative resources resolve), writes its
      * outputs to the provided output folder (regardless of the user configuration) and
      * its console output is captured in the provided log file.
+     *
+     * @param logFile      file to capture the console output
+     * @param timeoutSecs  maximum duration of the run
+     * @param outputFolder folder for all outputs
+     * @param input        the input file to process
+     * @param ocrFolder    Tesseract data folder, or null to keep the environment as is
+     * @param actions      the command line actions and options, e.g. -transcribe -export
      */
     private static void runAudiveris (Path logFile,
                                       long timeoutSecs,
                                       Path outputFolder,
                                       Path input,
-                                      Path ocrFolder)
+                                      Path ocrFolder,
+                                      List<String> actions)
         throws IOException, InterruptedException
     {
         final List<String> command = new ArrayList<>();
@@ -752,7 +846,8 @@ public class XmlExportRegressionTest
         command.add("-cp");
         command.add(System.getProperty("java.class.path"));
         command.add("org.audiveris.omr.Main");
-        Collections.addAll(command, "-batch", "-transcribe", "-export");
+        command.add("-batch");
+        command.addAll(actions);
         Collections.addAll(command, "-output", outputFolder.toAbsolutePath().toString());
 
         for (String constant : FORCED_CONSTANTS) {
@@ -766,7 +861,10 @@ public class XmlExportRegressionTest
         final ProcessBuilder builder = new ProcessBuilder(command);
         builder.directory(appFolder.toFile());
         builder.redirectErrorStream(true);
-        builder.environment().put("TESSDATA_PREFIX", ocrFolder.toAbsolutePath().toString());
+
+        if (ocrFolder != null) {
+            builder.environment().put("TESSDATA_PREFIX", ocrFolder.toAbsolutePath().toString());
+        }
 
         builder.redirectOutput(logFile.toFile());
 
