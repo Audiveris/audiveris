@@ -85,7 +85,7 @@ public abstract class AbstractClassifier<M extends Object, N extends Object>
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractClassifier.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     /** A special evaluation array, used to report NOISE. */
     private static final Evaluation[] noiseEvaluations = { new Evaluation(

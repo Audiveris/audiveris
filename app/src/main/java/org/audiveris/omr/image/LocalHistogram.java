@@ -38,7 +38,7 @@ public class LocalHistogram
 
     private static final Logger logger = LoggerFactory.getLogger(LocalHistogram.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     private static final int MAX = 255;
 

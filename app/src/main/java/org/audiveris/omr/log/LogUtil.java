@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.log;
 
-import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
@@ -388,10 +387,12 @@ public abstract class LogUtil
     // Message //
     //---------//
     /**
-     * Message whose translation can be differed (typically until the user locale is known).
+     * Message whose translation must be differed (typically until the user locale is known).
      */
     public static class Message
     {
+        private static Translator ct;
+
         public final Level level;
 
         public final String key;
@@ -409,7 +410,9 @@ public abstract class LogUtil
 
         public String translated ()
         {
-            final Translator ct = Translator.GLOBAL;
+            if (ct == null) {
+                ct = new Translator(); // Lazy elaboration
+            }
 
             if (arguments == null)
                 return ct.trans(key);

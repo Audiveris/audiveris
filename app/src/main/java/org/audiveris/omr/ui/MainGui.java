@@ -40,7 +40,6 @@ import org.audiveris.omr.sheet.ui.SheetView;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.ui.StepMenu;
 import org.audiveris.omr.step.ui.StepMonitoring;
-import org.audiveris.omr.text.OCR;
 import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.text.tesseract.Languages;
 import org.audiveris.omr.ui.action.ActionManager;
@@ -628,7 +627,7 @@ public class MainGui
         logger.debug("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
 
         if (!OcrUtil.getOcr().isAvailable()) {
-            logger.warn(OCR.NO_OCR);
+            logger.warn(OcrUtil.NO_OCR);
         }
 
         // Make the MainGui instance available for the other classes

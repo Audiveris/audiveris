@@ -121,7 +121,7 @@ public class SheetEditor
 
     private static final Logger logger = LoggerFactory.getLogger(SheetEditor.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 

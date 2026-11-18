@@ -168,7 +168,7 @@ public abstract class SheetPainter
 
     private static final Logger logger = LoggerFactory.getLogger(SheetPainter.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     /** A transformation to half scale. (used for slot time annotation) */
     protected static final AffineTransform halfAT = AffineTransform.getScaleInstance(0.5, 0.5);

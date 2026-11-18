@@ -67,8 +67,6 @@ public class UnitManager
 
     private static final Logger logger = LoggerFactory.getLogger(UnitManager.class);
 
-    private static final Translator ct = Translator.GLOBAL;
-
     /** The single instance of this class. */
     private static final UnitManager INSTANCE = new UnitManager();
 
@@ -208,7 +206,7 @@ public class UnitManager
     public void dumpAllUnits ()
     {
         final StringBuilder sb = new StringBuilder();
-        sb.append(ct.trans("unit.manager.all.units")).append("\n");
+        sb.append(Lazy.ct.trans("unit.manager.all.units")).append("\n");
 
         // Use alphabetical order for easier reading
         final List<Node> nodes = new ArrayList<>(mapOfNodes.values());
@@ -357,10 +355,10 @@ public class UnitManager
             addUnit(unit);
 
             return unit;
-        } else if (node instanceof UnitNode) {
-            return (UnitNode) node;
+        } else if (node instanceof UnitNode unitNode) {
+            return unitNode;
         } else if (node instanceof PackageNode) {
-            logger.error(ct.trans("unit.with.same.name.as.package", name));
+            logger.error(Lazy.ct.trans("unit.with.same.name.as.package", name));
         }
 
         return null;
@@ -472,5 +470,15 @@ public class UnitManager
     public static UnitManager getInstance ()
     {
         return INSTANCE;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //------//
+    // Lazy //
+    //------//
+    private static class Lazy
+    {
+        static final Translator ct = new Translator();
     }
 }

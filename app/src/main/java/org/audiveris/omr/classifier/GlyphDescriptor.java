@@ -47,7 +47,7 @@ public abstract class GlyphDescriptor
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphDescriptor.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 

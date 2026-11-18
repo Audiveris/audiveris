@@ -63,7 +63,7 @@ public class CueBeamsStep
 
     private static final Logger logger = LoggerFactory.getLogger(CueBeamsStep.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

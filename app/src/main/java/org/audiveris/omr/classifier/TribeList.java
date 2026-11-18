@@ -55,7 +55,7 @@ class TribeList
 
     private static final Logger logger = LoggerFactory.getLogger(TribeList.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;

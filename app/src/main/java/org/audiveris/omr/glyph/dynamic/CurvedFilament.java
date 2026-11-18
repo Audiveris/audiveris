@@ -56,7 +56,7 @@ public class CurvedFilament
 
     private static final Logger logger = LoggerFactory.getLogger(CurvedFilament.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 

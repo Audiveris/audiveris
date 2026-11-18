@@ -93,7 +93,7 @@ public class MeasureRhythm
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureRhythm.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 

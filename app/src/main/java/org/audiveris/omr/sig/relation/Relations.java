@@ -91,7 +91,7 @@ public abstract class Relations
 
     private static final Logger logger = LoggerFactory.getLogger(Relations.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     private static final Map<Class<? extends Inter>, Set<Class<? extends Relation>>> src =
             new LinkedHashMap<>();

@@ -106,7 +106,7 @@ public class StubsController
 
     private static final Logger logger = LoggerFactory.getLogger(StubsController.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     /** Events that can be published on sheet service. */
     private static final Class<?>[] eventsWritten = new Class<?>[] { StubEvent.class };

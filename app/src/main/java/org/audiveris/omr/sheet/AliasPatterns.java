@@ -64,7 +64,7 @@ public class AliasPatterns
 
     private static final Logger logger = LoggerFactory.getLogger(AliasPatterns.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     private static final String ALIAS_PATTERNS_FILENAME = "alias-patterns.xml";
 

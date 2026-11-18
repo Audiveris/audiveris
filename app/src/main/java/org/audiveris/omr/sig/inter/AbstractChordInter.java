@@ -82,7 +82,7 @@ public abstract class AbstractChordInter
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractChordInter.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     /**
      * Maximum number of beams and flags that can shorten a note.

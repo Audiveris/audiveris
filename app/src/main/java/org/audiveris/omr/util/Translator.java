@@ -41,8 +41,8 @@ public class Translator
 
     private static final Logger logger = LoggerFactory.getLogger(Translator.class);
 
-    /** The translator based on the global messages. */
-    public static final Translator GLOBAL = new Translator(GlobalMessages.class);
+    /** The global resources, lazily built. */
+    private static ResourceBundle GLOBAL_RESOURCES;
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -51,7 +51,19 @@ public class Translator
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Creates a <code>Translator</code> instance.
+     * Creates a <code>Translator</code> instance, using the GlobalMessages class.
+     */
+    public Translator ()
+    {
+        if (GLOBAL_RESOURCES == null) {
+            GLOBAL_RESOURCES = ResourceUtil.getBundle(GlobalMessages.class);
+        }
+
+        resources = GLOBAL_RESOURCES;
+    }
+
+    /**
+     * Creates a <code>Translator</code> instance, using the provided class.
      *
      * @param classe the related Java class
      */

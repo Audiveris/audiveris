@@ -94,7 +94,7 @@ public class TextsStep
         if (OcrUtil.getOcr().isAvailable()) {
             lines.addAll(scanner.scanSheet());
         } else {
-            logger.warn("TEXTS step: {}", OCR.NO_OCR);
+            logger.warn("TEXTS step: {}", OcrUtil.NO_OCR);
         }
 
         // Make all this available for system-level processing

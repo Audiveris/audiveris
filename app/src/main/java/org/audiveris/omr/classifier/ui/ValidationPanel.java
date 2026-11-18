@@ -67,7 +67,7 @@ public class ValidationPanel
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationPanel.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 

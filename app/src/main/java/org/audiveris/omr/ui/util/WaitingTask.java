@@ -56,7 +56,7 @@ public abstract class WaitingTask<T, V>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 

@@ -42,6 +42,7 @@ import org.audiveris.omr.text.TextBuilder;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
 import org.audiveris.omr.util.Dumping;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +74,8 @@ public class RehearsalsBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(RehearsalsBuilder.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -196,11 +199,11 @@ public class RehearsalsBuilder
                 relativeLines,
                 scene.getLocation());
         if (lines.isEmpty()) {
-            logger.info("No text found in rehearsal enclosure {}", enclosure);
+            logger.info(ct.trans("no.text.in.rehearsal.enclosure", enclosure));
             return null;
         }
         if (lines.size() > 1) {
-            logger.info("Several text lines found in rehearsal enclosure {}", enclosure);
+            logger.info(ct.trans("several.text.lines.in.rehearsal", enclosure));
             return null;
         }
 
@@ -304,7 +307,7 @@ public class RehearsalsBuilder
                     if (measure != null) {
                         measure.addInter(rehearsal);
                     } else {
-                        logger.info("No containing measure for {}", rehearsal);
+                        logger.info(ct.trans("no.containing.measure.for", rehearsal));
                     }
 
                     break;

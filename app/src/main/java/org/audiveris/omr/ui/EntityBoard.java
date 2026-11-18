@@ -68,7 +68,7 @@ public class EntityBoard<E extends Entity>
 
     private static final Logger logger = LoggerFactory.getLogger(EntityBoard.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[] { EntityListEvent.class };

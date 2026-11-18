@@ -91,7 +91,7 @@ public class TemplateFactory
 
     private static final Logger logger = LoggerFactory.getLogger(TemplateFactory.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     /** Singleton. */
     private static final TemplateFactory INSTANCE = new TemplateFactory();

@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -101,7 +100,6 @@ import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
 import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.OmrStep;
 import org.audiveris.omr.text.BlockScanner;
-import org.audiveris.omr.text.OCR;
 import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.text.TextBuilder;
 import org.audiveris.omr.text.TextLine;
@@ -188,7 +186,7 @@ public class InterController
 
     private static final Logger logger = LoggerFactory.getLogger(InterController.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -337,7 +335,7 @@ public class InterController
             protected void build ()
             {
                 if (!OcrUtil.getOcr().isAvailable()) {
-                    logger.info(OCR.NO_OCR);
+                    logger.info(OcrUtil.NO_OCR);
 
                     return;
                 }

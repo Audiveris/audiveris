@@ -51,7 +51,7 @@ public class OpusExporter
 
     private static final Logger logger = LoggerFactory.getLogger(OpusExporter.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 

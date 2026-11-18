@@ -27,6 +27,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OCR;
+import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.util.Translator;
 
@@ -235,7 +236,7 @@ public class TesseractOCR
         if (isAvailable()) {
             return "Tesseract OCR, version " + TessBaseAPI.Version().getString();
         } else {
-            return OCR.NO_OCR;
+            return OcrUtil.NO_OCR;
         }
     }
 

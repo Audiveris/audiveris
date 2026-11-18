@@ -76,7 +76,7 @@ public class SampleSheet
 
     private static final Logger logger = LoggerFactory.getLogger(SampleSheet.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     /** File name for sheet samples: {@value}. */
     public static final String SAMPLES_FILE_NAME = "samples.xml";

@@ -85,7 +85,7 @@ public class SymbolRipper
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolRipper.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     /** Stand-alone run (vs part of Audiveris). */
     private static boolean standAlone = false;

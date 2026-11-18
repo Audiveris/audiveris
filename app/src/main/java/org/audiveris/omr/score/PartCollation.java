@@ -69,7 +69,7 @@ public class PartCollation
 
     private static final Logger logger = LoggerFactory.getLogger(PartCollation.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     public static final List<StaffConfig> PIANO_CONFIG = StaffConfig.decodeCsv(
             constants.pianoStaffConfig.getValue());

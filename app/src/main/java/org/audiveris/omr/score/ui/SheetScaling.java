@@ -49,7 +49,7 @@ public class SheetScaling
 
     private static final Logger logger = LoggerFactory.getLogger(SheetScaling.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     // JGoodies columns specification:     Topic      SelBox     Item             Value
     private static final String colSpec = "10dlu,1dlu,10dlu,1dlu,100dlu,1dlu,right:15dlu";

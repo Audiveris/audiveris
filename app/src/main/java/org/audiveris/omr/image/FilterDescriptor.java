@@ -47,7 +47,7 @@ public abstract class FilterDescriptor
 
     private static final Logger logger = LoggerFactory.getLogger(FilterDescriptor.class);
 
-    private static final Translator ct = Translator.GLOBAL;
+    private static final Translator ct = new Translator();
 
     /** Default param. */
     public static final Param<FilterDescriptor> defaultFilter = new Default();
