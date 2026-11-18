@@ -14,11 +14,11 @@
       <supports type="yes" element="beam"></supports>
       <supports type="yes" element="stem"></supports>
       <software>ProxyMusic 4.0.3</software>
-      <encoding-date>2026-11-02</encoding-date>
+      <encoding-date>2026-11-18</encoding-date>
     </encoding>
-    <source>D:\sources\audiveris\data\regression\allegretto.png</source>
+    <source>C:\Users\herve\AppData\Local\Temp\xml-export-11438124297497930109\allegretto.png</source>
     <miscellaneous>
-      <miscellaneous-field name="source-file">D:\sources\audiveris\data\regression\allegretto.png</miscellaneous-field>
+      <miscellaneous-field name="source-file">C:\Users\herve\AppData\Local\Temp\xml-export-11438124297497930109\allegretto.png</miscellaneous-field>
       <miscellaneous-field name="source-sheet-1">1 2 3</miscellaneous-field>
     </miscellaneous>
   </identification>
@@ -181,8 +181,8 @@
       </direction>
       <note default-x="144">
         <rest measure="yes">
-          <display-step>D</display-step>
-          <display-octave>5</display-octave>
+          <display-step>B</display-step>
+          <display-octave>4</display-octave>
         </rest>
         <duration>8</duration>
         <voice>1</voice>
@@ -278,8 +278,8 @@
     <measure number="2" width="132">
       <note default-x="62">
         <rest measure="yes">
-          <display-step>D</display-step>
-          <display-octave>5</display-octave>
+          <display-step>B</display-step>
+          <display-octave>4</display-octave>
         </rest>
         <duration>8</duration>
         <voice>1</voice>
@@ -331,8 +331,8 @@
     <measure number="3" width="137">
       <note default-x="64">
         <rest measure="yes">
-          <display-step>D</display-step>
-          <display-octave>5</display-octave>
+          <display-step>B</display-step>
+          <display-octave>4</display-octave>
         </rest>
         <duration>8</duration>
         <voice>1</voice>
@@ -403,8 +403,8 @@
     <measure number="4" width="160">
       <note default-x="66">
         <rest measure="yes">
-          <display-step>D</display-step>
-          <display-octave>5</display-octave>
+          <display-step>B</display-step>
+          <display-octave>4</display-octave>
         </rest>
         <duration>8</duration>
         <voice>1</voice>
@@ -1967,11 +1967,6 @@
         <stem default-y="-43">down</stem>
         <staff>1</staff>
         <beam number="1">end</beam>
-        <notations>
-          <articulations>
-            <tenuto placement="above" default-y="30"></tenuto>
-          </articulations>
-        </notations>
       </note>
       <note default-x="86">
         <pitch>

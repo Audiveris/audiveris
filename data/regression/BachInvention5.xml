@@ -14,11 +14,11 @@
       <supports type="yes" element="beam"></supports>
       <supports type="yes" element="stem"></supports>
       <software>ProxyMusic 4.0.3</software>
-      <encoding-date>2026-11-02</encoding-date>
+      <encoding-date>2026-11-18</encoding-date>
     </encoding>
-    <source>C:\Users\Mihai\AppData\Local\Temp\xml-export-13343589865861487044\BachInvention5.jpg</source>
+    <source>C:\Users\herve\AppData\Local\Temp\xml-export-2584481997477683489\BachInvention5.jpg</source>
     <miscellaneous>
-      <miscellaneous-field name="source-file">C:\Users\Mihai\AppData\Local\Temp\xml-export-13343589865861487044\BachInvention5.jpg</miscellaneous-field>
+      <miscellaneous-field name="source-file">C:\Users\herve\AppData\Local\Temp\xml-export-2584481997477683489\BachInvention5.jpg</miscellaneous-field>
       <miscellaneous-field name="source-sheet-1">1 2 3 4 5 6</miscellaneous-field>
     </miscellaneous>
   </identification>
@@ -3959,12 +3959,12 @@
       <note default-x="161">
         <pitch>
           <step>B</step>
+          <alter>-1</alter>
           <octave>2</octave>
         </pitch>
         <duration>1</duration>
         <voice>5</voice>
         <type>16th</type>
-        <accidental>natural</accidental>
         <stem default-y="11">up</stem>
         <staff>2</staff>
         <beam number="1">end</beam>

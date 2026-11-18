@@ -13,11 +13,11 @@
       <supports type="yes" element="beam"></supports>
       <supports type="yes" element="stem"></supports>
       <software>ProxyMusic 4.0.3</software>
-      <encoding-date>2026-11-05</encoding-date>
+      <encoding-date>2026-11-18</encoding-date>
     </encoding>
-    <source>D:\sources\audiveris\data\regression\carmen.png</source>
+    <source>C:\Users\herve\AppData\Local\Temp\xml-export-7382850420729177963\carmen.png</source>
     <miscellaneous>
-      <miscellaneous-field name="source-file">D:\sources\audiveris\data\regression\carmen.png</miscellaneous-field>
+      <miscellaneous-field name="source-file">C:\Users\herve\AppData\Local\Temp\xml-export-7382850420729177963\carmen.png</miscellaneous-field>
       <miscellaneous-field name="source-sheet-1">1 2 3 4 5</miscellaneous-field>
     </miscellaneous>
   </identification>
@@ -134,6 +134,24 @@
       <backup>
         <duration>24</duration>
       </backup>
+      <direction placement="above">
+        <direction-type>
+          <dynamics default-y="23" relative-x="-12">
+            <sfz/>
+          </dynamics>
+        </direction-type>
+        <staff>2</staff>
+        <sound dynamics="100"></sound>
+      </direction>
+      <direction placement="above">
+        <direction-type>
+          <dynamics default-y="25" relative-x="-25">
+            <ff/>
+          </dynamics>
+        </direction-type>
+        <staff>2</staff>
+        <sound dynamics="122"></sound>
+      </direction>
       <direction placement="below">
         <direction-type>
           <dynamics default-y="-111" relative-x="-17">
@@ -566,13 +584,20 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>6</duration>
+        <duration>4</duration>
         <voice>1</voice>
         <type>eighth</type>
         <accidental>natural</accidental>
+        <time-modification>
+          <actual-notes>3</actual-notes>
+          <normal-notes>2</normal-notes>
+        </time-modification>
         <stem default-y="-56">down</stem>
         <staff>1</staff>
         <beam number="1">begin</beam>
+        <notations>
+          <tuplet type="start" number="1" placement="below"></tuplet>
+        </notations>
       </note>
       <direction placement="above">
         <direction-type>
@@ -588,43 +613,43 @@
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>6</duration>
+        <duration>4</duration>
         <voice>1</voice>
         <type>eighth</type>
+        <time-modification>
+          <actual-notes>3</actual-notes>
+          <normal-notes>2</normal-notes>
+        </time-modification>
         <stem default-y="-57">down</stem>
         <staff>1</staff>
         <beam number="1">continue</beam>
-        <notations>
-          <fermata type="inverted" default-y="-73"></fermata>
-        </notations>
       </note>
       <note default-x="180">
         <pitch>
           <step>C</step>
           <octave>5</octave>
         </pitch>
-        <duration>6</duration>
+        <duration>4</duration>
         <voice>1</voice>
         <type>eighth</type>
+        <time-modification>
+          <actual-notes>3</actual-notes>
+          <normal-notes>2</normal-notes>
+        </time-modification>
         <stem default-y="-56">down</stem>
         <staff>1</staff>
         <beam number="1">end</beam>
+        <notations>
+          <tuplet type="stop" number="1"></tuplet>
+        </notations>
       </note>
-      <backup>
-        <duration>18</duration>
-      </backup>
-      <forward>
-        <duration>12</duration>
-        <voice>2</voice>
-        <staff>1</staff>
-      </forward>
       <note default-x="225">
         <pitch>
           <step>B</step>
           <octave>4</octave>
         </pitch>
         <duration>6</duration>
-        <voice>2</voice>
+        <voice>1</voice>
         <type>eighth</type>
         <accidental>natural</accidental>
         <stem default-y="-62">down</stem>
@@ -638,7 +663,7 @@
           <octave>4</octave>
         </pitch>
         <duration>6</duration>
-        <voice>2</voice>
+        <voice>1</voice>
         <type>eighth</type>
         <accidental>flat</accidental>
         <stem default-y="-62">down</stem>
@@ -1680,6 +1705,9 @@
         <stem default-y="-52">down</stem>
         <staff>1</staff>
         <beam number="1">end</beam>
+        <notations>
+          <fermata type="upright" default-y="10"></fermata>
+        </notations>
       </note>
       <backup>
         <duration>24</duration>

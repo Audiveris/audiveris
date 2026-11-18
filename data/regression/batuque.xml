@@ -12,11 +12,11 @@
       <supports type="yes" element="beam"></supports>
       <supports type="yes" element="stem"></supports>
       <software>ProxyMusic 4.0.3</software>
-      <encoding-date>2026-11-02</encoding-date>
+      <encoding-date>2026-11-18</encoding-date>
     </encoding>
-    <source>D:\sources\audiveris\data\regression\batuque.png</source>
+    <source>C:\Users\herve\AppData\Local\Temp\xml-export-5302431081434501698\batuque.png</source>
     <miscellaneous>
-      <miscellaneous-field name="source-file">D:\sources\audiveris\data\regression\batuque.png</miscellaneous-field>
+      <miscellaneous-field name="source-file">C:\Users\herve\AppData\Local\Temp\xml-export-5302431081434501698\batuque.png</miscellaneous-field>
       <miscellaneous-field name="source-sheet-1">1 2 3</miscellaneous-field>
     </miscellaneous>
   </identification>
@@ -529,7 +529,7 @@
         <duration>1</duration>
         <voice>5</voice>
         <type>16th</type>
-        <stem default-y="-45">down</stem>
+        <stem default-y="-46">down</stem>
         <staff>2</staff>
         <beam number="1">begin</beam>
         <beam number="2">begin</beam>
@@ -1467,7 +1467,7 @@
           <system-distance>119</system-distance>
         </system-layout>
         <staff-layout number="2">
-          <staff-distance>79</staff-distance>
+          <staff-distance>80</staff-distance>
         </staff-layout>
       </print>
       <attributes>
@@ -1700,11 +1700,6 @@
         <staff>2</staff>
         <beam number="1">begin</beam>
         <beam number="2">begin</beam>
-        <notations>
-          <articulations>
-            <staccatissimo placement="below" default-y="-70"></staccatissimo>
-          </articulations>
-        </notations>
       </note>
       <note default-x="48">
         <pitch>
@@ -2165,6 +2160,7 @@
         <stem default-y="-22">down</stem>
         <staff>2</staff>
         <notations>
+          <fermata type="upright" default-y="37"></fermata>
           <articulations>
             <staccato placement="above" default-y="38"></staccato>
           </articulations>

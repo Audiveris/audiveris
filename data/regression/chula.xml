@@ -12,11 +12,11 @@
       <supports type="yes" element="beam"></supports>
       <supports type="yes" element="stem"></supports>
       <software>ProxyMusic 4.0.3</software>
-      <encoding-date>2026-11-02</encoding-date>
+      <encoding-date>2026-11-18</encoding-date>
     </encoding>
-    <source>D:\sources\audiveris\data\regression\chula.png</source>
+    <source>C:\Users\herve\AppData\Local\Temp\xml-export-1352850132012110926\chula.png</source>
     <miscellaneous>
-      <miscellaneous-field name="source-file">D:\sources\audiveris\data\regression\chula.png</miscellaneous-field>
+      <miscellaneous-field name="source-file">C:\Users\herve\AppData\Local\Temp\xml-export-1352850132012110926\chula.png</miscellaneous-field>
       <miscellaneous-field name="source-sheet-1">1 2 3</miscellaneous-field>
     </miscellaneous>
   </identification>
@@ -127,8 +127,8 @@
       </backup>
       <note default-x="91">
         <rest>
-          <display-step>C</display-step>
-          <display-octave>5</display-octave>
+          <display-step>B</display-step>
+          <display-octave>4</display-octave>
         </rest>
         <duration>6</duration>
         <voice>5</voice>
@@ -841,7 +841,7 @@
         <duration>6</duration>
         <voice>5</voice>
         <type>eighth</type>
-        <stem default-y="-54">down</stem>
+        <stem default-y="-55">down</stem>
         <staff>2</staff>
         <beam number="1">begin</beam>
       </note>
@@ -1150,8 +1150,8 @@
       </backup>
       <note default-x="20">
         <rest>
-          <display-step>C</display-step>
-          <display-octave>5</display-octave>
+          <display-step>B</display-step>
+          <display-octave>4</display-octave>
         </rest>
         <duration>6</duration>
         <voice>5</voice>
@@ -1653,7 +1653,7 @@
         <duration>3</duration>
         <voice>5</voice>
         <type>16th</type>
-        <stem default-y="-32">down</stem>
+        <stem default-y="-33">down</stem>
         <staff>2</staff>
         <beam number="1">continue</beam>
         <beam number="2">continue</beam>

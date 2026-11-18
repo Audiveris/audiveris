@@ -11,11 +11,11 @@
       <supports type="yes" element="beam"></supports>
       <supports type="yes" element="stem"></supports>
       <software>ProxyMusic 4.0.3</software>
-      <encoding-date>2026-11-02</encoding-date>
+      <encoding-date>2026-11-18</encoding-date>
     </encoding>
-    <source>D:\sources\audiveris\data\regression\hove.png</source>
+    <source>C:\Users\herve\AppData\Local\Temp\xml-export-6068107074640836949\hove.png</source>
     <miscellaneous>
-      <miscellaneous-field name="source-file">D:\sources\audiveris\data\regression\hove.png</miscellaneous-field>
+      <miscellaneous-field name="source-file">C:\Users\herve\AppData\Local\Temp\xml-export-6068107074640836949\hove.png</miscellaneous-field>
       <miscellaneous-field name="source-sheet-1">1 2 3 4 5</miscellaneous-field>
     </miscellaneous>
   </identification>
@@ -129,6 +129,7 @@
         <beam number="1">begin</beam>
         <notations>
           <articulations>
+            <staccatissimo placement="above" default-y="25"></staccatissimo>
             <staccato placement="above" default-y="34"></staccato>
           </articulations>
         </notations>
@@ -963,6 +964,14 @@
         <dot/>
         <stem default-y="-104">down</stem>
       </note>
+      <direction placement="below">
+        <direction-type>
+          <dynamics default-y="-95" relative-x="-4">
+            <p/>
+          </dynamics>
+        </direction-type>
+        <sound dynamics="56"></sound>
+      </direction>
       <note default-x="298">
         <pitch>
           <step>D</step>
@@ -978,7 +987,7 @@
     <measure number="9" width="386">
       <direction placement="above">
         <direction-type>
-          <words default-y="30" relative-x="4" font-family="serif" font-style="italic" font-size="12">m 1</words>
+          <words default-y="30" relative-x="4" font-family="serif" font-style="italic" font-size="12">m</words>
         </direction-type>
       </direction>
       <note default-x="20">
@@ -1004,6 +1013,7 @@
         <beam number="1">continue</beam>
         <notations>
           <articulations>
+            <staccatissimo placement="above" default-y="35"></staccatissimo>
             <staccato placement="above" default-y="44"></staccato>
           </articulations>
         </notations>
