@@ -169,8 +169,12 @@ public class TextLine
         // Discard really invalid words
         final List<TextWord> toRemove = new ArrayList<>();
 
-        for (TextWord word : getWords()) {
-            String reason = word.checkValidity();
+        final List<TextWord> lineWords = getWords();
+
+        for (int i = 0; i < lineWords.size(); i++) {
+            final TextWord word = lineWords.get(i);
+            final TextWord next = (i + 1 < lineWords.size()) ? lineWords.get(i + 1) : null;
+            String reason = word.checkValidity(next);
 
             if (reason != null) {
                 toRemove.add(word);
@@ -801,7 +805,9 @@ public class TextLine
         final Collection<TextWord> toAdd = new ArrayList<>();
         final Collection<TextWord> toRemove = new ArrayList<>();
 
-        for (TextWord word : words) {
+        for (int w = 0; w < words.size(); w++) {
+            final TextWord word = words.get(w);
+            final TextWord nextWord = (w + 1 < words.size()) ? words.get(w + 1) : null;
             final int maxCharGap = getMaxCharGap(word); // Max gap depends on word font size
             final List<TextWord> subWords = word.getSubWords(
                     this,
@@ -810,8 +816,11 @@ public class TextLine
             if (!subWords.isEmpty()) {
                 toRemove.add(word);
 
-                for (TextWord subWord : subWords) {
-                    if (subWord.checkValidity() == null)
+                for (int i = 0; i < subWords.size(); i++) {
+                    final TextWord subWord = subWords.get(i);
+                    final TextWord next = (i + 1 < subWords.size()) ? subWords.get(i + 1) : nextWord;
+
+                    if (subWord.checkValidity(next) == null)
                         toAdd.add(subWord);
                 }
             }
