@@ -89,9 +89,6 @@ public abstract class WellKnowns
     /** Name of operating system. */
     private static final String OS_NAME = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
 
-    /** Are we using a Linux OS?. */
-    public static final boolean LINUX = OS_NAME.startsWith("linux");
-
     /** Are we using Flatpak (Linux)?. */
     public static final boolean FLATPAK = FLATPAK_ID != null;
 
@@ -100,6 +97,9 @@ public abstract class WellKnowns
 
     /** Are we using a Windows OS?. */
     public static final boolean WINDOWS = OS_NAME.startsWith("windows");
+
+    /** Are we using another Unix-like OS (Linux, BSD, ...), based on X11 and XDG?. */
+    public static final boolean UNIX = !WINDOWS && !MAC_OS_X;
 
     /** Precise OS architecture. */
     public static final String OS_ARCH = System.getProperty("os.arch");
@@ -207,7 +207,7 @@ public abstract class WellKnowns
     }
 
     static {
-        /** Enable HiDPI scaling support on Linux Wayland. */
+        /** Enable HiDPI scaling support on Unix-like X11 or Wayland. */
         enableHiDpiScaling();
     }
 
@@ -275,7 +275,7 @@ public abstract class WellKnowns
     // enableHiDpiScaling //
     //--------------------//
     /**
-     * Detect the desktop scale factor on Linux and apply it.
+     * Detect the desktop scale factor on Linux (or other Unix-like OS) and apply it.
      * <p>
      * Java2D on X11 (which includes XWayland) only supports integer scale factors, any
      * fractional part of "sun.java2d.uiScale" is truncated.
@@ -285,7 +285,7 @@ public abstract class WellKnowns
      */
     private static void enableHiDpiScaling ()
     {
-        if (!LINUX || System.getProperty("sun.java2d.uiScale") != null
+        if (!UNIX || System.getProperty("sun.java2d.uiScale") != null
                 || System.getProperty("flatlaf.uiScale") != null) {
             return;
         }
@@ -492,19 +492,15 @@ public abstract class WellKnowns
             return getFolderForWindows(kind);
         } else if (MAC_OS_X) {
             return getFolderForMac(kind);
-        } else if (LINUX) {
-            return getFolderForLinux(kind);
         } else {
-            printError("Platform unknown: " + kind);
-
-            return null;
+            return getFolderForUnix(kind);
         }
     }
 
-    //-------------------//
-    // getFolderForLinux //
-    //-------------------//
-    private static Path getFolderForLinux (FolderKind kind)
+    //------------------//
+    // getFolderForUnix //
+    //------------------//
+    private static Path getFolderForUnix (FolderKind kind)
     {
         // First try XDG specification
         final String xdg = System.getenv(xdgProperty(kind));

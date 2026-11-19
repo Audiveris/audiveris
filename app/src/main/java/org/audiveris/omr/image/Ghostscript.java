@@ -72,7 +72,7 @@ public class Ghostscript
     public static String getPath ()
     {
         if (path == null) {
-            if (WellKnowns.LINUX || WellKnowns.MAC_OS_X) {
+            if (WellKnowns.UNIX || WellKnowns.MAC_OS_X) {
                 path = "gs";
             } else if (WellKnowns.WINDOWS) {
                 path = getWindowsPath();

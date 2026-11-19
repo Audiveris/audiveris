@@ -92,6 +92,27 @@ gradlew.bat run
 Please note that all these commands use the **gradle wrapper** (`gradlew`) which,
 behind the scenes, takes care of getting and launching the proper gradle version.
 
+## Platforms without prebuilt OCR libraries
+
+Bytedeco provides Tesseract native libraries only for Linux, macOS and Windows on x86_64,
+and for Linux and macOS on arm64.
+On other platforms, such as FreeBSD, the build compiles the JNI glue libraries locally against
+installed Tesseract and Leptonica, provided their headers are found.
+
+```sh
+# (FreeBSD)
+pkg install tesseract leptonica
+./gradlew run
+```
+
+Without these packages, Audiveris builds and runs, but without OCR.
+
+Properties to adjust this:
+- `-PlocalBase=/path`: installation prefix (default is `/usr` on Linux, `/usr/local` elsewhere).
+- `-PlocalJni=true`: force a local build, for example on Linux to use the distribution packages
+  which might be newer.
+- `-PlocalJni=false`: never build locally.
+
 ## Alternative run
 
 The gradle-based run, as described above, makes sure that all our potential modifications are

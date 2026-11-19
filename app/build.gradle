@@ -27,6 +27,32 @@ ext.tessVersion = '5.5.2'
 ext.leptVersion = '1.87.0'
 ext.jcppVersion = '1.5.13'
 
+
+//---------------//
+// OCR libraries //
+//---------------//
+
+// Does Bytedeco publish prebuilt Leptonica and Tesseract libraries for the target platform?
+def hasPrebuiltJni = targetOS in ['linux-x86_64', 'linux-arm64',
+                                  'macosx-x86_64', 'macosx-arm64', 'windows-x86_64']
+
+// Platforms JavaCPP has compiler settings for, besides the prebuilt ones
+def javacppPlatforms = ['freebsd-x86_64', 'linux-x86', 'linux-armhf', 'linux-ppc64le',
+                        'linux-riscv64', 'windows-x86', 'windows-arm64']
+
+// Build JNI libraries locally, against installed Leptonica and Tesseract?
+// Default is to do so only on platforms with no prebuilt libraries, if the
+// headers are found, otherwise it'll be an OCR-less build.
+// Can be forced e.g. on linux-x86_64 with -PlocalJni=true|false.
+def localBase = file(project.findProperty('localBase')
+        ?: (hostOSName == 'linux' ? '/usr' : '/usr/local'))
+def localHeaders = ['leptonica/allheaders.h', 'tesseract/version.h']
+        .collect { new File(localBase, "include/$it") }
+def useLocalJni = project.hasProperty('localJni')
+        ? project.property('localJni').toString().toBoolean()
+        : !hasPrebuiltJni && (targetOS in javacppPlatforms) &&
+          localHeaders.every { it.isFile() }
+
 def app = project(':app')
 
 // Name of Java main class. 
@@ -105,9 +131,20 @@ dependencies {
 
     runtimeOnly(
         "com.sun.xml.bind:jaxb-impl:2.3.1",
-        "org.bytedeco:leptonica:$leptVersion-$jcppVersion:$targetOS",
-        "org.bytedeco:tesseract:$tessVersion-$jcppVersion:$targetOS",
     )
+
+    // Prebuilt native libraries, unless built locally, see below
+    if (!useLocalJni) {
+        if (hasPrebuiltJni) {
+            runtimeOnly(
+                "org.bytedeco:leptonica:$leptVersion-$jcppVersion:$targetOS",
+                "org.bytedeco:tesseract:$tessVersion-$jcppVersion:$targetOS",
+            )
+        } else {
+            logger.warn("No prebuilt OCR libraries for $targetOS,"
+                    + " install leptonica and tesseract to build them locally, see the handbook")
+        }
+    }
 
     testImplementation(
         "junit:junit:4.13.2",
@@ -117,12 +154,73 @@ dependencies {
 }
 
 // Trick for Linux to include 'arm64' architecture in addition to 'x86_64'
-if (targetOS == "linux-x86_64") {
+if (targetOS == "linux-x86_64" && !useLocalJni) {
     dependencies {
         runtimeOnly(
             "org.bytedeco:leptonica:$leptVersion-$jcppVersion:linux-arm64",
             "org.bytedeco:tesseract:$tessVersion-$jcppVersion:linux-arm64",
         )
+    }
+}
+
+// Local build of JNI libraries, against the installed Leptonica and Tesseract.
+// Typically for platforms with no prebuilt libraries, like FreeBSD.
+if (useLocalJni) {
+    def includeDir = new File(localBase, 'include')
+    def libDir = new File(localBase, 'lib')
+
+    configurations {
+        jniBuilder
+    }
+
+    dependencies {
+        jniBuilder(
+            "org.bytedeco:javacpp:$jcppVersion",
+            "org.bytedeco:leptonica:$leptVersion-$jcppVersion",
+            "org.bytedeco:tesseract:$tessVersion-$jcppVersion",
+        )
+    }
+
+    def jniStage = layout.buildDirectory.dir("jni/stage")
+    def presets = [
+        javacpp  : 'org.bytedeco.javacpp.presets.javacpp',
+        leptonica: 'org.bytedeco.leptonica.**',
+        tesseract: 'org.bytedeco.tesseract.**',
+    ]
+
+    def jniTasks = presets.collect { name, classes ->
+        tasks.register("buildJni${name.capitalize()}", JavaExec) {
+            description = "Builds JNI library for $name on $targetOS"
+            def outDir = jniStage.map { it.dir("org/bytedeco/$name/$targetOS") }
+            def builderCp = configurations.jniBuilder
+            inputs.files(builderCp)
+            // Rebuild when installed packages change (headers, libraries)
+            inputs.files(fileTree(includeDir) { include 'leptonica/**', 'tesseract/**' })
+            inputs.files(fileTree(libDir) { include '*leptonica*', '*tesseract*' })
+            outputs.dir(outDir)
+            classpath = builderCp
+            mainClass = 'org.bytedeco.javacpp.tools.Builder'
+            argumentProviders.add({
+                ['-classpath', builderCp.asPath,
+                 '-properties', targetOS,
+                 "-Dplatform.includepath=$includeDir",
+                 "-Dplatform.linkpath=$libDir",
+                 '-d', outDir.get().asFile.path,
+                 classes]
+            } as CommandLineArgumentProvider)
+        }
+    }
+
+    def jniJar = tasks.register('jniJar', Jar) {
+        description = "Packages locally built JNI libraries for $targetOS"
+        dependsOn jniTasks
+        archiveFileName = "bytedeco-${targetOS}.jar"
+        destinationDirectory = layout.buildDirectory.dir("jni")
+        from jniStage
+    }
+
+    dependencies {
+        runtimeOnly files(jniJar)
     }
 }
 
