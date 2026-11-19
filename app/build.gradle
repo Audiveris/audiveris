@@ -505,6 +505,9 @@ test {
 
     // Application JVM options, for tests that launch Audiveris in a separate JVM
     systemProperty 'audiveris.jvmArgs', application.applicationDefaultJvmArgs.join(',')
+
+    // Keep tests hermetic from the configuration of the user running them
+    systemProperty 'audiveris.user.folder', layout.buildDirectory.dir('test-user').get().asFile.path
 }
 
 // Defining 'debug' task allows to set its arguments later   

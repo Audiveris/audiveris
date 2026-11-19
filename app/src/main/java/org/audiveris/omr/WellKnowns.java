@@ -82,6 +82,13 @@ public abstract class WellKnowns
     /** Specific prefix for application folders: {@value}. */
     private static final String TOOL_PREFIX = "/" + COMPANY_ID + "/" + TOOL_ID;
 
+    /**
+     * System property naming a single folder to use instead of all the platform-specific user
+     * folders, for hermetic tests which must not depend on the configuration of the user running
+     * them.
+     */
+    public static final String USER_FOLDER_PROPERTY = "audiveris.user.folder";
+
     //----------//
     // PLATFORM //
     //----------//
@@ -488,6 +495,12 @@ public abstract class WellKnowns
     //-----------//
     private static Path getFolder (FolderKind kind)
     {
+        final String userFolder = System.getProperty(USER_FOLDER_PROPERTY, "").trim();
+
+        if (!userFolder.isEmpty()) {
+            return Paths.get(userFolder).toAbsolutePath();
+        }
+
         if (WINDOWS) {
             return getFolderForWindows(kind);
         } else if (MAC_OS_X) {
