@@ -262,9 +262,10 @@ public class TextWord
     /**
      * Check the provided OCR'd word (the word is not modified).
      *
+     * @param next the word that follows in the line, or null
      * @return reason for invalidity if any, otherwise null
      */
-    public String checkValidity ()
+    public String checkValidity (TextWord next)
     {
         if (isVip()) {
             logger.info("VIP TextWord.checkValidity {}", this);
@@ -304,10 +305,11 @@ public class TextWord
         }
 
         // Remove word which is most likely a slur mis-read as a letter (e.g. a lone "J")
+        // OCR reads the note of a metronome mark as the same letter, so keep it before an '='
         if (SLUR_LIKE_WORDS != null) {
             Matcher matcher = SLUR_LIKE_WORDS.matcher(value);
 
-            if (matcher.matches()) {
+            if (matcher.matches() && !startsWithEqualSign(next)) {
                 logger.debug("      slur-like word {}", this);
                 return "slur-like-word-value";
             }
@@ -352,6 +354,26 @@ public class TextWord
         }
 
         return null; // No invalidity detected, word is considered as OK
+    }
+
+    //---------------------//
+    // startsWithEqualSign //
+    //---------------------//
+    /**
+     * Report whether the provided word starts with the '=' (or ':') of a metronome mark.
+     *
+     * @param word the word to check, perhaps null
+     * @return true if so
+     */
+    private static boolean startsWithEqualSign (TextWord word)
+    {
+        if (word == null) {
+            return false;
+        }
+
+        final String value = word.getValue();
+
+        return value.startsWith("=") || value.startsWith(":");
     }
 
     //------------//

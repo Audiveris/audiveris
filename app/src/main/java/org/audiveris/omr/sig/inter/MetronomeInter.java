@@ -935,6 +935,10 @@ public class MetronomeInter
             final String noteStr = getGroup(matcher, NOTE).trim();
             logger.debug("create. noteStr:\"{}\" codes[{}]", noteStr, codesOf(noteStr));
 
+            if (noteStr.isEmpty()) {
+                reporter.alert("No note characters in line: " + line);
+            }
+
             // Perhaps the note 'characters' are in the same word as the '=' sign
             ctx.noteWord = line.getWords().get(equalIndex);
             ctx.charIndex = ctx.noteWord.getValue().indexOf(noteStr);
