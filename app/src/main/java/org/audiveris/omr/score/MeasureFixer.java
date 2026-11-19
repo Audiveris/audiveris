@@ -117,6 +117,25 @@ public class MeasureFixer
         return termination;
     }
 
+    //--------------//
+    // isCautionary //
+    //--------------//
+    /**
+     * Check for an empty stack as a cautionary stack at the right end of a system.
+     * <p>
+     * A cautionary stack lies past the last barline of the system: it can hold courtesy clef,
+     * key or time signatures, and no barline on its right. Where a barline closes the stack,
+     * the stack is a measure, however little was recognised in it.
+     *
+     * @param stack the empty stack to check
+     * @return true if so
+     */
+    private boolean isCautionary (MeasureStack stack)
+    {
+        return (stack == stack.getSystem().getLastStack())
+                && (stack.getFirstMeasure().getRightPartBarline() == null);
+    }
+
     //---------//
     // isEmpty //
     //---------//
@@ -298,8 +317,8 @@ public class MeasureFixer
                 // This whole stack is empty (no notes/rests, hence no voices)
                 logger.debug("empty");
 
-                if (stack != system.getLastStack()) {
-                    // We will merge with the following stack
+                if (!isCautionary(stack)) {
+                    // Empty measure (a header stack will merge with the following stack)
                     setId(
                             (lastId != null) ? (lastId + 1)
                                     : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
