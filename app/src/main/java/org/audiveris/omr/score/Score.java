@@ -29,6 +29,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +94,8 @@ public class Score
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Score.class);
+
+    private static final Translator ct = new Translator();
 
     /** Number of lines in a staff. */
     public static final int LINE_NB = 5;
@@ -178,7 +181,7 @@ public class Score
      */
     public void close ()
     {
-        logger.info("Closing {}", this);
+        logger.info(ct.trans("closing", this));
 
         if (logicalsEditor != null) {
             logicalsEditor.getComponent().dispose();
@@ -442,7 +445,7 @@ public class Score
             if (delta != null) {
                 offset += delta;
             } else {
-                logger.info("No deltaMeasureId for {}", pageRef);
+                logger.info(ct.trans("no.delta.measure.id.for", pageRef));
             }
         }
 
@@ -863,7 +866,7 @@ public class Score
             for (SystemRef systemRef : pageRef.getSystems()) {
                 for (PartRef partRef : systemRef.getParts()) {
                     if (partRef.getLogicalId() == null) {
-                        logger.info("PartCollation needed in {}", this);
+                        logger.info(ct.trans("part.collation.needed.in", this));
                         return true;
                     }
                 }
@@ -938,7 +941,7 @@ public class Score
     public void setLogicalsLocked (boolean bool)
     {
         logicalsLocked = bool;
-        logger.info("LogicalParts for {} are {}", this, bool ? "LOCKED" : "UNLOCKED");
+        logger.info(ct.trans(bool ? "logical.parts.are.locked" : "logical.parts.are.unlocked"));
         book.setModified(true);
     }
 
@@ -1000,7 +1003,9 @@ public class Score
     private static class Constants
             extends ConstantSet
     {
-        private final Constant.Integer defaultVolume =
-                new Constant.Integer("Volume", 78, "Default Volume in 0..127 range");
+        private final Constant.Integer defaultVolume = new Constant.Integer(
+                "Volume",
+                78,
+                "Default Volume in 0..127 range");
     }
 }

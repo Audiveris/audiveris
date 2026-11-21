@@ -56,6 +56,7 @@ import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.action.Preferences;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VoidTask;
 
 import org.slf4j.Logger;
@@ -93,6 +94,8 @@ public class EditorMenu
 
     private static final Logger logger = LoggerFactory.getLogger(EditorMenu.class);
 
+    private static final Translator ct = new Translator(EditorMenu.class);
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
@@ -103,8 +106,8 @@ public class EditorMenu
     public EditorMenu (Sheet sheet)
     {
         super(sheet);
-        defineLayout();
         popup.setName("EditorMenu");
+        defineLayout();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -244,7 +247,7 @@ public class EditorMenu
 
         MeasureMenu ()
         {
-            super("Measure");
+            super(ct.trans("measure"));
             add(new JMenuItem(stackAction));
             add(new JMenuItem(new DumpMeasureAction()));
             add(new JMenuItem(rhythmAction));
@@ -265,7 +268,7 @@ public class EditorMenu
             setVisible(stack != null);
 
             if (stack != null) {
-                setText("Measure #" + stack.getPageId());
+                setText(ct.trans("measure.id", stack.getPageId()));
             }
 
             stackAction.update();
@@ -281,8 +284,8 @@ public class EditorMenu
         {
             DumpMeasureAction ()
             {
-                putValue(NAME, "Dump measure voices");
-                putValue(SHORT_DESCRIPTION, "Dump the voices of the selected measure");
+                putValue(NAME, ct.trans("dumpMeasure.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("dumpMeasure.toolTipText"));
             }
 
             @Override
@@ -300,8 +303,8 @@ public class EditorMenu
         {
             DumpStackAction ()
             {
-                putValue(NAME, "Dump stack voices");
-                putValue(SHORT_DESCRIPTION, "Dump the voices of the selected measure stack");
+                putValue(NAME, ct.trans("dumpStack.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("dumpStack.toolTipText"));
             }
 
             @Override
@@ -324,14 +327,14 @@ public class EditorMenu
         {
             MergeAction ()
             {
-                putValue(NAME, "Merge on right");
-                putValue(SHORT_DESCRIPTION, "Merge this measure stack with next one on right");
+                putValue(NAME, ct.trans("merge.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("merge.toolTipText"));
             }
 
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                logger.info("MergeAction for {}", stack);
+                logger.info(ct.trans("merging.measure", stack));
 
                 final SystemInfo system = stack.getSystem();
                 final List<Part> parts = system.getParts();
@@ -365,8 +368,8 @@ public class EditorMenu
         {
             RhythmAction ()
             {
-                putValue(NAME, "Reprocess rhythm");
-                putValue(SHORT_DESCRIPTION, "Reprocess rhythm on the selected measure");
+                putValue(NAME, ct.trans("measure.rhythm.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("measure.rhythm.toolTipText"));
             }
 
             @Override
@@ -400,7 +403,7 @@ public class EditorMenu
 
         PageMenu ()
         {
-            super("Page");
+            super(ct.trans("page"));
             add(new JMenuItem(rhythmAction));
         }
 
@@ -418,7 +421,7 @@ public class EditorMenu
             setVisible(page != null);
 
             if (page != null) {
-                setText("Page #" + page.getId());
+                setText(ct.trans("page.id", page.getId()));
             }
 
             rhythmAction.update();
@@ -432,8 +435,8 @@ public class EditorMenu
         {
             RhythmAction ()
             {
-                putValue(NAME, "Reprocess rhythm");
-                putValue(SHORT_DESCRIPTION, "Redo rhythm and systems connection for current page");
+                putValue(NAME, ct.trans("page.rhythm.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("page.rhythm.toolTipText"));
             }
 
             @Override
@@ -465,7 +468,7 @@ public class EditorMenu
 
         PartMenu ()
         {
-            super("Part");
+            super(ct.trans("part"));
         }
 
         @Override
@@ -500,7 +503,7 @@ public class EditorMenu
                 return;
             }
 
-            setText("Part #" + (1 + system.getParts().indexOf(part)));
+            setText(ct.trans("part.id", 1 + system.getParts().indexOf(part)));
             removeAll();
             add(new LogicalMenu(part));
             setVisible(true);
@@ -522,8 +525,8 @@ public class EditorMenu
                 this.part = part;
                 currentLogical = part.getLogicalPart();
 
-                setText("Assign logical");
-                setToolTipText("Assign the related logical part");
+                setText(ct.trans("logicalMenu.text"));
+                setToolTipText(ct.trans("logicalMenu.toolTipText"));
 
                 final List<LogicalPart> logicals = part.getSystem().getPage().getScore()
                         .getLogicalParts();
@@ -544,7 +547,7 @@ public class EditorMenu
                         part.getSystem().getPage().getScore().getLogicalParts());
 
                 if (prefLogical != null) {
-                    logger.info("Mapped {} to {}", part, prefLogical);
+                    logger.info(ct.trans("mapped.part", part, prefLogical));
                     part.setLogicalPart(prefLogical, true);
 
                     sheet.getSheetEditor().refresh();
@@ -569,7 +572,7 @@ public class EditorMenu
 
         ScoreMenu ()
         {
-            super("Score");
+            super(ct.trans("score"));
         }
 
         @Override
@@ -589,7 +592,7 @@ public class EditorMenu
                 return;
             }
 
-            setText("Score #" + score.getId());
+            setText(ct.trans("score.id", score.getId()));
 
             removeAll();
 
@@ -617,8 +620,8 @@ public class EditorMenu
         {
             LogicalsEditing ()
             {
-                putValue(NAME, "Edit logical parts");
-                putValue(SHORT_DESCRIPTION, "Review the definition of all logical parts in score");
+                putValue(NAME, ct.trans("logicals.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("logicals.toolTipText"));
             }
 
             @Override
@@ -652,8 +655,8 @@ public class EditorMenu
         {
             PartsCollation ()
             {
-                putValue(NAME, "Collate parts");
-                putValue(SHORT_DESCRIPTION, "Collate all parts in score into logical parts");
+                putValue(NAME, ct.trans("parts.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("parts.toolTipText"));
             }
 
             @Override
@@ -700,7 +703,7 @@ public class EditorMenu
 
         SlotMenu ()
         {
-            super("Slot");
+            super(ct.trans("slot"));
             add(new JMenuItem(new DumpSlotChordsAction()));
             add(new JMenuItem(new DumpVoicesAction()));
         }
@@ -719,7 +722,7 @@ public class EditorMenu
             setVisible(slot != null);
 
             if (slot != null) {
-                setText("Slot #" + slot.getId() + " @" + slot.getTimeOffset());
+                setText(ct.trans("slot.id", slot.getId(), slot.getTimeOffset().toString()));
             }
         }
 
@@ -731,8 +734,8 @@ public class EditorMenu
         {
             DumpSlotChordsAction ()
             {
-                putValue(NAME, "Dump chords");
-                putValue(SHORT_DESCRIPTION, "Dump the chords of the selected slot");
+                putValue(NAME, ct.trans("dumpSlot.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("dumpSlot.toolTipText"));
             }
 
             @Override
@@ -750,8 +753,8 @@ public class EditorMenu
         {
             DumpVoicesAction ()
             {
-                putValue(NAME, "Dump voices");
-                putValue(SHORT_DESCRIPTION, "Dump the voices of the selected slot");
+                putValue(NAME, ct.trans("dumpVoices.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("dumpVoices.toolTipText"));
             }
 
             @Override
@@ -768,11 +771,11 @@ public class EditorMenu
     private class StaffMenu
             extends LocationDependentMenu
     {
+        private final StaffEditingAction editing = new StaffEditingAction();
+
+        private final LineEditingAction lineEditing = new LineEditingAction();
+
         private Staff staff;
-
-        private StaffEditingAction editing = new StaffEditingAction();
-
-        private LineEditingAction lineEditing = new LineEditingAction();
 
         private Point2D center; // Current user location
 
@@ -781,7 +784,7 @@ public class EditorMenu
          */
         StaffMenu ()
         {
-            super("Staff");
+            super(ct.trans("staff"));
 
             add(new JMenuItem(editing));
             add(new JMenuItem(lineEditing));
@@ -802,7 +805,7 @@ public class EditorMenu
             setVisible(staff != null);
 
             if (staff != null) {
-                setText("Staff #" + staff.getId());
+                setText(ct.trans("staff.id", staff.getId()));
 
                 final int margin = sheet.getScale().toPixels(constants.maxStaffDx);
                 final double x = center.getX();
@@ -822,8 +825,8 @@ public class EditorMenu
         {
             LineEditingAction ()
             {
-                putValue(NAME, "Edit lines");
-                putValue(SHORT_DESCRIPTION, "Edit the staff lines individually");
+                putValue(NAME, ct.trans("lineEditing.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("lineEditing.toolTipText"));
             }
 
             @Override
@@ -841,8 +844,8 @@ public class EditorMenu
         {
             PlotAction ()
             {
-                putValue(NAME, "Staff projection");
-                putValue(SHORT_DESCRIPTION, "Display staff horizontal projection");
+                putValue(NAME, ct.trans("plot.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("plot.toolTipText"));
             }
 
             @Override
@@ -851,7 +854,7 @@ public class EditorMenu
                 try {
                     new StaffProjector(sheet, staff, null).plot();
                 } catch (Throwable ex) {
-                    logger.warn("StaffProjector error " + ex, ex);
+                    logger.warn(ct.trans("StaffProjector.error", ex), ex);
                 }
             }
         }
@@ -864,15 +867,15 @@ public class EditorMenu
         {
             PlotHeaderAction ()
             {
-                putValue(NAME, "Header projection");
-                putValue(SHORT_DESCRIPTION, "Display staff header horizontal projection");
+                putValue(NAME, ct.trans("plotHeader.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("plotHeader.toolTipText"));
             }
 
             @Override
             public void actionPerformed (ActionEvent e)
             {
                 if (sheet.getStub().getLatestStep().compareTo(OmrStep.HEADERS) < 0) {
-                    logger.info("HEADERS not yet available");
+                    logger.info(ct.trans("headers.not.yet.available"));
                     return;
                 }
 
@@ -895,8 +898,8 @@ public class EditorMenu
         {
             StaffEditingAction ()
             {
-                putValue(NAME, "Edit staff");
-                putValue(SHORT_DESCRIPTION, "Edit the staff as a whole");
+                putValue(NAME, ct.trans("staffEditing.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("staffEditing.toolTipText"));
             }
 
             @Override
@@ -922,7 +925,7 @@ public class EditorMenu
 
         SystemMenu ()
         {
-            super("System");
+            super(ct.trans("system"));
             add(new JMenuItem(mergeAction));
             add(new JMenuItem(toggleIndentAction));
         }
@@ -941,7 +944,7 @@ public class EditorMenu
             setVisible(system != null);
 
             if (system != null) {
-                setText("System #" + system.getId());
+                setText(ct.trans("system.id", system.getId()));
             }
 
             mergeAction.update();
@@ -956,8 +959,8 @@ public class EditorMenu
         {
             MergeAction ()
             {
-                putValue(NAME, "Merge with system below");
-                putValue(SHORT_DESCRIPTION, "Merge this system with the one located below");
+                putValue(NAME, ct.trans("mergeSystem.text"));
+                putValue(SHORT_DESCRIPTION, ct.trans("mergeSystem.toolTipText"));
             }
 
             @Override
@@ -975,11 +978,8 @@ public class EditorMenu
 
                 if (stacks.size() != stacks2.size()) {
                     OMR.gui.displayWarning(
-                            String.format(
-                                    "Different measure counts %d vs %d",
-                                    stacks.size(),
-                                    stacks2.size()),
-                            "Incompatible " + system + " & " + system2);
+                            ct.trans("different.measure.counts", stacks.size(), stacks2.size()),
+                            ct.trans("incompatible.systems", system, system2));
 
                     return;
                 }
@@ -1004,16 +1004,15 @@ public class EditorMenu
 
                     if (dx > maxEndShift) {
                         OMR.gui.displayWarning(
-                                "Misaligned left ends between " + measure + " and " + measure2,
-                                "Incompatible " + system + " & " + system2);
+                                ct.trans("misaligned.left.ends", measure, measure2),
+                                ct.trans("incompatible.systems", system, system2));
 
                         return;
                     }
                 }
 
                 if (OMR.gui.displayConfirmation(
-                        "Merge " + system.toLongString() + " with " + system2.toLongString()
-                                + "?")) {
+                        ct.trans("merge.systems", system.toLongString(), system2.toLongString()))) {
                     sheet.getInterController().mergeSystem(system);
                 }
             }
@@ -1040,7 +1039,7 @@ public class EditorMenu
         {
             ToggleIndentAction ()
             {
-                putValue(SHORT_DESCRIPTION, "Toggle whether this system starts a new movement");
+                putValue(SHORT_DESCRIPTION, ct.trans("indent.toolTipText"));
             }
 
             @Override
@@ -1049,8 +1048,9 @@ public class EditorMenu
                 final String label = system.isIndented() ? "unmark" : "mark";
 
                 if (OMR.gui.displayConfirmation(
-                        "About to " + label + " system #" + system.getId()
-                                + " as a movement start. Do you confirm?")) {
+                        ct.trans(
+                                "start.about.to." + (system.isIndented() ? "unmark" : "mark"),
+                                system.getId()))) {
                     sheet.getInterController().toggleIndentation(system);
                 }
             }
@@ -1059,15 +1059,15 @@ public class EditorMenu
             {
                 if (system == null) {
                     setEnabled(false);
-                    putValue(NAME, "Toggle movement start");
+                    putValue(NAME, ct.trans("indent.no.system.text"));
                 } else {
                     boolean gridDone = sheet.getStub().getLatestStep().compareTo(OmrStep.GRID) >= 0;
                     setEnabled(gridDone);
 
                     if (system.isIndented()) {
-                        putValue(NAME, "Unmark as movement start");
+                        putValue(NAME, ct.trans("indent.system.indented.text"));
                     } else {
-                        putValue(NAME, "Mark as movement start");
+                        putValue(NAME, ct.trans("indent.system.not.indented.text"));
                     }
                 }
             }

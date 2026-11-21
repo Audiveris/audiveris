@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.WrappedBoolean;
 
 import org.slf4j.Logger;
@@ -49,6 +50,8 @@ public class TimeSignatureFixer
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TimeSignatureFixer.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -117,16 +120,16 @@ public class TimeSignatureFixer
 
                             if ((timeRational == null) || !timeRational.equals(bestRational)) {
                                 logger.info(
-                                        "Measure#{} {}T{} {}->{}",
-                                        measure.getStack().getPageId(),
-                                        staff.getId(),
-                                        staff.getId(),
-                                        timeRational,
-                                        bestRational);
+                                        ct.trans(
+                                                "measure.staff.time.from.to",
+                                                measure.getStack().getPageId(),
+                                                staff.getId(),
+                                                timeRational,
+                                                bestRational));
                                 time.modify(null, bestRational);
                             }
                         } catch (Exception ex) {
-                            logger.warn("Could not check time signature for " + time + "ex:" + ex);
+                            logger.warn(ct.trans("cant.check.time.signature.for", time, ex), ex);
                         }
                     }
                 }
@@ -223,7 +226,7 @@ public class TimeSignatureFixer
                 checkTimeSigs(firstSystem.getFirstStack(), page.getLastSystem().getLastStack());
             }
         } catch (Exception ex) {
-            logger.warn("TimeSignatureFixer. Error processing " + page, ex);
+            logger.warn(ct.trans("error.processing.time.signature", page, ex), ex);
         }
     }
 

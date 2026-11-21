@@ -25,6 +25,7 @@ import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SimpleSheetPainter;
 import org.audiveris.omr.step.OmrStep;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,8 @@ public class BookPdfOutput
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(BookPdfOutput.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -102,7 +105,7 @@ public class BookPdfOutput
 
             for (SheetStub stub : stubs) {
                 if (!stub.isDone(OmrStep.GRID)) {
-                    logger.info("{} has not reached GRID step yet, no printout.", stub);
+                    logger.info(ct.trans("not.reached.grid.no.printout", stub));
 
                     continue;
                 }
@@ -141,7 +144,7 @@ public class BookPdfOutput
                 printedIds.add(stub.getNumber());
             }
 
-            logger.info("Printed sheet(s): {}", printedIds);
+            logger.info(ct.trans("printed.sheets", printedIds));
             completed = true;
         } finally {
             if (document != null) {
@@ -161,8 +164,7 @@ public class BookPdfOutput
             if (fos != null) {
                 try {
                     fos.close();
-                } catch (IOException ignored) {
-                }
+                } catch (IOException ignored) {}
             }
         }
     }
