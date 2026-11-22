@@ -2494,22 +2494,8 @@ public class PartwiseBuilder
             Shape noteShape = note.getShape();
             if (!noteShape.isRest() && current.isDrumPart) {
                 // Find a midi instrument with the correct head motif and pitch
-                HeadMotif motif = noteShape.getHeadMotif();
-                int notePitch = note.getIntegerPitch();
-
-                // Special case for circle-x notehead with pitch -5 or 5:
-                // These should be sounded as midi instrument Open Hi-Hat, midi# 46,
-                // having notehead shape NOTEHEAD_CROSS, integer pitch -3.
-                // All other circle-x notes should sound as instrument with ordinary
-                // x head shape at the integer pitch of the note at hand.
-                if (motif == HeadMotif.circle) {
-                    motif = HeadMotif.cross;
-                    if (notePitch == -5 || notePitch == 5) {
-                        notePitch = -3;
-                    }
-                } else if (motif == HeadMotif.small) {
-                    motif = HeadMotif.oval;
-                }
+                final HeadMotif motif = noteShape.getHeadMotif();
+                final int notePitch = note.getIntegerPitch();
 
                 final HeadInter head = (HeadInter) note;
                 final PlayingInter playing = head.getPlayingSign();
@@ -2526,7 +2512,22 @@ public class PartwiseBuilder
                     Instrument instrument = null;
 
                     if (map != null) {
-                        final DrumInstrument drum = map.get(ms);
+                        DrumInstrument drum = map.get(ms);
+
+                        if (drum == null) {
+                            // A small or circle head with no entry of its own sounds
+                            // like the oval or cross head at the same position
+                            final HeadMotif full = switch (motif) {
+                                case small -> HeadMotif.oval;
+                                case circle -> HeadMotif.cross;
+                                default -> null;
+                            };
+
+                            if (full != null) {
+                                drum = map.get(new MotifSign(full, sign));
+                            }
+                        }
+
                         if (drum != null) {
                             instrument = factory.createInstrument();
                             instrument.setId(current.instrumentMap.get(drum.sound.getMidi()));
