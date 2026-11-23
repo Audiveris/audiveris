@@ -746,7 +746,7 @@ public abstract class Constant<E>
                      E defaultValue,
                      java.lang.String description)
         {
-            super(null, defaultValue.toString(), description);
+            super(null, defaultValue.name(), description);
             this.classe = classe;
         }
 

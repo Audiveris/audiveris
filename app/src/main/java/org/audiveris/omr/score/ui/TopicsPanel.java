@@ -140,7 +140,6 @@ public class TopicsPanel
 
         for (XactTopic topic : topics) {
             // Topic title
-            System.out.println("topic.name: " + topic.name); // BINGO
             final JLabel title = new JLabel(textOf(topic.name));
             title.setHorizontalAlignment(SwingConstants.LEFT);
             builder.addRaw(title).xyw(1, r, 7);

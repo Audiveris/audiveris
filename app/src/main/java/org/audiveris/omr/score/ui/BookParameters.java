@@ -27,13 +27,12 @@ import org.audiveris.omr.image.FilterKind;
 import static org.audiveris.omr.image.FilterKind.ADAPTIVE;
 import static org.audiveris.omr.image.FilterKind.GLOBAL;
 import org.audiveris.omr.image.GlobalDescriptor;
-import org.audiveris.omr.score.ui.IntegerSpinPane.SpinData;
 import org.audiveris.omr.sheet.BarlineHeight;
 import org.audiveris.omr.sheet.Book;
+import org.audiveris.omr.sheet.InputQuality;
 import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.Profiles;
-import org.audiveris.omr.sheet.Profiles.InputQuality;
 import org.audiveris.omr.sheet.ScaleBuilder;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
@@ -42,10 +41,12 @@ import org.audiveris.omr.sheet.ui.SheetView;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OcrUtil;
+import org.audiveris.omr.ui.field.SpinnerUtil;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.ComboBoxTipRenderer;
 import static org.audiveris.omr.util.ResourceUtil.format;
+import org.audiveris.omr.util.Tipped;
 import org.audiveris.omr.util.Translator;
 import static org.audiveris.omr.util.param.Param.GLOBAL_SCOPE;
 
@@ -73,7 +74,9 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
+import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
@@ -427,6 +430,30 @@ public class BookParameters
         return true;
     }
 
+    //----------------//
+    // createLangPane //
+    //----------------//
+    /**
+     * Factory method to get a LangPane, while handling exception when no OCR is available.
+     *
+     * @return A usable LangPane instance, or null otherwise
+     */
+    private LangPane createLangPane ()
+    {
+        // The language pane needs Tesseract up & running
+        if (OcrUtil.getOcr().isAvailable()) {
+            try {
+                return new LangPane();
+            } catch (Throwable ex) {
+                logger.warn(ct.trans("error.creating.language.pane", ex.toString()), ex);
+            }
+        } else {
+            logger.info(ct.trans("no.language.pane.for.lack.of.ocr"));
+        }
+
+        return null;
+    }
+
     //--------------//
     // getComponent //
     //--------------//
@@ -494,31 +521,156 @@ public class BookParameters
 
     //~ Static Methods -----------------------------------------------------------------------------
 
-    //----------------//
-    // createLangPane //
-    //----------------//
-    /**
-     * Factory method to get a LangPane, while handling exception when no OCR is available.
-     *
-     * @return A usable LangPane instance, or null otherwise
-     */
-    private static LangPane createLangPane ()
+    //~ Inner Classes ------------------------------------------------------------------------------
+
+    //-----------//
+    // BookPanes // A XactPanes for the book scope
+    //-----------//
+    private class BookPanes
+            extends XactPanes
     {
-        // The language pane needs Tesseract up & running
-        if (OcrUtil.getOcr().isAvailable()) {
-            try {
-                return new LangPane();
-            } catch (Throwable ex) {
-                logger.warn(ct.trans("error.creating.language.pane", ex.toString()), ex);
-            }
-        } else {
-            logger.info(ct.trans("no.language.pane.for.lack.of.ocr"));
+        private final Book book;
+
+        public BookPanes (Book book)
+        {
+            this.book = book;
         }
 
-        return null;
+        @Override
+        @SuppressWarnings("unchecked")
+        public void setModels ()
+        {
+            for (Entry<Tag, XactPane> entry : tagMap.entrySet()) {
+                entry.getValue().setModel(switch (entry.getKey()) {
+                    case Music -> book.getMusicFamilyParam();
+                    case Quality -> book.getInputQualityParam();
+                    case Lang -> book.getOcrLanguagesParam();
+                    case Filter -> book.getBinarizationParam();
+                    case Interline -> book.getInterlineSpecificationParam();
+                    case Barline -> book.getBarlineHeightParam();
+                    case Beam -> book.getBeamSpecificationParam();
+                });
+            }
+
+            setModels(book.getProcessingSwitches());
+        }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------------//
+    // DefaultPanes // A XactPanes for the global scope
+    //--------------//
+    private class DefaultPanes
+            extends XactPanes
+    {
+        public DefaultPanes ()
+        {
+            tagMap.remove(Tag.Interline);
+            tagMap.remove(Tag.Beam);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void setModels ()
+        {
+            for (Entry<Tag, XactPane> entry : tagMap.entrySet()) {
+                switch (entry.getKey()) {
+                    case Music -> entry.getValue().setModel(MusicFont.defaultMusicParam);
+                    case Quality -> entry.getValue().setModel(Profiles.defaultQualityParam);
+                    case Lang -> entry.getValue().setModel(Language.ocrDefaultLanguages);
+                    case Filter -> entry.getValue().setModel(FilterDescriptor.defaultFilter);
+                    // No Interline
+                    case Barline -> entry.getValue().setModel(BarlineHeight.defaultParam);
+                    // No Beam
+                }
+            }
+
+            setModels(ProcessingSwitches.getDefaultSwitches());
+        }
+    }
+
+    //----------//
+    // EnumPane //
+    //----------//
+    /**
+     * Class <code>EnumPane</code> is a data pane to select an enum value.
+     *
+     * @param <T> specific category
+     * @param <E> the enum to handle
+     */
+    private static class EnumPane<T, E extends Enum<E> & Tipped>
+            extends XactPane<E>
+    {
+        /** ComboBox for enum. */
+        private final JComboBox<E> enumCombo;
+
+        /** Tooltips for enum values. */
+        private final String[] tooltips;
+
+        /**
+         * Creates an <code>EnumPane</code> object.
+         * <p>
+         * Model and Parent to be assigned later.
+         *
+         * @param tag    unique in scope
+         * @param values value array of the enum
+         */
+        public EnumPane (T tag,
+                         E[] values)
+        {
+            super(resources.getString(tag + "Pane.text"));
+
+            title.setToolTipText(resources.getString(tag + "Pane.toolTipText"));
+
+            // Retrieve the tooltip for each combo value
+            tooltips = new String[values.length];
+            for (int i = 0; i < values.length; i++) {
+                tooltips[i] = values[i].getTip();
+            }
+
+            enumCombo = new JComboBox<>(values);
+            enumCombo.setToolTipText(resources.getString(tag + "Pane.combo.toolTipText"));
+            enumCombo.setRenderer(new ComboBoxTipRenderer(tooltips)); // For support of value tooltips
+            enumCombo.addActionListener(this);
+        }
+
+        @Override
+        public int defineLayout (FormBuilder builder,
+                                 int titleWidth,
+                                 int r)
+        {
+            super.defineLayout(builder, 1, r); // sel + title, no advance
+
+            builder.addRaw(enumCombo).xyw(7, r, 3);
+
+            return r + 2;
+        }
+
+        @Override
+        protected void display (E value)
+        {
+            enumCombo.setSelectedItem(value);
+        }
+
+        @Override
+        protected E read ()
+        {
+            return enumCombo.getItemAt(enumCombo.getSelectedIndex());
+        }
+
+        @Override
+        public void setEnabled (boolean bool)
+        {
+            super.setEnabled(bool);
+            enumCombo.setEnabled(bool);
+        }
+
+        @Override
+        public void setVisible (boolean bool)
+        {
+            super.setVisible(bool);
+            enumCombo.setVisible(bool);
+        }
+    }
 
     //------------//
     // FilterPane //
@@ -576,8 +728,7 @@ public class BookParameters
             final FilterKind[] values = FilterKind.values();
             final String[] tooltips = new String[values.length];
             for (int i = 0; i < values.length; i++) {
-                tooltips[i] = resources.getString(
-                        "FilterPane.kindCombo." + values[i] + ".toolTipText");
+                tooltips[i] = values[i].getTip();
             }
 
             kindCombo.setRenderer(new ComboBoxTipRenderer(tooltips));
@@ -685,7 +836,7 @@ public class BookParameters
 
         private FilterKind readKind ()
         {
-            return kindCombo.getItemAt(kindCombo.getSelectedIndex());
+            return kindCombo.getItemAt(kindCombo.getSelectedIndex()); // BINGO to be checked!!!!
         }
 
         @Override
@@ -696,6 +847,73 @@ public class BookParameters
             globalData.setEnabled(bool);
             localDataMean.setEnabled(bool);
             localDataDev.setEnabled(bool);
+        }
+    }
+
+    //-----------------//
+    // IntegerSpinPane //
+    //-----------------//
+    /**
+     * Class <code>IntegerSpinPane</code> is a pane to handle an integer via a spinner.
+     *
+     * @param <T> specific category
+     */
+    private static class IntegerSpinPane<T>
+            extends XactPane<Integer>
+    {
+        protected final SpinData spinData;
+
+        public IntegerSpinPane (T tag,
+                                SpinData spinData)
+        {
+            super(resources.getString(tag + "Pane.text"));
+            title.setToolTipText(resources.getString(tag + "Pane.toolTipText"));
+            this.spinData = spinData;
+        }
+
+        @Override
+        public int defineLayout (FormBuilder builder,
+                                 int titleWidth,
+                                 int r)
+        {
+            super.defineLayout(builder, 1, r); // sel + title, no advance
+            spinData.defineLayout(builder, r);
+
+            return r + 2;
+        }
+
+        @Override
+        protected void display (Integer content)
+        {
+            if (content != null) {
+                spinData.spinner.setValue(content);
+            } else {
+                spinData.spinner.setValue(0);
+            }
+        }
+
+        @Override
+        protected Integer read ()
+        {
+            try {
+                spinData.spinner.commitEdit();
+            } catch (ParseException ignored) {}
+
+            return (int) spinData.spinner.getValue();
+        }
+
+        @Override
+        public void setEnabled (boolean bool)
+        {
+            super.setEnabled(bool);
+            spinData.setEnabled(bool);
+        }
+
+        @Override
+        public void setVisible (boolean bool)
+        {
+            super.setVisible(bool);
+            spinData.setVisible(bool);
         }
     }
 
@@ -788,6 +1006,87 @@ public class BookParameters
         public void valueChanged (ListSelectionEvent e)
         {
             langSpec.setText(read());
+        }
+    }
+
+    //------------//
+    // SheetPanes // A XactPanes for a sheet stub
+    //------------//
+    private class SheetPanes
+            extends XactPanes
+    {
+        private final SheetStub stub;
+
+        public SheetPanes (SheetStub stub)
+        {
+            this.stub = stub;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void setModels ()
+        {
+            for (Entry<Tag, XactPane> entry : tagMap.entrySet()) {
+                entry.getValue().setModel(switch (entry.getKey()) {
+                    case Music -> stub.getMusicFamilyParam();
+                    case Quality -> stub.getInputQualityParam();
+                    case Lang -> stub.getOcrLanguagesParam();
+                    case Filter -> stub.getBinarizationFilterParam();
+                    case Interline -> stub.getInterlineSpecificationParam();
+                    case Barline -> stub.getBarlineHeightParam();
+                    case Beam -> stub.getBeamSpecificationParam();
+                });
+            }
+
+            setModels(stub.getProcessingSwitches());
+        }
+    }
+
+    //----------//
+    // SpinData //
+    //----------//
+    /**
+     * A line with a labeled spinner.
+     */
+    private static class SpinData
+    {
+        protected final JLabel label;
+
+        protected final JSpinner spinner;
+
+        SpinData (String label,
+                  String tip,
+                  SpinnerModel model)
+        {
+            this.label = new JLabel(label, SwingConstants.RIGHT);
+
+            spinner = new JSpinner(model);
+            SpinnerUtil.setRightAlignment(spinner);
+            SpinnerUtil.setEditable(spinner, true);
+            spinner.setToolTipText(tip);
+        }
+
+        public int defineLayout (FormBuilder builder,
+                                 int r)
+        {
+            builder.addRaw(label).xyw(5, r, 1);
+            builder.addRaw(spinner).xyw(7, r, 3);
+
+            r += 2;
+
+            return r;
+        }
+
+        public void setEnabled (boolean bool)
+        {
+            label.setEnabled(bool);
+            spinner.setEnabled(bool);
+        }
+
+        public void setVisible (boolean bool)
+        {
+            label.setVisible(bool);
+            spinner.setVisible(bool);
         }
     }
 
@@ -899,7 +1198,7 @@ public class BookParameters
     // Tag //
     //-----//
     /** Category of pane in each scoped panel. */
-    public static enum Tag
+    private static enum Tag
     {
         Music,
         Quality,
@@ -945,8 +1244,8 @@ public class BookParameters
 
         protected XactPanes ()
         {
-            tagMap.put(Tag.Music, new EnumPane<>(Tag.Music, MusicFamily.values(), resources));
-            tagMap.put(Tag.Quality, new EnumPane<>(Tag.Quality, InputQuality.values(), resources));
+            tagMap.put(Tag.Music, new EnumPane<>(Tag.Music, MusicFamily.values()));
+            tagMap.put(Tag.Quality, new EnumPane<>(Tag.Quality, InputQuality.values()));
 
             tagMap.put(Tag.Filter, new FilterPane());
 
@@ -959,15 +1258,15 @@ public class BookParameters
                     "",
                     resources.getString("InterlinePane.toolTipText"),
                     new SpinnerNumberModel(0, 0, ScaleBuilder.getMaxInterline(), 1));
-            tagMap.put(Tag.Interline, new IntegerSpinPane<>(Tag.Interline, ilSpin, resources));
+            tagMap.put(Tag.Interline, new IntegerSpinPane<>(Tag.Interline, ilSpin));
 
-            tagMap.put(Tag.Barline, new EnumPane<>(Tag.Barline, BarlineHeight.values(), resources));
+            tagMap.put(Tag.Barline, new EnumPane<>(Tag.Barline, BarlineHeight.values()));
 
             final SpinData beamSpin = new SpinData(
                     "",
                     resources.getString("BeamPane.toolTipText"),
                     new SpinnerNumberModel(0, 0, ScaleBuilder.getMaxInterline(), 1));
-            tagMap.put(Tag.Beam, new IntegerSpinPane<>(Tag.Beam, beamSpin, resources));
+            tagMap.put(Tag.Beam, new IntegerSpinPane<>(Tag.Beam, beamSpin));
 
             for (ProcessingSwitch key : ProcessingSwitch.supportedSwitches) {
                 switchMap.put(key, new SwitchPane(key));
@@ -1002,104 +1301,6 @@ public class BookParameters
                     switchPane.setParent(parentSwitches.get(switchPane.getKey()));
                 }
             }
-        }
-    }
-
-    //--------------//
-    // DefaultPanes // A XactPanes for the global scope
-    //--------------//
-    private class DefaultPanes
-            extends XactPanes
-    {
-        public DefaultPanes ()
-        {
-            tagMap.remove(Tag.Interline);
-            tagMap.remove(Tag.Beam);
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public void setModels ()
-        {
-            for (Entry<Tag, XactPane> entry : tagMap.entrySet()) {
-                switch (entry.getKey()) {
-                    case Music -> entry.getValue().setModel(MusicFont.defaultMusicParam);
-                    case Quality -> entry.getValue().setModel(Profiles.defaultQualityParam);
-                    case Lang -> entry.getValue().setModel(Language.ocrDefaultLanguages);
-                    case Filter -> entry.getValue().setModel(FilterDescriptor.defaultFilter);
-                    // No Interline
-                    case Barline -> entry.getValue().setModel(BarlineHeight.defaultParam);
-                    // No Beam
-                }
-            }
-
-            setModels(ProcessingSwitches.getDefaultSwitches());
-        }
-    }
-
-    //-----------//
-    // BookPanes // A XactPanes for the book scope
-    //-----------//
-    private class BookPanes
-            extends XactPanes
-    {
-        private final Book book;
-
-        public BookPanes (Book book)
-        {
-            this.book = book;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public void setModels ()
-        {
-            for (Entry<Tag, XactPane> entry : tagMap.entrySet()) {
-                entry.getValue().setModel(switch (entry.getKey()) {
-                    case Music -> book.getMusicFamilyParam();
-                    case Quality -> book.getInputQualityParam();
-                    case Lang -> book.getOcrLanguagesParam();
-                    case Filter -> book.getBinarizationParam();
-                    case Interline -> book.getInterlineSpecificationParam();
-                    case Barline -> book.getBarlineHeightParam();
-                    case Beam -> book.getBeamSpecificationParam();
-                });
-            }
-
-            setModels(book.getProcessingSwitches());
-        }
-    }
-
-    //------------//
-    // SheetPanes // A XactPanes for a sheet stub
-    //------------//
-    private class SheetPanes
-            extends XactPanes
-    {
-        private final SheetStub stub;
-
-        public SheetPanes (SheetStub stub)
-        {
-            this.stub = stub;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public void setModels ()
-        {
-            for (Entry<Tag, XactPane> entry : tagMap.entrySet()) {
-                entry.getValue().setModel(switch (entry.getKey()) {
-                    case Music -> stub.getMusicFamilyParam();
-                    case Quality -> stub.getInputQualityParam();
-                    case Lang -> stub.getOcrLanguagesParam();
-                    case Filter -> stub.getBinarizationFilterParam();
-                    case Interline -> stub.getInterlineSpecificationParam();
-                    case Barline -> stub.getBarlineHeightParam();
-                    case Beam -> stub.getBeamSpecificationParam();
-                });
-            }
-
-            setModels(stub.getProcessingSwitches());
         }
     }
 }

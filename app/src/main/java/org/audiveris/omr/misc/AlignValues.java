@@ -33,11 +33,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
 /**
- * Class <code>AlignValues</code>
+ * Class <code>AlignValues</code> is a utility meant to pretty-format ".properties" files.
  *
  * @author Hervé Bitteur
  */
@@ -47,19 +51,50 @@ public class AlignValues
 
     private static final Logger logger = LoggerFactory.getLogger(AlignValues.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-
-    //~ Constructors -------------------------------------------------------------------------------
-
-    //~ Methods ------------------------------------------------------------------------------------
-
     //~ Static Methods -----------------------------------------------------------------------------
 
-    private static void process (int col,
-                                 String from,
-                                 String to)
+    private static int getCol (String from)
     {
-        logger.info("AlignValues col:{} from:{} to:{}", col, from, to);
+        int col = 0;
+
+        try (Reader reader = new InputStreamReader(new FileInputStream(from), "UTF-8");
+                BufferedReader fin = new BufferedReader(reader)) {
+            String sin;
+            while ((sin = fin.readLine()) != null) {
+                sin = sin.trim();
+
+                if (sin.isEmpty() || sin.charAt(0) == '#') {
+                    // Blank or comment line
+                } else {
+                    final int eq = sin.indexOf('=');
+
+                    if (eq != -1) {
+                        // Stop at first non-blank char just before '='
+                        for (int i = eq - 1; i >= 0; i--) {
+                            final char c = sin.charAt(i);
+
+                            if (c != ' ') {
+                                col = Math.max(col, i + 2); // Leave a blank before '='
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Make sure col is a tab value
+        col = 4 * Math.ceilDiv(col, 4);
+        System.out.println("AlignValues. col: " + col);
+
+        return col;
+    }
+
+    private static void align (int col,
+                               String from)
+    {
+        final String to = from + ".aligned";
 
         try (Reader reader = new InputStreamReader(new FileInputStream(from), "UTF-8");
                 BufferedReader fin = new BufferedReader(reader);
@@ -70,26 +105,40 @@ public class AlignValues
                 String sout = null;
                 final int eq = sin.indexOf('=');
                 if (eq != -1) {
-                    if (eq < col) {
-                        // Insert spaces
+                    // Index of first non-blank char after '=', if any
+                    Integer nb = null;
+                    for (int i = eq + 1; i < sin.length(); i++) {
+                        if (sin.charAt(i) != ' ') {
+                            nb = i;
+                            break;
+                        }
+                    }
+
+                    if (eq <= col) {
+                        // Insert needed spaces before '='
                         final StringBuilder sb = new StringBuilder();
                         for (int i = col - eq; i > 0; i--) {
                             sb.append(' ');
                         }
-                        sout = sin.substring(0, eq) + sb.toString() + sin.substring(eq);
+                        sout = sin.substring(0, eq) + sb.toString() + "=";
                     } else if (col < eq) {
-                        // Remove as many spaces as possible
+                        // Remove as many spaces as possible before '='
                         final String gap = sin.substring(col, eq);
                         if (gap.isBlank()) {
-                            sout = sin.substring(0, col) + sin.substring(eq);
+                            sout = sin.substring(0, col) + "=";
                         } else {
                             for (int i = eq - 1; i >= col; i--) {
                                 if (sin.charAt(i) != ' ') {
-                                    sout = sin.substring(0, i + 1) + sin.substring(eq);
+                                    sout = sin.substring(0, i + 1) + "=";
                                     break;
                                 }
                             }
                         }
+                    }
+
+                    // After '='
+                    if (nb != null) {
+                        sout = sout + " " + sin.substring(nb);
                     }
                 }
 
@@ -105,15 +154,56 @@ public class AlignValues
         }
     }
 
-    public static void main (String[] args)
+    public static void process (Path dir)
     {
-        final Path p = Paths.get(".").resolve("src/main/java/org/audiveris/omr/glyph/resources");
-        logger.info("p: {}", p);
-        process(
-                44, // 44
-                p.resolve("Shape_fi.properties").toString(),
-                p.resolve("Shape_fi.properties.txt").toString());
+        try {
+            Files.walkFileTree(dir, new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult preVisitDirectory (Path dir,
+                                                          BasicFileAttributes attrs)
+                    throws IOException
+                {
+                    final Path path = dir.toAbsolutePath().normalize();
+                    logger.trace("path: {}", path);
+                    final String fileName = path.getFileName().toString();
+
+                    if (fileName.equals("build") //
+                            || fileName.startsWith("."))
+                        return FileVisitResult.SKIP_SUBTREE;
+                    else
+                        return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
+                    throws IOException
+                {
+                    final String fileName = file.getFileName().toString();
+
+                    if (fileName.endsWith(".properties")) {
+                        final Path path = file.toAbsolutePath().normalize();
+                        System.out.println(path.toString());
+
+                        final int col = getCol(path.toString());
+                        align(col, path.toString());
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException ex) {
+            logger.warn("Error processing {}", dir, ex);
+        }
+
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
+    public static void main (String[] args)
+    {
+        final Path dir = Paths.get(".").resolve("src/main/java/org/audiveris/omr");
+        System.out.println("AlignValues. dir: " + dir);
+
+        process(dir);
+    }
 }

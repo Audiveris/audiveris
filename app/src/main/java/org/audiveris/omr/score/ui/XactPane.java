@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.param.Param;
 

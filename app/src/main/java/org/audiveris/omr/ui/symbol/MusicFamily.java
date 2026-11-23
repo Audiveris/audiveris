@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import org.audiveris.omr.util.Tipped;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
@@ -33,14 +35,10 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  *
  * @author Hervé Bitteur
  */
-public enum MusicFamily
+public enum MusicFamily implements Tipped
 {
     /** Main family. */
-    Bravura(
-            "Bravura",
-            "Bravura.otf",
-            null, // No backup needed for this comprehensive font
-            new BravuraSymbols()),
+    Bravura("Bravura", "Bravura.otf", null, new BravuraSymbols()), // No backup needed for Bravura
 
     /** Alternate family, some symbols missing. */
     Leland("Leland", "Leland.otf", Bravura, new LelandSymbols()),
@@ -57,7 +55,11 @@ public enum MusicFamily
     /** Alternate family, with many missing symbols. Kept for sample generation. */
     MusicalSymbols("MusicalSymbols", "MusicalSymbols.ttf", Bravura, new MusicalSymbols());
 
+    //~ Static fields/initializers -----------------------------------------------------------------
+
     private static final Logger logger = LoggerFactory.getLogger(MusicFamily.class);
+
+    private static final Translator ct = new Translator(MusicFamily.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -117,6 +119,24 @@ public enum MusicFamily
         return symbols;
     }
 
+    //--------//
+    // getTip //
+    //--------//
+    @Override
+    public String getTip ()
+    {
+        return ct.trans(name() + ".toolTipText");
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return ct.trans(name() + ".text");
+    }
+
     //~ Static Methods -----------------------------------------------------------------------------
 
     public static MusicFamily valueOfName (String value)
@@ -131,7 +151,7 @@ public enum MusicFamily
             return MusicFamily.Bravura;
         }
 
-        logger.warn("No music family for value: \"{}\"", value);
+        logger.warn(ct.trans("no.music.family.for.value", value));
         return null;
     }
 

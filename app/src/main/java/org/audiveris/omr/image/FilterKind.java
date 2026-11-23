@@ -21,16 +21,23 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
+import org.audiveris.omr.util.Tipped;
+import org.audiveris.omr.util.Translator;
+
 /**
  * Class <code>FilterKind</code> handles the various kinds of {@link PixelFilter}
  * implementations.
  *
  * @author Hervé Bitteur
  */
-public enum FilterKind
+public enum FilterKind implements Tipped
 {
     GLOBAL("Basic filter using a global threshold", GlobalFilter.class),
     ADAPTIVE("Adaptive filter using a local threshold", AdaptiveFilter.class);
+
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Translator ct = new Translator(FilterKind.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -47,5 +54,25 @@ public enum FilterKind
     {
         this.description = description;
         this.classe = classe;
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //--------//
+    // getTip //
+    //--------//
+    @Override
+    public String getTip ()
+    {
+        return ct.trans(name() + ".toolTipText");
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return ct.trans(name() + ".text");
     }
 }

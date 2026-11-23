@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import org.audiveris.omr.sheet.Profiles.InputQuality;
+import org.audiveris.omr.sheet.InputQuality;
 import org.audiveris.omr.util.param.Param;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;

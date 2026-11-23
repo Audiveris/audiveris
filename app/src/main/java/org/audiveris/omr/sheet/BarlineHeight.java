@@ -23,6 +23,8 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.util.Tipped;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.param.ConstantBasedParam;
 import org.audiveris.omr.util.param.Param;
 
@@ -47,7 +49,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  *
  * @author Hervé Bitteur
  */
-public enum BarlineHeight
+public enum BarlineHeight implements Tipped
 {
     four,
     twoThenFour,
@@ -57,6 +59,8 @@ public enum BarlineHeight
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
+
+    private static final Translator ct = new Translator(BarlineHeight.class);
 
     /** Default height. */
     public static final Param<BarlineHeight> defaultParam = new ConstantBasedParam<>(
@@ -83,6 +87,15 @@ public enum BarlineHeight
         };
     }
 
+    //--------//
+    // getTip //
+    //--------//
+    @Override
+    public String getTip ()
+    {
+        return ct.trans(name() + ".toolTipText");
+    }
+
     //--------------//
     // initialCount //
     //--------------//
@@ -99,6 +112,15 @@ public enum BarlineHeight
             case two -> 2;
             case oneThenTwo -> 1;
         };
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return ct.trans(name() + ".text");
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

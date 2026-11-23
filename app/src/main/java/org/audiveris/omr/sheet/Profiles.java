@@ -86,19 +86,4 @@ public abstract class Profiles
                 InputQuality.Standard,
                 "Default quality for input image");
     }
-
-    //~ Enumerations -------------------------------------------------------------------------------
-
-    /**
-     * Enum <code>InputQuality</code> describes input quality.
-     */
-    public static enum InputQuality
-    {
-        /** The highest quality, no gaps allowed. */
-        Synthetic,
-        /** The standard quality, small gaps allowed. */
-        Standard,
-        /** The lowest quality, use a hierarchy of gap profiles. */
-        Poor;
-    }
 }
