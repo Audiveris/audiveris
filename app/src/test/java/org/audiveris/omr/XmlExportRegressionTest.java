@@ -62,13 +62,19 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * Regression test that validates Audiveris' conversion of sheet-music images (png/jpg/pdf)
- * to MusicXML, against known good reference outputs.
+ * to MusicXML, against reference outputs.
  * <p>
  * The reference folder ({@code data/regression}) holds pairs of files: an input
- * image ({@code file1.png}, {@code file2.pdf}, ...) and the known good MusicXML output
- * ({@code file1.xml}, {@code file2.xml}) for it. Both files share the same base name.
+ * image ({@code file1.png}, {@code file2.pdf}, ...) and the reference MusicXML output
+ * ({@code file1.xml}, {@code file2.xml}) for it, as Audiveris currently produces it.
+ * Both files share the same base name.
  * An optional {@code file1.config} folder holds user configuration files for this input only,
  * such as {@code run.properties} or {@code drum-set.xml}.
+ * <p>
+ * An optional {@code file1.target.xml} holds the correct MusicXML output, when Audiveris does
+ * not produce it yet. {@code file1.xml} then holds the current output, so that any change is
+ * still detected, while the test only reports how many differences are left to the target.
+ * Targets are written by hand, the update mode below never touches them.
  * <p>
  * For every input file found in the reference folder, the test:
  * <ul>
@@ -280,6 +286,12 @@ public class XmlExportRegressionTest
                             Arrays.asList("-transcribe", "-export"));
 
                     final String producedXml = readScoreXml(findSingleExportFile(tempDir));
+                    final List<String> actualLines = normalize(producedXml);
+                    reportTarget(
+                            fileName,
+                            reference,
+                            input.resolveSibling(radix + ".target.xml"),
+                            actualLines);
 
                     if (isUpdateRequested()) {
                         updateReference(reference, producedXml);
@@ -294,7 +306,6 @@ public class XmlExportRegressionTest
                             StandardCharsets.UTF_8);
 
                     final List<String> expectedLines = normalize(expectedXml);
-                    final List<String> actualLines = normalize(producedXml);
                     final String diff = diffOf(expectedLines, actualLines);
 
                     if (diff == null) {
@@ -856,6 +867,40 @@ public class XmlExportRegressionTest
         final int cut = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
 
         return matcher.group(1) + ((cut >= 0) ? path.substring(cut + 1) : path) + matcher.group(3);
+    }
+
+    //--------------//
+    // reportTarget //
+    //--------------//
+    /**
+     * Report how far the produced MusicXML still is from the target one, if any.
+     *
+     * @param fileName    name of the input file
+     * @param reference   the reference MusicXML file
+     * @param target      the target MusicXML file, which may not exist
+     * @param actualLines the normalized produced MusicXML
+     */
+    private static void reportTarget (String fileName,
+                                      Path reference,
+                                      Path target,
+                                      List<String> actualLines)
+        throws IOException
+    {
+        if (!Files.exists(target)) {
+            return;
+        }
+
+        final List<String> targetLines = normalize(
+                new String(Files.readAllBytes(target), StandardCharsets.UTF_8));
+        final int count = DiffUtils.diff(targetLines, actualLines).getDeltas().size();
+
+        if (count == 0) {
+            System.out.println(
+                    fileName + ": matches target, move " + target.getFileName() + " over "
+                            + reference.getFileName());
+        } else {
+            System.out.println(fileName + ": " + count + " difference(s) left to target");
+        }
     }
 
     //--------------//
