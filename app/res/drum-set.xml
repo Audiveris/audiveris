@@ -82,18 +82,21 @@
 
     <!-- -4 -->
     <entry pitch-position="-4" motif="oval"     sound="High_Tom"/>
+    <entry pitch-position="-4" motif="small"    sound="High_Tom"/>
     <entry pitch-position="-4" motif="cross"    sound="Ride_Cymbal_1"/>
     <entry pitch-position="-4" motif="circle"   sound="Ride_Cymbal_1"/>
     <entry pitch-position="-4" motif="diamond"  sound="Ride_Bell"/> <!-- Or Ride_Cymbal_1 or 2 -->
     
     <!-- -3 -->
     <entry pitch-position="-3" motif="oval"     sound="Hi_Mid_Tom"/>
+    <entry pitch-position="-3" motif="small"    sound="Hi_Mid_Tom"/>
     <entry pitch-position="-3" motif="cross"    sound="Open_Hi_Hat"/>
     <entry pitch-position="-3" motif="circle"   sound="Open_Hi_Hat"/>
     <entry pitch-position="-3" motif="triangle" sound="Cowbell"/>
     
     <!-- -2 -->
     <entry pitch-position="-2" motif="oval"     sound="Low_Mid_Tom"/>
+    <entry pitch-position="-2" motif="small"    sound="Low_Mid_Tom"/>
     <entry pitch-position="-2" motif="triangle" sound="Cowbell"/>
     <entry pitch-position="-2" motif="diamond"  sound="Tambourine"/>
     <entry pitch-position="-2" motif="cross"    sound="Ride_Cymbal_2"/>
@@ -107,12 +110,15 @@
     
     <!-- 0 -->
     <entry pitch-position="0" motif="oval"      sound="Low_Tom"/>
+    <entry pitch-position="0" motif="small"     sound="Low_Tom"/>
     
     <!-- 1 -->
     <entry pitch-position="1" motif="oval"      sound="High_Floor_Tom"/>
+    <entry pitch-position="1" motif="small"     sound="High_Floor_Tom"/>
     
     <!-- 2 -->
     <entry pitch-position="2" motif="oval"      sound="Low_Floor_Tom"/>
+    <entry pitch-position="2" motif="small"     sound="Low_Floor_Tom"/>
     <entry pitch-position="2" motif="cross"     sound="Low_Conga"/>
     <entry pitch-position="2" motif="circle"    sound="Low_Conga"/>
     

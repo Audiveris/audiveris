@@ -90,6 +90,8 @@ The mapping definition is a list of entries within the containing ``staff`` XML 
     - "``sound``": intrument name (Acoustic_Bass_Drum, etc. see the appendix)
     - "``sign``": this attribute is optional, it indicates a playing technique
     (PLAYING_OPEN, PLAYING_HALF_OPEN, PLAYING_CLOSED)
+- At export, a small or circle head with no entry of its own gets the sound of the oval or cross
+head at the same position.
 
 This protected resource is just the *default* mapping:
 - As an end-user, we can always incrementally override some or all of the default mapping entries,
@@ -239,18 +241,21 @@ via a similar ``drum-set.xml`` file to be located in the user ``config`` folder.
 
     <!-- -4 -->
     <entry pitch-position="-4" motif="oval"     sound="High_Tom"/>
+    <entry pitch-position="-4" motif="small"    sound="High_Tom"/>
     <entry pitch-position="-4" motif="cross"    sound="Ride_Cymbal_1"/>
     <entry pitch-position="-4" motif="circle"   sound="Ride_Cymbal_1"/>
     <entry pitch-position="-4" motif="diamond"  sound="Ride_Bell"/> <!-- Or Ride_Cymbal_1 or 2 -->
     
     <!-- -3 -->
     <entry pitch-position="-3" motif="oval"     sound="Hi_Mid_Tom"/>
+    <entry pitch-position="-3" motif="small"    sound="Hi_Mid_Tom"/>
     <entry pitch-position="-3" motif="cross"    sound="Open_Hi_Hat"/>
     <entry pitch-position="-3" motif="circle"   sound="Open_Hi_Hat"/>
     <entry pitch-position="-3" motif="triangle" sound="Cowbell"/>
     
     <!-- -2 -->
     <entry pitch-position="-2" motif="oval"     sound="Low_Mid_Tom"/>
+    <entry pitch-position="-2" motif="small"    sound="Low_Mid_Tom"/>
     <entry pitch-position="-2" motif="triangle" sound="Cowbell"/>
     <entry pitch-position="-2" motif="diamond"  sound="Tambourine"/>
     <entry pitch-position="-2" motif="cross"    sound="Ride_Cymbal_2"/>
@@ -264,12 +269,15 @@ via a similar ``drum-set.xml`` file to be located in the user ``config`` folder.
     
     <!-- 0 -->
     <entry pitch-position="0" motif="oval"      sound="Low_Tom"/>
+    <entry pitch-position="0" motif="small"     sound="Low_Tom"/>
     
     <!-- 1 -->
     <entry pitch-position="1" motif="oval"      sound="High_Floor_Tom"/>
+    <entry pitch-position="1" motif="small"     sound="High_Floor_Tom"/>
     
     <!-- 2 -->
     <entry pitch-position="2" motif="oval"      sound="Low_Floor_Tom"/>
+    <entry pitch-position="2" motif="small"     sound="Low_Floor_Tom"/>
     <entry pitch-position="2" motif="cross"     sound="Low_Conga"/>
     <entry pitch-position="2" motif="circle"    sound="Low_Conga"/>
     
