@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- Drumeo notation guide mapping, complete so that changes to the default drum-set.xml
+     do not alter this test. Comments give the names used by the guide. -->
+<drum-set>
+  <staff line-count="5">
+    <entry pitch-position="-8" motif="cross"   sound="Splash_Cymbal"/>      <!-- Splash -->
+    <entry pitch-position="-8" motif="circle"  sound="Chinese_Cymbal"/>     <!-- China -->
+    <entry pitch-position="-7" motif="cross"   sound="Crash_Cymbal_1"/>     <!-- Crash, choked crash -->
+    <entry pitch-position="-6" motif="cross"   sound="Ride_Cymbal_1"/>      <!-- Ride -->
+    <entry pitch-position="-6" motif="diamond" sound="Ride_Bell"/>          <!-- Ride bell -->
+    <entry pitch-position="-5" motif="diamond" sound="Ride_Bell"/>          <!-- Secondary ride bell -->
+    <entry pitch-position="-5" motif="cross"   sound="Closed_Hi_Hat"/>      <!-- Hi-hat -->
+    <entry pitch-position="-5" motif="circle"  sound="Open_Hi_Hat"/>        <!-- Open hi-hat -->
+    <entry pitch-position="-4" motif="diamond" sound="Cowbell"/>            <!-- Cowbell/tambourine -->
+    <entry pitch-position="-3" motif="oval"    sound="High_Tom"/>           <!-- High tom -->
+    <entry pitch-position="-2" motif="oval"    sound="Low_Mid_Tom"/>        <!-- Middle tom -->
+    <entry pitch-position="-1" motif="oval"    sound="Acoustic_Snare"/>     <!-- Snare drum, ghost note -->
+    <entry pitch-position="-1" motif="small"   sound="Acoustic_Snare"/>     <!-- Flam, drag -->
+    <entry pitch-position="-1" motif="cross"   sound="Side_Stick"/>         <!-- Cross-stick -->
+    <entry pitch-position="1"  motif="oval"    sound="High_Floor_Tom"/>     <!-- Floor tom -->
+    <entry pitch-position="3"  motif="oval"    sound="Bass_Drum_1"/>        <!-- Bass drum -->
+    <entry pitch-position="5"  motif="cross"   sound="Pedal_Hi_Hat"/>       <!-- Hi-hat pedal -->
+    <entry pitch-position="5"  motif="circle"  sound="Open_Hi_Hat"/>        <!-- Hi-hat splash -->
+    <entry pitch-position="6"  motif="oval"    sound="Bass_Drum_1"/>        <!-- Bass drum 2 -->
+  </staff>
+</drum-set>
