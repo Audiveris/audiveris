@@ -62,15 +62,26 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * Regression test that validates Audiveris' conversion of sheet-music images (png/jpg/pdf)
- * to MusicXML, against known good reference outputs.
+ * to MusicXML, against reference outputs.
  * <p>
  * The reference folder ({@code data/regression}) holds pairs of files: an input
- * image ({@code file1.png}, {@code file2.pdf}, ...) and the known good MusicXML output
- * ({@code file1.xml}, {@code file2.xml}) for it. Both files share the same base name.
+ * image ({@code file1.png}, {@code file2.pdf}, ...) and the reference MusicXML output
+ * ({@code file1.xml}, {@code file2.xml}) for it, as Audiveris currently produces it.
+ * Both files share the same base name.
+ * An optional {@code file1.config} folder holds user configuration files for this input only,
+ * such as {@code run.properties} or {@code drum-set.xml}.
+ * <p>
+ * An optional {@code file1.target.xml} holds the correct MusicXML output, when Audiveris does
+ * not produce it yet. {@code file1.xml} then holds the current output, so that any change is
+ * still detected, while the test only reports how many differences are left to the target.
+ * Targets are written by hand, the update mode below never touches them.
  * <p>
  * For every input file found in the reference folder, the test:
  * <ul>
  * <li>copies it into a temporary work folder (never touching the original),</li>
+ * <li>gives Audiveris an empty user folder in the work folder, to keep the test hermetic from
+ * the configuration of the user running it, and copies the input config folder, if any, into
+ * it,</li>
  * <li>runs the full batch pipeline ({@code -batch -transcribe -export}), with the work folder
  * as output folder,</li>
  * <li>uses an isolated Tesseract data folder containing only the English language pack,</li>
@@ -246,14 +257,20 @@ public class XmlExportRegressionTest
                 }
 
                 // Work on a copy, never touch the reference folder
-                final Path tempDir;
+                Path tempDir = null;
                 final Path inputCopy;
+                final Path userFolder;
 
                 try {
                     tempDir = Files.createTempDirectory("xml-export-");
                     inputCopy = Files.copy(input, tempDir.resolve(fileName));
+                    userFolder = prepareUserFolder(
+                            tempDir.resolve("user"),
+                            input.resolveSibling(radix + ".config"));
                 } catch (IOException ex) {
-                    failures.add(fileName + ": " + ex.getMessage());
+                    failures.add(
+                            fileName + ": " + ex.getMessage() + ((tempDir != null)
+                                    ? "\nArtifacts kept in: " + tempDir : ""));
                     continue;
                 }
 
@@ -265,9 +282,16 @@ public class XmlExportRegressionTest
                             tempDir,
                             inputCopy.toAbsolutePath(),
                             ocrFolder,
+                            userFolder,
                             Arrays.asList("-transcribe", "-export"));
 
                     final String producedXml = readScoreXml(findSingleExportFile(tempDir));
+                    final List<String> actualLines = normalize(producedXml);
+                    reportTarget(
+                            fileName,
+                            reference,
+                            input.resolveSibling(radix + ".target.xml"),
+                            actualLines);
 
                     if (isUpdateRequested()) {
                         updateReference(reference, producedXml);
@@ -282,7 +306,6 @@ public class XmlExportRegressionTest
                             StandardCharsets.UTF_8);
 
                     final List<String> expectedLines = normalize(expectedXml);
-                    final List<String> actualLines = normalize(producedXml);
                     final String diff = diffOf(expectedLines, actualLines);
 
                     if (diff == null) {
@@ -348,6 +371,7 @@ public class XmlExportRegressionTest
                     tempDir,
                     inputCopy.toAbsolutePath(),
                     null,
+                    Files.createDirectories(tempDir.resolve("user")),
                     Arrays.asList("-transcribe", "-export", "-print", "-constant", NO_OCR_CONSTANT));
 
             final String log = new String(Files.readAllBytes(logFile), StandardCharsets.UTF_8);
@@ -758,6 +782,37 @@ public class XmlExportRegressionTest
         }
     }
 
+    //-------------------//
+    // prepareUserFolder //
+    //-------------------//
+    /**
+     * Create the hermetic user folder for one Audiveris run, with a copy of the provided config
+     * folder, if it exists.
+     */
+    private static Path prepareUserFolder (Path userFolder,
+                                           Path configFolder)
+        throws IOException
+    {
+        Files.createDirectories(userFolder);
+
+        if (Files.isDirectory(configFolder)) {
+            try (Stream<Path> stream = Files.walk(configFolder)) {
+                for (Path file : stream.toList()) {
+                    final Path target = userFolder.resolve(
+                            configFolder.relativize(file).toString());
+
+                    if (Files.isDirectory(file)) {
+                        Files.createDirectories(target);
+                    } else {
+                        Files.copy(file, target);
+                    }
+                }
+            }
+        }
+
+        return userFolder;
+    }
+
     //--------------//
     // readScoreXml //
     //--------------//
@@ -815,6 +870,40 @@ public class XmlExportRegressionTest
     }
 
     //--------------//
+    // reportTarget //
+    //--------------//
+    /**
+     * Report how far the produced MusicXML still is from the target one, if any.
+     *
+     * @param fileName    name of the input file
+     * @param reference   the reference MusicXML file
+     * @param target      the target MusicXML file, which may not exist
+     * @param actualLines the normalized produced MusicXML
+     */
+    private static void reportTarget (String fileName,
+                                      Path reference,
+                                      Path target,
+                                      List<String> actualLines)
+        throws IOException
+    {
+        if (!Files.exists(target)) {
+            return;
+        }
+
+        final List<String> targetLines = normalize(
+                new String(Files.readAllBytes(target), StandardCharsets.UTF_8));
+        final int count = DiffUtils.diff(targetLines, actualLines).getDeltas().size();
+
+        if (count == 0) {
+            System.out.println(
+                    fileName + ": matches target, move " + target.getFileName() + " over "
+                            + reference.getFileName());
+        } else {
+            System.out.println(fileName + ": " + count + " difference(s) left to target");
+        }
+    }
+
+    //--------------//
     // runAudiveris //
     //--------------//
     /**
@@ -822,14 +911,16 @@ public class XmlExportRegressionTest
      * and the application JVM options.
      * <p>
      * The process runs from the app folder (so that relative resources resolve), writes its
-     * outputs to the provided output folder (regardless of the user configuration) and
-     * its console output is captured in the provided log file.
+     * outputs to the provided output folder, uses the provided hermetic user folder instead of the
+     * one of the user running the test, and its console output is captured in the provided log
+     * file.
      *
      * @param logFile      file to capture the console output
      * @param timeoutSecs  maximum duration of the run
      * @param outputFolder folder for all outputs
      * @param input        the input file to process
      * @param ocrFolder    Tesseract data folder, or null to keep the environment as is
+     * @param userFolder   folder to use for configs in hermetic tests
      * @param actions      the command line actions and options, e.g. -transcribe -export
      */
     private static void runAudiveris (Path logFile,
@@ -837,12 +928,14 @@ public class XmlExportRegressionTest
                                       Path outputFolder,
                                       Path input,
                                       Path ocrFolder,
+                                      Path userFolder,
                                       List<String> actions)
         throws IOException, InterruptedException
     {
         final List<String> command = new ArrayList<>();
         command.add(Paths.get(System.getProperty("java.home"), "bin", "java").toString());
         command.addAll(getJvmArgs());
+        command.add("-D" + WellKnowns.USER_FOLDER_PROPERTY + "=" + userFolder.toAbsolutePath());
         command.add("-cp");
         command.add(System.getProperty("java.class.path"));
         command.add("org.audiveris.omr.Main");
