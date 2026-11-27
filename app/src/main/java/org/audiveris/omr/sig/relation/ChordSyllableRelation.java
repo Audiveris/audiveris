@@ -34,6 +34,7 @@ import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.ui.LinkTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UnlinkTask;
+import org.audiveris.omr.util.Translator;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
@@ -60,6 +61,8 @@ public class ChordSyllableRelation
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ChordSyllableRelation.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Methods ------------------------------------------------------------------------------------
 
@@ -146,7 +149,7 @@ public class ChordSyllableRelation
             final LyricItemInter other = (LyricItemInter) sig.getOppositeInter(chord, rel);
 
             if ((other != item) && (other.getEnsemble() == line)) {
-                logger.info("{} preferred to {} in chord-syllable link.", item, other);
+                logger.info(ct.trans("preferred.to.in.chord.syllable.link", item, other));
                 tasks.add(new UnlinkTask(sig, rel));
             }
         }

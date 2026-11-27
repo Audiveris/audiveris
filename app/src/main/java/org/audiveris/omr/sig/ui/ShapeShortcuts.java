@@ -25,6 +25,7 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Translator;
 import static org.audiveris.omr.util.UriUtil.toURI;
 
 import org.slf4j.Logger;
@@ -66,6 +67,8 @@ public abstract class ShapeShortcuts
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeShortcuts.class);
+
+    private static final Translator ct = new Translator();
 
     /** Name of the configuration file. */
     private static final String FILE_NAME = "shape-shortcuts.xml";
@@ -185,18 +188,18 @@ public abstract class ShapeShortcuts
         // Load system defaults first
         try {
             loadConfiguration(systemUri);
-            logger.debug("Loaded system shape shortcuts from {}", systemUri);
+            logger.debug(ct.trans("Loaded system shape shortcuts from {}", systemUri));
         } catch (Exception ex) {
-            logger.error("Failed to load system shape shortcuts from {}", systemUri, ex);
+            logger.error(ct.trans("failed.to.load.system.shape.shortcuts.from", systemUri, ex), ex);
         }
 
         // Then load user overrides if present
         if (Files.exists(userPath)) {
             try {
                 loadConfiguration(userPath.toUri());
-                logger.info("Loaded user shape shortcuts from {}", userPath);
+                logger.info(ct.trans("loaded.user.shape.shortcuts.from", userPath));
             } catch (Exception ex) {
-                logger.warn("Failed to load user shape shortcuts from {}", userPath, ex);
+                logger.warn(ct.trans("failed.to.load.user.shape.shortcuts.from", userPath, ex), ex);
             }
         }
 
@@ -218,7 +221,7 @@ public abstract class ShapeShortcuts
                     final ShapeSet shapeSet = ShapeSet.getShapeSet(setEntry.name);
 
                     if (shapeSet == null) {
-                        logger.warn("Unknown shape set: {}", setEntry.name);
+                        logger.warn(ct.trans("unknown.shape.set", setEntry.name));
                         continue;
                     }
 
@@ -232,7 +235,7 @@ public abstract class ShapeShortcuts
                                 final String twoChar = "" + setChar + shapeEntry.key.charAt(0);
                                 shapeMap.put(twoChar, shape);
                             } catch (IllegalArgumentException ex) {
-                                logger.warn("Unknown shape: {}", shapeEntry.name);
+                                logger.warn(ct.trans("unknown.shape", shapeEntry.name));
                             }
                         }
                     }
@@ -272,9 +275,9 @@ public abstract class ShapeShortcuts
         try {
             final ShortcutList list = buildShortcutList();
             Jaxb.marshal(list, userPath, getJaxbContext());
-            logger.info("Saved user shape shortcuts to {}", userPath);
+            logger.info(ct.trans("saved.user.shape.shortcuts.to", userPath));
         } catch (IOException | JAXBException | XMLStreamException ex) {
-            logger.warn("Failed to save user shape shortcuts to {}", userPath, ex);
+            logger.warn(ct.trans("failed.to.save.user.shape.shortcuts.to", userPath, ex), ex);
         }
     }
 

@@ -31,6 +31,7 @@ import org.audiveris.omr.text.TextChar;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
 import static org.audiveris.omr.text.tesseract.TesseractOCR.LANGUAGE_FILE_EXT;
+import org.audiveris.omr.util.Translator;
 
 import org.bytedeco.javacpp.BoolPointer;
 import org.bytedeco.javacpp.BytePointer;
@@ -82,6 +83,8 @@ public class TesseractOrder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TesseractOrder.class);
+
+    private static final Translator ct = new Translator();
 
     /** To specify UTF-8 encoding. */
     private static final String UTF8 = "UTF-8";
@@ -167,7 +170,7 @@ public class TesseractOrder
         image = pixReadMemTiff(buf, buf.capacity(), 0);
 
         if (image == null) {
-            logger.warn("Invalid image {}", label);
+            logger.warn(ct.trans("invalid.image", label));
             throw new RuntimeException("Invalid image");
         }
     }
@@ -371,7 +374,7 @@ public class TesseractOrder
 
             return lines;
         } catch (UnsupportedEncodingException ex) {
-            logger.warn("Error decoding tesseract output", ex);
+            logger.warn(ct.trans("error.decoding.tesseract.output", ex), ex);
 
             return null;
         } finally {
@@ -420,14 +423,14 @@ public class TesseractOrder
             // Set character white list?
             if (!constants.whiteList.getValue().isBlank()) {
                 if (!api.SetVariable(WHITE_LIST_NAME, constants.whiteList.getValue())) {
-                    logger.error("Error setting Tesseract variable {}", WHITE_LIST_NAME);
+                    logger.error(ct.trans("error.setting.tesseract.variable"), WHITE_LIST_NAME);
                 }
             }
 
             // Set character black list?
             if (!constants.blackList.getValue().isBlank()) {
                 if (!api.SetVariable(BLACK_LIST_NAME, constants.blackList.getValue())) {
-                    logger.error("Error setting Tesseract variable {}", BLACK_LIST_NAME);
+                    logger.error(ct.trans("error.setting.tesseract.variable"), BLACK_LIST_NAME);
                 }
             }
 
@@ -447,7 +450,7 @@ public class TesseractOrder
             final int recognizeResult = api.Recognize(null);
 
             if (recognizeResult != 0) {
-                logger.warn("Error in Tesseract recognize, result: {}", recognizeResult);
+                logger.warn(ct.trans("error.in.tesseract.recognize", recognizeResult));
 
                 return finish(null);
             }
@@ -487,7 +490,7 @@ public class TesseractOrder
             writer.setOutput(ios);
             writer.write(image);
         } catch (IOException ex) {
-            logger.warn("Could not write image", ex);
+            logger.warn(ct.trans("could.not.write.image", ex), ex);
         }
 
         final ByteBuffer buf = ByteBuffer.allocate(baos.size());
@@ -508,7 +511,7 @@ public class TesseractOrder
             try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
                 fos.write(bytes);
             } catch (IOException ex) {
-                logger.warn("Could not write to {}", path, ex);
+                logger.warn(ct.trans("could.not.write.to", path, ex), ex);
             }
         }
 

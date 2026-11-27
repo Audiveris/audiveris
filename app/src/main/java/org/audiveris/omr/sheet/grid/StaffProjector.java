@@ -43,6 +43,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 
 import org.jgrapht.Graph;
 
@@ -126,6 +127,8 @@ public class StaffProjector
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StaffProjector.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -338,11 +341,11 @@ public class StaffProjector
                         staff.setAbscissa(LEFT, blank.stop + 1);
                     }
                 } else {
-                    logger.warn("Staff#{} no clear end on LEFT", staff.getId());
+                    logger.warn(ct.trans("staff.no.clear.end.on.left", staff.getId()));
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error in checkLinesRoot on staff#{} {}", staff.getId(), ex.toString(), ex);
+            logger.warn(ct.trans("error.in.checkLinesRoot", staff.getId(), ex), ex);
         }
     }
 

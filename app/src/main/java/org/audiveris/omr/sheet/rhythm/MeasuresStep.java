@@ -37,6 +37,7 @@ import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,8 @@ public class MeasuresStep
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasuresStep.class);
+
+    private static final Translator ct = new Translator();
 
     /** All impacting classes. */
     private static final Set<Class<?>> impactingClasses;
@@ -182,7 +185,7 @@ public class MeasuresStep
                 if (stack == null) {
                     // Safeguard on removal
                     if (opKind != UITask.OpKind.UNDO) {
-                        logger.warn("Barlines located too far outside system.");
+                        logger.warn(ct.trans("barlines.located.too.far.outside.system"));
                     }
                 } else {
                     // Remove barlines
@@ -190,14 +193,14 @@ public class MeasuresStep
 
                     if (side != null) {
                         // Simply remove related PartBarlines
-                        logger.info("Removing PartBarlines on {} side", side);
+                        logger.info(ct.trans("removing.part.barlines.on.side", side));
                         stack.removePartBarlines(staffBarlines, side);
                     } else {
                         // Merge with next stack
                         MeasureStack rightStack = stack.getNextSibling();
 
                         if (rightStack != null) {
-                            logger.info("Merging {} with right", stack);
+                            logger.info(ct.trans("merging.with.right", stack));
                             stack.mergeWithRight(rightStack);
                             system.removeStack(rightStack);
                         }
@@ -207,7 +210,8 @@ public class MeasuresStep
                 if (stack == null) {
                     // Safeguard on insertion
                     if (opKind != UITask.OpKind.UNDO) {
-                        logger.warn("Barlines located too far outside system. Please undo!");
+                        logger.warn(ct.trans("barlines.located.too.far.outside.system"));
+                        logger.warn(ct.trans("please.undo"));
                     }
                 } else {
                     // Gather StaffBarline instances into PartBarline instances
@@ -217,10 +221,10 @@ public class MeasuresStep
                     final HorizontalSide side = stack.checkSystemSide(staffBarlines);
 
                     if (side != null) {
-                        logger.info("{}-Insertion of {}", side, oneBar);
+                        logger.info(ct.trans("insertion.of.bar.on.side", oneBar, side));
                         stack.sideInsertBarlines(partBarlines, side);
                     } else {
-                        logger.info("Insertion of {} inside {}", oneBar, stack);
+                        logger.info(ct.trans("insertion.of.inside", oneBar, stack));
                         final MeasureStack leftStack = stack.splitAtBarline(partBarlines);
                         leftStack.setExpectedDuration(stack.getExpectedDuration());
                     }

@@ -2620,7 +2620,7 @@ public class Book
     @Override
     public String toString ()
     {
-        return new StringBuilder("Book{").append(radix).append("}").toString();
+        return new StringBuilder(ct.trans("book")).append('{').append(radix).append("}").toString();
     }
 
     //------------//

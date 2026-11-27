@@ -28,8 +28,8 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
-import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +52,8 @@ public class GlyphListMenu
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphListMenu.class);
 
+    private static final Translator ct = new Translator();
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     private final GlyphListener glyphListener = new GlyphListener();
@@ -67,7 +69,7 @@ public class GlyphListMenu
      */
     public GlyphListMenu (Sheet sheet)
     {
-        super("Glyphs");
+        super(ct.trans("Glyphs"));
         this.sheet = sheet;
     }
 
@@ -82,8 +84,6 @@ public class GlyphListMenu
         Collection<Glyph> glyphs = sheet.getGlyphIndex().getSelectedGlyphList();
 
         if ((glyphs != null) && !glyphs.isEmpty()) {
-            UIUtil.insertTitle(this, "Glyphs:");
-
             for (Glyph glyph : glyphs) {
                 ///JMenuItem item = new SampleMenu(glyph, sheet);
                 JMenuItem item = new ShapeMenu(glyph, sheet);

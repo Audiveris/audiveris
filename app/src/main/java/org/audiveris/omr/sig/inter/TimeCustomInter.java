@@ -122,15 +122,6 @@ public class TimeCustomInter
     }
 
     //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
-    {
-        return "TIME_SIG:" + getTimeRational();
-    }
-
-    //----------------//
     // getShapeSymbol //
     //----------------//
     @Override

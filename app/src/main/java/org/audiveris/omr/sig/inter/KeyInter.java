@@ -42,14 +42,14 @@ import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.D;
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.E;
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.F;
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.NoteStep.G;
-import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
-import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.ALTO;
-import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.BARITONE;
-import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.BASS;
-import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.MEZZO_SOPRANO;
-import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.SOPRANO;
-import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.TENOR;
-import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.TREBLE;
+import org.audiveris.omr.sig.inter.ClefKind;
+import static org.audiveris.omr.sig.inter.ClefKind.ALTO;
+import static org.audiveris.omr.sig.inter.ClefKind.BARITONE;
+import static org.audiveris.omr.sig.inter.ClefKind.BASS;
+import static org.audiveris.omr.sig.inter.ClefKind.MEZZO_SOPRANO;
+import static org.audiveris.omr.sig.inter.ClefKind.SOPRANO;
+import static org.audiveris.omr.sig.inter.ClefKind.TENOR;
+import static org.audiveris.omr.sig.inter.ClefKind.TREBLE;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.KeyAltersRelation;
 import org.audiveris.omr.sig.ui.HorizontalEditor;
@@ -77,8 +77,6 @@ import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.audiveris.omr.GlobalMessages;
 
 /**
  * Class <code>KeyInter</code> represents a key signature on a staff.
@@ -508,7 +506,7 @@ public class KeyInter
     protected String internals ()
     {
         return new StringBuilder(super.internals()) //
-                .append(" fifths:").append(getFifths())//
+                .append(' ').append(ct.trans("fifths")).append(':').append(getFifths()) //
                 .toString();
     }
 

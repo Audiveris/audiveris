@@ -45,6 +45,7 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,8 @@ public class SymbolsLinker
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsLinker.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -116,7 +119,7 @@ public class SymbolsLinker
             try {
                 dynamics.linkWithChord();
             } catch (Exception ex) {
-                logger.warn("Error in linkDynamics for {} {}", inter, ex.toString(), ex);
+                logger.warn(ct.trans("error.in.for", "linkDynamics", inter, ex), ex);
             }
         }
     }
@@ -150,7 +153,7 @@ public class SymbolsLinker
                     }
                 }
             } catch (Exception ex) {
-                logger.warn("Error in linkFermatas for {} {}", fermata, ex.toString(), ex);
+                logger.warn(ct.trans("error.in.for", "linkFermatas", fermata, ex), ex);
             }
         }
     }
@@ -207,7 +210,7 @@ public class SymbolsLinker
                     link.applyTo(smallChord);
                 }
             } catch (Exception ex) {
-                logger.warn("Error in linkGraces for {} {}", smallChord, ex.toString(), ex);
+                logger.warn(ct.trans("error.in.for", "linkGraces", smallChord, ex), ex);
             }
         }
     }
@@ -227,7 +230,7 @@ public class SymbolsLinker
                 nb.linkAndConvert();
                 nb.remove(); // Even if not linked!
             } catch (Exception ex) {
-                logger.warn("Error in linkNumbers for {} {}", nb, ex.toString(), ex);
+                logger.warn(ct.trans("error.in.for", "linkNumbers", nb, ex), ex);
             }
         }
     }
@@ -255,10 +258,10 @@ public class SymbolsLinker
                         link.applyTo(os);
                     }
                 } else {
-                    logger.info("No chord linked to {} at {}", os, os.getCenter());
+                    logger.info(ct.trans("no.chord.linked.to", os, os.getCenter()));
                 }
             } catch (Exception ex) {
-                logger.warn("Error in linkOctaveShifts for {} {}", os, ex.toString(), ex);
+                logger.warn(ct.trans("error.in.for", "linkOctaveShifts", os, ex), ex);
             }
         }
     }
@@ -289,7 +292,7 @@ public class SymbolsLinker
                     pedal.setAbnormal(true);
                 }
             } catch (Exception ex) {
-                logger.warn("Error in linkPedals for {} {}", pedal, ex.toString(), ex);
+                logger.warn(ct.trans("error.in.for", "linkPedals", pedal, ex), ex);
             }
         }
     }
@@ -342,7 +345,7 @@ public class SymbolsLinker
                     link.applyTo(wedge);
                 }
             } catch (Exception ex) {
-                logger.warn("Error in linkWedges for {} {}", inter, ex.toString(), ex);
+                logger.warn(ct.trans("error.in.for", "linkWedges", inter, ex), ex);
             }
         }
     }

@@ -26,6 +26,7 @@ import org.audiveris.omr.sheet.rhythm.RhythmsStep;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.util.Translator;
 import static org.audiveris.omr.util.VerticalSide.BOTTOM;
 
 import org.slf4j.Logger;
@@ -57,6 +58,8 @@ public class SheetReduction
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SheetReduction.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -152,11 +155,12 @@ public class SheetReduction
                         }
                     } else {
                         logger.info(
-                                "Gutter. Different glyphs {}/{} {} vs {}",
-                                system1.getId(),
-                                system2.getId(),
-                                inter1,
-                                inter2);
+                                ct.trans(
+                                        "overlapping.glyphs.between",
+                                        system1.getId(),
+                                        system2.getId(),
+                                        inter1,
+                                        inter2));
                     }
                 }
             }

@@ -90,6 +90,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
@@ -130,6 +131,8 @@ public class SigReducer
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SigReducer.class);
+
+    private static final Translator ct = new Translator();
 
     /** Inter classes for which overlap detection is (currently) disabled. */
     private static final Class<?>[] disabledClasses = new Class<?>[] { BeamGroupInter.class,
@@ -832,7 +835,9 @@ public class SigReducer
         }
 
         others.forEach(head -> head.remove());
-        bestHeads.forEach((ink, head) -> reclassifyAsWhole(head, ink));
+        bestHeads.forEach(
+                (ink,
+                 head) -> reclassifyAsWhole(head, ink));
     }
 
     //------------------//
@@ -1617,10 +1622,11 @@ public class SigReducer
 
             if (!sharedLedgers.isEmpty()) {
                 logger.info(
-                        "Ledgers shared between staves #{} and #{}: {}",
-                        upper.getId(),
-                        lower.getId(),
-                        Inters.ids(sharedLedgers));
+                        ct.trans(
+                                "ledgers.shared.between.staves",
+                                upper.getId(),
+                                lower.getId(),
+                                Inters.ids(sharedLedgers)));
                 shareCount += sharedLedgers.size();
 
                 for (LedgerInter ledger : sharedLedgers) {
@@ -2261,7 +2267,12 @@ public class SigReducer
                     system.getProfile());
 
             if (head.isVip() || stem.isVip()) {
-                logger.info("VIP relinkHeads {} {} toward {} -> {}", head, stem, headToTail, newRel);
+                logger.info(
+                        "VIP relinkHeads {} {} toward {} -> {}",
+                        head,
+                        stem,
+                        headToTail,
+                        newRel);
             }
 
             sig.removeEdge(rel);

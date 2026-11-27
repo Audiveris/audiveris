@@ -229,15 +229,6 @@ public class BookActions
         };
     }
 
-    //-------------//
-    // bookHistory //
-    //-------------//
-    @Action
-    public void bookHistory (ActionEvent e)
-    {
-        logger.info("bookHistory"); // TODO What is this used for? BINGO
-    }
-
     //------------//
     // browseBook //
     //------------//
@@ -686,15 +677,23 @@ public class BookActions
         final boolean defaultCompressed = BookManager.useCompression();
 
         if (defaultCompressed) {
-            exportFilters.add(new OmrFileFilter(
-                    ct.trans("compressed.musicxml.filter"), OMR.COMPRESSED_SCORE_EXTENSION));
-            exportFilters.add(new OmrFileFilter(
-                    ct.trans("uncompressed.musicxml.filter"), OMR.SCORE_EXTENSION));
+            exportFilters.add(
+                    new OmrFileFilter(
+                            ct.trans("compressed.musicxml.filter"),
+                            OMR.COMPRESSED_SCORE_EXTENSION));
+            exportFilters.add(
+                    new OmrFileFilter(
+                            ct.trans("uncompressed.musicxml.filter"),
+                            OMR.SCORE_EXTENSION));
         } else {
-            exportFilters.add(new OmrFileFilter(
-                    ct.trans("uncompressed.musicxml.filter"), OMR.SCORE_EXTENSION));
-            exportFilters.add(new OmrFileFilter(
-                    ct.trans("compressed.musicxml.filter"), OMR.COMPRESSED_SCORE_EXTENSION));
+            exportFilters.add(
+                    new OmrFileFilter(
+                            ct.trans("uncompressed.musicxml.filter"),
+                            OMR.SCORE_EXTENSION));
+            exportFilters.add(
+                    new OmrFileFilter(
+                            ct.trans("compressed.musicxml.filter"),
+                            OMR.COMPRESSED_SCORE_EXTENSION));
         }
 
         final Path bookPath = UIUtil.pathChooser(
@@ -713,8 +712,7 @@ public class BookActions
         // This flag is the single source of truth read by Book.export / getScoreExportPaths,
         // so it consistently controls both the output extension and the actual compression.
         final String fileName = bookPath.getFileName().toString();
-        final boolean compressed = fileName.toLowerCase()
-                .endsWith(OMR.COMPRESSED_SCORE_EXTENSION);
+        final boolean compressed = fileName.toLowerCase().endsWith(OMR.COMPRESSED_SCORE_EXTENSION);
         BookManager.setCompression(compressed);
 
         // Remove extensions if any (.opus.mxl, .mxl, .xml, .mvt#.mxl, .mvt#.xml)
@@ -759,15 +757,23 @@ public class BookActions
         final List<OmrFileFilter> exportFilters = new ArrayList<>();
 
         if (defaultCompressed) {
-            exportFilters.add(new OmrFileFilter(
-                    ct.trans("compressed.musicxml.filter"), OMR.COMPRESSED_SCORE_EXTENSION));
-            exportFilters.add(new OmrFileFilter(
-                    ct.trans("uncompressed.musicxml.filter"), OMR.SCORE_EXTENSION));
+            exportFilters.add(
+                    new OmrFileFilter(
+                            ct.trans("compressed.musicxml.filter"),
+                            OMR.COMPRESSED_SCORE_EXTENSION));
+            exportFilters.add(
+                    new OmrFileFilter(
+                            ct.trans("uncompressed.musicxml.filter"),
+                            OMR.SCORE_EXTENSION));
         } else {
-            exportFilters.add(new OmrFileFilter(
-                    ct.trans("uncompressed.musicxml.filter"), OMR.SCORE_EXTENSION));
-            exportFilters.add(new OmrFileFilter(
-                    ct.trans("compressed.musicxml.filter"), OMR.COMPRESSED_SCORE_EXTENSION));
+            exportFilters.add(
+                    new OmrFileFilter(
+                            ct.trans("uncompressed.musicxml.filter"),
+                            OMR.SCORE_EXTENSION));
+            exportFilters.add(
+                    new OmrFileFilter(
+                            ct.trans("compressed.musicxml.filter"),
+                            OMR.COMPRESSED_SCORE_EXTENSION));
         }
 
         final Path sheetPath = UIUtil.pathChooser(

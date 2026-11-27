@@ -45,6 +45,7 @@ import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.Trimmable;
 
 import org.slf4j.Logger;
@@ -110,6 +111,8 @@ public class MeasureStack
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureStack.class);
+
+    private static final Translator ct = new Translator();
 
     /** String prefix for a second half id: {@value}. */
     public static final String SECOND_HALF_PREFIX = "X";
@@ -343,7 +346,7 @@ public class MeasureStack
         try {
             Trimmable.afterMarshal(this);
         } catch (Exception ex) {
-            logger.error("Error afterMarshal", ex);
+            logger.warn(ct.trans("error.in", "MeasureStack.afterMarshal()", ex), ex);
         }
     }
 
@@ -374,7 +377,7 @@ public class MeasureStack
                 slot.afterReload();
             }
         } catch (Exception ex) {
-            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+            logger.warn(ct.trans("error.in", "MeasureStack.afterReload()", ex), ex);
         }
     }
 
@@ -387,7 +390,7 @@ public class MeasureStack
         try {
             Trimmable.beforeMarshal(this);
         } catch (Exception ex) {
-            logger.error("Error beforeMarshal", ex);
+            logger.warn(ct.trans("error.in", "MeasureStack.beforeMarshal()", ex), ex);
         }
     }
 
@@ -1497,16 +1500,19 @@ public class MeasureStack
         // a null point/measure/border must not abort the whole SYMBOLS step. The
         // guard paths are logged (not silent) so problematic sheets stay visible.
         if ((point == null) || (skew == null) || (measure == null)) {
-            logger.debug("getXOffset: missing geometry (point={}, skew={}, measure={})"
-                    + " in stack {}", point, skew, measure, this);
+            logger.debug(
+                    "getXOffset: missing geometry (point={}, skew={}, measure={})" + " in stack {}",
+                    point,
+                    skew,
+                    measure,
+                    this);
             return 0;
         }
 
         final Point2D left = measure.getSidePoint(HorizontalSide.LEFT, staff);
 
         if (left == null) {
-            logger.debug("getXOffset: no left side point for staff {} in stack {}",
-                    staff, this);
+            logger.debug("getXOffset: no left side point for staff {} in stack {}", staff, this);
             return 0;
         }
 
@@ -1723,7 +1729,7 @@ public class MeasureStack
 
             logger.info(sb.toString());
         } catch (Exception ex) {
-            logger.warn("Error printing voices for {} {}", this, ex.toString(), ex);
+            logger.warn(ct.trans("error.in", "MeasureStack.printVoices()", ex), ex);
         }
     }
 
@@ -2110,7 +2116,7 @@ public class MeasureStack
     {
         final List<Part> systemParts = system.getParts();
 
-        logger.info("Splitting {}", this);
+        logger.info(ct.trans("Splitting", this));
         final MeasureStack leftStack = new MeasureStack(system);
         leftStack.left = this.left;
         leftStack.right = 0;

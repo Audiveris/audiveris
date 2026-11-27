@@ -51,8 +51,8 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.score.DrumSet;
 import org.audiveris.omr.score.DrumSet.DrumInstrument;
 import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Picture;
+import org.audiveris.omr.sheet.ProcessingSwitch;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -80,6 +80,7 @@ import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,6 +133,8 @@ public class NoteHeadsBuilder
 
     private static final Logger logger = LoggerFactory.getLogger(NoteHeadsBuilder.class);
 
+    private static final Translator ct = new Translator();
+
     private static final double EPSILON = 1E-5;
 
     /** Shapes of note head competitors. */
@@ -165,10 +168,13 @@ public class NoteHeadsBuilder
     private static final Set<Shape> TIP_STEMMED = EnumSet.of(
             Shape.NOTEHEAD_CROSS,
             Shape.NOTEHEAD_CROSS_VOID);
+
     /** The head a small head drawn between brackets stands for on a drum staff. */
     private static final Map<Shape, Shape> GHOSTED = Map.of(
-            Shape.NOTEHEAD_BLACK_SMALL, Shape.NOTEHEAD_BLACK,
-            Shape.NOTEHEAD_VOID_SMALL, Shape.NOTEHEAD_VOID);
+            Shape.NOTEHEAD_BLACK_SMALL,
+            Shape.NOTEHEAD_BLACK,
+            Shape.NOTEHEAD_VOID_SMALL,
+            Shape.NOTEHEAD_VOID);
     static {
         MATCHED_SHAPES.addAll(ShapeSet.HeadsOval);
         MATCHED_SHAPES.addAll(ShapeSet.QuarterHeads);
@@ -568,10 +574,11 @@ public class NoteHeadsBuilder
         final Rectangle box = head.getBounds();
 
         // Brackets come in pairs: a stroke on one side only is an accidental or a neighbour
-        final int[] edges = {box.x, (box.x + box.width) - 1};
-        final Integer[] outers = {
-                bracketOuterEdge(box, LEFT, edges[0]),
-                bracketOuterEdge(box, RIGHT, edges[1])};
+        final int[] edges = { box.x, (box.x + box.width) - 1 };
+        final Integer[] outers = { bracketOuterEdge(box, LEFT, edges[0]), bracketOuterEdge(
+                box,
+                RIGHT,
+                edges[1]) };
 
         if ((outers[0] == null) || (outers[1] == null)) {
             return;
@@ -625,8 +632,8 @@ public class NoteHeadsBuilder
             for (HeadInter other : heads) {
                 final Rectangle otherBox = other.getBounds();
 
-                if ((other != head) && (other.getIntegerPitch() == head.getIntegerPitch())
-                        && zone.intersects(otherBox) && !box.intersects(otherBox)) {
+                if ((other != head) && (other.getIntegerPitch() == head.getIntegerPitch()) && zone
+                        .intersects(otherBox) && !box.intersects(otherBox)) {
                     head.setParentheses(false);
 
                     break;
@@ -661,8 +668,9 @@ public class NoteHeadsBuilder
         final int dir = (side == LEFT) ? -1 : 1;
         final int reach = params.maxBracketGap + params.maxBracketStroke;
         final int yMin = Math.max(0, box.y - params.bracketOverhang);
-        final int yMax = Math.min(distances.getHeight() - 1,
-                                  (box.y + box.height) - 1 + params.bracketOverhang);
+        final int yMax = Math.min(
+                distances.getHeight() - 1,
+                (box.y + box.height) - 1 + params.bracketOverhang);
         int top = Integer.MAX_VALUE; // Extent of the stroke, seen or hidden
         int bottom = Integer.MIN_VALUE;
         int inkTop = Integer.MAX_VALUE; // Extent of the stroke seen
@@ -735,8 +743,8 @@ public class NoteHeadsBuilder
         // The stroke stands beyond the head's own height, and is ink either side of its middle
         final double middle = box.y + ((box.height - 1) / 2.0);
 
-        if ((top > box.y) || (bottom < ((box.y + box.height) - 1))
-                || (inkTop >= middle) || (inkBottom <= middle)) {
+        if ((top > box.y) || (bottom < ((box.y + box.height) - 1)) || (inkTop >= middle)
+                || (inkBottom <= middle)) {
             return null;
         }
 
@@ -778,8 +786,8 @@ public class NoteHeadsBuilder
             final int leftGap = box.x - ((s.x + s.width) - 1);
             final int rightGap = s.x - ((box.x + box.width) - 1);
 
-            if ((Math.abs(leftGap) <= params.maxBracketStemGap)
-                    || (Math.abs(rightGap) <= params.maxBracketStemGap)) {
+            if ((Math.abs(leftGap) <= params.maxBracketStemGap) || (Math.abs(
+                    rightGap) <= params.maxBracketStemGap)) {
                 return true;
             }
         }
@@ -1076,20 +1084,20 @@ public class NoteHeadsBuilder
             }
 
             switch (inter) {
-            case AbstractVerticalInter vertical -> {
-                // We may have a stem mistaken for a thin barline or a thin connector
-                // So, check bar/connector width vs max stem width
-                final int width = (int) Math.floor(vertical.getWidth());
+                case AbstractVerticalInter vertical -> {
+                    // We may have a stem mistaken for a thin barline or a thin connector
+                    // So, check bar/connector width vs max stem width
+                    final int width = (int) Math.floor(vertical.getWidth());
 
-                if (width <= scale.getMaxStem()) {
-                    return false;
+                    if (width <= scale.getMaxStem()) {
+                        return false;
+                    }
                 }
-            }
-            case AbstractBeamInter beam -> {
-                // Keep any beam if part of a beam group with at least one long beam
-                return beam.getGroup().hasLongBeam(params.minBeamWidth);
-            }
-            default -> {}
+                case AbstractBeamInter beam -> {
+                    // Keep any beam if part of a beam group with at least one long beam
+                    return beam.getGroup().hasLongBeam(params.minBeamWidth);
+                }
+                default -> {}
             }
 
             return true;
@@ -1298,10 +1306,10 @@ public class NoteHeadsBuilder
     private HeadInter pitchTieLoser (HeadInter h1,
                                      HeadInter h2)
     {
-        if ((h1.getShape() != h2.getShape()) || (h1.getStaff() != h2.getStaff())
-                || (Math.abs(h1.getIntegerPitch() - h2.getIntegerPitch()) != 1)
-                || (Math.abs(h1.getGrade() - h2.getGrade()) > constants.maxPitchTieGradeDiff
-                        .getValue())) {
+        if ((h1.getShape() != h2.getShape()) || (h1.getStaff() != h2.getStaff()) || (Math.abs(
+                h1.getIntegerPitch() - h2.getIntegerPitch()) != 1) || (Math.abs(
+                        h1.getGrade() - h2.getGrade()) > constants.maxPitchTieGradeDiff
+                                .getValue())) {
             return null;
         }
 
@@ -1335,8 +1343,10 @@ public class NoteHeadsBuilder
 
         int bottom = yMid;
 
-        while ((bottom < (image.getHeight() - 1)) && (rowCount(xMin, xMax, bottom + 1)
-                >= minCount)) {
+        while ((bottom < (image.getHeight() - 1)) && (rowCount(
+                xMin,
+                xMax,
+                bottom + 1) >= minCount)) {
             bottom++;
         }
 
@@ -1764,7 +1774,7 @@ public class NoteHeadsBuilder
         private final Constant.Ratio tipPitchMargin = new Constant.Ratio(
                 1.0,
                 "Vertical margin for intercepting stem seed around a target pitch, for a head"
-                + " whose stem is drawn from a tip");
+                        + " whose stem is drawn from a tip");
 
         private final Constant.Ratio stemLessBoost = new Constant.Ratio(
                 0, // Was 0.38,
@@ -1777,7 +1787,7 @@ public class NoteHeadsBuilder
         private final Scale.Fraction maxBracketGap = new Scale.Fraction(
                 0.7,
                 "Maximum gap between a head and the bracket beside it"
-                + " (up to 0.6 round a ghost drawn at cue size)");
+                        + " (up to 0.6 round a ghost drawn at cue size)");
 
         private final Scale.Fraction maxBracketStroke = new Scale.Fraction(
                 0.3,
@@ -2219,7 +2229,7 @@ public class NoteHeadsBuilder
                     .getStaffSet(lineCount);
 
             if (staffSet == null) {
-                logger.warn("No DrumSet defined for staff size {}", lineCount);
+                logger.warn(ct.trans("no.drum.set.for.staff.size", lineCount));
             } else {
                 final Map<DrumSet.MotifSign, DrumInstrument> msMap = staffSet.get(pitch);
 
@@ -2320,8 +2330,8 @@ public class NoteHeadsBuilder
                 return false;
             }
 
-            return staff.getSystem().getSheet().getStub().getProcessingSwitches()
-                    .getValue(ProcessingSwitch.drumNotation);
+            return staff.getSystem().getSheet().getStub().getProcessingSwitches().getValue(
+                    ProcessingSwitch.drumNotation);
         }
 
         //-----------------//

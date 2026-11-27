@@ -46,6 +46,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,8 @@ public abstract class Voices
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Voices.class);
+
+    private static final Translator ct = new Translator();
 
     /** To sort voices by their ID. */
     public static final Comparator<Voice> byId = (Voice v1,
@@ -330,7 +333,7 @@ public abstract class Voices
     {
         // Make sure logical parts are available
         if (score.getLogicalParts() == null) {
-            logger.info("Retrieving logical parts");
+            logger.info(ct.trans("retrieving.logical.parts"));
             final Book theBook = score.getBook();
             final List<SheetStub> theStubs = theBook.getValidSelectedStubs();
             new ScoreReduction(score).reduce(theStubs);

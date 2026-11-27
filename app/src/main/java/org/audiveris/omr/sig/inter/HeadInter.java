@@ -65,8 +65,9 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.HorizontalSide;
-import org.audiveris.omr.util.Jaxb;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
@@ -120,6 +121,8 @@ public class HeadInter
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(HeadInter.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -903,7 +906,7 @@ public class HeadInter
                     shape);
 
             if (template == null) {
-                logger.warn("Null template for {} {}", shape, family);
+                logger.warn(ct.trans("no.template.for.in", shape, family));
             }
         }
 
@@ -1095,7 +1098,7 @@ public class HeadInter
                                                 new Link(stem, new ChordStemRelation(), true))));
                     } else {
                         if (stemChords.size() > 1) {
-                            logger.warn("Stem shared by several chords, picked one");
+                            logger.warn(ct.trans("stem.shared.by.several.chords"));
                         }
 
                         headChord = stemChords.get(0);
@@ -1164,7 +1167,7 @@ public class HeadInter
         final List<Point> fores = template.getForegroundPixels(tplBox, image);
 
         if (fores.isEmpty()) {
-            logger.info("No foreground pixels for {}", this);
+            logger.info(ct.trans("no.foreground.pixels.for", this));
 
             return null;
         }

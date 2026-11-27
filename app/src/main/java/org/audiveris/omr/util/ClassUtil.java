@@ -38,6 +38,8 @@ public abstract class ClassUtil
 
     private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
+    private static final Translator ct = new Translator();
+
     //~ Constructors -------------------------------------------------------------------------------
 
     private ClassUtil ()
@@ -155,19 +157,19 @@ public abstract class ClassUtil
         String path = file.getAbsolutePath();
 
         if (verbose) {
-            logger.info("Loading file {} ...", path);
+            logger.info(ct.trans("loading.file", path));
         }
 
         try {
             System.load(path);
 
             if (verbose) {
-                logger.info("Loaded  file {}", path);
+                logger.info(ct.trans("loaded.file", path));
             }
 
             return true;
         } catch (Throwable ex) {
-            logger.warn("Error while loading file " + path, ex);
+            logger.warn(ct.trans("error.while.loading.file", path, ex), ex);
 
             return false;
         }
@@ -188,19 +190,19 @@ public abstract class ClassUtil
                                        boolean verbose)
     {
         if (verbose) {
-            logger.info("loadLibrary for {} ...", library);
+            logger.info(ct.trans("loading.library", library));
         }
 
         try {
             System.loadLibrary(library);
 
             if (verbose) {
-                logger.info("Loaded  library {}", library);
+                logger.info("Loaded library {}", library);
             }
 
             return true;
         } catch (Throwable ex) {
-            logger.warn("Error while loading library " + library, ex);
+            logger.warn(ct.trans("error.while.loading.library", library, ex), ex);
 
             return false;
         }

@@ -225,6 +225,15 @@ public abstract class AbstractTimeInter
         return (getTimeRational() != null) ? getTimeRational().num : 0;
     }
 
+    //----------------//
+    // getShapeString //
+    //----------------//
+    @Override
+    public String getShapeString ()
+    {
+        return ct.trans("time.signature", getTimeRational());
+    }
+
     //-----------------//
     // getTimeRational //
     //-----------------//

@@ -44,6 +44,7 @@ import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.symbol.TextSymbol;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.StringUtil;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.Wrapper;
 
@@ -83,6 +84,8 @@ public class WordInter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(WordInter.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -345,6 +348,7 @@ public class WordInter
      *
      * @return the fontInfo
      */
+    @Override
     public FontInfo getFontInfo ()
     {
         return fontInfo;
@@ -367,7 +371,7 @@ public class WordInter
     @Override
     public String getShapeString ()
     {
-        return "WORD";
+        return ct.trans("Word");
     }
 
     //----------//
@@ -376,6 +380,7 @@ public class WordInter
     /**
      * @return the value
      */
+    @Override
     public String getValue ()
     {
         return value;

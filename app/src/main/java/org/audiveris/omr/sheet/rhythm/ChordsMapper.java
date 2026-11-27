@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet.rhythm;
 import org.audiveris.omr.math.InjectionSolver;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.util.Arrangements;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.WrappedInteger;
 
 import org.slf4j.Logger;
@@ -48,6 +49,8 @@ public class ChordsMapper
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ChordsMapper.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -188,10 +191,10 @@ public class ChordsMapper
         rookies.forEach(r -> extended.add(null));
 
         final List<List<AbstractChordInter>> buckets = Arrangements.generate(extended, rNb);
-        logger.info("Raw     buckets: {}", buckets.size());
+        logger.info(ct.trans("raw.buckets", buckets.size()));
 
         Arrangements.reduce(buckets);
-        logger.info("Reduced buckets: {}", buckets.size());
+        logger.info(ct.trans("reduced.buckets", buckets.size()));
 
         final List<Mapping> all = new ArrayList<>();
 
@@ -314,7 +317,7 @@ public class ChordsMapper
         @Override
         public String toString ()
         {
-            return new StringBuilder("Mapping {") //
+            return new StringBuilder(ct.trans("Mapping")).append('{') //
                     .append(cost) //
                     .append(pairs.stream().map(p -> p.toString()).collect(joining(",", " [", "]")))
                     .append('}').toString();

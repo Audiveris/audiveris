@@ -33,13 +33,12 @@ import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
-import org.audiveris.omr.sheet.Params.SheetParams;
-import org.audiveris.omr.sheet.Picture.ImageKey;
-import org.audiveris.omr.sheet.Picture.TableKey;
-import org.audiveris.omr.sheet.InputQuality;
 import static org.audiveris.omr.sheet.InputQuality.Poor;
 import static org.audiveris.omr.sheet.InputQuality.Standard;
 import static org.audiveris.omr.sheet.InputQuality.Synthetic;
+import org.audiveris.omr.sheet.Params.SheetParams;
+import org.audiveris.omr.sheet.Picture.ImageKey;
+import org.audiveris.omr.sheet.Picture.TableKey;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.StubsController;
@@ -1312,7 +1311,7 @@ public class SheetStub
 
             return img;
         } catch (IOException ex) {
-            logger.warn(ct.trans("error.loading.image", si.path, ex.getMessage()), ex);
+            logger.warn(ct.trans("error.loading.image.path", si.path, ex), ex);
 
             return null;
         }

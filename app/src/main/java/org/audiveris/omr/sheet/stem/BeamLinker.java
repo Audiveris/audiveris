@@ -68,6 +68,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.BOTTOM;
 import static org.audiveris.omr.util.VerticalSide.TOP;
@@ -110,6 +111,8 @@ public class BeamLinker
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BeamLinker.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -1736,7 +1739,7 @@ public class BeamLinker
                             // Validate ordinate of shorter beam WRT base beam
                             final double dy = crossPt.getY() - beamPt.getY();
                             if (dy * yDir < 0) {
-                                logger.info("Not linking shorter {}", b);
+                                logger.info(ct.trans("not.linking.shorter", b));
                                 continue;
                             }
                         }

@@ -148,7 +148,7 @@ public abstract class AbstractNumberInter
     @Override
     public String getShapeString ()
     {
-        return "NUMBER_" + value;
+        return ct.trans("Number") + ' ' + value;
     }
 
     //----------------//
@@ -171,15 +171,6 @@ public abstract class AbstractNumberInter
     public Integer getValue ()
     {
         return value;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + value;
     }
 
     //----------//

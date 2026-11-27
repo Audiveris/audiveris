@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +96,8 @@ public class ChordSplitter
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ChordSplitter.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -239,7 +242,7 @@ public class ChordSplitter
 
         // Check every partition is addressed?
         for (int i = iLastAddressed + 1; i < allPartitions.size(); i++) {
-            logger.warn("{} unaddressed partition: {}", chord, allPartitions.get(i));
+            logger.warn(ct.trans("unaddressed.ensemble", chord, allPartitions.get(i)));
         }
 
         return stemMap;

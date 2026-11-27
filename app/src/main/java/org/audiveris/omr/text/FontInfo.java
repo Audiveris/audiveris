@@ -25,6 +25,7 @@ import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.TextFont;
 import static org.audiveris.omr.ui.symbol.TextFont.TEXT_FONT_NAME;
 import static org.audiveris.omr.util.RegexUtil.group;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,8 @@ public class FontInfo
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(FontInfo.class);
+
+    private static final Translator ct = new Translator();
 
     /** Optional separator in memo between attributes (if any) and point size. */
     private static final char SEPARATOR = '-';
@@ -329,7 +332,7 @@ public class FontInfo
     public static FontInfo computeMeanFontInfo (Collection<? extends Word> words)
     {
         if (words.isEmpty()) {
-            logger.info("No word to compute font information");
+            logger.info(ct.trans("no.word.to.compute.font.information"));
             return null;
         }
 

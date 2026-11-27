@@ -85,6 +85,7 @@ import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.BOTTOM;
 import static org.audiveris.omr.util.VerticalSide.TOP;
@@ -164,6 +165,8 @@ public class BarsRetriever
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BarsRetriever.class);
+
+    private static final Translator ct = new Translator(BarsRetriever.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -365,15 +368,16 @@ public class BarsRetriever
                         }
 
                         if (otherPeak == null) {
-                            logger.warn("Staff#{} isolated brace top", staff.getId());
+                            logger.warn(ct.trans("staff.with.isolated.brace.top", staff.getId()));
 
                             break;
                         }
 
                         if (!otherPeak.isSet(BRACE_MIDDLE) && !otherPeak.isSet(BRACE_BOTTOM)) {
                             logger.warn(
-                                    "Staff#{} expected brace middle/bottom",
-                                    otherStaff.getId());
+                                    ct.trans(
+                                            "staff.expected.brace.middle.bottom",
+                                            otherStaff.getId()));
 
                             break;
                         }
@@ -612,10 +616,10 @@ public class BarsRetriever
                             extendConnection(connection);
                         }
                     } else {
-                        logger.info("Cannot create connection for {}", align);
+                        logger.info(ct.trans("cant.create.connection.for", align));
                     }
                 } catch (Exception ex) {
-                    logger.warn("Error creating connection for {} {}", align, ex.toString(), ex);
+                    logger.warn(ct.trans("error.creating.connection.for", align, ex), ex);
                 }
             }
         }
@@ -699,7 +703,11 @@ public class BarsRetriever
                                     logger.debug("Staff#{} continue bracket {}", staff.getId(), pg);
                                 }
                             } else {
-                                logger.warn("Staff#{} no group level:{}", staff.getId(), level);
+                                logger.warn(
+                                        ct.trans(
+                                                "staff.has.no.part.group.of.level",
+                                                staff.getId(),
+                                                level));
                             }
                         }
                     } else if (!isConnected(peak, TOP) && isConnected(peak, BOTTOM)) {
@@ -727,10 +735,14 @@ public class BarsRetriever
                                 logger.debug("Staff#{} continue square {}", staff.getId(), pg);
                             }
                         } else {
-                            logger.warn("Staff#{} no group level:{}", staff.getId(), level);
+                            logger.warn(
+                                    ct.trans(
+                                            "staff.has.no.part.group.of.level",
+                                            staff.getId(),
+                                            level));
                         }
                     } else {
-                        logger.warn("Staff#{} weird square portion", staff.getId());
+                        logger.warn(ct.trans("staff.has.weird.square.portion", staff.getId()));
                     }
                 }
 
@@ -766,7 +778,7 @@ public class BarsRetriever
                                 logger.debug("Staff#{} stop brace {}", staff.getId(), pg);
                             }
                         } else {
-                            logger.info("No brace partner at level:{} for {}", level, bracePeak);
+                            logger.info(ct.trans("no.brace.partner.at.level", level, bracePeak));
                         }
                     }
                 }
@@ -896,9 +908,10 @@ public class BarsRetriever
             if (gutter < params.minSeparateStaffGutter) {
                 part.setMerged(true);
                 logger.info(
-                        "System#{} {} detected as a merged 11-line grand staff",
-                        system.getId(),
-                        part);
+                        ct.trans(
+                                "system.part.detected.as.grand.staff",
+                                system.getId(),
+                                part.getId()));
             }
         }
 
@@ -1064,8 +1077,8 @@ public class BarsRetriever
                 // The bars that open the system are all marked as staff end, a brace mistaken for
                 // the first of them included, so the first peak may be a brace portion even when
                 // it is itself the start peak.
-                if ((bracePeak == null) && ((iStart >= 1) || ((peaks.size() > 1)
-                        && peaks.get(1).isStaffEnd(LEFT)))) {
+                if ((bracePeak == null) && ((iStart >= 1) || ((peaks.size() > 1) && peaks.get(1)
+                        .isStaffEnd(LEFT)))) {
                     // First peak could itself be a brace portion (mistaken for a bar)
                     final StaffPeak secondPeak = peaks.get(1);
                     maxRight = secondPeak.getStart() - 1 - params.braceBarNeutralGap;
@@ -1285,9 +1298,10 @@ public class BarsRetriever
                         if ((first.getStart() - xLeft) > params.maxLinesLeftToStartBar) {
                             if (first.isVip() || logger.isDebugEnabled()) {
                                 logger.info(
-                                        "start {} too far inside staff#{}",
-                                        first,
-                                        staff.getId());
+                                        ct.trans(
+                                                "start.peak.too.far.inside.staff",
+                                                first,
+                                                staff.getId()));
                             }
 
                             inside.add(staff);
@@ -1301,9 +1315,10 @@ public class BarsRetriever
                         if (projector.hasStandardBlank(peak.getStop(), xLeft)) {
                             if (peak.isVip() || logger.isDebugEnabled()) {
                                 logger.info(
-                                        "start {} too far ahead of staff#{}",
-                                        peak,
-                                        staff.getId());
+                                        ct.trans(
+                                                "start.peak.too.far.ahead.staff",
+                                                peak,
+                                                staff.getId()));
                             }
 
                             continue SystemLoop;
@@ -1320,9 +1335,7 @@ public class BarsRetriever
 
                 for (Staff staff : inside) {
                     logger.info(
-                            "{} staff#{} lines start before the system start bar",
-                            system,
-                            staff.getId());
+                            ct.trans("staff.lines.before.system.start.bar", system, staff.getId()));
                 }
 
                 // The whole group is the staff end, so purgeLeftPeaks keeps it.
@@ -1640,10 +1653,11 @@ public class BarsRetriever
 
         if (serif.getWeight() < params.serifMinWeight) {
             logger.info(
-                    "Staff#{} serif normalized weight too small {} vs {}",
-                    staff.getId(),
-                    String.format("%.2f", serif.getNormalizedWeight(scale.getInterline())),
-                    constants.serifMinWeight.getValue());
+                    ct.trans(
+                            "staff.serif.weight.too.small",
+                            staff.getId(),
+                            String.format("%.2f", serif.getNormalizedWeight(scale.getInterline())),
+                            constants.serifMinWeight.getValue()));
 
             return null;
         }
@@ -1851,7 +1865,7 @@ public class BarsRetriever
         }
 
         if (bracePeak.getWidth() > params.maxBracePeakWidth) {
-            logger.info("too wide bracePeak {}", bracePeak);
+            logger.info(ct.trans("too.wide.brace.peak", bracePeak));
 
             return null;
         }

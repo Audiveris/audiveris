@@ -39,6 +39,7 @@ import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.ChartPlotter;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +85,8 @@ public class HeaderBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderBuilder.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -317,7 +320,7 @@ public class HeaderBuilder
 
                     if ((center.x > start) && (center.x < stop) && !bar.isStaffEnd(LEFT)) {
                         if (bar.isVip()) {
-                            logger.info("Deleting {} in staff#{} header", bar, staff.getId());
+                            logger.info(ct.trans("deleting.in.staff.header", bar, staff.getId()));
                         }
 
                         bar.remove();

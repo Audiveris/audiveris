@@ -656,7 +656,7 @@ class SampleListing
         private static String fullName (Shape shape)
         {
             final Shape physical = shape.getPhysicalShape();
-            final String text = " [" + shape.getDescription() + "]";
+            final String text = " [" + shape.getLocalizedName() + "]";
 
             if (physical == shape) {
                 return shape.name() + text;

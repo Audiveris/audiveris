@@ -69,6 +69,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.BOTTOM;
 import static org.audiveris.omr.util.VerticalSide.TOP;
@@ -111,6 +112,8 @@ public class BeamsBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BeamsBuilder.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -1556,7 +1559,7 @@ public class BeamsBuilder
         Glyph glyph = sheet.getGlyphIndex().registerOriginal(new Glyph(box.x, box.y, runTable));
 
         if (glyph.getWeight() == 0) {
-            logger.warn("No pixels for {}", beam);
+            logger.warn(ct.trans("no.pixels.for", beam));
         }
 
         return glyph;
@@ -2049,7 +2052,7 @@ public class BeamsBuilder
             // Determine stem direction in the aggregate
             globalDir = getDirection();
             if (globalDir == 0) {
-                logger.info("Mixed or unknown direction in cue area {} {}", id, bounds);
+                logger.info(ct.trans("mixed.unknown.dir.in.cue.area", id, bounds));
 
                 return;
             }

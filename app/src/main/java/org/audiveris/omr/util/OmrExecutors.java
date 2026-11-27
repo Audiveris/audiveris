@@ -54,6 +54,8 @@ public class OmrExecutors
 
     private static final Logger logger = LoggerFactory.getLogger(OmrExecutors.class);
 
+    private static final Translator ct = new Translator();
+
     private static final Constants constants = new Constants();
 
     /** Default parameter. */
@@ -270,7 +272,12 @@ public class OmrExecutors
         {
             if (!getValue().equals(specific)) {
                 constants.useParallelism.setValue(specific);
-                logger.info("Parallelism is {} allowed", specific ? "now" : "no longer");
+
+                if (specific) {
+                    logger.info(ct.trans("parallelism.is.now allowed"));
+                } else {
+                    logger.info(ct.trans("parallelism.is.no.longer.allowed"));
+                }
 
                 return true;
             } else {
@@ -405,7 +412,7 @@ public class OmrExecutors
             try {
                 // Wait a while for existing tasks to terminate
                 if (!pool.awaitTermination(constants.graceDelay.getValue(), TimeUnit.SECONDS)) {
-                    logger.warn("Pool {} did not terminate", getName());
+                    logger.warn(ct.trans("pool.did.not.terminate", getName()));
                     result = false;
 
                     // (Try to) cancel currently executing tasks.
@@ -443,7 +450,7 @@ public class OmrExecutors
         public synchronized ExecutorService getPool ()
         {
             if (!creationAllowed) {
-                logger.info("No longer allowed to create pool: {}", getName());
+                logger.info(ct.trans("no.longer .allowed.to.create.pool", getName()));
 
                 throw new ProcessingCancellationException("Executor closed");
             }

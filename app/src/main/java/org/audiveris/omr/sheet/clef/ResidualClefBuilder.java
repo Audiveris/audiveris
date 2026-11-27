@@ -40,6 +40,7 @@ import org.audiveris.omr.sheet.rhythm.MeasureFiller;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.Translator;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.SimpleGraph;
@@ -121,6 +122,8 @@ public class ResidualClefBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ResidualClefBuilder.class);
+
+    private static final Translator ct = new Translator();
 
     /** The only shapes this recovery pass will ever create -- clef family only. */
     private static final EnumSet<Shape> CANDIDATE_SHAPES = EnumSet.of(
@@ -212,13 +215,13 @@ public class ResidualClefBuilder
      * a candidate cluster is assigned to the single staff whose nearest line is truly closest
      * (via {@link Staff#doubleDistanceTo}), never to every staff whose margin happens to reach it.
      *
-     * @param system          the system to inspect
-     * @param examinedGlyphs  glyphs already offered to some system's candidate pool in this same
-     *                        {@link #process()} pass -- never offered again, see {@link #process()}
+     * @param system         the system to inspect
+     * @param examinedGlyphs glyphs already offered to some system's candidate pool in this same
+     *                       {@link #process()} pass -- never offered again, see {@link #process()}
      * @return true if at least one clef was recovered
      */
     private boolean processSystem (SystemInfo system,
-                                    Set<Glyph> examinedGlyphs)
+                                   Set<Glyph> examinedGlyphs)
     {
         final List<Staff> staves = system.getStaves();
 
@@ -315,8 +318,8 @@ public class ResidualClefBuilder
             // over-counts wildly, since foreground pixels shared by two overlapping candidates
             // get counted once per candidate. GlyphFactory#buildGlyph paints every part into one
             // shared buffer, so the same pixel only ever counts once in the result.
-            Glyph compound = (cluster.size() > 1) ? GlyphFactory.buildGlyph(cluster) : cluster
-                    .iterator().next();
+            Glyph compound = (cluster.size() > 1) ? GlyphFactory.buildGlyph(cluster)
+                    : cluster.iterator().next();
             final int weight = compound.getWeight();
 
             if ((weight < minWeight) || (weight > maxWeight)) {
@@ -410,11 +413,11 @@ public class ResidualClefBuilder
 
             system.getSig().addVertex(clef);
             logger.info(
-                    "Recovered residual clef {} in staff#{} ({}){}",
+                    ct.trans("recovered.residual.clef"),
                     clef,
                     bestStaff.getId(),
                     clefEval,
-                    evictions.isEmpty() ? "" : (", evicted " + evictions));
+                    evictions.isEmpty() ? "" : ", " + ct.trans("evicted", evictions));
             recovered = true;
         }
 
@@ -464,8 +467,8 @@ public class ResidualClefBuilder
 
         final Double claimantGrade = claimant.getGrade();
 
-        if ((claimantGrade == null)
-                || (claimantGrade > constants.weakClaimGradeCeiling.getValue())) {
+        if ((claimantGrade == null) || (claimantGrade > constants.weakClaimGradeCeiling
+                .getValue())) {
             return null; // Missing grade, or confidently explained by something else -- hands off
         }
 

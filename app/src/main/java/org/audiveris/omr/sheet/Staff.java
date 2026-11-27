@@ -57,6 +57,7 @@ import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.TOP;
 
@@ -157,6 +158,8 @@ public class Staff
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Staff.class);
+
+    private static final Translator ct = new Translator();
 
     /** To sort by staff id. */
     public static final Comparator<Staff> byId = (Staff o1,
@@ -2195,22 +2198,22 @@ public class Staff
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{" + getClass().getSimpleName());
+        final StringBuilder sb = new StringBuilder(ct.trans("staff")).append('{');
 
-        sb.append(" id=").append(getId());
+        sb.append(' ').append(ct.trans("id")).append('=').append(getId());
 
         if (isShort()) {
-            sb.append(" SHORT");
+            sb.append(' ').append(ct.trans("SHORT"));
         }
 
         if (isSmall()) {
-            sb.append(" SMALL");
+            sb.append(' ').append(ct.trans("SMALL"));
         }
 
-        sb.append(" left:").append(left);
-        sb.append(" right:").append(right);
+        sb.append(' ').append(ct.trans("left")).append(':').append(left);
+        sb.append(' ').append(ct.trans("right")).append(':').append(right);
 
-        sb.append("}");
+        sb.append('}');
 
         return sb.toString();
     }

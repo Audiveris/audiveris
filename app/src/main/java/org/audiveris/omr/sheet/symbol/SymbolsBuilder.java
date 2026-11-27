@@ -44,6 +44,7 @@ import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.SimpleGraph;
@@ -74,6 +75,8 @@ public class SymbolsBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolsBuilder.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -228,7 +231,7 @@ public class SymbolsBuilder
                     createdInters.add(created);
                 }
             } catch (Exception ex) {
-                logger.warn("Error in glyph evaluation " + ex, ex);
+                logger.warn(ct.trans("error.in.glyph.evaluation", ex), ex);
             }
         }
     }

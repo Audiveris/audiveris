@@ -77,6 +77,7 @@ import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.Version;
 
 import org.slf4j.Logger;
@@ -149,6 +150,8 @@ public class Sheet
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Sheet.class);
+
+    private static final Translator ct = new Translator();
 
     /** The radix used for folder of this sheet internals. */
     public static final String INTERNALS_RADIX = "sheet#";
@@ -413,7 +416,7 @@ public class Sheet
             if (stubVersion.compareWithLabelTo(Versions.DRUM_NOTATION) < 0) {
                 if (checkShapesRenamed()) {
                     stub.setUpgraded(true);
-                    logger.info("Some flag shapes renamed.");
+                    logger.debug("Some flag shapes renamed.");
                 }
             }
 
@@ -433,7 +436,7 @@ public class Sheet
             //                }
             //            }
         } catch (Exception ex) {
-            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+            logger.warn(ct.trans("error.in", "Sheet.afterReload()", ex), ex);
         }
     }
 
@@ -450,7 +453,7 @@ public class Sheet
             final Path bookFolder = BookManager.getDefaultBookFolder(book);
             annotate(bookFolder);
         } catch (Exception ex) {
-            logger.warn("Annotations failed {}", ex);
+            logger.warn(ct.trans("error.in", "Sheet.annotate()", ex), ex);
         }
     }
 
@@ -478,7 +481,7 @@ public class Sheet
             os = Files.newOutputStream(imgPath, CREATE);
             ImageIO.write(img, Annotations.SHEET_IMAGE_FORMAT, os);
         } catch (IOException | JAXBException | XMLStreamException ex) {
-            logger.warn("Error annotating {} {}", stub, ex.toString(), ex);
+            logger.warn(ct.trans("error.in", "Sheet.annotate()", ex), ex);
         } finally {
             if (os != null) {
                 try {
@@ -586,7 +589,7 @@ public class Sheet
             try {
                 SwingUtilities.invokeAndWait( () -> createBinaryView());
             } catch (InterruptedException | InvocationTargetException ex) {
-                logger.warn("invokeAndWait error", ex);
+                logger.warn(ct.trans("error.in", "Sheet.createBinaryView", ex), ex);
             }
         } else {
             final SheetAssembly assembly = stub.getAssembly();
@@ -654,7 +657,7 @@ public class Sheet
             getSheetEditor();
             stub.getAssembly().selectViewTab(SheetTab.DATA_TAB);
         } catch (Throwable ex) {
-            logger.warn("Error in displayDataTab " + ex, ex);
+            logger.warn(ct.trans("error.in", "Sheet.displayDataTab()", ex), ex);
         }
     }
 
@@ -775,7 +778,7 @@ public class Sheet
             // Remember the book export path in the book itself
             book.setExportPathSansExt(folder.resolve(book.getRadix()));
         } catch (Exception ex) {
-            logger.warn("Error exporting " + this + ", " + ex, ex);
+            logger.warn(ct.trans("error.exporting", this, ex), ex);
         }
     }
 
@@ -1028,7 +1031,7 @@ public class Sheet
             try {
                 setImage(img, true);
             } catch (StepException ex) {
-                logger.warn("Error setting image for sheet {}", stub.getNumber(), ex);
+                logger.warn(ct.trans("error.setting.image.for.sheet", stub.getNumber(), ex), ex);
             }
         }
 
@@ -1305,9 +1308,9 @@ public class Sheet
             new BookPdfOutput(getBook(), sheetPrintPath.toFile()).write(
                     Arrays.asList(getStub()),
                     new SheetResultPainter.PdfResultPainter());
-            logger.info("Sheet printed to {}", sheetPrintPath);
+            logger.info(ct.trans("sheet.printed.to", sheetPrintPath));
         } catch (Exception ex) {
-            logger.warn("Cannot print sheet to " + sheetPrintPath + " " + ex, ex);
+            logger.warn(ct.trans("cant.print.sheet.to", sheetPrintPath, ex), ex);
         }
     }
 
@@ -1491,8 +1494,10 @@ public class Sheet
 
             done(OmrStep.LOAD);
         } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " + stub.getBook().getInputPath() + "\n"
-                    + ex.getMessage();
+            String msg = ct.trans(
+                    "unsupported.image.format.in",
+                    stub.getBook().getInputPath(),
+                    ex.getMessage());
 
             if (OMR.gui != null) {
                 OMR.gui.displayWarning(msg);
@@ -1502,7 +1507,7 @@ public class Sheet
 
             throw new StepException(ex);
         } catch (Throwable ex) {
-            logger.warn("Error loading image", ex);
+            logger.warn(ct.trans("error.loading.image", ex), ex);
         }
     }
 
@@ -1566,7 +1571,7 @@ public class Sheet
                 // Save picture images (and remove tables if any)
                 picture.store(sheetFolder, oldSheetFolder);
             } catch (IOException ex) {
-                logger.warn("IOException on storing " + this, ex);
+                logger.warn(ct.trans("error.storing", this, ex), ex);
             }
         }
 
@@ -1582,7 +1587,7 @@ public class Sheet
             stub.setUpgraded(false);
             logger.debug("Storing {}", structurePath);
         } catch (IOException | JAXBException | XMLStreamException ex) {
-            logger.warn("Error in saving sheet structure " + ex, ex);
+            logger.warn(ct.trans("error.storing", this, ex), ex);
         }
     }
 
@@ -1592,7 +1597,7 @@ public class Sheet
     @Override
     public String toString ()
     {
-        final StringBuilder sb = new StringBuilder("Sheet{");
+        final StringBuilder sb = new StringBuilder(ct.trans("sheet")).append('{');
 
         if (getId() != null) {
             sb.append(getId());

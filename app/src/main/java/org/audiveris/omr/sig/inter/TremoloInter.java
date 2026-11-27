@@ -297,7 +297,7 @@ public class TremoloInter
                 sig.addEdge(headChord, this, new ChordOrnamentRelation());
             }
         } else {
-            logger.error("linkAsOrnament called with unexpected {}", inter);
+            logger.error(ct.trans("tremolo.cant.be.linked.to", inter));
         }
     }
 
@@ -582,7 +582,7 @@ public class TremoloInter
                         trem.remove();
                     }
                 } catch (Exception ex) {
-                    logger.warn("Could not aggregate tremolos around " + inter, ex);
+                    logger.warn(ct.trans("could.not.aggregate.tremolos.around", inter, ex), ex);
                 }
             }
         }

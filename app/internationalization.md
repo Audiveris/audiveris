@@ -221,7 +221,7 @@ using the mandatory `.toolTipText` suffix:
 
 ### Elaboration problems
 
-During the tedious work of internationalizing the existing classes, we stumbled upon problems
+During the work of internationalizing the existing classes, we stumbled upon problems
 related to the elaboration of some key classes and especially the order of this elaboration.
 
 One important aspect is the *interactive* vs *batch* mode.
@@ -233,35 +233,45 @@ Typically, we should not allocate a bundle before knowing the precise locale cho
 This locale value is defined as an application Constant and thus can be persisted
 in the `run.properties` file located in the Audiveris user folder.
 
+The sequence is thus:
+1. The `Main` class is loaded
+2. `WellKnows.ensureLoaded()` is called from `Main`.
+    1. Some system properties like `os.name` are retrieved
+    2. The user config folder is then retrieved
+    3. The `LogUtil.initialize()` initializes the logging tool
+    (including the logging file in the user config folder)
+3. `Main.readLocale()` is called from `Main.`
+    1. It retrieves the value of the `locale` Constant
+      (this requires the classes `Constant`, `ConstantManager`, `UnitManager`)
+    2. It sets the Locale default with this value.
 
+Only from this moment in time, we can pick up any proper resources bundle to actually translate a message.
 
-## Work progress
+Thus, the beginning of the log can look like:
+```
+Locale: "en"
+Running in interactive mode
+Logging configuration found at C:\Users\herve\AppData\Roaming\AudiverisLtd\audiveris\config\logback.xml
+Logging to file C:\Users\herve\AppData\Roaming\AudiverisLtd\audiveris\log\20261118T161150.log
+Plugins loaded from C:\Users\herve\AppData\Roaming\AudiverisLtd\audiveris\config\plugins.xml
+Installed OCR languages: deu,eng,fra,ita,ron
+```
+or, if we have chosen the French locale:
+```
+Paramètres régionaux : "fr"
+Exécution en mode interactif
+Configuration de journalisation lue sur C:\Users\herve\AppData\Roaming\AudiverisLtd\audiveris\config\logback.xml
+Journalisation dans le fichier C:\Users\herve\AppData\Roaming\AudiverisLtd\audiveris\log\20261118T161722.log
+Plugins chargés depuis C:\Users\herve\AppData\Roaming\AudiverisLtd\audiveris\config\plugins.xml
+Langues OCR installées : deu,eng,fra,ita,ron
+```
 
-### 24-aug-2026
-
-First version of this documentation.
-
-Start of French localization
-
-Start of restructuring the internationalization mechanisms, regardless of the language.
-
-### 14-oct-2026
-
-We now have support close to completion for 3 languages: English, French, Romanian
-
-This support is still limited to the GUI items.
-
-Beyond the UI-oriented classes, thanks to the `ResourceUtil.getBundle()` method,
-localization has been extended to the classes:
-- `OmrStep`
-- `ProcessingSwitch`
-- `Shape`
-- `ShapeSet`
-- `TextRole` 
-
-We can now clean up and rationalize the concepts and names used in internationalization,
-as described here under.
-
+Notice that the `LogUtil.initialize()` method results in a couple of log messages
+(Logging configuration found at ..., Logging to file ...)
+at a moment when the user locale has not yet been set.
+To circumvent this, the `LogUtil` class memorizes "differed messages", recording just the logging level and the message key.
+And later, when the user locale has been set, the `Main` class recalls the recorded "differed messages"
+and translates them on-the-fly into concrete localized log messages.
 
 
 ---

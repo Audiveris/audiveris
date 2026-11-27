@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.beam;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Picture;
@@ -38,10 +36,13 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Rectangle;
 import java.awt.geom.Area;
@@ -58,7 +59,8 @@ import java.util.Set;
  * produced a candidate glyph for. Two distinct symptoms are handled, sharing all of the actual
  * recovery machinery ({@link #scanBands}, {@link BeamStemRelation#checkLink}, group creation):
  * the dropped ink sometimes gets misread downstream as a spurious note head (evicted on success),
- * and sometimes leaves no trace anywhere at all (nothing to evict -- see {@link #findBareCandidate}).
+ * and sometimes leaves no trace anywhere at all (nothing to evict -- see
+ * {@link #findBareCandidate}).
  * <p>
  * {@link SpotsBuilder}'s spot pipeline (strip stem-width runs from the binary "no-staff" image,
  * blur, morphologically close with a disk sized for a <b>typical</b> beam, then a single global
@@ -73,9 +75,11 @@ import java.util.Set;
  * With no beam Inter ever created there, {@link org.audiveris.omr.sheet.note.NoteHeadsBuilder}'s
  * "skip locations already claimed by a good Inter" protection never engages -- there is nothing to
  * protect against. The merged ink then matches a head template and becomes a spurious
- * {@link HeadInter}, sitting near the stem's <b>far/beam-side</b> tip rather than the near/staff-side
+ * {@link HeadInter}, sitting near the stem's <b>far/beam-side</b> tip rather than the
+ * near/staff-side
  * end where the stem's real, primary head already sits -- much too far from that primary head to be
- * an ordinary stacked-chord notehead (which would sit within about an interline of it), yet right at
+ * an ordinary stacked-chord notehead (which would sit within about an interline of it), yet right
+ * at
  * the tip where nothing beyond it (no beam, no flag) explains why a head would be there at all.
  * Confirmed on a real score: the spurious head's own grade was clearly the weakest of every head
  * nearby, and its distance from the stem's genuine head (roughly 3.5 interlines) was far beyond any
@@ -118,6 +122,8 @@ public class ResidualBeamBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ResidualBeamBuilder.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ------------------------------------------------------------------------------
 
@@ -341,12 +347,13 @@ public class ResidualBeamBuilder
      * Look for a stem geometrically compatible with the suspect stem: close facing edges, a
      * matching outer tip level, and no beam or flag of its own already explaining ink there.
      *
-     * @param suspect          the suspect stem/head pair
-     * @param stems            every stem in the system
-     * @param resolved         stems already paired by an earlier suspect in this pass
+     * @param suspect                the suspect stem/head pair
+     * @param stems                  every stem in the system
+     * @param resolved               stems already paired by an earlier suspect in this pass
      * @param requireSingleHeadOther for a bare-candidate pair, require the other stem to also be
-     *                         single-headed (both sides need to independently qualify -- there is
-     *                         no spurious head on either side to corroborate the pairing)
+     *                               single-headed (both sides need to independently qualify --
+     *                               there is
+     *                               no spurious head on either side to corroborate the pairing)
      * @return the compatible neighbor stem, or null if none qualifies
      */
     private StemInter findNeighbor (Suspect suspect,
@@ -363,9 +370,8 @@ public class ResidualBeamBuilder
         int bestGap = Integer.MAX_VALUE;
 
         for (StemInter other : stems) {
-            if ((other == suspect.stem) || resolved.contains(other) || !other.getBeams()
-                    .isEmpty() || !system.getSig().getRelations(other, FlagStemRelation.class)
-                            .isEmpty()) {
+            if ((other == suspect.stem) || resolved.contains(other) || !other.getBeams().isEmpty()
+                    || !system.getSig().getRelations(other, FlagStemRelation.class).isEmpty()) {
                 continue;
             }
 
@@ -374,9 +380,8 @@ public class ResidualBeamBuilder
             }
 
             final Rectangle otherBox = other.getBounds();
-            final int xGap = (otherBox.x > suspectBox.x)
-                    ? (otherBox.x - (suspectBox.x + suspectBox.width))
-                    : (suspectBox.x - (otherBox.x + otherBox.width));
+            final int xGap = (otherBox.x > suspectBox.x) ? (otherBox.x - (suspectBox.x
+                    + suspectBox.width)) : (suspectBox.x - (otherBox.x + otherBox.width));
 
             if ((xGap < 0) || (xGap > maxXGap)) {
                 continue;
@@ -468,8 +473,8 @@ public class ResidualBeamBuilder
     private boolean attemptRecovery (Suspect suspect,
                                      StemInter neighbor)
     {
-        if ((suspect.head != null)
-                && (suspect.head.getGrade() > constants.headEvictionGradeCeiling.getValue())) {
+        if ((suspect.head != null) && (suspect.head.getGrade() > constants.headEvictionGradeCeiling
+                .getValue())) {
             // The whole premise of this recovery is that the suspect head is spurious ink that
             // really belongs to the beam. If it grades too well to plausibly be that, creating a
             // beam here anyway would leave both a beam and a (kept) head explaining the same
@@ -519,8 +524,7 @@ public class ResidualBeamBuilder
         final double height = (typicalHeight != null) ? typicalHeight
                 : scale.toPixelsDouble(constants.beamHeightFraction);
 
-        final ByteProcessor grey = system.getSheet().getPicture().getSource(
-                Picture.SourceKey.GRAY);
+        final ByteProcessor grey = system.getSheet().getPicture().getSource(Picture.SourceKey.GRAY);
 
         if (grey == null) {
             return false;
@@ -585,15 +589,21 @@ public class ResidualBeamBuilder
             }
         }
 
+        final StringBuilder sb = new StringBuilder();
+        if (suspect.head == null)
+            sb.append(' ').append(ct.trans("bare.pair.no.head.to.evict"));
+        else if (evicted)
+            sb.append(", ").append(ct.trans("evicted.spurious.head", suspect.head));
+        else
+            sb.append(" -- ").append(ct.trans("spurious.head.not.covered", suspect.head));
+
         logger.info(
-                "Recovered {} residual beam(s) between stem#{} and stem#{}{}",
-                candidates.size(),
-                leftStem.getId(),
-                rightStem.getId(),
-                (suspect.head == null) ? " (bare pair, no head to evict)"
-                        : (evicted ? (", evicted spurious head " + suspect.head)
-                                : (" -- spurious head " + suspect.head + " was not actually"
-                                        + " covered, left alone")));
+                ct.trans(
+                        "recovered.residual.beams",
+                        candidates.size(),
+                        leftStem.getId(),
+                        rightStem.getId(),
+                        sb.toString()));
 
         return true;
     }
@@ -633,8 +643,8 @@ public class ResidualBeamBuilder
         }
 
         final int threshold = constants.greyDarknessThreshold.getValue();
-        final int halfWindow = (int) Math.rint(typicalHeight * constants.scanHalfWindowRatio
-                .getValue());
+        final int halfWindow = (int) Math.rint(
+                typicalHeight * constants.scanHalfWindowRatio.getValue());
 
         // Per-offset dark-column counts, offset in [-halfWindow, +halfWindow].
         final int[] darkCounts = new int[(2 * halfWindow) + 1];
@@ -726,8 +736,8 @@ public class ResidualBeamBuilder
     {
         final Area beamArea = beam.getArea();
 
-        if ((beamArea == null) || (head.getBounds() == null)
-                || !beamArea.intersects(head.getBounds())) {
+        if ((beamArea == null) || (head.getBounds() == null) || !beamArea.intersects(
+                head.getBounds())) {
             return false; // Recovered beam does not actually cover this head -- leave it alone
         }
 
@@ -758,8 +768,8 @@ public class ResidualBeamBuilder
         final VerticalSide tailSide;
 
         Suspect (StemInter stem,
-                HeadInter head,
-                VerticalSide tailSide)
+                 HeadInter head,
+                 VerticalSide tailSide)
         {
             this.stem = stem;
             this.head = head;
@@ -769,9 +779,8 @@ public class ResidualBeamBuilder
         @Override
         public String toString ()
         {
-            return "Suspect{stem#" + stem.getId()
-                    + ((head != null) ? (" head#" + head.getId()) : " bare")
-                    + " tailSide=" + tailSide + "}";
+            return "Suspect{stem#" + stem.getId() + ((head != null) ? (" head#" + head.getId())
+                    : " bare") + " tailSide=" + tailSide + "}";
         }
     }
 
@@ -790,7 +799,7 @@ public class ResidualBeamBuilder
         final double height;
 
         Band (double offset,
-             double height)
+              double height)
         {
             this.offset = offset;
             this.height = height;
@@ -814,8 +823,8 @@ public class ResidualBeamBuilder
         final Link rightLink;
 
         Candidate (BeamInter beam,
-                  Link leftLink,
-                  Link rightLink)
+                   Link leftLink,
+                   Link rightLink)
         {
             this.beam = beam;
             this.leftLink = leftLink;

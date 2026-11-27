@@ -41,7 +41,7 @@ import org.audiveris.omr.sheet.key.KeyColumn.PartStatus;
 import org.audiveris.omr.sig.GradeUtil;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ClefInter;
-import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
+import org.audiveris.omr.sig.inter.ClefKind;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
@@ -52,6 +52,7 @@ import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.ChartPlotter;
 import org.audiveris.omr.util.IntUtil;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,6 +143,8 @@ public class KeyBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(KeyBuilder.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -1036,11 +1039,12 @@ public class KeyBuilder
 
                         if (alter.getIntegerPitch() != std) {
                             logger.info(
-                                    "Staff#{} key slice#{} pitch adjusted from {} to {}",
-                                    getId(),
-                                    slice.getId(),
-                                    String.format("%.1f", alter.getMeasuredPitch()),
-                                    std);
+                                    ct.trans(
+                                            "staff.key.slice.pitch.adjusted",
+                                            getId(),
+                                            slice.getId(),
+                                            String.format("%.1f", alter.getMeasuredPitch()),
+                                            std));
                             alter.setPitch(Double.valueOf(std));
                         }
                     }
@@ -1058,9 +1062,10 @@ public class KeyBuilder
                 }
 
                 logger.warn(
-                        "Staff#{} no header clef, guessed: {}",
-                        getId(),
-                        KeyInter.guessKind(keyShape, measuredPitches, null));
+                        ct.trans(
+                                "staff.no.header.clef.guessed",
+                                getId(),
+                                KeyInter.guessKind(keyShape, measuredPitches, null)));
             }
         }
 
@@ -1377,7 +1382,7 @@ public class KeyBuilder
             createKeyInter();
 
             if (keyInter == null) {
-                logger.info("Staff#{} key replication failed.", getId());
+                logger.info(ct.trans("staff.key.replication.failed", getId()));
 
                 return PartStatus.NO_REPLICATE;
             } else {

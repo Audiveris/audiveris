@@ -703,7 +703,6 @@ public class EditorMenu
 
         SlotMenu ()
         {
-            super(ct.trans("slot"));
             add(new JMenuItem(new DumpSlotChordsAction()));
             add(new JMenuItem(new DumpVoicesAction()));
         }

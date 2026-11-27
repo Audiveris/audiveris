@@ -22,6 +22,7 @@
 package org.audiveris.omr.util.param;
 
 import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,8 @@ public class ConstantBasedParam<E, C extends Constant<E>>
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ConstantBasedParam.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -100,14 +103,16 @@ public class ConstantBasedParam<E, C extends Constant<E>>
                 if (!cst.isSourceValue()) {
                     cst.resetToSource();
                     logger.info(
-                            "Default " + cst.getDescription() + " reset to {}",
-                            cst.getSourceValue());
+                            ct.trans(
+                                    "default.reset.to",
+                                    cst.getDescription(),
+                                    cst.getSourceValue()));
 
                     return true;
                 }
             } else {
                 cst.setValue(specific);
-                logger.info("Default " + cst.getDescription() + " set to {}", cst.getValue());
+                logger.info(ct.trans("default.set.to", cst.getDescription(), cst.getValue()));
 
                 return true;
             }

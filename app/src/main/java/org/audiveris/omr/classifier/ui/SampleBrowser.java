@@ -1235,7 +1235,7 @@ public class SampleBrowser
 
             setFont(list.getFont());
             setText(shape.name());
-            setToolTipText(shape.getDescription());
+            setToolTipText(shape.getLocalizedName());
 
             final ShapeSymbol symbol = shape.getDecoratedSymbol(MusicFamily.Bravura);
             if (symbol != null) {

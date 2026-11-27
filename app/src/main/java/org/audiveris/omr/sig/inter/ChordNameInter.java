@@ -61,6 +61,7 @@ import org.audiveris.omr.text.TextWord;
 import org.audiveris.omr.util.Jaxb;
 import static org.audiveris.omr.util.RegexUtil.getGroup;
 import static org.audiveris.omr.util.RegexUtil.group;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.Wrapper;
 
@@ -105,6 +106,8 @@ public class ChordNameInter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ChordNameInter.class);
+
+    private static final Translator ct = new Translator();
 
     /** Unicode value for <b>flat</b> sign: {@value}. */
     public static final String FLAT = "\u266D";
@@ -482,7 +485,7 @@ public class ChordNameInter
             degrees = cs.degrees;
             super.setValue(value.replaceAll("b", FLAT).replaceAll("#", SHARP));
         } else {
-            logger.info("Failed parsing ChordName text: {}", value);
+            logger.info(ct.trans("failed.parsing.chord.name.text", value));
             super.setValue(value);
         }
     }

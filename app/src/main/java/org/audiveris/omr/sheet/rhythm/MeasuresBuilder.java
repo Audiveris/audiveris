@@ -41,6 +41,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +71,8 @@ public class MeasuresBuilder
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
+
+    private static final Translator ct = new Translator();
 
     private static final Logger logger = LoggerFactory.getLogger(MeasuresBuilder.class);
 
@@ -307,7 +310,7 @@ public class MeasuresBuilder
 
         Measure topMeasure = lastStack.getFirstMeasure();
 
-        // Check it is a short measure with no ending barline
+        // Check whether it is a short measure with no ending barline
         if (topMeasure.getRightPartBarline() != null) {
             return;
         }
@@ -320,7 +323,7 @@ public class MeasuresBuilder
 
         // Check stack has one measure per part, otherwise simply remove this pseudo stack
         if (lastStack.getMeasures().size() < system.getParts().size()) {
-            logger.info("Partial courtesy stack removed {}", lastStack);
+            logger.info(ct.trans("truncated.courtesy.measure", lastStack));
             system.removeStack(lastStack);
 
             return;
@@ -413,19 +416,19 @@ public class MeasuresBuilder
 
             if (groupCount < staffCount) {
                 final String prefix = system.getLogPrefix();
-                logger.info("{}partial barline column:{}", prefix, column);
+                logger.info(ct.trans("truncated.barline.column", prefix, column));
 
                 if (groupCount < (staffCount - groupCount)) {
                     // Delete the minority
-                    logger.info("{}deleting  minor column:{}", prefix, column);
+                    logger.info(ct.trans("deleting .minor.column", prefix, column));
                     column.delete();
                 } else if (groupCount > (staffCount - groupCount)) {
                     // Spread the majority
-                    logger.info("{}expanding major column:{}", prefix, column);
+                    logger.info(ct.trans("expanding.major.column", prefix, column));
                     column.expand();
                 } else {
                     // Even, we delete.
-                    logger.info("{}deleting   half column:{}", prefix, column);
+                    logger.info(ct.trans("deleting.half.column", prefix, column));
                     column.delete();
                 }
             }
@@ -458,7 +461,7 @@ public class MeasuresBuilder
                               Group group)
         {
             if (groups.get(staff) != null) {
-                logger.warn("Column cell occupied in {} staff: {}", this, staff.getId());
+                logger.warn(ct.trans("position.occupied.in.staff", this, staff.getId()));
             } else {
                 groups.put(staff, group);
             }

@@ -920,7 +920,7 @@ public class SlurInter
         if (part != null) {
             part.removeSlur(this);
         } else {
-            logger.info("{} no part to remove from.", this);
+            logger.info(ct.trans("no.part.to.remove.from", this));
         }
 
         super.remove(extensive);
@@ -1331,11 +1331,10 @@ public class SlurInter
     public static class Impacts
             extends GradeImpacts
     {
-        private static final String[] NAMES = new String[]
-        { "dist", "angle", "width", "height", "vert" };
+        private static final String[] NAMES = new String[] { "dist", "angle", "width", "height",
+                "vert" };
 
-        private static final double[] WEIGHTS = new double[]
-        { 3, 1, 1, 1, 1 };
+        private static final double[] WEIGHTS = new double[] { 3, 1, 1, 1, 1 };
 
         public Impacts (double dist,
                         double angle,
@@ -1375,8 +1374,7 @@ public class SlurInter
             c1 = curve.getCtrlP1();
             c2 = curve.getCtrlP2();
             p2 = curve.getP2();
-            points = new Point2D[]
-            { p1, c1, c2, p2 };
+            points = new Point2D[] { p1, c1, c2, p2 };
         }
 
         @Override

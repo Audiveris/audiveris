@@ -40,6 +40,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.symbol.FlatSymbol;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
@@ -82,6 +83,8 @@ public class AlterInter
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AlterInter.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -415,9 +418,9 @@ public class AlterInter
 
             default -> {
                 logger.warn(
-                        "Weird shape {} for accidental {}",
+                        ct.trans("weird.shape.for.accidental",
                         accidental.getShape(),
-                        accidental.getId());
+                        accidental.getId()));
                 yield 0; // Should not happen
             }
         };

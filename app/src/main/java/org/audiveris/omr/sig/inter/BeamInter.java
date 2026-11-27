@@ -39,6 +39,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BeamInter
         extends AbstractBeamInter
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
     //~ Constructors -------------------------------------------------------------------------------
 
     /**

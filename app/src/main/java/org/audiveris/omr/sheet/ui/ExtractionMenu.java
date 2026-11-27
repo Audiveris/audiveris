@@ -29,6 +29,7 @@ import org.audiveris.omr.ui.util.OmrFileFilter;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.LocationDependent;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +58,8 @@ public class ExtractionMenu
 
     private static final Logger logger = LoggerFactory.getLogger(ExtractionMenu.class);
 
+    private static final Translator ct = new Translator();
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Underlying sheet. */
@@ -71,7 +74,7 @@ public class ExtractionMenu
      */
     public ExtractionMenu (Sheet sheet)
     {
-        super("Extraction");
+        super(ct.trans("Extraction"));
         this.sheet = sheet;
 
         add(new JMenuItem(new WholeAction())); // Save the whole sheet
@@ -93,8 +96,7 @@ public class ExtractionMenu
                 true,
                 OMR.gui.getFrame(),
                 new File(bookFolder.toFile(), sheet.getId() + "-ext.png"),
-                new OmrFileFilter(".png images", new String[]
-                { ".png" }));
+                new OmrFileFilter(ct.trans(".png.images"), new String[] { ".png" }));
 
         if (file == null) {
             return;
@@ -103,11 +105,11 @@ public class ExtractionMenu
         File folder = new File(file.getParent());
 
         if (folder.mkdirs()) {
-            logger.info("Creating folder {}", folder);
+            logger.info(ct.trans("creating.folder", folder));
         }
 
         ImageIO.write(img, "png", file);
-        logger.info("Extraction stored as {}", file);
+        logger.info(ct.trans("extraction.stored.as", file));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -127,7 +129,7 @@ public class ExtractionMenu
 
         AreaAction ()
         {
-            putValue(SHORT_DESCRIPTION, "Save the selected area to disk");
+            putValue(SHORT_DESCRIPTION, ct.trans("save.the.selected.area.to.disk"));
             setEnabled(false); // By default
         }
 
@@ -138,7 +140,7 @@ public class ExtractionMenu
                 // Extract the area selected from initial image
                 save(sheet.getPicture().getImageRectangle(area));
             } catch (IOException ex) {
-                logger.warn("Error in area extraction, " + ex, ex);
+                logger.warn(ct.trans("error.in.area.extraction", ex), ex);
             }
         }
 
@@ -155,9 +157,9 @@ public class ExtractionMenu
             setEnabled(area != null);
 
             if (area != null) {
-                putValue(NAME, String.format("Area %dx%d ...", area.width, area.height));
+                putValue(NAME, ct.trans("area", area.width, area.height));
             } else {
-                putValue(NAME, "no area selected");
+                putValue(NAME, ct.trans("no.area.selected"));
             }
         }
     }
@@ -173,8 +175,8 @@ public class ExtractionMenu
     {
         WholeAction ()
         {
-            putValue(NAME, "Whole sheet");
-            putValue(SHORT_DESCRIPTION, "Save the whole sheet to disk");
+            putValue(NAME, ct.trans("whole.sheet"));
+            putValue(SHORT_DESCRIPTION, ct.trans("save.the.whole.sheet.to.disk"));
         }
 
         @Override
@@ -184,7 +186,7 @@ public class ExtractionMenu
                 // Extract the whole initial image
                 save(sheet.getPicture().getImageRectangle(null));
             } catch (IOException ex) {
-                logger.warn("Error in sheet extraction, " + ex, ex);
+                logger.warn(ct.trans("error.in.sheet.extraction", ex), ex);
             }
         }
     }

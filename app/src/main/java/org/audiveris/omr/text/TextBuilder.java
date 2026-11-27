@@ -58,6 +58,7 @@ import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Pair;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.BOTTOM;
 import static org.audiveris.omr.util.VerticalSide.TOP;
@@ -113,6 +114,8 @@ public class TextBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TextBuilder.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -484,7 +487,7 @@ public class TextBuilder
                 default -> null; // To keep the compiler happy.
             });
         } catch (Exception ex) {
-            logger.warn("Error in guessRole for {} {}", line, ex.toString(), ex);
+            logger.warn(ct.trans("error.in.for", "guessRole", line, ex), ex);
         }
     }
 

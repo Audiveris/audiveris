@@ -560,10 +560,10 @@ public enum Shape
 
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Explanation of the glyph shape. */
-    private String description;
+    /** Localized name of the shape. */
+    private String localizedName;
 
-    /** Tip of the glyph shape. */
+    /** Localized tip of the shape. */
     private String tip;
 
     /** Potential related physical shape. */
@@ -652,27 +652,6 @@ public enum Shape
         }
 
         return symbol.getDecoratedVersion();
-    }
-
-    //----------------//
-    // getDescription //
-    //----------------//
-    /**
-     * Report a user-friendly description of this shape.
-     *
-     * @return the shape description
-     */
-    public String getDescription ()
-    {
-        if (description == null) {
-            description = resources.getString(name() + ".text");
-
-            if (description == null) {
-                description = toString(); // Better than nothing!
-            }
-        }
-
-        return description;
     }
 
     //---------------//
@@ -779,6 +758,27 @@ public enum Shape
         }
 
         return null;
+    }
+
+    //------------------//
+    // getLocalizedName //
+    //------------------//
+    /**
+     * Report the localized name of this shape.
+     *
+     * @return the shape localized name
+     */
+    public String getLocalizedName ()
+    {
+        if (localizedName == null) {
+            localizedName = resources.getString(name() + ".text");
+
+            if (localizedName == null) {
+                localizedName = toString(); // Better than nothing!
+            }
+        }
+
+        return localizedName;
     }
 
     //-----------------//

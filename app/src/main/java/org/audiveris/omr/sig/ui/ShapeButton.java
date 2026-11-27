@@ -64,7 +64,7 @@ public class ShapeButton
         this.shape = shape;
 
         if (shape != null) {
-            setText(shape.getDescription());
+            setText(shape.getLocalizedName());
             setToolTipText(shape.getTip());
         }
     }

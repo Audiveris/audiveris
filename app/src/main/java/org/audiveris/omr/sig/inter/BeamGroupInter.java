@@ -628,15 +628,6 @@ public class BeamGroupInter
         return super.getPart();
     }
 
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
-    {
-        return "BeamGroup";
-    }
-
     //----------//
     // getVoice //
     //----------//

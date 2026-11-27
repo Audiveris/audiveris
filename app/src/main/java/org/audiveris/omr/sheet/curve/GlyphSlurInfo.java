@@ -208,16 +208,27 @@ public class GlyphSlurInfo
          */
         private Point vectorAtX (int x)
         {
-            int y = yAtX(x);
+            final int y = yAtX(x);
 
             if (y != -1) {
                 return new Point(x, y);
             }
 
-            Point left = lookLeft(x);
-            Point right = lookRight(x);
+            final Point left = lookLeft(x);
+            final Point right = lookRight(x);
 
-            return PointUtil.rounded(LineUtil.intersectionAtX(new Line2D.Double(left, right), x));
+            if (left != null) {
+                if (right != null) {
+                    return PointUtil.rounded(
+                            LineUtil.intersectionAtX(new Line2D.Double(left, right), x));
+                } else {
+                    return left;
+                }
+            } else if (right != null) {
+                return right;
+            }
+
+            return null;
         }
 
         /**

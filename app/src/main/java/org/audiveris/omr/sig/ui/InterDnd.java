@@ -38,6 +38,7 @@ import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,8 @@ public class InterDnd
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterDnd.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -169,7 +172,7 @@ public class InterDnd
             final List<Staff> staves = sheet.getStaffManager().getStavesOf(dropPoint);
 
             if (staves.isEmpty()) {
-                logger.info("Drop point lies beyond sheet limits");
+                logger.info(ct.trans("drop.point.lies.beyond.sheet.limits"));
 
                 return;
             }

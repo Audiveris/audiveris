@@ -32,6 +32,7 @@ import org.audiveris.omr.ui.symbol.BravuraSymbols;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,8 @@ public abstract class AbstractPitchedInter
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractPitchedInter.class);
+
+    private static final Translator ct = new Translator();
 
     /** To order from bottom to top. */
     public static final Comparator<AbstractPitchedInter> bottomUp = (AbstractPitchedInter p1,
@@ -191,7 +194,13 @@ public abstract class AbstractPitchedInter
     @Override
     protected String internals ()
     {
-        return super.internals() + String.format(" pitch:%.1f", pitch);
+        final StringBuilder sb = new StringBuilder(super.internals());
+
+        if (pitch != null) {
+            sb.append(' ').append(String.format(ct.trans("pitch") + ":%.1f", pitch));
+        }
+
+        return sb.toString();
     }
 
     //-----------//

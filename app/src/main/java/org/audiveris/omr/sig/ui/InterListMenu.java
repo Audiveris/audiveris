@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Sheet;
@@ -240,7 +239,7 @@ public class InterListMenu
 
             setVisible(false);
         } catch (Exception ex) {
-            logger.warn("Error updating menu " + ex, ex);
+            logger.error("Error updating menu " + ex, ex);
         }
     }
 

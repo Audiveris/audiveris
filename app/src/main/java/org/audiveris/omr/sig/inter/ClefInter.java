@@ -291,7 +291,7 @@ public class ClefInter
     @Override
     public String getShapeString ()
     {
-        return kind + " " + shape;
+        return kind + " " + shape.getLocalizedName();
     }
 
     //-------------------------//
@@ -738,41 +738,6 @@ public class ClefInter
         }
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-
-    //----------//
-    // ClefKind //
-    //----------//
-    /**
-     * Clef kind, based on shape and pitch.
-     */
-    public static enum ClefKind
-    {
-        TREBLE(Shape.G_CLEF, 2),
-
-        BASS(Shape.F_CLEF, -2),
-        BARITONE(Shape.F_CLEF, 0),
-
-        TENOR(Shape.C_CLEF, -2),
-        ALTO(Shape.C_CLEF, 0),
-        MEZZO_SOPRANO(Shape.C_CLEF, 2),
-        SOPRANO(Shape.C_CLEF, 4),
-
-        PERCUSSION(Shape.PERCUSSION_CLEF, 0);
-
-        /** Symbol shape class. (regardless of ottava mark if any) */
-        public final Shape shape;
-
-        /** Pitch of reference line. */
-        public final int pitch;
-
-        ClefKind (Shape shape,
-                  int pitch)
-        {
-            this.shape = shape;
-            this.pitch = pitch;
-        }
-    }
 
     //--------//
     // Editor //

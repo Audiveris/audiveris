@@ -28,6 +28,7 @@ import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.NaturalSpec;
 import static org.audiveris.omr.util.NaturalSpec.getCounts;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.ZipFileSystem;
 
@@ -65,6 +66,8 @@ public class PlayList
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PlayList.class);
+
+    private static final Translator ct = new Translator(PlayList.class);
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
@@ -129,7 +132,7 @@ public class PlayList
 
                 for (int srcId : ids) {
                     final SheetStub srcStub = srcBook.getStub(srcId);
-                    logger.info("   Processing {}", srcStub);
+                    logger.info("   " + ct.trans("processing", srcStub));
                     srcStub.reachStep(OmrStep.BINARY, false);
 
                     final SheetStub tgtStub = new SheetStub(tgtBook, ++tgtId, srcStub);
@@ -139,7 +142,7 @@ public class PlayList
                         // Marshal
                         final Sheet srcSheet = srcStub.getSheet();
                         final Path tgtSheetPath = tgtRoot.resolve(INTERNALS_RADIX + tgtId);
-                        logger.info("   Marshalling {} as {}", srcSheet, tgtSheetPath);
+                        logger.info("   " + ct.trans("marshalling.as", srcSheet, tgtSheetPath));
                         srcSheet.store(tgtSheetPath, null);
                     } else {
                         // Copy all sheet items that exist (images, sheet)
@@ -148,11 +151,12 @@ public class PlayList
                         if (Files.exists(srcSheetPath)) {
                             final Path tgtSheetPath = tgtRoot.resolve(INTERNALS_RADIX + tgtId);
                             logger.info(
-                                    "Copying tree from {}{} to {}{}",
-                                    srcBook.getBookPath(),
-                                    srcSheetPath,
-                                    tgtPath,
-                                    tgtSheetPath);
+                                    ct.trans(
+                                            "copying.tree.from.to",
+                                            srcBook.getBookPath(),
+                                            srcSheetPath,
+                                            tgtPath,
+                                            tgtSheetPath));
                             FileUtil.copyTree(srcSheetPath, tgtSheetPath);
 
                             // File sheet#srcId.xml, if any, must be renamed as sheet#tgtId.xml
@@ -164,7 +168,7 @@ public class PlayList
                                 Files.move(tgtSheetXmlPath, newPath);
                             }
                         } else {
-                            logger.warn("No {} in {}", srcSheetPath, srcBook.getBookPath());
+                            logger.warn(ct.trans("no.in", srcSheetPath, srcBook.getBookPath()));
                         }
                     }
                 }
@@ -187,15 +191,14 @@ public class PlayList
             tgtBook.updateScores(null);
             tgtBook.setVersionValue(oldestVersion.value);
             tgtBook.storeBookInfo(tgtRoot);
-            logger.info("Compound book created as {}", tgtPath);
+            logger.info(ct.trans("compound.book.created.as", tgtPath));
         } catch (Exception ex) {
-            logger.warn("Error building " + this + " as " + tgtPath + " ex:" + ex, ex);
+            logger.warn(ct.trans("error.building.as", this, tgtPath, ex), ex);
         } finally {
             if (tgtRoot != null) {
                 try {
                     tgtRoot.getFileSystem().close();
-                } catch (IOException ignored) {
-                }
+                } catch (IOException ignored) {}
             }
 
             if (tgtBook != null) {
@@ -252,9 +255,9 @@ public class PlayList
     {
         try {
             Jaxb.marshal(this, targetPath, getJaxbContext());
-            logger.info("Playlist stored as {}", targetPath);
+            logger.info(ct.trans("playlist.stored.as", targetPath));
         } catch (Exception ex) {
-            logger.warn("Error storing playlist to {} {}", targetPath, ex.toString(), ex);
+            logger.warn(ct.trans("error.storing.playlist.to", targetPath, ex), ex);
         }
     }
 
@@ -264,11 +267,9 @@ public class PlayList
     @Override
     public String toString ()
     {
-        // @formatter:off
-        return new StringBuilder(getClass().getSimpleName()).append('{')
+        return new StringBuilder(ct.trans("playlist")).append('{') //
                 .append(excerpts.stream().map(Excerpt::toString).collect(Collectors.joining(",")))
                 .append('}').toString();
-        // @formatter:on
     }
 
     //~ Static Methods -----------------------------------------------------------------------------
@@ -299,7 +300,7 @@ public class PlayList
     public static PlayList load (Path sourcePath)
     {
         try {
-            logger.info("Loading playlist {}", sourcePath);
+            logger.info(ct.trans("loading.playlist", sourcePath));
 
             try (InputStream is = Files.newInputStream(sourcePath, StandardOpenOption.READ)) {
                 final JAXBContext ctx = getJaxbContext();
@@ -309,7 +310,7 @@ public class PlayList
                 return playlist;
             }
         } catch (IOException | JAXBException ex) {
-            logger.warn("Error loading playlist " + sourcePath + " " + ex, ex);
+            logger.warn(ct.trans("Error loading playlist", sourcePath, ex), ex);
 
             return null;
         }
@@ -458,8 +459,10 @@ public class PlayList
         @Override
         public String toString ()
         {
-            return new StringBuilder(getClass().getSimpleName()).append('{').append(path).append(
-                    " spec:").append(specification).append('}').toString();
+            return new StringBuilder(ct.trans("excerpt")).append('{') //
+                    .append(path).append(' ') //
+                    .append(ct.trans("spec")).append(" : ").append(specification) //
+                    .append('}').toString();
         }
     }
 }

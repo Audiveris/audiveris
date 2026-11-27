@@ -22,6 +22,7 @@
 package org.audiveris.omr.ui.util;
 
 import org.audiveris.omr.WellKnowns;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,9 +52,11 @@ public class WebBrowser
 
     private static final Logger logger = LoggerFactory.getLogger(WebBrowser.class);
 
+    private static final Translator ct = new Translator();
+
     /** Major browsers. */
-    private static final String[] browsers =
-    { "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
+    private static final String[] browsers = { "firefox", "opera", "konqueror", "epiphany",
+            "mozilla", "netscape" };
 
     /** Singleton instance, initially null. */
     private static WebBrowser instance;
@@ -92,18 +95,18 @@ public class WebBrowser
         String osName = System.getProperty("os.name");
 
         if (true) {
-            logger.info("Desktop.browse {} with {} on {}", uri, this, osName);
+            logger.info(ct.trans("desktop.browse.with.on", uri, this, osName));
 
             try {
                 Desktop desktop = Desktop.getDesktop();
                 desktop.browse(uri);
             } catch (IOException ex) {
-                logger.warn("Could not launch browser " + uri, ex);
+                logger.warn(ct.trans("could.not.launch.browser.on", uri, ex), ex);
             } catch (UnsupportedOperationException ex) {
                 logger.info("desktop.BROWSE unsupported, trying xdg-open " + uri);
                 try {
-                    Process p = Runtime.getRuntime().exec(new String[]
-                    { "xdg-open", uri.toString() });
+                    Process p = Runtime.getRuntime().exec(
+                            new String[] { "xdg-open", uri.toString() });
                     p.waitFor();
                 } catch (IOException exc) {
                     logger.warn("Could not launch browser using xdg-open " + uri, exc);
@@ -160,31 +163,28 @@ public class WebBrowser
         try {
             if (WellKnowns.MAC_OS_X) {
                 Class fileMgr = Class.forName("com.apple.eio.FileManager");
-                Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[]
-                { String.class });
-                openURL.invoke(null, new Object[]
-                { url });
+                Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[] { String.class });
+                openURL.invoke(null, new Object[] { url });
             } else if (WellKnowns.WINDOWS) {
-                Runtime.getRuntime().exec(new String[]
-                { "rundll32", "url.dll,FileProtocolHandler", url });
+                Runtime.getRuntime().exec(
+                        new String[] { "rundll32", "url.dll,FileProtocolHandler", url });
             } else { //assume Unix or Linux
 
                 for (String browser : browsers) {
-                    if (Runtime.getRuntime().exec(new String[]
-                    { "which", browser }).waitFor() == 0) {
-                        Runtime.getRuntime().exec(new String[]
-                        { browser, url });
+                    if (Runtime.getRuntime().exec(new String[] { "which", browser })
+                            .waitFor() == 0) {
+                        Runtime.getRuntime().exec(new String[] { browser, url });
 
                         return;
                     }
                 }
 
-                logger.warn("Could not find any suitable web browser");
+                logger.warn(ct.trans("no.suitable.web.browser"));
             }
         } catch (IOException | ClassNotFoundException | IllegalAccessException
                 | IllegalArgumentException | InterruptedException | NoSuchMethodException
                 | SecurityException | InvocationTargetException ex) {
-            logger.warn("Could not launch browser", ex);
+            logger.warn(ct.trans("could.not.launch.web.browser", ex), ex);
         }
     }
 

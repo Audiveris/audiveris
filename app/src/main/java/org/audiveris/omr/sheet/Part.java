@@ -48,6 +48,7 @@ import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
@@ -114,6 +115,8 @@ public class Part
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Part.class);
+
+    private static final Translator ct = new Translator();
 
     /** For comparing Part instances according to their id. */
     public static final Comparator<Part> byId = (p1,
@@ -313,7 +316,7 @@ public class Part
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+            logger.warn(ct.trans("error.in", "Part.afterReload()", ex), ex);
         }
     }
 
@@ -348,7 +351,7 @@ public class Part
     public Part createDummyPart (int id)
     {
         final int sn = system.getSheet().getStub().getNumber();
-        logger.info("Sheet#{} System#{} {} dummyPart id: {}", sn, system.getId(), this, id);
+        logger.info(ct.trans("sheet.system.dummy.part", sn, system.getId(), this, id));
 
         // Find some concrete system part for the provided id
         Part refPart = findRefPart(id);
@@ -486,7 +489,7 @@ public class Part
             otherSystem = otherSystem.getPrecedingInPage();
         }
 
-        logger.warn("{} Cannot find any real system part with id {}", this, id);
+        logger.warn(ct.trans("cant.find.real.part.with.id", this, id));
 
         return null;
     }
@@ -1150,7 +1153,7 @@ public class Part
      */
     public void mergeWithBelow (Part below)
     {
-        logger.info("Merging {} with below {}", this, below);
+        logger.info(ct.trans("merging.part.with.below", this, below));
 
         for (int im = 0; im < measures.size(); im++) {
             final Measure measure = measures.get(im);
@@ -1499,7 +1502,7 @@ public class Part
      */
     public void splitBefore (Staff pivotStaff)
     {
-        logger.info("Splitting {} before {}", this, pivotStaff);
+        logger.info(ct.trans("splitting.part.before", this, pivotStaff));
 
         final SystemRef systemRef = system.getRef();
         final int staffIndex = staves.indexOf(pivotStaff);
@@ -1564,24 +1567,25 @@ public class Part
     @Override
     public String toString ()
     {
-        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        final StringBuilder sb = new StringBuilder(ct.trans("part"));
         sb.append('#').append(id).append('{');
 
         if ((name != null) && !name.isRemoved()) {
-            sb.append("name:").append(name.getValue());
+            sb.append(ct.trans("name")).append(" : ").append(name.getValue());
         }
 
         if (isDummy()) {
-            sb.append(" dummy");
+            sb.append(' ').append(ct.trans("dummy"));
         }
 
-        sb.append(" staves[");
+        sb.append(' ').append(ct.trans("staves")).append('[');
         sb.append(staves.stream().map(s -> "" + s.getId()).collect(Collectors.joining(",")));
-        sb.append("]");
+        sb.append(']');
 
-        sb.append(" configs:[").append(StaffConfig.toCsvString(getStaffConfigs())).append(']');
+        sb.append(' ').append(ct.trans("configs")).append(" : [").append(
+                StaffConfig.toCsvString(getStaffConfigs())).append(']');
 
-        sb.append("}");
+        sb.append('}');
 
         return sb.toString();
     }

@@ -377,7 +377,7 @@ public class ShapeSymbol
      */
     public String getDescription ()
     {
-        return shape.getDescription();
+        return shape.getLocalizedName();
     }
 
     //--------------//

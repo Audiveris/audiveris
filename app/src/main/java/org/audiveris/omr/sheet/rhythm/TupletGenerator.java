@@ -39,6 +39,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.util.Entities;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +78,8 @@ public class TupletGenerator
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TupletGenerator.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -193,7 +196,7 @@ public class TupletGenerator
                 end = (end == null) ? chDur : end.plus(chDur);
             }
 
-            logger.info("   {} duration:{}", voice, end);
+            logger.info("   " + ct.trans("voice.duration.end", voice, end));
         }
     }
 

@@ -57,6 +57,7 @@ import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.Trimmable;
 
 import org.slf4j.Logger;
@@ -114,6 +115,8 @@ public class Measure
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Measure.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -514,7 +517,7 @@ public class Measure
                 part.getSystem().getSheet().getStub().setUpgraded(true);
             }
         } catch (Exception ex) {
-            logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+            logger.warn(ct.trans("error.in", "Measure.afterReload()", ex), ex);
         }
     }
 
@@ -541,7 +544,7 @@ public class Measure
         try {
             Trimmable.beforeMarshal(this);
         } catch (Exception ex) {
-            logger.error("Error beforeMarshal {}", ex);
+            logger.warn(ct.trans("error.in", "Measure.beforeMarshal()", ex), ex);
         }
     }
 
@@ -604,7 +607,7 @@ public class Measure
             } else {
                 List<Staff> stavesAround = part.getSystem().getStavesAround(center); // 1 or 2 staves
                 staff = stavesAround.get(0);
-                logger.warn("Inter with no staff {}, assigned to staff#{}", inter, staff.getId());
+                logger.warn(ct.trans("inter.with.no.staff.assigned.to", inter, staff.getId()));
                 inter.setStaff(staff);
 
                 if (!part.getStaves().contains(staff)) {
@@ -1653,7 +1656,7 @@ public class Measure
                 return VoiceKind.values()[index];
             }
 
-            logger.error("{} Weird staff index {} in part", startingStaff, index);
+            logger.error(ct.trans("weird.staff.index.in.part", startingStaff, index));
 
             return VoiceKind.HIGH;
         }
@@ -1792,7 +1795,7 @@ public class Measure
         // Keys
         if (right.hasKeys()) {
             if (hasKeys()) {
-                logger.warn("Attempt to merge keySigs from 2 measures {} and {}", this, right);
+                logger.warn(ct.trans("attempt.to.merge.key.sigs.from", this, right));
             } else {
                 keys.addAll(right.keys);
             }
@@ -2283,7 +2286,7 @@ public class Measure
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("Measure{");
+        StringBuilder sb = new StringBuilder(ct.trans("Measure")).append('{');
 
         if (stack != null) {
             sb.append('#').append(stack.getPageId());

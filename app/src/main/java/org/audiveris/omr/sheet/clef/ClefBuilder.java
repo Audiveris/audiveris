@@ -52,7 +52,7 @@ import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sig.GradeUtil;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ClefInter;
-import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
+import org.audiveris.omr.sig.inter.ClefKind;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.ClefKeyRelation;

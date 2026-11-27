@@ -739,8 +739,10 @@ public class BookParameters
         public void actionPerformed (ActionEvent e)
         {
             if ((e != null) && (e.getSource() == kindCombo)) {
-                FilterDescriptor desc = (readKind() == FilterKind.GLOBAL) ? GlobalDescriptor
-                        .getDefault() : AdaptiveDescriptor.getDefault();
+                final FilterDescriptor desc = switch (readKind()) {
+                    case GLOBAL -> GlobalDescriptor.getDefault();
+                    case ADAPTIVE -> AdaptiveDescriptor.getDefault();
+                };
                 display(desc);
             } else {
                 super.actionPerformed(e);
@@ -827,16 +829,17 @@ public class BookParameters
         {
             commitSpinners();
 
-            return (readKind() == FilterKind.GLOBAL) ? new GlobalDescriptor(
-                    (int) globalData.spinner.getValue())
-                    : new AdaptiveDescriptor(
-                            (double) localDataMean.spinner.getValue(),
-                            (double) localDataDev.spinner.getValue());
+            return switch (readKind()) {
+                case GLOBAL -> new GlobalDescriptor((int) globalData.spinner.getValue());
+                case ADAPTIVE -> new AdaptiveDescriptor(
+                        (double) localDataMean.spinner.getValue(),
+                        (double) localDataDev.spinner.getValue());
+            };
         }
 
         private FilterKind readKind ()
         {
-            return kindCombo.getItemAt(kindCombo.getSelectedIndex()); // BINGO to be checked!!!!
+            return kindCombo.getItemAt(kindCombo.getSelectedIndex());
         }
 
         @Override

@@ -55,6 +55,7 @@ import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.BOTTOM;
@@ -108,6 +109,8 @@ public abstract class AbstractBeamInter
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractBeamInter.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -478,7 +481,7 @@ public abstract class AbstractBeamInter
         } else if (staff != null) {
             system = staff.getSystem();
         } else {
-            logger.warn("No system nor staff for {}", this);
+            logger.warn(ct.trans("no.system.nor.staff.for", this));
 
             return null;
         }
@@ -1230,13 +1233,12 @@ public abstract class AbstractBeamInter
     public static class Impacts
             extends GradeImpacts
     {
-        private static final String[] NAMES = new String[]
-        { "wdth", "minH", "maxH", "core", "belt", "jit" };
+        private static final String[] NAMES = new String[] { "wdth", "minH", "maxH", "core", "belt",
+                "jit" };
 
         private static final int DIST_INDEX = 5;
 
-        private static final double[] WEIGHTS = new double[]
-        { 0.5, 1, 1, 2, 2, 2 };
+        private static final double[] WEIGHTS = new double[] { 0.5, 1, 1, 2, 2, 2 };
 
         public Impacts (double width,
                         double minHeight,

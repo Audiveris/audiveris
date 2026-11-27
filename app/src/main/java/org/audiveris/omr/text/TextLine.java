@@ -31,6 +31,7 @@ import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.text.WordScanner.OcrScanner;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
@@ -61,6 +62,8 @@ public class TextLine
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TextLine.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -499,7 +502,7 @@ public class TextLine
             if (glyph != null) {
                 glyphs.add(glyph);
             } else {
-                logger.warn("Word {} with no related glyph", word);
+                logger.warn(ct.trans("word.with.no.related.glyph", word));
             }
         }
 
@@ -818,7 +821,8 @@ public class TextLine
 
                 for (int i = 0; i < subWords.size(); i++) {
                     final TextWord subWord = subWords.get(i);
-                    final TextWord next = (i + 1 < subWords.size()) ? subWords.get(i + 1) : nextWord;
+                    final TextWord next = (i + 1 < subWords.size()) ? subWords.get(i + 1)
+                            : nextWord;
 
                     if (subWord.checkValidity(next) == null)
                         toAdd.add(subWord);

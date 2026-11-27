@@ -654,12 +654,12 @@ public class MetronomeInter
                 if (!links.isEmpty()) {
                     links.iterator().next().applyTo(this);
                 } else {
-                    logger.info("No chord available for {} {}", this, getValue());
+                    logger.info(ct.trans("no.chord.available.for", this, getValue()));
                 }
             }
 
         } catch (Exception ex) {
-            logger.warn("Error in link {} {}", this, ex.toString(), ex);
+            logger.warn(ct.trans("error.in.for", "link", this, ex), ex);
         }
     }
 
@@ -698,7 +698,7 @@ public class MetronomeInter
             if (note != null) {
                 m.unit = note.toShape();
             } else {
-                logger.info("No beat unit in metronome line \"{}\" str: \"{}\"", value, noteStr);
+                logger.info(ct.trans("no.beat.unit.in.metronome.line", value, noteStr));
             }
         }
 
@@ -711,7 +711,7 @@ public class MetronomeInter
             m.bpm1 = Integer.decode(bpm1Str);
             logger.debug("bpm1Str: \"{}\" bpm1: {}", bpm1Str, m.bpm1);
         } catch (NumberFormatException ex) {
-            logger.info("Invalid bpm in metronome portion: \"{}\"", bpm1Str);
+            logger.info(ct.trans("invalid.bpm.in.metronome.portion", bpm1Str));
         }
 
         // BPM2?
@@ -721,7 +721,7 @@ public class MetronomeInter
                 m.bpm2 = Integer.decode(bpm2Str);
                 logger.debug("bpm2Str: \"{}\" bpm2: {}", bpm2Str, m.bpm2);
             } catch (NumberFormatException ex) {
-                logger.info("Invalid bpm2 in metronome portion: \"{}\"", bpm2Str);
+                logger.info(ct.trans("invalid.bpm2.in.metronome.portion", bpm2Str));
             }
         }
 
@@ -921,13 +921,13 @@ public class MetronomeInter
 
             final Matcher matcher = metroPattern.matcher(str);
             if (!matcher.matches()) {
-                reporter.info("Invalid line: " + str); // We can continue
+                reporter.info(ct.trans("invalid.line", str)); // We can continue
             }
 
             // Index to the word that contains the '=' equal sign
             final int equalIndex = equalIndex(line);
             if (equalIndex == -1) {
-                reporter.alert("No '=' character found");
+                reporter.alert(ct.trans("no.equal.character.found"));
             }
 
             // Note shape
@@ -936,7 +936,7 @@ public class MetronomeInter
             logger.debug("create. noteStr:\"{}\" codes[{}]", noteStr, codesOf(noteStr));
 
             if (noteStr.isEmpty()) {
-                reporter.alert("No note characters in line: " + line);
+                reporter.alert(ct.trans("no.note.characters.in.line", line));
             }
 
             // Perhaps the note 'characters' are in the same word as the '=' sign
@@ -950,20 +950,21 @@ public class MetronomeInter
             }
 
             if (ctx.charIndex == -1) {
-                reporter.alert("Note characters not found in line: " + line);
+                reporter.alert(ct.trans("note.characters.not.found.in.line", line));
             }
 
             ctx.charCount = noteStr.length();
             ctx.noteGlyph = getNoteGlyph(glyphIndex, ctx.noteWord, ctx.charIndex, ctx.charCount);
             if (ctx.noteGlyph == null) {
-                reporter.alert("No underlying glyph for note in line: " + line);
+                reporter.alert(ct.trans("no.glyph.for.note.in.line", line));
             } else {
                 ctx.noteGlyph = glyphIndex.registerOriginal(ctx.noteGlyph);
 
                 ctx.note = recognizeNote(ctx.noteGlyph, system);
                 logger.debug("note: {}", ctx.note);
                 if (ctx.note == null) {
-                    reporter.alert("Non recognized note for glyph#" + ctx.noteGlyph.getId());
+                    reporter.alert(
+                            ct.trans("non.recognized.note.for.glyph", ctx.noteGlyph.getId()));
                 }
             }
 
@@ -973,7 +974,7 @@ public class MetronomeInter
                 Integer bpm1 = Integer.decode(bpm1Str);
                 logger.debug("bpm1: {}", bpm1);
             } catch (NumberFormatException ex) {
-                reporter.alert("Non recognized bpm in \"" + bpm1Str + "\"");
+                reporter.alert(ct.trans("non.recognized.bpm.in", bpm1Str));
             }
 
             // BPM2
@@ -983,7 +984,7 @@ public class MetronomeInter
                     Integer bpm2 = Integer.decode(bpm2Str);
                     logger.debug("bpm2: {}", bpm2);
                 } catch (NumberFormatException ex) {
-                    reporter.alert("Non recognized bpm2 in \"" + bpm2Str + "\"");
+                    reporter.alert(ct.trans("non.recognized.bpm2.in", bpm2Str));
                 }
             }
         } catch (ParsingException ignored) {}
@@ -1412,7 +1413,7 @@ public class MetronomeInter
 
         public void info (String message)
         {
-            logger.info("Metronome. {}", message); // Feedback to the end user
+            logger.info(ct.trans("metronome.msg", message)); // Feedback to the end user
         }
     }
 

@@ -92,10 +92,9 @@ public class AlignValues
     }
 
     private static void align (int col,
-                               String from)
+                               String from,
+                               String to)
     {
-        final String to = from + ".aligned";
-
         try (Reader reader = new InputStreamReader(new FileInputStream(from), "UTF-8");
                 BufferedReader fin = new BufferedReader(reader);
                 Writer writer = new OutputStreamWriter(new FileOutputStream(to), "UTF-8");
@@ -186,8 +185,12 @@ public class AlignValues
                         final Path path = file.toAbsolutePath().normalize();
                         System.out.println(path.toString());
 
-                        final int col = getCol(path.toString());
-                        align(col, path.toString());
+                        // Rename existing file as a backup
+                        final Path backup = Paths.get(path + ".bak");
+                        Files.move(path, backup);
+
+                        final int col = getCol(backup.toString());
+                        align(col, backup.toString(), path.toString());
                     }
 
                     return FileVisitResult.CONTINUE;

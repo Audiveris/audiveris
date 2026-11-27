@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.score.ui;
 
-import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.ScaleItem;
 import org.audiveris.omr.sheet.Sheet;
@@ -83,7 +82,6 @@ public class SheetScaling
         // Populate scalings with current scale values
         populateScalings();
 
-        ///final XactTopic topic = new XactTopic(ct.trans("Scaling.text"));
         final XactTopic topic = new XactTopic("SheetScaling");
 
         for (ScaleItem key : ScaleItem.values()) {
@@ -98,7 +96,7 @@ public class SheetScaling
             topic.add(scaledPane);
         }
 
-        topicsPanel = new TopicsPanel("Sheet settings", Arrays.asList(topic), ct, colSpec, 1); // BINGO à fixer!
+        topicsPanel = new TopicsPanel("Sheet settings", Arrays.asList(topic), ct, colSpec, 1);
 
         initialDisplay();
     }

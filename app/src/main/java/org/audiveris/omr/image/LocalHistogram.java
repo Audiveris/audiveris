@@ -215,10 +215,10 @@ public class LocalHistogram
         //boolean[] h=new boolean[256];
         //int pgsize=pg.length;
         //  int[] wnd=new int[pgsize];
-        int k = 0;
+        int k;
         int x;
-        int y = 0;
-        int bin = 0;
+        int y;
+        int bin;
         int i = index / width;
         int j = index % width;
         int tmin = 255;
@@ -239,7 +239,7 @@ public class LocalHistogram
                 }
             } catch (ArrayIndexOutOfBoundsException ex) {
                 k = x + (width * y);
-                logger.warn(ct.trans("a.i.o.o.Bounds.exception", x, y, k));
+                logger.warn("{} x: {} y: {} index: {}", ex, x, y, k, ex);
             }
             if (type == 0) {
                 bin = (k + pg1[2]) - 255;

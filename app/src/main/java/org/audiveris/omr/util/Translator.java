@@ -122,8 +122,8 @@ public class Translator
         try {
             return resources.getString(key);
         } catch (MissingResourceException mre) {
-            logger.error("MissingResourceException for key \"{}\"", key);
-            return key;
+            logger.error("MissingResourceException for key \"{}\"", key, mre);
+            return key; // Better than nothing
         }
     }
 }

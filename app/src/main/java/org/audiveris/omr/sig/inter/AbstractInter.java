@@ -56,6 +56,7 @@ import org.audiveris.omr.ui.util.BasicAttachmentHolder;
 import org.audiveris.omr.util.AbstractEntity;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.Version;
 import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.Wrapper;
@@ -115,6 +116,8 @@ public abstract class AbstractInter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractInter.class);
+
+    protected static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -306,14 +309,14 @@ public abstract class AbstractInter
     {
         // Make sure this Inter instance either has no glyph or has a duly registered one
         if ((glyph != null) && (glyph.getId() == 0)) {
-            logger.error("Inter referencing a non-registered glyph: " + this + " glyph: " + glyph);
+            logger.error(ct.trans("inter.referencing.a.non.registered.glyph", this, glyph));
         }
 
         // Make sure bounds exist
         getBounds();
 
         if (sig == null) {
-            logger.error("Marshalling an inter with no sig " + this);
+            logger.error(ct.trans("marshalling.inter.with.no.sig ", this));
         }
     }
 
@@ -409,27 +412,34 @@ public abstract class AbstractInter
     @Override
     public String dumpOf ()
     {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
-        sb.append(
-                String.format(
-                        "%s@%s%s%s%n",
-                        getClass().getSimpleName(),
-                        Integer.toHexString(this.hashCode()),
-                        (sig != null) ? (" System#" + sig.getSystem().getId()) : "",
-                        removed ? " REMOVED" : ""));
-        sb.append(String.format("   %s%n", this));
+        sb.append(getClass().getSimpleName()) //
+                .append('@').append(Integer.toHexString(this.hashCode()));
+
+        if (sig != null) {
+            sb.append(' ').append(ct.trans("system")).append('#').append(sig.getSystem().getId());
+
+            if (removed) {
+                sb.append(' ').append(ct.trans("REMOVED"));
+            }
+        }
+
+        sb.append('\n');
+
+        sb.append("   ").append(this).append('\n');
 
         if (!getDetails().isEmpty()) {
-            sb.append(String.format("   %s%n", getDetails()));
+            sb.append("   ").append(getDetails()).append('\n');
         }
 
         if (sig != null) {
             for (Relation rel : sig.edgesOf(this)) {
-                sb.append(String.format("   rel: %s%n", rel.seenFrom(this)));
+                sb.append("   ").append(ct.trans("relation")).append(": ") //
+                        .append(rel.seenFrom(this)).append('\n');
             }
         } else {
-            sb.append(" noSIG");
+            sb.append(' ').append(ct.trans("no.sig"));
         }
 
         return sb.toString();
@@ -651,7 +661,7 @@ public abstract class AbstractInter
         final StringBuilder sb = new StringBuilder();
 
         if (glyph != null) {
-            sb.append("g#").append(glyph.getId());
+            sb.append(ct.trans("glyph")).append('#').append(glyph.getId());
         }
 
         if (impacts != null) {
@@ -661,7 +671,7 @@ public abstract class AbstractInter
 
         if (abnormal) {
             sb.append((sb.length() != 0) ? " " : "");
-            sb.append("ABNORMAL");
+            sb.append(ct.trans("ABNORMAL"));
         }
 
         return sb.toString();
@@ -831,7 +841,11 @@ public abstract class AbstractInter
     @Override
     public String getShapeString ()
     {
-        return shape.getDescription();
+        if (shape != null) {
+            return shape.getLocalizedName();
+        }
+
+        return getLocalizedName();
     }
 
     //----------------//
@@ -980,40 +994,43 @@ public abstract class AbstractInter
     @Override
     protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internals());
+        final StringBuilder sb = new StringBuilder(super.internals());
 
+        // Special attributes if any
         if (isRemoved()) {
-            sb.append(" REMOVED");
+            sb.append(ct.trans("REMOVED")).append(' ');
         }
 
         if (isManual()) {
-            sb.append(" MANUAL");
+            sb.append(ct.trans("MANUAL")).append(' ');
         }
 
         if (isImplicit()) {
-            sb.append(" IMPLICIT");
+            sb.append(ct.trans("IMPLICIT")).append(' ');
         }
 
         if (isFrozen()) {
-            sb.append(" FROZEN");
+            sb.append(ct.trans("FROZEN")).append(' ');
         }
 
-        sb.append(String.format("(%.3f", grade));
+        // Grade
+        sb.append(ct.trans("grade")).append(':');
+        sb.append(String.format("%.3f", grade));
 
-        Double cg = getContextualGrade();
+        final Double cg = getContextualGrade();
 
         if (cg != null) {
             sb.append(String.format("/%.3f", cg));
         }
 
-        sb.append(")");
-
+        // Staff
         if (staff != null) {
-            sb.append(" staff:").append(staff.getId());
+            sb.append(' ').append(ct.trans("staff")).append(':').append(staff.getId());
         }
 
+        // Shape
         if (shape != null) {
-            sb.append(" ").append(shape);
+            sb.append(' ').append(shape.getLocalizedName());
         }
 
         return sb.toString();

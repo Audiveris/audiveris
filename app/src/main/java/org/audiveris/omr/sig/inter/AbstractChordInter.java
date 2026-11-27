@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.GlobalMessages;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
@@ -1052,26 +1051,26 @@ public abstract class AbstractChordInter
     @Override
     protected String internals ()
     {
-        StringBuilder sb = new StringBuilder(super.internals());
+        final StringBuilder sb = new StringBuilder(super.internals());
 
         if (sig != null) {
             if (sig.containsVertex(this)) {
                 if (slot != null) {
-                    sb.append(" slot#").append(slot.getId());
+                    sb.append(' ').append(ct.trans("slot")).append('#').append(slot.getId());
                 }
 
                 if (timeOffset != null) {
-                    sb.append(" off:").append(timeOffset);
+                    sb.append(' ').append(ct.trans("start")).append(':').append(timeOffset);
                 }
 
                 Rational dur = getDuration();
 
                 if (dur != null) {
-                    sb.append(" dur:").append(dur);
+                    sb.append(' ').append(ct.trans("duration")).append(':').append(dur);
                 }
             }
         } else {
-            sb.append(" noSIG");
+            sb.append(" no SIG");
         }
 
         return sb.toString();

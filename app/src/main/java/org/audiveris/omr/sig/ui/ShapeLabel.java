@@ -54,7 +54,7 @@ public class ShapeLabel
         this.shape = shape;
 
         if (shape != null) {
-            setText(shape.getDescription());
+            setText(shape.getLocalizedName());
             setToolTipText(shape.getTip());
         }
     }
@@ -72,7 +72,7 @@ public class ShapeLabel
         this.shape = shape;
 
         if (shape != null) {
-            setText(shape.getDescription());
+            setText(shape.getLocalizedName());
             setToolTipText(shape.getTip());
             setIcon(shape.getDecoratedSymbol(family));
         }

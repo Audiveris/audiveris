@@ -22,6 +22,7 @@
 package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,8 @@ public class TieTask
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(TieTask.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -64,7 +67,11 @@ public class TieTask
         final SlurInter slur = getInter();
         final boolean tied = slur.isTie();
         slur.setTie(!tied);
-        logger.info("Slur #{} tie set as: {}", slur.getId(), !tied);
+
+        if (tied)
+            logger.info(ct.trans("slur.set.as.tied", slur.getId()));
+        else
+            logger.info(ct.trans("slur.set.as.not.tied", slur.getId()));
 
         sheet.getInterIndex().publish(slur);
     }

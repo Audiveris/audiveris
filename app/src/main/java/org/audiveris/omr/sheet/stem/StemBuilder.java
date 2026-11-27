@@ -56,6 +56,7 @@ import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
 import org.audiveris.omr.ui.symbol.FontSymbol;
 import org.audiveris.omr.ui.symbol.MusicFamily;
 import org.audiveris.omr.ui.util.UIUtil;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,6 +98,8 @@ public class StemBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(StemBuilder.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -1094,8 +1097,7 @@ public class StemBuilder
 
             logger.debug("{}", this);
         } catch (Exception ex) {
-            logger.warn("StemBuilder. Error in retrieveAllItems {}", ex.getMessage(), ex);
-            logger.warn("StemBuilder. {}", startLinker);
+            logger.warn(ct.trans("error.in", startLinker, ex), ex);
 
             items.clear(); // Safer!
         }

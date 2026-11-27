@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet.rhythm;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,8 @@ public class StackRhythm
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(StackRhythm.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -99,7 +102,7 @@ public class StackRhythm
         // Look for empty staves
         for (Map.Entry<Staff, List<AbstractChordInter>> entry : map.entrySet()) {
             if (entry.getValue().isEmpty()) {
-                logger.info("{} staff#{} is empty", stack, entry.getKey().getId());
+                logger.info(ct.trans("staff.is.empty", stack, entry.getKey().getId()));
 
                 return false;
             }
@@ -221,10 +224,10 @@ public class StackRhythm
 
         try {
             if (!doProcess()) {
-                logger.info("{}{} no correct rhythm", stack.getSystem().getLogPrefix(), stack);
+                logger.info(ct.trans("no.correct.rhythm", stack.getSystem().getLogPrefix(), stack));
             }
         } catch (Exception ex) {
-            logger.warn("StackRhythm error processing {} {}", stack, ex.toString(), ex);
+            logger.warn(ct.trans("error.processing.rhythm.of", stack, ex), ex);
         }
     }
 
@@ -254,7 +257,7 @@ public class StackRhythm
 
             stack.setActualDuration(actualDuration);
         } catch (Exception ex) {
-            logger.warn("StackRhythm. Error visiting " + stack + " " + ex, ex);
+            logger.warn(ct.trans("error.rhythm.visiting", stack, ex), ex);
         }
     }
 }

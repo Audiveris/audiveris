@@ -96,6 +96,7 @@ import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,6 +127,8 @@ public class InterFactory
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterFactory.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -1196,7 +1199,7 @@ public class InterFactory
 
             // Others
             default:
-                logger.warn("No ghost instance for {}", shape);
+                logger.warn(ct.trans("no.ghost.instance.for.shape", shape));
 
                 return null;
         }

@@ -120,7 +120,7 @@ public class BraceInter
                 Part partBelow = systemParts.get(myIndex + 1);
                 myPart.mergeWithBelow(partBelow);
             } else {
-                logger.warn("No part to merge below {}", myPart);
+                logger.warn(ct.trans("no.part.to.merge.below", myPart));
             }
         }
     }
@@ -189,7 +189,7 @@ public class BraceInter
                     final int y2 = staff2.getLastLine().yAt(xRight);
                     bounds = new Rectangle(box.x, y1, box.width, y2 - y1 + 1);
                 } catch (Exception ex) {
-                    logger.warn("Error in getBounds for {}", this, ex);
+                    logger.warn(ct.trans("error.in.for", "getBounds", this, ex), ex);
                 }
             }
         }
@@ -228,7 +228,7 @@ public class BraceInter
             try {
                 return system.getClosestStaff(new Point(xRight, box.y));
             } catch (Exception ex) {
-                logger.warn("Error in getFirstStaff for {}", this, ex);
+                logger.warn(ct.trans("error.in.for", "getFirstStaff", this, ex), ex);
             }
         }
 
@@ -253,7 +253,7 @@ public class BraceInter
             try {
                 return system.getClosestStaff(new Point(xRight, (box.y + box.height) - 1));
             } catch (Exception ex) {
-                logger.warn("Error in getLastStaff for {}", this, ex);
+                logger.warn(ct.trans("error.in.for", "getLastStaff", this, ex), ex);
             }
         }
 
@@ -280,7 +280,7 @@ public class BraceInter
             Part myPart = staff.getPart();
 
             if (myPart.getStaves().size() < 2) {
-                logger.info("Not enough staves in {} to split it", myPart);
+                logger.info(ct.trans("not.enough.staves.in.to.split.it", myPart));
             } else {
                 myPart.splitBefore(myPart.getLastStaff());
             }

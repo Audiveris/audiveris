@@ -477,15 +477,6 @@ public class HeadChordInter
         return null;
     }
 
-    //----------------//
-    // getShapeString //
-    //----------------//
-    @Override
-    public String getShapeString ()
-    {
-        return "HeadChord";
-    }
-
     //---------//
     // getStem //
     //---------//

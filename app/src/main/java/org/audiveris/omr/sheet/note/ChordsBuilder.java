@@ -58,6 +58,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +87,8 @@ public class ChordsBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ChordsBuilder.class);
+
+    private static final Translator ct = new Translator();
 
     /** To sort head-stem relations left to right. */
     private static final Comparator<Relation> byHeadSide = (Relation o1,
@@ -287,7 +290,7 @@ public class ChordsBuilder
                 rels.remove(poorRel);
 
                 if (poorStem.getHeads().isEmpty()) {
-                    logger.info("Deleting {} on {} side of {}", poorStem, poorSide, head);
+                    logger.info(ct.trans("deleting.stem.on.side.of", poorStem, poorSide, head));
                     remove(poorStem, stemChords);
                 }
             }
@@ -421,7 +424,7 @@ public class ChordsBuilder
 
                 measure.addInter(chord);
             } else {
-                logger.warn("No containing measure for {}", inter);
+                logger.warn(ct.trans("no.containing.measure.for", inter));
             }
         }
     }

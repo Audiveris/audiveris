@@ -26,6 +26,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,8 @@ public abstract class ConnectionTask
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectionTask.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -116,7 +119,7 @@ public abstract class ConnectionTask
                     final SlurInter s2 = (SlurInter) two;
                     s1.setExtension(RIGHT, s2);
                     s2.setExtension(LEFT, s1);
-                    logger.info("Slur connection between #{} and #{}", s1.getId(), s2.getId());
+                    logger.info(ct.trans("slur.connection.between", s1.getId(), s2.getId()));
             }
         }
 
@@ -130,7 +133,7 @@ public abstract class ConnectionTask
                     final SlurInter s2 = (SlurInter) two;
                     s1.setExtension(RIGHT, null);
                     s2.setExtension(LEFT, null);
-                    logger.info("Slur un-connection between #{} and #{}", s1.getId(), s2.getId());
+                    logger.info(ct.trans("slur.disconnection.between", s1.getId(), s2.getId()));
             }
         }
     }
@@ -160,7 +163,7 @@ public abstract class ConnectionTask
                     final SlurInter s2 = (SlurInter) two;
                     s1.setExtension(RIGHT, null);
                     s2.setExtension(LEFT, null);
-                    logger.info("Slur disconnection between #{} and #{}", s1.getId(), s2.getId());
+                    logger.info(ct.trans("slur.disconnection.between", s1.getId(), s2.getId()));
             }
         }
 
@@ -174,7 +177,7 @@ public abstract class ConnectionTask
                     final SlurInter s2 = (SlurInter) two;
                     s1.setExtension(RIGHT, s2);
                     s2.setExtension(LEFT, s1);
-                    logger.info("Slur re-connection between #{} and #{}", s1.getId(), s2.getId());
+                    logger.info(ct.trans("slur.connection.between", s1.getId(), s2.getId()));
             }
         }
     }

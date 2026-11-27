@@ -49,7 +49,6 @@ import static org.audiveris.omr.text.TextRole.PartName;
 import org.audiveris.omr.text.Word;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Entities;
-import org.audiveris.omr.util.Translator;
 import org.audiveris.omr.util.WrappedBoolean;
 import org.audiveris.omr.util.Wrapper;
 
@@ -69,8 +68,6 @@ import java.util.stream.Collectors;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.audiveris.omr.GlobalMessages;
 
 /**
  * Class <code>SentenceInter</code> represents a full sentence of words.
@@ -103,8 +100,6 @@ public class SentenceInter
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SentenceInter.class);
-
-    private static final Translator ct = new Translator();
 
     /** For ordering sentences by their de-skewed ordinate. */
     public static final Comparator<SentenceInter> byOrdinate = (s1,
@@ -363,7 +358,7 @@ public class SentenceInter
     @Override
     public String getShapeString ()
     {
-        return "SENTENCE";
+        return ct.trans("Sentence");
     }
 
     //----------//

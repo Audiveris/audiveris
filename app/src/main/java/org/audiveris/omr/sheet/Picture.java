@@ -42,6 +42,7 @@ import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.PixelEvent;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +108,8 @@ public class Picture
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(Picture.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -218,7 +221,7 @@ public class Picture
     private ByteProcessor binarized (ByteProcessor src)
     {
         FilterDescriptor desc = AdaptiveDescriptor.getDefault();
-        logger.info("{} {}", "Binarization", desc);
+        logger.debug("Binarization {}", desc);
 
         PixelFilter filter = desc.getFilter(src);
 
@@ -280,7 +283,7 @@ public class Picture
 
                     if (glyph == null) {
                         final int idx = staff.getLines().indexOf(line);
-                        logger.warn("Staff #{} no glyph for line #{}", staff.getId(), 1 + idx);
+                        logger.warn(ct.trans("staff.no.glyph.for.line", staff.getId(), 1 + idx));
                     } else {
                         glyph.getRunTable().render(g, glyph.getTopLeft());
                     }
@@ -540,7 +543,7 @@ public class Picture
                 gray = adjustImageFormat(gray);
                 setImage(ImageKey.GRAY, gray, false);
             } catch (ImageFormatException ex) {
-                logger.warn("ImageFormatException thrown in getGrayImage", ex);
+                logger.warn(ct.trans("error.in", "Picture.getGrayImage", ex), ex);
 
                 return null;
             }
@@ -669,7 +672,7 @@ public class Picture
                             setImage(ImageKey.BINARY, image, true);
                             sheet.getStub().setModified(true);
                         } else {
-                            logger.warn("Cannot provide BINARY source");
+                            logger.warn(ct.trans("cant.provide.binary.source"));
 
                             return null;
                         }
@@ -924,7 +927,7 @@ public class Picture
             sheet.getLocationService().publish(
                     new PixelEvent(this, event.hint, event.movement, level));
         } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
+            logger.warn(ct.trans("error.in", " Picture.onEvent()", ex), ex);
         }
     }
 
@@ -975,12 +978,13 @@ public class Picture
         // The case was detected when switching from JPodRenderer loader to PdfBox loader
         if (image.getWidth() != width || image.getHeight() != height) {
             logger.info(
-                    "New {} image size: {}x{} vs {}x{}",
-                    key,
-                    image.getWidth(),
-                    image.getHeight(),
-                    width,
-                    height);
+                    ct.trans(
+                            "new.image.size",
+                            key,
+                            image.getWidth(),
+                            image.getHeight(),
+                            width,
+                            height));
 
             // Discard all sources and tables
             images.clear();
@@ -1051,10 +1055,10 @@ public class Picture
 
                         try {
                             if (Files.deleteIfExists(tablePath)) {
-                                logger.info("Washed {}", tablePath);
+                                logger.debug("Washed {}", tablePath);
                             }
                         } catch (IOException ex) {
-                            logger.warn("Error deleting {} {}", tablePath, ex);
+                            logger.warn(ct.trans("error.deleting", tablePath, ex), ex);
                         }
                     }
                 }

@@ -34,6 +34,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import static org.audiveris.omr.step.OmrStep.RHYTHMS;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +77,8 @@ public class PageRhythm
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(PageRhythm.class);
+
+    private static final Translator ct = new Translator();
 
     /** Adjustable rhythm classes. (FRAT: Flag, RestChord, AugmentationDot, Tuplet) */
     private static final Class<?>[] FRAT_CLASSES = new Class<?>[] { //
@@ -179,7 +182,7 @@ public class PageRhythm
                 final TimeRational timeRational = range.ts.getTimeRational();
 
                 if (timeRational == null) {
-                    logger.info("No timeRational value for {}", range.ts);
+                    logger.info(ct.trans("no.time.rational.value.for", range.ts));
 
                     return false;
                 }
@@ -197,15 +200,17 @@ public class PageRhythm
                         range.timeRational = lastTR.duplicate();
                         range.duration = lastTR.getValue();
                         logger.info(
-                                "{} Time value reused from sheet#{}",
-                                page,
-                                prevPageRef.getSheetNumber());
+                                ct.trans(
+                                        "time.value.reused.from.sheet",
+                                        page,
+                                        prevPageRef.getSheetNumber()));
                         break;
                     } else if (prevPageRef.getStub().getLatestStep().compareTo(RHYTHMS) < 0) {
                         logger.info(
-                                "{} Time value not yet available in sheet#{}",
-                                page,
-                                prevPageRef.getSheetNumber());
+                                ct.trans(
+                                        "time.value.not.yet.available.in.sheet",
+                                        page,
+                                        prevPageRef.getSheetNumber()));
                         break;
                     }
 
@@ -273,7 +278,7 @@ public class PageRhythm
                     logger.debug("\n--- Processing {} {} expDur:{}", sn, stack, range.duration);
                     new StackRhythm(stack).process(range.duration);
                 } catch (Exception ex) {
-                    logger.warn("Error on stack " + stack + " " + ex, ex);
+                    logger.warn(ct.trans("error.in", stack, ex), ex);
                 }
 
                 // End of range?

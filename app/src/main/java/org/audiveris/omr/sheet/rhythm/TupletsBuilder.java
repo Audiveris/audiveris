@@ -40,6 +40,7 @@ import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +71,8 @@ public class TupletsBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TupletsBuilder.class);
+
+    private static final Translator ct = new Translator();
 
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -223,7 +226,7 @@ public class TupletsBuilder
             case TUPLET_THREE -> 3;
             case TUPLET_SIX -> 6;
             default -> {
-                logger.error("Incorrect tuplet shape {}", shape);
+                logger.error(ct.trans("incorrect.tuplet.shape", shape));
                 yield 0;
             }
         };
@@ -301,11 +304,11 @@ public class TupletsBuilder
                 final int offset = signOffset(row, first, last, sign.x);
                 final int width = lastChord.getCenter().x - firstChord.getCenter().x;
 
-                if ((offset <= (maxOffsetRatio * width)) && (offset < bestOffset)
-                        && isTupletTotal(total, count)
-                        && respectsBeamGroup(row, first, last, factor)
-                        && standsBeyond(sign, run)
-                        && (bracketed || isBeamed(run))) {
+                if ((offset <= (maxOffsetRatio * width)) && (offset < bestOffset) && isTupletTotal(
+                        total,
+                        count) && respectsBeamGroup(row, first, last, factor) && standsBeyond(
+                                sign,
+                                run) && (bracketed || isBeamed(run))) {
                     bestOffset = offset;
                     best = run;
                 }
@@ -549,8 +552,10 @@ public class TupletsBuilder
 
             int length = 0;
 
-            while ((x >= 0) && (x < width) && (buffer.get(x, y) == 0)
-                    && (thickness(buffer, x, y) <= line.maxThickness)) {
+            while ((x >= 0) && (x < width) && (buffer.get(x, y) == 0) && (thickness(
+                    buffer,
+                    x,
+                    y) <= line.maxThickness)) {
                 x += line.dir;
                 length++;
             }
@@ -602,8 +607,8 @@ public class TupletsBuilder
         final double restPitch = staff.pitchPositionOf(rest.getCenter());
         final double signPitch = staff.pitchPositionOf(sign);
 
-        return (Math.signum(restPitch) != Math.signum(signPitch))
-                && (Math.abs(restPitch) > constants.maxRestPitchAway.getValue());
+        return (Math.signum(restPitch) != Math.signum(signPitch)) && (Math.abs(
+                restPitch) > constants.maxRestPitchAway.getValue());
     }
 
     //---------------//
@@ -659,7 +664,8 @@ public class TupletsBuilder
         final AbstractChordInter firstChord = row.get(first);
         final AbstractChordInter lastChord = row.get(last);
         final int headsMiddle = (firstChord.getCenter().x + lastChord.getCenter().x) / 2;
-        final int stemsMiddle = (firstChord.getTailLocation().x + lastChord.getTailLocation().x) / 2;
+        final int stemsMiddle = (firstChord.getTailLocation().x + lastChord.getTailLocation().x)
+                / 2;
         int offset = Math.min(Math.abs(signX - headsMiddle), Math.abs(signX - stemsMiddle));
 
         if (last + 1 < row.size()) {

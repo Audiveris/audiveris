@@ -50,6 +50,8 @@ public abstract class AbstractEntity
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractEntity.class);
 
+    private static final Translator ct = new Translator(AbstractEntity.class);
+
     //~ Instance fields ----------------------------------------------------------------------------
 
     // Persistent data
@@ -98,6 +100,21 @@ public abstract class AbstractEntity
         return id;
     }
 
+    //------------------//
+    // getLocalizedName //
+    //------------------//
+    public String getLocalizedName ()
+    {
+        final String simpleName = getClass().getSimpleName();
+        final String localized = ct.trans(simpleName);
+
+        if (localized != null) {
+            return localized;
+        } else {
+            return simpleName; // Better than nothing
+        }
+    }
+
     //-----------//
     // internals //
     //-----------//
@@ -144,15 +161,15 @@ public abstract class AbstractEntity
     @Override
     public String toString ()
     {
-        final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append('#').append(id).append('{');
+        final StringBuilder sb = new StringBuilder(getLocalizedName());
+        sb.append('#').append(id).append(" {");
 
         try {
             sb.append(internals());
         } catch (Throwable ex) {
             // Temporarily, some internals may not be printable
             // Hence, to not perturb debugging print outs, we use a basic placeholder here
-            sb.append("<invalid-internals>");
+            sb.append(ct.trans("<invalid-internals>"));
         }
 
         sb.append('}');

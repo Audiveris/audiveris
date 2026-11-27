@@ -277,7 +277,9 @@ public class GuiActions
     @Action
     public void launchTrainer (ActionEvent e)
     {
-        CursorController.launchWithDelayedMessage("Launching trainer...", () -> Trainer.launch());
+        CursorController.launchWithDelayedMessage(
+                resources.getString("launching.trainer"),
+                () -> Trainer.launch());
     }
 
     //---------------//

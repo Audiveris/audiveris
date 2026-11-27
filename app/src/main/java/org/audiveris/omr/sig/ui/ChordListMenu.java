@@ -49,6 +49,7 @@ import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 import org.audiveris.omr.util.ClassUtil;
 import org.audiveris.omr.util.Entities;
+import org.audiveris.omr.util.Translator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +91,8 @@ public class ChordListMenu
 
     private static final Logger logger = LoggerFactory.getLogger(ChordListMenu.class);
 
+    private static final Translator ct = new Translator(ChordListMenu.class);
+
     private static final String NO_VOICE_ID = "None";
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -107,7 +110,7 @@ public class ChordListMenu
      */
     public ChordListMenu (Sheet sheet)
     {
-        super("Chords");
+        super(ct.trans("Chords"));
         this.sheet = sheet;
     }
 
@@ -228,8 +231,7 @@ public class ChordListMenu
                                    final List<AbstractChordInter> sysChords,
                                    final SelectionListener listener)
     {
-        String plural = (sysChords.size() > 1) ? "s" : "";
-        String text = sysChords.size() + " chord" + plural + " for System #" + system.getId() + ":";
+        String text = ct.trans("chords.for.system", sysChords.size(), system.getId());
         JMenuItem title = new JMenuItem(text);
         title.setEnabled(false);
 
@@ -305,8 +307,8 @@ public class ChordListMenu
         if (chords.size() >= 3) {
             addItem(
                     new MultipleRelationAdditionItem(
-                            "Same Time Slot for all",
-                            "Make all chords share the same time slot",
+                            ct.trans("same.time.slot.for.all"),
+                            ct.trans("all.chords.share.same.time.slot"),
                             chords,
                             SameTimeRelation.class),
                     listener);
@@ -328,8 +330,8 @@ public class ChordListMenu
                 if (separate == null) {
                     addItem(
                             new RelationAdditionItem(
-                                    "Same Time Slot",
-                                    "Make the two chords share the same time slot",
+                                    ct.trans("same.time.slot"),
+                                    ct.trans("two.chords.share.same.time.slot"),
                                     src,
                                     tgt,
                                     new SameTimeRelation()),
@@ -338,8 +340,8 @@ public class ChordListMenu
             } else {
                 addItem(
                         new RelationRemovalItem(
-                                "cancel Same Time Slot",
-                                "Cancel use of same time slot",
+                                ct.trans("cancel.same.time.slot"),
+                                ct.trans("cancel.use.of.same.time.slot"),
                                 sig,
                                 same),
                         listener);
@@ -349,8 +351,8 @@ public class ChordListMenu
                 if (same == null) {
                     addItem(
                             new RelationAdditionItem(
-                                    "Separate Time Slots",
-                                    "Make the two chords use separate time slots",
+                                    ct.trans("separate.time.slots"),
+                                    ct.trans("two.chords.use.separate.slots"),
                                     src,
                                     tgt,
                                     new SeparateTimeRelation()),
@@ -359,8 +361,8 @@ public class ChordListMenu
             } else {
                 addItem(
                         new RelationRemovalItem(
-                                "cancel Separate Time Slots",
-                                "Cancel use of separate time slots",
+                                ct.trans("cancel.separate.time.slots"),
+                                ct.trans("cancel.use.of.separate.slots"),
                                 sig,
                                 separate),
                         listener);
@@ -422,8 +424,8 @@ public class ChordListMenu
             if (separate == null) {
                 addItem(
                         new RelationAdditionItem(
-                                "Next in Voice",
-                                "The two chords are in sequence within the same voice",
+                                ct.trans("next.in.voice"),
+                                ct.trans("two.chords.in.sequence"),
                                 left,
                                 right,
                                 new NextInVoiceRelation()),
@@ -432,8 +434,8 @@ public class ChordListMenu
         } else {
             addItem(
                     new RelationRemovalItem(
-                            "Cancel Next in Voice",
-                            "Cancel use of next in voice",
+                            ct.trans("cancel.next.in.voice"),
+                            ct.trans("cancel.use.of.next.in.voice"),
                             sig,
                             nextInVoice),
                     listener);
@@ -443,8 +445,8 @@ public class ChordListMenu
             if (nextInVoice == null) {
                 addItem(
                         new RelationAdditionItem(
-                                "Separate Voices",
-                                "Make the two chords use separate voices",
+                                ct.trans("separate.voices"),
+                                ct.trans("two.chords.separate.voices"),
                                 src,
                                 tgt,
                                 new SeparateVoiceRelation()),
@@ -453,8 +455,8 @@ public class ChordListMenu
         } else {
             addItem(
                     new RelationRemovalItem(
-                            "Cancel Separate Voices",
-                            "Cancel use of separate voices",
+                            ct.trans("cancel.separate.voices"),
+                            ct.trans("cancel.use.of.separate.voices"),
                             sig,
                             separate),
                     listener);
@@ -835,8 +837,8 @@ public class ChordListMenu
         MergeAction (List<HeadChordInter> chords,
                      boolean withStem)
         {
-            super("Merge");
-            putValue(Action.SHORT_DESCRIPTION, "Merge the provided chords into a single one");
+            super(ct.trans("Merge"));
+            putValue(Action.SHORT_DESCRIPTION, ct.trans("merge.chords.into.single.one"));
 
             this.chords = chords;
             this.withStem = withStem;
@@ -1005,8 +1007,8 @@ public class ChordListMenu
 
         SplitAction (HeadChordInter chord)
         {
-            super("Split");
-            putValue(Action.SHORT_DESCRIPTION, "Split the provided chord into two chords");
+            super(ct.trans("Split"));
+            putValue(Action.SHORT_DESCRIPTION, ct.trans("split.chord.into.two.chords"));
 
             this.chord = chord;
         }
@@ -1039,8 +1041,8 @@ public class ChordListMenu
             chordPrefId = chord.getPreferredVoiceId();
 
             final int prefId = (chordPrefId != null) ? chordPrefId : 0;
-            setText("Preferred voice");
-            setToolTipText("Assign specific voice ID to first chord in system voice");
+            setText(ct.trans("preferred.voice"));
+            setToolTipText(ct.trans("assign.voice.id.to.first.chord"));
 
             // None item
             final JMenuItem noneItem = new JRadioButtonMenuItem(NO_VOICE_ID);
@@ -1066,14 +1068,14 @@ public class ChordListMenu
 
             if (command.equals(NO_VOICE_ID)) {
                 if (chordPrefId != null) {
-                    logger.info("No more preferred voice for {}", chord);
+                    logger.info(ct.trans("no.more.preferred.voice.for", chord));
                     sheet.getInterController().changeVoiceId(chord, null);
                 }
             } else {
                 final int prefId = Integer.decode(e.getActionCommand());
 
                 if ((chordPrefId == null) || (chordPrefId != prefId)) {
-                    logger.info("Preferred voice {} for {}", prefId, chord);
+                    logger.info(ct.trans("preferred.voice.for", prefId, chord));
                     sheet.getInterController().changeVoiceId(chord, prefId);
                 }
             }
