@@ -188,7 +188,7 @@ public abstract class ShapeShortcuts
         // Load system defaults first
         try {
             loadConfiguration(systemUri);
-            logger.debug(ct.trans("Loaded system shape shortcuts from {}", systemUri));
+            logger.debug(ct.trans("loaded.system.shape.shortcuts.from", systemUri));
         } catch (Exception ex) {
             logger.error(ct.trans("failed.to.load.system.shape.shortcuts.from", systemUri, ex), ex);
         }
